@@ -23,22 +23,16 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nb_root}/nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
-  <property name="build" location="../nbbuild/netbeans"/>
-
-  <patternset id="httpserver/servletapi.files">
-    <include name="modules/autoload/servletapi.jar"/>
-    <include name="modules/autoload/ext/servlet-2.2.jar"/>
-  </patternset>
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
   </target>
 
   <target name="jars">
-    <mkdir dir="${build}/modules/autoload"/>
+    <mkdir dir="netbeans/modules/autoload"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="${build}/modules/autoload/servletapi.jar"
+    <locjar jarfile="netbeans/modules/autoload/servletapi.jar"
             manifest="manifest-subst.mf"
             basedir="src"
             excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -49,23 +43,19 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release" depends="init">
-    <mkdir dir="${build}/modules/autoload/ext"/>
+    <mkdir dir="netbeans/modules/autoload/ext"/>
     <copy file="../external/servlet-2.2.jar"
-          tofile="${build}/modules/autoload/ext/servlet-2.2.jar"/>
+          tofile="netbeans/modules/autoload/ext/servlet-2.2.jar"/>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Builds the module">
-      <genlist outputfiledir="${build}" module="modules/autoload/servletapi.jar">
-          <fileset dir="${build}">
-	      <patternset refID="httpserver/servletapi.files"/>
-          </fileset>
-      </genlist>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans" description="Prepare the module for distribution via Auto Update.">
     <makenbm file="servletapi.nbm"
-           productDir="${build}"
-           module="modules/autoload/servletapi.jar"
+             topdir="."
+           module="netbeans/modules/autoload/servletapi.jar"
            homepage="http://httpserver.${homepage.base}/"
            distribution="http://${dist.base}/servletapi.nbm">
       <license name="servletapi-license.txt">
@@ -83,11 +73,10 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../src">
                 <include name="org/netbeans/modules/servletapi/**/*.class"/>
             </fileset>
-            <fileset dir="${build}">
-	        <patternset refID="httpserver/servletapi.files"/>
-            </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
+        <delete dir="netbeans"/>
+        <delete dir="Info"/>
         <delete file="servletapi.nbm"/>
   </target>
 

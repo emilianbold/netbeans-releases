@@ -58,7 +58,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="nbm" depends="netbeans">
         <makenbm file="core-settings-examples.nbm"
                  topdir="."
-                 module="modules/core-settings-examples.jar"
+                 module="netbeans/modules/core-settings-examples.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-settings-examples.nbm">
                  <license file="${license.file}"/>

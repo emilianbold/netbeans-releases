@@ -27,13 +27,6 @@ ToDo:
   <target name="bootstrap"
           description="Bootstrap NetBeans-specific Ant extensions.">
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
-    <!-- Read the user property file at first -->
-    <property file="user.build.properties"/>
-
-    <!-- Read standard property file -->
-    <property file="build.properties"/>
-
-    
     <ant dir="external" target="unscramble"/>
     <ant dir="../core/external" target="unscramble"/>
     <ant dir="../xml/external" target="unscramble"/>
@@ -78,6 +71,11 @@ ToDo:
   </target>
 
   <target name="init-module-list" depends="bootstrap,setup-jdkhome-4">
+    <!-- Read the user property file at first -->
+    <property file="user.build.properties"/>
+
+    <!-- Read standard property file -->
+    <property file="build.properties"/>
 
     <!-- Define modules. -->
     <!-- The following is not permitted by Ant: -->
@@ -119,8 +117,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
 
-    <!-- Build deploy directory -->
-    <property name="build" location="netbeans"/>
+    <!-- We need absolute path to ${netbeans.dest} -->
+    <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <!-- Best to leave this alone, though, unless you know what you are doing: -->
@@ -481,7 +479,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-text" depends="all-openide,all-openide/deprecated">
+  <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
@@ -687,19 +685,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xml" depends="all-xml/api, all-xml/tax, all-xml/core, all-xml/catalog, all-xml/tools, all-xml/text-edit, all-xml/tree-edit, all-xml/css, all-xml/xsl, all-xml/schema"/>
 
-
   <target name="all-treefs" depends="all-openide">
     <echo message="Building module treefs..."/>
     <ant dir="../treefs" target="netbeans"/>
   </target>
 
-  <target name="all-xtest" depends="all-openide,all-core">
-      <ant dir="../xtest" antfile="build.xml" target="compile-dependend-modules"/>
-      <ant dir="../xtest" antfile="build.xml" target="makedist"/>
-      <ant dir="../xtest" antfile="build.xml" target="makedist-pes"/>
-  </target>
-
-  <target name="all-openidex/looks" depends="all-openide,all-core/naming">
+  <target name="all-openidex/looks" depends="all-openide">
       <echo message="Building module openidex/looks..."/>
       <ant dir="../openidex/looks" target="netbeans"/>
   </target>
@@ -707,6 +698,12 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-utilities/loaderswitcher" depends="all-openide">
       <echo message="Building module utilities/loaderswitcher..."/>
       <ant dir="../utilities/loaderswitcher" target="netbeans"/>
+  </target>
+
+  <target name="all-xtest">
+      <ant dir="../xtest" antfile="build.xml" target="compile-dependend-modules"/>
+      <ant dir="../xtest" antfile="build.xml" target="makedist"/>
+      <ant dir="../xtest" antfile="build.xml" target="makedist-pes"/>
   </target>
   
   <!-- build NBMs for selected modules -->
@@ -738,26 +735,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="build-nozip" depends="delete-and-merge" description="Build the IDE but do not create a final ZIP file.">
     <taskdef name="createmodulexml" classname="org.netbeans.nbbuild.CreateModuleXML" classpath="nbantext.jar"/>
-    <mkdir dir="${build}/system/Modules"/>
-    <mkdir dir="${build}/modules/autoload"/>
-    <mkdir dir="${build}/modules/eager"/>
-    <createmodulexml xmldir="${build}/system/Modules">
-      <enabled dir="${build}/modules">
+    <mkdir dir="${netbeans.dest}/system/Modules"/>
+    <mkdir dir="${netbeans.dest}/modules/autoload"/>
+    <mkdir dir="${netbeans.dest}/modules/eager"/>
+    <createmodulexml xmldir="${netbeans.dest}/system/Modules">
+      <enabled dir="${netbeans.dest}/modules">
         <include name="*.jar"/>
         <!-- Just to test that we can in fact preconfigure some disabled modules: -->
         <exclude name="icebrowser.jar"/>
       </enabled>
-      <disabled dir="${build}/modules">
+      <disabled dir="${netbeans.dest}/modules">
         <include name="icebrowser.jar"/>
       </disabled>
-      <autoload dir="${build}/modules/autoload">
+      <autoload dir="${netbeans.dest}/modules/autoload">
         <include name="*.jar"/>
       </autoload>
-      <eager dir="${build}/modules/eager">
+      <eager dir="${netbeans.dest}/modules/eager">
         <include name="*.jar"/>
       </eager>
     </createmodulexml>
-    <echo file="${build}/build_info">NetBeans dev build
+    <echo file="${netbeans.dest}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
 Date:     ${TODAY}
@@ -775,14 +772,14 @@ Tag:
     <exec executable="zip" dir="." os="Linux SunOS Solaris Mac OS X" failonerror="false">
       <arg value="-r"/>
       <arg value="NetBeans-${buildnum}.zip"/>
-      <arg value="${build}"/>
+      <arg value="${netbeans.dest}"/>
     </exec>
     <zip zipfile="NetBeans-${buildnum}.zip" basedir=".">
-      <include name="${build}/"/>
+      <include name="${netbeans.dest}/"/>
     </zip>
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
 If you like, you may run the IDE straight from
-the ${build}/bin/ directory.
+the ${netbeans.dest}/bin/ directory.
 (For example, type: ant tryme)
 </echo>
   </target>
@@ -811,13 +808,13 @@ the ${build}/bin/ directory.
   <target name="delete-and-merge" depends="merge-delete,merge" />   
 
   <target name="merge-delete" depends="init">
-    <delete dir="${build}" />
+    <delete dir="${netbeans.dest}" />
   </target>
   
   <target name="merge" depends="build-messaging">
-    <mkdir dir="${build}"/>
+    <mkdir dir="${netbeans.dest}"/>
     <nbmerge failonerror="${stop.when.broken.modules}" 
-             dest="${build}" 
+             dest="${netbeans.dest}" 
              topdir=".." 
              fixedmodules="${fixedmodules}" 
              modules="${modules}"
@@ -827,7 +824,7 @@ the ${build}/bin/ directory.
       <suppress locale="ja" unless="netbeans.japanese"/>
     </nbmerge>
     <chmod perm="ugo+x">
-      <fileset dir="${build}">
+      <fileset dir="${netbeans.dest}/bin">
         <include name="**/*.sh"/>
         <include name="**/*.pl"/>
         <include name="fastjavac/fastjavac.linux"/>
@@ -848,7 +845,7 @@ the ${build}/bin/ directory.
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${build}/bin/runide.exe" failonerror="yes" timeout="600000">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes" timeout="600000">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -856,7 +853,7 @@ the ${build}/bin/ directory.
       <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${build}/bin/runide.sh"/>
+      <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -867,7 +864,7 @@ the ${build}/bin/ directory.
   </target>
 
   <target name="check-for-build">
-    <available property="have-build" file="${build}/lib/openide.jar"/>
+    <available property="have-build" file="${netbeans.dest}/lib/openide.jar"/>
   </target>
   <target name="maybe-build-nozip" depends="check-for-build" unless="have-build">
     <ant dir="." target="build-nozip"/>
@@ -879,7 +876,7 @@ the ${build}/bin/ directory.
 
   <target name="tryme" depends="init,maybe-build-nozip"
           description="Try running the IDE interactively (build it first if needed).">
-    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${build}/bin/runide.exe" failonerror="yes">
+    <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/runide.exe" failonerror="yes">
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -887,7 +884,7 @@ the ${build}/bin/ directory.
       <arg line="${tryme.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes">
-      <arg value="${build}/bin/runide.sh"/>
+      <arg value="${netbeans.dest}/bin/runide.sh"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
@@ -945,19 +942,21 @@ the ${build}/bin/ directory.
     <delete file="nbantext.jar"/>
   </target>
 
-  <target name="clean" depends="init"
+  <target name="localclean" depends="init">
+    <delete dir="${netbeans.dest}"/>
+    <delete dir="${test.user.dir}"/>
+    <delete dir="modules_javadoc"/>
+    <delete file="moduledefs-tmp.properties"/>
+  </target>
+
+  <target name="clean" depends="init,localclean"
           description="Clean out (almost) all build products.">
-    <mkdir dir="${build}"/>
     <cleanall topdir=".." 
               modules="${allmodules}" 
               targetname="clean"
               resolvedependencies="${resolve.clean.dependencies}"
               deptargetprefix="all-"
               failonerror="${stop.when.clean.error}" />
-    <delete dir="${build}"/>
-    <delete dir="${test.user.dir}"/>
-    <delete dir="modules_javadoc"/>
-    <delete file="moduledefs-tmp.properties"/>
     <echo message="Run `ant real-clean' if desired."/>
   </target>
 

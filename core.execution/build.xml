@@ -18,34 +18,29 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
-    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
 
-    <patternset id="core/execution.files">
-        <include name="modules/autoload/core-execution.jar"/>
-    </patternset>
-    
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../openide/openide-13javac-workaround.jar"/>
-                <pathelement location="${build}/lib/openide.jar"/>
-                <pathelement location="${build}/modules/autoload/openide-io.jar"/>
-                <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
-                <pathelement location="${build}/lib/core.jar"/>
-                <pathelement location="${build}/lib/ext/boot.jar"/>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+                <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+                <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+                <pathelement location="../netbeans/lib/core.jar"/>
+                <pathelement location="../netbeans/lib/ext/boot.jar"/>
             </classpath>
         </javac>
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="${build}/modules/autoload"/>
+        <mkdir dir="netbeans/modules/autoload"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="${build}/modules/autoload/core-execution.jar"
+        <locjar jarfile="netbeans/modules/autoload/core-execution.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -55,17 +50,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars">
-        <genlist outputfiledir="${build}" module="modules/autoload/core-execution.jar">
-            <fileset dir="${build}">
-                <patternset refID="core/execution.files"/>
-            </fileset>
-        </genlist>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     <target name="nbm" depends="netbeans">
         <makenbm file="core-execution.nbm"
-                 productDir="${build}"
-                 module="modules/autoload/core-execution.jar"
+                 topdir="."
+                 module="netbeans/modules/autoload/core-execution.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-execution.nbm">
             <license file="${license.file}"/>
@@ -78,11 +69,10 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${build}">
-                <patternset refID="core/execution.files"/>
-            </fileset>
         </delete>
+        <delete dir="netbeans"/>
         <delete file="core-execution.nbm"/>
+        <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
     </target>
 

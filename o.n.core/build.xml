@@ -20,20 +20,7 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
-  <property name="build" location="../nbbuild/netbeans"/>
 
-  <patternset id="core.files">
-    <include name="lib/ext/crimson*.jar"/>
-    <include name="lib/ext/xerces*.jar"/>
-    <include name="lib/ext/xml-apis*.jar"/>
-    <include name="lib/ext/regexp*.jar"/>
-    <include name="lib/core.jar"/>
-    <include name="lib/ext/boot.jar"/>
-    <include name="lib/ide.ks"/>
-    <include name="bin/**"/>
-    <include name="CREDITS.html"/>
-  </patternset>
-  
   <target name="init">
     <ant dir="external" target="unscramble"/>
   </target>
@@ -42,10 +29,8 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${build}/lib">
-          <include name="openide*.jar" />
-        </fileset>
-        <pathelement location="${build}/lib/ext/boot.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="netbeans/lib/ext/boot.jar"/>
         <fileset dir="external">
           <include name="regexp*.jar"/>
           <include name="xml-apis*.jar"/>
@@ -53,15 +38,12 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
-  
-  <target name="boot">
-    <!-- boot sources should be kept in a separate tree for safety -->
-    <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" 
-        includes="org/netbeans/*java"
-    />    
-    
-    <mkdir dir="${build}/lib/ext" />
-    <jar jarfile="${build}/lib/ext/boot.jar"
+
+  <!-- XXX move to bootstrap/build.xml -->  
+  <target name="boot" depends="init">
+    <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}"/>
+    <mkdir dir="netbeans/lib/ext" />
+    <jar jarfile="netbeans/lib/ext/boot.jar"
             basedir="bootstrap/src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
@@ -69,10 +51,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="${build}/lib/ext" />
+    <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="${build}/lib/core.jar"
+    <locjar jarfile="netbeans/lib/core.jar"
             basedir="src"
             manifest="manifest-subst.mf"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -83,11 +65,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="${build}" includeEmptyDirs="false">
+    <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
-    <mkdir dir="${build}/lib/ext"/>
-    <copy todir="${build}/lib/ext">
+    <mkdir dir="netbeans/lib/ext"/>
+    <copy todir="netbeans/lib/ext">
       <fileset dir="external">
         <include name="crimson*.jar"/>
         <include name="xerces*.jar"/>
@@ -96,26 +78,22 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </copy>
     <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
-    <fixcrlf srcdir="${build}/bin" cr="add">
+    <fixcrlf srcdir="netbeans/bin" cr="add">
       <include name="**/*.bat"/>
       <include name="**/*.cmd"/>
     </fixcrlf>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Build everything.">
-    <mkdir dir="${build}/lib/patches"/>
-    <mkdir dir="${build}/modules"/>
-    <genlist outputfiledir="${build}" module="lib/core.jar">
-        <fileset dir="${build}">
-            <patternset refID="core.files"/>
-        </fileset>
-    </genlist>
+    <mkdir dir="netbeans/lib/patches"/>
+    <mkdir dir="netbeans/modules"/>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans" description="Build an NBM.">
     <makenbm file="core.nbm"
-             productDir="${build}"
-             module="lib/core.jar"
+             topdir="."
+             module="netbeans/lib/core.jar"
 	     homepage="http://core.${homepage.base}/"
 	     distribution="http://${dist.base}/core.nbm">
       <license name="core-license.txt">
@@ -193,11 +171,10 @@ included with the NetBeans core:</text>
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>
-      <fileset dir="${build}">
-        <patternset refID="core.files"/>
-      </fileset>
     </delete>
+    <delete dir="netbeans"/>
     <delete dir="modules-lib"/>
+    <delete dir="Info"/>
     <delete file="core.nbm"/>
   </target>
 

@@ -19,32 +19,19 @@ Microsystems, Inc. All Rights Reserved.
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
     <property name="build.sysclasspath" value="ignore"/>
-    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
 
-    <patternset id="core/ide.files">
-        <include name="modules/core-ide.jar"/>
-	<include name="CHANGES.html"/>
-	<include name="README.html"/>
-	<include name="netbeans.css"/>
-	<include name="docs/NetBeansWeb.html"/>
-	<include name="bin/icons/ide.ico"/>
-	<include name="bin/icons/ide2.ico"/>
-	<include name="bin/icons/readme.ico"/>
-	<include name="bin/icons/web.ico"/>
-    </patternset>
-    
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${build}/lib">
+                <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar" />
                 </fileset>
-                <pathelement location="${build}/lib/core.jar"/>
+                <pathelement location="../netbeans/lib/core.jar"/>
                 <fileset dir="../external">
                     <include name="xml-apis*.jar"/>
                 </fileset>
@@ -53,10 +40,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="${build}/modules"/>
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="${build}/modules/core-ide.jar"
+        <locjar jarfile="netbeans/modules/core-ide.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -66,23 +53,19 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="release">
-        <copy todir="${build}" includeEmptyDirs="false">
+        <copy todir="netbeans" includeEmptyDirs="false">
             <fileset dir="release" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </copy>
     </target>
 
     <target name="netbeans" depends="jars,release">
-        <genlist outputfiledir="${build}" module="modules/core-ide.jar">
-            <fileset dir="${build}">
-                <patternset refID="core/ide.files"/>
-            </fileset>
-        </genlist>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     <target name="nbm" depends="netbeans">
         <makenbm file="core-ide.nbm"
-                 productDir="${build}"
-                 module="modules/core-ide.jar"
+                 topdir="."
+                 module="netbeans/modules/core-ide.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-ide.nbm">
             <license file="${license.file}"/>
@@ -95,11 +78,10 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${build}">
-                <patternset refID="core/ide.files"/>
-            </fileset>
         </delete>
+        <delete dir="netbeans"/>
         <delete file="core-ide.nbm"/>
+        <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
     </target>
 

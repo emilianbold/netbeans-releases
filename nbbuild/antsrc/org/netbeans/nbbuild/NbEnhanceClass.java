@@ -133,7 +133,6 @@ public class NbEnhanceClass extends Task {
                 throw new BuildException ("Method does not return byte[]: " + m);
             }
         } catch (Exception ex) {
-	    ex.printStackTrace();
             throw new BuildException ("Cannot initialize class " + patchClass + " and method " + enhanceMethod, ex);
         }
             

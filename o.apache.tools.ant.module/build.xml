@@ -19,18 +19,12 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
-  <property name="build" location="../nbbuild/netbeans"/>
 
   <property name="nbm_alias" value="nb_ide"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-
-  <patternset id="ant.files">
-      <include name="modules/ext/ant*.jar"/>
-      <include name="modules/ant.jar"/>
-  </patternset>
 
   <target name="init">
     <ant dir="external" target="unscramble"/>
@@ -40,28 +34,28 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${build}/lib/openide.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="${build}/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-io.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <fileset dir="external">
-          <include name="ant-1.*.jar"/>
+          <include name="ant-1.5.1.jar"/>
         </fileset>
         <fileset dir="../core/external">
           <include name="xml-apis*.jar"/>
           <include name="xerces*.jar"/>
         </fileset>
-        <pathelement location="${build}/modules/autoload/javahelp-api.jar"/>
+        <pathelement location="../core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
       </classpath>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="${build}/modules"/>
+    <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="${build}/modules/ant.jar"
+    <locjar jarfile="netbeans/modules/ant.jar"
          manifest="manifest-subst.mf"
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -71,32 +65,28 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
   </target>
 
   <target name="release" depends="init">
-    <copy todir="${build}" includeEmptyDirs="false">
+    <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
-    <mkdir dir="${build}/modules/ext"/>
-    <copy todir="${build}/modules/ext">
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy todir="netbeans/modules/ext">
       <fileset dir="external">
-        <include name="ant*.jar"/>
+        <include name="ant*1.5.1.jar"/>
       </fileset>
     </copy>
   </target>
 
   <target name="netbeans" depends="jars,release" description="Build module.">
-    <genlist outputfiledir="${build}" module="modules/ant.jar">
-        <fileset dir="${build}">
-            <patternset refID="ant.files"/>
-        </fileset>
-    </genlist>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans" description="Build module NBM file.">
     <makenbm file="ant.nbm"
-             productDir="${build}"
-             module="modules/ant.jar"
+             topdir="."
+             module="netbeans/modules/ant.jar"
 	     homepage="http://ant.${homepage.base}/"
 	     distribution="http://${dist.base}/ant.nbm">
-     <license name="ant-license.txt">
+      <license name="ant-license.txt">
         <text>For the Ant module itself:</text>
         <file location="${license.file}"/>
 	<text>For the Ant runtime:</text>
@@ -112,8 +102,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="reload/ant.jar" manifest="manifest-subst.mf" compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <zipfileset src="external/ant-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
-      <zipfileset src="external/ant-optional-1.4.1.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
+      <zipfileset src="external/ant-optional-1.5.1.jar" excludes="META-INF/MANIFEST.MF"/>
     </jar>
   </target>
   <target name="test" depends="test-build" description="Test module inside running IDE.">
@@ -125,12 +115,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="${build}">
-        <patternset refID="ant.files"/>
-      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="ant.nbm"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
     <delete dir="AntAPIs"/>
     <delete file="AntAPIs.zip"/>
     <delete dir="javadoc"/>
@@ -158,6 +147,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy todir="${useful-sources}">
       <fileset dir="${release-source-root}">
         <include name="org/apache/tools/**/*.java"/>
+        <!-- Do not forget about the package list for Javadoc below... -->
       </fileset>
     </copy>
     <property name="ant-api.zip" location="docs/release/docs/ant-api.zip"/>
@@ -239,6 +229,8 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     - src/org/apache/tools/ant/module/resources/SampleProject.xml_
     - src/org/apache/tools/ant/module/resources/CustomTask_java
     - ../usersguide/javahelp/org/netbeans/modules/usersguide/ant/*.html
+    - manifest.mf
+    - build.xml
 8.  Update ${ParserDB} with sources from ${useful-sources}
 9.  Update ${features.xml}
 10. Refresh these files with the prebuilt binaries from an Ant download:
@@ -285,7 +277,7 @@ After that you should be done!
             </fileset>
             <fileset dir="external">
               <include name="ant.jar"/>
-              <include name="ant-1.*.jar"/>
+              <include name="ant-1.5.1.jar"/>
             </fileset>
             <fileset dir="../core/external">
               <include name="xml-apis*.jar"/>

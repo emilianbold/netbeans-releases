@@ -19,21 +19,16 @@ Microsystems, Inc. All Rights Reserved.
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="nb_all" value="../../"/>
     <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
-    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
-    <patternset id="core/settings.files">
-        <include name="modules/autoload/core-settings.jar"/>
-    </patternset>
-
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${build}/lib">
+                <fileset dir="${nb_all}/openide/netbeans/lib">
                     <include name="openide*.jar" />
                 </fileset>
                 <fileset dir="../external">
@@ -44,10 +39,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="${build}/modules/autoload"/>
+        <mkdir dir="netbeans/modules/autoload"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="${build}/modules/autoload/core-settings.jar"
+        <locjar jarfile="netbeans/modules/autoload/core-settings.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"
@@ -57,17 +52,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars" description="Build everything.">
-        <genlist outputfiledir="${build}" module="modules/autoload/core-settings.jar">
-            <fileset dir="${build}">
-                <patternset refID="core/settings.files"/>
-            </fileset>
-        </genlist>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     <target name="nbm" depends="netbeans" description="Build NBM.">
         <makenbm file="core-settings.nbm"
-                 productDir="${build}"
-                 module="modules/autoload/core-settings.jar"
+                 topdir="."
+                 module="netbeans/modules/autoload/core-settings.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-settings.nbm">
                  <license file="${license.file}"/>
@@ -80,12 +71,11 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="src">
           <include name="**/*.class"/>
         </fileset>
-        <fileset dir="${build}">
-          <patternset refID="core/settings.files"/>
-        </fileset>
       </delete>
       <delete file="manifest-subst.mf"/>
       <delete file="core-settings.nbm"/>
+      <delete dir="netbeans"/>
+      <delete dir="Info"/>
       <delete file="SettingsAPIs.zip"/>
       <delete dir="SettingsAPIs"/>
       <delete dir="javadoc"/>

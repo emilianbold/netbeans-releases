@@ -96,7 +96,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="nbm" depends="jars">
     <makenbm file="tomcat5.nbm"
              topdir="."
-             module="modules/tomcat5.jar"
+             module="netbeans/modules/tomcat5.jar"
 	     homepage="http://text.${homepage.base}/"
 	     distribution="http://${dist.base}/tomcat5.nbm">
       <license file="${license.file}"/>
@@ -133,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name="test">
-    <nbinstaller action="reinstall" module="${build}/modules/tomcat5.jar"/>
+    <nbinstaller action="reinstall" module="netbeans/modules/tomcat5.jar"/>
   </target>
 
 </project>

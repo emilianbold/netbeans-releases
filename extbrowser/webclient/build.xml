@@ -90,7 +90,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- This target will only work *inside* the IDE! -->
   <target name= "test" depends="jars" description="Test the module inside the running IDE." >
-    <nbinstaller action="reinstall" module="${build}/modules/webclient.jar"/>
+    <nbinstaller action="reinstall" module="netbeans/modules/webclient.jar"/>
   </target>
 
 </project>

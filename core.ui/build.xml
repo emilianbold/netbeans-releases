@@ -18,22 +18,17 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" location="../../nbbuild/standard-nbm-license.txt"/>
-    <property name="build" location="../nbbuild/netbeans"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
-
-    <patternset id="core/ui.files">
-        <include name="modules/core-ui.jar"/>
-    </patternset>
 
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../openide/openide-13javac-workaround.jar"/>
                 <pathelement location="../src/" />
-                <fileset dir="${build}/lib">
+                <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar" />
                 </fileset>
             </classpath>
@@ -41,10 +36,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="jars" depends="compile">
-        <mkdir dir="${build}/modules"/>
+        <mkdir dir="netbeans/modules"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <locjar jarfile="${build}/modules/core-ui.jar"
+        <locjar jarfile="netbeans/modules/core-ui.jar"
                 basedir="src"
                 manifest="manifest-subst.mf"
                 excludesfile="../../nbbuild/standard-jar-excludes.txt"
@@ -54,17 +49,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="netbeans" depends="jars">
-        <genlist outputfiledir="${build}" module="modules/core-ui.jar">
-            <fileset dir="${build}">
-                <patternset refID="core/ui.files"/>
-            </fileset>
-        </genlist>
+        <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
     <target name="nbm" depends="netbeans">
         <makenbm file="core-ui.nbm"
-                 productDir="${build}"
-                 module="modules/core-ui.jar"
+                 topdir="."
+                 module="netbeans/modules/core-ui.jar"
                  homepage="http://core.${homepage.base}/"
                  distribution="http://${dist.base}/core-ui.nbm">
             <license file="${license.file}"/>
@@ -77,11 +68,10 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
-            <fileset dir="${build}">
-                <patternset refID="core/ui.files"/>
-            </fileset>
         </delete>
+        <delete dir="netbeans"/>
         <delete file="core-ui.nbm"/>
+        <delete dir="Info"/>
         <delete file="manifest-subst.mf"/>
     </target>
 

@@ -18,33 +18,26 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
-  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
-
-  <patternset id="editor.files">
-    <include name="modules/editor.jar"/>
-    <include name="modules/ext/nb-editor.jar"/>
-    <include name="system/ParserDB/jdk*.jc*"/>
-  </patternset>
 
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <!-- We need Openide-util library. Namely RequestProcessor. -->
       <classpath>
-        <pathelement location="${build}/lib/openide.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
       </classpath>
     </javac>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
        <!-- XXX illegal dependency on core! -->
-       <pathelement location="${build}/lib/core.jar"/>
+       <pathelement location="../core/netbeans/lib/core.jar"/>
        <pathelement location="libsrc"/>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${build}/lib/openide.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="${build}/modules/autoload/java-src-model.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <fileset dir="../core/external">
           <include name="regexp*.jar"/>
           <include name="xml-apis*.jar"/>
@@ -54,19 +47,19 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="${build}/modules"/>
+    <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-    <locjar jarfile="${build}/modules/editor.jar"
+    <locjar jarfile="netbeans/modules/editor.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <locale name="ja"/>
     </locjar>
-    <mkdir dir="${build}/modules/ext"/>
-    <locjar jarfile="${build}/modules/ext/nb-editor.jar"
+    <mkdir dir="netbeans/modules/ext"/>
+    <locjar jarfile="netbeans/modules/ext/nb-editor.jar"
             basedir="libsrc"
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
@@ -75,24 +68,20 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <copy todir="${build}" includeEmptyDirs="false">
+    <copy todir="netbeans" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
   <target name="netbeans" depends="jars,release">
-      <genlist outputfiledir="${build}" module="modules/editor.jar">
-          <fileset dir="${build}">
-	      <patternset refID="editor.files"/>
-          </fileset>
-      </genlist>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
 
   <target name="nbm" depends="netbeans">
     <makenbm file="editor.nbm"
-             productDir="${build}"
-             module="modules/editor.jar"
+             topdir="."
+             module="netbeans/modules/editor.jar"
 	     homepage="http://editor.${homepage.base}/"
 	     distribution="http://${dist.base}/editor.nbm">
       <license file="${license.file}"/>
@@ -105,16 +94,17 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="${build}">
-        <patternset refID="editor.files"/>
-      </fileset>
+    </delete>
+    <delete>
       <fileset dir="libsrc">
         <include name="**/*.class"/>
       </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete file="editor.nbm"/>
+    <delete dir="netbeans"/>
     <delete dir="javadoc"/>
+    <delete dir="Info"/>
   </target>
 
   <target name="javadoc" description="Build editor module API documentation.">

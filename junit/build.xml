@@ -15,28 +15,15 @@ Microsystems, Inc. All Rights Reserved.
 <project name="junit" default="netbeans" basedir=".">
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
   <property name="build.compiler.deprecation" value="off"/>
   <property name="build.compiler.debug" value="off"/>  
-  <property name="build" location="../nbbuild/netbeans"/>
 
   <property name="module.license.file" location="../nbbuild/standard-nbm-license.txt"/>
 
   <target name="init">
     <ant dir="external" target="unscramble"/>
   </target>
-
-  <patternset id="junit.files">
-    <include name="modules/junit.jar"/>
-    <include name="modules/ext/junit*.jar"/>
-    <include name="docs/nbjunit-api.zip"/>
-    <include name="system/ParserDB/JUnit.jc*"/>
-    <include name="system/ParserDB/NbJUnit.jc*"/>
-    <include name="modules/docs/junit-module-help.jar"/>
-    <include name="modules/ext/junit-ext.jar"/>
-    <include name="docs/junit-api.zip"/>
-  </patternset>
 
   <target name="compile-junit-extensions" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -45,16 +32,16 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="external">
           <include name="junit*.jar"/>
         </fileset>
-        <pathelement location="${build}/lib/openide.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <!-- XXX -->
-        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
       </classpath>
     </javac>
   </target>
 
   <target name="jar-junit-extensions" depends="compile-junit-extensions">
-      <mkdir dir="${build}/modules/ext"/>
-      <jar jarfile="${build}/modules/ext/junit-ext.jar"
+      <mkdir dir="netbeans/modules/ext"/>
+      <jar jarfile="netbeans/modules/ext/junit-ext.jar"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
@@ -67,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="org/netbeans/junit/**/*.class"/>
       </fileset>
     </delete>
-    <delete file="${build}/lib/modules/junit-ext.jar"/>
+    <delete file="netbeans/lib/modules/junit-ext.jar"/>
   </target>
 
  <target name="javadoc-junit-extensions">
@@ -83,18 +70,18 @@ Microsystems, Inc. All Rights Reserved.
             <include name="junit*.jar"/>
           </fileset>
             <!-- XXX -->
-            <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+            <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         </classpath>
       </javadoc>
-      <mkdir dir="${build}/docs"/>
-      <zip zipfile="${build}/docs/nbjunit-api.zip"
+      <mkdir dir="netbeans/docs"/>
+      <zip zipfile="netbeans/docs/nbjunit-api.zip"
            basedir="javadoc/nbjunit-api"
        />
   </target>
 
   <target name="clean-javadoc-junit-extensions">
       <delete dir="javadoc/nbjunit-api"/>
-      <delete file="${build}/docs/nbjunit-api.zip"/>
+      <delete file="netbeans/docs/nbjunit-api.zip"/>
   </target>
 
   <target name="compile" depends="init">
@@ -104,12 +91,12 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="org/netbeans/junit/**"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${build}/lib/openide.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-        <pathelement location="${build}/modules/autoload/java-src-model.jar"/>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
+        <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <!-- XXX -->
-        <pathelement location="${build}/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <fileset dir="external">
           <include name="junit*.jar"/>
         </fileset>
@@ -118,10 +105,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="${build}/modules"/>
+    <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${build}/modules/junit.jar"
+    <jar jarfile="netbeans/modules/junit.jar"
             manifest="manifest-subst.mf"
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
@@ -141,35 +128,29 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="parserdb">
-  	<mkdir dir="${build}/system/ParserDB"/>
-  	<copy toDir="${build}/system/ParserDB">
+  	<mkdir dir="netbeans/system/ParserDB"/>
+  	<copy toDir="netbeans/system/ParserDB">
   		<fileset dir="parserdb"/>
   	</copy>
   </target>
 
   <target name="release" depends="init">
-    <mkdir dir="${build}/docs"/>
-    <copy file="external/junit-api.zip" tofile="${build}/docs/junit-api.zip"/>
-    <mkdir dir="${build}/modules/ext"/>
-    <copy todir="${build}/modules/ext">
+    <mkdir dir="netbeans/docs"/>
+    <copy file="external/junit-api.zip" tofile="netbeans/docs/junit-api.zip"/>
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy todir="netbeans/modules/ext">
       <fileset dir="external">
         <include name="junit*.jar"/>
       </fileset>
     </copy>
   </target>
 
-  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,parserdb,release">
-      <genlist outputfiledir="${build}" module="modules/junit.jar">
-          <fileset dir="${build}">
-	      <patternset refID="junit.files"/>
-          </fileset>
-      </genlist>
-  </target>
+  <target name="netbeans" depends="jar-junit-extensions,jars,javadoc-junit-extensions,javahelp,parserdb,release"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="junit.nbm"
-             productDir="${build}"
-             module="modules/junit.jar"
+             topdir="."
+             module="netbeans/modules/junit.jar"
 	     homepage="http://junit.netbeans.org/"
 	     distribution="http://www.netbeans.org/download/nbms/40/junit.nbm">
       <license name="junit-license.txt">
@@ -187,12 +168,11 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="${build}">
-        <patternset refID="junit.files"/>
-      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
+    <delete dir="netbeans"/>
     <delete file="junit.nbm"/>
+    <delete dir="Info"/>
     <delete dir="javadoc"/>
   </target>
 

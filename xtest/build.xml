@@ -21,7 +21,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="nbext" value="../nbbuild"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-  <property name="build" location="../nbbuild/netbeans"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
@@ -31,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="prepare-junit-extensions">
     <ant dir="../junit" antfile="build.xml" target="jar-junit-extensions"/>
     <mkdir dir="lib"/>
-    <copy file="${build}/modules/ext/junit-ext.jar" todir="lib"/>
+    <copy file="../junit/netbeans/modules/ext/junit-ext.jar" todir="lib"/>
   </target>
 
   <target name="init">
@@ -51,13 +50,13 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile" depends="init,prepare-junit-extensions">
     <path id="basecp">
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
-        <fileset dir="${build}/lib">
+        <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-	<pathelement location="${build}/lib/core.jar"/>
-	<pathelement location="${build}/lib/ext/boot.jar"/>
+	<pathelement location="../core/netbeans/lib/core.jar"/>
+	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
         <!-- execution, because of NbClassLoader .... -->
-        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <!-- use junit with already compiled extensions -->        
 	<pathelement location="src"/>
         <fileset dir="external">
@@ -90,14 +89,14 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/netbeans/xtest/testrunner/JUnitTestRunner.java"/>
       <classpath>
         <path refid="basecp"/>
-        <pathelement location="${build}/modules/autoload/openide-execution.jar"/>
-        <pathelement location="${build}/modules/autoload/openide-io.jar"/>
-        <pathelement location="${build}/modules/autoload/core-output.jar"/>
-        <pathelement location="${build}/modules/autoload/core-execution.jar"/>
+        <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+        <pathelement location="../core/output/netbeans/modules/autoload/core-output.jar"/>
+        <pathelement location="../core/execution/netbeans/modules/autoload/core-execution.jar"/>
         <!-- Not needed: -->
         <!--
-        <pathelement location="${build}/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="${build}/modules/autoload/core-compiler.jar"/>
+        <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="../core/compiler/netbeans/modules/autoload/core-compiler.jar"/>
         -->
       </classpath>
     </javac>

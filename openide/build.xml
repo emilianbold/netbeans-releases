@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" location="../nbbuild/standard-nbm-license.txt"/>
-  <property name="build" location="../nbbuild/netbeans"/>
 
   <property name="nbm_alias" value="nb_ide"/>
 
@@ -40,16 +39,17 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
-  <patternset id="openide.files">
-    <include name="lib/openide.jar"/>
-  </patternset>
-
   <target name="init">
     <ant dir="../core/external" target="unscramble"/>
     <path id="openide-cp">
       <fileset dir="../core/external">
         <include name="xml-apis*.jar"/>
       </fileset>
+    </path>
+    <path id="openide-boot-cp">
+      <!-- XXX not nice to use undocumented property here: -->
+      <pathelement path="${sun.boot.class.path}"/>
+      <pathelement location="openide-13javac-workaround.jar"/>
     </path>
   </target>
 
@@ -60,11 +60,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-regular" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <exclude name="org/openide/**/*14.java"/>
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
   </target>
@@ -72,22 +68,14 @@ Microsystems, Inc. All Rights Reserved.
   <target name="compile-14" if="jdk14" >
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/openide/**/*14.java"/>
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <!-- As needed: <classpath refid="openide-cp"/> -->
     </javac>
   </target>
   
   <target name="compile-compat" depends="compile-regular">
     <javac srcdir="compat/src" destdir="compat/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <bootclasspath>
-        <!-- XXX not nice to use undocumented property here: -->
-        <pathelement path="${sun.boot.class.path}"/>
-        <pathelement location="openide-13javac-workaround.jar"/>
-      </bootclasspath>
+      <bootclasspath refid="openide-boot-cp"/>
       <classpath>
         <pathelement location="src"/>
         <!-- As needed: <path refid="openide-cp"/> -->
@@ -104,11 +92,12 @@ Microsystems, Inc. All Rights Reserved.
     <ant antfile="../core/build.xml" dir="../core" target="boot" />
   
     <enhanceclass basedir="src">
-       <classpath>
-         <pathelement location="${build}/lib/ext/boot.jar"/>
-         <!-- See xtest/instance/build-clover.xml for explanation: -->
-         <pathelement location="${build}/lib/ext/clover.jar"/>
-       </classpath>
+      <classpath>
+        <pathelement location="../core/netbeans/lib/ext/boot.jar"/>
+        <!-- See xtest/instance/build-clover.xml for explanation: -->
+        <pathelement location="../core/netbeans/lib/ext/clover.jar"/>
+      </classpath>
+
             <!-- changes superclass to one that implements Node.Cookie -->
 	    <patch class="org/openide/filesystems/Repository" super="org/openide/filesystems/$$Repository$$Patch$$" /> 
 
@@ -260,10 +249,10 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper" description="Create JAR files.">
-    <mkdir dir="${build}/lib"/>
+    <mkdir dir="netbeans/lib"/>
     <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="${build}/lib/openide.jar"
+    <locjar jarfile="netbeans/lib/openide.jar"
             manifest="manifest-subst.mf"
 	    compress="false">
       <locale name="ja"/>
@@ -357,17 +346,13 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE.">
-      <genlist outputfiledir="${build}" module="lib/openide.jar">
-          <fileset dir="${build}">
-	      <patternset refID="openide.files"/>
-          </fileset>
-      </genlist>
+    <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="openide.nbm"
-             productDir="${build}"
-             module="lib/openide.jar"
+             topdir="."
+             module="netbeans/lib/openide.jar"
 	     homepage="http://openide.${homepage.base}/"
 	     distribution="http://${dist.base}/openide.nbm">
       <license file="${license.file}"/>
@@ -774,9 +759,11 @@ Included in JDK 1.3, else you may need to download it separately."/>
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/minicomposer/"/>
       <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="netbeans/lib/openide.jar"/>
+        <pathelement location="compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="io/netbeans/modules/autoload/openide-io.jar"/>
+        <pathelement location="deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodulereload/minicomposer-test"/>
@@ -789,7 +776,7 @@ Included in JDK 1.3, else you may need to download it separately."/>
     </jar>
   </target>
   <target name="example-minicomposer-test" depends="example-minicomposer-test-build" description="Try installing minicomposer into running IDE.">
-    <nbinstaller action="reinstall" module="${build}/examplemodulereload/minicomposer-test/minicomposer.jar"/>
+    <nbinstaller action="reinstall" module="examplemodulereload/minicomposer-test/minicomposer.jar"/>
   </target>
 
   <target name="example-globalactions-test-build" description="Build globalactions for testing purposes.">
@@ -809,7 +796,7 @@ Included in JDK 1.3, else you may need to download it separately."/>
 	 compress="false"/>
   </target>
   <target name="example-globalactions-test" depends="example-globalactions-test-build" description="Try installing globalactions into running IDE.">
-    <nbinstaller action="reinstall" module="${build}/examplemodulereload/globalactions-test/globalactions.jar"/>
+    <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
   </target>
 
   <target name="openidex-all" depends="netbeans">
@@ -901,24 +888,20 @@ Set jmf.home to the location of your JMF installation to continue."/>
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
-      <fileset dir="compat/src">
-        <include name="**/*.class"/>
-      </fileset>
       <fileset dir="api/examples">
         <include name="**/*.class"/>
       </fileset>
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>
-      <fileset dir="${build}">
-        <patternset refID="openide.files"/>
-      </fileset>
     </delete>
+    <delete dir="netbeans"/>
     <delete file="openide-13javac-workaround.jar"/>
     <delete dir="javadoc"/>
     <delete file="nb-api-tutorial.zip"/>
     <delete dir="examplemodules"/>
     <delete dir="standalone"/>
+    <delete dir="Info"/>
     <delete file="openide.nbm"/>
   </target>
   <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
