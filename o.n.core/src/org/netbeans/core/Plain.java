@@ -22,6 +22,7 @@ import org.openide.filesystems.FileSystem;
 
 import org.netbeans.core.modules.ModuleSystem;
 import org.netbeans.core.projects.ModuleLayeredFileSystem;
+import org.netbeans.core.xml.NbSAXParserFactoryImpl;
 import org.netbeans.core.xml.XML;
 
 /** Default implementation of TopManager that is used when 
@@ -30,6 +31,10 @@ import org.netbeans.core.xml.XML;
 * @author Jaroslav Tulach
 */
 public class Plain extends NbTopManager implements Runnable {
+    
+    static {
+        NbSAXParserFactoryImpl.install();
+    }
 
   /** Creates new Plain. */
   public Plain() {
