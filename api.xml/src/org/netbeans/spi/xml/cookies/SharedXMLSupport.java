@@ -25,6 +25,7 @@ import javax.swing.text.Document;
 import org.openide.cookies.*;
 import org.openide.util.*;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.ErrorManager;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -470,9 +471,23 @@ class SharedXMLSupport {
         try {
             XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
             xmlReader.setContentHandler(handler);
+
+            // XXX dumb resolver always returning empty stream would be better but
+            // parsing could fail on resolving general entities defined in DTD.
+            // Check XML spec if non-validation parser must resolve general entities
+            // Ccc: I think so, there is Xerces property to relax it but we get here Crimson
+            UserCatalog userCatalog = UserCatalog.getDefault();
+            if (userCatalog != null) {
+                EntityResolver resolver = userCatalog.getEntityResolver();
+                if (resolver != null) {
+                    xmlReader.setEntityResolver(resolver);
+                }
+            }
             xmlReader.parse(is);
         } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         } catch (SAXException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return handler;
     }
