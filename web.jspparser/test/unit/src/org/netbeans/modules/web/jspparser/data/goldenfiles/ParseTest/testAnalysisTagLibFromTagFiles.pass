@@ -84,6 +84,27 @@
               tag name     : test
                   class    : org.apache.jsp.tag.web.myTags.test_tag
                   attribs  : [a]
+        tag library: /TestTagLibrary
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : ttl
+            urn         : /TestTagLibrary
+            info        : Test tag library.
+            uri         : /TestTagLibrary
+              tag name     : helloTag
+                  class    : org.apache.jsp.tag.meta.hTag_tag
+                  attribs  : []
+              tag name     : book
+                  class    : org.apache.jsp.tag.meta.book_tag
+                  attribs  : [title, author]
+              tagfile path : /META-INF/tags/hTag.tag
+              tag name     : helloTag
+                  class    : org.apache.jsp.tag.meta.hTag_tag
+                  attribs  : []
+              tagfile path : /META-INF/tags/book.tag
+              tag name     : book
+                  class    : org.apache.jsp.tag.meta.book_tag
+                  attribs  : [title, author]
         tag library: urn:jsptagdir:/WEB-INF/tags/
             tlibversion : 1.0
             jspversion  : 2.0
@@ -103,6 +124,7 @@
                   attribs  : [separator]
       prefixMapper:
         myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
+        jarTags -> /TestTagLibrary
         c -> http://java.sun.com/jstl/core
         tags -> urn:jsptagdir:/WEB-INF/tags/
       approxXmlPrefixMapper :
@@ -139,6 +161,7 @@
   xmlns:c="http://java.sun.com/jstl/core"
   xmlns:tags="urn:jsptagdir:/WEB-INF/tags/"
   xmlns:myTags="urn:jsptagdir:/WEB-INF/tags/myTags/"
+  xmlns:jarTags="urn:jsptld:/TestTagLibrary"
   xmlns:jsp="http://java.sun.com/JSP/Page"
   jsp:id="0"
 >
@@ -179,36 +202,43 @@
   jsp:id="6"
 >
 <![CDATA[
-<html>
+
 ]]>
 </jsp:text>
 <jsp:text
   jsp:id="7"
 >
 <![CDATA[
-<head>]]>
+<html>
+]]>
 </jsp:text>
 <jsp:text
   jsp:id="8"
 >
 <![CDATA[
-<title>Test for taglib and tagfiles]]>
+<head>]]>
 </jsp:text>
 <jsp:text
   jsp:id="9"
 >
 <![CDATA[
-</title>]]>
+<title>Test for taglib and tagfiles]]>
 </jsp:text>
 <jsp:text
   jsp:id="10"
+>
+<![CDATA[
+</title>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="11"
 >
 <![CDATA[
 </head>
 ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="11"
+  jsp:id="12"
 >
 <![CDATA[
 <body>
@@ -216,10 +246,10 @@
 </jsp:text>
 <tags:linklist
   separator="/"
-  jsp:id="12"
+  jsp:id="13"
 />
 <jsp:text
-  jsp:id="13"
+  jsp:id="14"
 >
 <![CDATA[
 
@@ -227,24 +257,25 @@
 </jsp:text>
 <myTags:testx
   a="hello"
-  jsp:id="14"
+  jsp:id="15"
 />
 <jsp:text
-  jsp:id="15"
+  jsp:id="16"
 >
 <![CDATA[
+
 
 ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="16"
+  jsp:id="17"
 >
 <![CDATA[
 </body>
 ]]>
 </jsp:text>
 <jsp:text
-  jsp:id="17"
+  jsp:id="18"
 >
 <![CDATA[
 </html>
@@ -266,22 +297,26 @@ Node [/testTagLibs.jsp(3,49), TemplateText]
 Node [/testTagLibs.jsp(4,0), TaglibDirective] <%@ taglib prefix="myTags" tagdir="/WEB-INF/tags/myTags/"%>
 Node [/testTagLibs.jsp(4,58), TemplateText] 
 
-Node [/testTagLibs.jsp(5,0), TemplateText] <html>
+Node [/testTagLibs.jsp(5,0), TaglibDirective] <%@ taglib prefix="jarTags" uri="/TestTagLibrary"%>
+Node [/testTagLibs.jsp(5,50), TemplateText] 
 
-Node [/testTagLibs.jsp(6,0), TemplateText] <head>
-Node [/testTagLibs.jsp(6,6), TemplateText] <title>Test for taglib and tagfiles
-Node [/testTagLibs.jsp(6,41), TemplateText] </title>
-Node [/testTagLibs.jsp(6,49), TemplateText] </head>
+Node [/testTagLibs.jsp(6,0), TemplateText] <html>
 
-Node [/testTagLibs.jsp(7,0), TemplateText] <body>
+Node [/testTagLibs.jsp(7,0), TemplateText] <head>
+Node [/testTagLibs.jsp(7,6), TemplateText] <title>Test for taglib and tagfiles
+Node [/testTagLibs.jsp(7,41), TemplateText] </title>
+Node [/testTagLibs.jsp(7,49), TemplateText] </head>
 
-Node [/testTagLibs.jsp(8,0), CustomTag] <tags:linklist separator="/"></tags:linklist>
-Node [/testTagLibs.jsp(8,30), TemplateText] 
+Node [/testTagLibs.jsp(8,0), TemplateText] <body>
 
-Node [/testTagLibs.jsp(9,0), CustomTag] <myTags:testx a="hello"></myTags:testx>
-Node [/testTagLibs.jsp(9,26), TemplateText] 
+Node [/testTagLibs.jsp(9,0), CustomTag] <tags:linklist separator="/"></tags:linklist>
+Node [/testTagLibs.jsp(9,30), TemplateText] 
 
-Node [/testTagLibs.jsp(10,0), TemplateText] </body>
+Node [/testTagLibs.jsp(10,0), CustomTag] <myTags:testx a="hello"></myTags:testx>
+Node [/testTagLibs.jsp(10,26), TemplateText] 
 
-Node [/testTagLibs.jsp(11,0), TemplateText] </html>
+
+Node [/testTagLibs.jsp(12,0), TemplateText] </body>
+
+Node [/testTagLibs.jsp(13,0), TemplateText] </html>
 
