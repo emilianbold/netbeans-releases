@@ -15,7 +15,6 @@ package myorg;
 
 import junit.framework.*;
 import org.netbeans.junit.*;
-import HelloWorldTest;
 
 public class Hello2Test extends NbTestCase {
     
@@ -45,6 +44,5 @@ public class Hello2Test extends NbTestCase {
     
     protected void setUp() {
         testObject = new Hello2();
-        System.out.println("SUITE SETUP!!!"+HelloWorldTest.count);
     }
 }
