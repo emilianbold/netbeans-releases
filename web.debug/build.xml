@@ -37,7 +37,6 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nb_root}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
          <pathelement location="${nb_root}/java/api/netbeans/modules/autoload/java-api.jar"/>
          <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>
-         <pathelement location="${nb_root}/j2eeserver/deprecated/netbeans/modules/autoload/j2eeserver.jar"/>
          <pathelement location="${nb_root}/html/netbeans/modules/html.jar"/>
          <pathelement location="${nb_root}/web/core/netbeans/modules/jsp.jar"/>
          <pathelement location="${nb_root}/web/jspsyntax/netbeans/modules/jsp-syntax.jar"/>
