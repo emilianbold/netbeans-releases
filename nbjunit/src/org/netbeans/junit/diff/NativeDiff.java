@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -74,7 +74,7 @@ public class NativeDiff implements Diff {
             diffFile = new File(diff);
         
         FileOutputStream fos = new FileOutputStream(diffFile);
-        prs = Runtime.getRuntime().exec(prepareCommand(first, second));
+        prs = Runtime.getRuntime().exec(prepareCommand(new File(first).getAbsolutePath(), new File(second).getAbsolutePath()));
         StreamGobbler outputGobbler = new StreamGobbler(prs.getInputStream(), fos);
         outputGobbler.start();
 
@@ -91,7 +91,7 @@ public class NativeDiff implements Diff {
         catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         if (0 == prs.exitValue() || null == diff) {
             diffFile.delete();
         }        
