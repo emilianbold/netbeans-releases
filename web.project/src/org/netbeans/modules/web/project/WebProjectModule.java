@@ -99,9 +99,9 @@ public class WebProjectModule extends ModuleInstall {
                             sb.append(":"); // NOI18N
                             sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-api-2.0.jar", null, false));
                             sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.27.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.28.jar", null, false));
                             sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.27.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.28.jar", null, false));
                             sb.append(":"); // NOI18N
                             sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
                             sb.append(":"); // NOI18N
