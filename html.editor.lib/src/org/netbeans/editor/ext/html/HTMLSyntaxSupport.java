@@ -139,7 +139,7 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     //we are in a close tag
 		    String tag = token.getImage().trim().toLowerCase();
 		    while ( token != null){
-			if (isTagButNotSymbol(token)) {
+			if (isTagButNotSymbol(token) && !isSingletonTag(token)) {
 			    if (token.getImage().trim().toLowerCase().equals(tag) &&
                                 token.getTokenID() == HTMLTokenContext.TAG_OPEN){
                                 //it's an open tag
@@ -175,9 +175,14 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                     //we are in an open tag
 		    if (token.getImage().charAt(0) == '>')
 			return null;
+                    
+                    //We need to find out whether the open tag is a singleton tag or not.
+                    //In the first case no matching is needed
+                    if(isSingletonTag(token)) return null;
+                    
 		    String tag = token.getImage().toLowerCase();
 		    while ( token != null){
-			if (isTagButNotSymbol(token)) {
+			if (isTagButNotSymbol(token) && !isSingletonTag(token)) {
                             if (token.getImage().trim().toLowerCase().equals(tag) &&
                                 token.getTokenID() == HTMLTokenContext.TAG_CLOSE){
 				if (poss == 0) {
@@ -207,6 +212,29 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
 	    return null;
     }
     
+    /** Finds out whether the given tagTokenItem is a part of a singleton tag (e.g. <div style=""/>).
+     * @tagTokenItem a token item whithin a tag
+     * @return true is the token is a part of singleton tag
+     */
+    public boolean isSingletonTag(TokenItem tagTokenItem) {
+        TokenItem ti = tagTokenItem;
+        while(ti != null) {
+            if(ti.getTokenID() == HTMLTokenContext.TAG_CLOSE_SYMBOL) {
+                if("/>".equals(ti.getImage())) {
+                    //it is a singleton tag => do not match
+                    return true;
+                }
+                if(">".equals(ti.getImage())) break;
+            }
+            //break the loop on TEXT or on another open tag symbol
+            //(just to prevent long loop in case the tag is not closed)
+            if((ti.getTokenID() == HTMLTokenContext.TEXT)
+            || (ti.getTokenID() == HTMLTokenContext.TAG_OPEN_SYMBOL)) break;
+            
+            ti = ti.getNext();
+        }
+        return false;
+    }
     
     private final int getTokenEnd( TokenItem item ) {
         return item.getOffset() + item.getImage().length();
