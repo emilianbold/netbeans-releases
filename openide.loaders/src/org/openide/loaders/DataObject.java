@@ -444,7 +444,9 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             }
 
             // try to use the loaders machinery
-            obj = ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).findDataObject (fo);
+            DataLoaderPool p = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            assert p != null : "No DataLoaderPool found in " + Lookup.getDefault();
+            obj = p.findDataObject (fo);
             if (obj != null) {
                 return obj;
             }
@@ -561,6 +563,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             throw iae;
         }
         String oldName;
+        String newName;
         final FileObject[] files = new FileObject[2]; // [old, new]
         
         synchronized ( synchObject() ) {
@@ -578,9 +581,11 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
                             item.changePrimaryFile (files[1]);
                     }
                 });
+             newName = getName ();
         }
         if (files[0] != files[1])
             firePropertyChange (PROP_PRIMARY_FILE, files[0], getPrimaryFile ());
+        firePropertyChange (PROP_NAME, oldName, newName);
         
         fireOperationEvent (new OperationEvent.Rename (this, oldName), OperationEvent.RENAME);
     }
@@ -968,7 +973,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         * @return array of objects
         */
         public DataObject[] getModified () {
-            return (DataObject[])modified.toArray (new DataObject[0]);
+            return (DataObject[])modified.toArray (new DataObject[modified.size()]);
         }
     }
 
@@ -1058,11 +1063,15 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
         FileObject f = fae.getFile();
         if (f != null) {
             String attrFromFO = (String)f.getAttribute(EA_ASSIGNED_LOADER);
-            if ((attrFromFO != null) && (! attrFromFO.equals(getLoader().getClass().getName()))) {
-                try {
-                    setValid (false);
-                } catch (java.beans.PropertyVetoException e) {
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
+            if (attrFromFO == null || (! attrFromFO.equals(getLoader().getClass().getName()))) {
+                java.util.HashSet single = new java.util.HashSet();
+                single.add(f);
+                if (!DataObjectPool.getPOOL().revalidate(single).isEmpty()) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "It was not possible to invalidate data object: " + this); // NOI18N
+                } else {
+                    // we need to refresh parent folder if it is there 
+                    // this should be covered by DataLoaderPoolTest.testChangeIsAlsoReflectedInNodes
+                    FolderList.changedDataSystem (f.getParent());
                 }
             }
         }
