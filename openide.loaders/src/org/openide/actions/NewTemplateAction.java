@@ -157,7 +157,7 @@ public class NewTemplateAction extends NodeAction {
         }
         
         DataFolder cookie = (DataFolder)activatedNodes[0].getCookie(DataFolder.class);
-        if (cookie != null && !cookie.getPrimaryFile ().isReadOnly ()) {
+        if (cookie != null && cookie.getPrimaryFile ().canWrite ()) {
             return true;
         }
         return false;
@@ -207,7 +207,7 @@ public class NewTemplateAction extends NodeAction {
         TemplateWizard tw = getWizard (n);
         
         if (tw instanceof DefaultTemplateWizard) {
-            return new MenuWithRecent (n);
+            return new MenuWithRecent (n, this.isEnabled ());
         } else {
             // The null is correct but depends on the impl of MenuView.Menu
             JMenuItem menu = new MenuView.Menu (null, new TemplateActionListener (actionContext), false) {
@@ -227,11 +227,13 @@ public class NewTemplateAction extends NodeAction {
     private class MenuWithRecent extends JMenuPlus {
         private boolean initialized = false;
         private Node node;
+        private boolean canWrite;
         
-        public MenuWithRecent(Node n) {
+        public MenuWithRecent(Node n, boolean writable) {
             super(); //NewTemplateAction.this.getName());
             Actions.setMenuText(this, NewTemplateAction.this.getName(), false);
             node = n;
+            canWrite = writable;
         }
         
         public JPopupMenu getPopupMenu() {
@@ -287,6 +289,8 @@ public class NewTemplateAction extends NodeAction {
                 }
                 
                 addActionListener(this);
+                // recommendation from issue 32191, don't enable popup menu items on read-only folders
+                setEnabled (canWrite);
             }
             
             /** Get context help for this item.*/
