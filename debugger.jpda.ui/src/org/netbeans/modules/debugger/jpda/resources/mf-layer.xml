@@ -20,6 +20,9 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-debugger-jpda-ui-ToolTipAnnotation.instance"/>
                 </folder>
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance"/>
+                </folder>
                 <folder name="Popup">
                     <attr name="Separator7.instance/org-netbeans-modules-debugger-jpda-ui-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
 
