@@ -495,16 +495,7 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
     }
 
 	boolean valid(WizardDescriptor wizardDescriptor) {
-//        System.out.println("validating wizard properties");
-		// !PW 50047 - for EA1 (JSR-109 only) wizard is only valid if the project
-		// supports Servlet 2.4 (and thus J2EE 1.4).
 		Project p = Templates.getProject(wizardDescriptor);
-		// !PW FIXME this lookup call will need to be updated for freeform projects in EA2.
-		WebModuleImplementation wm = (WebModuleImplementation) p.getLookup().lookup(WebModuleImplementation.class);
-		if(WebModule.J2EE_13_LEVEL.equals(wm.getJ2eePlatformVersion())) {
-			wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_ClientNotSupported")); // NOI18N
-			return false; // servlet 2.3/j2ee 1.3 webapp project
-		}
 
         // Project selected must support at least one stub type.
         WebServicesClientSupport clientSupport =
