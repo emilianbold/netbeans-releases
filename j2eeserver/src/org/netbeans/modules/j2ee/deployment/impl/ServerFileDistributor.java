@@ -153,7 +153,6 @@ public class ServerFileDistributor extends ServerProgress {
         while (content.hasNext ()) {
             J2eeModule.RootedEntry re = (J2eeModule.RootedEntry) content.next ();
             FileObject file = re.getFileObject ();
-            
             if (file.isFolder())
                 continue;
             //jar file are created externally and timestamp may not be refreshed
@@ -362,7 +361,7 @@ public class ServerFileDistributor extends ServerProgress {
             }
             if (! descriptorChanged && (
                 ((descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) ||
-                 (relativePath.startsWith ("WEB-INF") && (relativePath.endsWith (".tld") || relativePath.endsWith (".xml")))))) {
+                 (relativePath.startsWith ("WEB-INF") && (relativePath.endsWith (".tld") || relativePath.endsWith (".xml") || relativePath.endsWith (".dtd")))))) {
                 descriptorChanged = true;
                 return;
             }
