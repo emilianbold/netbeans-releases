@@ -153,6 +153,8 @@ public class AppletSupport {
         writer.println("</HEAD>"); // NOI18N
         writer.println("<BODY>\n"); // NOI18N
 
+        writer.print(bundle.getString("GEN_warning"));
+
         writer.print("<H3><HR WIDTH=\"100%\">"); // NOI18N
         writer.print(bundle.getString("GEN_header"));
         writer.println("<HR WIDTH=\"100%\"></H3>\n"); // NOI18N
