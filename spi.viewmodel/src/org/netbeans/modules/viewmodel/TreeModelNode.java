@@ -16,9 +16,6 @@ package org.netbeans.modules.viewmodel;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyEditor;
 import java.lang.IllegalAccessException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import javax.swing.AbstractAction;
@@ -27,8 +24,6 @@ import javax.swing.Action;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.NoInformationException;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.nodes.AbstractNode;
@@ -36,7 +31,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.HelpCtx;
 import org.openide.util.lookup.Lookups;
 
 
@@ -144,10 +138,6 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx (getClass ());
-    }
-    
     void refresh () {
 //        try {
 //            setDisplayName (model.getDisplayName (object));

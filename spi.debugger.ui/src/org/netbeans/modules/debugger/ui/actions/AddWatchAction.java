@@ -85,7 +85,6 @@ public class AddWatchAction extends CallableSystemAction {
             panel, 
             bundle.getString ("CTL_WatchDialog_Title") // NOI18N
         );
-        dd.setHelpCtx (new HelpCtx ("debug.add.watch"));
         Dialog dialog = DialogDisplayer.getDefault ().createDialog (dd);
         dialog.setVisible (true);
         dialog.dispose ();

@@ -22,16 +22,13 @@ import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.modules.debugger.ui.Utils;
 import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.debugger.ui.Controller;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 
@@ -77,15 +74,6 @@ public class AddBreakpointAction extends AbstractAction {
     static final class AddBreakpointDialogManager extends Object
         implements ActionListener, PropertyChangeListener {
 
-        /**
-         * default <CODE>HelpCtx</CODE> to be used if the selected breakpoint
-         * type's customizer does not provide any
-         *
-         * @see  Breakpoint.Event#getCustomizer()
-         * @see  HelpCtx#findHelp
-         */
-        private final HelpCtx DEFAULT_HELP
-            = new HelpCtx ("debug.add.breakpoint"); // NOI18N
         /** true if ok was pressed */
         private boolean okPressed;
         private Dialog dialog;
@@ -118,7 +106,6 @@ public class AddBreakpointAction extends AbstractAction {
                 true,
                 this
             );
-            updateHelpCtx();
             descriptor.setOptions (new JButton[] {
                 bOk = new JButton (bundle.getString ("CTL_Ok")), // NOI18N
                 bCancel = new JButton (bundle.getString ("CTL_Cancel")) // NOI18N
@@ -149,20 +136,8 @@ public class AddBreakpointAction extends AbstractAction {
             dialog = null;
         }
         
-        /**
-         * Set the dialog's <CODE>HelpCtx</CODE> according to a selected
-         * breakpoint type.
-         */
-        private void updateHelpCtx() {
-            HelpCtx helpCtx = panel.getHelpCtx();
-            if (helpCtx == null)
-                helpCtx = DEFAULT_HELP;
-            descriptor.setHelpCtx(helpCtx);
-        }
-        
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == AddBreakpointPanel.PROP_TYPE) {
-                updateHelpCtx();
                 stopListening ();
                 setValid ();
                 startListening ();
