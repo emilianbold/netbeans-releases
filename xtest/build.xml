@@ -31,6 +31,7 @@ Microsystems, Inc. All Rights Reserved.
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <exclude name="org/netbeans/junit/**"/>
+      <exclude name="org/netbeans/xtest/pe/server*/**"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">
@@ -52,6 +53,8 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
     </javac>
   </target>
+  
+  
 
   <target name="jars" depends="compile">
     <mkdir dir="lib"/>
@@ -64,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
-            includes="org/netbeans/xtest/**"/>
+            includes="org/netbeans/xtest/**" excludes="org/netbeans/xtest/pe/server*/**" />
 
     <jar jarfile="lib/patches/testmain.jar"
             manifest="manifest-subst.mf"
@@ -116,6 +119,54 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/lib.jnikill.win32.x86.dll"/>
     <delete file="lib/kill.exe"/>
     <delete file="xtest-distribution.zip"/>
+    <delete file="xtest-pes-distribution.zip"/>
+  </target>
+  
+  
+  
+  <!-- PES targets -->
+  <target name="compile-pes">
+  	<javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <include name="org/netbeans/xtest/pe/**"/>      
+      <include name="org/netbeans/xtest/util/**"/>
+      <classpath>		
+		<pathelement location="src"/>
+		<pathelement location="${xtest.extra.home}/lib/xml-apis.jar"/>
+		<pathelement location="${xtest.extra.home}/lib/xerces.jar"/>
+		<pathelement location="${xtest.extra.home}/lib/xalan.jar"/>
+    	<!-- XXX stop using this! Not to mention it should use ${binroot}. -->
+    	<fileset dir="../../nbextra/ant/release/modules/ext">
+	        <include name="ant.jar"/>
+        	<include name="ant-1.*.jar"/>
+     	</fileset>		
+      </classpath>
+    </javac>
+  </target>
+  
+  <target name="jar-pes" depends="compile-pes">
+    <mkdir dir="lib"/>    
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="lib/xtest-pes.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
+            compress="false"
+            includes="org/netbeans/xtest/pe/**,org/netbeans/xtest/util/**"/>
+    <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
+    <copy file="${xtest.extra.home}/lib/xalan.jar" todir="lib"/>
+  </target>
+  
+  <target name="makedist-pes" depends="jar-pes">
+    <zip zipfile="xtest-pes-distribution.zip">
+     	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
+     	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
+     	<!-- again - this shoudn't be done this way -->
+     	<zipfileset  dir="../../nbextra/ant/release/modules/ext" prefix="lib" includes="ant-1.4.1.jar"/>
+     </zip>  
   </target>
 
 </project>
