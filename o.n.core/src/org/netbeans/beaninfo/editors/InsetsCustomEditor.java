@@ -16,6 +16,8 @@ package com.netbeans.developer.editors;
 import java.awt.Insets;
 import java.util.ResourceBundle;
 
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -68,8 +70,17 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
       int left = Integer.parseInt (leftField.getText ());
       int bottom = Integer.parseInt (bottomField.getText ());
       int right = Integer.parseInt (rightField.getText ());
+      if ((top < 0) || (left < 0) || (bottom < 0) || (right < 0)) {
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+        Insets insets = (Insets) editor.getValue();
+        top = insets.top;
+        left = insets.left;
+        bottom = insets.bottom;
+        right = insets.right;
+      }
       return new Insets (top, left, bottom, right);
     } catch (NumberFormatException e) {
+      TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_InvalidValue"), NotifyDescriptor.ERROR_MESSAGE));
       throw new IllegalStateException ();
     }
   }
@@ -212,6 +223,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE

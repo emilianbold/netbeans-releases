@@ -16,9 +16,11 @@ package com.netbeans.developer.editors;
 import java.awt.Point;
 import java.util.ResourceBundle;
 
-import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 
 /**
 *
@@ -63,8 +65,15 @@ static final long serialVersionUID =-4067033871196801978L;
     try {
       int x = Integer.parseInt (xField.getText ());
       int y = Integer.parseInt (yField.getText ());
+      if ((x < 0) || (y < 0)) {
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+        Point point = (Point) editor.getValue();
+        x = point.x;
+        y = point.y;
+      }
       return new Point (x, y);
     } catch (NumberFormatException e) {
+      TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_InvalidValue"), NotifyDescriptor.ERROR_MESSAGE));
       throw new IllegalStateException ();
     }
   }
@@ -157,6 +166,7 @@ static final long serialVersionUID =-4067033871196801978L;
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE

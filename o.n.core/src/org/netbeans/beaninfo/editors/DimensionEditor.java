@@ -16,6 +16,8 @@ package com.netbeans.developer.editors;
 import java.awt.Dimension;
 import java.util.ResourceBundle;
 
+import org.openide.TopManager;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /** A property editor for Dimension class.
@@ -42,7 +44,18 @@ public class DimensionEditor extends ArrayOfIntSupport {
   * which is set to method setValue(XXX)
   */
   void setValues(int[] val) {
-    setValue(new Dimension(val[0], val[1]));
+    if ((val[0] < 0) || (val[1] < 0)) {
+      //TopManager.getDefault().notify(...) cannot be called synchronous, because when error dialog is displayed
+      //PropertyEditor lost focus and setValues() method is called. After closing error dialog is focus returned
+      //to PropertyEditor and setValues() method is called again.
+      javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        public void run() {
+          TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+        }
+      });
+    }
+    else 
+      setValue(new Dimension(val[0], val[1]));
   }
 
   public boolean supportsCustomEditor () {
@@ -68,6 +81,7 @@ public class DimensionEditor extends ArrayOfIntSupport {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/11/00  Radko Najman    fixed bug #4910
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  4    Gandalf   1.3         7/19/99  Ian Formanek    XML Serialization

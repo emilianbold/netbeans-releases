@@ -16,6 +16,8 @@ package com.netbeans.developer.editors;
 import java.awt.Dimension;
 import java.util.ResourceBundle;
 
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -62,8 +64,15 @@ static final long serialVersionUID =3718340148720193844L;
     try {
       int width = Integer.parseInt (widthField.getText ());
       int height = Integer.parseInt (heightField.getText ());
+      if ((width < 0) || (height < 0)) {
+        TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_NegativeSize"), NotifyDescriptor.ERROR_MESSAGE));
+        Dimension dimension = (Dimension) editor.getValue();
+        width = dimension.width;
+        height = dimension.height;
+      }
       return new Dimension (width, height);
     } catch (NumberFormatException e) {
+      TopManager.getDefault().notify(new NotifyDescriptor.Message(bundle.getString("CTL_InvalidValue"), NotifyDescriptor.ERROR_MESSAGE));
       throw new IllegalStateException ();
     }
   }
@@ -160,6 +169,7 @@ static final long serialVersionUID =3718340148720193844L;
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/11/00  Radko Najman    fixed bug #4910
  *  10   Gandalf   1.9         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  9    Gandalf   1.8         8/18/99  Ian Formanek    Generated serial version
