@@ -24,7 +24,7 @@ import org.apache.tools.ant.types.*;
 import java.util.LinkedList;
 import java.util.Iterator;
 
-import org.openide.TopManager;
+//import org.openide.TopManager;
 
 /**
  *
@@ -72,7 +72,9 @@ public class NbMultiTaskDef extends Task {
     public void execute () throws BuildException {
         if (null != System.getProperty("test.ant.file")) {
             log("Using Netbeans classloader.", Project.MSG_DEBUG);
-            loader = TopManager.getDefault().currentClassLoader();
+            //loader = org.openide.TopManager.getDefault().currentClassLoader();
+            loader = Thread.currentThread().getContextClassLoader();
+            System.out.println("NetBeans class loader: "+loader);
         }
 
         if (classpath != null) {

@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="openide*.jar" />
         </fileset>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
+	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
         <!-- XXX stop using this! Not to mention it should use ${binroot}. -->
         <fileset dir="../../nbextra/ant/release/modules/ext">
           <include name="ant.jar"/>
@@ -68,15 +69,23 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false"
-            includes="org/netbeans/xtest/**" excludes="org/netbeans/xtest/pe/server*/**" />
+            includes="org/netbeans/xtest/**" excludes="org/netbeans/xtest/pe/server*/**,org/netbeans/xtest/ide/**" />
 
+            <!--
     <jar jarfile="lib/patches/testmain.jar"
             manifest="manifest-subst.mf"
             basedir="src"
             compress="false">
         <include name="org/netbeans/Main*.class"/>
         <include name="org/netbeans/core/modules/"/>
-    </jar>        
+    </jar>      
+    -->  
+    <jar jarfile="lib/xtest-ide.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+            compress="false">
+        <include name="org/netbeans/xtest/ide/*.class"/>        
+    </jar>      
     <copy file="${xtest.extra.home}/lib/junit.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xml-apis.jar" todir="lib"/>
     <copy file="${xtest.extra.home}/lib/xerces.jar" todir="lib"/>
@@ -108,6 +117,7 @@ Microsystems, Inc. All Rights Reserved.
     </delete>
     <delete file="manifest-subst.mf"/>
     <delete dir="lib/patches"/>
+    <delete file="lib/xtest-ide.jar"/>
     <delete file="lib/xtest.jar"/>
     <delete file="lib/junit-ext.jar"/>
     <delete file="lib/junit.jar"/>
