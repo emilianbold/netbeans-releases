@@ -109,6 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="${xtest.plugin.home}/lib/xtest-ide-main.jar" todir="${xtest.userdir}/xtest/lib"/>
         <copy file="${xtest.home}/lib/junit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
         <copy file="${xtest.home}/lib/nbjunit.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
+        <copy file="${xtest.home}/lib/insanelib.jar" todir="${xtest.userdir}/xtest/lib/ext"/>
                 
         <copy file="${xtest.home}/lib/xtest-junit-testrunner.jar" todir="${xtest.workdir.idejars}"/> 
         <copy file="${xtest.plugin.home}/lib/xtest-ide-testexec.jar" todir="${xtest.workdir.idejars}"/> 

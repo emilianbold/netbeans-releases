@@ -17,6 +17,7 @@ import java.awt.EventQueue;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import junit.framework.TestCase;
 import junit.framework.TestResult;
 import junit.framework.AssertionFailedError;
@@ -24,7 +25,7 @@ import java.util.*;
 import java.net.URL;
 
 import org.netbeans.junit.diff.*;
-
+import org.netbeans.insane.scanner.*;
 /**
  * NetBeans extension to JUnit's {@link TestCase}.
  * Adds various abilities such as comparing golden files, getting a working
@@ -885,7 +886,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 // ignore
             }
         }
-        fail(text + " " + ref.get());
+        alloc = null;
+        fail(text + ":\n" + findRefsFromRoot(ref.get()));
     }
 
     /** Assert size of some structure. Traverses the whole reference
@@ -921,32 +923,8 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      *        are counted.
      */
     public static void assertSize(String message, Collection roots, int limit, Object[] skip) {
-        try {
-            Collection c = MemoryCounter.countInstances(roots, skip);
-            int sum = 0;
-            for(Iterator it = c.iterator(); it.hasNext(); ) {
-                MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
-                sum += ci.getTotalSize();
-            }
-            if (sum > limit) {
-                StringBuffer sb = new StringBuffer (4096);
-                sb.append (message); 
-                sb.append (": ");
-                sb.append (sum);
-                sb.append (">");
-                sb.append (limit);
-                sb.append ('\n');
-                for(Iterator it = c.iterator(); it.hasNext(); ) {
-                    sb.append ("  ");
-                    MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
-                    sb.append (ci.toString ());
-                    sb.append ('\n');
-                }
-		fail(sb.toString());
-            }
-        } catch (Exception e) {
-            throw new Error("Could not traverse reference graph.", e);
-        }
+        org.netbeans.insane.scanner.Filter f = ScannerUtils.skipObjectsFilter(Arrays.asList(skip), false);
+        assertSize(message, roots, limit, f);
     }
 
 
@@ -959,14 +937,21 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param skip custom filter for counted objects
      * @return actual size or <code>-1</code> on internal error.
      */
-    public static int assertSize(String message, Collection roots, int limit, MemoryFilter skip) {
-         try {
-            Collection c = MemoryCounter.countInstances(roots, skip);
-            int sum = 0;
-            for(Iterator it = c.iterator(); it.hasNext(); ) {
-                MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
-                sum += ci.getTotalSize();
+    public static int assertSize(String message, Collection roots, int limit, final MemoryFilter skip) {
+        org.netbeans.insane.scanner.Filter f = new org.netbeans.insane.scanner.Filter() {
+            public boolean accept(Object o, Object refFrom, Field ref) {
+                return !skip.reject(o);
             }
+        };
+        return assertSize(message, roots, limit, f);
+    }
+
+    private static int assertSize(String message, Collection roots, int limit,
+	org.netbeans.insane.scanner.Filter f) {
+        try {
+            CountingVisitor counter = new CountingVisitor();
+            ScannerUtils.scan(f, counter, roots, false);
+            int sum = counter.getTotalSize();
             if (sum > limit) {
                 StringBuffer sb = new StringBuffer (4096);
                 sb.append (message); 
@@ -974,11 +959,13 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 sb.append (" over limit of ");
                 sb.append (limit + " bytes");
                 sb.append ('\n');
-                for(Iterator it = c.iterator(); it.hasNext(); ) {
+                for(Iterator it = counter.getClasses().iterator(); it.hasNext(); ) {
                     sb.append ("  ");
-                    MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
-                    sb.append (ci.toString ());
-                    sb.append ('\n');
+                    Class cls = (Class)it.next();
+                    if (counter.getCountForClass(cls) == 0) continue;
+                    sb.append (cls.getName()).append(": ").
+                        append(counter.getCountForClass(cls)).append(", ").
+                        append(counter.getSizeForClass(cls)).append("B\n");
                 }
 		fail(sb.toString());
             }
@@ -988,5 +975,156 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         }
         return -1; // fail throws for sure
     }
+
+
+    private static String findRefsFromRoot(final Object target) {
+        final Map objects = new IdentityHashMap();
+        boolean found = false;
+
+        Visitor vis = new Visitor() {
+            public void visitClass(Class cls) {}
+
+            public void visitObject(ObjectMap map, Object object) {
+                objects.put(object, new Entry(object));
+            }
+
+            public void visitArrayReference(ObjectMap map, Object from, Object to, int index) {
+                visitRef(from, to);
+            }
+
+            public void visitObjectReference(ObjectMap map, Object from, Object to, java.lang.reflect.Field ref) {
+                visitRef(from, to);
+            }
+        
+            private void visitRef(Object from, Object to) {
+                ((Entry)objects.get(from)).addOut(to);
+                ((Entry)objects.get(to)).addIn(from);
+                if (to == target) throw new RuntimeException("Done");
+            }
+
+
+            public void visitStaticReference(ObjectMap map, Object to, java.lang.reflect.Field ref) {
+                ((Entry)objects.get(to)).addStatic(ref);
+                if (to == target) throw new RuntimeException("Done");
+            }
+        };
+        
+        try {
+            ScannerUtils.scanExclusivelyInAWT(ScannerUtils.skipNonStrongReferencesFilter(), vis, ScannerUtils.interestingRoots());
+        } catch (Exception ex) {
+            // found object
+            found = true;
+        }
+        
+        if (found) {
+            return findRoots(objects, target);
+        } else {
+            return "Not found!!!";
+        }
+    }
+        /** BFS scan of incomming refs*/
+    private static String  findRoots(Map objects, Object obj) {
+        class PathElement {
+            private Entry item;
+            private PathElement next; 
+            public PathElement(Entry item, PathElement next) {
+                this.item = item;
+                this.next = next;
+            }
+            
+            public Entry getItem() {
+                return item;
+            }
+            public String toString() {
+                if (next == null) {
+                    return item.toString();
+                } else {
+                    return item.toString() + "->\n" + next.toString();
+                }
+            }
+        }
+
+        Set visited = new HashSet();
+        Entry fin = (Entry)objects.get(obj);
+        assert fin != null;
+        
+        visited.add(fin);
+        LinkedList queue = new LinkedList();
+        queue.add(new PathElement(fin, null));
+        
+        while (!queue.isEmpty()) {
+            PathElement act = (PathElement)queue.remove(0);
+            // any static ref?
+            Iterator it = act.getItem().staticRefs();
+            if (it.hasNext()) {
+                Field fld = (Field)it.next();
+                return fld + "->\n" + act;
+            }
+            
+            // follow incomming
+            it = act.getItem().incommingRefs();
+            while(it.hasNext()) {
+                Entry ref = (Entry)objects.get(it.next());
+                assert ref != null;
+                
+                // add to the queue if not new
+                if (visited.add(ref)) queue.add(new PathElement(ref, act));
+            }
+        }
+        return "Error";
+    }
     
+
+    static Object[] EMPTY = new Object[0];
+    
+    /** Entry represents one object and its incomming/outgoing refs */
+    private static class Entry {
+        private Object obj;
+        private Object[] in;
+        private Object[] out;
+        private Object[] stat;
+        
+        public Entry(Object o) {
+            obj = o;
+            in = EMPTY;
+            out = EMPTY;
+            stat = EMPTY;
+        }
+        
+        void addOut(Object o) {
+            out = append(out, o);
+        }
+        
+        void addStatic(Field ref) {
+            stat = append(stat, ref);
+        }
+        
+        void addIn(Object o) {
+            in = append(in, o);
+        }
+        
+        public Iterator incommingRefs() {
+            return Arrays.asList(in).iterator();
+        }
+
+        public Iterator staticRefs() {
+            return Arrays.asList(stat).iterator();
+        }
+
+        public Iterator outgoingRefs() {
+            return Arrays.asList(stat).iterator();
+        }
+        
+        private Object[] append(Object[] orig, Object add) {
+            int origLen = orig.length;
+            Object[] ret = new Object[origLen + 1];
+            System.arraycopy(orig, 0, ret, 0, origLen);
+            ret[origLen] = add;
+            return ret;
+        }
+        
+        public String toString() {
+            return obj.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(obj));
+        }
+    }
 }

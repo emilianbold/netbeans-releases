@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- set junit.classpath to contain also nbjunit -->
         <!-- Add also nbjunit-ide.jar to be available in compiler of base plugin.
             Ideally it should be added in compiler of ide plugin only. -->
-       <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar"/>
+       <property name="junit.classpath" value="${xtest.home}/lib/junit.jar:${xtest.home}/lib/nbjunit.jar:${xtest.home}/lib/nbjunit-ide.jar:${xtest.home}/lib/insanelib.jar"/>
 
         <!-- publishing tasks -->
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar">

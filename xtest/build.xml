@@ -83,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>	        
   
     <copy file="external/junit-3.8.1.jar" tofile="lib/junit.jar"/>
+    <copy file="external/insanelib.jar" tofile="lib/insanelib.jar"/>
   </target>
   
   <target name="build-xtest" depends="jars"/>
