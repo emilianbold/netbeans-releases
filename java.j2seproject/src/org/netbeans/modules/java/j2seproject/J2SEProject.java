@@ -325,7 +325,7 @@ final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
-            if (J2SEPhysicalViewProvider.hasBrokenLinks(evaluator())) {
+            if (J2SEPhysicalViewProvider.hasBrokenLinks(helper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
         }

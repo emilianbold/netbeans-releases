@@ -60,7 +60,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     
     public void refresh() {
         Set all = new LinkedHashSet();
-        Set s = getReferences(helper.getStandardPropertyEvaluator(), props, false);
+        Set s = getReferences(helper, helper.getStandardPropertyEvaluator(), props, false);
         all.addAll(s);
         s = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
         all.addAll(s);
@@ -127,8 +127,8 @@ public class BrokenReferencesModel extends AbstractListModel {
         return references.size();
     }
 
-    public static boolean isBroken(PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
-        Set s = getReferences(evaluator, props, true);
+    public static boolean isBroken(AntProjectHelper helper, PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
+        Set s = getReferences(helper, evaluator, props, true);
         if (s.size() > 0) {
             return true;
         }
@@ -136,7 +136,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         return s.size() > 0;
     }
 
-    private static Set getReferences(PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
+    private static Set getReferences(AntProjectHelper helper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
         Set set = new LinkedHashSet();
         StringBuffer all = new StringBuffer();
         for (int i=0; i<ps.length; i++) {
@@ -191,7 +191,18 @@ public class BrokenReferencesModel extends AbstractListModel {
             String key = (String)entry.getKey();
             String value = (String)entry.getValue();
             if (key.startsWith("project.")) { // NOI18N
-                File f = new File(value);
+                File f;
+                if (helper != null) {
+                    f = new File(helper.resolvePath(value));
+                } else {
+                    f = new File(value);
+                    if (!f.exists()) {
+                        // perhaps the file is relative?
+                        String basedir = evaluator.getProperty("basedir");
+                        assert basedir != null;
+                        f = new File(new File(basedir), value);
+                    }
+                }
                 if (f.exists()) {
                     continue;
                 }

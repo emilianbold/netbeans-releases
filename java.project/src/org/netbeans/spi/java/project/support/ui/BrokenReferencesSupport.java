@@ -55,7 +55,8 @@ public class BrokenReferencesSupport {
 
     /**
      * Checks whether the project has some broken references or not.
-     * @param evaluator property evaluator associated with the project
+     * @param projectHelper AntProjectHelper associated with the project.
+     * @param referenceHelper ReferenceHelper associated with the project.
      * @param properties array of property names which values hold
      *    references which may be broken. For example for J2SE project
      *    the property names will be: "javac.classpath", "run.classpath", etc.
@@ -68,8 +69,17 @@ public class BrokenReferencesSupport {
      * @return true if some problem was found and it is necessary to give
      *    user a chance to fix them
      */
+    public static boolean isBroken(AntProjectHelper projectHelper, 
+            ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
+        return BrokenReferencesModel.isBroken(projectHelper, 
+            projectHelper.getStandardPropertyEvaluator(), properties, platformProperties);
+    }
+    
+    /** DEPRECATED.
+     * @deprecated use {@link #isBroken(AntProjectHelper, ReferenceHelper, String[], String[])} instead
+     */
     public static boolean isBroken(PropertyEvaluator evaluator, String[] properties, String[] platformProperties) {
-        return BrokenReferencesModel.isBroken(evaluator, properties, platformProperties);
+        return BrokenReferencesModel.isBroken(null, evaluator, properties, platformProperties);
     }
     
     /**
