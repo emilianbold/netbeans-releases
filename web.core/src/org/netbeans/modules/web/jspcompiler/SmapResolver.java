@@ -99,12 +99,7 @@ public class SmapResolver {
      */
     private boolean resolve(String smap) {
         
-        boolean fileSection = false;        // whether we are in file section
-        boolean lineSection = false;        // whether we are in line section
-        boolean jspStratumSection = false;  // there may (theoretically) be more stratum sections in a file
-        
         String currentSection = "";
-        
         if (smap == null) return false;
         
         // tokenize the smap file by endlines
@@ -117,9 +112,7 @@ public class SmapResolver {
          */
         String fileIndex = null;
         
-        boolean cont = true;
-        
-        while (st.hasMoreTokens() && cont) {
+        while (st.hasMoreTokens()) {
             String token = st.nextToken();
             
             //this tough IF..ELSE is responsible for tracking which section is currently read
@@ -144,8 +137,6 @@ public class SmapResolver {
                 continue;
             } else if (END_SECTION.equals(token)) {
                 currentSection = END_SECTION;
-                cont = false;
-                sectionCounter = 0;
                 break;
             }
 
