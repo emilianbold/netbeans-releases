@@ -950,8 +950,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 DataObject[] children = nodes[ni].dataFolder.getChildren();
                 boolean cantDelete = false;
                 for (int i=0; i< children.length; i++) {
-                    if (children[i].getPrimaryFile().isData()) {
-                        //Copy only the pacakge level
+                    if (children[i].getPrimaryFile().isData() 
+                    && VisibilityQuery.getDefault().isVisible (children[i].getPrimaryFile())) {
+                        //Copy only the package level
                         children[i].copy (dest);
                         if (this.op == DnDConstants.ACTION_MOVE) {
                             try {
