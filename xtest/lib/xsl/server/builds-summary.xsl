@@ -24,6 +24,8 @@
 
 <xsl:include href="../library.xsl"/>
 
+<xsl:param name="truncated"/>
+
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">Results of <xsl:value-of select="//ManagedReport/@testedType"/> tests for <xsl:value-of select="//ManagedReport/@project"/> 
@@ -49,10 +51,24 @@
 		<LI><A HREF="../index.html">XTest Overall Results</A></LI>
 		<xsl:if test="not(@oldBuilds)">
 			<LI><A HREF="#history">History Matrices</A></LI>
-			<LI><A HREF="old-{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Older Builds</A></LI>
+			<LI>
+                           <xsl:if test="not(boolean($truncated))">
+                              <A HREF="old-{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Older Builds</A>
+                           </xsl:if>
+                           <xsl:if test="boolean($truncated)">
+                              <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('old-',ManagedReport/@testingGroup,'-',ManagedReport/@testedType,'.html'),' ','_')"/></xsl:attribute>Older Builds</A>
+                           </xsl:if>
+                        </LI>
 		</xsl:if>
 		<xsl:if test="@oldBuilds">
-			<LI><A HREF="{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Current builds</A></LI>
+			<LI>
+                           <xsl:if test="not(boolean($truncated))">
+                             <A HREF="{ManagedReport/@testingGroup}-{ManagedReport/@testedType}.html">Current builds</A>
+                           </xsl:if>
+                           <xsl:if test="boolean($truncated)">
+                             <A><xsl:attribute name="href"><xsl:value-of select="translate(concat(ManagedReport/@testingGroup,'-',ManagedReport/@testedType,'.html'),' ','_')"/></xsl:attribute>Current builds</A>
+                           </xsl:if>
+                        </LI>
 		</xsl:if>
 	</UL>
 	<BR/>
@@ -142,9 +158,14 @@
 					</TD>
 					<TD class="pass">
 						<xsl:for-each select="key('platformAndBuild',concat(./@osName,./@osVersion,./@osArch,$currentBuild))">
-							<A HREF="../{@webLink}index.html">
-								<xsl:value-of select="@host"/>
+                                                    <xsl:if test="not(boolean($truncated))">
+							<A HREF="../{@webLink}index.html"><xsl:value-of select="@host"/>
 							</A>
+                                                    </xsl:if>
+                                                    <xsl:if test="boolean($truncated)">
+                                                        <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('../',@webLink,'index.html'),' ','_')"/></xsl:attribute><xsl:value-of select="@host"/>
+							</A>
+                                                    </xsl:if>    
 							<BR/>
 						</xsl:for-each>
 					</TD>
@@ -182,7 +203,15 @@
 			<xsl:for-each select="$differentHosts">
 				<xsl:sort select="@host"/>
 				<LI>				
-					<B><A HREF="matrix-{@testingGroup}-{@testedType}-{@host}.html"><xsl:value-of select="@host"/></A></B>
+					<B>
+                                           <xsl:if test="not(boolean($truncated))">
+                                              <A HREF="matrix-{@testingGroup}-{@testedType}-{@host}.html"><xsl:value-of select="@host"/></A>
+                                           </xsl:if>
+                                           <xsl:if test="boolean($truncated)">
+                                              <A><xsl:attribute name="href"><xsl:value-of select="translate(concat('matrix-',@testingGroup,'-',@testedType,'-',@host,'.html'),' ','_')"/></xsl:attribute>
+                                              <xsl:value-of select="@host"/></A>
+                                           </xsl:if>
+                                       </B>
 				</LI>
 			</xsl:for-each>
 		</UL>

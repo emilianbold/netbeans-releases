@@ -16,6 +16,8 @@
 
 <xsl:include href="library.xsl"/>
 
+<xsl:param name="truncated"/>
+
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">TestBag <xsl:value-of select="/TestBag/@name"/></xsl:with-param>
@@ -36,9 +38,11 @@
 	<LI>Module: <xsl:value-of select="@module"/></LI>
 	<LI>Test Type: <xsl:value-of select="@testType"/></LI>
 	
-	<xsl:if test="string(@ideUserDir)='true'">
+        <xsl:if test="not(boolean($truncated))">
+  	  <xsl:if test="string(@ideUserDir)='true'">
 		<LI><A HREF="../sys/ide/">IDE User Directory</A></LI>
-	</xsl:if>
+	  </xsl:if>
+        </xsl:if>  
 	<!-- end of hack -->
 	
 	<xsl:if test="@unexpectedFailure">

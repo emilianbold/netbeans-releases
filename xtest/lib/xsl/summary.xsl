@@ -18,6 +18,8 @@
 
 <xsl:key name="module" match="TestBag" use="concat(@module,parent::*/@runID)"/>
 
+<xsl:param name="truncated"/>
+
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">Summary from <xsl:value-of select="/XTestResultsReport/SystemInfo/@host"/> run at <xsl:value-of select="/XTestResultsReport/@timeStamp"/></xsl:with-param>
@@ -113,9 +115,11 @@
 			<LI>Config:<xsl:value-of select="@config"/></LI>
 		</xsl:if>
 			<LI>Run (when): <xsl:value-of select="@timeStamp"/></LI>
-		<xsl:if test="string(@antLogs)='true'">
+		<xsl:if test="not(boolean($truncated))">
+                   <xsl:if test="string(@antLogs)='true'">
 			<LI><A HREF="../{@runID}/logs/">Logs from builds scripts</A></LI>
-		</xsl:if>
+		   </xsl:if>
+                </xsl:if>   
 		<xsl:for-each select="TestBag[@unexpectedFailure]">
 			<LI><B><FONT color="#FF0000">
 				!!! Tests did not finish correctly in module <xsl:value-of select="@module"/>, 

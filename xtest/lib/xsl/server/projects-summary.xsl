@@ -15,6 +15,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:java="java">
 
+<xsl:param name="truncated"/>
 
 <xsl:include href="../library.xsl"/>
 
@@ -121,8 +122,15 @@
 								<TD class="pass">
 									<xsl:value-of select="sum($expression/@testsTotal)"/>
 								</TD>
-								<TD class="pass"><A HREF="{$currentProject}/{$currentTestingGroup}-{$currentType}.html">report</A></TD>
-								</xsl:if>								
+								<TD class="pass">
+                                                                    <xsl:if test="not(boolean($truncated))">   
+                                                                        <A HREF="{$currentProject}/{$currentTestingGroup}-{$currentType}.html">report</A>
+                                                                    </xsl:if>    
+                                                                    <xsl:if test="boolean($truncated)">   
+                                                                        <A><xsl:attribute name="href"><xsl:value-of select="translate(concat($currentProject,'/',$currentTestingGroup,'-',$currentType,'.html'),' ','_')"/></xsl:attribute>report</A>
+                                                                    </xsl:if>
+                                                                </TD>
+						        </xsl:if>								
 							</xsl:for-each>
 							<xsl:if test="count($builds)=0">								
 								<TD colspan="4" class="pass">-</TD>

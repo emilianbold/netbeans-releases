@@ -96,6 +96,7 @@ public class ResultsUtils {
     // this method believes, that in suite dir can be only suite files    
     public static String[] listSuites(File suiteDir) {
         String[] suiteFilenames = suiteDir.list();
+        if (suiteFilenames == null) return null;
         String[] suiteNames = new String[suiteFilenames.length];
         int count=0;
         for (int i=0;i<suiteFilenames.length;i++) {        

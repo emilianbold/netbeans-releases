@@ -18,6 +18,7 @@
 
 <xsl:include href="../library.xsl"/>
 
+<xsl:param name="truncated"/>
 
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
@@ -69,7 +70,12 @@
 								<xsl:choose>
 									<xsl:when test="@result">										
 										<TD class="{@result}">
+                                                                                    <xsl:if test="not(boolean($truncated))">
 											<A HREF="../{@path}"><xsl:value-of select="@result"/></A>
+                                                                                    </xsl:if>
+                                                                                    <xsl:if test="boolean($truncated)">
+											<xsl:value-of select="@result"/>
+                                                                                    </xsl:if>
 										</TD>
 									</xsl:when>
 									<xsl:otherwise>

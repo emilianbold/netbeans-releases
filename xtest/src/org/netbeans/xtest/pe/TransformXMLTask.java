@@ -61,6 +61,8 @@ public class TransformXMLTask extends Task{
     
     private File inputDir;
     private File outputDir;
+
+    private static boolean truncated = false;
     
     //private File suiteXSL;
     
@@ -71,6 +73,15 @@ public class TransformXMLTask extends Task{
     public void setOutputDir(File outputDir) {
         this.outputDir = outputDir;
     }
+
+    public static void setTruncated(boolean b) {
+        truncated = b;
+    }
+
+    public static boolean isTruncated() {
+        return truncated;
+    }
+
     
     /*
     public void setSuiteXSL(File suiteXSL) {
@@ -176,6 +187,8 @@ public class TransformXMLTask extends Task{
         try {
             SAXParserFactoryUtil.setXTestParser();
             debugInfo("transform(Transformer,Source,Result) set XTest required XML parser");
+            if (truncated) 
+                transformer.setParameter("truncated","true");
             transformer.transform(xmlSource, outputTarget);
         } finally {
             SAXParserFactoryUtil.revertXTestParser();
@@ -201,10 +214,11 @@ public class TransformXMLTask extends Task{
         debugInfo("transformUnitSuites(): inputDir="+inputDir+" outputDir="+outputDir);
         File suiteInputDir = new File(inputDir,PEConstants.XMLRESULTS_DIR+File.separatorChar+PEConstants.TESTSUITES_SUBDIR);
         File suiteOutputDir = new File(outputDir,PEConstants.HTMLRESULTS_DIR+File.separatorChar+PEConstants.TESTSUITES_SUBDIR);
-        if (!suiteOutputDir.mkdirs()) {
+        if (!suiteOutputDir.exists() && !suiteOutputDir.mkdirs()) {
             throw new IOException("TransformXML, cannot create output dir: "+suiteOutputDir);
         }
         String[] suites = ResultsUtils.listSuites(suiteInputDir);
+        if (suites == null) return;
         debugInfo("transformUnitSuites(): got suites: "+suites.length);
         Transformer transformer = getTransformer(getXSLFile(TESTSUITES_XSL));
         for (int i=0; i<suites.length; i++) {
@@ -312,9 +326,11 @@ public class TransformXMLTask extends Task{
        File fsInputDir = ResultsUtils.getXMLResultDir(inputRoot);
        File fsInputFile = new File(fsInputDir,PEConstants.TESTREPORT_XML_FILE);
        
-       outputRoot.mkdirs();
-       if (!outputRoot.isDirectory()) {
-           throw new IOException("Cannot create directory:"+outputRoot);
+       if (!outputRoot.exists()) {
+           outputRoot.mkdirs();
+           if (!outputRoot.isDirectory()) {
+               throw new IOException("Cannot create directory:"+outputRoot);
+           }
        }
        File fsOutputFile = new File(outputRoot,PEConstants.INDEX_HTML_FILE);       
               

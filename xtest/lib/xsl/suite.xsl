@@ -16,6 +16,8 @@
 
 <xsl:include href="library.xsl"/>
 
+<xsl:param name="truncated"/>
+
 <xsl:template match="/">
 	<xsl:call-template name="html-page">
 		<xsl:with-param name="html-title">TestSuite <xsl:value-of select="/UnitTestSuite/@name"/></xsl:with-param>
@@ -57,20 +59,24 @@
 				<TD width="18%"><B>Name</B></TD>
 				<TD width="7%"><B>Status</B></TD>
 				<TD width="70%"><B>Message</B></TD>
-				<TD width="5%"><B>Workdir</B></TD>
+				<xsl:if test="not(boolean($truncated))">
+                                    <TD width="5%"><B>Workdir</B></TD>
+                                </xsl:if>
 				<TD nowrap="nowrap" width="5%"><B>Time(ms)</B></TD>
 			</TR>
 				<xsl:apply-templates select="UnitTestCase" mode="table"/>		
 		</TABLE>				
 	</P>
-	<P>
+        <xsl:if test="not(boolean($truncated))">
+	   <P>
 		<BR/>
 		<xsl:if test="@testsTotal!=@testsPass">
 			<H3>Details for failed test/tests with errors:</H3>
 			<BR/>
 			<xsl:apply-templates select="UnitTestCase" mode="innerText"/>
 		</xsl:if>
-	</P>
+	   </P>
+        </xsl:if>
 </xsl:template>
 
 <xsl:template match="UnitTestCase" mode="table">
@@ -82,21 +88,28 @@
 		<TD><xsl:value-of select="@name"/></TD>
 		<TD>
 			<xsl:if test="text()">
-		 		<A><xsl:attribute name="href">#<xsl:value-of select="@class"/>.<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@result"/></A>
-		 	</xsl:if>
+		 	    <xsl:if test="not(boolean($truncated))">	
+                                <A><xsl:attribute name="href">#<xsl:value-of select="@class"/>.<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@result"/></A>
+                            </xsl:if>
+                            <xsl:if test="boolean($truncated)">	
+                                <xsl:value-of select="@result"/>
+                            </xsl:if>
+                        </xsl:if>
 		 	<xsl:if test="not(text())">
 				<xsl:value-of select="@result"/>
 			</xsl:if>
 		</TD>
 		<TD><xsl:value-of select="@message"/></TD>
-		<TD>
+                <xsl:if test="not(boolean($truncated))">
+                   <TD>
 			<xsl:if test="@workdir">
 				<A><xsl:attribute name="href">../../user/<xsl:value-of select="translate(@workdir,'\','/')"/>/</xsl:attribute>Yes</A>
 			</xsl:if>
 			<xsl:if test="not(@workdir)">
 			No
 			</xsl:if>
-		</TD>
+		   </TD>
+                </xsl:if>
 		<TD><xsl:value-of select="@time"/></TD>
 	</TR>
 </xsl:template>
