@@ -31,11 +31,12 @@ public class AnnotationComponent {
     String name;
     ElementValue value;
 
-    static AnnotationComponent load(DataInputStream in, ConstantPool pool) 
+    static AnnotationComponent load(DataInputStream in, ConstantPool pool,
+				    boolean runtimeVisible) 
 	throws IOException {
 	int iName = in.readUnsignedShort();
 	String name = ((CPName)pool.get(iName)).getName();
-	ElementValue value = ElementValue.load(in, pool);
+	ElementValue value = ElementValue.load(in, pool, runtimeVisible);
 	return new AnnotationComponent(name, value);
     }
 

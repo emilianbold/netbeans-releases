@@ -40,25 +40,30 @@ public class Annotation {
 		     boolean visible, Map map) throws IOException {
 	int nattrs = in.readUnsignedShort();
 	for (int i = 0; i < nattrs; i++) {
-	    final ClassName type;
-	    CPEntry entry = pool.get(in.readUnsignedShort());
-	    if (entry.getTag() == ConstantPool.CONSTANT_Class)
-		// 1.5 build 51 and earlier
-		type = ((CPClassInfo)entry).getClassName();
-	    else {
-		String s = ((CPName)entry).getName();
-		type = ClassName.getClassName(s);
-	    }
-	    int npairs = in.readUnsignedShort();
-	    List pairList = new ArrayList();
-	    for (int j = 0; j < npairs; j++)
-		pairList.add(AnnotationComponent.load(in, pool));
-	    AnnotationComponent[] acs = 
-		new AnnotationComponent[pairList.size()];
-	    pairList.toArray(acs);
-	    Annotation ann = new Annotation(pool, type, acs, visible);
+	    Annotation ann = loadAnnotation(in, pool, visible);
 	    map.put(ann.getType(), ann);
 	}
+    }
+
+    static Annotation loadAnnotation(DataInputStream in, ConstantPool pool, 
+				     boolean visible) throws IOException {
+	final ClassName type;
+	CPEntry entry = pool.get(in.readUnsignedShort());
+	if (entry.getTag() == ConstantPool.CONSTANT_Class)
+	    // 1.5 build 51 and earlier
+	    type = ((CPClassInfo)entry).getClassName();
+	else {
+	    String s = ((CPName)entry).getName();
+	    type = ClassName.getClassName(s);
+	}
+	int npairs = in.readUnsignedShort();
+	List pairList = new ArrayList();
+	for (int j = 0; j < npairs; j++)
+	    pairList.add(AnnotationComponent.load(in, pool, visible));
+	AnnotationComponent[] acs = 
+	    new AnnotationComponent[pairList.size()];
+	pairList.toArray(acs);
+	return new Annotation(pool, type, acs, visible);
     }
 
     Annotation(ConstantPool pool, ClassName type, 

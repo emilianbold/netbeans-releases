@@ -34,6 +34,7 @@ public final class Method extends Field {
     private Code code;
     private CPClassInfo[] exceptions;
     private Parameter[] parameters;
+    private ElementValue annotationDefault;
 
     static Method[] loadMethods(DataInputStream in, ConstantPool pool,
 				ClassFile cls, boolean includeCode) 
@@ -62,10 +63,6 @@ public final class Method extends Field {
 	else if (name.equals("RuntimeInvisibleParameterAnnotations")) { //NOI18N
 	    return false; //FIXME
 	}
-	else if (name.equals("AnnotationDefault")) { //NOI18N
-	    return false; //FIXME
-	}
-
         return false;
     }
     */
@@ -84,7 +81,7 @@ public final class Method extends Field {
 		    code = new Code(in, classFile.constantPool);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Signature attribute");
+		    System.err.println("invalid Code attribute");
 		}
 	    }
 	}
@@ -100,7 +97,7 @@ public final class Method extends Field {
 			ClassFile.getCPClassList(in, classFile.constantPool);
 		    in.close();
 		} catch (IOException e) {
-		    System.err.println("invalid Signature attribute");
+		    System.err.println("invalid Exceptions attribute");
 		}
 	    }
 	    if (exceptions == null)
@@ -126,6 +123,27 @@ public final class Method extends Field {
     }
 
     /**
+     * Returns true if this method is declared synchronized.
+     */
+    public final boolean isSynchronized() {
+	return (access & Access.SYNCHRONIZED) == Access.SYNCHRONIZED;
+    }
+
+    /**
+     * Returns true if this method is declared native.
+     */
+    public final boolean isNative() {
+	return (access & Access.NATIVE) == Access.NATIVE;
+    }
+
+    /**
+     * Returns true if this method is declared abstract.
+     */
+    public final boolean isAbstract() {
+	return (access & Access.ABSTRACT) == Access.ABSTRACT;
+    }
+
+    /**
      * Returns the parameters for this method as a declaration-ordered list.
      */
     public final List getParameters() {
@@ -133,7 +151,30 @@ public final class Method extends Field {
 	    parameters = Parameter.makeParams(this);
 	return Arrays.asList(parameters);
     }
-            
+
+    /**
+     * Returns the default annotation value for the element
+     * defined by this method.  Null is returned if no default 
+     * is specified for this element, or if the class that contains 
+     * this method does not define an annotation type.
+     */
+    public ElementValue getAnnotationDefault() {
+	if (annotationDefault == null) {
+	    DataInputStream in = 
+		attributes.getStream("AnnotationDefault"); // NOI18N
+	    if (in != null) {
+		try {
+		    annotationDefault = 
+			ElementValue.load(in, classFile.constantPool, false);
+		    in.close();
+		} catch (IOException e) {
+		    System.err.println("invalid AnnotationDefault attribute");
+		}
+	    }
+	}
+        return annotationDefault;
+    }
+
     public String toString() {
         StringBuffer sb = new StringBuffer(super.toString());
         CPClassInfo[] ec = getExceptionClasses();
@@ -143,6 +184,11 @@ public final class Method extends Field {
                 sb.append(' '); //NOI18N
                 sb.append(ec[i].getName());
             }
+	}
+	if (getAnnotationDefault() != null) {
+	    sb.append(", default \"");
+	    sb.append(annotationDefault.toString());
+	    sb.append("\" ");
 	}
 	Code code = getCode();
 	if (code != null)

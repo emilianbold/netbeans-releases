@@ -30,17 +30,16 @@ import java.io.IOException;
  * @author  Thomas Ball
  */
 public final class NestedElementValue extends ElementValue {
-    AnnotationComponent value;
+    Annotation value;
 
-    NestedElementValue(ConstantPool pool, AnnotationComponent value) {
+    NestedElementValue(ConstantPool pool, Annotation value) {
 	this.value = value;
     }
 
     /**
-     * Returns the value of this component, which is another 
-     * AnnotationComponent.
+     * Returns the value of this component, which is an Annotation.
      */
-    public final AnnotationComponent getNestedValue() {
+    public final Annotation getNestedValue() {
 	return value;
     }
 

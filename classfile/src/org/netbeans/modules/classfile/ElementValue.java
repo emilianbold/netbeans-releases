@@ -29,7 +29,8 @@ import java.io.IOException;
  * @author  Thomas Ball
  */
 public abstract class ElementValue {
-    static ElementValue load(DataInputStream in, ConstantPool pool) 
+    static ElementValue load(DataInputStream in, ConstantPool pool, 
+			     boolean runtimeVisible) 
 	throws IOException {
 	char tag = (char)in.readByte();
 	switch (tag) {
@@ -39,13 +40,14 @@ public abstract class ElementValue {
 	      return new ClassElementValue(pool, classType);
 	  }
 	  case '@': {
-	      AnnotationComponent value = AnnotationComponent.load(in, pool);
+	      Annotation value = 
+		  Annotation.loadAnnotation(in, pool, runtimeVisible);
 	      return new NestedElementValue(pool, value);
 	  }
 	  case '[': {
 	      ElementValue[] values = new ElementValue[in.readUnsignedShort()];
 	      for (int i = 0; i < values.length; i++)
-		  values[i] = load(in, pool);
+		  values[i] = load(in, pool, runtimeVisible);
 	      return new ArrayElementValue(pool, values);
 	  }
 	  default:
