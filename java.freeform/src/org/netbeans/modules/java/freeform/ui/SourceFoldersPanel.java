@@ -93,12 +93,13 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
     }
     
     private void updateButtons() {
-        removeFolder.setEnabled(model.getSourceFoldersCount() > 0);
+        removeFolder.setEnabled(sourceFolders.getSelectedRowCount()==1);
+        removeTestFolder.setEnabled(testFolders.getSelectedRowCount()==1);
         updateUpDownButtons();
     }
     
     public void valueChanged(ListSelectionEvent e) {
-        updateUpDownButtons();
+        updateButtons();
     }
 
     private void updateUpDownButtons() {
