@@ -25,6 +25,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="homepage.base" value="http://xml.netbeans.org"/>
     <property name="dist.base" value="http://www.netbeans.org/download/nbms/40"/>
     <property name="storepass" value="?"/>
+    <property name="release" value="dev"/>
 
     <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
@@ -38,7 +39,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="init">
         <tstamp/>
-	<property name="release" value="dev"/>
         <property name="buildnumber" value="${DSTAMP}${TSTAMP}"/>
         <echo message="buildnumber = ${buildnumber}"/>
     </target>
@@ -122,7 +122,7 @@ Microsystems, Inc. All Rights Reserved.
             </fileset>
         </delete>
         <delete file="manifest-subst.mf"/>
-        <delete file="../xml-catalog.nbm"/>
+        <delete file="../xml-catalog-${release}.nbm"/>
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javahelp/org/netbeans/modules/xml/catalog/docs/JavaHelpSearch"/>
