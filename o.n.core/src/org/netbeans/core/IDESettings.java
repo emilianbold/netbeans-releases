@@ -562,7 +562,13 @@ public class IDESettings extends SystemOption {
     private String getDefaultNonProxyHosts() {
         String nonProxy = "localhost"; // NOI18N
         try {
-            nonProxy = nonProxy + "|" + InetAddress.getLocalHost().getHostName(); // NOI18N
+            String localhost = InetAddress.getLocalHost().getHostName();
+            if (!localhost.equals("localhost")) { // NOI18N
+                nonProxy = nonProxy + "|" + localhost; // NOI18N
+            } else {
+                // Avoid this error when hostname == localhost:
+                // Error in http.nonProxyHosts system property:  sun.misc.REException: localhost is a duplicate
+            }
         }
         catch (UnknownHostException e) {
             // OK. Sometimes a hostname is assigned by DNS, but a computer
