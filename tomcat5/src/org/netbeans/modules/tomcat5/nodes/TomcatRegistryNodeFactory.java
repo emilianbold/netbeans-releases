@@ -36,7 +36,8 @@ public class TomcatRegistryNodeFactory implements RegistryNodeFactory {
       *  @return a Node
       */
     public Node getFactoryNode(Lookup lookup) {
-        return null;
+        TomcatFactoryNode factoryNode = new TomcatFactoryNode(new Children.Map(), lookup);
+        return factoryNode;
     }
     
     /**
