@@ -182,6 +182,9 @@ public class Util {
      * valid Ant script
      */
     public static List/*<String>*/ getAntScriptTargetNames(FileObject fo) {
+        if (fo == null) {
+            throw new IllegalArgumentException("Cannot call Util.getAntScriptTargetNames with null"); // NOI18N
+        }
         AntProjectCookie apc = getAntProjectCookie(fo);
         if (apc == null) {
             return null;

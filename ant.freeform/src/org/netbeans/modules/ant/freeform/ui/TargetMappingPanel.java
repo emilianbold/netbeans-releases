@@ -677,7 +677,11 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
     public void show(FreeformProject project, AntProjectHelper helper, ProjectModel model) {
         if (!initialized) {
             FileObject as = FreeformProjectGenerator.getAntScript(helper, project.evaluator());
-            List l = Util.getAntScriptTargetNames(as);
+            List l = null;
+            // #50933 - script can be null
+            if (as != null) {
+                l = Util.getAntScriptTargetNames(as);
+            }
             if (l != null) {
                 setTargetNames(l, false);
                 initAntTargetEditor(l);
