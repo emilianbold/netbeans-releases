@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
-import java.io.*;
 
 import org.netbeans.spi.settings.DOMConvertor;
 import org.netbeans.spi.settings.Saver;
@@ -21,6 +20,11 @@ import org.openide.util.Lookup;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.*;
+
+import java.util.List;
+import java.util.Collections;
+import java.util.ArrayList;
+import java.io.*;
 
 /**
  *
@@ -104,4 +108,133 @@ public class TargetModuleConverter extends DOMConvertor {
     public void unregisterSaver(Object inst, org.netbeans.spi.settings.Saver s) {
         // Not needed:  there is not editing of TargetModule
     }
+
+    private static final String DIR_TARGETMODULES = "TargetModules";
+    private static FileObject targetModulesDir = null;
+    private static FileObject getTargetModulesDir() throws IOException {
+        if (targetModulesDir == null) {
+            FileObject j2eeDir = Repository.getDefault().getDefaultFileSystem().findResource("/J2EE");
+            targetModulesDir = j2eeDir.getFileObject(DIR_TARGETMODULES);
+            if (targetModulesDir == null)
+                targetModulesDir = j2eeDir.createFolder(DIR_TARGETMODULES);
+        }
+        return targetModulesDir;
+    }
+
+    public static boolean writeTargetModule(TargetModule instance, String managerDir, String targetDir, String tmFileName) {
+        FileLock lock = null;
+        Writer writer = null;
+        try {
+            FileObject managerDirFO = getTargetModulesDir().getFileObject(managerDir);
+            if (managerDirFO == null)
+                managerDirFO = getTargetModulesDir().createFolder(managerDir);
+            FileObject targetDirFO = managerDirFO.getFileObject(targetDir);
+            if (targetDirFO == null)
+                targetDirFO = managerDirFO.createFolder(targetDir);
+            FileObject fo = FileUtil.createData(targetDirFO, tmFileName);
+            lock = fo.lock();
+            writer = new OutputStreamWriter(fo.getOutputStream(lock));
+            create().write(writer, new TargetModule.List(instance));
+            return true;
+            
+        } catch(Exception ioe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            return false;
+        }
+        finally {
+            try {
+            if (lock != null) lock.releaseLock();
+            if (writer != null) writer.close();
+            } catch (Exception e) {
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, e);
+            }
+        }
+    }
+
+    public static TargetModule readTargetModule(String managerDir, String targetDir, String tmFileName) {
+        Reader reader = null;
+        try {
+            FileObject dir = getTargetModulesDir().getFileObject(managerDir);
+            if (dir != null) {
+                dir = dir.getFileObject (targetDir);
+                if (dir != null) {
+                    FileObject fo = dir.getFileObject(tmFileName);
+                    if (fo != null) {
+                        reader = new InputStreamReader(fo.getInputStream());
+                        TargetModule.List tml = (TargetModule.List) create().read(reader);
+                        if (tml == null || tml.getTargetModules().length < 1)
+                            return null;
+                        return tml.getTargetModules()[0];
+                    }
+                }
+            }
+            return null;
+        } catch(Exception ioe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            return null;
+        } finally {
+            try {  if (reader != null) reader.close(); } catch(Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }
+
+    public static List getTargetModulesByContextRoot(String managerDir, String targetDir, String contextRoot) {
+        Reader reader = null;
+        try {
+            FileObject dir = getTargetModulesDir().getFileObject(managerDir);
+            if (dir != null) {
+                dir = dir.getFileObject (targetDir);
+                if (dir != null) {
+                    java.util.Enumeration fos = dir.getChildren(false);
+                    ArrayList result = new ArrayList();
+                    while (fos.hasMoreElements()){
+                        FileObject fo = (FileObject) fos.nextElement();
+                        reader = new InputStreamReader(fo.getInputStream());
+                        TargetModule.List tml = (TargetModule.List) create().read(reader);
+                        if (tml != null && tml.getTargetModules().length > 0) {
+                            TargetModule tm = tml.getTargetModules()[0];
+                            if (contextRoot.equals(tm.getContextRoot()))
+                                result.add(tm);
+                        }
+                    }
+                    return result;
+                }
+            }
+            return Collections.EMPTY_LIST;
+        } catch(Exception ioe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            return Collections.EMPTY_LIST;
+        } finally {
+            try {  if (reader != null) reader.close(); } catch(Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }
+
+    public static TargetModule remove(String managerDir, String targetDir, String tmFileName) {
+        FileLock lock = null;
+        try {
+            FileObject dir = getTargetModulesDir().getFileObject(managerDir);
+            if (dir != null) {
+                dir = dir.getFileObject (targetDir);
+                if (dir != null) {
+                    FileObject fo = dir.getFileObject(tmFileName);
+                    if (fo != null) {
+                        lock = fo.lock();
+                        fo.delete(lock);
+                    }
+                }
+            }
+            return null;
+        } catch(Exception ioe) {
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.WARNING, ioe);
+            return null;
+        } finally {
+            try {  if (lock != null) lock.releaseLock(); } catch(Exception e) {
+                ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            }
+        }
+    }
+
 }
