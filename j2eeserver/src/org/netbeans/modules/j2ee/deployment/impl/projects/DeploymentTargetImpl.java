@@ -57,40 +57,28 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         return moduleProvider.getModuleChangeReporter ();
     }
     
+    /**
+     * This will return url to invoke webbrowser for web client.
+     * If there is no webclient, null will be returned. 
+     *
+     * Caution: this call does not attempt to detect whehter the client specified 
+     * by clientName is app client.
+     */
     public String getClientUrl(String partUrl) {
         // determine client module
-        J2eeModule clientModule = getModule();
+        J2eeModule clientModule = null;
         String url = null;
-        if (clientModule instanceof J2eeModuleContainer) {
-            J2eeModuleContainer ear = (J2eeModuleContainer)clientModule;
-            J2eeModule[] children = ear.getModules(null);
-            clientModule = null;
-            J2eeModule secondaryNonWeb = null;
-            for (int i=0; i<children.length; i++) {
-                if (children[i].getUrl().equals(clientName)) {
-                    clientModule = children[i];
-                    break;
-                } else if (clientModule == null && children[i].getModuleType().equals(J2eeModule.WAR)) {
-                    clientModule = children[i];
-                } else if (secondaryNonWeb == null && children[i].getModuleType().equals(J2eeModule.CLIENT))
-                    secondaryNonWeb = children[i];
-            }
-            if (clientModule == null)
-                clientModule = secondaryNonWeb;
-            
-            // Has no webs or nor client modules
-            if (clientModule == null)
-                return null;
-            
-            TargetModule tmid = getTargetModule(getModule());
-            url = getChildWebUrl(tmid, clientModule);
-            
-        } else if (clientModule.getModuleType().equals(J2eeModule.WAR)) {
-            TargetModule tmid = getTargetModule(clientModule);
-            if (tmid != null)
-                url = tmid.getWebURL();
+        
+        if (moduleProvider instanceof J2eeAppProvider) {
+            J2eeAppProvider ear = (J2eeAppProvider) moduleProvider;
+            J2eeModuleProvider clientProvider = ear.getChildModuleProvider(clientName);
+            if (clientProvider != null)
+                clientModule = clientProvider.getJ2eeModule();
+        } else {
+            clientModule = moduleProvider.getJ2eeModule();
         }
-
+        
+        url = findWebUrl(clientModule);
         if (url != null) {
             return (url + partUrl);
         } else {
@@ -98,7 +86,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
     }
     
-    private TargetModule getTargetModule(J2eeModule module) {
+    private TargetModule getTargetModule() {
         TargetModule[] mods = getTargetModules();
         if (mods == null || mods.length == 0)
             return null;
@@ -120,31 +108,47 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         }
 
         if (execMod == null) execMod = mods[0];
-        execMod.initDelegate((ModuleType)module.getModuleType());
+        execMod.initDelegate((ModuleType)getModule().getModuleType());
         return execMod;
     }
     
-    private String getChildWebUrl(TargetModule module, J2eeModule childWeb) {
+    /**
+     * Find the web URL for the given client module.
+     * If null is passed, or when plugin failed to resolve the child module url,
+     * this will attempt to return the first web url it sees.
+     */
+    private String findWebUrl(J2eeModule client) {
+        TargetModule module = getTargetModule();
+        if (module == null) {
+            return null;
+        }
+        if (getModule() == client) { // stand-alone web
+            return module.getWebURL();
+        }
+        
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(module.getInstanceUrl());
         IncrementalDeployment mur = instance.getIncrementalDeployment ();
+        String clientModuleUri = client == null ? "" : client.getUrl();
+        TargetModuleID[] children = module.getChildTargetModuleID();
+        String urlString = null;
         TargetModuleID tmid = null;
-        String clientModuleUri = childWeb.getUrl();
-            TargetModuleID[] children = module.getChildTargetModuleID();
-            for (int i=0; children != null && i<children.length; i++) {
-                if (clientModuleUri.equals(mur.getModuleUrl(children[i]))) {
-                    tmid = children[i];
-                    break;
-                }
+        for (int i=0; children != null && i<children.length; i++) {
+            // remember when see one, just for a rainy day
+            if (urlString == null || urlString.trim().equals("")) {
+                urlString = children[i].getWebURL();
             }
-        if (tmid == null) {
-//            System.out.println("Failed to find TargetModuleID for webclient :"+childWeb.getUrl()+" from: "+module);
-            return null;
+
+            // matched child module url with plugin's help
+            if (clientModuleUri.equals(mur.getModuleUrl(children[i]))) {
+                tmid = children[i];
+                break;
+            }
         }
-        String urlString = tmid.getWebURL();
-        if (urlString == null) {
-//            System.out.println("Failed to get webURL for webclient :"+childWeb.getUrl()+" from: "+tmid);
-            return null;
+        // prefer the matched
+        if (tmid != null) {
+            urlString = tmid.getWebURL();
         }
+        
         return urlString;
     }
     
