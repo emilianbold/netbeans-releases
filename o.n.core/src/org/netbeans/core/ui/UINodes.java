@@ -74,12 +74,13 @@ public final class UINodes extends Object {
 
    /** Getter for filesystem pool node.
     * @return a node
-    */
+    * /
     public static Node createFileSystems () {
         return new MountNode (
             NbPlaces.getDefault().findSessionFolder ("Mount") // NOI18N
         );
     }
+    */
 
 /*
     static Node getProjectSettingsNode () {

@@ -468,10 +468,12 @@ Microsystems, Inc. All Rights Reserved.
                 <folder name="System">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
+                    <!-- No longer useful:
                     <file name="FileSystems.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
                     </file>
+                    -->
 
                     <file name="Modules.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.ui.ModuleNode" />
