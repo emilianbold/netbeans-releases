@@ -285,9 +285,24 @@ public class TopSecurityManager extends SecurityManager {
 
     public void checkPermission(Permission perm) {
         checkSetSecurityManager(perm);
+        
+        //
+        // part of makeSwingUseSpecialClipboard that makes it work on
+        // JDK 1.5
+        //
+        if (perm instanceof java.awt.AWTPermission) {
+            if ("accessClipboard".equals (perm.getName ())) { // NOI18N
+                if (CLIPBOARD_FORBIDDEN.get () != null) {
+                    CLIPBOARD_FORBIDDEN.set (this);
+                    throw new SecurityException ();
+                } else {
+                    checkWhetherAccessedFromSwingTransfer ();
+                }
+            }
+        }
         return;
     }
-
+    
     public void checkPermission(Permission perm, Object context) {
         checkSetSecurityManager(perm);
         return;
@@ -414,13 +429,6 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     // IDE.  See also NbClipboard
     
     private static ThreadLocal CLIPBOARD_FORBIDDEN = new ThreadLocal ();
-    public void checkSystemClipboardAccess () {
-        if (CLIPBOARD_FORBIDDEN.get () != null) {
-            CLIPBOARD_FORBIDDEN.set (this);
-            throw new SecurityException ();
-        }
-        super.checkSystemClipboardAccess ();
-    }    
     
     /** Convinces Swing components that they should use special clipboard
      * and not Toolkit.getSystemClipboard.
@@ -465,6 +473,28 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
             CLIPBOARD_FORBIDDEN.set (null);
         }
     }
+    
+    /** the class that needs to be non accessible */
+    private static Class transferHandlerTransferAction;
+    /** Throws exception if accessed from javax.swing.TransferHandler class
+     */
+    private void checkWhetherAccessedFromSwingTransfer () throws SecurityException {
+        if (transferHandlerTransferAction == null) {
+            try {
+                transferHandlerTransferAction = Class.forName ("javax.swing.TransferHandler$TransferAction"); // NOI18N
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
+                throw new SecurityException (ex.getMessage ());
+            }
+        }
+        Class[] arr = getClassContext ();
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == transferHandlerTransferAction) {
+                throw new SecurityException ("All swing access to clipboard should be redirected to ExClipboard"); // NOI18N
+            }
+        }
+    }
+
 
     private static final class PrivilegedCheck implements PrivilegedExceptionAction {
         int action;
