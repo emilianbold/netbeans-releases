@@ -103,7 +103,7 @@ public class ServerFileDistributor extends ServerProgress {
         
         ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (module.getModuleType ());
         List serverDescriptorRelativePaths = Arrays.asList(splitter.getDeploymentPlanFileNames(moduleType));
-        return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths);
+        return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths, (ModuleType) dtarget.getModule ().getModuleType ());
     }
     
     public AppChangeDescriptor distribute(TargetModule targetModule, ModuleChangeReporter mcr) throws IOException {
@@ -161,10 +161,10 @@ public class ServerFileDistributor extends ServerProgress {
             FileObject file = (FileObject) contentFiles.nextElement();
             if (file.isFolder())
                 continue;
+            //jar file are created externally and timestamp may not be refreshed
+            file.refresh ();
             if (file.lastModified().after(lastDeployed)) {
                 String relativePath = file.getPath().substring(beginIndex);
-                //System.out.println("Changed: "+relativePath);
-                //System.out.println("lastDeployTime="+lastDeployTime+" lastModified="+file.lastModified().getTime());
                 mc.record(relativePath);
             }
             
@@ -334,30 +334,39 @@ public class ServerFileDistributor extends ServerProgress {
         boolean manifestChanged = false;
         boolean ejbsChanged = false;
         List changedEjbs = Collections.EMPTY_LIST;
+        ModuleType moduleType = null;
         
         List descriptorRelativePaths;
         List serverDescriptorRelativePaths;
         AppChanges() {
         }
-        AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths) {
+        AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths, ModuleType moduleType) {
             this.descriptorRelativePaths = descriptorRelativePaths;
             this.serverDescriptorRelativePaths = serverDescriptorRelativePaths;
+            this.moduleType = moduleType;
         }
         private void record(AppChanges changes) {
-            if (descriptorChanged == false) descriptorChanged = changes.descriptorChanged();
-            if (serverDescriptorChanged == false) serverDescriptorChanged = changes.serverDescriptorChanged();
-            if (classesChanged == false) classesChanged = changes.classesChanged();
-            if (manifestChanged == false) manifestChanged = changes.manifestChanged();
-            if (ejbsChanged == false) ejbsChanged = changes.ejbsChanged();
+            if (!descriptorChanged) descriptorChanged = changes.descriptorChanged();
+            if (!serverDescriptorChanged) serverDescriptorChanged = changes.serverDescriptorChanged();
+            if (!classesChanged) classesChanged = changes.classesChanged();
+            if (!manifestChanged) manifestChanged = changes.manifestChanged();
+            if (!ejbsChanged) ejbsChanged = changes.ejbsChanged();
             List ejbs = Arrays.asList(changes.getChangedEjbs());
             if (ejbs.size() > 0)
                 changedEjbs.addAll(ejbs);
         }
         
         private void record(String relativePath) {
-            if (! classesChanged && (relativePath.endsWith(".class") || relativePath.endsWith(".jsp") || relativePath.endsWith(".java"))) { //NOI18N
-                classesChanged = true;
-                return;
+            if (! classesChanged) {
+                boolean importantClass = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
+                boolean classes = importantClass && relativePath.endsWith(".class"); //NOI18N
+                boolean importantLib = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/lib/"); //NOI18N
+                boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
+                if (classes || libs) {
+                    classesChanged = true;
+                    System.out.println("First class change is from:" + relativePath);
+                    return;
+                }
             }
             if (! descriptorChanged && descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) {
                 descriptorChanged = true;
