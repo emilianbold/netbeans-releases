@@ -89,7 +89,7 @@ public abstract class NbBaseServlet extends HttpServlet {
 
         HttpServerSettings settings = HttpServerSettings.OPTIONS;
 
-        if (settings.getHost().equals(HttpServerSettings.ANYHOST))
+        if (settings.getHostProperty ().getHost ().equals(HttpServerSettings.ANYHOST))
             return true;
 
         HashSet hs = HttpServerSettings.OPTIONS.getGrantedAddressesSet();

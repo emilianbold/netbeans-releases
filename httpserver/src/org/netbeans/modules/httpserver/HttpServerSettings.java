@@ -67,13 +67,15 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public static final String ANYHOST = "any"; // NOI18N
 
     public static final String PROP_PORT               = "port"; // NOI18N
-    public static final String PROP_HOST               = "host"; // NOI18N
+    public static final String PROP_HOST_PROPERTY      = "hostProperty"; // NOI18N
     public static final String PROP_REPOSITORY_BASEURL = "repositoryBaseURL"; // NOI18N
     public static final String PROP_CLASSPATH_BASEURL  = "classpathBaseURL"; // NOI18N
     public static final String PROP_JAVADOC_BASEURL    = "javadocBaseURL"; // NOI18N
            static final String PROP_WRAPPER_BASEURL    = "wrapperBaseURL"; // NOI18N
     public static final String PROP_RUNNING            = "running"; // NOI18N
-    public static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
+
+    private static final String PROP_HOST               = "host"; // NOI18N
+    private static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
 
     /** port */
     //  private static int port = 8082; //8080
@@ -361,14 +363,14 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     }
 
     /** Getter for grantedAddresses property */
-    public String getGrantedAddresses() {
+    private String getGrantedAddresses() {
         return grantedAddresses;
     }
 
     /** Setter for grantedAccesses property */
     public void setGrantedAddresses(String grantedAddresses) {
         this.grantedAddresses = grantedAddresses;
-        firePropertyChange(PROP_GRANTED_ADDRESSES, null, this.grantedAddresses);
+        firePropertyChange(PROP_HOST_PROPERTY, null, this.grantedAddresses);
     }
 
     /** setter for port */
@@ -397,11 +399,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public void setHost(String h) {
         if (h.equals(ANYHOST) || h.equals(LOCALHOST))
             host = h;
-        firePropertyChange(PROP_HOST, null, this.host);
+        firePropertyChange(PROP_HOST_PROPERTY, null, this.host);
     }
 
     /** getter for host */
-    public String getHost() {
+    private String getHost() {
         return host;
     }
 
@@ -638,6 +640,69 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         }
 // System.out.println("demangling "+name+" to "+sb.toString ()+".");
         return sb.toString ();
+    }
+    
+    /** Getter for property hostProperty.
+     * @return Value of property hostProperty.
+     */
+    public HttpServerSettings.HostProperty getHostProperty () {
+        return new HttpServerSettings.HostProperty (grantedAddresses, host);
+    }
+    
+    /** Setter for property hostProperty.
+     * @param hostProperty New value of property hostProperty.
+     */
+    public void setHostProperty (HttpServerSettings.HostProperty hostProperty) {
+        if (ANYHOST.equals(hostProperty.getHost ()) || LOCALHOST.equals(hostProperty.getHost ())) {
+            grantedAddresses = hostProperty.getGrantedAddresses ();
+            host = hostProperty.getHost ();
+            firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
+        }
+    }
+    
+    /** Property value that describes set of host with granted access
+     */
+    public static class HostProperty implements java.io.Serializable {
+        
+        private String grantedAddresses;
+        
+        private String host;
+        
+        private static final long serialVersionUID = 1927848926692414249L;
+        
+        HostProperty (String grantedAddresses, String host) {
+            this.grantedAddresses = grantedAddresses;
+            this.host = host;
+        }
+        
+        /** Getter for property host.
+         * @return Value of property host.
+         */
+        public String getHost () {
+            return host;
+        }
+        
+        /** Setter for property host.
+         * @param host New value of property host.
+         */
+        public void setHost (String host) {
+            this.host = host;
+        }
+        
+        /** Getter for property grantedAddresses.
+         * @return Value of property grantedAddresses.
+         */
+        public String getGrantedAddresses () {
+            return grantedAddresses;
+        }
+        
+        /** Setter for property grantedAddresses.
+         * @param grantedAddresses New value of property grantedAddresses.
+         */
+        public void setGrantedAddresses (String grantedAddresses) {
+            this.grantedAddresses = grantedAddresses;
+        }
+        
     }
     
 }

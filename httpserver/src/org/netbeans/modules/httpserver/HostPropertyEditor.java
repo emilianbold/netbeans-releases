@@ -23,31 +23,23 @@ import org.openide.util.NbBundle;
 /** Property editor for host property of HttpServerSettings class
 *
 * @author Ales Novak, Petr Jiricka
-* @version 0.11 May 5, 1999
 */
 public class HostPropertyEditor extends PropertyEditorSupport {
 
     private static final java.util.ResourceBundle bundle = NbBundle.getBundle(HostPropertyEditor.class);
 
-    /** localized local host string*/
+    /** localized local (selected) host string*/
     private final static String LOCALHOST = bundle.getString("CTL_Local_host");
 
-    /** localized local host string*/
+    /** localized any host string*/
     private final static String ANYHOST = bundle.getString("CTL_Any_host");
-
-    /** array of hosts */
-    private static final String[] hostNames = {LOCALHOST, ANYHOST};
-
-    /** @return names of the supported LookAndFeels */
-    public String[] getTags() {
-        return hostNames;
-    }
 
     /** @return text for the current value */
     public String getAsText () {
-        String host = (String) getValue();
+        HttpServerSettings.HostProperty hp = (HttpServerSettings.HostProperty) getValue();
+        String host = hp.getHost ();
         if (host.equals(HttpServerSettings.LOCALHOST)) {
-            return LOCALHOST;
+            return LOCALHOST + hp.getGrantedAddresses ();
         }
         else {
             return ANYHOST;
@@ -56,34 +48,24 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
     /** @param text A text for the current value. */
     public void setAsText (String text) {
-        if (text.equals(LOCALHOST)) {
-            //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
-            setValue(HttpServerSettings.LOCALHOST);
+        if (ANYHOST.equals (text)) {
+            setValue (new HttpServerSettings.HostProperty ("", HttpServerSettings.ANYHOST));    // NOI18N
             return;
         }
-        if (text.equals(ANYHOST)) {
-            //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.ANYHOST);
-            setValue(HttpServerSettings.ANYHOST);
+        else if (text != null && text.startsWith (LOCALHOST)) {
+            setValue (new HttpServerSettings.HostProperty (text.substring (LOCALHOST.length ()), HttpServerSettings.LOCALHOST));
             return;
         }
-
-        throw new IllegalArgumentException ();
+        
+        throw new IllegalArgumentException (text);
     }
 
-    public void setValue(Object value) {
-        super.setValue(value);
+    public boolean supportsCustomEditor () {
+        return true;
     }
+
+    public java.awt.Component getCustomEditor () {
+        return new HostPropertyCustomEditor (this);
+    }
+
 }
-
-/*
- * Log
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         6/22/99  Petr Jiricka    
- *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         6/8/99   Petr Jiricka    
- *  2    Gandalf   1.1         5/11/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/7/99   Petr Jiricka    
- * $
- */
