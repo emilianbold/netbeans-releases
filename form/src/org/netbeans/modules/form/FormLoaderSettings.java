@@ -469,6 +469,16 @@ public class FormLoaderSettings extends SystemOption {
         firePropertyChange(PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
     }
 
+    public String[] getRegisteredEditor(int index) {
+        return registeredEditors[index];
+    }
+
+    public void setRegisteredEditor(int index, String[] value) {
+        registeredEditors[index] = value;
+        FormPropertyEditorManager.clearEditorsCache(); // clear the editors cache so that the new editors can be used
+        firePropertyChange(PROP_REGISTERED_EDITORS, null, null);
+    }
+
     /** Getter for OutputLevel property.
      * @return The level of output
      */

@@ -79,8 +79,9 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                                        "getVariablesModifier", "setVariablesModifier"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_EDITOR_SEARCH_PATH, FormLoaderSettings.class,
                                        "getEditorSearchPath", "setEditorSearchPath"), // NOI18N
-                new PropertyDescriptor(FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class,
-                                       "getRegisteredEditors", "setRegisteredEditors"), // NOI18N
+                new IndexedPropertyDescriptor(FormLoaderSettings.PROP_REGISTERED_EDITORS, FormLoaderSettings.class,
+                                       "getRegisteredEditors", "setRegisteredEditors",
+                                       "getRegisteredEditor", "setRegisteredEditor"), // NOI18N
 //                new PropertyDescriptor(FormLoaderSettings.PROP_OUTPUT_LEVEL, FormLoaderSettings.class,
 //                                       "getOutputLevel", "setOutputLevel"), // NOI18N
 //                new PropertyDescriptor(FormLoaderSettings.PROP_NULL_LAYOUT, FormLoaderSettings.class,
