@@ -153,7 +153,7 @@
 	<xsl:if test="$pesConfig!=string('default')">
 	
 		<BR/>
-		<H2>Results gtom other projects:</H2>    				
+		<H2>Results from other projects:</H2>    				
 		<UL>
 			<xsl:if test="$projectGroupDescription!=string('current')">
 				<LI><A HREF="index.html">Currently tested projects</A></LI>
