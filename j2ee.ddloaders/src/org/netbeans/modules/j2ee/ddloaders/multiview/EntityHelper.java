@@ -256,6 +256,16 @@ public class EntityHelper extends EntityAndSessionHelper {
         public CmpFieldsTableModel getCmpFieldsTableModel() {
             return cmpFieldsTableModel;
         }
+
+        public int getFieldRow(CmpField cmpField) {
+            final CmpField[] fields = getCmpFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].equals(cmpField)) {
+                    return i;
+                }
+            }
+            return -1;            
+        }
     }
 
     public class Queries implements PropertyChangeSource {
@@ -379,6 +389,24 @@ public class EntityHelper extends EntityAndSessionHelper {
 
         public SelectMethodsTableModel getSelectMethodsTableModel() {
             return selectMethodsTableModel;
+        }
+
+        public int getSelectMethodRow(Query query) {
+            for (int i = 0; i < selectMethods.length; i++) {
+                if (query.equals(selectMethods[i])) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        public int getFinderMethodRow(Query query) {
+            for (int i = 0; i < finderMethods.length; i++) {
+                if (query.equals(finderMethods[i])) {
+                    return i;
+                }
+            }
+            return -1;
         }
     }
 }

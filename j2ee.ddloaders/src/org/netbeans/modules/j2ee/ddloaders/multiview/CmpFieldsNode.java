@@ -49,7 +49,7 @@ class CmpFieldsNode extends EjbSectionNode {
 
             public void focusData(Object element) {
                 if (element instanceof CmpField) {
-                    final int row = getRow((CmpField) element);
+                    final int row = cmpFields.getFieldRow((CmpField) element);
                     if (row >= 0) {
                         getTable().getSelectionModel().setSelectionInterval(row, row);
                     }
@@ -62,7 +62,7 @@ class CmpFieldsNode extends EjbSectionNode {
 
     public SectionNode getNodeForElement(Object element) {
         if (element instanceof CmpField) {
-            if (getRow((CmpField) element) >= 0) {
+            if (cmpFields.getFieldRow((CmpField) element) >= 0) {
                 return this;
             }
         } else if (element instanceof CmpField[]) {
@@ -77,17 +77,4 @@ class CmpFieldsNode extends EjbSectionNode {
         }
         return super.getNodeForElement(element);
     }
-
-    private int getRow(final CmpField field) {
-        int n = -1;
-        final CmpField[] fields = this.cmpFields.getCmpFields();
-        for (int i = 0; i < fields.length; i++) {
-            if (fields[i].equals(field)) {
-                n = i;
-                break;
-            }
-        }
-        return n;
-    }
-
 }

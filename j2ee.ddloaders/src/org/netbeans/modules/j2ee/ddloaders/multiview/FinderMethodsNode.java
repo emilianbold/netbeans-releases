@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -38,7 +40,25 @@ class FinderMethodsNode extends EjbSectionNode {
             public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
                 //super.dataModelPropertyChange(source, propertyName, oldValue, newValue);    
             }
+
+            public void focusData(Object element) {
+                if (element instanceof Query) {
+                    final int row = queries.getFinderMethodRow((Query) element);
+                    if (row >= 0) {
+                        getTable().getSelectionModel().setSelectionInterval(row, row);
+                    }
+                }
+            }
         };
         return innerTablePanel;
+    }
+
+    public SectionNode getNodeForElement(Object element) {
+        if (element instanceof Query) {
+            if (queries.getFinderMethodRow((Query) element) >= 0) {
+                return this;
+            }
+        }
+        return super.getNodeForElement(element);
     }
 }
