@@ -58,11 +58,14 @@ public class FormCustomEditor extends JPanel
         advancedButton.setText(FormUtils.getBundleString("CTL_Advanced")); // NOI18N
         advancedButton.setMnemonic(FormUtils.getBundleString(
                                       "CTL_Advanced_mnemonic").charAt(0)); // NOI18N
-        advancedButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showAdvancedSettings();
-            }
-        });
+        if (editor.getProperty() instanceof RADProperty)
+            advancedButton.addActionListener(new java.awt.event.ActionListener() {
+                public void actionPerformed(java.awt.event.ActionEvent evt) {
+                    showAdvancedSettings();
+                }
+            });
+        else
+            advancedButton.setEnabled(false);
         
         jLabel1.setText(FormUtils.getBundleString("LAB_SelectMode")); //NOI18N
         jLabel1.setDisplayedMnemonic((FormUtils.getBundleString(
@@ -349,13 +352,9 @@ public class FormCustomEditor extends JPanel
             Object[] nodes = editor.getPropertyEnv().getBeans();
             if (nodes == null || nodes.length <= 1) {
                 FormProperty prop = editor.getProperty();
-                boolean fire = prop.isChangeFiring();
-                prop.setChangeFiring(false);
 
                 prop.setPreCode(preCode);
                 prop.setPostCode(postCode);
-
-                prop.setChangeFiring(fire);
 
                 value = new FormProperty.ValueWithEditor(value, currentEditor);
             }
@@ -376,13 +375,8 @@ public class FormCustomEditor extends JPanel
                     if (prop == null)
                         continue; // property not known
 
-                    boolean fire = prop.isChangeFiring();
-                    prop.setChangeFiring(false);
-
                     prop.setPreCode(preCode);
                     prop.setPostCode(postCode);
-
-                    prop.setChangeFiring(fire);
                 }
 
                 value = new FormProperty.ValueWithEditor(value, currentIndex);

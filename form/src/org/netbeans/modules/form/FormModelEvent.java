@@ -673,31 +673,63 @@ public class FormModelEvent extends EventObject
         }
 
         private void undoSyntheticPropertyChange() {
-            Node.Property[] props = getComponent().getSyntheticProperties();
-            for (int i=0; i < props.length; i++) {
-                if (props[i].getName().equals(getPropertyName())) {
-                    try {
-                        props[i].setValue(getOldPropertyValue());
+            String propName = getPropertyName();
+            if (propName.startsWith(RADProperty.SYNTH_PREFIX)) {
+                // special case - pre/post init code of a property
+                if (propName.startsWith(RADProperty.SYNTH_PRE_CODE)) {
+                    FormProperty prop = getComponent().getPropertyByName(
+                        propName.substring(RADProperty.SYNTH_PRE_CODE.length()));
+                    prop.setPreCode((String)getOldPropertyValue());
+                }
+                else if (propName.startsWith(RADProperty.SYNTH_POST_CODE)) {
+                    FormProperty prop = getComponent().getPropertyByName(
+                        propName.substring(RADProperty.SYNTH_POST_CODE.length()));
+                    prop.setPostCode((String)getOldPropertyValue());
+                }
+            }
+            else { // component synthetic property
+                Node.Property[] props = getComponent().getSyntheticProperties();
+                for (int i=0; i < props.length; i++) {
+                    if (props[i].getName().equals(propName)) {
+                        try {
+                            props[i].setValue(getOldPropertyValue());
+                        }
+                        catch (Exception ex) { // should not happen
+                            ex.printStackTrace();
+                        }
+                        break;
                     }
-                    catch (Exception ex) { // should not happen
-                        ex.printStackTrace();
-                    }
-                    break;
                 }
             }
         }
 
         private void redoSyntheticPropertyChange() {
-            Node.Property[] props = getComponent().getSyntheticProperties();
-            for (int i=0; i < props.length; i++) {
-                if (props[i].getName().equals(getPropertyName())) {
-                    try {
-                        props[i].setValue(getNewPropertyValue());
+            String propName = getPropertyName();
+            if (propName.startsWith(RADProperty.SYNTH_PREFIX)) {
+                // special case - pre/post init code of a property
+                if (propName.startsWith(RADProperty.SYNTH_PRE_CODE)) {
+                    FormProperty prop = getComponent().getPropertyByName(
+                        propName.substring(RADProperty.SYNTH_PRE_CODE.length()));
+                    prop.setPreCode((String)getNewPropertyValue());
+                }
+                else if (propName.startsWith(RADProperty.SYNTH_POST_CODE)) {
+                    FormProperty prop = getComponent().getPropertyByName(
+                        propName.substring(RADProperty.SYNTH_POST_CODE.length()));
+                    prop.setPostCode((String)getNewPropertyValue());
+                }
+            }
+            else { // component synthetic property
+                Node.Property[] props = getComponent().getSyntheticProperties();
+                for (int i=0; i < props.length; i++) {
+                    if (props[i].getName().equals(propName)) {
+                        try {
+                            props[i].setValue(getNewPropertyValue());
+                        }
+                        catch (Exception ex) { // should not happen
+                            ex.printStackTrace();
+                        }
+                        break;
                     }
-                    catch (Exception ex) { // should not happen
-                        ex.printStackTrace();
-                    }
-                    break;
                 }
             }
         }
