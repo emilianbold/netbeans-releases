@@ -69,8 +69,6 @@ import org.openide.util.Utilities;
  */
 final class TemplateChooserPanelGUI extends javax.swing.JPanel implements PropertyChangeListener, AsyncGUIJob {
     
-    private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
-    
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
@@ -87,6 +85,8 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private String template;
     private boolean isWarmUp = true;
 
+    private ListCellRenderer projectCellRenderer;
+    
     public TemplateChooserPanelGUI() {
         this.builder = new FileChooserBuilder ();
         initComponents();
@@ -191,6 +191,20 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
 
     public void setCategory (String category) {
         ((TemplatesPanelGUI)this.templatesPanel).setSelectedCategoryByName (category);
+    }
+    
+    public void addNotify () {
+        super.addNotify ();
+        if (projectCellRenderer == null) {
+            projectCellRenderer = new ProjectCellRenderer ();
+        }
+        projectsComboBox.setRenderer (projectCellRenderer);
+    }
+    
+    public void removeNotify () {
+        super.removeNotify ();
+        projectCellRenderer = null;
+        projectsComboBox.setRenderer (null);
     }
     
     /** This method is called from within the constructor to
@@ -489,7 +503,6 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             }
             cursor = TemplateChooserPanelGUI.this.getCursor();
             TemplateChooserPanelGUI.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );
             initValues( p );
             ((TemplatesPanelGUI)this.templatesPanel).doFinished (this.templatesFolder, c, t);
         } finally {
