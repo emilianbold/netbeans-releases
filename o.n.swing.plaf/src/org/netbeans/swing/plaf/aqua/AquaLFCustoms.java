@@ -39,6 +39,9 @@ public final class AquaLFCustoms extends LFCustoms {
                                                 new FontUIResource("Dialog", Font.PLAIN, uiFontSize)).getFont(); //NOI18N
 
         Object[] result = {
+            "Button.font", controlFont,
+            "Tree.font", controlFont,
+            "ToggleButton.font", controlFont,
             "Menu.font", controlFont,
             "MenuBar.font", controlFont,
             "MenuItem.font", controlFont,
