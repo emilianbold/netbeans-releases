@@ -497,6 +497,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
+  <!-- XXX remove dep on all-web/servletapi23 when possible (unused at runtime) -->
   <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans/rt,all-html,all-httpserver,all-tomcatint/tomcat5/bundled,all-httpserver/servletapi,all-web/servletapi23">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
@@ -697,9 +698,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-javacvs/libmodule">
     <echo message="Building module javacvs/libmodule..."/>
     <ant dir="../javacvs/libmodule" target="netbeans"/>
-  </target>
-  <target name="all-web" depends="all-web/servletapi23,all-web/core,all-web/jspparser,all-web/jspsyntax">
-    <echo message="Building module web..."/>
   </target>
   <target name="all-web/servletapi23" depends="all-web/core">
     <echo message="Building module web/servletapi23..."/>
@@ -1075,19 +1073,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/autoload"/>
     <mkdir dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/eager"/>
     <createmodulexml xmldir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.system.dir}/Modules">
-      <enabled dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}">
-        <include name="*.jar"/>
-        <!-- Just to test that we can in fact preconfigure some disabled modules: -->
-        <exclude name="icebrowser.jar"/>
+      <enabled dir="${netbeans.dest.dir}/${one.cluster.dir}">
+        <include name="${nb.modules.dir}/*.jar"/>
       </enabled>
-      <disabled dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}">
-        <include name="icebrowser.jar"/>
-      </disabled>
-      <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/autoload">
-        <include name="*.jar"/>
+      <autoload dir="${netbeans.dest.dir}/${one.cluster.dir}">
+        <include name="${nb.modules.dir}/autoload/*.jar"/>
       </autoload>
-      <eager dir="${netbeans.dest.dir}/${one.cluster.dir}/${nb.modules.dir}/eager">
-        <include name="*.jar"/>
+      <eager dir="${netbeans.dest.dir}/${one.cluster.dir}">
+        <include name="${nb.modules.dir}/eager/*.jar"/>
       </eager>
     </createmodulexml>
   </target>

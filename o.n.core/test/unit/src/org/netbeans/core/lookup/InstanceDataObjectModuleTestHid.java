@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,9 +67,9 @@ public abstract class InstanceDataObjectModuleTestHid extends NbTestCase {
         try {
             mgr.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
-                    m1 = mgr.create(jar1, new ModuleHistory(), false, false);
+                    m1 = mgr.create(jar1, new ModuleHistory(jar1.getAbsolutePath()), false, false);
                     if (!m1.getProblems().isEmpty()) throw new IllegalStateException("m1 is uninstallable: " + m1.getProblems());
-                    m2 = mgr.create(jar2, new ModuleHistory(), false, false);
+                    m2 = mgr.create(jar2, new ModuleHistory(jar2.getAbsolutePath()), false, false);
                     return null;
                 }
             });

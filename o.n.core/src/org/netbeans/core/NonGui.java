@@ -301,26 +301,8 @@ public class NonGui extends NbTopManager implements Runnable {
 
         {
     	    StartLog.logStart ("Modules initialization"); // NOI18N
-
-            getUserDir();
-            File moduleDirHome = new File(homeDir, DIR_MODULES);
-            File moduleDirUser;
-            if (homeDir.equals(userDir)) {
-                moduleDirUser = null;
-            } else {
-                moduleDirUser = new File(userDir, DIR_MODULES);
-            }
-            // #27151: ${netbeans.dirs}
-            List extradirs = new ArrayList(5); // List<File>
-            String nbdirs = System.getProperty("netbeans.dirs");
-            if (nbdirs != null) {
-                StringTokenizer tok = new StringTokenizer(nbdirs, File.pathSeparator);
-                while (tok.hasMoreTokens()) {
-                    extradirs.add(new File(tok.nextToken(), "modules")); // NOI18N
-                }
-            }
             try {
-                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem(), moduleDirHome, (File[])extradirs.toArray(new File[extradirs.size()]), moduleDirUser);
+                moduleSystem = new ModuleSystem(Repository.getDefault().getDefaultFileSystem());
             } catch (IOException ioe) {
                 // System will be screwed up.
                 IllegalStateException ise = new IllegalStateException("Module system cannot be created"); // NOI18N
@@ -331,8 +313,8 @@ public class NonGui extends NbTopManager implements Runnable {
 
             moduleSystem.loadBootModules();
             moduleSystem.readList();
-            Main.addAndSetSplashMaxSteps(40); // additional steps after loading all modules
-            moduleSystem.scanForNewAndRestore();
+            Main.addAndSetSplashMaxSteps(30); // additional steps after loading all modules
+            moduleSystem.restore();
     	    StartLog.logEnd ("Modules initialization"); // NOI18N
         }
 
@@ -354,12 +336,6 @@ public class NonGui extends NbTopManager implements Runnable {
 
         LoaderPoolNode.installationFinished ();
         StartLog.logProgress ("LoaderPool notified"); // NOI18N
-        Main.incrementSplashProgressBar(10);
-
-        // -----------------------------------------------------------------------------------------------------
-        // 15. Install new modules
-        moduleSystem.installNew();
-        StartLog.logProgress ("New modules installed"); // NOI18N
         Main.incrementSplashProgressBar(10);
 
         //-------------------------------------------------------------------------------------------------------

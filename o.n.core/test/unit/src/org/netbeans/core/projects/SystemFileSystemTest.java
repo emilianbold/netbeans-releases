@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -61,7 +61,7 @@ public class SystemFileSystemTest extends NbTestCase {
             mgr.mutex().readAccess(new Mutex.ExceptionAction() {
                 public Object run() throws Exception {
                     satJar = new File(SystemFileSystemTest.class.getResource("data/sfs-attr-test.jar").getFile());
-                    satModule = mgr.create(satJar, new ModuleHistory(), false, false, false);
+                    satModule = mgr.create(satJar, new ModuleHistory(satJar.getAbsolutePath()), false, false, false);
                     assertEquals("no problems installing sfs-attr-test.jar", Collections.EMPTY_SET, satModule.getProblems());
                     mgr.enable(satModule);
                     return null;

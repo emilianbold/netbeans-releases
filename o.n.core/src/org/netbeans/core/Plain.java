@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,9 +73,8 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
   
     /** Create the module system. Subclasses may override. */
     protected ModuleSystem createModuleSystem() throws IOException {
-        String userDir = System.getProperty("modules.dir"); // NOI18N
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        return new ModuleSystem(fs, userDir == null ? null : new File(userDir), new File[0], null);
+        return new ModuleSystem(fs);
     }
   
     /** Initializaton of modules if user directory provided.
@@ -90,9 +89,8 @@ public class Plain extends NbTopManager implements Runnable, ChangeListener {
         moduleSystem.loadBootModules();
         if (!Repository.getDefault().getDefaultFileSystem().isReadOnly()) {
             moduleSystem.readList();
-            moduleSystem.scanForNewAndRestore();
+            moduleSystem.restore();
             LoaderPoolNode.installationFinished();
-            moduleSystem.installNew();
         } else {
             LoaderPoolNode.installationFinished();
         }

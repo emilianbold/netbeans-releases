@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -80,19 +80,19 @@ public class CreateModuleXML extends Task {
         }
         Iterator it = enabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), true, false, false, "installation", enabledNames);
+            scanModules((FileSet)it.next(), true, false, false, enabledNames);
         }
         it = disabled.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, false, "installation", disabledNames);
+            scanModules((FileSet)it.next(), false, false, false, disabledNames);
         }
         it = autoload.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, true, false, "installation/autoload", autoloadNames);
+            scanModules((FileSet)it.next(), false, true, false, autoloadNames);
         }
         it = eager.iterator();
         while (it.hasNext()) {
-            scanModules((FileSet)it.next(), false, false, true, "installation/eager", eagerNames);
+            scanModules((FileSet)it.next(), false, false, true, eagerNames);
         }
         Collections.sort(enabledNames);
         Collections.sort(disabledNames);
@@ -104,14 +104,13 @@ public class CreateModuleXML extends Task {
         log("Eager modules: " + eagerNames);
     }
     
-    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, String origin, List names) throws BuildException {
+    private void scanModules(FileSet fs, boolean isEnabled, boolean isAutoload, boolean isEager, List names) throws BuildException {
         FileScanner scan = fs.getDirectoryScanner(project);
         File dir = scan.getBasedir();
         String[] kids = scan.getIncludedFiles();
         for (int i = 0; i < kids.length; i++) {
             File module = new File(dir, kids[i]);
             if (! module.exists()) throw new BuildException("Does not really exist: " + module, location);
-            if (! module.getParentFile().equals(dir)) throw new BuildException("JARs in subfolders not permitted: " + module, location);
             if (! module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed: " + module, location);
             try {
                 JarFile jar = new JarFile(module);
@@ -182,8 +181,7 @@ public class CreateModuleXML extends Task {
                         if (!isAutoload && !isEager) {
                             pw.println("    <param name=\"enabled\">" + isEnabled + "</param>");
                         }
-                        pw.println("    <param name=\"jar\">" + module.getName() + "</param>");
-                        pw.println("    <param name=\"origin\">" + origin + "</param>");
+                        pw.println("    <param name=\"jar\">" + kids[i].replace(File.separatorChar, '/') + "</param>");
                         if (rel != -1) {
                             pw.println("    <param name=\"release\">" + rel + "</param>");
                         }
