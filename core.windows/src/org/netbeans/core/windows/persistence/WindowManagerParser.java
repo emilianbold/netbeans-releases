@@ -1733,7 +1733,7 @@ public class WindowManagerParser {
         public void setDocumentLocator(org.xml.sax.Locator locator) {
         }
         
-        public void startDocument() throws org.xml.sax.SAXException {
+        public void startDocument() throws SAXException {
         }
         
         /** Writes data from asociated window manager to the xml representation */
@@ -1765,8 +1765,9 @@ public class WindowManagerParser {
             String curValue = null;
             // header
             buff.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n"); // NOI18N
-            //buff.append("<!DOCTYPE windowmanager PUBLIC \"-//NetBeans//DTD Window Manager Properties 1.0//EN\""); // NOI18N
-            //buff.append(" \"windowmanager-properties1_0.dtd\">\n\n"); // NOI18N
+            /*buff.append("<!DOCTYPE windowmanager PUBLIC\n"); // NOI18N
+            buff.append("          \"-//NetBeans//DTD Window Manager Properties 2.0//EN\"\n"); // NOI18N
+            buff.append("          \"http://www.netbeans.org/dtds/windowmanager-properties2_0.dtd\">\n\n"); // NOI18N*/
             buff.append("<windowmanager version=\"2.0\">\n"); // NOI18N
             
             appendMainWindow(wmc, buff);
