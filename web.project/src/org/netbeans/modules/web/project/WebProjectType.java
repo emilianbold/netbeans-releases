@@ -26,7 +26,7 @@ public final class WebProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.modules.web.project";
     private static final String PROJECT_CONFIGURATION_NAME = "data";
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/1";
+    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/2";
     private static final String PRIVATE_CONFIGURATION_NAME = "data";
     private static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project-private/1";
     

@@ -11,14 +11,23 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
+<!--
+XXX should not have changed /1 to /2 for URI of *all* macrodefs; only the ones
+that actually changed semantically as a result of supporting multiple compilation
+units. E.g. <webproject1:property/> did not change at all, whereas
+<webproject1:javac/> did. Need to only update URIs where necessary; otherwise we
+cause gratuitous incompatibilities for people overriding macrodef targets. Also
+we will need to have an upgrade guide that enumerates all build script incompatibilities
+introduced by support for multiple source roots. -jglick
+-->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:p="http://www.netbeans.org/ns/project/1"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                xmlns:web="http://www.netbeans.org/ns/web-project/1"
-                xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
+                xmlns:webproject1="http://www.netbeans.org/ns/web-project/1"
+                xmlns:webproject2="http://www.netbeans.org/ns/web-project/2"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                exclude-result-prefixes="xalan p web projdeps">
+                exclude-result-prefixes="xalan p projdeps">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
 
@@ -34,11 +43,14 @@ is divided into following sections:
   - execution
   - debugging
   - javadoc
+  - junit compilation
+  - junit execution
+  - junit debugging
   - cleanup
 
 ]]></xsl:comment>
 
-        <xsl:variable name="name" select="/p:project/p:configuration/web:data/web:name"/>
+        <xsl:variable name="name" select="/p:project/p:configuration/webproject2:data/webproject2:name"/>
         <!-- Synch with build-impl.xsl: -->
         <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
         <project name="{$codename}-impl">
@@ -82,16 +94,16 @@ is divided into following sections:
 
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
-                    <webproject:property name="platform.home" value="platforms.${{platform.active}}.home"/>
-                    <webproject:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
-                    <webproject:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
-                    <webproject:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
+                    <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
+                    <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
+                    <webproject1:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
+                    <webproject1:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
                     <condition property="platform.javac" value="${{platform.home}}/bin/javac">
                         <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
                     </condition>
                     <property name="platform.javac" value="${{platform.javac.tmp}}"/>
-                    <webproject:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
+                    <webproject1:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
                     <condition property="platform.java" value="${{platform.home}}/bin/java">
                         <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
                     </condition>
@@ -102,10 +114,21 @@ is divided into following sections:
                     <fail unless="platform.bootcp">Must set platform.bootcp</fail>
                     <fail unless="platform.java">Must set platform.java</fail>
                     <fail unless="platform.javac">Must set platform.javac</fail>
+                    <fail if="platform.invalid">Platform is not correctly set up</fail>
                 </xsl:if>
-                <xsl:if test="/p:project/p:configuration/web:data/web:use-manifest">
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:use-manifest">
                     <fail unless="manifest.file">Must set manifest.file</fail>
                 </xsl:if>
+                <xsl:call-template name="createRootAvailableTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                    <xsl:with-param name="propName">have.tests</xsl:with-param>
+                </xsl:call-template>
+                <condition property="netbeans.home+have.tests">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="have.tests"/>
+                    </and>
+                </condition>
                 <condition property="no.javadoc.preview">
                     <isfalse value="${{javadoc.preview}}"/>
                 </condition>
@@ -134,13 +157,20 @@ is divided into following sections:
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
-                <fail unless="src.dir">Must set src.dir</fail>
+                <xsl:call-template name="createSourcePathValidityTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                </xsl:call-template>
+                <xsl:call-template name="createSourcePathValidityTest">
+                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                </xsl:call-template>
                 <fail unless="build.dir">Must set build.dir</fail>
                 <fail unless="build.web.dir">Must set build.web.dir</fail>
                 <fail unless="build.generated.dir">Must set build.generated.dir</fail>
                 <fail unless="dist.dir">Must set dist.dir</fail>
                 <fail unless="build.classes.dir">Must set build.classes.dir</fail>
                 <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
+                <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
+                <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
                 <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
                 <fail unless="dist.war">Must set dist.war</fail>
             </target>
@@ -164,10 +194,14 @@ is divided into following sections:
             <target name="-init-macrodef-javac">
                 <macrodef>
                     <xsl:attribute name="name">javac</xsl:attribute>
-                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/1</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/2</xsl:attribute>
                     <attribute>
                         <xsl:attribute name="name">srcdir</xsl:attribute>
-                        <xsl:attribute name="default">${src.dir}</xsl:attribute>
+                        <xsl:attribute name="default">
+                            <xsl:call-template name="createPath">
+                                <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                            </xsl:call-template>
+                        </xsl:attribute>
                     </attribute>
                     <attribute>
                         <xsl:attribute name="name">destdir</xsl:attribute>
@@ -191,13 +225,14 @@ is divided into following sections:
                             <xsl:attribute name="destdir">@{destdir}</xsl:attribute>
                             <xsl:attribute name="debug">@{debug}</xsl:attribute>
                             <xsl:attribute name="deprecation">${javac.deprecation}</xsl:attribute>
-                            <xsl:if test ="not(/p:project/p:configuration/web:data/web:explicit-platform/@explicit-source-supported ='false')">
+                            <xsl:if test ="not(/p:project/p:configuration/webproject2:data/webproject2:explicit-platform/@explicit-source-supported ='false')">
                                 <xsl:attribute name="source">${javac.source}</xsl:attribute>
                             </xsl:if>
                             <xsl:attribute name="target">${javac.target}</xsl:attribute>
-                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                                 <xsl:attribute name="fork">yes</xsl:attribute>
                                 <xsl:attribute name="executable">${platform.javac}</xsl:attribute>
+                                <xsl:attribute name="tempdir">${java.io.tmpdir}</xsl:attribute> <!-- XXX cf. #51482, Ant #29391 -->
                             </xsl:if>
                             <xsl:attribute name="includeantruntime">false</xsl:attribute>
                             <classpath>
@@ -208,6 +243,46 @@ is divided into following sections:
                         </javac>
                     </sequential>
                  </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit">
+                <macrodef>
+                    <xsl:attribute name="name">junit</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/web-project/2</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">includes</xsl:attribute>
+                        <xsl:attribute name="default">**/*Test.java</xsl:attribute>
+                    </attribute>
+                    <sequential>
+                        <junit>
+                            <xsl:attribute name="showoutput">true</xsl:attribute>
+                            <xsl:attribute name="fork">true</xsl:attribute>
+                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> --> 
+                            <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
+                            <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
+                            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <batchtest todir="${{build.test.results.dir}}">
+                                <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                                    <xsl:with-param name="includes">@{includes}</xsl:with-param>
+                                </xsl:call-template>
+                            </batchtest>
+                            <classpath>
+                                <path path="${{run.test.classpath}}"/>
+                            </classpath>
+                            <syspropertyset>
+                                <propertyref prefix="test-sys-prop."/>
+                                <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                            </syspropertyset>
+                            <formatter type="brief" usefile="false"/>
+                            <!-- TBD
+                            <formatter type="xml"/>
+                            -->
+                        </junit>
+                    </sequential>
+                </macrodef>
             </target>
 
             <target name="-init-macrodef-java">
@@ -224,7 +299,7 @@ is divided into following sections:
                     </element>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg line="${{runmain.jvmargs}}"/>
@@ -258,7 +333,7 @@ is divided into following sections:
                             <classpath>
                                 <path path="@{{classpath}}"/>
                             </classpath>
-                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                                 <bootclasspath>
                                     <path path="${{platform.bootcp}}"/>
                                 </bootclasspath>
@@ -299,7 +374,7 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
-                            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+                            <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <jvmarg value="-Xdebug"/>
@@ -325,7 +400,7 @@ is divided into following sections:
             </target>
 
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -338,82 +413,81 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
-            <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service|/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-                <target name="wscompile-init">
-                    <taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
-                        <classpath path="${{wscompile.classpath}}"/>
-                    </taskdef>
+			<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service|/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+				<target name="wscompile-init">
+					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+					  <classpath path="${{wscompile.classpath}}"/>
+					</taskdef>
 
-                    <mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
-                    <mkdir dir="${{build.classes.dir}}"/>
-                    <mkdir dir="${{build.generated.dir}}/wssrc"/>
-                </target>
-            </xsl:if>
+					<mkdir dir="${{build.web.dir}}/WEB-INF/wsdl"/>
+					<mkdir dir="${{build.classes.dir}}"/>
+					<mkdir dir="${{build.generated.dir}}/wssrc"/>
+				</target>
+			</xsl:if>
 
-            <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                <xsl:variable name="wsname">
-                    <xsl:value-of select="webproject:web-service-name"/>
-                </xsl:variable>
+            <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+              <xsl:variable name="wsname">
+                <xsl:value-of select="webproject2:web-service-name"/>
+              </xsl:variable>
 
-                <target name="{$wsname}_wscompile" depends="wscompile-init">
-                    <wscompile
-                        server="true"
-                        fork="true"
-                        keep="true"
-                        base="${{build.generated.dir}}/wssrc"
-                        xPrintStackTrace="true"
-                        verbose="true"
-                        nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
-                        classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
-                        mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
-                        config="${{src.dir}}/${{{$wsname}.config.name}}">
-                        <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
-                    </wscompile>
-                </target>
+              <target name="{$wsname}_wscompile" depends="wscompile-init">
+                <wscompile
+                   server="true"
+                   fork="true"
+                   keep="true"
+                   base="${{build.generated.dir}}/wssrc"
+                   xPrintStackTrace="true"
+                   verbose="true"
+                   nonClassDir="${{build.web.dir}}/WEB-INF/wsdl"
+                   classpath="${{wscompile.classpath}}:build/web/WEB-INF/classes"
+                   mapping="${{build.web.dir}}/WEB-INF/wsdl/${{{$wsname}.mapping}}"
+                   config="${{src.dir}}/${{{$wsname}.config.name}}">
+                   <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
+                </wscompile>
+              </target>
             </xsl:for-each>
 
-            <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-                <xsl:variable name="wsclientname">
-                    <xsl:value-of select="webproject:web-service-client-name"/>
-                </xsl:variable>
+			<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+				<xsl:variable name="wsclientname">
+					<xsl:value-of select="webproject2:web-service-client-name"/>
+				</xsl:variable>
                 <xsl:variable name="useimport">
                     <xsl:choose>
-                        <xsl:when test="webproject:web-service-stub-type">
-                            <xsl:value-of select="webproject:web-service-stub-type='jsr-109_client'"/>
+                        <xsl:when test="webproject2:web-service-stub-type">
+                            <xsl:value-of select="webproject2:web-service-stub-type='jsr-109_client'"/>
                         </xsl:when>
                         <xsl:otherwise>true</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="useclient">
                     <xsl:choose>
-                        <xsl:when test="webproject:web-service-stub-type">
-                            <xsl:value-of select="webproject:web-service-stub-type='jaxrpc_static_client'"/>
+                        <xsl:when test="webproject2:web-service-stub-type">
+                            <xsl:value-of select="webproject2:web-service-stub-type='jaxrpc_static_client'"/>
                         </xsl:when>
                         <xsl:otherwise>false</xsl:otherwise>
                     </xsl:choose>
                 </xsl:variable>
 
-                <target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
-                    <copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
-                        tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
-                        <filterset>
-                            <!-- replace token with reference to WSDL file in source tree, not build tree, since the
-                                 the file probably has not have been copied to the build tree yet. -->
-                            <filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
-                        </filterset>
-                    </copy>
-                    <wscompile
-                        xPrintStackTrace="true" verbose="false" fork="true" keep="true"
-                        client="{$useclient}" import="{$useimport}"
-                        features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.classes.dir}}"
-                        sourceBase="${{build.generated.dir}}/wssrc"
-                        classpath="${{wscompile.classpath}}"
-                        mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
-                        config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
-                    </wscompile>
-                </target>
-            </xsl:for-each>
+				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+					<copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+						tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+						<filterset>
+							<!-- replace token with reference to WSDL file in source tree, not build tree, since the
+							     the file probably has not have been copied to the build tree yet. -->
+							<filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+						</filterset>
+					</copy>
+					<wscompile
+						xPrintStackTrace="true" verbose="true"
+						fork="true" keep="true" import="true" features="norpcstructures"
+						base="${{build.classes.dir}}"
+						sourceBase="${{build.generated.dir}}/wssrc"
+						classpath="${{wscompile.classpath}}"
+						mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+						config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+					</wscompile>
+				</target>
+			</xsl:for-each>
 
             <target name="-pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
@@ -421,73 +495,77 @@ is divided into following sections:
             </target>
 
             <target name="-pre-compile">
-                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-service-clients/webproject:web-service-client">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:variable name="wsname2">
-                                <xsl:value-of select="webproject:web-service-client-name"/>
-                            </xsl:variable>
-                            <xsl:value-of select="webproject:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </xsl:if>
+				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+					<xsl:attribute name="depends">
+						<xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-service-clients/webproject2:web-service-client">
+							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+							<xsl:variable name="wsname2">
+								<xsl:value-of select="webproject2:web-service-client-name"/>
+							</xsl:variable>
+							<xsl:value-of select="webproject2:web-service-client-name"/><xsl:text>_client_wscompile</xsl:text>
+						</xsl:for-each>
+					</xsl:attribute>
+				</xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="-do-compile">
                 <xsl:attribute name="depends">init, deps-jar, -pre-pre-compile, -pre-compile</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment>
-                    <delete>
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
+                    <delete> 
                       <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
                     </delete>
                 </xsl:if>
 
-                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
-
+                <webproject2:javac/>
+               
                 <copy todir="${{build.classes.dir}}">
-                    <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                        <xsl:with-param name="excludes">${build.classes.excludes}</xsl:with-param>
+                    </xsl:call-template>
                 </copy>
                 <copy todir="${{build.web.dir}}">
                   <fileset excludes="${{build.web.excludes}}" dir="${{web.docbase.dir}}">
-                   <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
+                   <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
                      <xsl:attribute name="excludes">WEB-INF/classes/** WEB-INF/web.xml WEB/sun-web.xml</xsl:attribute>
                    </xsl:if>
                   </fileset>
                 </copy>
-                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>
-                    <copy todir="${{build.web.dir}}" overwrite="true">
+
+                <xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+                    <xsl:comment>For web services, refresh web.xml and sun-web.xml</xsl:comment>  
+                    <copy todir="${{build.web.dir}}" overwrite="true"> 
                       <fileset includes="WEB-INF/web.xml WEB-INF/sun-web.xml" dir="${{web.docbase.dir}}"/>
                     </copy>
                  </xsl:if>
-
-                <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-libraries/web:library[web:path-in-war]">
-                    <xsl:variable name="copyto" select=" web:path-in-war"/>
-                    <xsl:variable name="libfile" select="web:file"/>
+                
+                <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-libraries/webproject2:library[webproject2:path-in-war]">
+                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
+                    <xsl:variable name="libfile" select="webproject2:file"/>
                     <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
                 </xsl:for-each>
-                <xsl:for-each select="/p:project/p:configuration/web:data/web:web-module-additional-libraries/web:library[web:path-in-war]">
-                    <xsl:variable name="copyto" select=" web:path-in-war"/>
-                    <xsl:variable name="libfile" select="web:file"/>
+                <xsl:for-each select="/p:project/p:configuration/webproject2:data/webproject2:web-module-additional-libraries/webproject2:library[webproject2:path-in-war]">
+                    <xsl:variable name="copyto" select=" webproject2:path-in-war"/>
+                    <xsl:variable name="libfile" select="webproject2:file"/>
                     <copyfiles todir="${{build.web.dir}}/{$copyto}" files="{$libfile}"/>
                 </xsl:for-each>
             </target>
 
             <target name="-post-compile">
-                <xsl:if test="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                    <xsl:attribute name="depends">
-                        <xsl:for-each select="/p:project/p:configuration/webproject:data/webproject:web-services/webproject:web-service">
-                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
-                            <xsl:variable name="wsname2">
-                                <xsl:value-of select="webproject:web-service-name"/>
-                            </xsl:variable>
-                            <xsl:value-of select="webproject:web-service-name"/><xsl:text>_wscompile</xsl:text>
-                        </xsl:for-each>
-                    </xsl:attribute>
-                </xsl:if>
+				<xsl:if test="/p:project/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+					<xsl:attribute name="depends">
+						<xsl:for-each select="/p:project2/p:configuration/webproject2:data/webproject2:web-services/webproject2:web-service">
+							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+							<xsl:variable name="wsname2">
+								<xsl:value-of select="webproject2:web-service-name"/>
+							</xsl:variable>
+							<xsl:value-of select="webproject2:web-service-name"/><xsl:text>_wscompile</xsl:text>
+						</xsl:for-each>
+					</xsl:attribute>
+				</xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
@@ -505,11 +583,11 @@ is divided into following sections:
             <target name="-do-compile-single">
                 <xsl:attribute name="depends">init,deps-jar,-pre-pre-compile</xsl:attribute>
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
-                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
+                <webproject2:javac>
                     <customize>
                         <patternset includes="${{javac.includes}}"/>
                     </customize>
-                </webproject:javac>
+                </webproject2:javac>
             </target>
 
             <target name="-post-compile-single">
@@ -539,7 +617,7 @@ is divided into following sections:
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
-                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
+                <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
                     classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}"/>
@@ -566,14 +644,14 @@ is divided into following sections:
                     <classpath path="${{java.home}}/../lib/tools.jar:${{copyfiles.classpath}}:${{jspc.classpath}}"/>
                 </java>
                 <mkdir dir="${{build.generated.dir}}/classes"/>
-                <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1"
+                <webproject2:javac
                     srcdir="${{build.generated.dir}}/src"
                     destdir="${{build.generated.dir}}/classes"
                     classpath="${{javac.classpath}}:${{build.classes.dir}}:${{jspc.classpath}}">
                     <customize>
                         <patternset includes="${{javac.jsp.includes}}"/>
                     </customize>
-                </webproject:javac>
+                </webproject2:javac>
                 <!--
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <xsl:with-param name="srcdir" select="'${{build.generated.dir}}/src'"/>
@@ -643,7 +721,7 @@ is divided into following sections:
             <target name="run-main">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-                <webproject:java classname="${{run.class}}"/>
+                <webproject2:java classname="${{run.class}}"/>
             </target>
 
 
@@ -664,7 +742,7 @@ is divided into following sections:
             <sourcepath>
                 <path path="${{web.docbase.dir}}"/>
             </sourcepath>
-            <xsl:if test="/p:project/p:configuration/web:data/web:explicit-platform">
+            <xsl:if test="/p:project/p:configuration/webproject1:data/webproject1:explicit-platform">
             <bootclasspath>
                 <path path="${{platform.bootcp}}"/>
             </bootclasspath>
@@ -685,14 +763,14 @@ is divided into following sections:
     <target name="-debug-start-debugger">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init</xsl:attribute>
-        <webproject:nbjpdastart name="${{debug.class}}"/>
+        <webproject1:nbjpdastart name="${{debug.class}}"/>
     </target>
 
     <target name="-debug-start-debuggee-single">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,compile-single</xsl:attribute>
         <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
-        <webproject:debug classname="${{debug.class}}"/>
+        <webproject1:debug classname="${{debug.class}}"/>
     </target>
 
     <target name="debug-single-main">
@@ -709,7 +787,7 @@ is divided into following sections:
     <target name="-do-debug-fix">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,-pre-debug-fix,compile-single</xsl:attribute>
-        <webproject:nbjpdareload xmlns:webproject="http://www.netbeans.org/ns/web-project/1"/>
+        <webproject1:nbjpdareload/>
     </target>
 
     <target name="debug-fix">
@@ -717,7 +795,7 @@ is divided into following sections:
         <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
     </target>
 
-            <xsl:comment>
+    <xsl:comment>
     ======================
     JAVADOC SECTION
     ======================
@@ -728,9 +806,9 @@ is divided into following sections:
                 <mkdir dir="${{dist.javadoc.dir}}"/>
                 <!-- XXX do an up-to-date check first -->
                 <xsl:choose>
-                    <xsl:when test="/p:project/p:configuration/web:data/web:explicit-platform">
+                    <xsl:when test="/p:project/p:configuration/webproject2:data/webproject2:explicit-platform">
                         <!-- XXX #46901: <javadoc> does not support an explicit executable -->
-                        <webproject:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                        <webproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
                         <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
                             <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
                         </condition>
@@ -777,7 +855,7 @@ is divided into following sections:
                         <apply executable="${{platform.javadoc}}" failonerror="true" parallel="true">
                             <arg value="-d"/>
                             <arg file="${{dist.javadoc.dir}}"/>
-                            <xsl:if test ="not(/p:project/p:configuration/web:data/web:explicit-platform/@explicit-source-supported ='false')">
+                            <xsl:if test ="not(/p:project/p:configuration/webproject2:data/webproject2:explicit-platform/@explicit-source-supported ='false')">
                                 <arg value="-source"/>
                                 <arg value="${{javac.source}}"/>
                             </xsl:if>
@@ -785,8 +863,17 @@ is divided into following sections:
                             <arg value="${{javadoc.windowtitle}}"/>
                             <arg line="${{javadoc.notree.opt}} ${{javadoc.use.opt}} ${{javadoc.nonavbar.opt}} ${{javadoc.noindex.opt}} ${{javadoc.splitindex.opt}} ${{javadoc.author.opt}} ${{javadoc.version.opt}} ${{javadoc.private.opt}} ${{javadoc.classpath.opt}}"/>
                             <arg value="-sourcepath"/>
-                            <arg file="${{src.dir}}"/>
-                            <fileset dir="${{src.dir}}" includes="**/*.java"/>
+                            <xsl:element name="arg">
+                                <xsl:attribute name="path">
+                                    <xsl:call-template name="createPath">
+                                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                                    </xsl:call-template>
+                                </xsl:attribute>
+                            </xsl:element>
+                            <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                                    <xsl:with-param name="includes">**/*.java</xsl:with-param>
+                           </xsl:call-template>
                         </apply>
                     </xsl:when>
                     <xsl:otherwise>
@@ -802,13 +889,18 @@ is divided into following sections:
                             <xsl:attribute name="version">${javadoc.version}</xsl:attribute>
                             <xsl:attribute name="windowtitle">${javadoc.windowtitle}</xsl:attribute>
                             <xsl:attribute name="private">${javadoc.private}</xsl:attribute>
+                            <xsl:attribute name="failonerror">true</xsl:attribute> <!-- #47325 -->
                             <classpath>
                                 <path path="${{javac.classpath}}"/>
                             </classpath>
                             <sourcepath>
-                                <pathelement location="${{src.dir}}"/>
+                                <xsl:call-template name="createPathElements">
+                                    <xsl:with-param name="locations" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                                </xsl:call-template>
                             </sourcepath>
-                            <fileset dir="${{src.dir}}"/>
+                            <xsl:call-template name="createFilesets">
+                                    <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:source-roots"/>
+                            </xsl:call-template>
                         </javadoc>
                     </xsl:otherwise>
                 </xsl:choose>
@@ -827,6 +919,199 @@ is divided into following sections:
             </target>
 
             <xsl:comment>
+            
+    =========================
+    JUNIT COMPILATION SECTION
+    =========================
+    </xsl:comment>
+
+            <target name="-pre-pre-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <mkdir dir="${{build.test.classes.dir}}"/>
+            </target>
+
+            <target name="-pre-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-do-compile-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test</xsl:attribute>
+                <xsl:element name="webproject2:javac">
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="debug">true</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                </xsl:element>
+                <copy todir="${{build.test.classes.dir}}">
+                    <xsl:call-template name="createFilesets">
+                        <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                        <xsl:with-param name="excludes">**/*.java</xsl:with-param>
+                    </xsl:call-template>
+                </copy>
+            </target>
+
+            <target name="-post-compile-test">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-test">
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test,-do-compile-test,-post-compile-test</xsl:attribute>
+            </target>
+
+            <target name="-pre-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-do-compile-test-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single</xsl:attribute>
+                <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+                <xsl:element name="webproject2:javac">
+                    <xsl:attribute name="srcdir">
+                        <xsl:call-template name="createPath">
+                            <xsl:with-param name="roots" select="/p:project/p:configuration/webproject2:data/webproject2:test-roots"/>
+                        </xsl:call-template>
+                    </xsl:attribute>
+                    <xsl:attribute name="destdir">${build.test.classes.dir}</xsl:attribute>
+                    <xsl:attribute name="debug">true</xsl:attribute>
+                    <xsl:attribute name="classpath">${javac.test.classpath}</xsl:attribute>
+                    <customize>
+                        <patternset includes="${{javac.includes}}"/>
+                    </customize>
+                </xsl:element>
+            </target>
+
+            <target name="-post-compile-test-single">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="compile-test-single">
+                <xsl:attribute name="depends">init,compile,-pre-pre-compile-test,-pre-compile-test-single,-do-compile-test-single,-post-compile-test-single</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+            
+    =======================
+    JUNIT EXECUTION SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="-pre-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
+            <target name="-do-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run</xsl:attribute>
+                <webproject2:junit/>
+            </target>
+
+            <target name="-post-test-run">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
+            <target name="test-report">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <junitreport todir="${{build.test.results.dir}}">
+                    <fileset dir="${{build.test.results.dir}}">
+                        <include name="TEST-*.xml"/>
+                    </fileset>
+                    <report format="noframes" todir="${{build.test.results.dir}}"/>
+                </junitreport>
+                -->
+            </target>
+
+            <target name="-test-browse">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <!-- TBD
+                <nbbrowse file="${{build.test.results.dir}}/junit-noframes.html"/>
+                -->
+            </target>
+
+            <target name="test">
+                <xsl:attribute name="depends">init,compile-test,-pre-test-run,-do-test-run,test-report,-post-test-run,-test-browse</xsl:attribute>
+                <xsl:attribute name="description">Run unit tests.</xsl:attribute>
+            </target>
+
+            <target name="-pre-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <mkdir dir="${{build.test.results.dir}}"/>
+            </target>
+
+            <target name="-do-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single</xsl:attribute>
+                <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+                <webproject2:junit includes="${{test.includes}}"/>
+            </target>
+
+            <target name="-post-test-run-single">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single</xsl:attribute>
+                <fail if="tests.failed">Some tests failed; see details above.</fail>
+            </target>
+
+            <target name="test-single">
+                <xsl:attribute name="depends">init,compile-test-single,-pre-test-run-single,-do-test-run-single,-post-test-run-single</xsl:attribute>
+                <xsl:attribute name="description">Run single unit test.</xsl:attribute>
+            </target>
+
+            <xsl:comment>
+            
+    =======================
+    JUNIT DEBUGGING SECTION
+    =======================
+    </xsl:comment>
+
+            <target name="-debug-start-debuggee-test">
+                <xsl:attribute name="if">have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+                <webproject1:debug classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+            </target>
+
+            <target name="-debug-start-debugger-test">
+                <xsl:attribute name="if">netbeans.home+have.tests</xsl:attribute>
+                <xsl:attribute name="depends">init,compile-test</xsl:attribute>
+                <webproject1:nbjpdastart name="${{test.class}}" classpath="${{debug.test.classpath}}"/>
+            </target>
+
+            <target name="debug-test">
+                <xsl:attribute name="depends">init,compile-test,-debug-start-debugger-test,-debug-start-debuggee-test</xsl:attribute>
+            </target>
+
+            <target name="-do-debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-debug-fix,compile-test-single</xsl:attribute>
+                <webproject1:nbjpdareload dir="${{build.test.classes.dir}}"/>
+            </target>
+
+            <target name="debug-fix-test">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
+            </target>
+
+            
+    <xsl:comment>
+
     ======================
     CLEANUP SECTION
     ======================
@@ -935,5 +1220,68 @@ to simulate
             </xsl:for-each>
         </target>
     </xsl:template>
+
+    <xsl:template name="createRootAvailableTest">
+        <xsl:param name="roots"/>
+        <xsl:param name="propName"/>
+        <xsl:element name="condition">
+            <xsl:attribute name="property"><xsl:value-of select="$propName"/></xsl:attribute>
+            <or>
+                <xsl:for-each select="$roots/webproject2:root">
+                    <xsl:element name="available">
+			        <xsl:attribute name="file"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+		            </xsl:element>
+                </xsl:for-each>
+            </or>
+        </xsl:element>
+    </xsl:template>
+
+    <xsl:template name="createSourcePathValidityTest">
+        <xsl:param name="roots"/>
+        <xsl:for-each select="$roots/webproject2:root">
+            <xsl:element name="fail">
+			    <xsl:attribute name="unless"><xsl:value-of select="@id"/></xsl:attribute>
+                <xsl:text>Must set </xsl:text><xsl:value-of select="@id"/>
+		    </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+
+    <xsl:template name="createFilesets">
+		<xsl:param name="roots"/>
+        <xsl:param name="includes"/>
+        <xsl:param name="excludes"/>
+        <xsl:for-each select="$roots/webproject2:root">
+            <xsl:element name="fileset">
+			    <xsl:attribute name="dir"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+                <xsl:if test="$includes">
+                    <xsl:attribute name="includes"><xsl:value-of select="$includes"/></xsl:attribute>
+                </xsl:if>
+                <xsl:if test="$excludes">
+			        <xsl:attribute name="excludes"><xsl:value-of select="$excludes"/></xsl:attribute>
+                </xsl:if>
+		    </xsl:element>
+        </xsl:for-each>
+	</xsl:template>
+
+    <xsl:template name="createPathElements">
+        <xsl:param name="locations"/>
+        <xsl:for-each select="$locations/webproject2:root">
+            <xsl:element name="pathelement">
+			    <xsl:attribute name="location"><xsl:text>${</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:attribute>
+		    </xsl:element>
+        </xsl:for-each>
+    </xsl:template>
+
+	<xsl:template name="createPath">
+		<xsl:param name="roots"/>
+		<xsl:for-each select="$roots/webproject2:root">
+		    <xsl:if test="position() != 1">
+			    <xsl:text>:</xsl:text>
+		    </xsl:if>
+		    <xsl:text>${</xsl:text>
+		    <xsl:value-of select="@id"/>
+		    <xsl:text>}</xsl:text>
+		</xsl:for-each>						
+	</xsl:template>
 
 </xsl:stylesheet>

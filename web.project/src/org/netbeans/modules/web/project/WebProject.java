@@ -22,12 +22,37 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.*;
+
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.SwingUtilities;
+
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+
+import org.openide.filesystems.FileLock;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
+
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
-import org.openide.filesystems.FileLock;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -36,7 +61,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.web.project.queries.CompiledSourceForBinaryQuery;
+import org.netbeans.modules.web.project.queries.*;
 import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.VisualClassPathItem;
@@ -57,43 +82,20 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
-import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.netbeans.modules.web.project.queries.SourceLevelQueryImpl;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
-
 
 /**
  * Represents one plain Web project.
  * @author Jesse Glick, et al., Pavel Buzek
  */
-final class WebProject implements Project, AntProjectListener, FileChangeListener {
+public final class WebProject implements Project, AntProjectListener, FileChangeListener {
     
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18N
     
@@ -111,7 +113,12 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private WebServicesClientSupport apiWebServicesClientSupport;
     private WebContainerImpl enterpriseResourceSupport;
     private FileWatch webPagesFileWatch;
-    private FileWatch javaSourceFileWatch;
+//    private FileWatch javaSourceFileWatch;
+//    private FileWatch testSourceFileWatch;
+    private SourceRoots sourceRoots;
+    private SourceRoots testRoots;
+    private final UpdateHelper updateHelper;
+    private final AuxiliaryConfiguration aux;
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -227,8 +234,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
-        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
-        refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
+//        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        aux = helper.createAuxiliaryConfiguration();
+        refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
@@ -236,11 +244,13 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
         apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, this.genFilesHelper, UpdateHelper.createDefaultNotifier());
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
-        javaSourceFileWatch = new FileWatch(WebProjectProperties.SRC_DIR);
+//        javaSourceFileWatch = new FileWatch(WebProjectProperties.SRC_DIR);
+//        testSourceFileWatch = new FileWatch(WebProjectProperties.TEST_SRC_DIR);
     }
 
     public FileObject getProjectDirectory() {
@@ -253,6 +263,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     
     private PropertyEvaluator createEvaluator() {
         // XXX might need to use a custom evaluator to handle active platform substitutions... TBD
+        // It is currently safe to not use the UpdateHelper for PropertyEvaluator; UH.getProperties() delegates to APH
         return helper.getStandardPropertyEvaluator();
     }
     
@@ -260,29 +271,37 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         return eval;
     }
     
+    ReferenceHelper getReferenceHelper () {
+        return this.refHelper;
+    }
+
     public Lookup getLookup() {
         return lookup;
     }
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator (), new String[] {
-            "${src.dir}/*.java" // NOI18N
-        }, new String[] {
-            "${build.classes.dir}/*.class" // NOI18N
-        });
+//        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(helper.getStandardPropertyEvaluator (), new String[] {
+//            "${src.dir}/*.java" // NOI18N
+//        }, new String[] {
+//            "${build.classes.dir}/*.class" // NOI18N
+//        });
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
         String webModuleLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_WebModule"); //NOI18N
         String webPagesLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_DocBase"); //NOI18N
-        String srcJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+//        String srcJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"); //NOI18N
+//        String testJavaLabel = org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_TestSources"); //NOI18N
         
         sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SOURCE_ROOT+"}", webModuleLabel, /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
+//        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", webPagesLabel, /*XXX*/null, null);
+//        sourcesHelper.addPrincipalSourceRoot("${"+WebProjectProperties.TEST_SRC_DIR+"}", testJavaLabel, /*XXX*/null, null);
         
-        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
+//        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, srcJavaLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}", WebProjectConstants.TYPE_DOC_ROOT, webPagesLabel, /*XXX*/null, null);
         sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.WEB_DOCBASE_DIR+"}/WEB-INF", WebProjectConstants.TYPE_WEB_INF, /*XXX I18N*/ "WEB-INF", /*XXX*/null, null);
+//        sourcesHelper.addTypedSourceRoot("${"+WebProjectProperties.TEST_SRC_DIR+"}", JavaProjectConstants.SOURCES_TYPE_JAVA, testJavaLabel, /*XXX*/null, null);
+        
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
                 sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
@@ -297,21 +316,26 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 			new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
             enterpriseResourceSupport,
-            new WebActionProvider( this, helper, refHelper ),
-            new WebPhysicalViewProvider(this, helper, evaluator (), spp, refHelper),
-            new WebCustomizerProvider( this, helper, refHelper ),
-            new ClassPathProviderImpl(helper, evaluator ()),
-            new CompiledSourceForBinaryQuery(helper),
+            new WebActionProvider( this, this.updateHelper ),
+            new WebPhysicalViewProvider(this, this.updateHelper, evaluator (), spp, refHelper),
+            new WebCustomizerProvider( this, this.updateHelper, evaluator(), refHelper ),
+            new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
+            new JavadocForBinaryQueryImpl(this.helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-            new SourceLevelQueryImpl(helper, evaluator()),
-            fileBuilt,
-            new RecommendedTemplatesImpl(),
+            new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
+            new SourceLevelQueryImpl(this.helper, evaluator()),
+            new JavaSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
+            new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            new RecommendedTemplatesImpl(this.updateHelper),
+            new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             sourcesHelper.createSources(),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${src.dir}", // NOI18N
                 "${web.docbase.dir}", // NOI18N
+                "${" + WebProjectProperties.TEST_SRC_DIR + "}", // NOI18N
             }, new String[] {
                 "${dist.dir}", // NOI18N
                 "${build.dir}", // NOI18N
@@ -329,8 +353,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     }
 
     public void propertiesChanged(AntProjectEvent ev) {
-        // currently ignored
-        //TODO: should not be ignored!
+        // currently ignored (probably better to listen to evaluator() if you need to)
     }
     
     String getBuildXmlName () {
@@ -339,6 +362,32 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     }
     
     // Package private methods -------------------------------------------------
+    
+    /**
+     * Returns the source roots of this project
+     * @return project's source roots
+     */
+    public synchronized SourceRoots getSourceRoots() {        
+        if (this.sourceRoots == null) { //Local caching, no project metadata access
+            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", "src.dir{0}"); //NOI18N
+        }
+        return this.sourceRoots;
+    }
+    
+    public synchronized SourceRoots getTestSourceRoots() {
+        if (this.testRoots == null) { //Local caching, no project metadata access
+            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", "test.src.dir{0}"); //NOI18N
+        }
+        return this.testRoots;
+    }
+    
+    File getTestClassesDirectory() {
+        String testClassesDir = evaluator().getProperty(WebProjectProperties.BUILD_TEST_CLASSES_DIR);
+        if (testClassesDir == null) {
+            return null;
+        }
+        return helper.resolveFile(testClassesDir);
+    }
     
     ProjectWebModule getWebModule () {
         return webModule;
@@ -384,7 +433,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     }
     
     public WebProjectProperties getWebProjectProperties() {
-        return new WebProjectProperties (this, helper, refHelper);
+        return new WebProjectProperties (this, updateHelper, eval, refHelper);
     }
 
     private void checkLibraryFolder (FileObject fo) {
@@ -412,39 +461,39 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     /** Timeout within which request to show alert will be ignored. */
     private static int BROKEN_ALERT_TIMEOUT = 1000;
     
-    private static synchronized void showBrokenReferencesAlert() {
-        // Do not show alert if it is already shown or if it was shown
-        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
-        if (brokenAlertShown || 
-            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
-            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
-                return;
-        }
-        brokenAlertShown = true;
-        SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    try {
-                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
-                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
-                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
-                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                        Dialog dlg = null;
-                        try {
-                            dlg = DialogDisplayer.getDefault().createDialog(dd);
-                            dlg.setVisible(true);
-                        } finally {
-                            if (dlg != null)
-                                dlg.dispose();
-                        }
-                    } finally {
-                        synchronized (WebProject.class) {
-                            brokenAlertLastTime = System.currentTimeMillis();
-                            brokenAlertShown = false;
-                        }
-                    }
-                }
-            });
-    }
+//    private static synchronized void showBrokenReferencesAlert() {
+//        // Do not show alert if it is already shown or if it was shown
+//        // in last BROKEN_ALERT_TIMEOUT milliseconds or if user do not wish it.
+//        if (brokenAlertShown || 
+//            brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis() ||
+//            !FoldersListSettings.getDefault().isShowAgainBrokenRefAlert()) {
+//                return;
+//        }
+//        brokenAlertShown = true;
+//        SwingUtilities.invokeLater(new Runnable() {
+//                public void run() {
+//                    try {
+//                        Object ok = NbBundle.getMessage(BrokenReferencesAlertPanel.class,"MSG_Broken_References_OK");
+//                        DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
+//                            NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
+//                            true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
+//                        Dialog dlg = null;
+//                        try {
+//                            dlg = DialogDisplayer.getDefault().createDialog(dd);
+//                            dlg.setVisible(true);
+//                        } finally {
+//                            if (dlg != null)
+//                                dlg.dispose();
+//                        }
+//                    } finally {
+//                        synchronized (WebProject.class) {
+//                            brokenAlertLastTime = System.currentTimeMillis();
+//                            brokenAlertShown = false;
+//                        }
+//                    }
+//                }
+//            });
+//    }
     
     /** Return configured project name. */
     public String getName() {
@@ -507,7 +556,20 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         }
         
         public String getDisplayName() {
-            return WebProject.this.getName();
+            return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+                public Object run() {
+                    Element data = updateHelper.getPrimaryConfigurationData(true);
+                    // XXX replace by XMLUtil when that has findElement, findText, etc.
+                    NodeList nl = data.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
+                    if (nl.getLength() == 1) {
+                        nl = nl.item(0).getChildNodes();
+                        if (nl.getLength() == 1 && nl.item(0).getNodeType() == Node.TEXT_NODE) {
+                            return ((Text) nl.item(0)).getNodeValue();
+                        }
+                    }
+                    return "???"; // NOI18N
+                }
+            });
         }
         
         public Icon getIcon() {
@@ -608,15 +670,20 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 }
                 // Register copy on save support
                 css.initialize();
+                
+                
                 // Check up on build scripts.
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    WebProject.class.getResource("resources/build-impl.xsl"),
-                    true);
-                genFilesHelper.refreshBuildScript(
-                    getBuildXmlName (),
-                    WebProject.class.getResource("resources/build.xsl"),
-                    true);
+                if (updateHelper.isCurrent()) {
+                    //Refresh build-impl.xml only for webproject/2
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        WebProject.class.getResource("resources/build-impl.xsl"),
+                        true);
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_XML_PATH,
+                        WebProject.class.getResource("resources/build.xsl"),
+                        true);
+                }
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
@@ -636,10 +703,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             // Make it easier to run headless builds on the same machine at least.
             ProjectManager.mutex().writeAccess(new Mutex.Action() {
                 public Object run() {
-                    EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                     File buildProperties = new File(System.getProperty("netbeans.user"), "build.properties"); // NOI18N
                     ep.setProperty("user.properties.file", buildProperties.getAbsolutePath()); //NOI18N
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                     try {
                         ProjectManager.getDefault().saveProject(WebProject.this);
                     } catch (IOException e) {
@@ -648,17 +715,17 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                     return null;
                 }
             });
-            if (WebPhysicalViewProvider.hasBrokenLinks(helper, refHelper)) {
+            if (WebPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
-            javaSourceFileWatch.init();
+//            javaSourceFileWatch.init();
         }
 
         protected void projectClosed() {
 
             webPagesFileWatch.reset();
-            javaSourceFileWatch.reset();
+//            javaSourceFileWatch.reset();
 
             // Probably unnecessary, but just in case:
             try {
@@ -699,7 +766,12 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     }
     
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+        RecommendedTemplatesImpl (UpdateHelper helper) {
+            this.helper = helper;
+        }
         
+        private UpdateHelper helper;
+
         // List of primarily supported templates
         
         private static final String[] TYPES = new String[] { 
@@ -727,6 +799,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         };
         
         public String[] getRecommendedTypes() {
+//            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+//            // if the project has no main class, it's not really an application
+//            boolean isLibrary = ep.getProperty (WebProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (WebProjectProperties.MAIN_CLASS)); // NOI18N
+//            return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
             return TYPES;
         }
         

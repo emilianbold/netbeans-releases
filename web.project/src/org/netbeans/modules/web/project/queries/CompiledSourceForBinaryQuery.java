@@ -12,18 +12,27 @@
  */
 package org.netbeans.modules.web.project.queries;
 
+import java.io.File;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import java.util.ArrayList;
+import org.openide.filesystems.FileUtil;
+
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
+
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.web.project.SourceRoots;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -32,47 +41,59 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImplementation {
 
     private AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
     private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
 
-    public CompiledSourceForBinaryQuery (AntProjectHelper helper) {
+    public CompiledSourceForBinaryQuery (AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
         this.helper = helper;
+        this.evaluator = evaluator;
+        this.sourceRoots = srcRoots;
+        this.testRoots = testRoots;
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) this.cache.get (binaryRoot);
+        if (FileUtil.getArchiveFile(binaryRoot) != null) {
+            binaryRoot = FileUtil.getArchiveFile(binaryRoot);
+            // XXX check whether this is really the root
+        }
+        SourceForBinaryQuery.Result res = (SourceForBinaryQuery.Result) cache.get (binaryRoot);
         if (res != null) {
             return res;
         }
-        if (hasSources(binaryRoot, "build.classes.dir") || hasSources (binaryRoot, WebProjectProperties.DIST_WAR)) {      //NOI18N
-            res = new Result (this.helper, new String [] { "src.dir", "websvc.generated.dir" } );  //NOI18N
-            this.cache.put (binaryRoot, res);
+        SourceRoots src = null;
+        if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
+            src = this.sourceRoots;
+        }
+        else if (hasSources (binaryRoot,"dist.jar")) {      //NOI18N
+            src = this.sourceRoots;
+        }
+        else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
+            src = this.testRoots;
+        }
+        if (src == null) {
+            return null;
+        }
+        else {
+            res = new Result (src);
+            cache.put (binaryRoot, res);
             return res;
         }
-        return null;
     }
 
 
     private boolean hasSources (URL binaryRoot, String binaryProperty) {
         try {
-            //TODO: Fix this. Use FileUtil.getArchiveFile.
-            if (binaryRoot.getProtocol().equals("jar")) {  // NOI18N
-                // We are interested in the JAR file itself.
-                // Note that this impl therefore accepts *both* file:/tmp/foo.jar
-                // and jar:file:/tmp/foo.jar!/ as equivalent (like URLClassLoader).
-                String surl = binaryRoot.toExternalForm();
-                if (surl.endsWith("!/")) { // NOI18N
-                    binaryRoot = new URL(surl.substring(4, surl.length() - 2));
-                } else if (surl.lastIndexOf("!/") == -1) { // NOI18N
-                    // Legal??
-                    binaryRoot = new URL(surl.substring(4));
-                } else {
-                    // Some specific path, e.g. jar:file:/tmp/foo.jar!/foo/,
-                    // which we do not support.
-                }
-            }
-            String outDir = helper.getStandardPropertyEvaluator ().getProperty (binaryProperty);
+            String outDir = evaluator.getProperty(binaryProperty);
             if (outDir != null) {
-                URL url = helper.resolveFile (outDir).toURI().toURL();
+                File f = helper.resolveFile (outDir);
+                URL url = f.toURI().toURL();
+                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) { // NOI18N
+                    // non-existing 
+                    assert !url.toExternalForm().endsWith("/") : f; // NOI18N
+                    url = new URL(url.toExternalForm() + "/"); // NOI18N
+                }
                 if (url.equals (binaryRoot)) {
                     return true;
                 }
@@ -83,40 +104,52 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         return false;
     }
     
-    private static class Result implements SourceForBinaryQuery.Result {
+    private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
         
-        FileObject[] cache;
-        AntProjectHelper helper;
-        String [] propertyNames;
-          
-        public Result (AntProjectHelper helper, String [] propertyNames) {
-            this.helper = helper;
-            this.propertyNames = propertyNames;
+        private ArrayList listeners;
+        private SourceRoots sourceRoots;
+
+        public Result (SourceRoots sourceRoots) {
+            this.sourceRoots = sourceRoots;
+            this.sourceRoots.addPropertyChangeListener(this);
         }
         
         public synchronized FileObject[] getRoots () {
-            if (this.cache == null) {
-				ArrayList/*FileObject*/ rootList = new ArrayList();
-				for(int i = 0; i < propertyNames.length; i++) {
-					String srcDir = this.helper.getStandardPropertyEvaluator().getProperty (propertyNames[i]);
-					if (srcDir != null) {                
-						FileObject fo = helper.resolveFileObject(srcDir);                    
-						if(fo != null) {
-							rootList.add(fo);
-						}
-					}
-				}
-				this.cache = (FileObject []) rootList.toArray(new FileObject [rootList.size()]);
+            return this.sourceRoots.getRoots(); //No need to cache it, SourceRoots does
+        }
+        
+        public synchronized void addChangeListener (ChangeListener l) {
+            if (this.listeners == null) {
+                this.listeners = new ArrayList();
             }
-            return this.cache;
+            this.listeners.add (l);
         }
         
-        public void addChangeListener (ChangeListener l) {
-            //TODO: Implement this if needed (source folder can be changed)
+        public synchronized void removeChangeListener (ChangeListener l) {
+            if (this.listeners == null) {
+                return;
+            }
+            this.listeners.remove (l);
         }
-        
-        public void removeChangeListener (ChangeListener l) {
-            //TODO: Implement this if needed (source folder can be changed)
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
+                this.fireChange ();
+            }
+        }
+
+        private void fireChange() {
+            Iterator it;
+            synchronized (this) {
+                if (this.listeners == null) {
+                    return;
+                }
+                it = ((ArrayList)this.listeners.clone()).iterator();
+            }
+            ChangeEvent event = new ChangeEvent(this);
+            while (it.hasNext()) {
+                ((ChangeListener)it.next()).stateChanged(event);
+            }
         }
         
     }

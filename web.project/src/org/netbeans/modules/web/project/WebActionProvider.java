@@ -91,6 +91,9 @@ class WebActionProvider implements ActionProvider {
         WebProjectConstants.COMMAND_REDEPLOY,
         COMMAND_DEBUG_SINGLE, 
         JavaProjectConstants.COMMAND_JAVADOC, 
+        COMMAND_TEST, 
+        COMMAND_TEST_SINGLE, 
+        COMMAND_DEBUG_TEST_SINGLE, 
         JavaProjectConstants.COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
     };
@@ -99,13 +102,16 @@ class WebActionProvider implements ActionProvider {
     WebProject project;
     
     // Ant project helper of the project
-    private AntProjectHelper antProjectHelper;
-    private ReferenceHelper refHelper;
+    private UpdateHelper updateHelper;
+
+    // Ant project helper of the project
+//    private AntProjectHelper antProjectHelper;
+//    private ReferenceHelper refHelper;
         
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
     
-    public WebActionProvider(WebProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+    public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
         
         commands = new HashMap();
             commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
@@ -121,12 +127,14 @@ class WebActionProvider implements ActionProvider {
             // the target name is debug, except for Java files with main method, where it is debug-single-main
             commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
+            commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
+            commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
+            commands.put(COMMAND_DEBUG_TEST_SINGLE, new String[] {"debug-test"}); // NOI18N
             commands.put(JavaProjectConstants.COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
         
-        this.antProjectHelper = antProjectHelper;
+        this.updateHelper = updateHelper;
         this.project = project;
-        this.refHelper = refHelper;
     }
     
     private FileObject findBuildXml() {
@@ -177,7 +185,7 @@ class WebActionProvider implements ActionProvider {
                 if (files!=null && files.length>0) {
                     try {
                         // possibly compile the JSP, if we are not compiling all of them
-                        String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                        String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
                         boolean compile = decodeBoolean(raw);
                         if (!compile) {
                             setAllPropertiesForSingleJSPCompilation(p, files);
@@ -301,7 +309,7 @@ class WebActionProvider implements ActionProvider {
                     // debug jsp
                     try {
                         // possibly compile the JSP, if we are not compiling all of them
-                        String raw = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
+                        String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
                         boolean compile = decodeBoolean(raw);
                         if (!compile) {
                             setAllPropertiesForSingleJSPCompilation(p, files);
@@ -438,7 +446,7 @@ class WebActionProvider implements ActionProvider {
     /* Deletes translated class/java file to force recompilation of the page with all includes
      */
     public void invalidateClassFile(WebProject wp, FileObject jsp) {
-        String dir = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_GENERATED_DIR);
+        String dir = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.BUILD_GENERATED_DIR);
         if (dir == null) {
             return;
         }
@@ -456,8 +464,8 @@ class WebActionProvider implements ActionProvider {
         String fileClass = dir + '/' + filePath + ".class"; //NOI18N
         String fileJava = dir + '/' + filePath + ".java"; //NOI18N
         
-        File fC = antProjectHelper.resolveFile(fileClass);
-        File fJ = antProjectHelper.resolveFile(fileJava);
+        File fC = updateHelper.getAntProjectHelper().resolveFile(fileClass);
+        File fJ = updateHelper.getAntProjectHelper().resolveFile(fileJava);
         if ((fJ != null) && (fJ.exists())) {
             fJ.delete();
         }
@@ -808,7 +816,7 @@ class WebActionProvider implements ActionProvider {
     }
     
     private boolean isSelectedServer () {
-        String instance = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
+        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
         boolean selected;
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
@@ -829,7 +837,7 @@ class WebActionProvider implements ActionProvider {
         }
         
         // no selected server => warning
-        String server = antProjectHelper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        String server = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
         NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
 
         Object[] options = new Object[] {
@@ -868,7 +876,7 @@ class WebActionProvider implements ActionProvider {
     }
     
     private void setServerInstance(String serverInstanceId) {
-        WebProjectProperties wpp = new WebProjectProperties (project, antProjectHelper, refHelper);
+        WebProjectProperties wpp = new WebProjectProperties (project, updateHelper, project.evaluator(), project.getReferenceHelper());
         wpp.put (WebProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceId);
         wpp.store ();
     }
