@@ -38,22 +38,16 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-
-
 /** Global IDE settings.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class IDESettings extends SystemOption {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 801136840705717911L;
 
     /** showToolTipsInIDE property name */
     public static final String PROP_SHOW_TOOLTIPS_IN_IDE = "showToolTipsInIDE"; // NOI18N    
-    /** showTipsOnStartup property name */
-    public static final String PROP_SHOW_TIPS_ON_STARTUP = "showTipsOnStartup"; // NOI18N
-    /** lastTip property name */
-    public static final String PROP_LAST_TIP = "lastTip"; // NOI18N
     /** confirmDelete property name */
     public static final String PROP_CONFIRM_DELETE = "confirmDelete"; // NOI18N
     /** home page property name */
@@ -79,8 +73,6 @@ public class IDESettings extends SystemOption {
     public static final String KEY_PROXY_PORT = "http.proxyPort"; // NOI18N
     /** non proxy hosts VM property key */
     public static final String KEY_NON_PROXY_HOSTS = "http.nonProxyHosts"; // NOI18N
-    /** The state of mini status bar. If true then these bars are showed. */
-    public static final String PROP_MINI_STATUS_BAR_STATE = "mini_status_bar_state"; // NO18N
     
     public static final int MODULES_SORT_UNSORTED = 0;
     public static final int MODULES_SORT_DISPLAYNAME = 1;
@@ -98,10 +90,7 @@ public class IDESettings extends SystemOption {
     private static boolean confirmDelete = true;
     private static int modulesSortMode = MODULES_SORT_CATEGORY;
 
-    private static Hashtable alreadyLoadedBeans = new Hashtable();
-
     private static boolean useProxy = false;
-    private static boolean isMiniStatusBarEnabled = true;
     private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
@@ -187,40 +176,6 @@ public class IDESettings extends SystemOption {
                             showToolTips ? Boolean.TRUE : Boolean.FALSE);
     }
     
-    /** Getter for ShowTipsOnStartup
-     * @return true if dialog will be shown*/
-    public boolean getShowTipsOnStartup() {
-        return showTips;
-    }
-
-    /** Setter for ShowTipsOnStartup
-    * @param value true if on the next start of corona the dialog will be shown
-    *              false otherwise */
-    public void setShowTipsOnStartup(boolean value) {
-        if (showTips == value) return;
-        showTips = value;
-        // fire the PropertyChange
-        firePropertyChange (PROP_SHOW_TIPS_ON_STARTUP,
-                            !showTips ? Boolean.TRUE : Boolean.FALSE,
-                            showTips ? Boolean.TRUE : Boolean.FALSE);
-    }
-
-    /** Getter for LastTip
-     * @return index of the tip which should be shown on the next start of Corona*/
-    public int getLastTip() {
-        return lastTip;
-    }
-
-    /** Setter for LastTip
-     * @param value sets index of the tip which will be shown on the next start of Corona*/
-    public void setLastTip(int value) {
-        if (value == lastTip) return;
-        Integer oldValue = new Integer (lastTip);
-        lastTip = value;
-        // fire the PropertyChange
-        firePropertyChange (PROP_LAST_TIP, oldValue, new Integer (lastTip));
-    }
-
     /** Getter for ConfirmDelete
      * @param true if the user should asked for confirmation of object delete, false otherwise */
     public boolean getConfirmDelete() {
@@ -250,22 +205,6 @@ public class IDESettings extends SystemOption {
         return new HelpCtx (IDESettings.class);
     }
 
-    /** Getter for Hashtable of loaded jars with beans in previous NetBeans session.
-    * Names of Jars which are not in this table will be auto loaded in next NetBeans
-    * startup.
-    */
-    public Hashtable getLoadedBeans() {
-        return alreadyLoadedBeans;
-    }
-
-    /** Setter for Hashtable of loaded jars with beans in previous NetBeans session.
-    * Names of Jars which are not in this table will be auto loaded in next NetBeans
-    * startup.
-    */
-    public void setLoadedBeans(Hashtable table) {
-        alreadyLoadedBeans = table;
-    }
-
     /** Getter for home page used in html viewer.
     */
     public String getHomePage () {
@@ -276,25 +215,6 @@ public class IDESettings extends SystemOption {
     */
     public void setHomePage (String homePage) {
         HtmlBrowser.setHomePage (homePage);
-    }
-
-    /** Getter for mini status bar state.
-    */
-    public boolean getMiniStatusBarState () {
-        return isMiniStatusBarEnabled;
-    }
-
-    /** Setter for mini status bar state.
-    */
-    public void setMiniStatusBarState (boolean state) {
-        if (isMiniStatusBarEnabled != state) {
-            boolean oldValue = isMiniStatusBarEnabled;
-            isMiniStatusBarEnabled = state;
-            // notify listeners
-            firePropertyChange (PROP_MINI_STATUS_BAR_STATE,
-                                oldValue ? Boolean.TRUE : Boolean.FALSE,
-                                isMiniStatusBarEnabled ? Boolean.TRUE : Boolean.FALSE);
-        }
     }
 
     /** Getter for proxy set flag.
@@ -378,24 +298,7 @@ public class IDESettings extends SystemOption {
     public void setShowFileExtensions (boolean s) {
         boolean old = getShowFileExtensions ();
         DataNode.setShowFileExtensions (s);
-        firePropertyChange (PROP_SHOW_FILE_EXTENSIONS,
-                            old ? Boolean.TRUE : Boolean.FALSE,
-                            s ? Boolean.TRUE : Boolean.FALSE);
-        
-        /* akemr: following notification removed because of new implemented
-        * runtime refresh of nodes
-        *
-        if (old != s) {
-            new Thread () {
-                    public void run () {
-                        DialogDisplayer.getDefault ().notify
-                            (new NotifyDescriptor.Message
-                                (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
-                                 NotifyDescriptor.WARNING_MESSAGE));
-                    }
-                }.start ();
-        }
-        */
+        firePropertyChange (PROP_SHOW_FILE_EXTENSIONS, Boolean.valueOf(old), Boolean.valueOf(s));
     }
 
     /** Getter for preffered web browser.

@@ -455,9 +455,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
         static final long serialVersionUID =-8202452314155464024L;
         /** composited view */
         protected TreeView view;
-        /** mini status bar */
-        private MiniStatusBar miniStatusBar;
-        //private MouseListener statusBarPopupInvoker;
         /** listeners to the root context and IDE settings */
         private PropertyChangeListener weakRcL, weakIdeL;
         private NodeListener weakNRcL;
@@ -479,9 +476,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
             
             // attach listener to the changes of IDE settings
             weakIdeL = WeakListeners.propertyChange(rcListener(), ideSettings);
-            
-            // enhancement 9940, add MiniStatusBarListener a status bar's state
-            ideSettings.addPropertyChangeListener (new MiniStatusBarStateListener ());
         }
         
         /** Overriden to explicitely set persistence type of ExplorerTab
@@ -541,61 +535,10 @@ public final class NbMainExplorer extends CloneableTopComponent {
         protected TreeView initGui () {
             TreeView view = new BeanTreeView();
             setLayout(new BorderLayout());
-            
             add (view);
-            
-            // add mini status bar at the bottom of this explorer panel
-            add (getMiniStatusBar(), BorderLayout.SOUTH);
-            getMiniStatusBar ().setVisible (MiniStatusBar.isMiniStatusBarEnabled ());
-
             return view;
         }
 
-        private void removeMiniStatusBar () {
-            if (miniStatusBar!=null) {
-                getMiniStatusBar ().setExplorerManager (null);
-                getMiniStatusBar ().setVisible (false);
-                revalidate ();
-            }
-        }
-        
-        private MiniStatusBar getMiniStatusBar () {
-            if (miniStatusBar==null) {
-                miniStatusBar = new MiniStatusBar (getExplorerManager ());
-                Font f = UIManager.getFont("Tree.font"); //NOI18N
-                if (f != null) {
-                    miniStatusBar.setFont(f);
-                }
-            }
-            return miniStatusBar;
-        }
-        
-        /** Listensm on the changes in IDESettings about the mini status bar.
-         */
-        private class MiniStatusBarStateListener implements PropertyChangeListener {
-            
-            MiniStatusBarStateListener() {}
-            
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (IDESettings.PROP_MINI_STATUS_BAR_STATE.equals (evt.getPropertyName ())) {
-                    if (evt.getNewValue ().equals(evt.getOldValue ()))
-                        // no change
-                        return ;
-                    
-                    // mini status bar will be hidden
-                    if (((Boolean)evt.getOldValue ()).booleanValue ()) {
-                        removeMiniStatusBar ();
-                    }
-                    
-                    // mini status bar will be showed
-                    if (((Boolean)evt.getNewValue ()).booleanValue ()) {
-                        getMiniStatusBar ().setExplorerManager (getExplorerManager ());
-                        getMiniStatusBar ().setVisible (true);
-                    }
-                }
-            }
-        }
-        
         /** Ensures that component is valid before opening */
         public void open (Workspace workspace) {
             setValidRootContext();
@@ -689,9 +632,6 @@ public final class NbMainExplorer extends CloneableTopComponent {
         /** Initialize this top component properly with information
         * obtained from specified root context node */
         private void initializeWithRootContext (Node rc) {
-            // set explorer manager to mini status bar
-            if (miniStatusBar!=null)
-                miniStatusBar.setExplorerManager (getExplorerManager ());
             // update TC's attributes
             setIcon(rc.getIcon(BeanInfo.ICON_COLOR_16x16));
             setToolTipText(rc.getShortDescription());

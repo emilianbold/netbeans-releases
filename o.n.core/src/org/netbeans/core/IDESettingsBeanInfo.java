@@ -16,35 +16,26 @@ package org.netbeans.core;
 import java.awt.Image;
 import java.beans.*;
 import java.util.ResourceBundle;
-import org.netbeans.core.MiniStatusBar;
 
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.core.UIModePropertyEditor;
 import org.openide.ErrorManager;
 
 /** A BeanInfo for global IDE settings.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
     /** Provides an explicit property info. */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
     	    ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
-            ResourceBundle bundleMiniStatusBar = NbBundle.getBundle(MiniStatusBar.class);
 
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
-                       new PropertyDescriptor (IDESettings.PROP_SHOW_TIPS_ON_STARTUP, IDESettings.class,
-                                                "getShowTipsOnStartup", "setShowTipsOnStartup"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_LAST_TIP, IDESettings.class,
-                                               "getLastTip", "setLastTip"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_CONFIRM_DELETE, IDESettings.class,
                                                "getConfirmDelete", "setConfirmDelete"), // NOI18N
-                       new PropertyDescriptor ("loadedBeans", IDESettings.class, // NOI18N
-                                               "getLoadedBeans", "setLoadedBeans"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_HOME_PAGE, IDESettings.class,
                                                "getHomePage", "setHomePage"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
@@ -62,50 +53,38 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                        new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
                                                "getUIMode", "setUIMode"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
-                                               "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N                                               
-                       new PropertyDescriptor (IDESettings.PROP_MINI_STATUS_BAR_STATE, IDESettings.class,
-                                               "getMiniStatusBarState", "setMiniStatusBarState") // NOI18N                                               
+                                               "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N
                    };
 
-            desc[0].setHidden (true);
-            
-            desc[1].setHidden (true);
+            desc[0].setDisplayName (NbBundle.getMessage (Main.class, "PROP_CONFIRM_DELETE"));
+            desc[0].setShortDescription (NbBundle.getMessage (Main.class, "HINT_CONFIRM_DELETE"));
 
-            desc[2].setDisplayName (NbBundle.getMessage (Main.class, "PROP_CONFIRM_DELETE"));
-            desc[2].setShortDescription (NbBundle.getMessage (Main.class, "HINT_CONFIRM_DELETE"));
+            desc[1].setDisplayName (NbBundle.getMessage (Main.class, "PROP_HOME_PAGE"));
+            desc[1].setShortDescription (NbBundle.getMessage (Main.class, "HINT_HOME_PAGE"));
 
-            desc[3].setHidden(true);
+            desc[2].setDisplayName (NbBundle.getMessage (Main.class, "PROP_USE_PROXY"));
+            desc[2].setShortDescription (NbBundle.getMessage (Main.class, "HINT_USE_PROXY"));
 
-            desc[4].setDisplayName (NbBundle.getMessage (Main.class, "PROP_HOME_PAGE"));
-            desc[4].setShortDescription (NbBundle.getMessage (Main.class, "HINT_HOME_PAGE"));
+            desc[3].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_HOST"));
+            desc[3].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_HOST"));
 
-            desc[5].setDisplayName (NbBundle.getMessage (Main.class, "PROP_USE_PROXY"));
-            desc[5].setShortDescription (NbBundle.getMessage (Main.class, "HINT_USE_PROXY"));
+            desc[4].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_PORT"));
+            desc[4].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_PORT"));
 
-            desc[6].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_HOST"));
-            desc[6].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_HOST"));
+            desc[5].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_FILE_EXTENSIONS"));
+            desc[5].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_FILE_EXTENSIONS"));
 
-            desc[7].setDisplayName (NbBundle.getMessage (Main.class, "PROP_PROXY_PORT"));
-            desc[7].setShortDescription (NbBundle.getMessage (Main.class, "HINT_PROXY_PORT"));
+            desc[6].setHidden (true);
 
-            desc[8].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_FILE_EXTENSIONS"));
-            desc[8].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_FILE_EXTENSIONS"));
+            desc[7].setDisplayName (NbBundle.getMessage (Main.class, "PROP_WWW_BROWSER"));
+            desc[7].setShortDescription (NbBundle.getMessage (Main.class, "HINT_WWW_BROWSER"));
 
-            desc[9].setHidden (true);
+            desc[8].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
+            desc[8].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
+            desc[8].setPropertyEditorClass(UIModePropertyEditor.class);
 
-            desc[10].setDisplayName (NbBundle.getMessage (Main.class, "PROP_WWW_BROWSER"));
-            desc[10].setShortDescription (NbBundle.getMessage (Main.class, "HINT_WWW_BROWSER"));
-
-            desc[11].setDisplayName(bundleUIMode.getString("PROP_UI_Mode"));
-            desc[11].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
-            desc[11].setPropertyEditorClass(UIModePropertyEditor.class);
-
-            desc[12].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
-            desc[12].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
-
-            desc[13].setDisplayName (bundleMiniStatusBar.getString("PROP_MINI_STATUS_BAR_STATE"));
-            desc[13].setShortDescription (bundleMiniStatusBar.getString("HINT_MINI_STATUS_BAR_STATE"));
-            //desc[13].setHidden (true);
+            desc[9].setDisplayName (NbBundle.getMessage (Main.class, "PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[9].setShortDescription (NbBundle.getMessage (Main.class, "HINT_SHOW_TOOLTIPS_IN_IDE"));
 
             return desc;
         } catch (IntrospectionException ex) {
