@@ -68,6 +68,27 @@ public class JarClassLoader extends ProxyClassLoader {
         }
             
     }
+    
+    /** Boot classloader needs to add entries for netbeans.user later.
+     */
+    final void addSources (List newSources) {
+        ArrayList l = new ArrayList (sources.length + newSources.size ());
+        l.addAll (Arrays.asList (sources));
+        try {
+            int i=0;
+            for (Iterator it = newSources.iterator(); it.hasNext(); i++ ) {
+                Object act = it.next();
+                if (act instanceof File) {
+                    l.add (new DirSource((File)act));
+                } else {
+                    l.add (new JarSource((JarFile)act));
+                }
+            }
+        } catch (MalformedURLException exc) {
+            throw new IllegalArgumentException(exc.getMessage());
+        }
+        sources = (Source[])l.toArray (sources);
+    }
 
     /** Allows to specify the right permissions, OneModuleClassLoader does it differently.
      */

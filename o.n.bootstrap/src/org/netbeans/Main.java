@@ -13,10 +13,14 @@
 
 package org.netbeans;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.net.URLConnection;
 import java.util.jar.JarFile;
 import java.security.*;
@@ -67,7 +71,7 @@ public class Main extends Object {
      * @param methodToCall null or array with one item that will be set to 
      *   a method that shall be executed as the main application
      */
-    private static int execute (
+    static int execute (
         String[] args, 
         java.io.InputStream reader, 
         java.io.OutputStream writer,
@@ -129,7 +133,7 @@ public class Main extends Object {
         }
         
         // XXX separate openide.jar and core*.jar into different classloaders
-        ClassLoader loader = new BootClassLoader(list, new ClassLoader[] {
+        BootClassLoader loader = new BootClassLoader(list, new ClassLoader[] {
             Main.class.getClassLoader()
         });
         
@@ -151,7 +155,7 @@ public class Main extends Object {
         //
         
         CLIHandler.Status result;
-        result = CLIHandler.initialize(args, reader, writer, loader, true, false);
+        result = CLIHandler.initialize(args, reader, writer, loader, true, false, loader);
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null, 
@@ -161,7 +165,7 @@ public class Main extends Object {
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
             if (value == javax.swing.JOptionPane.OK_OPTION) {
-                result = CLIHandler.initialize(args, reader, writer, loader, true, true);
+                result = CLIHandler.initialize(args, reader, writer, loader, true, true, loader);
             }
             
         }
@@ -186,10 +190,47 @@ public class Main extends Object {
         }
     }
     
-    private static final class BootClassLoader extends JarClassLoader {
+    static final class BootClassLoader extends JarClassLoader 
+    implements Runnable {
+        private List allCLIs;
+        private Set allCLIclasses;
+        
         public BootClassLoader(List cp, ClassLoader[] parents) {
             super(cp, parents);
         }
+        
+        /** Checks for new JARs in netbeans.user */
+        public void run () {
+            // do not call this method twice
+            if (allCLIclasses == Collections.EMPTY_SET) return;
+            
+            ArrayList toAdd = new ArrayList ();
+            String user = System.getProperty ("netbeans.user"); // NOI18N
+            try {
+                if (user != null) {
+                    build_cp (new File (user), toAdd, false, new HashSet ());
+                    // JarClassLoader treats a File as a dir; for a ZIP/JAR, needs JarFile
+                    ListIterator it2 = toAdd.listIterator();
+                    while (it2.hasNext()) {
+                        File f = (File)it2.next();
+                        if (f.isFile()) {
+                            it2.set(new JarFile (f, false));
+                        }
+                    }
+                }
+                
+                if (!toAdd.isEmpty ()) {
+                    addSources (toAdd);
+                    // search for new CLIs from the newly added JARs
+                    allCLIs ();
+                }
+                allCLIclasses = Collections.EMPTY_SET;
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        
         /** Startup optimalization. See issue 27226. */
         protected PermissionCollection getPermissions(CodeSource cs) {
             return getAllPermission();
@@ -205,7 +246,70 @@ public class Main extends Object {
             }
             return modulePermissions;
         }
-    }
+
+        /** For a given classloader finds all registered CLIHandlers.
+         */
+        public final List allCLIs () {
+            if (allCLIclasses == Collections.EMPTY_SET) return allCLIs;
+            
+            if (allCLIclasses == null) {
+                allCLIclasses = new HashSet ();
+            }
+
+            if (allCLIs == null) {
+                /* should be, but we cannot use it yet, as openide is not separated:
+                return new ArrayList(Lookups.metaInfServices(loader).lookup(new Lookup.Template(CLIHandler.class)).allInstances());
+                 */
+                allCLIs = new ArrayList();
+            }
+            Enumeration en;
+            try {
+                en = getResources("META-INF/services/org.netbeans.CLIHandler"); // NOI18N
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                return Collections.EMPTY_LIST;
+            }
+            while (en.hasMoreElements()) {
+                URL url = (URL)en.nextElement();
+                try {
+                    InputStream is = url.openStream();
+                    try {
+                        BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
+                        while (true) {
+                            String line = reader.readLine();
+                            if (line == null) break;
+
+                            // Ignore blank lines and comments.
+                            line = line.trim();
+                            if (line.length() == 0) continue;
+
+                            boolean remove = false;
+                            if (line.charAt(0) == '#') {
+                                if (line.length() == 1 || line.charAt(1) != '-') {
+                                    continue;
+                                }
+
+                                // line starting with #- is a sign to remove that class from lookup
+                                remove = true;
+                                line = line.substring(2);
+                            }
+                            Class inst = Class.forName(line, false, this);
+                            if (allCLIclasses.add (inst)) {
+                                Object obj = inst.newInstance();
+                                allCLIs.add((CLIHandler)obj);
+                            }
+                        }
+                    } finally {
+                        is.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return allCLIs;
+        }
+    } // end of BootClassLoader
     
     private static void append_jars_to_cp (File dir, Collection toAdd) {
         if (!dir.isDirectory()) return;

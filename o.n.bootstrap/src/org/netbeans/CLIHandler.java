@@ -263,8 +263,23 @@ public abstract class CLIHandler extends Object {
      * @param cleanLockFile removes lock file if it appears to be dead
      * @return the file to be used as lock file or null parsing of args failed
      */
-    static Status initialize(String[] args, InputStream is, OutputStream os, ClassLoader loader, boolean failOnUnknownOptions, boolean cleanLockFile) {
-        return initialize(new Args(args, is, os, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), failOnUnknownOptions, cleanLockFile);
+    static Status initialize(
+        String[] args, 
+        InputStream is, 
+        OutputStream os, 
+        Main.BootClassLoader loader,
+        boolean failOnUnknownOptions, 
+        boolean cleanLockFile,
+        Runnable runWhenHome
+    ) {
+        return initialize(
+            new Args(args, is, os, System.getProperty ("user.dir")), 
+            (Integer)null, 
+            loader.allCLIs(), 
+            failOnUnknownOptions, 
+            cleanLockFile, 
+            runWhenHome
+        );
     }
     
     /**
@@ -356,9 +371,16 @@ public abstract class CLIHandler extends Object {
      * @param handlers all handlers to use
      * @param failOnUnknownOptions if true, fail (status 2) if some options are not recognized (also checks for -? and -help)
      * @param cleanLockFile removes lock file if it appears to be dead
+     * @param runWhenHome runnable to be executed when netbeans.user property is set
      * @return a status summary
      */
-    static Status initialize(final Args args, Integer block, final List handlers, final boolean failOnUnknownOptions, boolean cleanLockFile) {
+    static Status initialize(
+        final Args args, Integer block, 
+        final List handlers, 
+        final boolean failOnUnknownOptions, 
+        boolean cleanLockFile,
+        Runnable runWhenHome
+    ) {
         // initial parsing of args
         {
             int r = notifyHandlers(args, handlers, WHEN_BOOT, false, failOnUnknownOptions);
@@ -371,7 +393,15 @@ public abstract class CLIHandler extends Object {
         String home = System.getProperty("netbeans.user"); // NOI18N
         if (home == null) {
             home = System.getProperty("user.home"); // NOI18N
+            System.setProperty ("netbeans.user", home); // NOI18N
         }
+        
+        if (runWhenHome != null) {
+            // notify that we have successfully identified the home property
+            runWhenHome.run ();
+        }
+        
+        
         File lockFile = new File(home, "lock"); // NOI18N
         
         for (int i = 0; i < 5; i++) {
@@ -574,60 +604,6 @@ public abstract class CLIHandler extends Object {
         return new Status();
     }
 
-    /** For a given classloader finds all registered CLIHandlers.
-     */
-    private static List allCLIs(ClassLoader loader) {
-        /* should be, but we cannot use it yet, as openide is not separated:
-        return new ArrayList(Lookups.metaInfServices(loader).lookup(new Lookup.Template(CLIHandler.class)).allInstances());
-         */
-        List res = new ArrayList();
-        Enumeration en;
-        try {
-            en = loader.getResources("META-INF/services/org.netbeans.CLIHandler"); // NOI18N
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return Collections.EMPTY_LIST;
-        }
-        while (en.hasMoreElements()) {
-            URL url = (URL)en.nextElement();
-            try {
-                InputStream is = url.openStream();
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "UTF-8")); // NOI18N
-                    while (true) {
-                        String line = reader.readLine();
-                        if (line == null) break;
-                        
-                        // Ignore blank lines and comments.
-                        line = line.trim();
-                        if (line.length() == 0) continue;
-                        
-                        boolean remove = false;
-                        if (line.charAt(0) == '#') {
-                            if (line.length() == 1 || line.charAt(1) != '-') {
-                                continue;
-                            }
-                            
-                            // line starting with #- is a sign to remove that class from lookup
-                            remove = true;
-                            line = line.substring(2);
-                        }
-                        Class inst = Class.forName(line, false, loader);
-                        
-                        Object obj = inst.newInstance();
-                        res.add((CLIHandler)obj);
-                    }
-                } finally {
-                    is.close();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        return res;
-    }
-    
     /** Class that represents available arguments to the CLI
      * handlers.
      */
