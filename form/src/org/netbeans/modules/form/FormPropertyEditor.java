@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.*;
 import java.beans.*;
+import java.util.*;
 import java.lang.ref.WeakReference;
 import java.security.*;
 
@@ -33,24 +35,22 @@ public class FormPropertyEditor implements PropertyEditor,
                                            EnhancedPropertyEditor,
                                            ExPropertyEditor
 {
-    private Object value;
-    private Object source;
+    private Object value = BeanSupport.NO_VALUE;
     private FormProperty property;
-    private FormPropertyContext propertyContext;
     private WeakReference propertyEnv;
 
-    private PropertyEditor modifiedEditor;
     private PropertyEditor[] allEditors;
-    private java.util.Vector listeners;
+    private ArrayList listeners;
 
 
     /** Crates a new FormPropertyEditor */
     FormPropertyEditor(FormProperty property) {
         this.property = property;
-        this.propertyContext = property.getPropertyContext();
-        source = this;
-        modifiedEditor = property.getCurrentEditor();
-        modifiedEditor.addPropertyChangeListener(this);
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd != null) {
+            prEd.addPropertyChangeListener(this);
+            value = prEd.getValue();
+        }
     }
 
     Class getPropertyType() {
@@ -62,32 +62,28 @@ public class FormPropertyEditor implements PropertyEditor,
     }
 
     FormPropertyContext getPropertyContext() {
-        return propertyContext;
+        return property.getPropertyContext();
     }
 
     PropertyEnv getPropertyEnv() {
         return propertyEnv != null ? (PropertyEnv) propertyEnv.get() : null;
     }
 
-    PropertyEditor getModifiedEditor() {
-        return modifiedEditor;
+    PropertyEditor getCurrentEditor() {
+        return property.getCurrentEditor();
     }
 
-    void commitModifiedEditor() {
-        property.setCurrentEditor(modifiedEditor);
-    }
-
-    void setModifiedEditor(PropertyEditor editor) {
-        modifiedEditor.removePropertyChangeListener(this);
-        modifiedEditor = editor;
-        modifiedEditor.addPropertyChangeListener(this);
+    void setCurrentEditor(PropertyEditor newEditor) {
+        property.setCurrentEditor(newEditor);
     }
 
     // -----------------------------------------------------------------------------
     // PropertyChangeListener implementation
 
     public void propertyChange(PropertyChangeEvent evt) {
-        value = modifiedEditor.getValue();
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd != null)
+            value = prEd.getValue();
 
         // we run this as privileged to avoid security problems - because
         // the property change can be fired from untrusted property editor code
@@ -110,14 +106,11 @@ public class FormPropertyEditor implements PropertyEditor,
      *     modified value.
      */
     public void setValue(Object newValue) {
-        if (modifiedEditor != property.getCurrentEditor())
-            setModifiedEditor(property.getCurrentEditor());
-
         value = newValue;
-        if (value != BeanSupport.NO_VALUE)
-            modifiedEditor.setValue(value);
 
-        firePropertyChange();
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (value != BeanSupport.NO_VALUE && prEd != null)
+            prEd.setValue(value);
     }
 
     /**
@@ -126,7 +119,8 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return The value of the property.
      */
     public Object getValue() {
-        return modifiedEditor.getValue(); // value;
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.getValue() : value;
     }
 
     // -----------------------------------------------------------------------------
@@ -137,7 +131,8 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return  True if the class will honor the paintValue method.
      */
     public boolean isPaintable() {
-        return modifiedEditor.isPaintable();
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.isPaintable() : false;
     }
 
     /**
@@ -151,8 +146,10 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param gfx  Graphics object to paint into.
      * @param box  Rectangle within graphics object into which we should paint.
      */
-    public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
-        modifiedEditor.paintValue(gfx, box);
+    public void paintValue(Graphics gfx, Rectangle box) {
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd != null)
+            prEd.paintValue(gfx, box);
     }
 
     // -----------------------------------------------------------------------------
@@ -169,7 +166,8 @@ public class FormPropertyEditor implements PropertyEditor,
      *   	current value.
      */
     public String getJavaInitializationString() {
-        return modifiedEditor.getJavaInitializationString();
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.getJavaInitializationString() : null;
     }
 
     // -----------------------------------------------------------------------------
@@ -185,9 +183,11 @@ public class FormPropertyEditor implements PropertyEditor,
      *	     be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
-        return value != BeanSupport.NO_VALUE ?
-                 modifiedEditor.getAsText() :
-                 FormEditor.getFormBundle().getString("CTL_ValueNotSet"); // NOI18N
+        if (value == BeanSupport.NO_VALUE)
+            return FormEditor.getFormBundle().getString("CTL_ValueNotSet"); // NOI18N
+
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.getAsText() : null;
     }
 
     /**
@@ -199,7 +199,9 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param text  The string to be parsed.
      */
     public void setAsText(String text) throws java.lang.IllegalArgumentException {
-        modifiedEditor.setAsText(text);
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd != null)
+            prEd.setAsText(text);
     }
 
     // -----------------------------------------------------------------------------
@@ -216,7 +218,8 @@ public class FormPropertyEditor implements PropertyEditor,
      *	
      */
     public String[] getTags() {
-        return modifiedEditor.getTags();
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.getTags() : null;
     }
 
     // -----------------------------------------------------------------------------
@@ -236,13 +239,18 @@ public class FormPropertyEditor implements PropertyEditor,
      *	    not supported.
      */
 
-    public java.awt.Component getCustomEditor() {
-        if (modifiedEditor.supportsCustomEditor()) {
-            java.awt.Component customEditor = modifiedEditor.getCustomEditor();
-            if (customEditor instanceof java.awt.Window)
+    public Component getCustomEditor() {
+        Component customEditor;
+
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd != null && prEd.supportsCustomEditor()) {
+            customEditor = prEd.getCustomEditor();
+            if (customEditor instanceof Window)
                 return customEditor;
         }
-        return new FormCustomEditor(this);
+        else customEditor = null;
+
+        return new FormCustomEditor(this, customEditor);
     }
 
     /**
@@ -252,21 +260,33 @@ public class FormPropertyEditor implements PropertyEditor,
      */
     public boolean supportsCustomEditor() {
         PropertyEditor[] editors = getAllEditors();
-        if (editors.length > 1) return true; // we must allow to choose the editor even if none of them supports custom editing
-        if (editors.length == 1) return editors[0].supportsCustomEditor();
+        if (editors.length > 1)
+            return true; // we must  at least allow to choose the editor
+        if (editors.length == 1)
+            return editors[0].supportsCustomEditor();
         return false;
     }
 
-    PropertyEditor[] getAllEditors() {
+    synchronized PropertyEditor[] getAllEditors() {
         if (allEditors == null) {
             PropertyEditor expliciteEditor = property.getExpliciteEditor();
-            allEditors = FormPropertyEditorManager.getAllEditors(property.getValueType());
+            PropertyEditor[] typeEditors = FormPropertyEditorManager
+                                        .getAllEditors(property.getValueType());
             if (expliciteEditor != null) {
-                PropertyEditor[] newAllEditors = new PropertyEditor[allEditors.length + 1];
-                newAllEditors[0] = expliciteEditor;
-                System.arraycopy(allEditors, 0, newAllEditors, 1, allEditors.length);
-                allEditors = newAllEditors;
+                // expliciteEditor could be already in typeEditors
+                for (int i=0; i < typeEditors.length; i++)
+                    if (expliciteEditor.getClass().equals(typeEditors[i].getClass())) {
+                        typeEditors[i] = expliciteEditor;
+                        expliciteEditor = null;
+                        break;
+                    }
             }
+            if (expliciteEditor != null) {
+                allEditors = new PropertyEditor[typeEditors.length+1];
+                allEditors[0] = expliciteEditor;
+                System.arraycopy(typeEditors, 0, allEditors, 1, typeEditors.length);
+            }
+            else allEditors = typeEditors;
         }
         return allEditors;
     }
@@ -278,23 +298,19 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return a custom property editor to be shown inside the property
      *         sheet
      */
-    public java.awt.Component getInPlaceCustomEditor() {
-        if (modifiedEditor instanceof EnhancedPropertyEditor) {
-            return((EnhancedPropertyEditor)modifiedEditor).getInPlaceCustomEditor();
-        } else {
-            return null;
-        }
+    public Component getInPlaceCustomEditor() {
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd instanceof EnhancedPropertyEditor ?
+               ((EnhancedPropertyEditor)prEd).getInPlaceCustomEditor() : null;
     }
 
     /** Test for support of in-place custom editors.
      * @return <code>true</code> if supported
      */
     public boolean hasInPlaceCustomEditor() {
-        if (modifiedEditor instanceof EnhancedPropertyEditor) {
-            return((EnhancedPropertyEditor)modifiedEditor).hasInPlaceCustomEditor();
-        } else {
-            return false;
-        }
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd instanceof EnhancedPropertyEditor ?
+               ((EnhancedPropertyEditor)prEd).hasInPlaceCustomEditor() : false;
     }
 
     /** Test for support of editing of tagged values.
@@ -302,11 +318,9 @@ public class FormPropertyEditor implements PropertyEditor,
      * @return <code>true</code> if supported
      */
     public boolean supportsEditingTaggedValues() {
-        if (modifiedEditor instanceof EnhancedPropertyEditor) {
-            return((EnhancedPropertyEditor)modifiedEditor).supportsEditingTaggedValues();
-        } else {
-            return false;
-        }
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd instanceof EnhancedPropertyEditor ?
+               ((EnhancedPropertyEditor)prEd).supportsEditingTaggedValues() : false;
     }
 
     // -------------------------------------------------------------
@@ -328,11 +342,11 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param listener  An object to be invoked when a PropertyChange
      *		event is fired.
      */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-        if (listeners == null) {
-            listeners = new java.util.Vector();
-        }
-        listeners.addElement(listener);
+    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
+        if (listeners == null)
+            listeners = new ArrayList();
+
+        listeners.add(l);
     }
 
     /**
@@ -340,11 +354,9 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param listener  The PropertyChange listener to be removed.
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-        if (listeners == null) {
-            return;
-        }
-        listeners.removeElement(listener);
+    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
+        if (listeners != null)
+            listeners.remove(l);
     }
 
     /**
@@ -353,18 +365,18 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param source  The PropertyEditor that caused the event.
      */
     void firePropertyChange() {
-        java.util.Vector targets;
+        java.util.List targets;
         synchronized(this) {
             if (listeners == null)
                 return;
-            targets =(java.util.Vector) listeners.clone();
+            targets = (java.util.ArrayList) listeners;
         }
 
         PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
 
         for (int i = 0; i < targets.size(); i++) {
             PropertyChangeListener target = (PropertyChangeListener)
-                                            targets.elementAt(i);
+                                            targets.get(i);
             target.propertyChange(evt);
         }
     }
@@ -378,20 +390,21 @@ public class FormPropertyEditor implements PropertyEditor,
      */
     public void attachEnv(PropertyEnv env) {
         propertyEnv = new WeakReference(env);
-        if (modifiedEditor instanceof ExPropertyEditor)
-            ((ExPropertyEditor)modifiedEditor).attachEnv(env);
+        PropertyEditor prEd = property.getCurrentEditor();
+        if (prEd instanceof ExPropertyEditor)
+            ((ExPropertyEditor)prEd).attachEnv(env);
     }
 
     // ---------
-    // delegating hashCode and equals to modifiedEditor - for PropertyPanel
-    // mapping property editors to PropertyEnv
+    // delegating hashCode() and equals(Object) methods to modifiedEditor - for
+    // PropertyPanel mapping property editors to PropertyEnv
 
     public int hashCode() {
-        return modifiedEditor.hashCode();
+        PropertyEditor prEd = property.getCurrentEditor();
+        return prEd != null ? prEd.hashCode() : super.hashCode();
     }
 
     public boolean equals(Object obj) {
-        if (obj == null) return false;
-        return modifiedEditor.hashCode() == obj.hashCode();
+        return obj != null ? hashCode() == obj.hashCode() : false;
     }
 }

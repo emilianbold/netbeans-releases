@@ -89,6 +89,7 @@ public abstract class FormProperty extends Node.Property {
     String preCode;
     String postCode;
 
+    FormPropertyEditor formPropertyEditor;
     PropertyEditor currentEditor;
 
     private ArrayList propListeners;
@@ -447,15 +448,18 @@ public abstract class FormProperty extends Node.Property {
      * setCurrentEditor(...) and getExpliciteEditor().
      */
     public PropertyEditor getPropertyEditor() {
-        PropertyEditor defaultEd = getCurrentEditor();//findDefaultEditor();
+        PropertyEditor prEd;
 
-        if (!propertyContext.useMultipleEditors()) {
-            propertyContext.initPropertyEditor(defaultEd);
-            return defaultEd;
+        if (formPropertyEditor == null) {
+            if (propertyContext.useMultipleEditors()) {
+                formPropertyEditor = new FormPropertyEditor(this);
+                prEd = formPropertyEditor;
+            }
+            else prEd = getCurrentEditor();
         }
+        else prEd = formPropertyEditor;
 
-        return defaultEd != null ?
-                 new FormPropertyEditor(this) : null;
+        return prEd;
     }
 
     /** Gets the currently selected property editor (from multiple editors
@@ -464,7 +468,8 @@ public abstract class FormProperty extends Node.Property {
     public final PropertyEditor getCurrentEditor() {
         if (currentEditor == null) {
             currentEditor = findDefaultEditor();
-            propertyContext.initPropertyEditor(currentEditor);
+            if (currentEditor != null)
+                propertyContext.initPropertyEditor(currentEditor);
         }
         return currentEditor;
     }
@@ -472,13 +477,22 @@ public abstract class FormProperty extends Node.Property {
     /** Sets the current property editor that will be used for this property
      * by FormPropertyEditor.
      */
-    public final void setCurrentEditor(PropertyEditor editor) {
-        PropertyEditor old = currentEditor;
-        propertyContext.initPropertyEditor(editor);
-        currentEditor = editor;
+    public final void setCurrentEditor(PropertyEditor newEditor) {
+        if (newEditor != currentEditor) {
+            if (newEditor != null)
+                propertyContext.initPropertyEditor(newEditor);
 
-        if (old != editor)
-            currentEditorChanged(old, editor);
+            if (formPropertyEditor != null) {
+                if (currentEditor != null)
+                    currentEditor.removePropertyChangeListener(formPropertyEditor);
+                if (newEditor != null)
+                    newEditor.addPropertyChangeListener(formPropertyEditor);
+            }
+
+            PropertyEditor old = currentEditor;
+            currentEditor = newEditor;
+            currentEditorChanged(old, newEditor);
+        }
     }
 
     /** Gets the property editor explicitly designated for this property.
@@ -555,9 +569,21 @@ public abstract class FormProperty extends Node.Property {
         return propertyContext;
     }
 
-    public void setPropertyContext(FormPropertyContext context) {
-        propertyContext = context != null ? context :
-                          FormPropertyContext.EmptyImpl.getInstance();
+    public void setPropertyContext(FormPropertyContext newContext) {
+        if (newContext == null)
+            newContext = FormPropertyContext.EmptyImpl.getInstance();
+        if (propertyContext != null
+            && formPropertyEditor != null
+            && propertyContext.useMultipleEditors()
+                 != newContext.useMultipleEditors())
+        {
+            if (currentEditor != null)
+                currentEditor.removePropertyChangeListener(formPropertyEditor);
+            formPropertyEditor = null;
+        }
+
+        propertyContext = newContext;
+
         if (currentEditor != null)
             propertyContext.initPropertyEditor(currentEditor);
     }

@@ -11,12 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/*
- * FormCustomEditor.java
- *
- * Created on March 1, 2001, 11:52 AM
- */
-
 package org.netbeans.modules.form;
 
 import org.openide.*;
@@ -39,8 +33,8 @@ import javax.swing.border.EmptyBorder;
  * @author  Ian Formanek, Vladimir Zboril
  */
 public class FormCustomEditor extends JPanel
-                              implements EnhancedCustomPropertyEditor {
-
+                              implements EnhancedCustomPropertyEditor
+{
     private static final int DEFAULT_WIDTH  = 350;
     private static final int DEFAULT_HEIGHT = 350;
 
@@ -55,10 +49,10 @@ public class FormCustomEditor extends JPanel
     private String preCode;
     private String postCode;
 
-    static final long serialVersionUID =-5566324092702416875L;
-    
     /** Creates new form FormCustomEditor */
-    public FormCustomEditor(FormPropertyEditor editor) {
+    public FormCustomEditor(FormPropertyEditor editor,
+                            Component currentCustomEditor)
+    {
         initComponents();
 
         advancedButton.setText(FormEditor.getFormBundle().getString("CTL_Advanced")); // NOI18N
@@ -80,28 +74,27 @@ public class FormCustomEditor extends JPanel
         postCode = editor.getProperty().getPostCode();
         allEditors = editor.getAllEditors();
 
-        PropertyEditor currentEditor = editor.getModifiedEditor();
-        if (currentEditor == null) {
-            currentEditor = allEditors[0];
-//            editor.setModifiedEditor(currentEditor);
-        }
-      
-        int currentIndex = -1;
+        PropertyEditor currentEditor = editor.getCurrentEditor();
+        int currentIndex;
 
-        for (int i=0; i < allEditors.length; i++)
-            if (allEditors[i].getClass().equals(currentEditor.getClass())) {
-                currentIndex = i;
-                allEditors[i] = currentEditor;
-                break;
+        if (currentEditor != null) {
+            currentIndex = -1;
+            for (int i=0; i < allEditors.length; i++)
+                if (currentEditor.getClass().equals(allEditors[i].getClass())) {
+                    currentIndex = i;
+                    allEditors[i] = currentEditor;
+                    break;
+                }
+            if (currentIndex == -1) {
+                // this should not happen, but we cannot exclude it
+                PropertyEditor[] editors = new PropertyEditor[allEditors.length+1];
+                editors[0] = currentEditor;
+                System.arraycopy(allEditors, 0, editors, 1, allEditors.length);
+                allEditors = editors;
+                currentIndex = 0;
             }
-
-        if (currentIndex == -1) {
-            PropertyEditor[] editors = new PropertyEditor[allEditors.length+1];
-            editors[0] = currentEditor;
-            System.arraycopy(allEditors, 0, editors, 1, allEditors.length);
-            allEditors = editors;
-            currentIndex = 0;
         }
+        else currentIndex = 0;
 
         allCustomEditors = new Component[allEditors.length];
         validValues = new boolean[allEditors.length];
@@ -109,13 +102,14 @@ public class FormCustomEditor extends JPanel
         PropertyEnv env = editor.getPropertyEnv();
         Object currentValue = editor.getValue();
 
+        // go through all available property editors, set their values and
+        // setup their cutom editors
         for (int i=0; i < allEditors.length; i++) {
             PropertyEditor prEd = allEditors[i];
             editor.getPropertyContext().initPropertyEditor(prEd);
 
             boolean valueSet = false;
             if (i == currentIndex) { // this is the currently used editor
-//                prEd.setValue(currentValue);
                 valueSet = true;
             }
             else {
@@ -124,8 +118,9 @@ public class FormCustomEditor extends JPanel
 
                 if (currentValue != null) {
                     if (editor.getPropertyType().isAssignableFrom(
-                                                   currentValue.getClass())) {
-                        // currentValue contains a real property value
+                                           currentValue.getClass()))
+                    {   // currentValue is a real property value corresponding
+                        // to property editor value type
                         prEd.setValue(currentValue);
                         valueSet = true;
                     }
@@ -139,12 +134,19 @@ public class FormCustomEditor extends JPanel
                         }
                     }
                 }
+                // [null value should not be set?]
+
                 if (!valueSet) {
+                    // no reasonable value for this property editor, try to
+                    // set the default value
                     Object defaultValue = editor.getProperty().getDefaultValue();
                     if (defaultValue != BeanSupport.NO_VALUE) {
                         prEd.setValue(defaultValue);
                         valueSet = true;
                     }
+                    // [but if there's no default value it is not possible to
+                    // switch to this property editor and enter something - see
+                    // getPropertyValue() - it returns BeanSupport.NO_VALUE]
                 }
             }
             validValues[i] = valueSet;
@@ -154,11 +156,16 @@ public class FormCustomEditor extends JPanel
                         Utilities.getShortClassName(prEd.getClass());
 
             Component custEd = null;
-            if (!prEd.supportsCustomEditor()
-                    || (custEd = prEd.getCustomEditor()) instanceof Window) {
+            if (i == currentIndex)
+                custEd = currentCustomEditor;
+            else if (prEd.supportsCustomEditor())
+                custEd = prEd.getCustomEditor();
+
+            if (custEd == null || custEd instanceof Window) {
                 JPanel p = new JPanel(new GridBagLayout());
-                JLabel label = new JLabel(FormEditor.getFormBundle().getString("CTL_PropertyEditorDoesNot")); // NOI18N
-                p.add(label); 
+                JLabel label = new JLabel(FormEditor.getFormBundle()
+                                    .getString("CTL_PropertyEditorDoesNot")); // NOI18N
+                p.add(label);
                 p.getAccessibleContext().setAccessibleDescription(label.getText());
                 custEd = p;
             }
@@ -176,7 +183,6 @@ public class FormCustomEditor extends JPanel
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 CardLayout cl2 = (CardLayout) cardPanel.getLayout();
                 cl2.show(cardPanel, (String) editorsCombo.getSelectedItem());
-//                FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
 
                 int i = editorsCombo.getSelectedIndex();
                 HelpCtx helpCtx = i < 0 ? null :
@@ -187,7 +193,7 @@ public class FormCustomEditor extends JPanel
                 updateAccessibleDescription(i < 0 ? null : cardPanel.getComponent(i));
             }
         });
-        
+
         updateAccessibleDescription(cardPanel.getComponent(currentIndex));
         advancedButton.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_CTL_Advanced"));
         editorsCombo.getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_BTN_SelectMode"));
@@ -310,38 +316,40 @@ public class FormCustomEditor extends JPanel
 
     /** Get the customized property value.
      * @return the property value
-     * @exception InvalidStateException when the custom property editor does not contain a valid property value
-     *(and thus it should not be set)
+     * @exception InvalidStateException when the custom property editor does
+     * not contain a valid property value (and thus it should not be set)
      */
     public Object getPropertyValue() throws IllegalStateException {
         int currentIndex = editorsCombo.getSelectedIndex();
+        PropertyEditor currentEditor = currentIndex > -1 ?
+                                       allEditors[currentIndex] : null;
         Component currentCustomEditor = currentIndex > -1 ?
-                                          allCustomEditors[currentIndex] : null;
+                                        allCustomEditors[currentIndex] : null;
         Object value;
 
-        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor)
+        if (currentCustomEditor instanceof EnhancedCustomPropertyEditor) {
+            // current editor is EnhancedCustomPropertyEditor too
             value = ((EnhancedCustomPropertyEditor) currentCustomEditor)
                                                         .getPropertyValue();
+        }
         else if (currentIndex > -1) {
-            value = validValues[currentIndex] ?
-                      allEditors[currentIndex].getValue() :
-                      BeanSupport.NO_VALUE;
+            value = validValues[currentIndex] ? currentEditor.getValue() :
+                                                BeanSupport.NO_VALUE;
         }
         else value = editor.getValue();
 
         // set the current property editor to FormPropertyEditor (to be used as
-        // custom editor provider next time; and also for code generation)
-        // - it should be set to all properties (of all nodes selected)
+        // the custom editor provider next time; and also for code generation);
+        // it should be set for all properties (of all nodes selected)
         if (currentIndex > -1) {
             Object[] nodes = editor.getPropertyEnv().getBeans();
             if (nodes == null || nodes.length <= 1) {
                 editor.getProperty().setPreCode(preCode);
                 editor.getProperty().setPostCode(postCode);
 
-                editor.setModifiedEditor(allEditors[currentIndex]);
-                editor.commitModifiedEditor();
+                editor.setCurrentEditor(currentEditor);
             }
-            else {
+            else { // there are more nodes selected
                 for (int i=0; i < nodes.length; i++) {
                     if (!(nodes[i] instanceof Node))
                         break; // these are not nodes...
@@ -360,8 +368,16 @@ public class FormCustomEditor extends JPanel
                     if (pe instanceof FormPropertyEditor) {
                         prop.setPreCode(preCode);
                         prop.setPostCode(postCode);
-                        prop.setCurrentEditor(((FormPropertyEditor)pe)
-                                                .getAllEditors()[currentIndex]);
+                        // set the current editor for this FormPropertyEditor,
+                        // but be sure it matches via currentIndex
+                        FormPropertyEditor fpe = (FormPropertyEditor) pe;
+                        PropertyEditor[] allEds = fpe.getAllEditors();
+                        if (currentIndex < allEds.length
+                            && currentEditor.getClass().equals(
+                                 allEds[currentIndex].getClass()))
+                        {
+                            fpe.setCurrentEditor(allEds[currentIndex]);
+                        }
                     }
                 }
             }
@@ -369,7 +385,6 @@ public class FormCustomEditor extends JPanel
 
         return value;
     }
-
 
     public PropertyEditor getCurrentPropertyEditor() {
         int index = editorsCombo.getSelectedIndex();
@@ -380,5 +395,4 @@ public class FormCustomEditor extends JPanel
         int index = editorsCombo.getSelectedIndex();
         return (index == -1) ? null : allCustomEditors[index];
     }
-    
 }
