@@ -68,13 +68,11 @@ public class StartActionProvider extends ActionsProvider {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
                         Operator o = createOperator (virtualMachine);
+                        o.start ();
                         debuggerImpl.setRunning (
                             virtualMachine,
                             o
                         );
-                        o.start ();
-//                        virtualMachine.resume ();
-//                        debuggerImpl.setRunning ();
                     } catch (Exception ex) {
                         debuggerImpl.setException (ex);
                         ((Session) lookupProvider.lookupFirst 
