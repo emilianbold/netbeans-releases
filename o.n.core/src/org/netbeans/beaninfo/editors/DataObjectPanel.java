@@ -36,7 +36,7 @@ import org.openide.util.*;
  * currently selected node.
  * @author Joe Warzecha
  */
-public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEditor {
+public class DataObjectPanel extends JPanel {
     
     final static int DEFAULT_INSET = 10;
     
@@ -172,12 +172,14 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
                 if (evt.getPropertyName().equals
                 (ExplorerManager.PROP_SELECTED_NODES)) {
                     Node [] nodes = (Node []) evt.getNewValue();
+                    DataObject d = getDataObject();
+                    myEditor.setValue( d );
                     if ((nodes != null) && (nodes.length > 0) && 
-                    (dataFilter != null) && (getDataObject() != null)) {
+                    (dataFilter != null) && (d != null)) {
                         myEditor.setOkButtonEnabled(
-                            dataFilter.acceptDataObject(getDataObject())); 
+                            dataFilter.acceptDataObject( d )); 
                     } else {
-                        myEditor.setOkButtonEnabled(getDataObject() != null);
+                        myEditor.setOkButtonEnabled( d != null );
                     }
                 }
             }
