@@ -62,9 +62,10 @@ public class JellyTestCase extends NbTestCase {
         super(testName);
     }
     
-    /** Overriden method from JUnit framework execution to perform conditional 
+    /** Overriden method from JUnit framework execution to perform conditional
      * screen shot and conversion from TimeoutExpiredException to AssertionFailedError.<br>
      * Redirects output and waits a second before test execution.
+     * @throws Throwable Throwable
      */
     public void runBare() throws Throwable {
         PrintStream jemmyLog = getLog("jemmy.log");
@@ -136,4 +137,13 @@ public class JellyTestCase extends NbTestCase {
         }
         new JDialogOperator(dialog).close();
     }
+    
+    /** Finishes test with status Fail
+     * @param t Throwable reason of test failure
+     */    
+    public void fail(Throwable t) {
+        t.printStackTrace(getLog());
+        throw new AssertionFailedErrorException(t);
+    }
+    
 }
