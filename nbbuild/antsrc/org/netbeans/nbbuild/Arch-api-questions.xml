@@ -71,10 +71,12 @@ edits in the text of a question, you need not change the version number.
         </question>
         
         <question id="arch-quality" when="init">
-            How the quality of your code will be tested and 
+            How the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
+            of your code will be tested and 
             how future regressions are going to be prevented?
             <hint>
-            What kind of testing you want to use? What/how much area of functionality
+            What kind of testing
+            you want to use? What/how much area of functionality
             should be covered by the tests? 
             </hint>
         </question>
@@ -264,7 +266,7 @@ edits in the text of a question, you need not change the version number.
     <category id="lookup" name="Lookup of components">
         <question id="lookup-lookup" when="init" >
             Does your module use <code>org.openide.util.Lookup</code>
-            to find any components to communicate with? Which ones?
+            or any similar technology to find any components to communicate with? Which ones?
             
             <hint>
             Please describe the interfaces you are searching for, where 
