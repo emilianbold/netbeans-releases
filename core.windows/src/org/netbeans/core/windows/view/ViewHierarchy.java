@@ -715,15 +715,6 @@ final class ViewHierarchy {
 
     }
     
-    /**
-     * front the editor frame if it exists.
-     */
-    private void frontEditorFrame() {
-        if (editorAreaFrame != null) {
-            editorAreaFrame.toFront();
-        }
-    }
-    
     
     private List getComponentAWTHierarchyChain(Component comp) {
         List l = new ArrayList();

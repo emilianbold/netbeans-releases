@@ -63,7 +63,8 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
     protected void updateActive(boolean active) {
         if(active) {
             Window window = SwingUtilities.getWindowAncestor(panel);
-            if(window != null && !window.isActive()) {
+            if(window != null && !window.isActive() && WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
+                // only front in SDI, in MID assume that it's either active or user doens't want it active..
                 window.toFront();
             }
         }

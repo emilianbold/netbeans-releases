@@ -133,7 +133,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     
     protected void updateActive(boolean active) {
         if(active) {
-            if (frame.isVisible()) {
+            if (frame.isVisible() && !frame.isActive()) {
                 frame.toFront();
             }
         } 

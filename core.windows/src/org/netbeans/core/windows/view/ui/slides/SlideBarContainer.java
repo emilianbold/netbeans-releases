@@ -74,7 +74,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
         // #48588 - when in SDI, slidein needs to front the editor frame.
         if(active) {
             Window window = SwingUtilities.getWindowAncestor(panel);
-            if(window != null && !window.isActive()) {
+            if(window != null && !window.isActive() && WindowManagerImpl.getInstance().getEditorAreaState() == Constants.EDITOR_AREA_SEPARATED) {
                 window.toFront();
             }
         }
