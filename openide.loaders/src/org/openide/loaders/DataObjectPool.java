@@ -163,6 +163,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             if (priviledged != null) throw new IllegalStateException ("Previous priviledged is not null: " + priviledged + " now: " + delegate); // NOI18N
             priviledged = delegate;
         }
+        // wakeup everyone in enterRecognition, as this changes the conditions there
+        notifyAll ();
     }
     
     /** Exits the priviledged processor.
@@ -172,6 +174,8 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             if (priviledged != delegate) throw new IllegalStateException ("Trying to unregister wrong priviledged. Prev: " + priviledged + " now: " + delegate); // NOI18N
             priviledged = null;
         }
+        // wakeup everyone in enterRecognition, as this changes the conditions there
+        notifyAll ();
     }
     
     /** Checks whether it is safe to enter the recognition. 
@@ -187,7 +191,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 // ok, reentering again
                 return;
             }
-            
             if (priviledged != null && priviledged.isRequestProcessorThread()) {
                 // ok, we have priviledged request processor thread
                 return;
