@@ -71,7 +71,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private static final ListCellRenderer PROJECT_CELL_RENDERER = new ProjectCellRenderer();
     
     /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
     // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
@@ -93,6 +93,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             }
         });
         initValues( p );        
+        setPreferredSize( PREF_DIM );
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
         projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                
      }

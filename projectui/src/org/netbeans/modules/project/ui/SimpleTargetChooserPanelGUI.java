@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
 public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements ActionListener, DocumentListener {
   
     /** prefered dimmension of the panels */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
         

@@ -52,7 +52,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_DefaultNewPackageName" ); // NOI18N
     
     /** prefered dimmension of the panel */
-    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
+    private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (500, 340);
     
     private static final ListCellRenderer CELL_RENDERER = new NodeCellRenderer();
     
@@ -101,6 +101,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         packageComboBox.setRenderer( CELL_RENDERER );                
         rootComboBox.addActionListener( this );
         
+        setPreferredSize( PREF_DIM );
         setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
     

@@ -239,8 +239,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         setPreferredSize(new java.awt.Dimension(500, 230));
         jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("MNE_Categories").charAt(0));
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Categories"));
         jLabel1.setLabelFor(categoriesPanel);
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Categories"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -281,8 +281,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         add(projectsPanel, gridBagConstraints);
 
         jLabel3.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_DescriptionMnemonic").charAt(0));
-        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Description"));
         jLabel3.setLabelFor(description);
+        jLabel3.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("CTL_Description"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -292,7 +292,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
 
         description.setEditable(false);
         description.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
-        description.setPreferredSize(new java.awt.Dimension(100, 60));
+        description.setPreferredSize(new java.awt.Dimension(100, 66));
         jScrollPane1.setViewportView(description);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -303,7 +303,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.3;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
     }//GEN-END:initComponents
