@@ -38,7 +38,6 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
     // private PrintStream wrapper for System.out
     private PrintStream systemOutPSWrapper = new PrintStream(System.out);
     private int index = 0;
-    public static final int WAIT_MAX_MILIS_FOR_CLIPBOARD = 4000;
     public static final int WAIT_MAX_MILIS_FOR_UNDO_REDO = 2000;      
       
     /** Creates a new instance of Main */
@@ -153,34 +152,5 @@ import org.netbeans.jemmy.operators.JEditorPaneOperator;
         return fileLengthValueResolver;
     }
     
-    protected ValueResolver getClipboardResolver(final JEditorPaneOperator txtOper, final Transferable oldClipValue){
-        
-        ValueResolver clipboardValueResolver = new ValueResolver(){
-            public Object getValue(){
-                Transferable newClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
-                log("newClipValue:"+newClipValue);
-                return (newClipValue == oldClipValue) ? Boolean.TRUE : Boolean.FALSE;
-            }
-        };
-        
-        return clipboardValueResolver;
-    }
-
-    protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){
-        Transferable oldClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
-        log("");
-        log("oldClipValue:"+oldClipValue);
-        txtOper.pushKey(key, mod);
-        // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
-        boolean success = waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, oldClipValue), Boolean.FALSE);
-        if (success == false){
-            // give it one more chance. maybe selection was not ready at the time of
-            // copying
-            log("!!!! ONCE AGAIN");
-            txtOper.pushKey(key, mod);
-            // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
-            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, oldClipValue), Boolean.FALSE);
-        }
-    }
     
 }

@@ -19,6 +19,7 @@
 
 package lib;
 
+import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.util.StringTokenizer;
 import javax.swing.text.BadLocationException;
@@ -35,11 +36,13 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
  *
- * @author  Petr Felenda
+ * @author  Petr Felenda, Martin Roskanin
  */
 public class EditorTestCase extends JellyTestCase {
     
@@ -57,6 +60,7 @@ public class EditorTestCase extends JellyTestCase {
     private String treeSubPackagePathToFile = null;
     private String fileName = null;
     private final String dialogSaveTitle = "Save";  // I18N
+    public static final int WAIT_MAX_MILIS_FOR_CLIPBOARD = 4000;
     
     /**
      * Creates a new instance of EditorTestCase.
@@ -374,4 +378,48 @@ public class EditorTestCase extends JellyTestCase {
         Object getValue();
     }
 
+    protected ValueResolver getClipboardResolver(final JEditorPaneOperator txtOper, final Transferable oldClipValue){
+        
+        ValueResolver clipboardValueResolver = new ValueResolver(){
+            public Object getValue(){
+                Transferable newClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
+                log("newClipValue:"+newClipValue);
+                return (newClipValue == oldClipValue) ? Boolean.TRUE : Boolean.FALSE;
+            }
+        };
+        
+        return clipboardValueResolver;
+    }
+
+    protected void cutCopyViaStrokes(JEditorPaneOperator txtOper, int key, int mod){
+        Transferable oldClipValue = txtOper.getToolkit().getSystemClipboard().getContents(txtOper);
+        log("");
+        log("oldClipValue:"+oldClipValue);
+        txtOper.pushKey(key, mod);
+        // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+        boolean success = waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, oldClipValue), Boolean.FALSE);
+        if (success == false){
+            // give it one more chance. maybe selection was not ready at the time of
+            // copying
+            log("!!!! ONCE AGAIN");
+            txtOper.pushKey(key, mod);
+            // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+            waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, getClipboardResolver(txtOper, oldClipValue), Boolean.FALSE);
+        }
+    }
+
+    protected void pasteViaStrokes(ComponentOperator compOper, int key, int mod, ValueResolver resolver){
+        compOper.pushKey(key, mod);
+        // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+        if (resolver !=null){
+            boolean success = waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, resolver, Boolean.TRUE);
+            if (success == false){
+                // give it one more chance.
+                compOper.pushKey(key, mod);
+                // give max WAIT_MAX_MILIS_FOR_CLIPBOARD milis for clipboard to change
+                waitMaxMilisForValue(WAIT_MAX_MILIS_FOR_CLIPBOARD, resolver, Boolean.TRUE);
+            }
+        }
+    }
+    
 }

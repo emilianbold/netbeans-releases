@@ -13,6 +13,7 @@
 
 package search_replace;
 
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -466,6 +467,28 @@ public class SearchAndReplaceTest extends lib.EditorTestCase{
             checkIncrementalSearch(find, "t", 295, 299);
             checkIncrementalSearch(find, "X", -1, -1); // fails - behind selected area
             find.close();
+            
+            //#52115
+            // firstly try CTRL+V
+            editor.setCaretPosition(16, 9);  //word "search"
+            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+            editor.setCaretPosition(1, 1);
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            pasteViaStrokes(find, KeyEvent.VK_V, KeyEvent.CTRL_DOWN_MASK, null);
+            find.find();
+            find.close();
+            checkSelection(txtOper, 8, 14, "Issue #52115 testing failed on CTRL+V!");
+            // then Shift+Insert
+            editor.setCaretPosition(327);  //word "text"
+            txtOper.pushKey(KeyEvent.VK_J, KeyEvent.ALT_DOWN_MASK);
+            cutCopyViaStrokes(txtOper, KeyEvent.VK_C, KeyEvent.CTRL_DOWN_MASK);
+            editor.setCaretPosition(1, 1);
+            find = openFindDialog(null, ALL_UNCHECKED); // reset find dialog checkboxes
+            pasteViaStrokes(find, KeyEvent.VK_INSERT, KeyEvent.SHIFT_DOWN_MASK, null);
+            find.find();
+            find.close();
+            checkSelection(txtOper, 167, 171, "Issue #52115 testing failed on Shift+Insert!");
             
         } finally {
             closeFileWithDiscard();
