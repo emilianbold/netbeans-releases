@@ -399,8 +399,12 @@ public class HttpServerSettings extends SystemOption
 
     /** setter for port */
     public void setPort(int p) {
-        if (p <= 0 || p >65535)
-            throw new IllegalArgumentException (NbBundle.getMessage(HttpServerSettings.class, "ERR_PortNumberOutOfRange", new Integer (p)));
+        if (p <= 0 || p >65535) {
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(HttpServerSettings.class, "ERR_PortNumberOutOfRange", new Integer(p)), NotifyDescriptor.ERROR_MESSAGE);
+            
+            DialogDisplayer.getDefault().notify(msg);
+        }
         
         Object old = getProperty(PROP_PORT);
         int port = ((old == null) ? DEFAULT_PORT : ((Integer)old).intValue());
