@@ -36,13 +36,13 @@ public class EntityHelper {
     public EntityHelper(FileObject ejbJarFile, Entity entity) {
         this.entity = entity;
         this.ejbJarFile = ejbJarFile;
-        beanClass = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.getBeanClass(this.ejbJarFile, this.entity);
+        beanClass = Utils.getBeanClass(this.ejbJarFile, this.entity);
         localBusinessInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
         remoteBusinessInterface = Utils.getBusinessInterfaceClass(entity.getRemote(), ejbJarFile, beanClass);
     }
 
     public void addCmpField() {
-        EntityNode entityNode = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.createEntityNode(ejbJarFile,
+        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
                 entity);
         new AddCmpFieldAction() {
             protected void performAction(Node[] activatedNodes) {
@@ -52,7 +52,7 @@ public class EntityHelper {
     }
 
     public void addFinderMethod() {
-        EntityNode entityNode = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.createEntityNode(ejbJarFile,
+        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
                 entity);
         new AddFinderMethodAction() {
             protected void performAction(Node[] activatedNodes) {
@@ -62,7 +62,7 @@ public class EntityHelper {
     }
 
     public void addSelectMethod() {
-        EntityNode entityNode = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.createEntityNode(ejbJarFile,
+        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
                 entity);
         new AddSelectMethodAction() {
             protected void performAction(Node[] activatedNodes) {

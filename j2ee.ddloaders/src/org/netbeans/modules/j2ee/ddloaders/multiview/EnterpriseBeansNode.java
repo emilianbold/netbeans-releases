@@ -15,6 +15,9 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
+import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.MessageDriven;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
@@ -41,7 +44,14 @@ public class EnterpriseBeansNode extends SectionNode {
         });
 
         for (int i = 0; i < ejbs.length; i++) {
-            addChild(new EjbNode(sectionNodeView, ejbs[i]));
+            Ejb ejb = ejbs[i];
+            if (ejb instanceof Session) {
+                addChild(new SessionNode(sectionNodeView, (Session) ejb));
+            } else if (ejb instanceof Entity) {
+                addChild(new EntityNode(sectionNodeView, (Entity) ejb));
+            } else if (ejb instanceof MessageDriven) {
+                addChild(new MessageDrivenNode(sectionNodeView, (MessageDriven) ejb));
+            }
         }
     }
 }

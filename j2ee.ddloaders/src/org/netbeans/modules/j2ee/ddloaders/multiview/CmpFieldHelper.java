@@ -159,7 +159,7 @@ public class CmpFieldHelper extends EntityHelper {
     }
 
     public void addFinderMethod() {
-        EntityNode entityNode = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.createEntityNode(ejbJarFile,
+        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
                 entity);
         new AddFinderMethodAction() {
             protected void performAction(Node[] activatedNodes) {
@@ -169,7 +169,7 @@ public class CmpFieldHelper extends EntityHelper {
     }
 
     public void addSelectMethod() {
-        EntityNode entityNode = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.createEntityNode(ejbJarFile,
+        EntityNode entityNode = Utils.createEntityNode(ejbJarFile,
                 entity);
         new AddSelectMethodAction() {
             protected void performAction(Node[] activatedNodes) {

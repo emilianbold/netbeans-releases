@@ -37,7 +37,7 @@ public class QueryMethodHelper {
         this.entity = entity;
         this.ejbJarFile = ejbJarFile;
         this.query = query;
-        beanClass = org.netbeans.modules.j2ee.ddloaders.multiview.Utils.getBeanClass(this.ejbJarFile, this.entity);
+        beanClass = Utils.getBeanClass(this.ejbJarFile, this.entity);
         isSelectMethod = query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
     }
 
@@ -53,8 +53,7 @@ public class QueryMethodHelper {
         } else {
             //finder method
             String localHomeName = entity.getLocalHome();
-            classElement =
-                    org.netbeans.modules.j2ee.ddloaders.multiview.Utils.getClassElement(ejbJarFile, localHomeName);
+            classElement = Utils.getClassElement(ejbJarFile, localHomeName);
         }
         QueryMethod queryMethod = query.getQueryMethod();
         String[] methodParam = queryMethod.getMethodParams().getMethodParam();
