@@ -514,7 +514,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspparser..."/>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="all-web/core,all-xml/text-edit,all-openide/deprecated">
+  <target name="all-web/jspsyntax" depends="all-web/core,all-xml/text-edit">
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>
