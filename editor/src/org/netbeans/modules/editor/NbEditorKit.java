@@ -14,6 +14,8 @@
 package org.netbeans.modules.editor;
 
 import java.awt.event.ActionEvent;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -24,6 +26,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
@@ -44,11 +47,14 @@ import org.netbeans.editor.ActionFactory.GotoNextBookmarkAction;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseTextUI;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
+import org.netbeans.modules.editor.options.OptionUtilities;
+
 
 /**
 * Java editor kit with appropriate document
@@ -78,6 +84,7 @@ public class NbEditorKit extends ExtKit {
     protected Action[] createActions() {
         Action[] nbEditorActions = new Action[] {
                                        new NbBuildPopupMenuAction(),
+                                       new NbStopMacroRecordingAction(),
                                        new NbUndoAction(),
                                        new NbRedoAction(),
                                        new NbToggleBookmarkAction(),
@@ -199,7 +206,42 @@ public class NbEditorKit extends ExtKit {
 
 
     }
-    
+
+    public class NbStopMacroRecordingAction extends ActionFactory.StopMacroRecordingAction {
+        
+        private BaseOptions bo;
+        
+        private Map getKBMap(){
+            Map ret;
+            List list = bo.getKeyBindingList();
+            if( list.size() > 0 &&
+            ( list.get( 0 ) instanceof Class || list.get( 0 ) instanceof String )
+            ) {
+                list.remove( 0 ); //remove kit class name
+            }
+            ret = OptionUtilities.makeKeyBindingsMap(list);
+            return ret;
+        }
+        
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
+            Map oldMacroMap = null;
+            Map oldKBMap = null;
+            if (bo != null){
+                oldMacroMap = bo.getMacroMap();
+                oldKBMap = getKBMap();
+            }
+            
+            super.actionPerformed(evt, target);
+            
+            if (bo != null){
+                bo.setMacroDiffMap(OptionUtilities.getMapDiff(oldMacroMap, bo.getMacroMap(), true));
+                bo.setKeyBindingsDiffMap(OptionUtilities.getMapDiff(oldKBMap, getKBMap(), true));
+            }
+        }
+        
+    }
+        
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {

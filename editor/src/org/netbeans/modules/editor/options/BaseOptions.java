@@ -594,6 +594,15 @@ public class BaseOptions extends OptionSupport {
         setKeyBindingList(list, true);
     }
     
+    
+    /** Saves keybindings settings to XML file. 
+     *  (This is used especially for record macro action.)*/
+    public void setKeyBindingsDiffMap(Map diffMap){
+        if ((diffMap != null) && (diffMap.size()>0)){
+            updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
+        }
+    }
+    
     /** Sets new keybindings list to initializer map and if saveToXML is true,
      *  then new settings will be saved to XML file. */
     public void setKeyBindingList(List list, boolean saveToXML) {
@@ -746,6 +755,14 @@ public class BaseOptions extends OptionSupport {
         loadDefaultMacros();
         loadSettings(MacrosMIMEProcessor.class);
         return new HashMap( (Map)super.getSettingValue(SettingsNames.MACRO_MAP) );
+    }
+    
+    /** Saves macro settings to XML file. 
+     *  (This is used especially for record macro action.)*/
+    public void setMacroDiffMap(Map diffMap){
+        if ((diffMap != null) && (diffMap.size()>0)){
+            updateSettings(MacrosMIMEProcessor.class, diffMap);
+        }
     }
     
     /** Sets new macro map to initializer map and if saveToXML is true,
