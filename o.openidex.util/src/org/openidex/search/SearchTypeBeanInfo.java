@@ -31,15 +31,15 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
   static {
     try {
-      properties[PROPERTY_class] = new PropertyDescriptor ( "class", SearchType.class, "getClass", null );
+      properties[PROPERTY_class] = new PropertyDescriptor ( "class", SearchType.class, "getClass", null ); // NOI18N
       properties[PROPERTY_class].setHidden ( true );
-      properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" );
+      properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
       properties[PROPERTY_name].setHidden ( true );
-      properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", SearchType.class, "getDisplayName", null );
+      properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", SearchType.class, "getDisplayName", null ); // NOI18N
       properties[PROPERTY_displayName].setHidden ( true );
-      properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null );
+      properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
       properties[PROPERTY_helpCtx].setHidden ( true );
-      properties[PROPERTY_scannerClass] = new PropertyDescriptor ( "scannerClass", SearchType.class, "getScannerClass", null );
+      properties[PROPERTY_scannerClass] = new PropertyDescriptor ( "scannerClass", SearchType.class, "getScannerClass", null ); // NOI18N
       properties[PROPERTY_scannerClass].setHidden ( true );
     }
     catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
@@ -56,7 +56,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
   static {
     try {
-      eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( SearchType.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" );
+      eventSets[EVENT_propertyChangeListener] = new EventSetDescriptor ( SearchType.class, "propertyChangeListener", java.beans.PropertyChangeListener.class, new String[0], "addPropertyChangeListener", "removePropertyChangeListener" ); // NOI18N
     }
     catch( IntrospectionException e) {}//GEN-HEADEREND:Events
 
@@ -68,7 +68,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   private static java.awt.Image iconColor32 = null;
   private static java.awt.Image iconMono16 = null;
   private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";//GEN-BEGIN:Icons
+  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
   private static String iconNameC32 = null;
   private static String iconNameM16 = null;
   private static String iconNameM32 = null;//GEN-END:Icons
@@ -151,7 +151,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   public java.awt.Image getIcon(int iconKind) {
     switch ( iconKind ) {
       case ICON_COLOR_16x16:
-        return Res.image("SEARCH");
+        return Res.image("SEARCH"); // NOI18N
       case ICON_COLOR_32x32:
         if ( iconNameC32 == null )
           return null;
@@ -182,7 +182,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
 
   public BeanDescriptor getBeanDescriptor(){
     BeanDescriptor descr = new BeanDescriptor(SearchType.class);
-    descr.setDisplayName("Search Types");
+    descr.setDisplayName(org.openide.util.NbBundle.getBundle(SearchTypeBeanInfo.class).getString("CTL_SearchTypes"));
     return descr;
   }
   
@@ -190,7 +190,7 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
     try {
       return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
     } catch (IntrospectionException ie) {
-      if (Boolean.getBoolean ("netbeans.debug.exceptions"))
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
         ie.printStackTrace ();
       return null;
     }

@@ -64,7 +64,7 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
     try {
       return super.clone();
     } catch (CloneNotSupportedException ex) {
-      throw new RuntimeException("SearchType must be clonable.");
+      throw new RuntimeException("SearchType must be clonable."); // NOI18N
     }
   }
   
@@ -90,6 +90,7 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
 
 /* 
 * Log
+*  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
 *  4    Gandalf   1.3         1/4/00   Petr Kuzel      Polymorphism
 *  3    Gandalf   1.2         12/15/99 Martin Balin    Fixed package statement
 *  2    Gandalf   1.1         12/14/99 Petr Kuzel      Enforcing Cloneable.

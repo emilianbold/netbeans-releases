@@ -157,7 +157,7 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
       gridBagConstraints1.gridy = 0;
       gridBagConstraints1.insets = new java.awt.Insets (8, 8, 0, 8);
       gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-      add (new JLabel ("Select Cursor Name"), gridBagConstraints1);
+      add (new JLabel (org.openide.util.NbBundle.getBundle (CursorEditor.class).getString ("CTL_SelectCursorName")), gridBagConstraints1);
     }
     
     public Object getPropertyValue () throws IllegalStateException {
@@ -210,6 +210,7 @@ public class CursorEditor extends PropertyEditorSupport  implements EnhancedProp
 
 /*
  * Log
+ *  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
  *  4    Gandalf   1.3         1/13/00  Ian Formanek    NOI18N #2
  *  3    Gandalf   1.2         12/17/99 Pavel Buzek     support for saving into 
  *       XML
