@@ -141,7 +141,7 @@ public class RunTargetsAction extends CookieAction implements Presenter.Popup {
             for (int i = 0; i < nl.getLength (); i++) {
                 if (nl.item (i) instanceof Element) {
                     Element targ = (Element) nl.item (i);
-                    if (! targ.getNodeName ().equals ("target")) continue; // NI18N
+                    if (! targ.getNodeName ().equals ("target")) continue; // NOI18N
                     String targname = targ.getAttribute ("name"); // NOI18N
                     String descr = targ.getAttribute ("description"); // NOI18N
                     if (descr.length () == 0) {
