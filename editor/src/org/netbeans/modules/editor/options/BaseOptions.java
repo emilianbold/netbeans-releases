@@ -82,6 +82,7 @@ public class BaseOptions extends OptionSupport {
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
     public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
+    public static final String MACRO_MAP_PROP = "macroMap"; // NOI18N
     public static final String MARGIN_PROP = "margin"; // NOI18N
     public static final String SCROLL_FIND_INSETS_PROP = "scrollFindInsets"; // NOI18N
     public static final String SCROLL_JUMP_INSETS_PROP = "scrollJumpInsets"; // NOI18N
@@ -112,6 +113,7 @@ public class BaseOptions extends OptionSupport {
         LINE_HEIGHT_CORRECTION_PROP,
         LINE_NUMBER_MARGIN_PROP,
         LINE_NUMBER_VISIBLE_PROP,
+        MACRO_MAP_PROP,
         MARGIN_PROP,
         SCROLL_FIND_INSETS_PROP,
         SCROLL_JUMP_INSETS_PROP,
@@ -380,6 +382,14 @@ public class BaseOptions extends OptionSupport {
             LINE_HEIGHT_CORRECTION_PROP);
     }
 
+    public Map getMacroMap() {
+        return new HashMap( (Map)getSettingValue(SettingsNames.MACRO_MAP) );
+    }
+
+    public void setMacroMap(Map map) {
+        setSettingValue(SettingsNames.MACRO_MAP, map);
+    }
+
     public Insets getMargin() {
         return (Insets)getSettingValue(SettingsNames.MARGIN);
     }
@@ -539,34 +549,3 @@ public class BaseOptions extends OptionSupport {
     }
 
 }
-
-/*
- * Log
- *  22   Jaga      1.14.1.1.1.44/13/00  Miloslav Metelka 
- *  21   Jaga      1.14.1.1.1.33/24/00  Miloslav Metelka 
- *  20   Jaga      1.14.1.1.1.23/21/00  Miloslav Metelka 
- *  19   Jaga      1.14.1.1.1.13/20/00  Miloslav Metelka 
- *  18   Jaga      1.14.1.1.1.03/15/00  Miloslav Metelka Structural change
- *  17   Gandalf-post-FCS1.14.1.1    2/28/00  Petr Nejedly    
- *  16   Gandalf-post-FCS1.14.1.0    2/28/00  Petr Nejedly    Redesign of 
- *       ColoringEditor
- *  15   Gandalf   1.14        1/13/00  Miloslav Metelka Localization
- *  14   Gandalf   1.13        1/10/00  Miloslav Metelka 
- *  13   Gandalf   1.12        12/28/99 Miloslav Metelka 
- *  12   Gandalf   1.11        11/11/99 Miloslav Metelka 
- *  11   Gandalf   1.10        11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         9/15/99  Miloslav Metelka 
- *  8    Gandalf   1.7         8/27/99  Miloslav Metelka 
- *  7    Gandalf   1.6         8/17/99  Miloslav Metelka 
- *  6    Gandalf   1.5         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  5    Gandalf   1.4         7/29/99  Miloslav Metelka 
- *  4    Gandalf   1.3         7/26/99  Miloslav Metelka 
- *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
- *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
- *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
- * $
- */
