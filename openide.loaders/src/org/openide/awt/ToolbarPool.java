@@ -18,6 +18,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Toolkit;
 import java.awt.event.*;
 import java.util.*;
 
@@ -117,14 +118,18 @@ public final class ToolbarPool extends JComponent implements Accessible {
         getAccessibleContext().setAccessibleDescription(instance.instanceName());
 
         if (UIManager.getLookAndFeel() instanceof com.sun.java.swing.plaf.windows.WindowsLookAndFeel) {
-            //Set up custom borders for XP
-            setBorder(BorderFactory.createCompoundBorder(
-                upperBorder, 
-                BorderFactory.createCompoundBorder(
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, 
-                    fetchColor("controlShadow", Color.DARK_GRAY)),
-                    BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
-            )); //NOI18N
+            if( isXPTheme() ) {
+                //Set up custom borders for XP
+                setBorder(BorderFactory.createCompoundBorder(
+                    upperBorder, 
+                    BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, 
+                        fetchColor("controlShadow", Color.DARK_GRAY)),
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
+                )); //NOI18N
+            } else {
+                setBorder( BorderFactory.createEtchedBorder() );
+            }
         }
     }
     
@@ -382,6 +387,20 @@ public final class ToolbarPool extends JComponent implements Accessible {
         }
         return accessibleContext;
     }
+
+    /** Recognizes if XP theme is set.
+     *  (copy & paste from org.openide.awt.Toolbar to avoid API changes)
+     * @return true if XP theme is set, false otherwise
+     */
+    private static Boolean isXP = null;
+    private static boolean isXPTheme () {
+        if (isXP == null) {
+            Boolean xp = (Boolean)Toolkit.getDefaultToolkit().
+            getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
+            isXP = Boolean.TRUE.equals(xp)? Boolean.TRUE : Boolean.FALSE;
+        }
+        return isXP.booleanValue();
+    }    
 
     /**
      * This class is used for delayed setting of configuration after instance
