@@ -20,6 +20,7 @@ import java.net.URL;
 
 import org.openide.*;
 import org.openide.actions.OpenAction;
+import org.openide.cookies.CompilerCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -41,7 +42,7 @@ public class ImageDataObject extends MultiDataObject {
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject"; // NOI18N
 
     /** Helper variable. Speeds up <code>DataObject</code> recognition. */
-    private transient boolean shouldInitCookieSet = true;
+    private transient boolean cookiesInitialized = false;
     
     
     /** Constructor.
@@ -101,7 +102,7 @@ public class ImageDataObject extends MultiDataObject {
     
     /** Overrides superclass method. */
     public CookieSet getCookieSet() {
-        if (shouldInitCookieSet) {
+        if (!cookiesInitialized) {
             initCookieSet();
         }
         return super.getCookieSet();
@@ -115,11 +116,11 @@ public class ImageDataObject extends MultiDataObject {
      *    is not supported
      */
     public Node.Cookie getCookie(Class type) {
-        if (org.openide.cookies.CompilerCookie.class.isAssignableFrom(type)) {
+        if (CompilerCookie.class.isAssignableFrom(type)) {
             return null;
         }
         
-        if (shouldInitCookieSet) {
+        if(!cookiesInitialized) {
             initCookieSet();
         }
         return super.getCookie(type);
@@ -127,11 +128,12 @@ public class ImageDataObject extends MultiDataObject {
     
     /** Initializes cookie set. */
     private synchronized void initCookieSet() {
-        if (!shouldInitCookieSet) {
+        if (cookiesInitialized) {
             return;
         }
         CookieSet cookies = super.getCookieSet();
         cookies.add(new ImageOpenSupport (getPrimaryEntry ()));
-        shouldInitCookieSet = false;
+        cookiesInitialized = true;
     }
+    
 }
