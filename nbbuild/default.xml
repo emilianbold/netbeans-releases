@@ -34,6 +34,13 @@
     </propertyfile>
   </target>
 
+  <target name="print-files-in-module" depends="init">
+    <taskdef name="getfiles" 
+             classname="org.netbeans.nbbuild.GetFilesInModule"
+             classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    <getfiles patternset="${module.name}.files"/>
+  </target>
+  
   <target name="setup-jdkhome-1">
     <!-- Note: user-configured -Djavahome=... will always override this: -->
     <property name="javahome" location="${java.home}"/>

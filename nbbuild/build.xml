@@ -1241,6 +1241,28 @@ the ${netbeans.dest}/bin/ directory.
     </chmod>
   </target>
 
+  <target name="zipclusters" depends="init">
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <mkdir dir="${netbeans.build.dir}"/>
+    <repeat target="zip-one-cluster" name="one.cluster.name" values="${clusters.list}" /> 
+  </target>
+  
+  <target name="zip-one-cluster">
+    <taskdef name="setclusterpatternset" classname="org.netbeans.nbbuild.SetClusterPatternSet" classpath="nbantext.jar"/>
+    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="directories.properties" />
+    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
+    
+    <setclusterpatternset cluster="${one.cluster.name}" name="${one.cluster.name}.files" trackingpath="${netbeans.dest.dir}" clusterdir="${one.cluster.dir}"/>
+    
+    <zip destfile="${netbeans.build.dir}/libnb-${one.cluster.name}-${buildnum}.zip" update="true" duplicate="preserve">
+      <fileset dir="${netbeans.dest.dir}">
+        <patternset refID="${one.cluster.name}.files"/>
+      </fileset>
+    </zip>
+  </target>
+  
   <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
   <target name="testuserdir-delete" depends="init">
     <delete dir="${test.user.dir}"/>

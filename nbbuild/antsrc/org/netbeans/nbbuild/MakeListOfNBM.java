@@ -97,9 +97,6 @@ public class MakeListOfNBM extends Task {
         ds.setExcludes( excludes );
         ds.scan();
         
-        //                log ("Module: " + codenamebase);
-        //                log ("Specification Version: " + versionSpecNum);
-        
         String include[] = ds.getIncludedFiles();
         for( int j=0; j < include.length; j++ ){
             if (include[j].equals("Info/info.xml") || include[j].startsWith("main/")) continue;
@@ -119,6 +116,13 @@ public class MakeListOfNBM extends Task {
                 log( ex.toString() );
             }
         }
-        track.write();		    
+        track.write();
+        String absolutePath = outputFile.getAbsolutePath();
+        String clusterDir = this.getProject().getProperty("cluster.dir");
+        String moduleName = this.getProject().getProperty("module.name");
+        String outputPath = absolutePath.substring(0,absolutePath.length() - clusterDir.length());
+        ModuleTracking moduleTracking = new ModuleTracking( outputPath );
+        moduleTracking.putModule(moduleName, absolutePath, include);
+        moduleTracking.write();
     }
 }
