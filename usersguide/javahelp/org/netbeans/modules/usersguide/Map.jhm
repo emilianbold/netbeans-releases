@@ -1294,6 +1294,7 @@
 
    <mapID target="org.openide.loaders.TemplateWizard1.Templates" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.TemplateWizard2" url="objects/objects_new.html" />
+   <mapID target="org.openide.loaders.NewObjectPanel" url="objects/objects_new.html" />
    <mapID target="org.openide.loaders.ClassNamePanel" url="objects/objects_new.html" />
 
 
