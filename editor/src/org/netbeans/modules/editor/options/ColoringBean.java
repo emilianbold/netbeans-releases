@@ -15,37 +15,46 @@ package com.netbeans.developer.modules.text.options;
 
 import java.awt.Font;
 import java.awt.Color;
+import java.beans.*;     
 
 import com.netbeans.editor.Coloring;
 
 public class ColoringBean implements java.io.Serializable {
-
+    
   /** Encapsulated Coloring */
-  Coloring coloring;
+  transient Coloring coloring;
   
-  /** Default Coloring */
-  transient Coloring defaultColoring;
-
   /** example text */
   transient String example;
 
-  static final long serialVersionUID =7093605647730152393L;
   public ColoringBean() {
   }
   
-  public Coloring getColoring() {
-    return coloring;
+  public ColoringBean changeColoring( Coloring newColoring ) {
+    return new ColoringBean( newColoring, example, defaultColoring, isDefault );
   }
-
-  public void setColoring(Coloring coloring) {
-    this.coloring = coloring;
+  
+  public boolean equals( Object o ) {
+    if( o instanceof ColoringBean ) {
+      ColoringBean c = (ColoringBean)o;
+      return (
+        ( ( (coloring == null) && (c.coloring == null) ) ||
+          ( (coloring != null) && coloring.equals(c.coloring) ) ) &&
+        ( ( (example == null) && (c.example == null) ) ||
+          ( (example != null) && example.equals(c.example) ) ) &&
+        ( ( (defaultColoring == null) && (c.defaultColoring == null) ) ||
+          ( (defaultColoring != null) && defaultColoring.equals(c.defaultColoring) ) ) &&
+        (isDefault == c.isDefault) );
+    }
+    return false;
   }
-
+  
 }
 
 
 /*
  * Log
+ *  6    Gandalf   1.5         12/28/99 Miloslav Metelka 
  *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

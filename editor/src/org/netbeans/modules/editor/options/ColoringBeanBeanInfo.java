@@ -75,6 +75,7 @@ public class ColoringBeanBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  5    Gandalf   1.4         12/28/99 Miloslav Metelka 
  *  4    Gandalf   1.3         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  3    Gandalf   1.2         7/20/99  Miloslav Metelka 

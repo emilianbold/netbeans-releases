@@ -114,6 +114,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  9    Gandalf   1.8         12/28/99 Miloslav Metelka 
 *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
 *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment

@@ -16,10 +16,10 @@ package com.netbeans.developer.modules.text.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
+import java.util.HashMap;
   
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.Coloring;
-import com.netbeans.editor.ColoringManager;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -44,38 +44,50 @@ public class OptionSupport extends SystemOption {
   private String typeName;
   
   private PropertyChangeListener settingsListener;
+
+  private static final HashMap kitClass2Type = new HashMap();
   
-  
+  /** Construct new option support. The pair [kitClass, typeName]
+  * is put into a map so it's possible to find a typeName when kitClass is known
+  * through <tt>getTypeName()</tt> static method.
+  * @param kitClass class of the editorr kit for which this support is constructed.
+  * @param typeName name 
+  */
   public OptionSupport(Class kitClass, String typeName) {
     this.kitClass = kitClass;
     this.typeName = typeName;
+    kitClass2Type.put(kitClass, typeName);
   }
 
-  Class getKitClass() {
+  public Class getKitClass() {
     return kitClass;
   }
   
-  String getTypeName() {
+  public String getTypeName() {
     return typeName;
+  }
+
+  public static String getTypeName(Class kitClass) {
+    return (String)kitClass2Type.get(kitClass);
   }
 
   public String displayName() {
     return getString(OPTIONS_PREFIX + typeName);
   }
 
-  void setSettingValue(String name, Object newValue) {
-    Object oldValue = getSettingValue(name);
+  public void setSettingValue(String settingName, Object newValue) {
+    Object oldValue = getSettingValue(settingName);
     if ((oldValue == null && newValue == null)
         || (oldValue != null && oldValue.equals(newValue))
     ) {
       return; // no change
     }
     
-    Settings.setValue(kitClass, name, newValue);
-    firePropertyChange(name, oldValue, newValue);
+    Settings.setValue(kitClass, settingName, newValue);
+    firePropertyChange(settingName, oldValue, newValue);
   }
 
-  Object getSettingValue(String settingName) {
+  public Object getSettingValue(String settingName) {
     return Settings.getValue(kitClass, settingName);
   }
   
@@ -101,27 +113,6 @@ public class OptionSupport extends SystemOption {
     setSettingValue(settingName, new Integer(newValue));
   }
 
-  public void setColoringsHelper(Object[] value, int[] sets) {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    for (int i = 0; i < sets.length; i++) {
-      Coloring[] cols = (Coloring[])value[i + 2];
-      System.arraycopy(cols, 0,
-          cm.getColorings(getKitClass(), sets[i]), 0, cols.length);
-    }
-    Settings.touchValue(getKitClass(), Settings.COLORING_MANAGER);
-  }
-  
-  public Object[] getColoringsHelper(int[] sets) {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    Object[] ret = new Object[2 + sets.length];
-    ret[0] = getTypeName();
-    ret[1] = cm.getDefaultColoring(getKitClass());
-    for (int i = 0; i < sets.length; i++) {
-      ret[i + 2] = cm.getColorings(getKitClass(), sets[i]);
-    }
-    return ret;
-  }
-
   /** @return localized string */
   protected String getString(String s) {
     if (bundle == null) {
@@ -145,6 +136,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
  *  9    Gandalf   1.8         11/11/99 Miloslav Metelka SVUID explicitly 
  *       specified
  *  8    Gandalf   1.7         11/11/99 Miloslav Metelka 
