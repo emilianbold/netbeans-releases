@@ -118,8 +118,6 @@ public final class PropertiesDataObject extends MultiDataObject {
 
     // properties node - creates new types
     DataNode dn = new PropertiesDataNode(this, pc);
-    dn.setIconBase(PROPERTIES_ICON_BASE);
-    dn.setDefaultAction (SystemAction.get(OpenAction.class));
     return dn;
   }            
    
@@ -238,6 +236,8 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  17   Gandalf   1.16        8/17/99  Petr Jiricka    Changed node 
+ *       initialization
  *  16   Gandalf   1.15        6/24/99  Petr Jiricka    
  *  15   Gandalf   1.14        6/23/99  Petr Jiricka    
  *  14   Gandalf   1.13        6/22/99  Ian Formanek    employed DEFAULT_HELP
