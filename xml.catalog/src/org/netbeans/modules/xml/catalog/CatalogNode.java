@@ -244,6 +244,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      * Give to the action your own name
      */
     private static final class UnmountAction extends NodeAction {
+        /** Serial Version UID */
+        private static final long serialVersionUID = 3556006276357785484L;
         
         public UnmountAction() {
         }

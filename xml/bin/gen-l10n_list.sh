@@ -25,8 +25,8 @@
 echo -n > xml/l10n.list
 
 for module in catalog compat core css tax text-edit tools tree-edit; do
-    find xml/${module} -name "Bundle.properties" > xml/${module}/l10n.list
-    find xml/${module} -name "*.html" | grep -v "_ja.html" | grep -v "package.html" >> xml/${module}/l10n.list
+    find xml/${module} -name "Bundle.properties" | sort > xml/${module}/l10n.list
+    find xml/${module} -name "*.html" | grep -v "_ja.html" | grep -v "package.html" | sort >> xml/${module}/l10n.list
 
     cat xml/${module}/l10n.list >> xml/l10n.list
 done

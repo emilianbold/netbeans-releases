@@ -260,7 +260,8 @@ public final class CatalogRootNode extends AbstractNode {
      * Give to action your own name
      */
     private static final class MountAction extends NodeAction {
-        
+        /** Serial Version UID */        
+        private static final long serialVersionUID = -3608629636833099065L;        
         
         public MountAction() {
         }
