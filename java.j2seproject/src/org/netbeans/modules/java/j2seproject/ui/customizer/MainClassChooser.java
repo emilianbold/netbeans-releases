@@ -69,6 +69,16 @@ public class MainClassChooser extends JPanel {
         Set result = new HashSet ();
         Enumeration en = sourcesRoot.getChildren (true);
         while (en.hasMoreElements ()) {
+            FileObject fo = (FileObject)en.nextElement ();
+            if (hasMainMethod (fo)) {
+                try {
+                    DataObject classDo = DataObject.find (fo);
+                    result.add (getMainMethod (classDo.getCookie (SourceCookie.class), null));
+                } catch (DataObjectNotFoundException ex) {
+                    // alreary checked, must passes
+                    assert false : fo;
+                }
+            }
         }
         return result.toArray ();
     }
