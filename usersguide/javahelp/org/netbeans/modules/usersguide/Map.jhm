@@ -32,6 +32,7 @@
 <mapID target="proj_free_classpath" url="project/proj_free_classpath.html" />
 <mapID target="proj_free_targets" url="project/proj_free_targets.html" />
 <mapID target="proj_free_nbtargs" url="project/proj_free_nbtargs.html" />
+<mapID target="proj_free_debug_about" url="project/proj_free_debug_about.html" />
 <mapID target="proj_free_debug" url="project/proj_free_debug.html" />
 <mapID target="proj_free_projectxml" url="project/proj_free_projectxml.html" />
 <mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
