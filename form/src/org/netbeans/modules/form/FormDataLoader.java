@@ -15,7 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
-import com.netbeans.ide.loaders.MultiFileDataObject;
+import com.netbeans.ide.loaders.MultiDataObject;
 import com.netbeans.developer.impl.actions.*;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
@@ -23,8 +23,7 @@ import com.netbeans.developer.modules.loaders.java.JavaDataLoader;
 /** Loader for Forms. Recognizes file with extension .form and .java and with extension class if
 * there is their source and form file.
 *
-* @author Ian Formanek, Petr Hamernik
-* @version 0.15, June 05, 1998
+* @author Ian Formanek
 */
 public class FormDataLoader extends DataLoader {
   /* The standard extensions of the recognized files */
@@ -37,23 +36,35 @@ public class FormDataLoader extends DataLoader {
     super (FormDataObject.class);
 
     setActions(new SystemAction[] {
-      new OpenAction(),
+      SystemAction.get(OpenAction.class),
       null,
-      new CompileAction(),
+      SystemAction.get(CompileAction.class),
       null,
-      new ExecuteAction(),
+      SystemAction.get(ExecuteAction.class),
       null,
-      new CutAction(),
-      new CopyAction(),
-      new PasteAction(),
+      SystemAction.get(CutAction.class),
+      SystemAction.get(CopyAction.class),
+      SystemAction.get(PasteAction.class),
       null,
-      new DeleteAction(),
-      new RenameAction(),
+      SystemAction.get(DeleteAction.class),
+      SystemAction.get(RenameAction.class),
       null,
-      new SaveAsTemplateAction(),
+      SystemAction.get(SaveAsTemplateAction.class),
       null,
-      new PropertiesAction()
+      SystemAction.get(PropertiesAction.class),
     });
+
+  }
+
+  /** finds file with the same name and specified extension in the same folder as param javaFile */
+  static public FileObject findFile(FileObject javaFile, String ext) {
+    if (javaFile == null) return null;
+    String name = javaFile.getName ();
+    int indx = name.indexOf ('$');
+    if (indx > 0) {
+      name = name.substring (0, indx);
+    }
+    return javaFile.getParent().getFileObject (name, ext);
 
   }
 
@@ -79,19 +90,19 @@ public class FormDataLoader extends DataLoader {
 
     if (ext.equals(FORM_EXTENSION)) {
       ffo = fo;
-      jfo = JavaDataLoader.findFile (fo, JAVA_EXTENSION);
-      cfo = JavaDataLoader.findFile (fo, CLASS_EXTENSION);
+      jfo = findFile (fo, JAVA_EXTENSION);
+      cfo = findFile (fo, CLASS_EXTENSION);
     }
 
     if (ext.equals(JAVA_EXTENSION)) {
-      ffo = JavaDataLoader.findFile (fo, FORM_EXTENSION);
+      ffo = findFile (fo, FORM_EXTENSION);
       jfo = fo;
-      cfo = JavaDataLoader.findFile (fo, CLASS_EXTENSION);
+      cfo = findFile (fo, CLASS_EXTENSION);
     }
 
     if (ext.equals(CLASS_EXTENSION)) {
-      ffo = JavaDataLoader.findFile (fo, FORM_EXTENSION);
-      jfo = JavaDataLoader.findFile (fo, JAVA_EXTENSION);
+      ffo = findFile (fo, FORM_EXTENSION);
+      jfo = findFile (fo, JAVA_EXTENSION);
       cfo = fo;
     }
 
@@ -110,11 +121,11 @@ public class FormDataLoader extends DataLoader {
           return null; // recognized as different type of object
       }
       if (cfo != null) {
-        MultiFileDataObject.FileEntry fe = new MultiFileDataObject.NumbEntry(cfo);
+        MultiDataObject.FileEntry fe = new MultiDataObject.NumbEntry(cfo);
         obj.addSecondaryEntry(fe);
         obj.fileEntryAdded(fe);
       }
-      obj.addSecondaryEntry(new MultiFileDataObject.MirroringEntry(ffo));
+      obj.addSecondaryEntry(new MultiDataObject.MirroringEntry(ffo));
       return obj;
     }
     else {
@@ -125,11 +136,9 @@ public class FormDataLoader extends DataLoader {
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/25/99  Ian Formanek    First switch to Gandalf
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
- * Beta Change History:
- *  0    Tuborg    0.14        --/--/98 Petr Hamernik   recognizing files bugfix.
- *  0    Tuborg    0.15        --/--/98 Ales Novak      recognizing files bugfix
  */
