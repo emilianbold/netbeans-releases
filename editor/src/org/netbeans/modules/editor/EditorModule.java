@@ -50,7 +50,6 @@ public class EditorModule extends ModuleInstall {
   private static final String MIME_PLAIN = "text/plain";
   private static final String MIME_JAVA = "text/x-java";
   private static final String MIME_HTML = "text/html";
-  private static final String MIME_IDL = "text/x-idl";
   private static final String MIME_PROPERTIES = "text/x-properties";
   private static final String MIME_JSP = "text/x-jsp";
 
@@ -59,7 +58,6 @@ public class EditorModule extends ModuleInstall {
     new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
     new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
     new KitInfo(MIME_HTML, "com.netbeans.developer.modules.text.NbEditorHTMLKit"),
-    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit")
   };
 
   private static PropertyChangeListener settingsListener;
@@ -156,6 +154,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  35   Gandalf   1.34        11/9/99  Miloslav Metelka 
  *  34   Gandalf   1.33        11/8/99  Miloslav Metelka 
  *  33   Gandalf   1.32        10/29/99 Jaroslav Tulach Does not cast to 
  *       LocalFileSystem
