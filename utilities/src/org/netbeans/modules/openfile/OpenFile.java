@@ -10,10 +10,7 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.openfile;
-
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -61,13 +58,14 @@ import org.openide.TopManager;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /** Opens files when requested. Main functionality.
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
-class OpenFile extends Object {
+public class OpenFile extends Object {
 
     /** Extenstion for .java files. */
     static final String JAVA_EXT = ".JAVA"; // NOI18N
@@ -79,6 +77,32 @@ class OpenFile extends Object {
     private static final String JAR_EXT = ".JAR"; // NOI18N
     /** Name of package keyword. */
     private static final String PACKAGE = "package"; // NOI18N
+
+
+    
+    /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by
+     * showing it in the Explorer.
+     * Uses {@link #find} to figure out what the right file object is.
+     * @param fileName file name to open
+     */
+    public static void open (final String fileName) {
+        final File f = new File (fileName);
+        if ( f.exists() && f.isFile() ) {
+            RequestProcessor.postRequest
+                (new Runnable () {
+                        public void run () {
+                            open (f, false, null, -1, -1);
+                        }
+                    }, 10000 //!!! Waiting for IDE initialization
+                 );
+        } else {
+            new Thread (new Runnable () {
+                    public void run () {
+                        TopManager.getDefault().notify (new NotifyDescriptor.Message (SettingsBeanInfo.getString ("MSG_fileNotFound", fileName)));
+                    }
+                }).start ();
+        }
+    }    
 
     
     /** Open the file either by calling {@link OpenCookie} ({@link ViewCookie}), or by

@@ -10,17 +10,16 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
-
 package org.netbeans.modules.utilities;
-
-
-import org.netbeans.modules.openfile.Server;
-import org.netbeans.modules.openfile.Settings;
-import org.netbeans.modules.pdf.LinkProcessor;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
+
+import org.netbeans.modules.openfile.Server;
+import org.netbeans.modules.openfile.Settings;
+import org.netbeans.modules.openfile.SettingsBeanInfo;
+import org.netbeans.modules.openfile.OpenFile;
+import org.netbeans.modules.pdf.LinkProcessor;
 
 
 /** Module install class for Utilities module.
@@ -28,6 +27,9 @@ import org.openide.util.RequestProcessor;
  * @author Jesse Glick, Petr Kuzel, Martin Ryzl
  */
 public class Installer extends ModuleInstall {
+    /** System property name to indicate file to open on NetBeans start-up. */
+    private static final String NETBEANS_OPENFILE = "netbeans.openfile"; // NOI18N
+
 
     /** Serial version UID. */
     private final static long serialVersionUID = 1;
@@ -54,7 +56,14 @@ public class Installer extends ModuleInstall {
                 }
             }, 60000
         );
+
+        // test netbeans.openfile property
+        String fileName = System.getProperty (NETBEANS_OPENFILE);
+        if ( fileName != null ) {
+            OpenFile.open (fileName);
+        }
     }
+
     
     /** Uninstalls module. Shuts down openfile server and uninstalls
      * search 'sub-module'. Overrides superclass method. */
