@@ -228,7 +228,7 @@ public class TargetServer {
                 undeployTMIDs.addAll(Arrays.asList(haveSameReferences)); 
 
                 //Note: for brand new module not known on any targets (toRedeploy empty) these transfer lists will be empty
-                distributeTargets.add(maybeRedistributeWhenSharedDetected);
+                distributeTargets.addAll(maybeRedistributeWhenSharedDetected);
                 toRedeploy.removeAll(maybeRemoveFromRedeployWhenSharedDetected);
             }
         }
