@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -400,7 +400,7 @@ public class XMLDataObject extends MultiDataObject {
                 d = new DelDoc ();
                 doc = d;
             }
-            return d;
+            return d.getProxyDocument();
         }
     }
     
@@ -1902,15 +1902,17 @@ public class XMLDataObject extends MultiDataObject {
     } // end of ICDel    
     
     /** Delegating DOM document that provides fast implementation of
-     * DocumentType and getPublicID methods.
+     * getDocumentType and getPublicID methods.
      */
-    private final class DelDoc implements Document, DocumentType {
-        /** PROP_DOCUMENT property holder, a DOM created from 'xml' file
-        * Weaker reference to org.w3c.dom.Document 
-        */
-        private Reference xmlDocument;
+    private final class DelDoc implements InvocationHandler {
         
-        DelDoc() {}
+        private Reference/*<Document>*/ xmlDocument;
+        private final Document proxyDocument;
+        
+        DelDoc() {
+            proxyDocument = (Document)Proxy.newProxyInstance(
+                DelDoc.class.getClassLoader(), new Class[] {Document.class}, this);
+        }
 
         /** Creates w3c's document for the xml file. Either returns cached reference
         * or parses the file and creates new document.
@@ -1952,265 +1954,32 @@ public class XMLDataObject extends MultiDataObject {
             }
         }
         
-        /** The document to delegate to.
+        /**
+         * Get the externally usable, lazy document.
+         * Delegates everything to the parsed document on disk (parsing as necessary),
+         * except that getDoctype().getPublicId() is specially implemented so as to
+         * not require loading the whole document.
          */
-        private final Document getDocumentImpl () {
-            return getDocumentImpl (true);
+        public Document getProxyDocument() {
+            return proxyDocument;
         }
         
-        
-        
-        
-        public org.w3c.dom.Node getFirstChild() {
-            return getDocumentImpl ().getFirstChild ();
-        }
-        
-        public org.w3c.dom.NamedNodeMap getAttributes() {
-            return getDocumentImpl ().getAttributes ();
-        }
-        
-        public org.w3c.dom.Attr createAttribute(java.lang.String str) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createAttribute (str);
-        }
-        
-        public org.w3c.dom.Element getElementById(java.lang.String str) {
-            return getDocumentImpl ().getElementById (str);
-        }
-        
-        public org.w3c.dom.Node getPreviousSibling() {
-            return getDocumentImpl ().getPreviousSibling ();
-        }
-        
-        public boolean hasAttributes() {
-            return getDocumentImpl ().hasAttributes ();
-        }
-        
-        public org.w3c.dom.Element createElement(java.lang.String str) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createElement (str);
-        }
-        
-        public org.w3c.dom.Node insertBefore(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().insertBefore (node, node1);
-        }
-        
-        public org.w3c.dom.DOMImplementation getImplementation() {
-            return getDocumentImpl ().getImplementation ();
-        }
-        
-        public org.w3c.dom.Element createElementNS(java.lang.String str, java.lang.String str1) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createElementNS (str, str1);
-        }
-        
-        public org.w3c.dom.DocumentFragment createDocumentFragment() {
-            return getDocumentImpl ().createDocumentFragment ();
-        }
-        
-        public org.w3c.dom.Node getParentNode() {
-            return getDocumentImpl ().getParentNode ();
-        }
-        
-        public org.w3c.dom.Node getNextSibling() {
-            return getDocumentImpl ().getNextSibling ();
-        }
-        
-        
-        public org.w3c.dom.NodeList getElementsByTagNameNS(java.lang.String str, java.lang.String str1) {
-            return getDocumentImpl ().getElementsByTagNameNS (str, str1);
-        }
-        
-        public org.w3c.dom.Attr createAttributeNS(java.lang.String str, java.lang.String str1) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createAttributeNS (str, str1);
-        }
-        
-        public java.lang.String getNodeName() {
-            return getDocumentImpl ().getNodeName ();
-        }
-        
-        public void setPrefix(java.lang.String str) throws org.w3c.dom.DOMException {
-            getDocumentImpl ().setPrefix (str);
-        }
-        
-        public org.w3c.dom.ProcessingInstruction createProcessingInstruction(java.lang.String str, java.lang.String str1) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createProcessingInstruction (str, str1);
-        }
-        
-        public org.w3c.dom.NodeList getElementsByTagName(java.lang.String str) {
-            return getDocumentImpl ().getElementsByTagName (str);
-        }
-        
-        public org.w3c.dom.Element getDocumentElement() {
-            return getDocumentImpl ().getDocumentElement ();
-        }
-        
-        public org.w3c.dom.Node getLastChild() {
-            return getDocumentImpl ().getLastChild ();
-        }
-        
-        public org.w3c.dom.DocumentType getDoctype() {
-            return this;
-        }
-        
-        public java.lang.String getNamespaceURI() {
-            return getDocumentImpl ().getNamespaceURI ();
-        }
-        
-        public java.lang.String getPrefix() {
-            return getDocumentImpl ().getPrefix ();
-        }
-        
-        public boolean isSupported(java.lang.String str, java.lang.String str1) {
-            return getDocumentImpl ().isSupported (str, str1);
-        }
-        
-        public org.w3c.dom.CDATASection createCDATASection(java.lang.String str) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createCDATASection (str);
-        }
-        
-        public org.w3c.dom.EntityReference createEntityReference(java.lang.String str) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().createEntityReference (str);
-        }
-        
-        public short getNodeType() {
-            return getDocumentImpl ().getNodeType ();
-        }
-        
-        public org.w3c.dom.Document getOwnerDocument() {
-            return getDocumentImpl ().getOwnerDocument ();
-        }
-        
-        public void normalize() {
-            getDocumentImpl ().normalize ();
-        }
-        
-        public org.w3c.dom.NodeList getChildNodes() {
-            return getDocumentImpl ().getChildNodes ();
-        }
-
-        public org.w3c.dom.Node removeChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().removeChild (node);
-        }
-        
-        public org.w3c.dom.Text createTextNode(java.lang.String str) {
-            return getDocumentImpl ().createTextNode (str);
-        }
-        
-        public boolean hasChildNodes() {
-            return getDocumentImpl ().hasChildNodes ();
-        }
-        
-        public org.w3c.dom.Node appendChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().appendChild (node);
-        }
-        
-        public org.w3c.dom.Comment createComment(java.lang.String str) {
-            return getDocumentImpl ().createComment (str);
-        }
-        
-        public java.lang.String getLocalName() {
-            return getDocumentImpl ().getLocalName ();
-        }
-        
-        public org.w3c.dom.Node cloneNode(boolean param) {
-            return getDocumentImpl ().cloneNode (param);
-        }
-        
-        public org.w3c.dom.Node replaceChild(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().replaceChild (node, node1);
-        }
-        
-        public void setNodeValue(java.lang.String str) throws org.w3c.dom.DOMException {
-            getDocumentImpl ().setNodeValue (str);
-        }
-        
-        public java.lang.String getNodeValue() throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().getNodeValue ();
-        }
-        
-        public org.w3c.dom.Node importNode(org.w3c.dom.Node node, boolean param) throws org.w3c.dom.DOMException {
-            return getDocumentImpl ().importNode (node, param);
-        }
-
-        // DOM3 only methods ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-        private void dom3() {
-            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, "DOM3 feature");  //!!! DOM3 Document only            
-        }
-        
-        public org.w3c.dom.Node adoptNode(org.w3c.dom.Node source) throws DOMException {
-            dom3();
-            return null;
-        }
-
-        public String getEncoding() {
-            dom3();
-            return null;
-        }
-        
-        public void setEncoding(String encoding) {
-            dom3();
-        }
-        
-        public boolean getStandalone() {
-            dom3();
-            return false;
-        }
-
-        public void setStandalone(boolean standalone) {
-            dom3();
-        }
-
-        public boolean getStrictErrorChecking() {
-            dom3();
-            return false;
-        }
-
-        public void setStrictErrorChecking(boolean strictErrorChecking) {
-            dom3();
-        }
-
-        public String getVersion() {
-            dom3();
-            return null;
-        }
-
-        public void setVersion(String version) {
-            dom3();
-        }
-
-        
-        
-        //
-        // Implementation of DocumentType
-        //
-        
-        public java.lang.String getName() {
-            return getDocumentImpl ().getDoctype ().getName ();
-        }
-        
-        public org.w3c.dom.NamedNodeMap getEntities() {
-            return getDocumentImpl ().getDoctype ().getEntities ();
-        }
-        
-        public java.lang.String getInternalSubset() {
-            return getDocumentImpl ().getDoctype ().getInternalSubset ();
-        }
-                
-        public java.lang.String getPublicId() {
-            Document d = getDocumentImpl (false);
-            if (d != null) {
-                DocumentType doctype = d.getDoctype();
-                return doctype == null ? null : doctype.getPublicId ();
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("getDoctype") && args == null) { // NOI18N
+                return Proxy.newProxyInstance(DelDoc.class.getClassLoader(), new Class[] {DocumentType.class}, this);
+            } else if (method.getName().equals("getPublicId") && args == null) { // NOI18N
+                Document d = getDocumentImpl(false);
+                if (d != null) {
+                    DocumentType doctype = d.getDoctype();
+                    return doctype == null ? null : doctype.getPublicId();
+                } else {
+                    return getIP().getPublicId();
+                }
             } else {
-                return getIP ().getPublicId ();
+                return method.invoke(getDocumentImpl(true), args);
             }
         }
         
-        public java.lang.String getSystemId() {
-            return getDocumentImpl ().getDoctype ().getSystemId ();
-        }
-        
-        public org.w3c.dom.NamedNodeMap getNotations() {
-            return getDocumentImpl ().getDoctype ().getNotations ();
-        }
     }
+    
 }
