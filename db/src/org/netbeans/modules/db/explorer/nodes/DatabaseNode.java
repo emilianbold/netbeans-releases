@@ -155,7 +155,14 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     public void destroy() throws IOException
     {
         info.delete();
+        DatabaseNodeInfo parent = info.getParent();
         super.destroy();
+        try{
+            parent.refreshChildren();
+        } catch (Exception ex){
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                ex.printStackTrace();
+        }
     }
 
     public Node.Cookie getCookie(Class cls)

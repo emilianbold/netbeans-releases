@@ -316,6 +316,33 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
 
     public void refreshChildren() throws DatabaseException
     {
+        // create list (infos)
+        Vector charr = new Vector();
+        put(DatabaseNodeInfo.CHILDREN, charr);
+        initChildren(charr);
+        
+        // create sub-tree (by infos)
+        try {
+
+            Node[] subTreeNodes = new Node[charr.size()];
+
+            // current sub-tree
+            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
+
+            // remove current sub-tree
+            children.remove(children.getNodes());
+
+            // build refreshed sub-tree
+            for(int i=0; i<charr.size(); i++)
+                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
+
+            // add built sub-tree
+            children.add(subTreeNodes);
+
+        } catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                ex.printStackTrace();
+        }
     }
 
     /** Called by property editor */

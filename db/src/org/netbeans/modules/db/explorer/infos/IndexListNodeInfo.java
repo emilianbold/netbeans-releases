@@ -86,30 +86,12 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 rs.close();
 
                 if (info != null) ((DatabaseNodeChildren)getNode().getChildren()).createSubnode(info,true);
-                // refersh list of indexes
-                refreshChildren();
                 //refresh list of columns due to the column's icons
                 getParent().refreshChildren();
             }
         } catch (Exception e) {
             e.printStackTrace();
             throw new DatabaseException(e.getMessage());
-        }
-    }
-
-    public void refreshChildren() throws DatabaseException {
-        Vector charr = new Vector();
-        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
-
-        // it is unnecessary ?????
-        put(DatabaseNodeInfo.CHILDREN, charr);
-
-        chil.remove(chil.getNodes());
-        initChildren(charr);
-        Enumeration en = charr.elements();
-        while(en.hasMoreElements()) {
-            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-            chil.add(new Node[] {subnode});
         }
     }
 

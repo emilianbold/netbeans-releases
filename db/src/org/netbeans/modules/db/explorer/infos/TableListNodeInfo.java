@@ -89,20 +89,6 @@ public class TableListNodeInfo extends DatabaseNodeInfo implements TableOwnerOpe
         }
     }
 
-    public void refreshChildren() throws DatabaseException {
-        Vector charr = new Vector();
-        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
-
-        put(DatabaseNodeInfo.CHILDREN, charr);
-        chil.remove(chil.getNodes());
-        initChildren(charr);
-        Enumeration en = charr.elements();
-        while(en.hasMoreElements()) {
-            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-            chil.add(new Node[] {subnode});
-        }
-    }
-
     /** Returns tablenodeinfo specified by info
     * Compares code and name only.
     */

@@ -181,36 +181,68 @@ public class TableNodeInfo extends DatabaseNodeInfo {
 
     public void refreshChildren() throws DatabaseException
     {
+        // create list of columns (infos)
         Vector charr = new Vector();
-
-        // it is unnecessary (it caused the problem with Indexes node) ?????
         put(DatabaseNodeInfo.CHILDREN, charr);
-
-        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
-        Node[] chilNodes = chil.getNodes();
-        int iCountOfChildren = chilNodes.length;
-        
-        for(int i=0; i < iCountOfChildren; i++)
-            if(chilNodes[i] instanceof DatabaseNode)
-                // is it node Indexes or column?
-                if(((DatabaseNode)chilNodes[i]).getInfo() instanceof IndexListNodeInfo)
-                    // refresh indexes
-                    ((DatabaseNode)chilNodes[i]).getInfo().refreshChildren();
-                else
-                // is it node Foreign keys or column?
-                if(((DatabaseNode)chilNodes[i]).getInfo() instanceof ForeignKeyListNodeInfo)
-                    // refresh foreign keys
-                    ((DatabaseNode)chilNodes[i]).getInfo().refreshChildren();
-                else
-                    // remove column node from list of columns
-                    chil.remove(new Node[] {chilNodes[i]});
-
-        // create list of columns
         initChildren(charr);
-        Enumeration en = charr.elements();
-        while(en.hasMoreElements()) {
-            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-            chil.add(new Node[] {subnode});
+        
+        // create sub-tree (by infos)
+        try {
+            Node[] subTreeNodes = new Node[charr.size()+1/*special node Foreign keys*/+/*special node Indexes*/1];
+
+            // current sub-tree
+            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
+            final Node[] childrenNodes = children.getNodes();
+            for(int i=0; i < childrenNodes.length; i++)
+                // is it node Indexes
+                if(((DatabaseNode)childrenNodes[i]).getInfo() instanceof IndexListNodeInfo) {
+                    final int j = i;
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {                            
+                                // refresh indexes
+                                ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
+                                } catch(Exception ex) {
+                                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                                        ex.printStackTrace();
+                                }
+                            }
+                        });
+                    // add into refreshed sub-tree
+                    subTreeNodes[charr.size()+1] = childrenNodes[i];
+                } else
+                // is it node Foreign keys or column? 
+                if(((DatabaseNode)childrenNodes[i]).getInfo() instanceof ForeignKeyListNodeInfo) {
+                    final int j = i;
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {                            
+                                // refresh foreign keys
+                                ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
+                                } catch(Exception ex) {
+                                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                                        ex.printStackTrace();
+                                }
+                            }
+                        });
+                    // add into refreshed sub-tree
+                    subTreeNodes[charr.size()] = childrenNodes[i];
+                }
+
+            // remove current sub-tree
+            children.remove(childrenNodes);
+
+            // build refreshed sub-tree
+            for(int i=0; i<charr.size(); i++){
+                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
+            }
+
+            // add built sub-tree
+            children.add(subTreeNodes);
+
+        } catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                ex.printStackTrace();
         }
     }
 

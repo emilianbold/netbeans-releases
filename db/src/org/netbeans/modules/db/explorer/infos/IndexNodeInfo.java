@@ -71,18 +71,34 @@ public class IndexNodeInfo extends TableNodeInfo {
         }
     }
 
-    public void refreshChildren() throws DatabaseException {
+    public void refreshChildren() throws DatabaseException
+    {
+        // create list (infos)
         Vector charr = new Vector();
-        DatabaseNodeChildren chil = (DatabaseNodeChildren)getNode().getChildren();
-
-        // it is unnecessary ?????
         put(DatabaseNodeInfo.CHILDREN, charr);
-        chil.remove(chil.getNodes());
         initChildren(charr);
-        Enumeration en = charr.elements();
-        while(en.hasMoreElements()) {
-            DatabaseNode subnode = chil.createNode((DatabaseNodeInfo)en.nextElement());
-            chil.add(new Node[] {subnode});
+        
+        // create sub-tree (by infos)
+        try {
+
+            Node[] subTreeNodes = new Node[charr.size()];
+
+            // current sub-tree
+            DatabaseNodeChildren children = (DatabaseNodeChildren)getNode().getChildren();
+
+            // remove current sub-tree
+            children.remove(children.getNodes());
+
+            // build refreshed sub-tree
+            for(int i=0; i<charr.size(); i++)
+                subTreeNodes[i] = children.createNode((DatabaseNodeInfo)charr.elementAt(i));
+
+            // add built sub-tree
+            children.add(subTreeNodes);
+
+        } catch (Exception ex) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
+                ex.printStackTrace();
         }
     }
 

@@ -62,10 +62,10 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             cmd.setObjectOwner((String)get(DatabaseNodeInfo.SCHEMA));
             cmd.execute();
             // refresh list of columns after column drop
-            getParent().refreshChildren();
-        } catch(DatabaseException exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+            //getParent().refreshChildren();
+        //} catch(DatabaseException exc) {
+            //String message = MessageFormat.format(bundle.getString("ERR_UnableToDeleteColumn"), new String[] {exc.getMessage()}); // NOI18N
+            //TopManager.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         } catch (Exception exc) {
             throw new IOException(exc.getMessage());
         }
