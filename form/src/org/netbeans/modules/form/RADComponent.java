@@ -691,7 +691,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
             Node.Property prop = createProperty(pd);
             if (prop != null)
-                listToAdd.add(createProperty(pd));
+                listToAdd.add(prop);
         }
 
         changePropertiesExplicitly(prefProps, normalProps, expertProps);
