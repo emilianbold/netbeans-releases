@@ -115,7 +115,7 @@ public class FormEditorSupport extends JavaEditor
 
     public FormEditorSupport(MultiDataObject.Entry javaEntry,
                              FormDataObject formDataObject) {
-        super(javaEntry);
+        super(formDataObject);
         this.formDataObject = formDataObject;
     }
 
@@ -163,14 +163,14 @@ public class FormEditorSupport extends JavaEditor
     /** Overriden from JavaEditor - opens editor at given position and ensures
      * it is selected in the multiview.
      */
-    protected EditorSupport.Editor openAt(PositionRef pos) {
+    public void openAt(PositionRef pos) {
         elementToOpen = JAVA_ELEMENT_INDEX;
         openCloneableTopComponent();
 
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         handler.requestActive(handler.getPerspectives()[JAVA_ELEMENT_INDEX]);
 
-        return super.openAt(pos);
+        super.openAt(pos);
     }
 
     /** Public method for loading form data from file. Does not open the
@@ -225,31 +225,6 @@ public class FormEditorSupport extends JavaEditor
         try {
             saveFormData();
             super.saveDocument();
-        }
-        catch (PersistenceException ex) {
-            Throwable t = ex.getOriginalException();
-            if (t instanceof IOException)
-                ioEx = (IOException) t;
-            else {
-                ioEx = new IOException("Cannot save the form"); // NOI18N
-                ErrorManager.getDefault().annotate(ioEx, t != null ? t : ex);
-            }
-        }
-        reportErrors(SAVING);
-
-        if (ioEx != null)
-            throw ioEx;
-    }
-
-    /** Save the document in this thread.
-     * @param parse true if the parser should be started, otherwise false
-     * @exception IOException on I/O error
-     */
-    protected void saveDocumentIfNecessary(boolean parse) throws IOException {
-        IOException ioEx = null;
-        try {
-            saveFormData();
-            super.saveDocumentIfNecessary(parse);
         }
         catch (PersistenceException ex) {
             Throwable t = ex.getOriginalException();
@@ -725,7 +700,7 @@ public class FormEditorSupport extends JavaEditor
             reloadDocument();
     }
 
-    protected org.openide.util.Task reloadDocumentTask() {
+    protected org.openide.util.Task reloadDocument() {
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         MultiViewPerspective[] mvps = handler.getPerspectives();
         int openedElement = 0;
@@ -749,7 +724,7 @@ public class FormEditorSupport extends JavaEditor
         // TODO would be better not to close the form, but just reload
         // FormModel and update form designer(s) with the new model
 
-        org.openide.util.Task docLoadTask = super.reloadDocumentTask();
+        org.openide.util.Task docLoadTask = super.reloadDocument();
 
         // after reloading is done, open the form editor again
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -1154,10 +1129,8 @@ public class FormEditorSupport extends JavaEditor
 
     // -------
     // window system & multiview
-
-    /** Overriden from JavaEditor. Gets called if java editor is opened first
-     * via EditCookie. */
-    protected CloneableTopComponent createCloneableTopComponent() {
+    
+    protected CloneableEditorSupport.Pane createPane() {
         MultiViewDescription[] descs = new MultiViewDescription[] {
             new JavaDesc(formDataObject), new FormDesc(formDataObject) };
 
@@ -1172,7 +1145,7 @@ public class FormEditorSupport extends JavaEditor
         if (editorMode != null) {
             editorMode.dockInto(mvtc);
         }
-        return mvtc;
+        return (CloneableEditorSupport.Pane)mvtc;
     }
     
     private static String getMVTCToolTipText(FormDataObject formDataObject) {
@@ -1431,7 +1404,7 @@ public class FormEditorSupport extends JavaEditor
             JavaEditor javaEditor = getJavaEditor();
             if (javaEditor != null) {
                 javaEditor.prepareDocument();
-                JavaEditorTopComponent editor = new JavaEditorTopComponent(dataObject);
+                JavaEditorTopComponent editor = new JavaEditorTopComponent((JavaEditor) dataObject.getCookie(JavaEditor.class));
                 Node[] nodes = editor.getActivatedNodes();
                 if ((nodes == null) || (nodes.length == 0)) {
                     editor.setActivatedNodes(new Node[] {dataObject.getNodeDelegate()});
@@ -1491,8 +1464,8 @@ public class FormEditorSupport extends JavaEditor
             super();
         }
 
-        JavaEditorTopComponent(DataObject dobj) {
-            super(dobj);
+        JavaEditorTopComponent(DataEditorSupport s) {
+            super(s);
         }
 
         public JComponent getToolbarRepresentation() {
@@ -1528,10 +1501,10 @@ public class FormEditorSupport extends JavaEditor
             multiViewObserver = callback;
 
             // needed for deserialization...
-            if (obj instanceof FormDataObject) { // [obj is from EditorSupport.Editor]
+            if (((DataEditorSupport) cloneableEditorSupport ()).getDataObject() instanceof FormDataObject) { // [obj is from EditorSupport.Editor]
                 // this is used (or misused?) to obtain the deserialized
                 // multiview topcomponent and set it to FormEditorSupport
-                ((FormDataObject)obj).getFormEditor().setTopComponent(
+                ((FormDataObject)((DataEditorSupport) cloneableEditorSupport ()).getDataObject()).getFormEditor().setTopComponent(
                                                    callback.getTopComponent());
             }
         }
@@ -1569,7 +1542,7 @@ public class FormEditorSupport extends JavaEditor
         public void updateName() {
             super.updateName();
             if (multiViewObserver != null) {
-                FormDataObject formDataObject = (FormDataObject)obj;
+                FormDataObject formDataObject = (FormDataObject)((DataEditorSupport) cloneableEditorSupport ()).getDataObject();
                 setDisplayName(getMVTCDisplayName(formDataObject));
             }
         }
