@@ -72,7 +72,8 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
   
-  <target name="compile" depends="13javac-workaround,compile-regular,compile-preprocessed"/>
+  <target name="compile" depends="13javac-workaround,compile-regular,compile-preprocessed"
+          description="Compile all source files but do not package them."/>
   
   <target name="compile-preprocessed" depends="preprocess" >
     <javac srcdir="compatkit-work" destdir="compatkit-work" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
@@ -152,7 +153,7 @@ Microsystems, Inc. All Rights Reserved.
     </jar>
   </target>
   
-  <target name="jars" depends="libs,compile,13javac-workaround">
+  <target name="jars" depends="libs,compile,13javac-workaround" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -191,7 +192,7 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
 
-  <target name="netbeans" depends="jars"/>
+  <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE."/>
 
   
   <!-- Build separate libraries for the IDE -->
@@ -303,7 +304,8 @@ Microsystems, Inc. All Rights Reserved.
 To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
-  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" unless="open-apis-up-to-date">
+  <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" unless="open-apis-up-to-date"
+          description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
     <tstamp/>
     <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2000 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
@@ -490,7 +492,8 @@ The Java Media Framework is separately downloadable.
 	 compress="true"/>
   </target>
 
-  <target name="apiexamples" depends="netbeans,examplemodules">
+  <target name="apiexamples" depends="netbeans,examplemodules"
+          description="Build all API code examples.">
     <ant dir="../sysprops"/>
     <ant dir="../serialversion"/>
     <mkdir dir="examplemodules/apiexamples"/>
@@ -528,7 +531,7 @@ The Java Media Framework is separately downloadable.
 	 compress="true"/>
   </target>
 
-  <target name="clean">
+  <target name="clean" description="Remove all build products.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>
