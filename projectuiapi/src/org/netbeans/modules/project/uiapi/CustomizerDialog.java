@@ -84,8 +84,9 @@ public class CustomizerDialog {
             null );                                 // listener 
 
         innerPane.addPropertyChangeListener( new HelpCtxChangeListener( dialogDescriptor, helpCtx ) );
-        
-        // XXX HelpCtx problem innerPane.setDialogDescriptor( dialogDescriptor );        
+        if ( innerPane instanceof HelpCtx.Provider ) {
+            dialogDescriptor.setHelpCtx( ((HelpCtx.Provider)innerPane).getHelpCtx() );
+        }
         dialogDescriptor.setClosingOptions( new Object[] { options[ OPTION_OK ], options[ OPTION_CANCEL ] } );
 
         Dialog dialog = DialogDisplayer.getDefault().createDialog( dialogDescriptor );
@@ -115,7 +116,7 @@ public class CustomizerDialog {
     }
     
     private static class HelpCtxChangeListener implements PropertyChangeListener {
-        
+                
         DialogDescriptor dialogDescriptor;
         HelpCtx defaultHelpCtx;
         
@@ -127,7 +128,7 @@ public class CustomizerDialog {
         public void propertyChange( PropertyChangeEvent evt ) {
             
             if ( CustomizerPane.HELP_CTX_PROPERTY.equals( evt.getPropertyName() ) ) {
-                HelpCtx newHelp = (HelpCtx)evt.getNewValue(); 
+                HelpCtx newHelp = (HelpCtx)evt.getNewValue();
                 dialogDescriptor.setHelpCtx( newHelp == null  || newHelp == HelpCtx.DEFAULT_HELP  ? defaultHelpCtx : newHelp );
             }
                         
