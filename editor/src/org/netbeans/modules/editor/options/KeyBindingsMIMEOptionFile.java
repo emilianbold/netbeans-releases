@@ -184,14 +184,24 @@ public class KeyBindingsMIMEOptionFile extends MIMEOptionFile{
                 continue;
             }
             
-            // if property is in default set we don't have to write it
-            if ((properties.get(key) instanceof MultiKeyBinding) && (!defaultKeybs.containsKey(key))){
+            if (properties.get(key) instanceof MultiKeyBinding){
                 MultiKeyBinding mkb = (MultiKeyBinding) properties.get(key);
+                String curActionName= mkb.actionName;
+                if (curActionName == null) curActionName=""; //NOI18N
                 
-                Element keybElem = doc.createElement(TAG_BIND);
-                keybElem.setAttribute(ATTR_KEY, key);
-                keybElem.setAttribute(ATTR_ACTION_NAME, mkb.actionName);
-                rootElem.appendChild(keybElem);
+                boolean save = true;
+                if (defaultKeybs.get(key) instanceof MultiKeyBinding){
+                    String defActionName = ((MultiKeyBinding)defaultKeybs.get(key)).actionName;
+                    // if property is in default set and the action names are the same we don't have to write it
+                    if (defaultKeybs.containsKey(key) && curActionName.equals(defActionName)) save = false;
+                }
+                
+                if (save){
+                    Element keybElem = doc.createElement(TAG_BIND);
+                    keybElem.setAttribute(ATTR_KEY, key);
+                    keybElem.setAttribute(ATTR_ACTION_NAME, curActionName);
+                    rootElem.appendChild(keybElem);
+                }
             }
         }
         
