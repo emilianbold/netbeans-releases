@@ -108,6 +108,7 @@ public class AntModule extends ModuleInstall {
                 System.err.println("Note: ant-api.zip not found to add to Javadoc, ignoring...");
             }
         }
+        AntProjectSupport.startFiringProcessor ();
     }
 
     public void uninstalled () {
@@ -134,6 +135,11 @@ public class AntModule extends ModuleInstall {
         } else {
             System.err.println("Note: ant-api.zip not found to remove from Javadoc, ignoring...");
         }
+        AntProjectSupport.stopFiringProcessor ();
+    }
+    
+    public void close () {
+        AntProjectSupport.stopFiringProcessor ();
     }
 
     static File findAPIDocs () {
