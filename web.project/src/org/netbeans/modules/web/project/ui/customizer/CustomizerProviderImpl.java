@@ -98,7 +98,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             init( uiProperties );
 
             OptionListener listener = new OptionListener( project, uiProperties );
-            HelpCtx helpCtx = new HelpCtx( "org.netbeans.modules.web.project.ui.customizer.WebCustomizer" );
+            //HelpCtx helpCtx = new HelpCtx( "org.netbeans.modules.web.project.ui.customizer.WebCustomizer" );
             if (preselectedCategory != null && preselectedSubCategory != null) {
                 for (int i = 0; i < categories.length; i++) {
                     if (preselectedCategory.equals(categories[i].getName())) {
@@ -109,7 +109,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     }
                 }
             }
-            dialog = ProjectCustomizer.createCustomizerDialog( categories, panelProvider, preselectedCategory, listener, helpCtx );
+            dialog = ProjectCustomizer.createCustomizerDialog( categories, panelProvider, preselectedCategory, listener, null );
             dialog.addWindowListener( listener );
             dialog.setTitle( MessageFormat.format(                 
                     NbBundle.getMessage( CustomizerProviderImpl.class, "LBL_Customizer_Title" ), // NOI18N 
