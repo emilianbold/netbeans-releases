@@ -36,6 +36,8 @@ import org.netbeans.modules.form.actions.FormEditorAction;
  */
 public class FormEditorSupport extends JavaEditor implements FormCookie, EditCookie
 {
+    static final String NO_WORKSPACE = "None"; // NOI18N
+
     /** The FormModel instance holding the form itself */
     private FormModel formModel;
 
@@ -454,16 +456,24 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     private boolean activateWorkspace() {
         attachWorkspacesListener();
 
-        if (isCurrentWorkspaceEditing()) {
+        String currentWSName = TopManager.getDefault().getWindowManager()
+                                              .getCurrentWorkspace().getName();
+        String formWSName = FormEditor.getFormSettings().getWorkspace();
+
+        if ("Editing".equals(currentWSName) // NOI18N
+            || "Visual".equals(currentWSName) // NOI18N
+            || formWSName.equals(NO_WORKSPACE) // no extra workspace needed
+            || formWSName.equals(currentWSName))
+        {
             openOnEditing = false;
-            String formWorkspace = FormEditor.getFormSettings().getWorkspace();
-            if (!formWorkspace.equalsIgnoreCase(FormEditor.getFormBundle()
-                                        .getString("VALUE_WORKSPACE_NONE"))) {
-                Workspace visualWorkspace =
+            if (!formWSName.equals(currentWSName)
+                && !formWSName.equals(NO_WORKSPACE))
+            {   // switch to the form main workspace
+                Workspace formWorkspace =
                     TopManager.getDefault().getWindowManager()
-                        .findWorkspace(formWorkspace);
-                if (visualWorkspace != null)
-                    visualWorkspace.activate();
+                        .findWorkspace(formWSName);
+                if (formWorkspace != null)
+                    formWorkspace.activate();
             }
             return true;
         }
@@ -472,13 +482,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             openOnEditing = true;
             return false;
         }
-    }
-
-    private static boolean isCurrentWorkspaceEditing() {
-        String name = TopManager.getDefault().getWindowManager()
-                                         .getCurrentWorkspace().getName();
-        return "Editing".equals(name) || "Visual".equals(name) // NOI18N
-               || FormEditor.getFormSettings().getWorkspace().equals(name);
     }
 
     /** Opens FormDesigner and ComponentInspector.
@@ -636,9 +639,21 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                                            evt.getPropertyName()))
                     return;
 
-                // if switched to an editing workspace, look for forms
-                // waiting for opening their designers
-                if (isCurrentWorkspaceEditing()) {
+                Workspace ws = TopManager.getDefault().getWindowManager()
+                                                   .getCurrentWorkspace();
+                if (ws == null)
+                    return; // [can it even be null?]
+
+                String currentWSName = ws.getName();
+                String formWSName = FormEditor.getFormSettings()
+                                                   .getWorkspace();
+
+                if ("Editing".equals(currentWSName) // NOI18N
+                    || "Visual".equals(currentWSName) // NOI18N
+                    || formWSName.equals(NO_WORKSPACE) // no extra workspace for forms
+                    || formWSName.equals(currentWSName))
+                {   // if switched to a workspace usable for form editor then
+                    // look for forms waiting for opening their designers
                     boolean anyWaitingForm = false;
                     Collection forms = openForms.values();
                     for (Iterator it=forms.iterator(); it.hasNext(); ) {
@@ -653,13 +668,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                         return;
                 }
 
-                // do nothig if switched to the main "GUI" workspace
-                Workspace ws = TopManager.getDefault().getWindowManager()
-                                                   .getCurrentWorkspace();
-                if (FormEditor.getFormSettings().getWorkspace().equals(
-                                                          ws.getName()))
+                // do nothing if switched to the main form workspace
+                if (formWSName.equals(currentWSName)
+                        && !formWSName.equals(NO_WORKSPACE))
                     return;
-
+                
                 // refresh opened designers on this workspace
                 Mode formMode = ws.findMode("Form"); // NOI18N
                 if (formMode == null)

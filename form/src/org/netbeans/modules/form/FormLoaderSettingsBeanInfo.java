@@ -337,11 +337,11 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             }
             // XXX(-tdt)
             // tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
-            String[] names = new String [tagList.size() + 1];
+            String[] names = new String [tagList.size()]; // + 1];
             for (int i=0, n = tagList.size(); i < n; i++)
                 names[i] = (String)namesMap.get(tagList.get(i));
 
-            names[tagList.size()] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
+//            names[tagList.size()] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
             return names;
         }
 
@@ -364,6 +364,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
                 
                 namesMap.put(wss[i].getName(), new String(part1 + part2));;
             }
+            namesMap.put(FormEditorSupport.NO_WORKSPACE,
+                         FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE")); // NOI18N
         }
 
         /** @return Returns programmatic name of the workspace for given
