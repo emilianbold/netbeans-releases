@@ -16,18 +16,18 @@ Microsystems, Inc. All Rights Reserved.
 <MIME-resolver>
     <file>
         <ext name="gif"/>
-        <resolver mime="image/gif+gif"/>
+        <resolver mime="image/gif"/>
     </file>
     <file>
         <ext name="jpg"/>
-        <resolver mime="image/jpeg+jpg"/>
+        <resolver mime="image/jpeg"/>
     </file>
     <file>
         <ext name="jpeg"/>
-        <resolver mime="image/jpeg+jpeg"/>
+        <resolver mime="image/jpeg"/>
     </file>
     <file>
         <ext name="png"/>
-        <resolver mime="image/png+png"/>
+        <resolver mime="image/png"/>
     </file>
 </MIME-resolver>
