@@ -68,19 +68,19 @@ class AntGrammar implements GrammarQuery {
     }
     
     /** this element is a special thing, like the root project element */
-    private static final String KIND_SPECIAL = "special"; // NOI18N
+    static final String KIND_SPECIAL = "special"; // NOI18N
     /** this element is a task */
-    private static final String KIND_TASK = "task"; // NOI18N
+    static final String KIND_TASK = "task"; // NOI18N
     /** this element is a data type */
-    private static final String KIND_TYPE = "type"; // NOI18N
+    static final String KIND_TYPE = "type"; // NOI18N
     /** this element is part of some other structure (task or type) */
-    private static final String KIND_DATA = "data"; // NOI18N
+    static final String KIND_DATA = "data"; // NOI18N
     /** tag for root project element */
-    private static final String SPECIAL_PROJECT = "project"; // NOI18N
+    static final String SPECIAL_PROJECT = "project"; // NOI18N
     /** tag for a target element */
-    private static final String SPECIAL_TARGET = "target"; // NOI18N
+    static final String SPECIAL_TARGET = "target"; // NOI18N
     /** tag for a project description element */
-    private static final String SPECIAL_DESCRIPTION = "description"; // NOI18N
+    static final String SPECIAL_DESCRIPTION = "description"; // NOI18N
     
     /**
      * Determine what a particular element in a build script represents,
@@ -91,7 +91,7 @@ class AntGrammar implements GrammarQuery {
      * @param e an element
      * @return a two-element string (kind and details), or null if this element is anomalous
      */
-    private static final String[] typeOf(Element e) {
+    static final String[] typeOf(Element e) {
         String name = e.getNodeName();
         Node p = e.getParentNode();
         if (p == null) {

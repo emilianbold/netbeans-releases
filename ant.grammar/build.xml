@@ -23,14 +23,16 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../../nbbuild/nbantext.jar"/>
+  
+  <path id="cp">
+    <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    <pathelement location="../netbeans/modules/ant.jar"/>
+    <pathelement location="../../xml/core/netbeans/modules/autoload/xml-core.jar"/>
+  </path>
 
   <target name="compile">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <classpath>
-        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../netbeans/modules/ant.jar"/>
-        <pathelement location="../../xml/core/netbeans/modules/autoload/xml-core.jar"/>
-      </classpath>
+      <classpath refid="cp"/>
     </javac>
   </target>
 
@@ -69,6 +71,14 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="reload"/>
     <copy file="netbeans/modules/eager/ant-grammar.jar" tofile="reload/ant-grammar.jar"/>
     <nbinstaller module="reload/ant-grammar.jar" action="reinstall"/>
+  </target>
+
+  <target name="test" depends="jars" description="Run unit tests.">
+    <path id="source.cp">
+      <path refid="cp"/>
+      <pathelement location="src"/>
+    </path>
+    <ant dir="test/unit" target="runtests" inheritrefs="true"/>
   </target>
 
   <target name="clean" description="Clean out build products.">
