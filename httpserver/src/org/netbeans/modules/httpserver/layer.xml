@@ -39,12 +39,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.httpserver.Bundle"/>
         <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/httpserver/httpServerSettings.gif"/>
       </file>
-      <folder name="Hidden">
-          <file name="org-netbeans-modules-httpserver-urlmapper.instance">
-              <attr name="instanceClass" stringvalue="org.netbeans.modules.httpserver.HttpServerURLMapper"/>
-              <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
-          </file>
-      </folder> <!-- Hidden -->
   </folder> <!-- Services -->
   
 </filesystem>
