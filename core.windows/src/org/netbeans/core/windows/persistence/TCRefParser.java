@@ -52,8 +52,6 @@ class TCRefParser {
     /** Local parent folder */
     private FileObject localParentFolder;
     
-    private PropertyHandler propertyHandler;
-    
     private InternalConfig internalConfig;
     
     /** true if wstcref file is present in module folder */
@@ -69,9 +67,7 @@ class TCRefParser {
     TCRefConfig load () throws IOException {
         if (DEBUG) Debug.log(TCRefParser.class, "load ENTER" + " tcRef:" + tc_id);
         TCRefConfig tcRefCfg = new TCRefConfig();
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(tcRefCfg, internalCfg);
@@ -82,9 +78,7 @@ class TCRefParser {
     /** Save tcref configuration. */
     void save (TCRefConfig tcRefCfg) throws IOException {
         if (DEBUG) Debug.log(TCRefParser.class, "save ENTER" + " tcRef:" + tc_id);
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(tcRefCfg, internalCfg);
         if (DEBUG) Debug.log(TCRefParser.class, "save LEAVE" + " tcRef:" + tc_id);

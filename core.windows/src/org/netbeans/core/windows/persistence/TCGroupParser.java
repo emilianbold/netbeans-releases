@@ -48,8 +48,6 @@ class TCGroupParser {
     /** Local parent folder */
     private FileObject localParentFolder;
     
-    private PropertyHandler propertyHandler;
-    
     private InternalConfig internalConfig;
     
     /** true if wstcgrp file is present in module folder */
@@ -65,9 +63,7 @@ class TCGroupParser {
     TCGroupConfig load () throws IOException {
         if (DEBUG) Debug.log(TCGroupParser.class, "load ENTER" + " tcGrp:" + tc_id);
         TCGroupConfig tcGroupCfg = new TCGroupConfig();
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(tcGroupCfg, internalCfg);
@@ -78,9 +74,8 @@ class TCGroupParser {
     /** Save tcGroup configuration. */
     void save (TCGroupConfig tcGroupCfg) throws IOException {
         if (DEBUG) Debug.log(TCGroupParser.class, "save ENTER" + " tcGrp:" + tc_id);
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(tcGroupCfg, internalCfg);
         if (DEBUG) Debug.log(TCGroupParser.class, "save LEAVE" + " tcGrp:" + tc_id);

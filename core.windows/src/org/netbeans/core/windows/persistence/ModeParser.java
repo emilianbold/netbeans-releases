@@ -67,8 +67,6 @@ class ModeParser {
     /** Local parent folder */
     private FileObject localParentFolder;
     
-    private PropertyHandler propertyHandler;
-    
     private InternalConfig internalConfig;
     
     /** Map of TCRefParser instances. Used for fast access. */
@@ -113,9 +111,7 @@ class ModeParser {
     
     private void readProperties (ModeConfig mc) throws IOException {
         if (DEBUG) Debug.log(ModeParser.class, "readProperties ENTER" + " mo:" + getName());
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(mc, internalCfg);
@@ -340,9 +336,7 @@ class ModeParser {
     
     private void writeProperties (ModeConfig mc) throws IOException {
         if (DEBUG) Debug.log(ModeParser.class, "writeProperties ENTER" + " mo:" + getName());
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(mc, internalCfg);
         if (DEBUG) Debug.log(ModeParser.class, "writeProperties LEAVE" + " mo:" + getName());

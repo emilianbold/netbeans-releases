@@ -47,8 +47,6 @@ class GroupParser {
     /** Local parent folder */
     private FileObject localParentFolder;
     
-    private PropertyHandler propertyHandler;
-    
     private InternalConfig internalConfig;
     
     private Map tcGroupParserMap = new HashMap(19);
@@ -87,9 +85,7 @@ class GroupParser {
     
     private void readProperties (GroupConfig sc) throws IOException {
         if (DEBUG) Debug.log(GroupParser.class, "readProperties ENTER" + " group:" + getName());
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         internalCfg.clear();
         propertyHandler.readData(sc, internalCfg);
@@ -236,9 +232,7 @@ class GroupParser {
     
     private void writeProperties (GroupConfig sc) throws IOException {
         if (DEBUG) Debug.log(GroupParser.class, "writeProperties ENTER" + " group:" + getName());
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         InternalConfig internalCfg = getInternalConfig();
         propertyHandler.writeData(sc, internalCfg);
         if (DEBUG) Debug.log(GroupParser.class, "writeProperties LEAVE" + " group:" + getName());

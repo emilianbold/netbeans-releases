@@ -58,8 +58,6 @@ public class WindowManagerParser {
     
     private PersistenceManager pm;
     
-    private PropertyHandler propertyHandler;
-    
     private InternalConfig internalConfig;
     
     private Map modeParserMap = new HashMap(19);
@@ -322,9 +320,7 @@ public class WindowManagerParser {
     
     private void readProperties (WindowManagerConfig wmc) throws IOException {
         if (DEBUG) Debug.log(WindowManagerParser.class, "readProperties ENTER");
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         internalConfig = new InternalConfig();
         propertyHandler.readData(wmc, internalConfig);
         if (DEBUG) Debug.log(WindowManagerParser.class, "readProperties LEAVE");
@@ -573,9 +569,7 @@ public class WindowManagerParser {
     
     private void writeProperties (WindowManagerConfig wmc) throws IOException {
         if (DEBUG) Debug.log(WindowManagerParser.class, "writeProperties ENTER");
-        if (propertyHandler == null) {
-            propertyHandler = new PropertyHandler();
-        }
+        PropertyHandler propertyHandler = new PropertyHandler();
         propertyHandler.writeData(wmc);
         if (DEBUG) Debug.log(WindowManagerParser.class, "writeProperties LEAVE");
     }
