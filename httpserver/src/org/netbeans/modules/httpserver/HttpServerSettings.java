@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.httpserver;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -44,7 +46,8 @@ import org.openide.TopManager;
 * @author Ales Novak, Petr Jiricka
 * @version 0.12, May 5, 1999
 */
-public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
+public class HttpServerSettings extends SystemOption 
+    implements HttpServer.Impl, PropertyChangeListener {
 
     private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
@@ -137,6 +140,11 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public HttpServerSettings() {
     }
 
+    protected void initialize () {
+        super.initialize ();
+        addPropertyChangeListener (this);
+    }
+    
     /** This is a project option. */
     private boolean isGlobal() {
         return false;
@@ -658,6 +666,33 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             grantedAddresses = hostProperty.getGrantedAddresses ();
             host = hostProperty.getHost ();
             firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
+        }
+    }
+    
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (isReadExternal () || !equals(evt.getSource ()))
+            return;
+        
+        // check definity of servlet paths
+        String prop = evt.getPropertyName ();
+        if (PROP_CLASSPATH_BASEURL.equals (prop)
+        ||  PROP_JAVADOC_BASEURL.equals (prop)
+        ||  PROP_REPOSITORY_BASEURL.equals (prop)) {
+            boolean clash = getClasspathBaseURL ().startsWith (getJavadocBaseURL ());
+            clash |= getClasspathBaseURL ().startsWith (getRepositoryBaseURL ());
+            clash |= getJavadocBaseURL ().startsWith (getClasspathBaseURL ());
+            clash |= getJavadocBaseURL ().startsWith (getRepositoryBaseURL ());
+            clash |= getRepositoryBaseURL ().startsWith (getClasspathBaseURL ());
+            clash |= getRepositoryBaseURL ().startsWith (getJavadocBaseURL ());
+            
+            if (clash) {
+                org.openide.util.RequestProcessor.postRequest (new Runnable () {
+                    public void run () {
+                        TopManager.getDefault ().notify (new NotifyDescriptor.Message (
+                            NbBundle.getMessage (HttpServerSettings.class, "MSG_MappingsConflict")));
+                    }
+                });
+            }
         }
     }
     
