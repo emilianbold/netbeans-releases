@@ -844,7 +844,9 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
                             nodeToSelect = ((RADVisualContainer)cont)
                                                 .getLayoutNodeReference();
                         }
-                        else if (type == FormModelEvent.COMPONENT_ADDED) {
+                        else if (type == FormModelEvent.COMPONENT_ADDED
+                                 && ev.getComponent().isInModel())
+                        {
                             if (compsToSelect == null)
                                 compsToSelect = new HashSet();
 
