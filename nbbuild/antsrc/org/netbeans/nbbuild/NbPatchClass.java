@@ -27,13 +27,19 @@ import java.util.jar.JarFile;
 // from your IDE installation directory in your Filesystems before
 // continuing to ensure that it is in your classpath.
 
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
+import org.apache.tools.ant.AntClassLoader;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.MatchingTask;
+import org.apache.tools.ant.DirectoryScanner;
+import java.util.Vector;
 
 /**
  * @author Jaroslav Tulach
  */
-public class NbPatchClass extends Task {
+public class NbPatchClass extends MatchingTask {
 
     /* Path to library containing the patch method */
     private Path patchPath;
@@ -46,23 +52,27 @@ public class NbPatchClass extends Task {
     
     
     /* Name of class with patch method */
-    private String patchClass = "org.netbeans.PatchByteCode";
+    private String patchClass = "org.netbeans.PatchByteCode"; //NOI18N
     public void setPatchClass (String f) {
         patchClass = f;
     }
     
     /** Name of the method to call. Must have byte[] array argument and return the same
      */
-    private String patchMethod = "patch";
+    private String patchMethod = "patch"; //NOI18N
     public void setPatchMethod (String f) {
         patchMethod = f;
     }
     
     /** Source JAR to extract.
      */
-    private File sourceJar;
     public void setSource (File f) {
-        sourceJar = f;
+        if (f.exists()) {
+            FileSet xfs = new FileSet();
+            xfs.setDir(project.getBaseDir());
+            xfs.setIncludes(f.getAbsolutePath());
+            addFileset(xfs);
+        }
     }
     
     /* Base dir to find classes relative to */
@@ -71,22 +81,37 @@ public class NbPatchClass extends Task {
         targetdir = f;
     }
     
+    /**
+     * Adds a set of files (nested fileset attribute).
+     */
+    private Vector filesets = new Vector ();
+    public void addFileset(FileSet set) {
+        filesets.addElement(set);
+    }
+ 
     public void execute() throws BuildException {
         if (targetdir == null) {
             throw new BuildException ("Attribute targetdir must be specified");
         }
 
-        if (sourceJar == null) {
-            throw new BuildException ("Attribute source must be specified");
+        addFileset(fileset);
+        
+        boolean fs_empty = true;
+        for (int i=0; i<filesets.size() && fs_empty; i++) {
+            FileSet n = (FileSet) filesets.elementAt(i);
+            if ( n != null ) {
+                DirectoryScanner ds = n.getDirectoryScanner(project);
+                String[] files = ds.getIncludedFiles();
+                File bdir = ds.getBasedir();
+                for (int k=0; k < files.length && fs_empty; k++) {
+                    File n_file = new File(bdir, files[k]);
+                    if (n_file.exists()) fs_empty = false;
+                }
+            }
         }
-        
-        
-        JarFile jar;
-        
-        try {
-            jar = new JarFile (sourceJar);
-        } catch (IOException ex) {
-            throw new BuildException ("Problem initializing file " + sourceJar, ex);
+                    
+        if (fs_empty) {
+            throw new BuildException ("Attribute \"source\" or fileset includes must be specified");
         }
         
         //
@@ -107,7 +132,7 @@ public class NbPatchClass extends Task {
         } catch (Exception ex) {
             throw new BuildException ("Cannot initialize class " + patchClass + " and method " + patchMethod, ex);
         }
-            
+        
         /*
         try {
             log ("Testing method " + m);
@@ -115,77 +140,105 @@ public class NbPatchClass extends Task {
         } catch (Exception ex) {
             throw new BuildException ("Exception during test invocation of the method", ex);
         }
-         */
-            
+        */
+                        
         //
         // Ok we have the method and we can do the patching
-        //
-        
-        java.util.Enumeration it = jar.entries();
-        while (it.hasMoreElements()) {
-            java.util.jar.JarEntry e = (java.util.jar.JarEntry)it.nextElement ();
-            String entryname = e.getName();
-            if (!entryname.endsWith(".class")) {
-                // resource, skip
-                continue;
-            }
-            String name = entryname.substring(0, entryname.length() - 6).replace('/', '.');
+        // go over fileset includes
 
-            int size = (int)e.getSize();
-            if (size <= 4) {
-                // not interesting entry
-                continue;
-            }
-            
-            byte[] arr = new byte[size];
-            
-            try {
-                java.io.InputStream is = jar.getInputStream(e);
-                
-                int indx = 0;
-                while (indx < arr.length) {
-                    int read = is.read (arr, indx, arr.length - indx);
-                    if (read == -1) {
-                        throw new BuildException("Entry: " + name + " size should be: " + size + " but was read just: " + indx);
+        for (int i=0; i<filesets.size(); i++) {
+            FileSet n = (FileSet) filesets.elementAt(i);
+            if ( n != null ) {
+                DirectoryScanner ds = n.getDirectoryScanner(project);
+                String[] files = ds.getIncludedFiles();
+                File bdir = ds.getBasedir();
+                for (int k=0; k <files.length; k++) {
+                    File n_file = new File(bdir, files[k]);
+                    JarFile jar;
+                    log("Checking jarfile " + n_file, Project.MSG_VERBOSE);
+
+                    try {
+                        jar = new JarFile (n_file);
+                    } catch (IOException ex) {
+                        throw new BuildException ("Problem initializing file " + n_file, ex);
                     }
-                    indx += read;
-                }
-            } catch (IOException ex) {
-                throw new BuildException (ex);
-            }
+                    
+                    // do the patching
+                    java.util.Enumeration it = jar.entries();
+                    while (it.hasMoreElements()) {
+                        java.util.jar.JarEntry e = (java.util.jar.JarEntry)it.nextElement ();
+                        String entryname = e.getName();
+                        if (!entryname.endsWith(".class")) { //NOI18N
+                            // resource, skip
+                            log("Skipping resource " + entryname, Project.MSG_DEBUG);
+                            continue;
+                        }
+                        String name = entryname.substring(0, entryname.length() - 6).replace('/', '.');
             
-            byte[] original = (byte[])arr.clone ();
-            byte[] out;
-            try {
-                out = (byte[])m.invoke (null, new Object[] { arr, name });
-            } catch (java.lang.reflect.InvocationTargetException ex) {
-                throw new BuildException (ex.getTargetException());
-            } catch (Exception ex) {
-                throw new BuildException (ex);
-            }
-            
-            if (java.util.Arrays.equals (original, out)) {
-                // no patching, go on
-                continue;
-            }
+                        int size = (int)e.getSize();
+                        if (size <= 4) {
+                            // not interesting entry
+                            log("Class " + name + " is not an interesting entry (<5 bytes)", Project.MSG_DEBUG);
+                            continue;
+                        }
 
-            File f = new File (targetdir, e.getName ().replace ('/', File.separatorChar));
-            if (f.exists () && f.lastModified() > sourceJar.lastModified ()) {
-                // if the file is newer
-                continue;
-            }
+                        log("Checking class " + name, Project.MSG_DEBUG);
+                        
+                        byte[] arr = new byte[size];
+                        
+                        try {
+                            java.io.InputStream is = jar.getInputStream(e);
+                            
+                            int indx = 0;
+                            while (indx < arr.length) {
+                                int read = is.read (arr, indx, arr.length - indx);
+                                if (read == -1) {
+                                    throw new BuildException("Entry: " + name + " size should be: " + size + " but was read just: " + indx);
+                                }
+                                indx += read;
+                            }
+                        } catch (IOException ex) {
+                            throw new BuildException (ex);
+                        }
+                        
+                        byte[] original = (byte[])arr.clone ();
+                        byte[] out;
+                        try {
+                            out = (byte[])m.invoke (null, new Object[] { arr, name });
+                        } catch (java.lang.reflect.InvocationTargetException ex) {
+                            throw new BuildException (ex.getTargetException());
+                        } catch (Exception ex) {
+                            throw new BuildException (ex);
+                        }
+                        
+                        if (java.util.Arrays.equals (original, out)) {
+                            // no patching, go on
+                            log("Not patching class " + name, Project.MSG_DEBUG);
+                            continue;
+                        }
             
-            f.getParentFile().mkdirs();
-            
-            log ("Writing patched file " + f);
-            
-            try {
-                FileOutputStream os = new FileOutputStream (f);
-                os.write (out);
-                os.close ();
-            } catch (IOException ex) {
-                throw new BuildException ("Cannot write file " + f, ex);
-            }
+                        File f = new File (targetdir, e.getName ().replace ('/', File.separatorChar));
+                        if (f.exists () && f.lastModified() > n_file.lastModified ()) {
+                            // if the file is newer
+                            log("Patched class " + name + " in " + targetdir.getAbsolutePath() + " is newer than jarfile of origin, not saving patched bytestream to file " + f.getAbsolutePath() , Project.MSG_VERBOSE);
+                            continue;
+                        }
+                        
+                        f.getParentFile().mkdirs();
+                        
+                        log ("Writing patched file " + f, Project.MSG_INFO);
+                        //log ("Writing patched file " + f + " (jarfile of origin " + n_file.getName() + ")", Project.MSG_VERBOSE);
+                        
+                        try {
+                            FileOutputStream os = new FileOutputStream (f);
+                            os.write (out);
+                            os.close ();
+                        } catch (IOException ex) {
+                            throw new BuildException ("Cannot write file " + f, ex);
+                        }
+                    }
+  	        }
+ 	    }
         }
     }
     
