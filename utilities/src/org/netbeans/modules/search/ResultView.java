@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
@@ -36,9 +37,15 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.DefaultEditorKit;
 import org.openide.ErrorManager;
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
+import org.openide.actions.DeleteAction;
+import org.openide.actions.PasteAction;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.RepositoryNodeFactory;
@@ -152,6 +159,7 @@ final class ResultView extends TopComponent
                         }
                     }
                 });
+        setupActions();
 
         /* Create the left part of the window: */
         treeView =  new BeanTreeView();
@@ -207,6 +215,37 @@ final class ResultView extends TopComponent
                                          "TEXT_Search_in_filesystems"));//NOI18N
         node.setIconBase("org/netbeans/modules/search/res/find");       //NOI18N
         return node;
+    }
+    
+    /**
+     * Sets up actions Copy, Cut, Paste &amp; Delete so that they are
+     * activated/deactivated appropriately and so that they do what they
+     * should do.
+     */
+    private void setupActions() {
+        ExplorerManager manager = explorerManager;
+        
+        Object copyActionKey   = DefaultEditorKit.copyAction;
+        Object cutActionKey    = DefaultEditorKit.cutAction;
+        Object pasteActionKey  = DefaultEditorKit.pasteAction;
+        Object deleteActionKey = "delete";                              //NOI18N
+        
+        ActionMap map = getActionMap();
+        map.put(copyActionKey,   ExplorerUtils.actionCopy(explorerManager));
+        map.put(cutActionKey,    ExplorerUtils.actionCut(explorerManager));
+        map.put(pasteActionKey,  ExplorerUtils.actionPaste(explorerManager));
+        map.put(deleteActionKey, ExplorerUtils.actionDelete(explorerManager,
+                                                            true));
+        
+        associateLookup(ExplorerUtils.createLookup(explorerManager, map));
+    }
+    
+    protected void componentActivated() {
+        ExplorerUtils.activateActions(explorerManager, true);
+    }
+    
+    protected void componentDeactivated() {
+        ExplorerUtils.activateActions(explorerManager, false);
     }
 
     /**
