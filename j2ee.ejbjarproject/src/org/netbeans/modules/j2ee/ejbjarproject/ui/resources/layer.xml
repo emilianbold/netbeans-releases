@@ -27,7 +27,19 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.localizingBundle"
                       stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.Bundle"/>
          <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EnterpriseJavaBean16.gif"/>
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/session/SessionNodeIcon.gif"/>
+            
+        </file>
+        <file name="Message">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.mdb.MessageEJBWizard" />
+         <attr name="templateCategory" stringvalue="ejb-types"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/MessageEJB.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.mdb.Bundle"/>
+         <attr name="SystemFileSystem.icon"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/mdb/MessageNodeIcon.gif"/>
             
         </file>
         <file name="RelatedCMP">
@@ -39,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.localizingBundle"
                       stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.cmp.Bundle"/>
          <attr name="SystemFileSystem.icon"
-                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/EnterpriseJavaBean16.gif"/>
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
             
         </file>
         </folder>
