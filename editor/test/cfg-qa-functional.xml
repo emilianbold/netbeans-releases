@@ -109,7 +109,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,full,focus" name="FocusTests">
+    <testbag testattribs="all,full,validation,focus" name="FocusTests">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/focus/FocusTestPerformer.class"/>            
