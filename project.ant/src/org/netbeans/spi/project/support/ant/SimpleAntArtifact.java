@@ -81,4 +81,9 @@ final class SimpleAntArtifact extends AntArtifact {
         return AntBasedProjectFactorySingleton.getProjectFor(h);
     }
     
+    public String toString() {
+        return "SimpleAntArtifact[helper=" + h + ",type=" + type + ",locationProperty=" + locationProperty + // NOI18N
+            ",targetName=" + targetName + ",cleanTargetName=" + cleanTargetName + /*",props=" + eval.getProperties() +*/ "]"; // NOI18N
+    }
+    
 }
