@@ -61,7 +61,16 @@ public class FileCustomEditorOperator extends NbDialogOperator {
     /** sets edited file
      * @param file File */    
     public void setFileValue(File file) {
-        fileChooser().setSelectedFile(file);
+        // Need to go from parent to file because events are not fired when
+        // only setSelectedFile(file) is used.
+        // select parent directory
+        fileChooser().setSelectedFile(file.getParentFile());
+        // go into dir
+        fileChooser().enterSubDir(file.getParentFile().getName());
+        // wait file is displayed
+        fileChooser().waitFileDisplayed(file.getName());
+        // select file
+        fileChooser().selectFile(file.getName());
     }
     
     /** sets edited file
