@@ -119,6 +119,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             // otherwise we implement just the InstanceCookie directly
             ser = new Ser (this);
         }
+        
+        try {
+            if (!pf.getFileSystem ().isDefault ()) {
+                getCookieSet ().add (new DefaultES (this, getPrimaryEntry (), getCookieSet ()));
+            }
+        } catch (FileStateInvalidException ex) {
+            // ok, ignore no editor support added
+        }
     }
 
     /** used for synchronization instead of the IDO object */

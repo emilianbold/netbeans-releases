@@ -55,7 +55,7 @@ implements OpenCookie, EditCookie, EditorCookie.Observable, PrintCookie, CloseCo
      * @param obj data object to work on
      * @param set set to add/remove save cookie from
      */
-    DefaultES (DefaultDataObject obj, MultiDataObject.Entry entry, CookieSet set) {
+    DefaultES (DataObject obj, MultiDataObject.Entry entry, CookieSet set) {
         super(obj, new Environment(obj, entry));
         this.set = set;
         setMIMEType("text/plain"); // NOI18N

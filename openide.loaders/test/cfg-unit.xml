@@ -31,11 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="all openide code unit tests">
         <testset dir="">
             <patternset>
-                <include name="org/openide/awt/*Test.class"/>
-                <include name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImpl"/>
-
-                <!-- excluded because issue #46587, issue #46589-->
-                <exclude name="org/openide/loaders/TemplateWizardTest.class/testNextOnIterImplWithNotification"/>
+                <include name="org/openide/**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>

@@ -615,6 +615,7 @@ private static class InstanceLoader extends UniFileLoader {
     */
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
+            SystemAction.get (org.openide.actions.OpenAction.class),
             SystemAction.get (org.openide.actions.FileSystemAction.class),
             null,
             SystemAction.get(org.openide.actions.CutAction.class),
