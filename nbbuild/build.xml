@@ -3060,7 +3060,7 @@ PKGINST=${pkg.svr4.pkginst}</echo>
       <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
-      <arg value="${netbeans.dest}/bin/netbeans"/>
+      <arg value="${netbeans.dest.abs}/bin/netbeans"/>
       <arg value="-jdkhome"/>
       <arg file="${jdkhome}"/>
       <arg value="-userdir"/>
