@@ -38,7 +38,7 @@ public class BrokenReferencesAlertPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(350, 100));
+        setPreferredSize(new java.awt.Dimension(350, 120));
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "ACSN_BrokenReferencesAlertPanel"));
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrokenReferencesAlertPanel.class, "ACSD_BrokenReferencesAlertPanel"));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, java.util.ResourceBundle.getBundle("org/netbeans/modules/java/project/Bundle").getString("MSG_Broken_References_Label"));
@@ -72,12 +72,13 @@ public class BrokenReferencesAlertPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 11, 0, 0);
         add(message, gridBagConstraints);
 
+        jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
