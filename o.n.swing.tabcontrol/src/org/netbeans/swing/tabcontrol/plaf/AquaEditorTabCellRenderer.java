@@ -32,7 +32,7 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
 final class AquaEditorTabCellRenderer extends AbstractTabCellRenderer {
     private static final AquaTabPainter AquaTabPainter = new AquaTabPainter();
 
-    static final int TOP_INSET = 1;
+    static final int TOP_INSET = 0;
     static final int LEFT_INSET = 3;
     static final int RIGHT_INSET = 6;
     static final int BOTTOM_INSET = 2;

@@ -31,8 +31,6 @@ import org.netbeans.swing.tabcontrol.SlidingButton;
 import org.netbeans.swing.tabcontrol.SlidingButtonUI;
 import org.netbeans.swing.tabcontrol.plaf.GenericGlowingChiclet;
 
-//import org.netbeans.swing.tabcontrol.plaf.GenericGlowingChiclet;
-
 /**
  *
  * @author  mkleint
@@ -104,8 +102,8 @@ public class AquaSlidingButtonUI extends SlidingButtonUI {
 	Dimension d = super.getPreferredSize(c);
 
         AbstractButton b = (AbstractButton)c;
-        d.width += 5;
-	d.height += 5; 
+        d.width += 9;
+	d.height += 7; 
 	return d;
     } 
 

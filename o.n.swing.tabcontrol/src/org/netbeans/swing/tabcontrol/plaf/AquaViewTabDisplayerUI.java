@@ -75,7 +75,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     public Dimension getPreferredSize(JComponent c) {
         FontMetrics fm = getTxtFontMetrics();
         int height = fm == null ?
-                21 : fm.getAscent() + 2 * fm.getDescent() + 2;
+                21 : fm.getAscent() + 2 * fm.getDescent() + 3;
         Insets insets = c.getInsets();
         prefSize.height = height + insets.bottom + insets.top;
         return prefSize;
@@ -133,7 +133,7 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
                 g.setColor(isSelected(index) && isActive() ?
                            new Color(80, 80, 123) : new Color(110, 120, 120));
-                iconY -= 2; //Only if we're painting, not using a bitmap
+                iconY -= 1; //Only if we're painting, not using a bitmap
                 iconX -= 2; //Only if we're painting, not using a bitmap
 
                 g.drawLine(iconX, iconY, iconX + iconWidth, iconY + iconHeight);
@@ -225,7 +225,9 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         if (isAttention(index)) {
             state |= GenericGlowingChiclet.STATE_ATTENTION;
         }
-
+        
+        y+=1; //align with top of editor tabs
+        
         chiclet.setState(state);
         chiclet.setBounds(x, y, width, height);
         chiclet.setArcs(first ? 0.5f : 0f, last ? 0.5f : 0f,
