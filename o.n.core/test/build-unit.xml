@@ -17,39 +17,37 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================== -->
     <!-- Setting classpaths -->
     <!-- ================== -->
-    
-    <target name="init_cp">
-        <path id="compiletest.classpath">
-            <pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
-	    <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-            <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
-            <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-            <!-- XXX -->
-            <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-            <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-            <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
-            <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
-            
-	    <pathelement path="${junit.path}"/> <!-- XXX ??? -->
-            <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
-    	</path>
-        <path id="codetest.classpath">
-	   <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
-           <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
-           <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-           <!-- XXX -->
-           <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-           <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
-           <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
-           <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
-    	</path>
-    </target>
+
+    <path id="compiletest.classpath">
+        <pathelement location="${xtest.home}/lib/openide-13javac-workaround.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <!-- XXX -->
+        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+        <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/>
+        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        
+	<pathelement path="${junit.path}"/> <!-- XXX ??? -->
+        <pathelement path="${xerces.path}"/> <!-- XXX ??? -->
+    </path>
+    <path id="codetest.classpath">
+	<pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <!-- XXX -->
+        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+        <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+    </path>
     
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="unit-compiler" depends="init_cp">
+    <target name="unit-compiler">
         <buildTests srcDir="unit/src" compileexcludes="**/jars/**">
             <classpath refid="compiletest.classpath"/>
         </buildTests>
@@ -70,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
         </executeTests>
     </target>
     
-    <target name="runcodetest" depends="init_cp">
+    <target name="runcodetest">
         <executeTests  pluginName="jvm">
             <classpath refid="codetest.classpath"/>
         </executeTests>
