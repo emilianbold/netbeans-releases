@@ -404,7 +404,6 @@ public abstract class NbTopManager {
             NbBundle.getBundle (NbTopManager.class).getString ("MSG_AllSaved"));
     }
     
-    // XXX who uses this interface outside core?
     /** Interface describing basic control over window system. 
      * @since 1.15 */
     public interface WindowSystem {
@@ -412,16 +411,6 @@ public abstract class NbTopManager {
         void hide();
         void load();
         void save();
-
-        // Project specific.
-        /** @since 1.20
-         * @deprecated Probably unused.
-         */
-        void saveProjectData();
-        /** @since 1.20
-         * @deprecated Probably unused.
-         */
-        void loadProjectData();
         /**
          * This is used by projects/projectui to track the project selection.
          * @since 1.20

@@ -69,18 +69,7 @@ final class PersistenceHandler implements PersistenceObserver {
         }
     }
     
-
-    // PENDING It seem there will be better to separate the load sequences 
-    // for startup and project completely.
     public void load() {
-        load(false);
-    }
-    
-    private void loadProjectWinsysData() {
-        load(true); // PENDING
-    }
-    
-    private synchronized void load(boolean projectLoading) {
         if(DEBUG) {
             debugLog("## PersistenceHandler.load"); // NOI18N
         }
@@ -129,7 +118,7 @@ final class PersistenceHandler implements PersistenceObserver {
         
         wm.setEditorAreaConstraints(wmc.editorAreaConstraints);
         
-        if(!projectLoading && Constants.SWITCH_START_IN_SEPARATE_MODE) {
+        if (Constants.SWITCH_START_IN_SEPARATE_MODE) {
             wm.setEditorAreaState(Constants.EDITOR_AREA_SEPARATED);
         } else {
             wm.setEditorAreaState(wmc.editorAreaState);
@@ -240,10 +229,6 @@ final class PersistenceHandler implements PersistenceObserver {
         wm.setToolbarConfigName(wmc.toolbarConfiguration);
     }
     
-    
-    private void saveProjectWinsysData() {
-        save(); // PENDING
-    }
     
     /** Implements <code>NbTopManager.WindowSystem</code> interface method. */
     public synchronized void save() {
@@ -928,40 +913,4 @@ final class PersistenceHandler implements PersistenceObserver {
         return bounds;
     }
     
-    
-    // Projects>>
-    public void loadProjectData() {
-        // Reset PersistenceManager
-        PersistenceManager.getDefault().resetAfterLayerSwitch();
-        // Load window system.
-        loadProjectWinsysData();
-    }
-    
-    public void saveProjectData() {
-        // Save window system.
-        saveProjectWinsysData();
-        // Remove all components from model.
-        removeAll();
-        //Reset PersistenceManager
-        PersistenceManager.getDefault().resetBeforeLayerSwitch();
-    }
-    
-    private void removeAll() {
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        // Remove all modes.
-        for(Iterator it = wm.getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            wm.removeMode(mode);
-        }
-        name2mode.clear();
-        
-        // Remove all groups.
-        for(Iterator it = wm.getTopComponentGroups().iterator(); it.hasNext(); ) {
-            TopComponentGroupImpl group = (TopComponentGroupImpl)it.next();
-            wm.removeTopComponentGroup(group);
-        }
-        name2group.clear();
-    }
-    // Projects<<
-
 }

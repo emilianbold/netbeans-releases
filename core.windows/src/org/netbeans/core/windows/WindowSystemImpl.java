@@ -64,22 +64,9 @@ public class WindowSystemImpl implements NbTopManager.WindowSystem {
         ShortcutAndMenuKeyEventProcessor.uninstall();
     }
     
-    // Projects>>
-    public void loadProjectData() {
-        WindowManagerImpl.assertEventDispatchThread();
-        PersistenceHandler.getDefault().loadProjectData();
-    }
-    
-    public void saveProjectData() {
-        WindowManagerImpl.assertEventDispatchThread();
-        PersistenceHandler.getDefault().saveProjectData();
-    }
-    
     public void setProjectName(String projectName) {
         WindowManagerImpl.assertEventDispatchThread();
         WindowManagerImpl.getInstance().setProjectName(projectName);
     }
-    // Projects<<
     
 }
-

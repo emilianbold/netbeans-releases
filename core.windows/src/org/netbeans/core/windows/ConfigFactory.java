@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -101,7 +101,7 @@ abstract class ConfigFactory {
         mc.state = Constants.MODE_STATE_JOINED;
         mc.kind = Constants.MODE_KIND_VIEW;
         mc.constraints = createDefaultExplorerConstraints();
-        mc.selectedTopComponentID = "filesystems"; // NOI18N
+        mc.selectedTopComponentID = "runtime"; // NOI18N
         mc.permanent = true;
         mc.tcRefConfigs = createDefaultExplorerTCRefConfigs();
         return mc;
@@ -117,29 +117,13 @@ abstract class ConfigFactory {
     
     private static TCRefConfig[] createDefaultExplorerTCRefConfigs() {
         List tcRefConfigs = new ArrayList();
-        tcRefConfigs.add(createDefaultFilesystemsTCRefConfig());
         tcRefConfigs.add(createDefaultRuntimeTCRefConfig());
-        tcRefConfigs.add(createDefaultProjectsTCRefConfig());
         return (TCRefConfig[])tcRefConfigs.toArray(new TCRefConfig[0]);
     }
 
-    private static TCRefConfig createDefaultFilesystemsTCRefConfig() {
-        TCRefConfig tcrc = new TCRefConfig();
-        tcrc.tc_id = "filesystems"; // NOI18N
-        tcrc.opened = true;
-        return tcrc;
-    }
-    
     private static TCRefConfig createDefaultRuntimeTCRefConfig() {
         TCRefConfig tcrc = new TCRefConfig();
         tcrc.tc_id = "runtime"; // NOI18N
-        tcrc.opened = true;
-        return tcrc;
-    }
-    
-    private static TCRefConfig createDefaultProjectsTCRefConfig() {
-        TCRefConfig tcrc = new TCRefConfig();
-        tcrc.tc_id = "projects"; // NOI18N
         tcrc.opened = true;
         return tcrc;
     }
@@ -343,4 +327,3 @@ abstract class ConfigFactory {
 
 
 }
-
