@@ -130,8 +130,9 @@ public class JavaProjectNature implements ProjectNature {
             new OpenHook(cp), // ProjectOpenedHook
             new TestQuery(projectHelper, projectEvaluator, aux), // MultipleRootsUnitTestForSourceQueryImplementation
             new JavadocQuery(projectHelper, projectEvaluator, aux), // JavadocForBinaryQueryImplementation
-            new PrivilegedTemplatesImpl(),           // List of templates in New action popup
-            new LookupMergerImpl(),
+            new PrivilegedTemplatesImpl(), // PrivilegedTemplates
+            new JavaActions(project, projectHelper, projectEvaluator, aux), // ActionProvider
+            new LookupMergerImpl(), // LookupMerger
         });
     }
     
@@ -161,7 +162,7 @@ public class JavaProjectNature implements ProjectNature {
     /**
      * Transparently handles /1 -> /2 schema upgrade (on read only, not write!).
      */
-    private static final class UpgradingAuxiliaryConfiguration implements AuxiliaryConfiguration {
+    static final class UpgradingAuxiliaryConfiguration implements AuxiliaryConfiguration {
         
         private final AuxiliaryConfiguration delegate;
         
@@ -194,7 +195,7 @@ public class JavaProjectNature implements ProjectNature {
         
     }
 
-    /* accessible for unit test */ static Element upgradeSchema(Element old) {
+    static Element upgradeSchema(Element old) {
         Document doc = old.getOwnerDocument();
         Element nue = doc.createElementNS(NS_JAVA_2, EL_JAVA);
         copyXMLTree(doc, old, nue, NS_JAVA_2);

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -254,7 +255,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         registeredClasspaths = null;
     }
     
-    private static List/*<String>*/ findPackageRootNames(Element compilationUnitEl) {
+    static List/*<String>*/ findPackageRootNames(Element compilationUnitEl) {
         List/*<String>*/ names = new ArrayList();
         Iterator it = Util.findSubElements(compilationUnitEl).iterator();
         while (it.hasNext()) {
@@ -268,8 +269,8 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         return names;
     }
     
-    private static List/*<FileObject>*/ findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, List/*<String>*/ packageRootNames) {
-        List/*<FileObject>*/ roots = new ArrayList(packageRootNames.size());
+    static Map/*<String,FileObject>*/ findPackageRootsByName(AntProjectHelper helper, PropertyEvaluator evaluator, List/*<String>*/ packageRootNames) {
+        Map/*<String,FileObject>*/ roots = new LinkedHashMap();
         Iterator it = packageRootNames.iterator();
         while (it.hasNext()) {
             String location = (String) it.next();
@@ -281,11 +282,15 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
                     if (FileUtil.isArchiveFile(locationFileObject)) {
                         locationFileObject = FileUtil.getArchiveRoot(locationFileObject);
                     }
-                    roots.add(locationFileObject);
+                    roots.put(location, locationFileObject);
                 }
             }
         }
         return roots;
+    }
+    
+    private static List/*<FileObject>*/ findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, List/*<String>*/ packageRootNames) {
+        return new ArrayList(findPackageRootsByName(helper, evaluator, packageRootNames).values());
     }
     
     public static List/*<FileObject>*/ findPackageRoots(AntProjectHelper helper, PropertyEvaluator evaluator, Element compilationUnitEl) {
