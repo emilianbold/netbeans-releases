@@ -981,7 +981,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml/xsl" depends="build-platform,all-httpserver/servletapi,all-xml/api,all-xml/tax,all-xml/core">
+  <target name="all-xml/xsl" depends="build-platform,all-httpserver/servletapi,all-xml/api,all-xml/tax,all-xml/core,all-libs/xalan">
       <echo message="Building module xml/xsl..."/>
       <ant dir="../xml/xsl" target="netbeans"/>
   </target>
