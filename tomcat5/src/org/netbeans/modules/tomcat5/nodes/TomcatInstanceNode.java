@@ -406,7 +406,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    }
                    
                    public void setValue (Object val){
-                       setDebugPort((Integer)val);
+                       TomcatManager mng = getTomcatManager();
+                       if (mng!=null) {
+                           if (mng.isRunning()) {
+                               TomcatInstallUtil.notifyThatRunning(mng);
+                           } else {
+                               setDebugPort((Integer)val);
+                           }
+                       }
                    }                   
                };      
         ssDebug.put(p);
@@ -422,7 +429,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                    }
                    
                    public void setValue (Object val){
-                       setClassic((Boolean)val);
+                       TomcatManager mng = getTomcatManager();
+                       if (mng!=null) {
+                           if (mng.isRunning()) {
+                               TomcatInstallUtil.notifyThatRunning(mng);
+                           } else {
+                               setClassic((Boolean)val);
+                           }
+                       }
                        
                    }                   
                };      
@@ -440,8 +454,15 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                            return getDebugType();
                        }
 
-                       public void setValue (Object val){
-                            setDebugType((String)val);
+                       public void setValue (Object val) {
+                           TomcatManager mng = getTomcatManager();
+                           if (mng!=null) {
+                               if (mng.isRunning()) {
+                                   TomcatInstallUtil.notifyThatRunning(mng);
+                               } else {
+                                    setDebugType((String)val);
+                               }
+                           }
                        }
 
                        public PropertyEditor getPropertyEditor(){
@@ -460,7 +481,14 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        }
 
                        public void setValue (Object val){
-                           setSharedMemory((String)val);
+                           TomcatManager mng = getTomcatManager();
+                           if (mng!=null) {
+                               if (mng.isRunning()) {
+                                   TomcatInstallUtil.notifyThatRunning(mng);
+                               } else {
+                                   setSharedMemory((String)val);
+                               }
+                           }
                        }
                    };
             ssDebug.put(p);  
@@ -530,7 +558,10 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
     private FileObject getTomcatConf() {
         FileSystem fs = getTomcatManager().getCatalinaBaseFileSystem();
-        return fs.findResource("conf/server.xml"); //NOI18N
+        if (fs != null) {
+            return fs.findResource("conf/server.xml"); //NOI18N
+        }
+        return null;
     }
     
     private void updateDocument(DataObject dobj, org.w3c.dom.Document doc)
