@@ -40,7 +40,7 @@ import org.openide.nodes.FilterNode;
 public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescriptor.Panel, PropertyChangeListener {
 
     private String prop;
-    private boolean topOK, stripAmps;
+    private boolean topOK;
     
     /** Create the wizard panel and set up some basic properties. */
     public SelectFolderPanel (String name, String hint, Node top, boolean topOK, boolean stripAmps, String prop) {
@@ -48,16 +48,17 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
         // Provide a name in the title bar.
         setName (name);
         hintsArea.setText (hint);
-        explorerPanel.getExplorerManager ().setRootContext (new FolderFilter (top));
+        explorerPanel.getExplorerManager ().setRootContext (new FolderFilter (top, stripAmps));
         explorerPanel.getExplorerManager ().addPropertyChangeListener (this);
         this.topOK = topOK;
-        this.stripAmps = stripAmps;
         this.prop = prop;
     }
     
-    private final class FolderFilter extends FilterNode {
-        public FolderFilter (Node orig) {
-            super (orig, new FolderFilterChildren (orig));
+    private static final class FolderFilter extends FilterNode {
+        private final boolean stripAmps;
+        public FolderFilter (Node orig, boolean stripAmps) {
+            super (orig, new FolderFilterChildren (orig, stripAmps));
+            this.stripAmps = stripAmps;
         }
         public String getDisplayName () {
             String name = super.getDisplayName ();
@@ -70,14 +71,16 @@ public class SelectFolderPanel extends javax.swing.JPanel implements WizardDescr
             return name;
         }
     }
-    private final class FolderFilterChildren extends FilterNode.Children {
-        public FolderFilterChildren (Node orig) {
+    private static final class FolderFilterChildren extends FilterNode.Children {
+        private final boolean stripAmps;
+        public FolderFilterChildren (Node orig, boolean stripAmps) {
             super (orig);
+            this.stripAmps = stripAmps;
         }
         protected Node[] createNodes (Object key) {
             Node child = (Node) key;
             if (child.getCookie (DataFolder.class) != null) {
-                return new Node[] { new FolderFilter (child) };
+                return new Node[] { new FolderFilter (child, stripAmps) };
             } else {
                 return new Node[] { };
             }
