@@ -25,7 +25,7 @@ Describes format of NetBeans Architecture Answers file
 %xhtml;
 
 <!-- stability categories -->
-<!ENTITY % category "(official|stable|devel|third|standard|friend|private)">
+<!ENTITY % category "(official|stable|devel|third|standard|friend|private|deprecated)">
 
 <!--
 Document element.

@@ -168,6 +168,7 @@
                     <xsl:when test="$category='standard'">Standard</xsl:when>
                     <xsl:when test="$category='friend'">Friend private</xsl:when>
                     <xsl:when test="$category='private'">Private</xsl:when>
+                    <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
                     <xsl:otherwise>WARNING: <xsl:value-of select="$category" /></xsl:otherwise>
                 </xsl:choose>
             </td>
@@ -219,6 +220,7 @@
                     <xsl:when test="$category='standard'">Standard</xsl:when>
                     <xsl:when test="$category='friend'">Friend private</xsl:when>
                     <xsl:when test="$category='private'">Private</xsl:when>
+                    <xsl:when test="$category='deprecated'">Deprecated</xsl:when>
                     <xsl:otherwise>WARNING: <xsl:value-of select="$category" /></xsl:otherwise>
                 </xsl:choose>
             </td>
