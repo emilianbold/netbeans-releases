@@ -17,6 +17,7 @@ package org.netbeans.modules.form;
 import java.lang.reflect.InvocationTargetException;
 
 import org.openide.util.HelpCtx;
+//import org.openide.nodes.Sheet;
 import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
@@ -41,6 +42,20 @@ public class FormDataNode extends JavaNode {
         super(fdo);
     }
 
+    public Object getValue(String attributeName) {
+        if ("propertiesHelpID".equals(attributeName)) // NOI18N
+            return "org.netbeans.modules.form.FormObjectProperties"; // NOI18N
+
+        return super.getValue(attributeName);
+    }
+
+//    protected Sheet createSheet () {
+//        Sheet sheet = super.createSheet();
+//        Sheet.Set ps = sheet.get(Sheet.PROPERTIES);
+//        ps.setValue("helpID", "org.netbeans.modules.form.FormObjectProperties"); // NOI18N
+//        return sheet;
+//    }
+//
     protected String getIconBase() {
         return FORM_ICON_BASE;
     }
