@@ -15,6 +15,7 @@
 package org.netbeans.core.windows.model;
 
 
+import java.lang.ref.WeakReference;
 import org.netbeans.core.windows.*;
 import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
@@ -250,7 +251,13 @@ final class DefaultModel implements Model {
     }
 
     /** Sets active mode. */
+    private WeakReference lastActiveMode = null;
     public void setActiveMode(ModeImpl activeMode) {
+        if (lastActiveMode != null && lastActiveMode.get() == activeMode) {
+            return;
+        } else {
+            lastActiveMode = new WeakReference(activeMode);
+        }
         synchronized(LOCK_MODES) {
             boolean success = modesSubModel.setActiveMode(activeMode);
             if (success) {

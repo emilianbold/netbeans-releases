@@ -14,6 +14,7 @@
 package org.netbeans.core.windows;
 
 
+import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.model.Model;
 import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
@@ -131,8 +132,8 @@ final class Central implements ControllerHandler {
     }
     
     /** Sets active mode into model and requests view (if needed). */
-    public void setActiveMode(ModeImpl activeMode) {
-        ModeImpl old = getActiveMode();
+    public void setActiveMode(final ModeImpl activeMode) {
+        final ModeImpl old = getActiveMode();
         if(activeMode == old) {
             // kind of workaround to the scenario when a window slides out automatically
             // and user clicks in the currently active mode, not allow to exit in such case and fire changes to
@@ -155,20 +156,31 @@ final class Central implements ControllerHandler {
                 new ViewRequest(null, View.CHANGE_ACTIVE_MODE_CHANGED,
                     old, activeMode));
         }
+
+        
         
         WindowManagerImpl.getInstance().doFirePropertyChange(
             WindowManagerImpl.PROP_ACTIVE_MODE, old, activeMode);
         
-        // Notify registry.
-        // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in 
-        // project layer, that can cause out of synch state when switching projects.
-        // all subsequent calls should handle the null value correctly.
-        if (activeMode != null) {
-            WindowManagerImpl.notifyRegistryTopComponentActivated(
-                activeMode.getSelectedTopComponent());
-        } else {
-            WindowManagerImpl.notifyRegistryTopComponentActivated(null);
-        }
+        //Invokelatering the event that updates toolbar buttons, etc. makes a
+        //fairly massive perceived responsiveness improvement - tabs immediately
+        //repaint as active, rather than not repainting until all the (slow) 
+        //action enablement code runs, which causes a sometimes long delay
+        //between clicking and anything visibly happening
+        SwingUtilities.invokeLater (new Runnable() {
+            public void run() {
+                // Notify registry.
+                // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in 
+                // project layer, that can cause out of synch state when switching projects.
+                // all subsequent calls should handle the null value correctly.
+                if (activeMode != null) {
+                    WindowManagerImpl.notifyRegistryTopComponentActivated(
+                        activeMode.getSelectedTopComponent());
+                } else {
+                    WindowManagerImpl.notifyRegistryTopComponentActivated(null);
+                }
+            }
+        });
     }
 
     /** Sets editor area bounds into model and requests view (if needed). */
