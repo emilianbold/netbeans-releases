@@ -34,6 +34,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
 
     String[] serverInstanceIDs;
     String[] serverNames;
+    boolean initialized = false;
     
     /** Creates new form CustomizerCompile */
     public CustomizerRun(WebProjectProperties webProperties, ProjectWebModule wm) {
@@ -64,6 +65,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         doc = jTextFieldContextPath.getDocument();
         doc.addDocumentListener(this);
         jTextFieldRelativeURL.getDocument().addDocumentListener(this);
+        initialized = true;
     } 
     
     /** This method is called from within the constructor to
@@ -204,8 +206,14 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     }//GEN-END:initComponents
 
     private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
-        if (jComboBoxServer.getSelectedIndex() == -1)
+        if (jComboBoxServer.getSelectedIndex() == -1 || !initialized)
             return;
+        jTextFieldContextPath.getDocument ().removeDocumentListener (this);
+        String newCtxPath = wm.getContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()]);
+        if (newCtxPath != null) {
+            jTextFieldContextPath.setText(newCtxPath);
+        }
+        jTextFieldContextPath.getDocument ().addDocumentListener (this);
         setFullURL();
     }//GEN-LAST:event_jComboBoxServerActionPerformed
 
@@ -263,7 +271,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     }
     
     private void setContextPath() {
-        wm.setContextPath(jTextFieldContextPath.getText().trim());
+        wm.setContextPath(serverInstanceIDs [jComboBoxServer.getSelectedIndex ()], jTextFieldContextPath.getText().trim());
     }
     
     /** Help context where to find more about the paste type action.

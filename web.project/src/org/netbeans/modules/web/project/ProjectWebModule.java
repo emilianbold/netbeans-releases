@@ -55,10 +55,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
     private WebProject project;
     private AntProjectHelper helper;
     private Set versionListeners = null;
+    private String fakeServerInstId = null; // used to get access to properties of other servers
     
     ProjectWebModule (WebProject project, AntProjectHelper helper) {
         this.project = project;
         this.helper = helper;
+        project.evaluator ().addPropertyChangeListener (this);
     }
     
     public FileObject getDeploymentDescriptor() {
@@ -78,6 +80,19 @@ public final class ProjectWebModule extends J2eeModuleProvider
     
     public void setContextPath (String path) {
         getConfigSupport ().setWebContextRoot (path);
+    }
+    
+    public String getContextPath (String serverInstId) {
+        fakeServerInstId = serverInstId;
+        String result = getConfigSupport ().getWebContextRoot ();
+        fakeServerInstId = null;
+        return result;
+    }
+    
+    public void setContextPath (String serverInstId, String path) {
+        fakeServerInstId = serverInstId;
+        getConfigSupport ().setWebContextRoot (path);
+        fakeServerInstId = null;
     }
     
     public FileObject getDocumentBase () {
@@ -139,10 +154,17 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     public String getServerID () {
-        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        String inst = getServerInstanceID ();
+        if (inst != null) {
+            return Deployment.getDefault ().getServerID (inst);
+        } else {
+            return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
+        }
     }
 
     public String getServerInstanceID () {
+        if (fakeServerInstId != null)
+            return fakeServerInstId;
         return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
     }
     
@@ -225,6 +247,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 String newVersion = (String) evt.getNewValue();
                 vl.versionChanged(oldVersion, newVersion);
             }
+        } else if (evt.getPropertyName ().equals (WebProjectProperties.J2EE_SERVER_TYPE)) {
+            fireServerChange ((String) evt.getOldValue (), (String) evt.getNewValue ());
+        } else if (evt.getPropertyName ().equals (WebProjectProperties.J2EE_SERVER_INSTANCE)) {
+            Deployment d = Deployment.getDefault ();
+            String oldServerID = evt.getOldValue () == null ? null : d.getServerID ((String) evt.getOldValue ());
+            String newServerID = evt.getNewValue () == null ? null : d.getServerID ((String) evt.getNewValue ());
+            fireServerChange (oldServerID, newServerID);
         }
     }
         
