@@ -1,75 +1,8 @@
 /* Stylesheet used for NetBeans API Javadoc. */
 
+/* Special things for API documentation: */
 @import "nb-docs.css";
-
-
-/* Sections of netbeans.css. Cannot use general defs (#35065). */
-.constant {
-  color: #b03060;
-  }
-
-.keyword {
-  color: #0000ff;
-  }
-
-.function-name {
-  color: #0000ff;
-  }
-
-.comment {
-  color: #666666;
-  font-style: italic;
-  }
-
-.string {
-  color: #b03060;
-  }
-
-.variable-name {
-  color: #006400;
-  }
-
-.type {
-  color: #00008b;
-  }
-
-.extra-java-font-lock-number {
-  color: #b03060;
-  }
-
-.builtin {
-  color: #0000ff;
-  }
-
-
+/* Only basic syntax coloration etc. from normal netbeans.css: */
+@import "netbeans-lite.css";
 /* The rest is the default stylesheet produced by Javadoc 1.4.2: */
-
-/* Javadoc style sheet */
-
-/* Define colors, fonts and other style attributes here to override the defaults */
-
-/* Page background color */
-body { background-color: #FFFFFF }
-
-/* Headings */
-h1 { font-size: 145% }
-
-/* Table colors */
-.TableHeadingColor     { background: #CCCCFF } /* Dark mauve */
-.TableSubHeadingColor  { background: #EEEEFF } /* Light mauve */
-.TableRowColor         { background: #FFFFFF } /* White */
-
-/* Font used in left-hand frame lists */
-.FrameTitleFont   { font-size: 100%; font-family: Helvetica, Arial, sans-serif }
-.FrameHeadingFont { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
-.FrameItemFont    { font-size:  90%; font-family: Helvetica, Arial, sans-serif }
-
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color:#EEEEFF;} /* Light mauve */
-.NavBarCell1Rev { background-color:#00008B;} /* Dark Blue */
-.NavBarFont1    { font-family: Arial, Helvetica, sans-serif; color:#000000;}
-.NavBarFont1Rev { font-family: Arial, Helvetica, sans-serif; color:#FFFFFF;}
-
-.NavBarCell2    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
-.NavBarCell3    { font-family: Arial, Helvetica, sans-serif; background-color:#FFFFFF;}
-
+@import "javadoc-generic.css";
