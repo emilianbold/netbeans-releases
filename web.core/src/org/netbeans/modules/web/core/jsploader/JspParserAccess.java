@@ -101,7 +101,7 @@ public class JspParserAccess {
             pcs.firePropertyChange(propertyName, null, null);
         }
         
-        public FileObject[] getPackageRoots() {
+/*        public FileObject[] getPackageRoots() {
             FileObject[] roots = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE).getRoots();
             ArrayList folders = new ArrayList();
             for (int i = 0; i < roots.length; i++){
@@ -111,8 +111,9 @@ public class JspParserAccess {
             }
             return (FileObject[])folders.toArray(new FileObject[folders.size()]);
         }
+*/        
         
-        public FileObject[] getLibraries() {
+/*        public FileObject[] getLibraries() {
             // PENDING - better implementation when we will be able distinguish the libraries.
             FileObject[] roots = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE).getRoots();
             ArrayList lib = new ArrayList();
@@ -128,7 +129,7 @@ public class JspParserAccess {
             }
             return (FileObject[])lib.toArray(new FileObject[lib.size()]);
             
-        }
+        }*/
        
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
