@@ -578,6 +578,7 @@
 <mapID target="internation.testing" url="internationalize/testingwizard.html" />
 <mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
+<mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 <mapID target="i18n.pe.bundlestring" url="internationalize/bundleformat.html" />
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
