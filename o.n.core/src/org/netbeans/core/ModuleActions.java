@@ -61,7 +61,7 @@ public class ModuleActions extends ActionManager
      */
     public void invokeAction(final Action a, final ActionEvent e) {
         try {
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            org.openide.util.Mutex.EVENT.readAccess (new Runnable() {
                 public void run() {
                     showWaitCursor(e);
                 }
@@ -71,7 +71,7 @@ public class ModuleActions extends ActionManager
             a.actionPerformed (e);
         } finally {
             removeRunningAction(e);
-            java.awt.EventQueue.invokeLater(new Runnable() {
+            org.openide.util.Mutex.EVENT.readAccess (new Runnable() {
                 public void run() {
                     hideWaitCursor(e);
                 }
