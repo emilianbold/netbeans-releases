@@ -160,6 +160,8 @@ public final class MultiViewPeer  {
         delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
         ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
         setActivatedNodesAccordingToElement(true);
+        tabs.setInnerToolBar(el.getToolbarRepresentation());
+        
     }
     
     void peerComponentHidden() {
@@ -228,6 +230,7 @@ public final class MultiViewPeer  {
         if (!calledFromComponentOpened) {
             if (peer.isOpened()) {
                 el.componentShowing();
+                tabs.setInnerToolBar(el.getToolbarRepresentation());                
             }
         // should we really set the stuff only when not called from componentOpened()? maybe it's better to call it twice sometimes.
             // if we don't call it here for opened but not showing component, then the map, lookup and nodes will not be initialized properly.
@@ -236,7 +239,6 @@ public final class MultiViewPeer  {
             ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
             setActivatedNodesAccordingToElement(true);
         }
-        tabs.setInnerToolBar(el.getToolbarRepresentation());
     }
     
     
