@@ -51,6 +51,7 @@ public final class Issue extends Object implements Comparable {
     static final String BLOCKS = "blocks";
     static final String CREATED = "creation_ts";
     static final String VOTES = "votes";
+    static final String KEYWORDS = "keywords";
     
     /** The target milestone attribute name. */
     static final String TARGET_MILESTONE = "target_milestone";
@@ -208,6 +209,30 @@ public final class Issue extends Object implements Comparable {
         }
     }
 
+    /** All keywords of the issue.
+     * @return Keywords deliminated by comma or empty string
+     */
+    public String getKeywords () {
+        try {
+            return string (KEYWORDS);
+        } catch (Exception ex) {
+            return "";
+        }
+    }
+    
+    /** Check if the this issue has the specified keyword
+     * @return <code>true</code> if specified keyword is set in this issue,
+     *  otherwise <code>false</code>.
+     */
+    public boolean containsKeyword (String keyword) {
+        StringTokenizer tokenizer = new StringTokenizer(getKeywords());
+        while (tokenizer.hasMoreTokens()) {
+            String current = tokenizer.nextToken();
+            if (current.equals(keyword))
+                return true;
+        }
+        return false;
+    }
     
     /** Is this bug actually an enhancement?
      * @return <CODE>true</CODE> if this is enhancement, <CODE>false</CODE> otherwise
