@@ -36,6 +36,8 @@ public class FoldersListSettings extends SystemOption {
 
     private static final String SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
     
+    private static final String SHOW_AGAIN_BROKEN_SERVER_ALERT = "showAgainBrokenServerAlert"; //NOI18N
+    
     private static final String LAST_USED_CHOOSER_LOCATIONS = "lastUsedChooserLocations"; //NOI18N
 
     public static FoldersListSettings getDefault () {
@@ -123,7 +125,16 @@ public class FoldersListSettings extends SystemOption {
     public void setShowAgainBrokenRefAlert(boolean again) {
         this.putProperty(SHOW_AGAIN_BROKEN_REF_ALERT, Boolean.valueOf(again), true);
     }
-
+    
+    public boolean isShowAgainBrokenServerAlert() {
+        Boolean b = (Boolean)getProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT);
+        return b == null ? true : b.booleanValue();
+    }
+    
+    public void setShowAgainBrokenServerAlert(boolean again) {
+        this.putProperty(SHOW_AGAIN_BROKEN_SERVER_ALERT, Boolean.valueOf(again), true);
+    }
+    
     public Map getLastUsedChooserLocations() {
         return (Map) this.getProperty(LAST_USED_CHOOSER_LOCATIONS);
     }

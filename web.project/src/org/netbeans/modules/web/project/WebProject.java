@@ -95,6 +95,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.modules.web.project.ui.BrokenServerSupport;
 
 /**
  * Represents one plain Web project.
@@ -646,7 +647,7 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                             }
                         }
                         if (platform == null) {
-                            // TODO inform the user that no server is set
+                            BrokenServerSupport.showAlert();
                         }
                     }
                 }

@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.web.project;
 
-import java.awt.Dialog;
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -42,11 +40,9 @@ import org.netbeans.api.debugger.jpda.*;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.api.webmodule.URLCookie;
-import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.ServletUriPanel;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.web.project.parser.ParserWebModule;
 import org.netbeans.modules.web.project.parser.JspNameUtil;
@@ -54,7 +50,6 @@ import org.netbeans.modules.web.project.parser.JspNameUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.api.java.classpath.ClassPath;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -65,8 +60,6 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 import org.netbeans.jmi.javamodel.*;
 import java.lang.reflect.Modifier;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 
@@ -857,7 +850,6 @@ class WebActionProvider implements ActionProvider {
     
     private boolean isSelectedServer () {
         String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_INSTANCE);
-        boolean selected;
         if (instance != null) {
             J2eeModuleProvider jmp = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
             String sdi = jmp.getServerInstanceID();
@@ -868,13 +860,6 @@ class WebActionProvider implements ActionProvider {
                 }
             }
         }
-        
-//        // try to use the default server instance
-//        instance = Deployment.getDefault().getDefaultServerInstanceID();
-//        if (instance != null) {
-//            setServerInstance(instance);
-//            return true;
-//        }
         
         // if there is some server instance of the type which was used
         // previously do not ask and use it
@@ -888,43 +873,9 @@ class WebActionProvider implements ActionProvider {
         }
         
         // no selected server => warning
-        String server = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_SERVER_TYPE);
-        NoSelectedServerWarning panel = new NoSelectedServerWarning (server);
-
-        Object[] options = new Object[] {
-            DialogDescriptor.OK_OPTION,
-            DialogDescriptor.CANCEL_OPTION
-        };
-        final DialogDescriptor desc = new DialogDescriptor (panel,
-                NbBundle.getMessage (NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
-            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
-        desc.setMessageType(DialogDescriptor.WARNING_MESSAGE);
-        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
-        panel.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(NoSelectedServerWarning.OK_ENABLED)) {
-                        Object newvalue = evt.getNewValue();
-                        if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                            desc.setValid(((Boolean)newvalue).booleanValue());
-                        }
-                    }
-                }
-            }
-        );
-        desc.setValid(panel.getSelectedInstance() != null);
-        dlg.setVisible (true);
-        if (desc.getValue() != options[0]) {
-            selected = false;
-        } else {
-            instance = panel.getSelectedInstance ();
-            selected = instance != null;
-            if (selected) {
-                setServerInstance(instance);
-            }
-        }
-        dlg.dispose();            
-
-        return selected;
+        String msg = NbBundle.getMessage(WebActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+        return false;
     }
     
     private void setServerInstance(String serverInstanceId) {
