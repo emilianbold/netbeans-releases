@@ -17,11 +17,9 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.openide.loaders.MultiFileLoader;
+import org.openide.util.Utilities;
 
 public class XMLDataObject {
-
-    private static Image icon;
-    private static Image icon32;
 
     public static class LoaderBeanInfo extends SimpleBeanInfo {
 
@@ -37,22 +35,12 @@ public class XMLDataObject {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                if (icon == null) icon = loadImage ("/org/openide/resources/xmlObject.gif"); // NOI18N
-                return icon;
+                return Utilities.loadImage("/org/openide/resources/xmlObject.gif"); // NOI18N
             } else {
-                if (icon32 == null) icon32 = loadImage ("/org/openide/resources/xmlObject32.gif"); // NOI18N
-                return icon32;
+                return Utilities.loadImage ("/org/openide/resources/xmlObject32.gif"); // NOI18N
             }
         }
 
     }
 
 }
-
-/*
- * Log
- *  3    Jaga      1.1.1.0     3/9/00   Jesse Glick     
- *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
- *  1    Gandalf   1.0         1/13/00  Jesse Glick     
- * $
- */
