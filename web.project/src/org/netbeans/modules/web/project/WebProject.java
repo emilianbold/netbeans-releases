@@ -388,6 +388,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     
     private boolean addLibrary (List cpItems, FileObject lib) {
         boolean needsAdding = true;
+        if (!lib.getExt().equalsIgnoreCase("jar") && !lib.getExt().equalsIgnoreCase("zip")) {
+            return false;
+        }
         for (Iterator vcpsIter = cpItems.iterator (); vcpsIter.hasNext ();) {
             VisualClassPathItem vcpi = (VisualClassPathItem) vcpsIter.next ();
 
