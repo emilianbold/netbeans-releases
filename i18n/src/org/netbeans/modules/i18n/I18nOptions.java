@@ -21,6 +21,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
 import org.openide.TopManager;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -215,5 +216,13 @@ public class I18nOptions extends SystemOption {
         
         putProperty(PROP_LAST_RESOURCE, lastResource.getPrimaryFile().getPackageNameExt('/', '.'), true);
     }
+    
+    /** Get context help for this system option.
+    * @return context help
+    */
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx (I18nOptions.class);
+    }
+    
 
 }
