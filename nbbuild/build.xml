@@ -675,7 +675,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module schema2beans/dev..."/>
     <ant dir="../schema2beans/dev" target="netbeans"/>
   </target>
-  <target name="all-scripting" depends="build-platform,all-openidex,all-openide/deprecated">
+  <target name="all-scripting" depends="build-platform,all-openidex,all-openide/execution,all-openide/execution/deprecated">
     <echo message="Building module scripting..."/>
     <ant dir="../scripting" target="netbeans"/>
   </target>
