@@ -315,7 +315,7 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         });
         
         dialog.pack();
-        dialog.show();
+        dialog.setVisible(true);
     }
 
     /** Implements <code>PropertyChangeListener</code> interface. */

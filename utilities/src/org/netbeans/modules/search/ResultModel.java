@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,7 +40,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 import org.openide.util.Utilities;
@@ -258,7 +258,7 @@ public class ResultModel implements TaskListener {
 
         // XXX this listening should be done at root directly
 
-        searchGroup.addPropertyChangeListener(WeakListener.propertyChange(propListener = new PropertyChangeListener() {
+        searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(propListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if(SearchGroup.PROP_RESULT.equals(evt.getPropertyName())) {
                     if(evt.getNewValue() == null) {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.pdf;
@@ -19,7 +19,6 @@ import java.beans.PropertyChangeListener;
 import org.openide.ErrorManager;
 
 import org.openide.util.Lookup;
-import org.openide.util.SharedClassObject;
 
 
 /**
@@ -39,20 +38,7 @@ public class Settings {
         return (Settings) Lookup.getDefault().lookup(Settings.class);
     }
 
-    /**
-     * 
-     */
-    private void importOldSettings() {
-        Object old = SharedClassObject.findObject(PDFSettings.class);
-        if (old != null) {
-            setPDFViewer(((PDFSettings) old).getPDFViewer());
-        }
-    }
-    
     public File getPDFViewer() {
-        if (viewer == null) {
-            importOldSettings();
-        }
         return (viewer != null) ? viewer : new File(DEFAULT_VIEWER_NAME);
     }
 

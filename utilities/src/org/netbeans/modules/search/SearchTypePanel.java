@@ -368,7 +368,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         
         while (true) {
-            dialog.show();
+            dialog.setVisible(true);
             if (desc.getValue().equals(DialogDescriptor.OK_OPTION)) {
                 String name = textField.getText();
                 if (name.length() > 0) {
@@ -446,7 +446,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         DialogDescriptor desc = new DialogDescriptor(
                 pane,
                 bundle.getString("TEXT_LABEL_RESTORE_CRITERION"));      //NOI18N
-        DialogDisplayer.getDefault().createDialog(desc).show();
+        DialogDisplayer.getDefault().createDialog(desc).setVisible(true);
         
         if (desc.getValue().equals(DialogDescriptor.OK_OPTION)) {
             SearchCriterion c = (SearchCriterion) combo.getSelectedItem();

@@ -49,7 +49,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
 
 

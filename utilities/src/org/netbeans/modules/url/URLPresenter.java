@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,7 +33,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -104,7 +104,7 @@ final class URLPresenter implements Presenter.Menu,
         /* set the presenter's text and ensure it is maintained up-to-date: */
         NameChangeListener listener = new NameChangeListener(presenter);
         presenter.addPropertyChangeListener(
-                WeakListener.propertyChange(listener, dataObject));
+                WeakListeners.propertyChange(listener, dataObject));
         updateName(presenter);
         /*
          * The above code works with the assumption that it is called

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -21,7 +21,7 @@ import java.beans.PropertyChangeListener;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
 import org.openide.util.Task;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
 
@@ -65,7 +65,7 @@ public class SearchTask extends Task {
             if (searchGroup == null) {
                 return;
             }
-            searchGroup.addPropertyChangeListener(WeakListener.propertyChange(
+            searchGroup.addPropertyChangeListener(WeakListeners.propertyChange(
                 propListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (SearchGroup.PROP_FOUND.equals(evt.getPropertyName())) {
