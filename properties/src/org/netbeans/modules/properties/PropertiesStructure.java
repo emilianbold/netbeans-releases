@@ -295,12 +295,6 @@ public class PropertiesStructure extends Element {
     * Think twice when using this - don't I need to reparse all files ?
     */
     void itemKeyChanged(String oldKey, Element.ItemElem newElem) {
-        // update the element in the structure, because now it is in with the wrong key
-        int index = items.indexOf(oldKey);
-        if (index < 0)
-            throw new InternalError();
-        items.set(index, newElem.getKey(), newElem);
-
         // structural change information - watch: there may be two properties of the same name !
         // maybe this is unnecessary
         ArrayMapList changed  = new ArrayMapList();
