@@ -30,6 +30,7 @@ import org.netbeans.modules.xml.api.model.HintContext;
 import org.netbeans.modules.xml.text.completion.XMLCompletionQuery;
 import org.netbeans.modules.xml.text.completion.GrammarManager;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.windows.TopComponent;
@@ -44,7 +45,7 @@ import org.w3c.dom.DOMException;
  *
  * @author  asgeir@dimonsoftware.com
  */
-public class NodeSelector {
+public final class NodeSelector {
     
     /** Listener on caret movements */
     private CaretListener caretListener;
@@ -91,6 +92,8 @@ public class NodeSelector {
         timerSelNodes.restart();
         
         pane.addCaretListener(caretListener);
+
+        //!!! It should also listen on current TopComponent
     }
     
     /** Restart the timer which updates the selected nodes after the specified delay from
@@ -131,6 +134,8 @@ public class NodeSelector {
         if (originalUINode == null) {
             originalUINode = activeNodes[0];
         }
+
+        //it must be called from separate thread, it may the block UI thread
         
         GrammarQuery grammarQuery = XMLCompletionQuery.getPerformer(pane.getDocument(), syntaxSupport);
         if (grammarQuery == null) {
@@ -150,7 +155,7 @@ public class NodeSelector {
         topComp.setActivatedNodes(new Node[]{newUiNode});
     }
     
-    private class DelegatingNode extends PeerNode {
+    private class DelegatingNode extends FilterNode {
         
         GrammarQuery grammarQuery;
         

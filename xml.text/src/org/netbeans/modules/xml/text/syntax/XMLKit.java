@@ -91,7 +91,9 @@ public class XMLKit extends UniKit {
     
     public void install(JEditorPane c) {
         super.install(c);
-        new NodeSelector(c);
+        if (Boolean.getBoolean("netbeans.experimental.xml.nodeselectors")) {  // NOI18N
+            new NodeSelector(c);
+        }
     }
 
     // hack to be settings browseable //??? more info needed    
