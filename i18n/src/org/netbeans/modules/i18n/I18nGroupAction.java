@@ -15,44 +15,32 @@
 package org.netbeans.modules.i18n;
 
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JToolBar;
 
 import org.netbeans.modules.i18n.wizard.I18nWizardAction;
 import org.netbeans.modules.i18n.wizard.I18nTestWizardAction;
 
-import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 
 
 /**
- * Action which groups all i18n actions. And that's only purpose of this action.
+ * Abstract enclosing class for I18n group actions. Just for sharing static context.
  *
  * @author  Peter Zavadsky
+ * @see I18nGroupAction.Menu
+ * @see I18nGroupAction.Popup
  */
-public class I18nGroupAction extends SystemAction implements Presenter.Menu, Presenter.Popup, Presenter.Toolbar {
-
-    /** Generated serial verision UID. */
-    static final long serialVersionUID = 2305127847881996960L;
+public abstract class I18nGroupAction extends SystemAction {
 
     /** Array of i18n actions. */
-    private static final SystemAction[] i18nActions = new SystemAction[] {
+    protected static final SystemAction[] i18nActions = new SystemAction[] {
         SystemAction.get(I18nWizardAction.class),
         SystemAction.get(I18nTestWizardAction.class),
         SystemAction.get(I18nAction.class),
         SystemAction.get(InsertI18nStringAction.class)
     };
 
-    /** Icon. */
-    private static Icon icon = null;
-    
-    
     /** Does nothing. Shouldn't be called. Implements superclass abstract method. */
     public void actionPerformed(ActionEvent ev) {
     }
@@ -71,64 +59,7 @@ public class I18nGroupAction extends SystemAction implements Presenter.Menu, Pre
     public HelpCtx getHelpCtx () {
         return new HelpCtx(I18nGroupAction.class);
     }
+    
 
-    /** Implements <code>Presenter.Menu</code> interface. */
-    public JMenuItem getMenuPresenter() {
-        JMenu menu = new JMenu(getName());
-        
-        // Binary-incompatible across SystemAction.icon ImageIcon -> Icon change:
-        //menu.setIcon (getIcon ());
-        if(icon == null) 
-            icon = new ImageIcon(I18nGroupAction.class.getResource(iconResource()));
-        
-        menu.setIcon(icon);
-        
-        for(int i= 0; i<i18nActions.length; i++) {
-            SystemAction action = i18nActions[i];
-            
-            if (action == null) {
-                menu.addSeparator ();
-            } else if (action instanceof Presenter.Menu) {
-                menu.add(((Presenter.Menu)action).getMenuPresenter());
-            }
-        }
-        
-        return menu;
-    }
-
-    /** Implements <code>Presenter.Popup</code> interface. */
-    public JMenuItem getPopupPresenter () {
-        JMenu menu = new JMenu (getName ());
-        for(int i=0; i<i18nActions.length; i++) {
-            SystemAction action = i18nActions[i];
-            
-            if(action == null) {
-                menu.addSeparator ();
-            } else if(action instanceof Presenter.Popup) {
-                menu.add(((Presenter.Popup)action).getPopupPresenter());
-            }
-        }
-        
-        return menu;
-    }
-
-    /** Implements <code>Presenter.Toolbar</code> interface. */
-    public Component getToolbarPresenter() {
-        // In jdk1.3 could be used new JToolBar(getName()).
-        JToolBar toolbar = new JToolBar ();
-        toolbar.setName(getName());
-        
-        for(int i=0; i<i18nActions.length; i++) {
-            SystemAction action = i18nActions[i];
-            
-            if(action == null) {
-                toolbar.addSeparator ();
-            } else if(action instanceof Presenter.Toolbar) {
-                toolbar.add(((Presenter.Toolbar)action).getToolbarPresenter());
-            }
-        }
-        
-        return toolbar;
-    }
 
 }

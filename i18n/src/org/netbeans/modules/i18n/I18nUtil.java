@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 
@@ -155,6 +157,41 @@ public abstract class I18nUtil {
         return regExpHelpItems;
     }
 
+    /** Indicates if folder contains some from accepted data objects. */
+    public static boolean containsAcceptedDataObject(DataFolder folder) {
+        DataObject[] children = folder.getChildren();
+
+        for(int i = 0; i < children.length; i++) {
+            if(children[i] instanceof DataFolder) {  
+                if(containsAcceptedDataObject((DataFolder)children[i]))
+                    return true;
+            } else {
+                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /** Utility method. Gets all accepted data objects from given folder. */
+    public static List getAcceptedDataObjects(DataFolder folder) {
+        List accepted = new ArrayList();
+        
+        DataObject[] children = folder.getChildren();
+
+        for(int i = 0; i < children.length; i++) {
+            if(children[i] instanceof DataFolder) {  
+                accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
+            } else {
+                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
+                    accepted.add(children[i]);
+            }
+        }
+
+        return accepted;
+    }
+    
     /** Gets resource bundle for i18n module. */
     public static ResourceBundle getBundle() {
         if(bundle == null)

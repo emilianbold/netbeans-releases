@@ -95,17 +95,17 @@ public class I18nWizardAction extends NodeAction {
         wizardDesc.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
 
         ArrayList contents = new ArrayList(4);
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_SelectSourcesHelp"));
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_SelectResourceHelp"));
+        contents.add(NbBundle.getBundle(I18nWizardAction.class).getString("TXT_SelectSourcesHelp"));
+        contents.add(NbBundle.getBundle(I18nWizardAction.class).getString("TXT_SelectResourceHelp"));
         
         if(I18nUtil.getOptions().isAdvancedWizard())
-            contents.add(NbBundle.getBundle(getClass()).getString("TXT_AdditionalHelp"));
+            contents.add(NbBundle.getBundle(I18nWizardAction.class).getString("TXT_AdditionalHelp"));
         
-        contents.add(NbBundle.getBundle(getClass()).getString("TXT_FoundStringsHelp"));
+        contents.add(NbBundle.getBundle(I18nWizardAction.class).getString("TXT_FoundStringsHelp"));
         
         wizardDesc.putProperty("WizardPanel_contentData", (String[])contents.toArray(new String[contents.size()])); // NOI18N
         
-        wizardDesc.setTitle(NbBundle.getBundle(getClass()).getString("LBL_WizardTitle"));
+        wizardDesc.setTitle(NbBundle.getBundle(I18nWizardAction.class).getString("LBL_WizardTitle"));
         wizardDesc.setTitleFormat(new MessageFormat("{0} ({1})")); // NOI18N
 
         wizardDesc.setModal(false);
@@ -141,7 +141,7 @@ public class I18nWizardAction extends NodeAction {
                     continue;
                 
                 if(dataObject instanceof DataFolder) {
-                    Iterator it = SourceWizardPanel.getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
                     
                     while(it.hasNext())
                         settings.put(it.next(), null);

@@ -31,6 +31,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 
 import org.netbeans.modules.i18n.FactoryRegistry;
+import org.netbeans.modules.i18n.I18nUtil;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFilter;
@@ -221,7 +222,7 @@ public class SourceWizardPanel extends JPanel {
                                 return false;
 
                             // if it is folder and constains some our data object.
-                            if(dataObject instanceof DataFolder && containsAcceptedDataObject((DataFolder)dataObject))
+                            if(dataObject instanceof DataFolder && I18nUtil.containsAcceptedDataObject((DataFolder)dataObject))
                                 return true;
                             
                             // Has to have registered i18n factory for that data object class name.
@@ -239,7 +240,7 @@ public class SourceWizardPanel extends JPanel {
                 DataObject dataObject = (DataObject)selectedNodes[i].getCookie(DataObject.class);
 
                 if(dataObject instanceof DataFolder) {
-                    Iterator it = getAcceptedDataObjects((DataFolder)dataObject).iterator();
+                    Iterator it = I18nUtil.getAcceptedDataObjects((DataFolder)dataObject).iterator();
                     while(it.hasNext()) 
                         sourceMap.put(it.next(), null);
                     
@@ -264,41 +265,6 @@ public class SourceWizardPanel extends JPanel {
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
-    /** Indicates if folder contains some from accepted data objects. */
-    static boolean containsAcceptedDataObject(DataFolder folder) {
-        DataObject[] children = folder.getChildren();
-
-        for(int i = 0; i < children.length; i++) {
-            if(children[i] instanceof DataFolder) {  
-                if(containsAcceptedDataObject((DataFolder)children[i]))
-                    return true;
-            } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-    
-    /** Utility method. Gets all accepted data objects from given folder. */
-    static List getAcceptedDataObjects(DataFolder folder) {
-        List accepted = new ArrayList();
-        
-        DataObject[] children = folder.getChildren();
-
-        for(int i = 0; i < children.length; i++) {
-            if(children[i] instanceof DataFolder) {  
-                accepted.addAll(getAcceptedDataObjects((DataFolder)children[i]));
-            } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass().getName()))
-                    accepted.add(children[i]);
-            }
-        }
-
-        return accepted;
-    }
-    
 
     /** List cell rendrerer which uses data object as values. */
     public static class DataObjectListCellRenderer extends DefaultListCellRenderer {
