@@ -16,7 +16,6 @@ package org.netbeans.modules.dbschema.nodes;
 import org.openide.actions.*;
 import org.openide.nodes.*;
 
-import org.openide.src.nodes.DefaultFactory;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -27,7 +26,13 @@ import org.netbeans.modules.dbschema.*;
 * Uses the standard node implementations in this package.
 */
 public class DefaultDBFactory implements DBElementNodeFactory, IconStrings {
-	/** Default instance of the factory with read-write properties. */
+    public static final String WAIT =
+        "org/openide/src/resources/wait"; // NOI18N
+
+    public static final String ERROR =
+        "org/openide/src/resources/error"; // NOI18N
+
+    /** Default instance of the factory with read-write properties. */
 	public static final DefaultDBFactory READ_WRITE = new DefaultDBFactory(true);
 
 	/** Default instance of the factory with read-only properties. */
@@ -209,25 +214,29 @@ public class DefaultDBFactory implements DBElementNodeFactory, IconStrings {
 		return children;
 	}
   
-	/* Creates and returns the instance of the node
-	 * representing the status 'WAIT' of the DataNode.
-	 * It is used when it spent more time to create elements hierarchy.
-	 * @return the wait node.
-	 */
-	public Node createWaitNode () {
-		return (isWriteable() ? DefaultFactory.READ_WRITE.createWaitNode() : 
-			DefaultFactory.READ_ONLY.createWaitNode());
-	}
 
-	/* Creates and returns the instance of the node
-	 * representing the status 'ERROR' of the DataNode
-	 * @return the error node.
-	 */
-	public Node createErrorNode () {
-		return (isWriteable() ? DefaultFactory.READ_WRITE.createErrorNode() : 
-			DefaultFactory.READ_ONLY.createErrorNode());
-	}
-
+    /* Creates and returns the instance of the node
+     * representing the status 'WAIT' of the DataNode.
+     * It is used when it spent more time to create elements hierarchy.
+     * @return the wait node.
+     */
+        public Node createWaitNode() {
+            AbstractNode n = new AbstractNode(Children.LEAF);
+            n.setName(NbBundle.getMessage(DefaultDBFactory.class,"Wait"));
+            n.setIconBase(WAIT);
+            return n;
+        }
+        
+    /* Creates and returns the instance of the node
+     * representing the status 'ERROR' of the DataNode
+     * @return the error node.
+     */
+        public Node createErrorNode() {
+            AbstractNode n = new AbstractNode(Children.LEAF);
+            n.setName(NbBundle.getMessage(DefaultDBFactory.class,"Error")); // NO18N
+            n.setIconBase(ERROR);
+            return n;
+        }
 	/** Array of the actions of the category nodes. */
 	private static final SystemAction[] CATEGORY_ACTIONS = new SystemAction[] {
 		SystemAction.get(ToolsAction.class),
