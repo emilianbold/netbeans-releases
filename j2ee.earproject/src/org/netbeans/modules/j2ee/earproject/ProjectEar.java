@@ -20,6 +20,10 @@ import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 //import org.netbeans.api.project.*;
 //import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -270,7 +274,17 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getJ2eePlatformVersion(); // helper.getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_PLATFORM);
     }
     
-    
+    public FileObject[] getSourceRoots() {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject[] roots = new FileObject[groups.length+1];
+        roots[0] = getMetaInf();
+        for (int i=0; i < groups.length; i++) {
+            roots[i+1] = groups[i].getRootFolder();
+        }
+        
+        return roots; 
+    }
     
 //    private Set versionListeners() {
 //        if (versionListeners == null) {

@@ -18,6 +18,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -403,6 +407,18 @@ public final class ProjectWebModule extends J2eeModuleProvider
        }
        return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml");
    }
+    
+    public FileObject[] getSourceRoots() {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject[] roots = new FileObject[groups.length+1];
+        roots[0] = getDocumentBase();
+        for (int i=0; i < groups.length; i++) {
+            roots[i+1] = groups[i].getRootFolder();
+        }
+        
+        return roots; 
+    }
     
 //    private Set versionListeners() {
 //        if (versionListeners == null) {
