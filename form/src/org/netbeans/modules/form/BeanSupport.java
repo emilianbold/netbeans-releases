@@ -273,18 +273,13 @@ public class BeanSupport {
         if (img instanceof Image) {
             return (Image) img;
         } else {
-            String res = (String) img;
-            Image image = getImage(res, klass);
+            Image image = java.awt.Toolkit.getDefaultToolkit().createImage(
+                                     FormEditor.class.getResource((String)img));
             icons.put(name, image);
             return image;
         }
     }
-    
-    private static Image getImage(String res, Class klass) {
-        java.net.URL resurl = klass.getResource(res);
-        return java.awt.Toolkit.getDefaultToolkit().createImage(resurl);
-    }
-    
+
     private static Map createImageCache() {
         Map ret = new HashMap();
         
@@ -307,9 +302,13 @@ public class BeanSupport {
         compos = FormEditorModule.getDefaultBorders();
         compos = FormEditorModule.getDefaultBordersIcons();
         include(ret, compos, icons);
-        
-        ret.put("javax.swing.JFrame", "/javax/swing/beaninfo/images/JFrameColor16.gif");
+
+        ret.put("javax.swing.JApplet", "/javax/swing/beaninfo/images/JAppletColor16.gif");
         ret.put("javax.swing.JDialog", "/javax/swing/beaninfo/images/JDialogColor16.gif");
+        ret.put("javax.swing.JFrame", "/javax/swing/beaninfo/images/JFrameColor16.gif");
+        ret.put("java.applet.Applet", "/org/netbeans/modules/form/resources/applet.gif");
+        ret.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/dialog.gif");
+        ret.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif");
         return ret;
     }
     
