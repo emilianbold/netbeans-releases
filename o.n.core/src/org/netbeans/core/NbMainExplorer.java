@@ -697,12 +697,15 @@ public final class NbMainExplorer extends CloneableTopComponent
             }
 
             previousTask = RequestProcessor.postRequest (new Runnable () {
-                               public void run () {
-                                   previousTask = null;
-
-                                   doSelectNode (obj);
-                               }
-                           }, 100);
+                public void run () {
+                    previousTask = null;
+                    if (! obj.isValid()) {
+                        // #14179: could have been invalidated while we were in req. proc.
+                        return;
+                    }
+                    doSelectNode (obj);
+                }
+            }, 100);
         }
         
         /** Setups the environment to select the right node.
