@@ -116,15 +116,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/Separator2.instance" boolvalue="true"/>
         </folder> <!-- File -->
 
-        <folder name="Edit">
-            <attr name="org-openide-actions-GotoAction.instance/sep-before-reposearch.instance" boolvalue="true"/>
-            <file name="sep-before-reposearch.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-	    </file>
-            <attr name="sep-before-reposearch.instance/org-netbeans-modules-search-RepositorySearchAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-search-RepositorySearchAction.instance"/>
-        </folder> <!-- Edit -->
-
         <folder name="Window">
             <attr name="org-netbeans-core-output2-OutputWindowAction.instance/ResultViewOpenAction.shadow" boolvalue="true"/>
             <file name="ResultViewOpenAction.shadow">

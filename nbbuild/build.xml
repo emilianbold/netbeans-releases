@@ -735,6 +735,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
+  <target name="all-utilities/project" depends="build-platform,all-projects/projectapi,all-projects/projectuiapi,all-utilities">
+    <echo message="Building module utilities/project..."/>
+    <ant dir="../utilities/project" target="netbeans"/>
+  </target>
   <target name="all-utilities/group" depends="build-platform,all-openidex">
     <echo message="Building module utilities/group..."/>
     <ant dir="../utilities/group" target="netbeans"/>
