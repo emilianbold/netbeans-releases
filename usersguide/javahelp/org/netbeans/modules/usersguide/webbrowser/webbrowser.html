@@ -6,59 +6,51 @@
 -->
 <HTML>
 <HEAD>
-<TITLE>Using a Web Browser With the IDE</TITLE>
+<TITLE>Opening a Web Browser From the IDE</TITLE>
 <link rel="StyleSheet" href="../ide.css" type="text/css">
 </HEAD>
 <BODY>
 
-<h2>Using a Web Browser With the IDE</h2>
-<p>
-You can open a web browser from the IDE in two ways:
-</p>
+<h2>Opening a Web Browser From the IDE</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
 <ul>
-<li>Choose View <img src="../images/arrow.gif" alt="and choose">&nbsp;Web Browser (Ctrl-7) to
-open the browser to your home page.
-</li>
-<li>Choose Help <img src="../images/arrow.gif" alt="and choose">&nbsp;Bookmarks <img src="../images/arrow.gif" alt="and choose">&nbsp;<i>web-site-name</i> to open the browser to a predefined site.
-</li>
+  <li>Choose View <img src="../images/arrow.gif" alt="and choose">&nbsp;Web Browser 
+    (Ctrl-7) to open the browser to your home page. </li>
 </ul>
-<p>
-You can configure the IDE to use either the internal
-Swing HTML browser or an external web browser.
-Both types of browsers enable you to view external and 
-local web pages, including online help and Javadoc documentation.
-An internal browser provides the highest level of integration with the IDE
-because you can embed an internal browser into another IDE window or an MDI frame.   </p>
-<p>
-The preferred browser for use with the IDE is an external browser,
-which provides more functionality than the internal
-browser and does not close when you shut down the IDE.
-You set your preferred browser in the Setup wizard, which you open
-from the Tools menu.
-</p>
-<p>You can view the available web browsers and configure their
-properties in the Options window.  Expand IDE Configuration <img src="../images/expand.gif" alt="and expand">&nbsp;Server and External Tool Settings <img src="../images/expand.gif" alt="and expand">&nbsp;Web Browsers.
-</p>
-<p>
-For step-by-step instructions on using a web browser in the IDE, see:
-</p>
-<blockquote>
-<a href="home_page.html">Setting a Home Page for the Web Browser</a><br>
-<a href="bookmark.html">Creating a Bookmark for a Web Page</a><br>
-<a href="proxy.html">Setting a Proxy</a><br>
-<a href="bypassproxy.html">Accessing Local Files Through a Proxy</a><br>
-<a href="httpserver-options.html">Configuring HTTP Server Options</a><br>
-<a href="default.html">Specifying the Default Web Browser</a>
-</blockquote>
-<p>
-For information on the available web browsers and their properties:
-</p>
-<blockquote>
-<a href="winwebbrowser.html">External Browser (Windows)</a><br>
-<a href="unixwebbrowser.html">External Browser (UNIX)</a><br>
-<a href="simpleextbrowser.html">External Browser (Command Line)</a><br>
-<a href="swingbrowser.html">Swing HTML Browser</a>
-</blockquote>
+<p> By default, the IDE opens your system's default web browser. If the IDE cannot 
+  find the operating system's default web browser, try one of the following:</p>
+<ul>
+  <li><b>Choose a different web browser.</b> </li>
+  <ol>
+    <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Setup 
+      Wizard from the main menu. </li>
+    <li>Select a different browser from the Web Browsers combo box.</li>
+  </ol>
+  <li><b>Specify the location of the browser executable.</b> 
+    <ol>
+      <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options 
+        from the main menu. </li>
+      <li>Expand IDE Configuration <img src="../images/expand.gif" alt="and expand">&nbsp;Server 
+        and External Tools Settings <img src="../images/expand.gif" alt="and expand">&nbsp;Web 
+        Browsers and select the browser type you are using.</li>
+      <li>Open the property editor for Browser Executable property and set the 
+        full path to the executable in the Process field. You can click the ellipsis 
+        button (...) to browse to the executable.</li>
+    </ol>
+  </li>
+</ul>
+<table>
+  <tr> 
+    <th colspan="2" align="left"><a name="seealso">See Also</a></th>
+  </tr>
+  <tr> 
+    <td width="23"></td>
+    <td> <a href="default.html">Specifying the Default Browser</a> <br>
+      <a href="proxy.html">Setting a Proxy</a> <br>
+      <a href="httpserver-options.html">Configuring HTTP Server Options</a> <a href="bypassproxy.html"><br>
+      Accessing Local Files Through a Proxy</a> </td>
+  </tr>
+</table>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
 </body>

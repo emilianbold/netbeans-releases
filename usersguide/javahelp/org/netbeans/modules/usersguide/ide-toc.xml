@@ -97,6 +97,7 @@
   <tocitem text="Working With Tabs" target="editing.tabs"/>
   <tocitem text="Finding and Replacing Text" target="editing.find"/>
   <tocitem text="Displaying Line Numbers" target="editing.linenumbers"/>
+  <tocitem text="Scanning for TODOs in Source Code" target="editing.tasks"/>
   <tocitem text="Using Annotations" target="editing.annotations"/>
   <tocitem text="Viewing and Zooming an Image" target="editing.imageview"/>
   <tocitem text="Using Code Completion" target="editing.codecompletion">
@@ -576,18 +577,15 @@
     <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
     <tocitem text="Enabling or Disabling a Module" target="configure.module" />
   </tocitem>
-  <tocitem text="Using a Web Browser With the IDE" target="webbrowser">
-    <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
-    <tocitem text="Creating a Bookmark for a Web Page" target="webbrowser.bookmark" />
+  <tocitem text="Using a Web Browser With the IDE" >
+    <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
     <tocitem text="Setting a Proxy" target="proxy" />
     <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
+    <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" />
+    <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
     <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
-    <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" >
-      <tocitem text="External Browser (Windows)" target="webbrowser.winwebbrowser" />
-      <tocitem text="External Browser (UNIX)" target="webbrowser.unixwebbrowser" />
-      <tocitem text="External Browser (Command Line)" target="webbrowser.simpleextbrowser" />
-      <tocitem text="Swing HTML Browser" target="webbrowser.swing" />
-    </tocitem>
+    <tocitem text="Creating a Bookmark for a Web Page" target="webbrowser.bookmark" />
+    <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
   </tocitem>
   <tocitem text="Managing IDE Windows" target="workspace.jump">
     <tocitem text="Changing Window Modes" target="workspace.window.mode"/>

@@ -360,6 +360,8 @@
 <mapID target="editing.editor-props" url="editing/configuring/editor-props.html" />
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing_error-marks" url="editing/editing_error-marks.html" />
+<mapID target="editing.tasks" url="editing/tasks_viewing.html" />
+
 
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
@@ -598,6 +600,7 @@
 <mapID target="webbrowser.winwebbrowser" url="webbrowser/winwebbrowser.html" />
 <mapID target="webbrowser.unixwebbrowser" url="webbrowser/unixwebbrowser.html" />
 <mapID target="webbrowser.simpleextbrowser" url="webbrowser/simpleextbrowser.html" />
+<mapID target="webbrowser.config" url="webbrowser/config_browser.html" />
 <mapID target="proxy" url="webbrowser/proxy.html" />
 <mapID target="bypass.proxy" url="webbrowser/bypassproxy.html" />
 <mapID target="httpserver-options" url="webbrowser/httpserver-options.html" />
@@ -755,11 +758,9 @@
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
 <mapID target="org.netbeans.core.services.DebuggerTypes" url="debug/debugger/debugger_jump.html" />
-<mapID target="org.netbeans.core.services.Browsers" url="webbrowser/webbrowser.html" />
 
-<mapID target="org.netbeans.modules.extbrowser.WinWebBrowser" url="webbrowser/winwebbrowser.html" />
-<mapID target="org.netbeans.modules.extbrowser.UnixWebBrowser" url="webbrowser/unixwebbrowser.html" />
-<mapID target="org.netbeans.modules.extbrowser.SimpleExtBrowser" url="webbrowser/simpleextbrowser.html" />
+<mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
+<mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
 <mapID target="org.openide.awt.SwingBrowser" url="webbrowser/swingbrowser.html" />
 
 
@@ -827,7 +828,7 @@
 <mapID target="debug.add.breakpoint.java.exception" url="debug/breakpoint/breakpoint_exception.html" />
 <mapID target="debug.add.breakpoint.java.thread" url="debug/breakpoint/breakpoint_thread.html" />
 
-<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
+<mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_expert.html" />
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_expert" url="webbrowser/httpserver_expert.html" />
 
 

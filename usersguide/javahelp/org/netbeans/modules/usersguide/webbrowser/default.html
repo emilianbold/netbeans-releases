@@ -14,65 +14,41 @@
 <h2>Specifying the Default Web Browser</h2>
 <p>
 <small><a href="#seealso">See Also</a></small></p>
-<p>
-You can configure the IDE to use either an external web browser or
-the internal Swing HTML web browser.
-Both types of browsers enable you to view external and 
-local web pages, including online help and Javadoc documentation.
-The Swing HTML browser provides the highest level of integration with the IDE because you can embed an internal browser into another IDE window or an MDI frame.
-</p>
-<p>
-The preferred browser for use with the IDE is an external browser,
-which provides more functionality than an internal
-browser and does not close when you shut down the IDE.
-A disadvantage of using an external browser is that you
-cannot embed it in an IDE window.  Three implementations of the external
-browser are available for use with the IDE:
-</p>
-<ul>
-<li><b>External browser (Command Line)</b>.
-A browser that you specify. You set the browser in the Options window. Expand IDE Configuration <img
-src="../images/expand.gif" alt="and expand">&nbsp;Server and External
-Tools Settings <img src="../images/expand.gif" alt="and
-expand">&nbsp;Web Browsers. Then select External Browser (Command Line).
-In the Browser Executable property, specify the command to use to
-activate the browser window. 
-</li>
-<li><b>External browser (Windows)</b>. The HTML browser, such as Internet
-Explorer or Netscape Navigator, set as the default browser on your Microsoft Windows platforms.  
-</li>
-<li><b>External browser (UNIX)</b>.
-The HTML browser set as the default browser in the UNIX environment.  
-</li>
-</ul>
-<p>
-At startup, the default browser is the Microsoft Windows or UNIX external
-browser, depending on your platform.
-</p>  
-<p>
-<b>To change the default web browser:</b></p>
 <ol>
-<li>
-From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Setup Wizard.
-</li>
-<li>In the Setup wizard, select a browser type from the Web Browser combo box.
-</li>
+  <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Setup 
+    Wizard from the main menu. </li>
+  <li>Select a browser from the Web Browsers combo box.</li>
+  <p>You can choose from the following web browsers:</p>
+  <ul>
+    <li><b>&lt;System Default&gt;</b>. The browser that is registered as your 
+      operating system's default browser. For Windows machines, the default browser 
+      is read from the Windows registry. For UNIX machines, what?</li>
+    <li><b>Internet Explorer</b></li>
+    <li><b>Netscape</b></li>
+    <li><b>Swing Browser</b>. A simple HTML browser based on a Swing component. 
+      The internal Swing HTML browser provides a higher level of integration with 
+      the IDE than an external browser. You can embed the Swing HTML browser into 
+      another IDE window or an MDI frame. </li>
+  </ul>
 </ol>
+<table>
+  <tr> 
+    <td valign="top"><img src="../images/tip.gif" alt="Tip"></td>
+    <td valign="top" align="left"> You can add other web browsers to the list 
+      in the Setup Wizard. See <a href="config_browser.html">Configuring a Web 
+      Browser</a> for more information. 
+  </tr>
+</table>
 <table>
 <tr>
 <th colspan="2" align="left"><a name="seealso">See Also</a></th>
 </tr>
 <tr>
 <td width="23"></td>
-<td>
-<a href="httpserver-options.html">Configuring HTTP Server Options</a>
-<br>
-<a href="winwebbrowser.html">External Browser (Windows)</a><br>
-<a href="unixwebbrowser.html">External Browser (UNIX)</a><br>
-<a href="simpleextbrowser.html">External Browser (Command Line)</a>
-<br>
-<a href="swingbrowser.html">Swing HTML Browser</a>
-</td></tr>
+    <td> <a href="webbrowser.html">Opening a Web Browser</a><br>
+      <a href="httpserver-options.html">Configuring HTTP Server Options</a> <br>
+      <a href="proxy.html">Setting a Proxy</a> </td>
+  </tr>
 </table>
 <hr>
 <small><a href="../credits.html">Legal Notices</a></small>
