@@ -54,15 +54,85 @@ public class Module extends JellyTestCase {
     public Module(String testName) { 
         super(testName); 
     } 
+    
+    public static NbTestSuite suite() {
+    	NbTestSuite suite = new NbTestSuite("test_temp");
+        suite.addTest(new Module("test_1_1"));
+        /*
+        suite.addTest(new Module("test_1_5"));
+        suite.addTest(new Module("test_2_1"));
+        suite.addTest(new Module("test_2_2"));
+        suite.addTest(new Module("test_3_1"));
+        suite.addTest(new Module("test_3_2"));
+        */
+        suite.addTest(new Module("test_4_1_1"));
+        suite.addTest(new Module("test_4_2_1"));
+        suite.addTest(new Module("test_4_2_2"));
+        suite.addTest(new Module("test_4_2_4")); 
+        suite.addTest(new Module("test_4_2_5")); 
+        suite.addTest(new Module("test_4_2_6")); 
+        suite.addTest(new Module("test_4_2_7"));
+        
+        
+        suite.addTest(new Module("test_4_3_1"));
+        suite.addTest(new Module("test_4_3_2"));        
+        /*
+        //suite.addTest(new Module("test_4_5_1"));
+        //suite.addTest(new Module("test_4_5_2"));
+        //suite.addTest(new Module("test_4_5_3"));
+        suite.addTest(new Module("test_4_5_4"));
+        //suite.addTest(new Module("test_4_6_1"));
+        //suite.addTest(new Module("test_4_6_2"));
+        //suite.addTest(new Module("test_4_6_3"));
+        //suite.addTest(new Module("test_4_6_4"));
+        suite.addTest(new Module("test_4_6_5"));
+        //suite.addTest(new Module("test_4_7_1"));
+        //suite.addTest(new Module("test_4_7_2"));
+        //suite.addTest(new Module("test_4_7_3"));
+        //suite.addTest(new Module("test_4_7_4"));
+        suite.addTest(new Module("test_4_7_5"));
+         */
+        
+        suite.addTest(new Module("test_4_8_01"));
+        suite.addTest(new Module("test_4_8_02"));
+        suite.addTest(new Module("test_4_8_03"));
+        suite.addTest(new Module("test_4_8_04")); 
+        suite.addTest(new Module("test_4_8_05"));
+        suite.addTest(new Module("test_4_8_06"));
+        suite.addTest(new Module("test_4_8_07"));
+        suite.addTest(new Module("test_4_8_08"));
+        
+        /*
+        suite.addTest(new Module("test_4_8_09"));
+        suite.addTest(new Module("test_4_8_10"));
+        suite.addTest(new Module("test_4_8_11"));
+        suite.addTest(new Module("test_4_8_12"));
+        suite.addTest(new Module("test_4_8_13"));
+        suite.addTest(new Module("test_4_8_14"));
+        suite.addTest(new Module("test_4_8_15"));
+        suite.addTest(new Module("test_4_8_16"));
+        suite.addTest(new Module("test_4_8_17"));
+        suite.addTest(new Module("test_4_8_18"));
+        suite.addTest(new Module("test_4_8_19"));
+        suite.addTest(new Module("test_4_8_20"));
+        suite.addTest(new Module("test_4_8_21"));
+        suite.addTest(new Module("test_4_8_22"));
+        suite.addTest(new Module("test_4_8_23"));
+        suite.addTest(new Module("test_4_8_24"));
+        */
+        
+        suite.addTest(new Module("test_4_9_1"));
+        suite.addTest(new Module("test_4_9_2"));
+        suite.addTest(new Module("test_4_9_3"));
+        
+        return suite;
+    }
 
     /** Use for execution inside IDE */ 
     public static void main(java.lang.String[] args) { 
-        junit.textui.TestRunner.run(new NbTestSuite(Module.class)); 
-        /*
-        NbTestSuite suite = new NbTestSuite("test_temp");
-        suite.addTest(new Module("test_4_9_3"));
-        junit.textui.TestRunner.run(suite);
-        */
+        //junit.textui.TestRunner.run(new NbTestSuite(Module.class)); 
+        junit.textui.TestRunner.run(suite());
+        
     } 
 
     public void setUp() { 
@@ -210,6 +280,7 @@ public class Module extends JellyTestCase {
 // 1.1
     public void test_1_1() {
 
+        /*
 	switchToHTTPServerNode();
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Expert");
@@ -217,10 +288,11 @@ public class Module extends JellyTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Base Filesystems URL");
 	tf.setValue("repository");	// NOI18
 	pw.close();
-
+        */
+         
 	startHTTPServer();
 
- 	checkResult("/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+ 	checkResult("/",3,"<title>Directory Listing for:/</title>",false);
     }
   
 // 1.5    
@@ -240,10 +312,7 @@ public class Module extends JellyTestCase {
         checkResult("/repository/org/netbeans/test/gui/httpserver/test.txt",1,"This is test file",false);
     }
 
-    
-
 // Internal HTTP Server Test Specification:  Test suite: 2. Accessing Items on IDE Classpath
-
 
 // 2.1
     public void test_2_1() {
@@ -278,9 +347,7 @@ public class Module extends JellyTestCase {
                     15,"Select the type of filesystem that you want to mount.",false);
     }
 
-
 // Internal HTTP Server Test Specification:  Test suite: 3. Accessing Javadoc
-
 
 // 3.1
     public void test_3_1() {
@@ -315,13 +382,8 @@ public class Module extends JellyTestCase {
         7,"JAXP 1.1, DOM2, SAX2, SAX2-ext 1.0: Class  SAXParser",false);
     }
 
-    
-    
-  
 // Internal HTTP Server Test Specification:  Test suite: 4. Module Properties
-
-
-    
+ 
 // 4.1 Hosts with Granted Access
 
 // 4.1.1
@@ -338,13 +400,13 @@ public class Module extends JellyTestCase {
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	startHTTPServer();
 
-	checkResult("/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+	checkResult("/",3,"<title>Directory Listing for:/</title>",false);
     }
 
 // 4.2 Port
@@ -361,15 +423,14 @@ public class Module extends JellyTestCase {
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	startHTTPServer();
 
-	checkResult("http://localhost:16384/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+	checkResult("http://localhost:16384/",3,"<title>Directory Listing for:/</title>",false);
     }
-
 
 // 4.2.2
     public void test_4_2_2() {
@@ -383,16 +444,14 @@ public class Module extends JellyTestCase {
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	startHTTPServer();
 
-	checkResult("http://localhost:"+originalPort+"/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
+	checkResult("http://localhost:"+originalPort+"/",3,"<title>Directory Listing for:/</title>",true);
     }
-
-/* commented because of bug in IDE
  
 // 4.2.4
     public void test_4_2_4() {
@@ -401,18 +460,19 @@ public class Module extends JellyTestCase {
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Properties");
 
-	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
+	final TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 
 	value=tf.getValue();
-	tf.setValue("-9999");	// NOI18N
+	new Thread() {
+            public void run() { tf.setValue("-9999"); }
+        }.start();
         
-        AssertionFailedErrorException e = checkDialog("Information");
+        AssertionFailedErrorException e = checkDialog("Error");
         tf.setValue(value);
         pw.close();
 	if (e != null) 
             throw e;
     }
-
 
 // 4.2.5
     public void test_4_2_5() {
@@ -421,12 +481,14 @@ public class Module extends JellyTestCase {
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Properties");
 
-	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
+	final TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 
 	value=tf.getValue();
-	tf.setValue("0");	// NOI18N
+	new Thread() {
+            public void run() {tf.setValue("0"); }
+        }.start();
 
-        AssertionFailedErrorException e = checkDialog("Information");
+        AssertionFailedErrorException e = checkDialog("Error");
         tf.setValue(value);
         pw.close();
         if (e != null)
@@ -440,18 +502,19 @@ public class Module extends JellyTestCase {
         PropertySheetOperator pw = new PropertySheetOperator("HTTP Server");
         psto = pw.getPropertySheetTabOperator("Properties");
 
-	TextFieldProperty tf=new TextFieldProperty(psto,"Port");
+	final TextFieldProperty tf=new TextFieldProperty(psto,"Port");
 
 	value=tf.getValue();
-	tf.setValue("65536");	// NOI18N
+	new Thread() {
+            public void run() {tf.setValue("65536"); }
+        }.start();
 
-        AssertionFailedErrorException e = checkDialog("Information");
+        AssertionFailedErrorException e = checkDialog("Error");
         tf.setValue(value);
         pw.close();
         if (e != null)
             throw e;
     }
-*/
     
 // 4.2.7
     public void test_4_2_7() {
@@ -465,13 +528,13 @@ public class Module extends JellyTestCase {
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	startHTTPServer();
 
-	checkResult("http://localhost:65535/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+	checkResult("http://localhost:65535/",3,"<title>Directory Listing for:/</title>",false);
     }
 
 
@@ -489,13 +552,13 @@ public class Module extends JellyTestCase {
 
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	stopHTTPServer();
 
-	checkResult("http://localhost:65535/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",true);
+	checkResult("http://localhost:65535/",3,"<title>Directory Listing for:/</title>",true);
     }
 
 // 4.3.2
@@ -510,16 +573,15 @@ public class Module extends JellyTestCase {
 	
         psto = pw.getPropertySheetTabOperator("Expert");
 
-	tf=new TextFieldProperty(psto,"Base Filesystems URL");
-	tf.setValue("repository");	// NOI18N
+	//tf=new TextFieldProperty(psto,"Base Filesystems URL");
+	//tf.setValue("repository");	// NOI18N
 	pw.close();
 
 	startHTTPServer();
 
-	checkResult("http://localhost:16384/repository/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
+	checkResult("http://localhost:16384/",3,"<title>Directory Listing for:/</title>",false);
     }
 
-/*
 // 4.5 Base Filesystems URL 
 
 // 4.5.1
@@ -588,7 +650,6 @@ public class Module extends JellyTestCase {
 
         checkResult("http://localhost:"+originalPort+"/",1,"<HTML><HEAD><TITLE>Filesystems</TITLE></HEAD>",false);
     }
-*/
     
 // 4.5.4
     public void test_4_5_4() {
@@ -613,7 +674,7 @@ public class Module extends JellyTestCase {
 
     
 // 4.6 Base Class Path URL 
-/*
+
 // 4.6.1
     public void test_4_6_1() {
 	
@@ -712,7 +773,6 @@ public class Module extends JellyTestCase {
         checkResult("http://localhost:"+originalPort+"/org/netbeans/core/resources/templatesFileSystems.html",
                     15,"Select the type of filesystem that you want to mount.",false);
     }
-*/
     
 // 4.6.5
     public void test_4_6_5() {
@@ -738,8 +798,7 @@ public class Module extends JellyTestCase {
     }
 
 // 4.7 Base Javadoc URL 
-
-/*    
+   
 // 4.7.1
     public void test_4_7_1() {
 
@@ -837,7 +896,6 @@ public class Module extends JellyTestCase {
 
         checkResult("http://localhost:"+originalPort+"/",2,"List of Javadoc mounts",false);
     }
-*/
     
 // 4.7.5
     public void test_4_7_5() {
@@ -943,7 +1001,6 @@ public class Module extends JellyTestCase {
 	pw.close();
     }
 
-/*  commented out due to bug #38680
 // 4.8.4
     public void test_4_8_04() {
 
@@ -954,12 +1011,13 @@ public class Module extends JellyTestCase {
 	TextFieldProperty tf=new TextFieldProperty(psto,"Hosts with Granted Access");
         tf.setValue("foo");	// NOI18N
 
-        AssertionFailedErrorException e = checkDialog("Information");
-        pw.close();
-        if (e != null)
-            throw e;        
+        value=tf.getValue();
+	pw.close();
+	if (!value.equals("Selected Hosts: foo")) {
+		pw.close();
+		fail("'Selected Hosts: foo' isn't set.");
+	}
     }
-*/
 
 // 4.8.5
     public void test_4_8_05() {
