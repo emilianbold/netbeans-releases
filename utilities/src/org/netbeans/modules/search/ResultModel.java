@@ -445,7 +445,7 @@ public class ResultModel implements TaskListener {
 
         /** Creates nodes. */
         protected Node[] createNodes(Object key) {
-            return new Node[] { new FoundNode(key)};
+            return new Node[] { createFoundNode(key)};
         }
         
         public void addFoundObjects(Object[] foundObjects) {
@@ -528,21 +528,86 @@ public class ResultModel implements TaskListener {
     } // End of ResultRootChildren class.
 
 
+    /** Creates result node with carefully cafted children */
+    public FoundNode createFoundNode(Object foundObject) {
+        Node node = searchGroup.getNodeForFoundObject(foundObject);
+        SearchType[] types = searchGroup.getSearchTypes();
+
+        // TODO need faster hasDetails check, without creating (and discarding) actual detail nodes
+        boolean hasDetails = false;
+        for (int i = 0; i < types.length; i++) {
+            SearchType searchType = types[i];
+            Node[] details = searchType.getDetails(node);
+            if ((details != null) && details.length>0) {
+                hasDetails = true;
+                break;
+            }
+        }
+
+        if (hasDetails) {
+            return new FoundNode(node, new DetailChildren(node), foundObject);
+        } else {
+            return new FoundNode(node, org.openide.nodes.Children.LEAF, foundObject);
+        }
+    }
+
+    /** Details for found top level (file) nodes. */
+    final class DetailChildren extends Children.Array {
+
+        private final Node parent;
+
+        DetailChildren(Node parent) {
+            this.parent = parent;
+        }
+
+        // TODO why I must subclass Children.Array? I tried to subclass Children directly
+        // and returned createNodes result from getNodes() but it did not work.
+        // Why I complain, *Children.Array* is very memory expensive structure
+        // other implementation (Keys, ...) are even worse :-(
+
+        protected void addNotify() {
+            add(createNodes(parent));
+        }
+
+        protected void removeNotify() {
+            remove(getNodes());
+        }
+
+        protected Node[] createNodes(Object key) {
+            Node node = (Node) key;           // the parent
+            SearchType[] types = searchGroup.getSearchTypes();
+            ArrayList nodes = new ArrayList(5);
+            for (int i = 0; i < types.length; i++) {
+                SearchType searchType = types[i];
+                Node[] details = searchType.getDetails(node);
+                if ((details != null) && details.length>0) {
+                    for (int j = 0; j < details.length; j++) {
+                        Node detail = details[j];
+                        nodes.add(detail);
+                    }
+                }
+            }
+
+            return (Node[]) nodes.toArray(new Node[nodes.size()]);
+        }
+
+    }
+
     /** Node to show in result window. */
-    class FoundNode extends FilterNode implements PropertyChangeListener {
+    final class FoundNode extends FilterNode implements PropertyChangeListener {
         
         /** Original data object if there is any. */
         private DataObject originalDataObject;
 
         /** Original found object. */
         private Object foundObject;
-        
 
-        /** Constructs node. */
-        public FoundNode(Object foundObject) {
+
+        /** Use {@link ResultModel#createFoundNode} instead. */
+        FoundNode(Node node, org.openide.nodes.Children kids, Object foundObject) {
 
             // cut off children, we do not need to show them and they eat memory
-            super(ResultModel.this.searchGroup.getNodeForFoundObject(foundObject), org.openide.nodes.Children.LEAF);
+            super(node, kids);
             
             this.foundObject = foundObject;
             

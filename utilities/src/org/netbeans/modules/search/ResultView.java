@@ -202,6 +202,9 @@ final class ResultView extends TopComponent
         btnStop.addActionListener(buttonListener);
         
         initAccessibility();
+
+        // TODO remove the code completely
+        detailsPanel.setVisible(false);
     }
     
     /**
