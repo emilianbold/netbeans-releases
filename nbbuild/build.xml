@@ -1303,8 +1303,8 @@ Tag:
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
       <zipfileset file="${netbeans.dest}/bin/netbeans" filemode="755" prefix="${netbeans.dest}/bin"/>
       <zipfileset file="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec" filemode="755" prefix="${netbeans.dest}/${nb.cluster.platform.dir}/${nb.bin.dir}"/>
-      <zipfileset file="${netbeans.dest}" filemode="755" prefix="${netbeans.dest}">
-        <include name="*.sh"/>
+      <zipfileset dir="${netbeans.dest}" filemode="755" prefix="${netbeans.dest}">
+        <include name="**/*.sh"/>
       </zipfileset>
       <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}">
         <exclude name="*.built" />
