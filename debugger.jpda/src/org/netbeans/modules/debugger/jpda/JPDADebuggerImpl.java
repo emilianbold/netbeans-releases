@@ -20,7 +20,6 @@ import com.sun.jdi.request.EventRequestManager;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -451,9 +450,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 );
             synchronized (LOCK) {
                 List l = disableAllBreakpoints ();
-                Value v = evaluator.evaluate ();
-                enableAllBreakpoints (l);
-                return v;
+                try {
+                    return evaluator.evaluate ();
+                } finally {
+                    enableAllBreakpoints (l);
+                }
             }
         } catch (Throwable e) {
             InvalidExpressionException iee = new InvalidExpressionException 
@@ -476,14 +477,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
         try {
             synchronized (LOCK) {
                 List l = disableAllBreakpoints ();
-                Value v = org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
-                    reference,
-                    method,
-                    getEvaluationThread (),
-                    Arrays.asList (arguments)
-                );
-                enableAllBreakpoints (l);
-                return v;
+                try {
+                    return org.netbeans.modules.debugger.jpda.expr.Evaluator.invokeVirtual (
+                                        reference,
+                                        method,
+                                        getEvaluationThread (),
+                                        Arrays.asList (arguments)
+                                    );
+                } finally {
+                    enableAllBreakpoints (l);
+                }
             }
         } catch (org.netbeans.modules.debugger.jpda.expr.Evaluator.TimeoutException e) {
             throw new InvalidExpressionException(e.getMessage());
