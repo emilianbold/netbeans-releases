@@ -56,7 +56,12 @@ public class ExceptionTableEntry extends Object {
         handlerPC = in.readUnsignedShort();
         int typeIndex = in.readUnsignedShort();
         if (typeIndex != 0) // may be 0 for "finally" exception handler
-            catchType = pool.getClass(typeIndex);
+	    try {
+	        catchType = pool.getClass(typeIndex);
+	    } catch (IndexOutOfBoundsException e) {
+	        System.err.println("invalid catchType (" + typeIndex +
+				   ") in exception table entry");
+	    }
     }
     
     /**
