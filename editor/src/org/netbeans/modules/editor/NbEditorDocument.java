@@ -24,6 +24,7 @@ import java.text.AttributedCharacterIterator;
 import javax.swing.text.AttributeSet;
 import javax.swing.JEditorPane;
 import javax.swing.Timer;
+import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.PrintContainer;
 import org.netbeans.editor.Syntax;
@@ -54,6 +55,9 @@ NbDocument.Printable, NbDocument.CustomEditor {
      */
     public static final String MIME_TYPE_PROP = "mimeType";
 
+    /** Indent engine for the given kitClass. */
+    public static final String INDENT_ENGINE = "indentEngine";
+
     /** Formatter being used. */
     private Formatter formatter;
 
@@ -77,6 +81,17 @@ NbDocument.Printable, NbDocument.CustomEditor {
 
         // Refresh formatter
         formatter = (Formatter)Settings.getValue(getKitClass(), FORMATTER);
+
+        // Check whether the mimeType is set
+        Object o = getProperty("mimeType");
+        if (!(o instanceof String)) {
+            BaseKit kit = BaseKit.getKit(getKitClass());
+            putProperty("mimeType", kit.getContentType());
+        }
+
+        // Fill in the indentEngine property
+        
+        putProperty("indentEngine", Settings.getValue(getKitClass(), INDENT_ENGINE));
     }
 
     public void setCharacterAttributes(int offset, int length, AttributeSet s,
@@ -110,7 +125,7 @@ NbDocument.Printable, NbDocument.CustomEditor {
         if (f == null) {
             String mimeType = (String)getProperty(MIME_TYPE_PROP);
             if (mimeType != null) {
-                IndentEngine eng = IndentEngine.find(mimeType);
+                IndentEngine eng = IndentEngine.find(this);
                 if (eng != null) {
                     if (eng == lastFoundIndentEngine) {
                         f = lastFoundFormatter;
