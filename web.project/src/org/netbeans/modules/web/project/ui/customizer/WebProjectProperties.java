@@ -38,7 +38,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.web.project.J2SEProjectType;
+import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -687,15 +687,15 @@ public class WebProjectProperties {
     
     public static List readJavacClasspath (AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
         Element data = antProjectHelper.getPrimaryConfigurationData (true);
-        Element webModuleLibs = (Element) data.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
         NodeList ch = webModuleLibs.getChildNodes ();
         List cpItems = new ArrayList( ch.getLength () );
         for (int i = 0; i < ch.getLength (); i++) {
             if (ch.item (i).getNodeType () != Node.ELEMENT_NODE) continue;
             Element library = (Element) ch.item (i);
-            Element webFile = (Element) library.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file").item (0); //NOI18N
+            Element webFile = (Element) library.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file").item (0); //NOI18N
             String file = findText (webFile);
-            NodeList pathInWarList = library.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+            NodeList pathInWarList = library.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
             String pathInWar = VisualClassPathItem.PATH_IN_WAR_NONE;
             if (pathInWarList.getLength () > 0) {
                 pathInWar = findText ((Element) pathInWarList.item (0));
@@ -752,7 +752,7 @@ public class WebProjectProperties {
     public static void writeJavacClasspath ( List value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
         Element data = antProjectHelper.getPrimaryConfigurationData (true);
         org.w3c.dom.Document doc = data.getOwnerDocument ();
-        Element webModuleLibs = (Element) data.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
+        Element webModuleLibs = (Element) data.getElementsByTagNameNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "web-module-libraries").item (0); //NOI18N
         while (webModuleLibs.hasChildNodes ()) {
             webModuleLibs.removeChild (webModuleLibs.getChildNodes ().item (0));
         }
@@ -793,14 +793,14 @@ public class WebProjectProperties {
                     break;
             }
 
-            Element library = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
+            Element library = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "library"); //NOI18N
             webModuleLibs.appendChild (library);
-            Element webFile = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
+            Element webFile = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "file"); //NOI18N
             library.appendChild (webFile);
             webFile.appendChild (doc.createTextNode (library_tag_value));
 
             if (vcpi.getPathInWAR () != VisualClassPathItem.PATH_IN_WAR_NONE) {
-                Element pathInWar = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
+                Element pathInWar = doc.createElementNS (WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "path-in-war"); //NOI18N
                 pathInWar.appendChild (doc.createTextNode (vcpi.getPathInWAR ()));
                 library.appendChild (pathInWar);
             }

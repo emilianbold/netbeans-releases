@@ -33,7 +33,7 @@ import org.openide.loaders.TemplateWizard;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 
-import org.netbeans.modules.web.project.J2SEProjectGenerator;
+import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,7 +64,7 @@ public class NewWebProjectWizardIterator implements TemplateWizard.Iterator {
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
-        J2SEProjectGenerator.createProject(dirF, codename, displayName);
+        WebProjectGenerator.createProject(dirF, codename, displayName);
         FileObject dir = FileUtil.fromFile(dirF)[0];
         Project p = ProjectManager.getDefault().findProject(dir);
         // Returning set of DataObject of project diretory. 

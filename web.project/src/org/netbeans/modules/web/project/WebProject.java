@@ -30,8 +30,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.queries.CompiledSourceForBinaryQuery;
-import org.netbeans.modules.web.project.ui.J2SECustomizerProvider;
-import org.netbeans.modules.web.project.ui.J2SEPhysicalViewProvider;
+import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
+import org.netbeans.modules.web.project.ui.WebPhysicalViewProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -107,8 +107,8 @@ final class WebProject implements Project, AntProjectListener {
             webModule,
             J2eeModuleProvider.createJ2eeProjectMarker (webModule),
             new WebActionProvider( this, helper ),
-            new J2SEPhysicalViewProvider(this, helper, spp),
-            new J2SECustomizerProvider( this, helper, refHelper ),
+            new WebPhysicalViewProvider(this, helper, spp),
+            new WebCustomizerProvider( this, helper, refHelper ),
             new ClassPathProviderImpl(helper),
             new CompiledSourceForBinaryQuery(helper),
             new AntArtifactProviderImpl(),

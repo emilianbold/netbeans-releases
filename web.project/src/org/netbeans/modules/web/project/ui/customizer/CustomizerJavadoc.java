@@ -36,7 +36,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerJavadoc extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerJavadoc extends JPanel implements WebCustomizer.Panel {
     
         
     /** Creates new form CustomizerCompile */

@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
  *
  * @author  phrebejk
  */
-public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
+public class CustomizerCompile extends JPanel implements WebCustomizer.Panel {
 
     // Helper for storing properties
     private WebProjectProperties j2seProperties;
