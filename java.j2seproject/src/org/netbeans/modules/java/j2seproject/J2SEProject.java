@@ -151,7 +151,8 @@ final class J2SEProject implements Project, AntProjectListener {
             }
         });
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        final boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null;
+        // if the project has no main class, it's not really an application
+        final boolean isLibrary = ep.getProperty (J2SEProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (J2SEProjectProperties.MAIN_CLASS)); // NOI18N
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,

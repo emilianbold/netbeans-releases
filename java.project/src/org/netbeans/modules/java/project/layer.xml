@@ -37,27 +37,32 @@ Microsystems, Inc. All Rights Reserved.
       <file name="Class.java" url="nbres:/org/netbeans/modules/java/resources/templates/Class.template">         
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-classes-basic"/>
       </file>
       <file name="Main.java" url="nbres:/org/netbeans/modules/java/resources/templates/Main.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
-         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-main-class"/>
       </file>
       <file name="Empty.java" url="nbres:/org/netbeans/modules/java/resources/templates/Empty.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-classes-basic"/>
       </file>
       <file name="Interface.java" url="nbres:/org/netbeans/modules/java/resources/templates/Interface.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-classes-basic"/>
       </file>
       <file name="Exception.java" url="nbres:/org/netbeans/modules/java/resources/templates/Exception.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-classes-basic"/>
       </file>
       <file name="Package" url="nbres:/org/netbeans/modules/java/resources/templates/Package.template">
          <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.java.project.NewJavaFileWizardIterator.packageWizard"/>
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
          <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateCategory" stringvalue="java-classes-basic"/>
       </file>        
     </folder>
     
