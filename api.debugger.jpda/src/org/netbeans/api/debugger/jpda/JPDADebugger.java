@@ -58,7 +58,7 @@ public abstract class JPDADebugger {
     public static final String          PROP_SUSPEND = "suspend"; // NOI18N
 
     /** Suspend property value constant. */
-    public static final int             SUSPEND_ALL = EventRequest.SUSPEND_EVENT_THREAD;
+    public static final int             SUSPEND_ALL = EventRequest.SUSPEND_ALL;
     /** Suspend property value constant. */
     public static final int             SUSPEND_EVENT_THREAD = EventRequest.SUSPEND_EVENT_THREAD;
     
