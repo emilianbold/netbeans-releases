@@ -149,7 +149,7 @@ export CLASSPATH=
 
 if [ -n "$unscramble" ]
 then
-    scramblerflag=-Dscrambler=$unscramble
+    scramblerflag=-Dscrambler2=$unscramble
 fi
 
 origdisplay=$DISPLAY
