@@ -13,5 +13,5 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <map version="1.0">
-  <mapID target="com.netbeans.enterprise.modules.db.HOMEID" url="index.html" />
+  <mapID target="com.netbeans.enterprise.modules.db.HOMEID" url="dbexplor.htm" />
 </map>
