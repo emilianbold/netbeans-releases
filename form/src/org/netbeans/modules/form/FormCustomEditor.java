@@ -22,6 +22,8 @@ package org.netbeans.modules.form;
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
@@ -89,6 +91,7 @@ public class FormCustomEditor extends JPanel
         for (int i=0; i < allEditors.length; i++)
             if (allEditors[i].getClass().equals(currentEditor.getClass())) {
                 currentIndex = i;
+                allEditors[i] = currentEditor;
                 break;
             }
 
@@ -103,6 +106,7 @@ public class FormCustomEditor extends JPanel
         allCustomEditors = new Component[allEditors.length];
         validValues = new boolean[allEditors.length];
 
+        PropertyEnv env = editor.getPropertyEnv();
         Object currentValue = editor.getValue();
 
         for (int i=0; i < allEditors.length; i++) {
@@ -111,10 +115,13 @@ public class FormCustomEditor extends JPanel
 
             boolean valueSet = false;
             if (i == currentIndex) { // this is the currently used editor
-                prEd.setValue(currentValue);
+//                prEd.setValue(currentValue);
                 valueSet = true;
             }
             else {
+                if (env != null && prEd instanceof ExPropertyEditor)
+                    ((ExPropertyEditor)prEd).attachEnv(env);
+
                 if (currentValue != null) {
                     if (editor.getPropertyType().isAssignableFrom(
                                                    currentValue.getClass())) {
@@ -134,7 +141,6 @@ public class FormCustomEditor extends JPanel
                 }
                 if (!valueSet) {
                     Object defaultValue = editor.getProperty().getDefaultValue();
-                    // we want to pass null e.g. because FontEditor threw NPE
                     if (defaultValue != BeanSupport.NO_VALUE) {
                         prEd.setValue(defaultValue);
                         valueSet = true;
