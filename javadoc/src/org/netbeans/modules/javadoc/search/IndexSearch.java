@@ -100,6 +100,7 @@ public class IndexSearch
 
     private static final DefaultListModel waitModel = new DefaultListModel();
     private static final DefaultListModel notModel = new DefaultListModel();
+    private boolean setDividerLocation;
 
     static {
         DocIndexItem dii = new DocIndexItem( ResourceUtils.getBundledString("CTL_SEARCH_Wait" ), "", null, "" );    //NOI18N
@@ -130,7 +131,12 @@ public class IndexSearch
         // Split panel
         splitPanel = new JSplitPane (JSplitPane.VERTICAL_SPLIT);
         splitPanel.setPreferredSize(PREFFERED_SIZE);
+        
         splitPanel.setDividerLocation(oldSplit / 100.0);
+        //previous line does not work
+        //setDividerLocation must be set in open
+        setDividerLocation = true;
+        
 
         java.awt.GridBagConstraints gridBagConstraints1 = new java.awt.GridBagConstraints ();
         gridBagConstraints1.gridwidth = 0;
@@ -228,13 +234,12 @@ public class IndexSearch
     protected String preferredID() {
         return "JavaDocIndexSearch"; // NOI18N
     }
-
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx (INDEX_SEARCH_HELP_CTX_KEY);
+    
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(INDEX_SEARCH_HELP_CTX_KEY);
     }
     
-    private void initAccessibility()
-    {
+    private void initAccessibility() {
         getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yName"));  // NOI18N
         getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_PanelA11yDesc"));  // NOI18N
         searchComboBox.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_SearchComboBoxA11yName"));  // NOI18N
@@ -244,7 +249,7 @@ public class IndexSearch
         quickBrowser.getAccessibleContext().setAccessibleName(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yName"));  // NOI18N
         quickBrowser.getAccessibleContext().setAccessibleDescription(ResourceUtils.getBundledString("ACS_SEARCH_QuickBrowserA11yDesc"));  // NOI18N
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -591,6 +596,11 @@ public class IndexSearch
 
         quickFind = null;
         searchComboBox.getEditor().selectAll();
+        
+        if (setDividerLocation) {
+            splitPanel.setDividerLocation(oldSplit / 100.0);
+            setDividerLocation = false;
+        }
     }
 
     java.awt.Dimension getPrefferedSize() {
