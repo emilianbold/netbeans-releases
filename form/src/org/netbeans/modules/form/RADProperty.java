@@ -18,9 +18,9 @@ import java.beans.*;
 import java.lang.reflect.*;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 
+import org.netbeans.modules.form.editors.*;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
@@ -107,7 +107,7 @@ public class RADProperty extends FormProperty {
                 "MSG_ERR_WRITING_TO_PROPERTY", // NOI18N
                 new Object[] { getDisplayName() });
 
-            TopManager.getDefault ().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 ex, ErrorManager.WARNING, null,
                 message, null, null);
 
@@ -158,32 +158,68 @@ public class RADProperty extends FormProperty {
     // ----------
 
     public PropertyEditor getExpliciteEditor() {
-        PropertyDescriptor descriptor = getPropertyDescriptor();
-        if (descriptor.getPropertyType() == Integer.TYPE
-            // XXX(-ttran) DebugGraphics.NONE_OPTION is not an enum, see Swing
-            // source code for details
-            && !"debugGraphicsOptions".equals(descriptor.getName())) // NOI18N
-        {
-            if ("mnemonic".equals(descriptor.getName()) // NOI18N
-                    || "displayedMnemonic".equals(descriptor.getName())) // NOI18N
-                return new org.netbeans.modules.form.editors.MnemonicEditor();
+        PropertyEditor prEd = null;
 
-            Object[] enumerationValues =
-                (Object[]) descriptor.getValue("enumerationValues"); // NOI18N
-            if (enumerationValues != null)
-                return new org.netbeans.modules.form.editors.EnumEditor(enumerationValues);
+        PropertyDescriptor descriptor = getPropertyDescriptor();
+        if (descriptor.getPropertyType() == Integer.TYPE) {
+            if ("mnemonic".equals(descriptor.getName()) // NOI18N
+                  || "displayedMnemonic".equals(descriptor.getName())) // NOI18N
+                prEd = new MnemonicEditor();
+            else
+                prEd = createEnumEditor(descriptor);
         }
 
-        if (desc.getPropertyEditorClass() != null) {
+        if (prEd == null && desc.getPropertyEditorClass() != null) {
             try {
-                return (PropertyEditor) desc.getPropertyEditorClass().newInstance();
+                prEd = (PropertyEditor)
+                       desc.getPropertyEditorClass().newInstance();
             }
             catch (Exception ex) {
                 if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                     ex.printStackTrace();
             }
         }
-        return null;
+
+        return prEd;
+    }
+
+    protected PropertyEditor createEnumEditor(PropertyDescriptor descriptor) {
+        Object[] enumerationValues;
+
+        if (!"debugGraphicsOptions".equals(descriptor.getName()) // NOI18N
+            || !javax.swing.JComponent.class.isAssignableFrom(
+                                              component.getBeanClass()))
+        {   // get the enumeration values by standard means
+            enumerationValues = (Object[])
+                                descriptor.getValue("enumerationValues"); // NOI18N
+        }
+        else { // hack: debugGraphicsOptions is problematic because its
+               // default value (0) does not correspond to any of the
+               // enumerated constants (NONE_OPTION is -1)
+            enumerationValues = new Object[] {
+                "NONE_OPTION", new Integer(-1), "DebugGraphics.NONE_OPTION", // NOI18N
+                "LOG_OPTION", new Integer(1), "DebugGraphics.LOG_OPTION", // NOI18N
+                "FLASH_OPTION", new Integer(2), "DebugGraphics.FLASH_OPTION", // NOI18N
+                "BUFFERED_OPTION", new Integer(4), "DebugGraphics.BUFFERED_OPTION" }; // NOI18N
+        }
+
+        if (enumerationValues == null
+            && "defaultCloseOperation".equals(descriptor.getName()) // NOI18N
+            && javax.swing.JDialog.class.isAssignableFrom(
+                                           component.getBeanClass()))
+        {   // hack: enumeration definition is missing in standard Swing
+            // JDialogBeanInfo for defaultCloseOperation property
+            enumerationValues = new Object[] {
+                "DISPOSE_ON_CLOSE", new Integer(2), // NOI18N
+                        "WindowConstants.DISPOSE_ON_CLOSE", // NOI18N
+                "DO_NOTHING_ON_CLOSE", new Integer(0), // NOI18N
+                        "WindowConstants.DO_NOTHING_ON_CLOSE", // NOI18N
+                "HIDE_ON_CLOSE", new Integer(1), // NOI18N
+                         "WindowConstants.HIDE_ON_CLOSE" }; // NOI18N
+        }
+
+        return enumerationValues != null ?
+                 new EnumEditor(enumerationValues) : null;
     }
 
     String getPartialSetterCode() {
