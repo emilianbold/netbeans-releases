@@ -27,6 +27,9 @@ public class Operator {
 
   private boolean           resume = false;
   
+  /** current event set */ 
+  private EventSet          eventSet;
+  
   /**
   * Creates operator for given event queue.
   */
@@ -41,6 +44,7 @@ public class Operator {
         try {
           for (;;) {
             EventSet set = queue.remove ();
+            eventSet = set;
             EventIterator i = set.eventIterator ();
             while (i.hasNext ()) {
               Event e = i.nextEvent ();
@@ -59,11 +63,11 @@ public class Operator {
               }
               Executor exec = null;
               if (e.request () == null) {
-                System.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
+                //S ystem.out.println ("EVENT: " + e + " REQUEST: null"); // NOI18N
               } else 
                 exec = (Executor) e.request ().getProperty ("executor");
               
-              printEvent (e, exec);
+              // printEvent (e, exec);
 
               // safe invocation of user action
               if (exec != null) 
@@ -73,7 +77,7 @@ public class Operator {
                   ex.printStackTrace ();
                 }
             }
-//            System.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
+//            S ystem.out.println ("END (" + set.suspendPolicy () + ") ==========================================================================="); // NOI18N
             if (resume) {
               resume = false;
               virtualMachine.resume ();
@@ -97,6 +101,13 @@ public class Operator {
   */
   public void resume () {
     resume = true;
+  }
+
+  /**
+  * Returns current event set.
+  */
+  public EventSet getEventSet () {
+    return eventSet;
   }
   
   private void printEvent (Event e, Executor exec) {
@@ -142,6 +153,7 @@ public class Operator {
 
 /*
  * Log
+ *  11   Jaga      1.9.3.0     2/25/00  Daniel Prusa    post 1.0 changes
  *  10   Gandalf   1.9         1/14/00  Daniel Prusa    NOI18N
  *  9    Gandalf   1.8         1/13/00  Daniel Prusa    NOI18N
  *  8    Gandalf   1.7         1/4/00   Jan Jancura     Use trim () on user 
