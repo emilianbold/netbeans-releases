@@ -184,7 +184,7 @@ public class NbTopManager extends TopManager {
   * @param text the text to be shown
   */
   public void setStatusText(String text) {
-    NbWindowManager.setStatusText (text);
+    StatusLine.setStatusText (text);
   }
 
   /** Returns currently installed debugger or throws
