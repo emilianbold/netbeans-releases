@@ -705,6 +705,19 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
                 firePropertyChange (PROP_TIME, null, new Date (time));
             }
         }
+
+        /** Called from the <code>EnvironmentListener</code>.
+         * The components are going to be closed anyway and in case of
+         * modified document its asked before if to save the change. */
+        private void fileRemoved() {
+            try {
+                fireVetoableChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+            } catch(PropertyVetoException pve) {
+                // Ignore it and close anyway. File doesn't exist anymore.
+            }
+            
+            firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+        }
     } // End of nested class Environment.
 
     
@@ -735,8 +748,17 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
                     environment.entry.getFile().addFileChangeListener(new EnvironmentListener(environment));
                     return;
                 }
-                
-                environment.fileChanged(evt.isExpected(), evt.getTime());
+
+                // #16403. See DataEditorSupport.EnvListener.
+                if(evt.getFile().isVirtual()) {
+                    environment.entry.getFile().removeFileChangeListener(this);
+                    // File doesn't exist on disk -> simulate env is invalid,
+                    // even the fileObject could be valid, see VCS FS.
+                    environment.fileRemoved();
+                    environment.entry.getFile().addFileChangeListener(this);
+                } else {
+                    environment.fileChanged(evt.isExpected(), evt.getTime());
+                }
             }
         }
     } // End of nested class EnvironmentListener.
