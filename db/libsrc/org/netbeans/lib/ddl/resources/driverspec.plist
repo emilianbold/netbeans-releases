@@ -300,6 +300,37 @@
   };
   
 // ****************************************************
+// MS Access JDBC-ODBC Bridge
+// ****************************************************
+  "JDBC-ODBC Bridge (odbcjt32.dll)" = {
+    DriverName = "JDBC-ODBC Bridge (odbcjt32.dll)";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = null;
+    TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = null;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = null;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = null;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = null;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = null;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = null;
+    getProcedureColumns_ColumnNamePattern = null;
+  };    
+  
+// ****************************************************
 // MySQL JDBC-ODBC bridge
 // ****************************************************
   "JDBC-ODBC Bridge (myodbc.dll)" = {
@@ -358,7 +389,38 @@
 
     getProcedureColumns_Catalog = true;
     getProcedureColumns_SchemaPattern = true;
-   getProcedureColumns_ColumnNamePattern = null;
+    getProcedureColumns_ColumnNamePattern = null;
+  };
+  
+// ****************************************************
+// PointBase JDBC driver
+// ****************************************************
+  "PointBase JDBC Driver" = {
+    DriverName = "PointBase JDBC Driver";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
   };
   
 // ****************************************************
@@ -392,5 +454,70 @@
     getProcedureColumns_ColumnNamePattern = null;
   };
   
+// ****************************************************
+// Sybase jConnect driver
+// ****************************************************
+  "jConnect (TM) for JDBC (TM)" = {
+    DriverName = "jConnect (TM) for JDBC (TM)";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+  };
+
+// ****************************************************
+// Sybase JDBC-ODBC bridge
+// ****************************************************
+  "JDBC-ODBC Bridge (DBODBC6W.DLL)" = {
+    DriverName = "JDBC-ODBC Bridge (DBODBC6W.DLL)";
+    getTables_Catalog = true;
+    getTables_SchemaPattern = true;
+    getTables_TableNamePattern = null;
+    getTables_Types = true;
+
+    getProcedures_Catalog = true;
+    getProcedures_SchemaPattern = true;
+    getProcedures_ProcedureNamePattern = null;
+
+    getPrimaryKeys_Catalog = true;
+    getPrimaryKeys_Schema = true;
+    
+    getExportedKeys_Catalog = true;
+    getExportedKeys_Schema = true;
+    
+    getIndexInfo_Catalog = true;
+    getIndexInfo_Schema = true;
+
+    getColumns_Catalog = true;
+    getColumns_SchemaPattern = true;
+
+    getProcedureColumns_Catalog = true;
+    getProcedureColumns_SchemaPattern = true;
+    getProcedureColumns_ColumnNamePattern = null;
+  };
+
+
+
+
 
 }
