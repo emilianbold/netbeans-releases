@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<Form version="1.0" type="com.netbeans.developer.modules.loaders.form.forminfo.JDialogFormInfo">
+  <Properties>
+    <Property name="title" type="java.lang.String" editor="com.netbeans.developer.modules.loaders.form.RADConnectionPropertyEditor">
+      <Connection code="&quot;Property Editor: &quot; + propertySupport.getDisplayName ()" type="code"/>
+    </Property>
+  </Properties>
+
+  <Events>
+    <EventHandler event="windowClosing" handler="closeDialog"/>
+  </Events>
+
+  <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
+  <SubComponents>
+    <Component class="javax.swing.JEditorPane" name="codeEditorPane">
+      <Properties>
+        <Property name="contentType" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="text/x-java"/>
+      </Properties>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePre" value="-84,-19,0,5,116,0,0"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodePre" value="-84,-19,0,5,116,0,0"/>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" value="-84,-19,0,5,116,0,31,67,117,115,116,111,109,67,111,100,101,69,100,105,116,111,114,95,99,111,100,101,69,100,105,116,111,114,80,97,110,101"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" value="-84,-19,0,5,116,0,-40,116,114,121,32,123,10,32,32,99,111,100,101,69,100,105,116,111,114,80,97,110,101,46,115,101,116,84,101,120,116,40,40,83,116,114,105,110,103,41,32,112,114,111,112,101,114,116,121,83,117,112,112,111,114,116,46,103,101,116,86,97,108,117,101,32,40,41,41,59,10,125,32,99,97,116,99,104,32,40,106,97,118,97,46,108,97,110,103,46,114,101,102,108,101,99,116,46,73,110,118,111,99,97,116,105,111,110,84,97,114,103,101,116,69,120,99,101,112,116,105,111,110,32,101,49,41,32,123,10,32,32,101,49,46,112,114,105,110,116,83,116,97,99,107,84,114,97,99,101,40,41,59,10,125,32,99,97,116,99,104,32,40,73,108,108,101,103,97,108,65,99,99,101,115,115,69,120,99,101,112,116,105,111,110,32,101,50,41,32,123,10,32,32,101,50,46,112,114,105,110,116,83,116,97,99,107,84,114,97,99,101,40,41,59,10,125"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" value="-84,-19,0,5,116,0,0"/>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" value="-84,-19,0,5,116,0,0"/>
+      </AuxValues>
+      <Constraints>
+        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="1" gridX="0" gridY="0" insetsBottom="8" insetsLeft="8" insetsRight="8" insetsTop="8" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
+        </Constraint>
+        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
+          <BorderConstraints direction="Center"/>
+        </Constraint>
+      </Constraints>
+    </Component>
+    <Container class="javax.swing.JPanel" name="jPanel1">
+      <Constraints>
+        <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="3" gridX="0" gridY="1" insetsBottom="8" insetsLeft="8" insetsRight="8" insetsTop="8" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+
+      <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout">
+        <Property name="alignment" type="int" value="2"/>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JButton" name="okButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Ok"/>
+          </Properties>
+
+          <Events>
+            <EventHandler event="actionPerformed" handler="okButtonActionPerformed"/>
+          </Events>
+          <Constraints>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+              <GridBagConstraints anchor="13" fill="0" gridHeight="1" gridWidth="1" gridX="1" gridY="0" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="Center"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout$CardConstraintsDescription">
+              <CardConstraints cardName="card1"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
+          </Constraints>
+        </Component>
+        <Component class="javax.swing.JButton" name="cancelButton">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="com.netbeans.developer.editors.StringEditor" value="Cancel"/>
+          </Properties>
+
+          <Events>
+            <EventHandler event="actionPerformed" handler="cancelButtonActionPerformed"/>
+          </Events>
+          <Constraints>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+              <GridBagConstraints anchor="13" fill="0" gridHeight="1" gridWidth="1" gridX="2" gridY="0" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignBorderLayout$BorderConstraintsDescription">
+              <BorderConstraints direction="East"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignCardLayout$CardConstraintsDescription">
+              <CardConstraints cardName="card2"/>
+            </Constraint>
+            <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignFlowLayout$FlowConstraintsDescription"/>
+          </Constraints>
+        </Component>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>
