@@ -524,6 +524,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
+            // Make sure DD graph removed from caching
+            getWebModule().uncacheDescriptors();
+            
             // unregister project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));

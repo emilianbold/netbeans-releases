@@ -198,6 +198,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return null;
     }
 
+    public void uncacheDescriptors() {
+        DDProvider.getDefault ().uncacheDDRoot(getDeploymentDescriptor());
+        this.getConfigSupport().resetStorage();
+    }
+    
     private WebApp getWebApp () {
         try {
             return DDProvider.getDefault ().getDDRoot (getDeploymentDescriptor ());
