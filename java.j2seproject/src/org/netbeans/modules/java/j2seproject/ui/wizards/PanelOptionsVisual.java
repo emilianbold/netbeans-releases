@@ -142,7 +142,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(mainClassTextField, gridBagConstraints);
-        mainClassTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/Bundle").getString("ASCN_mainClassTextFiled"));
+        mainClassTextField.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ASCN_mainClassTextFiled"));
         mainClassTextField.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/wizards/Bundle").getString("ASCD_mainClassTextFiled"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
