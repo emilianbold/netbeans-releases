@@ -48,6 +48,11 @@ class SearchThreadJdk12 extends IndexSearchThread {
     if ( fo.isFolder() ) {
       // Documentation uses splited index - resolve the right file
       Integer fileNumber = new Integer( (int)(Character.toUpperCase( toFind.charAt(0) ))  - 'A' + 1);
+
+      if ( fileNumber.intValue() < 1 || fileNumber.intValue() > 26 ) {
+        fileNumber = new Integer( 27 );
+      }
+
       String fileName = new String( "index-" + fileNumber.toString() );
       this.fo = fo.getFileObject( fileName, "html" );
 

@@ -61,11 +61,13 @@ public class DocumentationSettings extends ContextSystemOption //implements View
 
   /** getter for type of generation 
   */
+  /*
   public boolean isExternalJavadoc () {
     return externalJavadoc;
   }
-
+  */
   /** setter for viewer */
+ 
   public void setExternalJavadoc(boolean b) {
     externalJavadoc = b;
     /*
@@ -73,23 +75,24 @@ public class DocumentationSettings extends ContextSystemOption //implements View
       viewer = v;
     */
   }
-
+  
   /** Getter for documentation search path
   */
   public String[] getSearchPath() {
     return searchPath;
   }
-
+ 
   /** Setter for documentation search path
   */
   public void setSearchPath(String[] s) {
     searchPath = s;
   }
-
+  
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/14/99  Petr Hrebejk    
  *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
  * $
  */

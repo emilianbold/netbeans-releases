@@ -25,6 +25,7 @@ import java.awt.Dimension;
 import com.netbeans.ide.windows.TopComponent;
 import com.netbeans.ide.util.RequestProcessor;
 import com.netbeans.ide.TopManager;
+import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.ide.util.NbBundle;
 
 /** Main window for documentation index search
@@ -220,6 +221,13 @@ public class IndexSearch extends TopComponent {
     /** Starts searching */
 
     void go() {
+      
+      if ( docSystems.length <= 0 ) {
+        TopManager.getDefault().notify( new NotifyDescriptor.Message( bundle.getString( "MSG_NoDoc" ) ) );
+        searchStoped();  
+        return;  
+      }
+
       String toFind = new String( searchComboBox.getEditor().getItem().toString() );
 
       // Try to find this string in Combo

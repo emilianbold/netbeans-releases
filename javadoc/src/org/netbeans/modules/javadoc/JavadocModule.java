@@ -26,7 +26,8 @@ import com.netbeans.ide.modules.ModuleInstall;
 import com.netbeans.ide.loaders.DataFolder;
 import com.netbeans.ide.loaders.DataLoader;
 import com.netbeans.ide.TopManager;
-
+import com.netbeans.ide.filesystems.LocalFileSystem;
+import com.netbeans.ide.filesystems.Repository;
 
 // MODULE imports ---------------
 
@@ -49,6 +50,29 @@ public class JavadocModule implements ModuleInstall {
   public void installed() {
     // Create Standard Doclet option to get Standard javadoc directory
     StdDocletSettings sdsTemp = new StdDocletSettings();
+
+    File jdkDocsDir = new File ( System.getProperty ("java.home")  + java.io.File.separator + ".." 
+                                 + java.io.File.separator + "docs" + java.io.File.separator + "api" );
+
+    System.out.println (  System.getProperty ("java.home")  + java.io.File.separator + ".." 
+                                 + java.io.File.separator + "docs" + java.io.File.separator + "api" );
+
+    if ( jdkDocsDir.isDirectory() ) {
+      try {
+        File jdkDocsDirCan = new File( jdkDocsDir.getCanonicalPath() );
+        if ( jdkDocsDirCan.isDirectory() ) {
+          System.out.println ( "ADDING FS " );
+          LocalFileSystem lfs = new LocalFileSystem( );
+          lfs.setRootDirectory(jdkDocsDirCan);
+          lfs.setHidden( true );
+          TopManager.getDefault().getRepository().addFileSystem ( lfs );
+        }
+      }
+      catch ( java.io.IOException ex ) {
+      }
+      catch ( java.beans.PropertyVetoException ex ) {
+      }
+    }
 
     File dir = sdsTemp.getDirectory();
     
@@ -149,6 +173,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         5/14/99  Petr Hrebejk    
  *  6    Gandalf   1.5         5/11/99  Petr Hrebejk    
  *  5    Gandalf   1.4         5/11/99  Petr Hrebejk    
  *  4    Gandalf   1.3         5/7/99   Petr Hrebejk    
