@@ -142,7 +142,13 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
             }
             getCloseIconRect(tempRect, index);
             if (pinButton != null) {
-                pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+                // don't activate and draw pin button if tab is too narrow
+                if (tempRect.x - space4Pin < x + TXT_X_PAD - 1) {
+                    pinButton.setVisible(false);
+                } else {
+                    pinButton.setVisible(true);
+                    pinButton.setLocation(tempRect.x - space4Pin, tempRect.y);
+                }
             }
             icon.paintIcon(getDisplayer(), g, tempRect.x, tempRect.y);
         } else {

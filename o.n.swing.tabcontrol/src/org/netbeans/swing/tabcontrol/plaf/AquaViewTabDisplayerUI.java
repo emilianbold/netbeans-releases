@@ -145,12 +145,17 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                 //Ugly for now - really we should get rid of the button 
                 //entirely
                 
-                Icon ic = pinButton.getIcon();
-                pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
-                    ic.getIconWidth(), ic.getIconHeight());
-                
-                if (ic != null) {
-                    ic.paintIcon(displayer, g, pinButtonRect.x, pinButtonRect.y);
+                // don't activate and draw pin button if tab is too narrow
+                if (tempRect.x - space4Pin <= x) {
+                    pinButtonRect.setBounds(0, 0, 0, 0);
+                } else {
+                    Icon ic = pinButton.getIcon();
+                    pinButtonRect.setBounds(iconX - space4Pin, iconY - 4, 
+                        ic.getIconWidth(), ic.getIconHeight());
+
+                    if (ic != null) {
+                        ic.paintIcon(displayer, g, pinButtonRect.x, pinButtonRect.y);
+                    }
                 }
                 
 
