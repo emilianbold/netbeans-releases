@@ -360,7 +360,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- finally, printout URL where the report is 
             - this is relevant only when running tests from module/test -->
-        <property name="xtest.report.url" value="${xtest.results}/htmlresults/index.html"/>
+        <property name="xtest.report.url" value="${xtest.results}/index.html"/>
         <echo message="Hi, here's report URL:"/>
         <echo message="file://${xtest.report.url}"/>        
     </target>        
