@@ -14,6 +14,7 @@
 package com.netbeans.developer.impl;
 
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -230,9 +231,9 @@ public final class LoaderPoolNode extends AbstractNode {
       }
       private void warn (String yourLoader, String otherLoader, String otherRepn) {
         // PLEASE DO NOT COMMENT OUT:
-        System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + " was found.");
-        System.err.println ("The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class.");
-        System.err.println ("Probably you wanted " + otherRepn + " which is the loader's representation class.");
+        System.err.println ("Warning: a possible error in the manifest containing " + yourLoader + " was found."); // NOI18N
+        System.err.println ("The loader specified an Install-{After,Before} on " + otherLoader + ", but this is a DataLoader class."); // NOI18N
+        System.err.println ("Probably you wanted " + otherRepn + " which is the loader's representation class."); // NOI18N
       }
     };
     try {
@@ -273,6 +274,7 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   private static synchronized void writePool (ObjectOutputStream oos) 
   throws IOException {
+    //System.err.println("writePool");
     oos.writeObject (installBefores);
     oos.writeObject (installAfters);
     
@@ -290,10 +292,34 @@ public final class LoaderPoolNode extends AbstractNode {
       }
       
       if (obj != null) {
+        //System.err.println("writing " + l.getDisplayName ());
         oos.writeObject (obj);
       }
     }
+    //System.err.println("writing null");
     oos.writeObject (null);
+    
+    // Write out system loaders now:
+    Enumeration e = loaderPool.allLoaders ();
+    while (e.hasMoreElements ()) {
+      DataLoader l = (DataLoader) e.nextElement ();
+      if (loaders.contains (l)) continue;
+      NbMarshalledObject obj;
+      try {
+        obj = new NbMarshalledObject (l);
+      } catch (IOException ex) {
+        TopManager.getDefault ().notifyException (ex);
+        obj = null;
+      }
+      if (obj != null) {
+        //System.err.println("writing " + l.getDisplayName ());
+        oos.writeObject (obj);
+      }
+    }
+    //System.err.println("writing null");
+    oos.writeObject (null);
+    
+    //System.err.println("done writing");
   }
 
   /** Reads loader from the input stream.
@@ -310,11 +336,13 @@ public final class LoaderPoolNode extends AbstractNode {
     for (;;) {
       NbMarshalledObject obj = (NbMarshalledObject)ois.readObject ();
       if (obj == null) {
+        //System.err.println("reading null");
         break;
       }
       
       try {
         DataLoader loader = (DataLoader)obj.get ();
+        //System.err.println("reading " + loader.getDisplayName ());
         l.add (loader);
         classes.add (loader.getClass ());
       } catch (IOException ex) {
@@ -327,6 +355,30 @@ public final class LoaderPoolNode extends AbstractNode {
         }
       }
     }
+    
+    // Read system loaders. But not into any particular order.
+    for (;;) {
+      NbMarshalledObject obj = (NbMarshalledObject) ois.readObject ();
+      if (obj == null) {
+        //System.err.println("reading null");
+        break;
+      }
+      try {
+        // Just reads its shared state, nothing more.
+        DataLoader loader = (DataLoader) obj.get ();
+        //System.err.println("reading " + loader.getDisplayName ());
+      } catch (IOException ex) {
+        if (System.getProperty ("netbeans.debug.exceptions") != null) {
+          ex.printStackTrace();
+        }
+      } catch (ClassNotFoundException ex) {
+        if (System.getProperty ("netbeans.debug.exceptions") != null) {
+          ex.printStackTrace();
+        }
+      }
+    }
+    
+    //System.err.println("done reading");
     
     // Explanation: modules are permitted to restoreDefault () before
     // the loader pool is de-externalized. This means that all loader manifest
@@ -426,6 +478,10 @@ public final class LoaderPoolNode extends AbstractNode {
 
   /** Node representing one loader in Loader Pool */
   private static class LoaderPoolItemNode extends BeanNode {
+    
+    /** true if a system loader */
+    boolean isSystem;
+    
     /**
     * Constructs LoaderPoolItemNode for specified DataLoader.
     *
@@ -434,6 +490,15 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     public LoaderPoolItemNode(DataLoader loader) throws IntrospectionException {
       super(loader);
+      isSystem = ! loaders.contains (loader);
+      // [PENDING] uncomment when can check in bundle change
+      /*
+      if (isSystem) {
+        setSynchronizeName (false);
+        setDisplayName (MessageFormat.format (NbBundle.getBundle (LoaderPoolNode.class).getString ("LBL_system_data_loader"),
+                                              new Object[] { getDisplayName () }));
+      }
+      */
     }
 
     /** Getter for set of actions that should be present in the
@@ -442,13 +507,19 @@ public final class LoaderPoolNode extends AbstractNode {
     * @return array of system actions that should be in popup menu
     */
     public SystemAction[] createActions () {
-      return new SystemAction[] {
-        SystemAction.get(MoveUpAction.class),
-        SystemAction.get(MoveDownAction.class),
-        null,
-        SystemAction.get(ToolsAction.class),
-        SystemAction.get(PropertiesAction.class),
-      };
+      if (isSystem)
+        return new SystemAction[] {
+          SystemAction.get(ToolsAction.class),
+          SystemAction.get(PropertiesAction.class),
+        };
+      else
+        return new SystemAction[] {
+          SystemAction.get(MoveUpAction.class),
+          SystemAction.get(MoveDownAction.class),
+          null,
+          SystemAction.get(ToolsAction.class),
+          SystemAction.get(PropertiesAction.class),
+        };
     }
 
     /** @return true
@@ -490,12 +561,10 @@ public final class LoaderPoolNode extends AbstractNode {
   private static final class LoaderChildren extends Children.Keys {
     /** Update the the nodes */
     public void update () {
-      List _loaders;
-      // Note: this method is called asynch from the update thread,
-      // thus it needs to explicitly resynch here:
-      synchronized (LoaderPoolNode.class) {
-        _loaders = new ArrayList (loaders);
-      }
+      List _loaders = new LinkedList ();
+      // Should not need an explicit synch, NBLP.loaders() does this:
+      Enumeration e = loaderPool.allLoaders ();
+      while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
       setKeys (_loaders);
       
       Iterator it = _loaders.iterator ();
@@ -531,7 +600,7 @@ public final class LoaderPoolNode extends AbstractNode {
   */
   public static final class NbLoaderPool extends DataLoaderPool 
   implements PropertyChangeListener {
-    private static final long serialVersionUID =-8488524097175567565L;
+    private static final long serialVersionUID =-8488524097175567566L;
     
     /** Enumerates all loaders. Loaders are taken from children
     * structure of LoaderPoolNode. */
@@ -553,7 +622,7 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Listener to property changes.
     */
     public void propertyChange (PropertyChangeEvent ev) {
-      Thread t = new Thread ("Data Loader Change Notification " + ev.getSource ()) {
+      Thread t = new Thread ("Data Loader Change Notification " + ev.getSource ()) { // NOI18N
         public void run () {
           superFireChangeEvent (new ChangeEvent (this));
         }
@@ -601,7 +670,13 @@ public final class LoaderPoolNode extends AbstractNode {
     * @throws NotImplementedException always
     */
     public Node[] getNodes () {
-      return getChildren ().getNodes ();
+      Enumeration e = getChildren ().nodes ();
+      List l = new ArrayList ();
+      while (e.hasMoreElements ()) {
+        LoaderPoolItemNode node = (LoaderPoolItemNode) e.nextElement ();
+        if (! node.isSystem) l.add (node);
+      }
+      return (Node[]) l.toArray (new Node[l.size ()]);
     }
 
     /** Get the node count. Subclasses must provide this.
@@ -641,6 +716,8 @@ public final class LoaderPoolNode extends AbstractNode {
 
 /*
 * Log
+*  33   Gandalf   1.32        1/13/00  Jesse Glick     All loaders are displayed
+*       and persisted, incl. system ones, though these cannot be reordered.
 *  32   Gandalf   1.31        12/2/99  Jesse Glick     Loaders cannot be removed
 *       from pool, either intentionally or accidentally (e.g. after failed 
 *       deserialize).
