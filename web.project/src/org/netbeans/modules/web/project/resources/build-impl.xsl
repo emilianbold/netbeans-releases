@@ -914,7 +914,7 @@ to simulate
                     </xsl:choose>
                 </xsl:variable>
                 <xsl:variable name="script" select="projdeps:script"/>
-                     <ant target="{$subtarget}" inheritall="false" dir="${{project.{$subproj}}}" antfile="${{project.{$subproj}}}/{$script}"/>
+                     <ant target="{$subtarget}" inheritall="false" antfile="${{project.{$subproj}}}/{$script}"/>
             </xsl:for-each>
         </target>
     </xsl:template>
