@@ -33,6 +33,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -101,8 +102,14 @@ class WebContainerImpl extends EnterpriseReferenceContainer {
     }
     
     private void addJ2eeLibrary() {
-        Library lib = LibraryManager.getDefault().getLibrary(J2EE_14_LIBRARY); 
-        WebProjectProperties wp = new WebProjectProperties (webProject,antHelper,helper);
+        Library lib = LibraryManager.getDefault().getLibrary(J2EE_14_LIBRARY);
+        
+        WebProjectProperties wp = new WebProjectProperties(
+            webProject, 
+            new UpdateHelper (webProject, antHelper, antHelper.createAuxiliaryConfiguration(), new GeneratedFilesHelper(antHelper), UpdateHelper.createDefaultNotifier()),
+            ((WebProject) webProject).evaluator(),
+            helper);
+        
         List vcpis = (List) wp.get (WebProjectProperties.JAVAC_CLASSPATH);
         VisualClassPathItem vcpi = VisualClassPathItem.create (lib, VisualClassPathItem.PATH_IN_WAR_NONE);
         vcpis.add (vcpi);
