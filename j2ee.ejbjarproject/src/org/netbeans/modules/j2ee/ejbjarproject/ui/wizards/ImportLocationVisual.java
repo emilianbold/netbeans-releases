@@ -433,7 +433,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     private void jButtonLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLibrariesActionPerformed
         JFileChooser chooser = createChooser(jTextFieldLibraries.getText());    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportEjbJarLocationsVisual.class, "LBL_IW_SelectLibrariesLocation"))) { //NOI18N
+        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_SelectLibrariesLocation"))) { //NOI18N
             File libDir = chooser.getSelectedFile();
             jTextFieldLibraries.setText(libDir.getAbsolutePath());
         }            
@@ -441,7 +441,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
 
     private void jButtonConfigFilesLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonConfigFilesLocationActionPerformed
         JFileChooser chooser = createChooser(jTextFieldConfigFiles.getText());    
-        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportEjbJarLocationsVisual.class, "LBL_IW_SelectConfigFilesLocation"))) { //NOI18N
+        if (chooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_SelectConfigFilesLocation"))) { //NOI18N
             File configFilesDir = chooser.getSelectedFile();
             jTextFieldConfigFiles.setText(configFilesDir.getAbsolutePath());
         }            
