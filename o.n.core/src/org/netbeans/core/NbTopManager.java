@@ -380,12 +380,12 @@ public abstract class NbTopManager extends TopManager {
         return (Dialog)Mutex.EVENT.readAccess (new Mutex.Action () {
             public Object run () {
                 // if a modal dialog active use it as parent
-                // otherwise use null Frame
+                // otherwise use the main window
                 if (NbPresenter.currentModalDialog != null) {
                     return new NbDialog(d, NbPresenter.currentModalDialog);
                 }
                 else {
-                    return new NbDialog(d, (Frame) null);
+                    return new NbDialog(d, WindowManager.getDefault().getMainWindow());
                 }
             }
         });
@@ -505,20 +505,20 @@ public abstract class NbTopManager extends TopManager {
                     if (win != null) focusOwner = ((Window)win).getFocusOwner ();
 
                     // if a modal dialog is active use it as parent
-                    // otherwise use null Frame
+                    // otherwise use the main window
                     
                     NbPresenter presenter = null;
                     if (descriptor instanceof DialogDescriptor) {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
                         } else {
-                            presenter = new NbDialog((DialogDescriptor) descriptor, (Frame) null);
+                            presenter = new NbDialog((DialogDescriptor) descriptor, WindowManager.getDefault().getMainWindow());
                         }
                     } else {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
                         } else {
-                            presenter = new NbPresenter(descriptor, (Frame) null, true);
+                            presenter = new NbPresenter(descriptor, WindowManager.getDefault().getMainWindow(), true);
                         }
                     }
 
