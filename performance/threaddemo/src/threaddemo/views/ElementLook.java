@@ -13,6 +13,7 @@
 
 package threaddemo.views;
 
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
@@ -20,6 +21,7 @@ import org.netbeans.spi.looks.Look;
 import org.openide.actions.DeleteAction;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
+import org.openide.xml.XMLUtil;
 import org.w3c.dom.*;
 import org.w3c.dom.events.*;
 
@@ -71,7 +73,6 @@ public class ElementLook extends Look implements EventListener {
     }
     
     private static String fullText(Element el) {
-        // NOI18N thruout...
         StringBuffer buf = new StringBuffer();
         buf.append('<');
         buf.append(el.getNodeName());
@@ -83,15 +84,18 @@ public class ElementLook extends Look implements EventListener {
             buf.append(attr.getName());
             buf.append('=');
             buf.append('"');
-            // Note: no attempt at escaping vals, etc.
-            buf.append(attr.getValue());
+            try {
+                buf.append(XMLUtil.toAttributeValue(attr.getValue()));
+            } catch (CharConversionException e) {
+                e.printStackTrace();
+            }
             buf.append('"');
         }
-        if (el.getChildNodes().getLength() > len) {
-            // Have some children other than attributes.
+        if (el.getElementsByTagName("*").getLength() > 0) {
+            // Have some sub-elements.
             buf.append('>');
         } else {
-            buf.append("/>"); // NOI18N
+            buf.append("/>");
         }
         return buf.toString();
     }
