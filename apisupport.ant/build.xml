@@ -29,9 +29,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="../../ant/external">
                     <include name="ant-1.*.jar"/>
                 </fileset>
-                <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar" />
-                </fileset>
+                <pathelement location="../../openide/netbeans/lib/openide.jar"/>
                 <pathelement location="../../core/netbeans/lib/core.jar"/>
             </classpath>
             <include name="org/netbeans/modules/apisupport/ant/"/>
