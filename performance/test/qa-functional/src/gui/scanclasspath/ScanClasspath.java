@@ -15,13 +15,10 @@ package gui.scanclasspath;
 
 import java.util.ArrayList;
 
-import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
-import org.netbeans.jellytools.NewProjectWizardOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.junit.*;
-import junit.framework.*;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.performance.test.utilities.LoggingScanClasspath;
 import org.netbeans.performance.test.utilities.LoggingScanClasspath.PerformanceScanData;
@@ -34,8 +31,6 @@ import org.netbeans.performance.test.utilities.LoggingScanClasspath.PerformanceS
  * @author  mmirilovic@netbeans.org
  */
 public class ScanClasspath extends org.netbeans.performance.test.utilities.PerformanceTestCase {
-    
-    private NewProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name;
     
@@ -69,11 +64,11 @@ public class ScanClasspath extends org.netbeans.performance.test.utilities.Perfo
         WAIT_AFTER_OPEN=20000;
     }
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite("Classpath scanning test suite");
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
         
         suite.addTest(new gui.setup.IDESetupTest("testCloseMemoryToolbar"));
-        suite.addTest(new gui.setup.IDESetupTest("testCloseWelcome"));
+        suite.addTest(new gui.setup.IDESetupTest("testCloseAllDocuments"));
         suite.addTest(new ScanClasspath("testOpenJEditProject"));
 
         return suite;
