@@ -242,10 +242,22 @@
         <question id="exec-component">
             Is execution of your code influenced by (string) property
             of any of your components?
+            
+            <hint>
+            Often <code>JComponent.getClientProperty</code>, <code>Action.getValue</code>
+            or <code>PropertyDescriptor.getValue</code>, etc. are used to influence
+            a behaviour of some code. This of course forms an interface that should
+            be documented. Also if one depends on some interface that an object
+            implements (<code>component instanceof Runnable</code>) that forms an
+            API as well.
+            </hint>
         </question>
 
         <question id="exec-classloader">
             Does your code uses own classloader?
+            <hint>
+            A bit unusual. Please explain why and what for.
+            </hint>
         </question>
                 
     </category>
