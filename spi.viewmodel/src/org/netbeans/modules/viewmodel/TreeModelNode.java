@@ -465,17 +465,26 @@ public class TreeModelNode extends AbstractNode {
         }
         
         public Object getValue () {
+            // 1) return value from cache
             if (properties.containsKey (id))
                 return properties.get (id);
             
+            // 2) no value in cache => put there old value or null
+            Object value = oldProperties.get (id);
+            if (columnModel.getType ().equals (String.class)) {
+                if (value == null)
+                    value = "";
+                else
+                    value = i ((String) value);
+            }
+            properties.put (id, value);
+            
+            // 3) get a new value
             getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     try {
                         Object value = model.getValueAt (object, id);
-                        if ( (value != null) &&
-                             (getValueType ().equals (String.class))
-                        )
-                            properties.put (id, value);
+                        properties.put (id, value);
                         firePropertyChange (id, null, value);
                     } catch (UnknownTypeException e) {
                         if (!(object instanceof String)) {
@@ -487,14 +496,7 @@ public class TreeModelNode extends AbstractNode {
                     }
                 }
             });
-            Object value = oldProperties.get (id);
-            if (columnModel.getType ().equals (String.class)) {
-                if (value == null)
-                    value = "";
-                else
-                    value = i ((String) value);
-            }
-            properties.put (id, value);
+            
             return value;
         }
         
@@ -510,7 +512,8 @@ public class TreeModelNode extends AbstractNode {
         IllegalArgumentException, java.lang.reflect.InvocationTargetException {
             try {
                 model.setValueAt (object, id, v);
-                TreeModelNode.this.firePropertyChange (id, null, null);
+                properties.put (id, v);
+                firePropertyChange (id, null, null);
             } catch (UnknownTypeException e) {
                 e.printStackTrace ();
                 System.out.println("  Column id:" + columnModel.getID ());
