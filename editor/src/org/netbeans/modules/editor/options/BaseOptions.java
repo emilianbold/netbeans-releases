@@ -166,7 +166,7 @@ public class BaseOptions extends OptionSupport {
         // Create evaluators for indentEngine and formatter
         setSettingValue(NbEditorDocument.INDENT_ENGINE,
             new Settings.Evaluator() {
-                public Object getValue(Class kitClass, String settingName) {
+                public Object getValue(Class kitClass2, String settingName) {
                         return getIndentEngine();
                 }
             },
@@ -175,7 +175,7 @@ public class BaseOptions extends OptionSupport {
 
         setSettingValue(NbEditorDocument.FORMATTER,
             new Settings.Evaluator() {
-                public Object getValue(Class kitClass, String settingName) {
+                public Object getValue(Class kitClass2, String settingName) {
                     IndentEngine eng = getIndentEngine();
                     return (eng != null)
                         ? ((eng instanceof FormatterIndentEngine)
