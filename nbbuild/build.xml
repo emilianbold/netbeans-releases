@@ -49,7 +49,6 @@ ToDo:
 
     <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
     <ant dir="external" target="unscramble"/>
-    <ant dir="../xml/external" target="unscramble"/>
     <property name="ant.jar" value="${ant.home}/lib/ant.jar"/>
     <path id="bootstrap-cp">
      <pathelement location="${ant.jar}"/>
@@ -57,7 +56,7 @@ ToDo:
         <!-- For JavaHelp indexing: -->
         <include name="nbbuild/external/jhall*.jar"/>
         <!-- For XMLValidate Ant task: -->
-        <include name="xml/external/resolver*.jar"/>
+        <include name="nbbuild/external/resolver*.jar"/>
       </fileset>
     </path>
     <javac srcdir="antsrc" destdir="antsrc" deprecation="true" debug="${build.compiler.debug}" source="1.4">
@@ -2491,7 +2490,7 @@ the ${netbeans.dest}/bin/ directory.
     <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate">
       <classpath>
         <pathelement location="nbantext.jar"/>
-        <fileset dir="../xml/external">
+        <fileset dir="external">
           <include name="resolver*.jar"/>
         </fileset>
       </classpath>
