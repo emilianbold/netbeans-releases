@@ -52,6 +52,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
     private RequestProcessor.Task parsingTask = null;
     private RequestProcessor requestProcessor;
 
+    private Object openedLock = new Object(); //lock for parsing thread
+    private boolean opened; //is an editor pane opened?
+
     /** Holds a reference to the JSP coloring data. */
     private WeakReference jspColoringDataRef;
     
@@ -159,6 +162,18 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
     }
     
+    
+    //used for notifying the parsing thread (to start the parsing)
+    void setEditorOpened(boolean state) {
+        System.out.println("[parsing] set editor opened = " + state);
+        opened = state;
+        if(opened) {
+            synchronized (openedLock) {
+                openedLock.notifyAll();
+            }
+        }
+    }
+  
     public JspParserAPI.JspOpenInfo getCachedOpenInfo(boolean preferCurrent, boolean useEditor) {
         synchronized (openInfoLock) {
             if (preferCurrent)
@@ -231,6 +246,22 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         }
         
         public void run() {
+            //wait with the parsing until an editor pane is opened
+            try {
+                if(!opened) {
+                    System.out.println("[parsing] waiting on editor to open");
+                    synchronized(TagLibParseSupport.this.openedLock) {
+                        TagLibParseSupport.this.openedLock.wait();
+                        
+                        //since the EditorCookie.Observable fires the event for changed(opened) view panes 
+                        //before the document is really rendered, we have to wait for an additional 
+                        //time interval, so the thread doesn't slow down the document showing.
+                        Thread.currentThread().sleep(100);
+                    }
+                    System.out.println("[parsing] starting");
+                }
+            }catch(InterruptedException e) { }
+            
             JspParserAPI parser = JspParserFactory.getJspParser();
             // assert parser != null;
             if (parser == null) {

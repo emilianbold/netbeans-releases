@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Reader;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -137,6 +139,25 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 }
             }
         });
+    
+        //add a property change listener - we needs to get know when the document is opened to start parsing after it happen
+        //this is a performance improvements - the parsing thread doesn't slow down the editor opening
+        addPropertyChangeListener(new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent e) {
+                if(e.getPropertyName().equals(EditorCookie.Observable.PROP_OPENED_PANES)) {
+                    TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
+                    //test whether there is at least one opened pane for this document
+                    if(getOpenedPanes() != null && getOpenedPanes().length > 0) {
+                        //notify the parsing thread to start it's work
+                        sup.setEditorOpened(true);                    
+                    }
+                    if(getOpenedPanes() == null || getOpenedPanes().length == 0) {
+                        //close the semaphore - the next parsing will wait for the editor to be opened
+                        sup.setEditorOpened(false);
+                    }
+                }
+            }
+        });
         
         encoding = null;
                 
@@ -186,7 +207,11 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     protected void loadFromStreamToKit(StyledDocument doc, InputStream stream, EditorKit kit) throws IOException, BadLocationException {
 
         Reader reader = null;
-        encoding = getObjectEncoding(false);
+        
+        //the encoding is recognized inside the open() method, 
+        //which is called before this one, so the cached encoding can be used
+        encoding = getObjectEncoding(true);
+        
         if (!isSupportedEncoding(encoding)){
             encoding = defaulEncoding;
         }
