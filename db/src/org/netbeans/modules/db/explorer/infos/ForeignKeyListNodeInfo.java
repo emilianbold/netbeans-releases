@@ -47,6 +47,11 @@ public class ForeignKeyListNodeInfo extends DatabaseNodeInfo {
                     if (rset.get(new Integer(12)) != null) {
                         info = (ForeignKeyNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.IMPORTED_KEY, rset);
                         if (info != null) {
+                            String fkName = info.getName();
+                            if (fkName == null || fkName.trim().equals("")) {// NOI18N 
+                                String refName = (String) rset.get(new Integer(3));
+                                info.setName("GENERATED_FK_" + refName); // NOI18N
+                            }
                             if (!fkmap.contains(info.getName())) {
                                 fkmap.add(info.getName());
                                 info.put(DatabaseNode.IMPORTED_KEY, info.getName());

@@ -22,6 +22,12 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
+import org.netbeans.lib.ddl.impl.CreateIndex;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.*;
+
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
 
 public class AddIndexDialog {
@@ -31,8 +37,7 @@ public class AddIndexDialog {
     CheckBoxListener cbxlistener;
     JCheckBox cbx_uq;
     
-    public AddIndexDialog(Collection columns)
-    {
+    public AddIndexDialog(Collection columns, final Specification spec, final DatabaseNodeInfo info) {
         try {
             ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
@@ -123,23 +128,43 @@ public class AddIndexDialog {
             JScrollPane spane = new JScrollPane(subpane);
             layout.setConstraints(spane, con);
             pane.add(spane);
+            
+            final String tablename = (String)info.get(DatabaseNode.TABLE);
 
             ActionListener listener = new ActionListener() {
-                                          public void actionPerformed(ActionEvent event) {
-                                              boolean candismiss = false;
-                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                                  candismiss = (getIndexName().length() != 0);
-                                                  result = true;
-                                              } else candismiss = true;
+                public void actionPerformed(ActionEvent event) {
+                    
+                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                        
+                        try {
+                            result = false;
+                            CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+                            icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+                            icmd.setIndexName(getIndexName());
+                            icmd.setIndexType(getIndexType());
+                            Iterator enu = getSelectedColumns().iterator();
+                            while (enu.hasNext())
+                                icmd.specifyColumn((String)enu.next());
+                            icmd.execute();
 
-                                              if (candismiss) {
-                                                  dialog.setVisible(false);
-                                                  dialog.dispose();
-                                              } else Toolkit.getDefaultToolkit().beep();
-                                          }
-                                      };
+                            if (!icmd.wasException()) {
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            }
+                            result = true;
+                        } catch (CommandNotSupportedException e) {
+                        } catch (DDLException e) {
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddIndexTitle"), true, listener); //NOI18N
+            // inbuilt close of the dialog is only after CANCEL button click
+            // after OK button is dialog closed by hand
+            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+            descriptor.setClosingOptions(closingOptions);
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {

@@ -22,6 +22,12 @@ import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
+import org.netbeans.lib.ddl.impl.CreateView;
+import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.*;
+
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.*;
 
 public class AddViewDialog {
@@ -30,8 +36,7 @@ public class AddViewDialog {
     JTextField namefld;
     JTextArea tarea;
 
-    public AddViewDialog()
-    {
+    public AddViewDialog(final Specification spec, final DatabaseNodeInfo info) {
         try {
             ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
             JPanel pane = new JPanel();
@@ -89,21 +94,34 @@ public class AddViewDialog {
             pane.add(spane);
 
             ActionListener listener = new ActionListener() {
-                                          public void actionPerformed(ActionEvent event) {
-                                              boolean candismiss = false;
-                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                                  candismiss = (getViewName().length() != 0);
-                                                  result = true;
-                                              } else candismiss = true;
-
-                                              if (candismiss) {
-                                                  dialog.setVisible(false);
-                                                  dialog.dispose();
-                                              } else Toolkit.getDefaultToolkit().beep();
-                                          }
-                                      };
+                public void actionPerformed(ActionEvent event) {
+                    
+                    if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                        
+                        try {
+                            result = false;
+                            CreateView cmd = spec.createCommandCreateView(getViewName());
+                            cmd.setQuery(getViewCode());
+                            cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
+                            cmd.execute();
+                            
+                            if (!cmd.wasException()) {
+                                dialog.setVisible(false);
+                                dialog.dispose();
+                            }
+                        } catch (CommandNotSupportedException e) {
+                        } catch (DDLException e) {
+                        } catch (Exception e) {
+                        }
+                    }
+                }
+            };
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddViewTitle"), true, listener); //NOI18N
+            // inbuilt close of the dialog is only after CANCEL button click
+            // after OK button is dialog closed by hand
+            Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+            descriptor.setClosingOptions(closingOptions);
             dialog = TopManager.getDefault().createDialog(descriptor);
             dialog.setResizable(true);
         } catch (MissingResourceException e) {

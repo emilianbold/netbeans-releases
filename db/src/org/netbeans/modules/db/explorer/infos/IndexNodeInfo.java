@@ -97,6 +97,8 @@ public class IndexNodeInfo extends TableNodeInfo {
             cmd.execute();
             //refresh list of columns due to the column's icons
             getParent().getParent().refreshChildren();
+        } catch (DDLException e) {
+            
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }

@@ -46,12 +46,8 @@ public class CreateViewAction extends DatabaseAction {
             Specification spec = (Specification)nfo.getSpecification();
 
             // Create and execute command
-            AddViewDialog dlg = new AddViewDialog();
+            AddViewDialog dlg = new AddViewDialog(spec, info);
             if (dlg.run()) {
-                CreateView cmd = spec.createCommandCreateView(dlg.getViewName());
-                cmd.setQuery(dlg.getViewCode());
-                cmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                cmd.execute();
                 nfo.addView(dlg.getViewName());
             }
         } catch(Exception exc) {

@@ -64,18 +64,9 @@ public class AddIndexAction extends DatabaseAction {
                 throw new Exception(bundle.getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
-            AddIndexDialog dlg = new AddIndexDialog(cols);
+            AddIndexDialog dlg = new AddIndexDialog(cols, spec, info);
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
-                CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-                icmd.setObjectOwner((String)info.get(DatabaseNodeInfo.SCHEMA));
-                icmd.setIndexName(dlg.getIndexName());
-                icmd.setIndexType(dlg.getIndexType());
-                Iterator enu = dlg.getSelectedColumns().iterator();
-                while (enu.hasNext())
-                    icmd.specifyColumn((String)enu.next());
-
-                icmd.execute();
                 nfo.addIndex(dlg.getIndexName());
             }
         } catch(Exception exc) {
