@@ -53,6 +53,7 @@ import org.netbeans.editor.Bookmarks;
 import org.openide.text.Line;
 import org.netbeans.editor.ActionFactory.ToggleBookmarkAction;
 import org.netbeans.editor.ActionFactory.GotoNextBookmarkAction;
+import org.netbeans.editor.ActionFactory.GotoPreviousBookmarkAction;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.BaseDocument;
@@ -156,6 +157,7 @@ public class NbEditorKit extends ExtKit {
                                        new NbRedoAction(),
                                        new NbToggleBookmarkAction(),
                                        new NbGotoNextBookmarkAction(BaseKit.gotoNextBookmarkAction, false),
+                                       new NbGotoPreviousBookmarkAction(BaseKit.gotoPreviousBookmarkAction, false),
                                        new NbBuildToolTipAction(),
                                        new NbToggleLineNumbersAction(),
                                        new ToggleToolbarAction(),
@@ -609,6 +611,70 @@ public class NbEditorKit extends ExtKit {
         }
     }
 
+    
+    public static class NbGotoPreviousBookmarkAction extends GotoPreviousBookmarkAction {
+
+
+        public NbGotoPreviousBookmarkAction() {
+            super(null, false);
+        }
+        
+        public NbGotoPreviousBookmarkAction(String nm, boolean select) {
+            super(nm, select);
+        }
+
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            if (target == null)
+                return;
+                
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            Caret caret = target.getCaret();
+
+            // check whether the glyph gutter is visible or not
+            if (Utilities.getEditorUI(target) == null || !Utilities.getEditorUI(target).isGlyphGutterVisible()) {
+                target.getToolkit().beep();
+                return;
+            }
+            
+            int line = 0;
+            int lastLine = 0;
+            
+            try {
+                line = Utilities.getLineOffset(doc, caret.getDot());
+                lastLine = Utilities.getLineOffset(doc, doc.getLength());
+            } catch (BadLocationException e) {
+                target.getToolkit().beep();
+                return;
+            }
+
+            Bookmarks bookmarks = doc.getBookmarks();
+            
+            Bookmark bookmark = (Bookmark)bookmarks.getPreviousLineBookmark(line-1);
+
+            if (bookmark == null)
+                bookmark = (Bookmark)bookmarks.getPreviousLineBookmark(lastLine);
+                
+            if (bookmark == null)
+                return;
+
+            Annotation anno = bookmark.getAnno();
+            anno.moveToFront();
+            if (doc instanceof NbEditorDocument){
+                NbEditorDocument nbDoc = (NbEditorDocument)doc;
+                Map annoMap = nbDoc.getAnnoMap();
+                Object obj = annoMap.get(anno);
+                if (obj instanceof AnnotationDesc){
+                    AnnotationDesc desc = (AnnotationDesc) obj;
+                    caret.setDot(desc.getOffset());
+                    return;
+                }
+            }
+            
+            ((Line)anno.getAttachedAnnotatable()).show(Line.SHOW_GOTO);
+
+        }
+    }
+    
     /** Switch visibility of line numbers in editor */
     public class NbToggleLineNumbersAction extends ActionFactory.ToggleLineNumbersAction {
 
