@@ -151,8 +151,12 @@ public class TreeEditorCookieImpl implements TreeEditorCookie, UpdateDocumentCoo
 
                         prepareException[0] = null;
                     } catch (IOException ex) {
+                        ErrorManager em = ErrorManager.getDefault();
+                        em.annotate(ex, Util.THIS.getString("BK0001"));
                         prepareException[0] = ex;
                     } catch (TreeException ex) {
+                        ErrorManager em = ErrorManager.getDefault();
+                        em.annotate(ex, Util.THIS.getString("BK0001"));
                         prepareException[0] = ex;
                     }
 
