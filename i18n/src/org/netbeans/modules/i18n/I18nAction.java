@@ -44,14 +44,15 @@ public class I18nAction extends NodeAction {
      * @param activatedNodes Currently activated nodes.
      */
     protected void performAction(final Node[] activatedNodes) {
-        if (activatedNodes.length == 0)
+        if (activatedNodes.length != 1)
             return;
 
-        DataObject dataObject = (DataObject) activatedNodes[0].getCookie(DataObject.class);
+        final Node node = activatedNodes[0];
+        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
         if (dataObject == null)
             return;
 
-        EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+        EditorCookie editorCookie = (EditorCookie) node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
             if (editorCookie == null)
@@ -69,14 +70,15 @@ public class I18nAction extends NodeAction {
     /** Overrides superclass method. Adds additional test if i18n module has registered factory
      * for this data object to be able to perform i18n action. */
     protected boolean enable(Node[] activatedNodes) {    
-        if (activatedNodes.length == 0)
+        if (activatedNodes.length != 1)
             return false;
 
-        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
+        final Node node = activatedNodes[0];
+        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
         if (dataObject == null || dataObject.getPrimaryFile() == null)
             return false;
 
-        EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+        EditorCookie editorCookie = (EditorCookie) node.getCookie(EditorCookie.class);
         if (editorCookie == null) {
             editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
             if (editorCookie == null)
