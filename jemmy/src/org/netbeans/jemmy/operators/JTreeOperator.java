@@ -1485,6 +1485,7 @@ public class JTreeOperator extends JComponentOperator
  	for(int i = 0; i < rows.length; i++) {
  	    paths[i] = getPathForRow(rows[i]);
  	}
+        waitSelected(paths);
     }
 
     /**
