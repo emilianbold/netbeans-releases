@@ -207,9 +207,14 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         wd = new File(wd, "httpwork"); // NOI18N
         tc.setWorkDir(wd.getAbsolutePath());
         
+        // install interceptors which need to be initialized BEFORE the default server interceptors
+	NbLoaderInterceptor nbL =new NbLoaderInterceptor();
+	tc.addContextInterceptor( nbL );
+        
         // hack - force initialization of default interceptors, so our interceptor is after them
         tc.addApplicationAdapter(null);
 
+        // install interceptors which need to be initialized AFTER the default server interceptors
 	NbServletsInterceptor nbI =new NbServletsInterceptor();
 	tc.addContextInterceptor( nbI );
         
