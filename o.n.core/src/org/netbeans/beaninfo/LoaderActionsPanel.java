@@ -56,7 +56,9 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
                                                }
                                            }
                                        });
-        HelpCtx.setHelpIDString (this, LoaderActionsPanel.class.getName ());
+        // bugfix #39369: remove help button in Action dialog property editor
+        //HelpCtx.setHelpIDString (this, LoaderActionsPanel.class.getName ());
+                                       
         // Form Editor does not permit you to set this, because
         // it has both int and double params:
         splitPane.setDividerLocation (300);
