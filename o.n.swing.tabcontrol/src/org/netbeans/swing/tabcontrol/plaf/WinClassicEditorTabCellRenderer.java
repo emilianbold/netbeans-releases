@@ -51,6 +51,14 @@ final class WinClassicEditorTabCellRenderer extends AbstractTabCellRenderer {
     public Color getForeground() {
         return getSelectedForeground();
     }
+    
+    /**
+     * #56245 - need more space between icon and edge on classic for the case
+     * of full 16x16 icons.
+     */
+    public int getPixelsToAddToSelection() {
+        return 4;
+    }    
 
     private static final Insets INSETS = new Insets(0, 2, 0, 10);
 
