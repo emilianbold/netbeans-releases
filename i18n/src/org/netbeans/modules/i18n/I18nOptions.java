@@ -15,7 +15,12 @@
 package org.netbeans.modules.i18n;
 
 
+import java.io.IOException;
+
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.options.SystemOption;
+import org.openide.TopManager;
 
 
 /**
@@ -42,6 +47,9 @@ public class I18nOptions extends SystemOption {
     
     /** Property name for replacing init java . */
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
+
+    /** Property name for last used resource data object. */
+    public static final String PROP_LAST_RESOURCE = "lastResource"; // NOI18N
 
     
     /** Provided due exeternaliazation only. 
@@ -141,5 +149,36 @@ public class I18nOptions extends SystemOption {
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_REGULAR_EXPRESSION, regExp, true);
     }    
+    
+    /** Getter for last resource property. */
+    public DataObject getLastResource() {
+        String resourceName = (String)getProperty(PROP_LAST_RESOURCE);
+        
+        if(resourceName == null)
+            return null;
+
+        DataObject lastResource = null;
+        
+        FileObject fileObject = TopManager.getDefault().getRepository().findResource(resourceName);
+        if(fileObject != null) {
+            try {
+                lastResource = TopManager.getDefault().getLoaderPool().findDataObject(fileObject);
+            } catch (IOException ioe) {
+                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
+                    ioe.printStackTrace();
+            }
+        }
+
+        return lastResource;
+    }
+    
+    /** Setter for last resource property. */
+    public void setLastResource(DataObject lastResource) {
+        // Make sure it is sane.        
+        if(lastResource == null)
+            throw new NullPointerException();
+        
+        putProperty(PROP_LAST_RESOURCE, lastResource.getPrimaryFile().getPackageNameExt('/', '.'), true);
+    }
 
 }
