@@ -133,15 +133,14 @@ public class ImageDataObject extends MultiDataObject implements OpenCookie {
       if (result != null)
         return result;
       // not template, so try to open at least
-      if (openAction == null)
-        openAction = new OpenAction();
-      return openAction;
+      return OpenAction.get (OpenAction.class);
     }
   } // end of ImageDataObject inner class
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         1/7/99   Ian Formanek    
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
