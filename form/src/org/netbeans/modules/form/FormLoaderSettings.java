@@ -16,7 +16,6 @@ package com.netbeans.developer.modules.loaders.form;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
-import org.openide.explorer.propertysheet.editors.ModifierEditor;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 
@@ -463,6 +462,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  19   Gandalf   1.18        1/10/00  Ian Formanek    Removed obsoleted import
  *  18   Gandalf   1.17        1/5/00   Ian Formanek    NOI18N
  *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
  *       added (workspace where forms are opened)
