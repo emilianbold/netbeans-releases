@@ -13,13 +13,8 @@
 
 package com.netbeans.developer.modules.text.options;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Insets;
-import java.beans.*;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
   
 import com.netbeans.editor.Settings;
@@ -107,6 +102,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $
  */

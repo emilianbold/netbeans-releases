@@ -57,10 +57,11 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
     ColoringProperty[] cps = new ColoringProperty[colorings.length];
     ResourceBundle bundle = NbBundle.getBundle(ColoringArrayEditor.class);
     for (int i = 0; i < colorings.length; i++) {
-      String desc = ""; /* !!! bundle.getString("HINT_coloring_" + typeName
-          + "_" + colorings[i].getName()); */
-      String example = "text"; /* !!! bundle.getString("EXAMPLE_coloring_" + typeName
-          + "_" + colorings[i].getName()); */
+//      System.out.println("ColoringArrayEditor.java:63 typeName=" + typeName + ", name=" + colorings[i].getName());
+      String desc = bundle.getString("HINT_coloring_" + typeName
+          + "_" + colorings[i].getName());
+      String example = bundle.getString("EXAMPLE_coloring_" + typeName
+          + "_" + colorings[i].getName());
       cps[i] = new ColoringProperty(colorings, i, desc, example, defaultColoring);
     }
 
@@ -146,6 +147,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
 * $
 */

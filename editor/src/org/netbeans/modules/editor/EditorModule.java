@@ -23,6 +23,7 @@ import javax.swing.JEditorPane;
 import com.netbeans.editor.BaseDocument;
 import com.netbeans.editor.BaseKit;
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.LocaleSupport;
 import com.netbeans.editor.ext.JavaKit;
 import com.netbeans.editor.Formatter;
 import com.netbeans.editor.view.DialogSupport;
@@ -80,7 +81,7 @@ public class EditorModule implements ModuleInstall {
   /** Module installed again. */
   public void restored () {
 
-    NbEditorSettings.initLocale();
+    LocaleSupport.setLocaleSupport(new NbLocaleSupport());
 
     // initializations
     FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
@@ -94,7 +95,7 @@ public class EditorModule implements ModuleInstall {
     if (!dbDir.exists()) {
       dbDir.mkdir();
     }
-    JCStorage.init(dbDir.getAbsolutePath());
+    JCStorage.init(dbDir);
 
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
@@ -160,6 +161,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  20   Gandalf   1.19        7/21/99  Miloslav Metelka 
  *  19   Gandalf   1.18        7/20/99  Miloslav Metelka Creation of ParserDB dir
  *       if necessary
  *  18   Gandalf   1.17        7/20/99  Miloslav Metelka 

@@ -14,17 +14,14 @@
 package com.netbeans.developer.modules.text.options;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Insets;
-import java.beans.*;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.List;
-import java.util.ResourceBundle;
   
 import com.netbeans.editor.Settings;
 import com.netbeans.editor.ColoringManager;
 import com.netbeans.editor.BaseKit;
+import com.netbeans.editor.Syntax;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -138,12 +135,9 @@ public class BaseOptions extends OptionSupport {
   }
   
   public Map getAbbrevMap() {
-    Map m = (Map) getSettingValue(Settings.ABBREV_MAP);
-    if (m == null) {
-      m = new java.util.HashMap(3);
-    }
-    return m;
+    return (Map)getSettingValue(Settings.ABBREV_MAP);
   }
+
   public void setAbbrevMap(Map map) {
     changeProperty(Settings.ABBREV_MAP, map);
   }
@@ -227,8 +221,11 @@ public class BaseOptions extends OptionSupport {
 
   public Object[] getSystemColoringArray() {
     ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {cm.getSystemColorings(getKitClass()),
-        cm.getSystemColorings(getKitClass())[0], getTypeName()};
+    return new Object[] {
+      cm.getSystemColorings(getKitClass()),
+      cm.getDefaultColoring(getKitClass()),
+      BASE
+    };
   }
   public void setSystemColoringArray(Object[] notUsed) {
     Settings.touchValue(Settings.COLORING_MANAGER);
@@ -236,8 +233,11 @@ public class BaseOptions extends OptionSupport {
   
   public Object[] getTokenColoringArray() {
     ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {cm.getTokenColorings(getKitClass()),
-        cm.getSystemColorings(getKitClass())[0], getTypeName()};
+    return new Object[] {
+      cm.getTokenColorings(getKitClass()),
+      cm.getDefaultColoring(getKitClass()),
+      getTypeName()
+    };
   }
   public void setTokenColoringArray(Object[] notUsed) {
     Settings.touchValue(Settings.COLORING_MANAGER);
@@ -283,6 +283,7 @@ public class BaseOptions extends OptionSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $
  */

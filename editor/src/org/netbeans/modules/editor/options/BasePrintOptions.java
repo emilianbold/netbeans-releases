@@ -13,11 +13,8 @@
 
 package com.netbeans.developer.modules.text.options;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.beans.*;
-import java.util.Hashtable;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
   
 import com.netbeans.editor.Settings;
@@ -68,8 +65,11 @@ public class BasePrintOptions extends OptionSupport {
 
   public Object[] getPrintSystemColoringArray() {
     ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {cm.getPrintSystemColorings(getKitClass()),
-        cm.getPrintSystemColorings(getKitClass())[0], getTypeName()};
+    return new Object[] {
+      cm.getPrintSystemColorings(getKitClass()),
+      cm.getPrintDefaultColoring(getKitClass()),
+      BASE
+    };
   }
   public void setPrintSystemColoringArray(Object[] notUsed) {
     Settings.touchValue(Settings.COLORING_MANAGER);
@@ -77,8 +77,11 @@ public class BasePrintOptions extends OptionSupport {
   
   public Object[] getPrintTokenColoringArray() {
     ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {cm.getPrintTokenColorings(getKitClass()),
-        cm.getPrintSystemColorings(getKitClass())[0], getTypeName()};
+    return new Object[] {
+      cm.getPrintTokenColorings(getKitClass()),
+      cm.getPrintDefaultColoring(getKitClass()),
+      getTypeName()
+    };
   }
   public void setPrintTokenColoringArray(Object[] notUsed) {
     Settings.touchValue(Settings.COLORING_MANAGER);
@@ -88,6 +91,7 @@ public class BasePrintOptions extends OptionSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
  * $
  */
