@@ -10,7 +10,6 @@ OpenIDE-Module-Module-Dependencies:
   org.netbeans.api.java/1,
   org.netbeans.core/1 > 1.0, 
   org.openide.src > 1.0, 
-  org.openide.debugger > 1.0, 
   org.openide.loaders > 4.11
 Class-Path: ext/nb-editor.jar
 

@@ -267,6 +267,7 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>
                 </file>
+                
                 <folder name="Popup">
                     <file name="goto-help"/>
                     <attr name="goto-help/Separator3.instance" boolvalue="true"/>
