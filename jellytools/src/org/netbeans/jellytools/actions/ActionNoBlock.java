@@ -46,13 +46,30 @@ public class ActionNoBlock extends Action {
     }
     
     /** creates new Action instance without API_MODE support
-     * @param shortcut Shortcut (use null value if menu mode is not supported)
+     * @param shortcuts array of Shortcut instances (use null value if shortcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
+    public ActionNoBlock(String menuPath, String popupPath, Shortcut[] shortcuts) {
+        super(menuPath, popupPath, shortcuts);
+    }
+
+    /** creates new Action instance without API_MODE support
+     * @param shortcut Shortcut (use null value if shortcut mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
     public ActionNoBlock(String menuPath, String popupPath, Shortcut shortcut) {
         super(menuPath, popupPath, shortcut);
     }
     
+    /** creates new Action instance
+     * @param shortcuts array of Shortcut instances (use null value if shortcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode is not supported)
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+    public ActionNoBlock(String menuPath, String popupPath, String systemActionClass, Shortcut[] shortcuts) {
+        super(menuPath, popupPath, systemActionClass, shortcuts);
+    }
+
     /** creates new Action instance
      * @param shortcut Shortcut String (use null value if menu mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
@@ -156,11 +173,15 @@ public class ActionNoBlock extends Action {
     /** performs action through shortcut
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
     public void performShortcut() {
-        if (shortcut==null)
+        if (shortcuts == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
+        }
         new Thread(new Runnable() {
             public void run() {
-                new KeyRobotDriver(null).pushKey(null, shortcut.getKeyCode(), shortcut.getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+                for(int i=0; i<shortcuts.length; i++) {
+                    new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+                    JemmyProperties.getProperties().getTimeouts().sleep("Action.WaitAfterShortcutTimeout");
+                }
             }
         }, "thread performing action through shortcut").start();
         try {

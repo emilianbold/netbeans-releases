@@ -22,6 +22,7 @@ import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.drivers.input.KeyRobotDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
@@ -45,6 +46,10 @@ import org.openide.util.actions.SystemAction;
  * Action also can be performed using runtime default mode by calling perform(...).<p>
  * When default mode is not support by the action other modes are tried till
  * supported mode found and action is performed.
+ *
+ * <BR>Timeouts used: <BR>
+ * Action.WaitAfterShortcutTimeout - time to sleep between shortcuts in sequence (default 0) <BR>
+ *
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class Action {
     
@@ -61,6 +66,8 @@ public class Action {
     protected static final long SELECTION_WAIT_TIME = 300;
     /** sleep time after action execution */    
     protected static final long AFTER_ACTION_WAIT_TIME = 0;
+    /** sleep time between sequence of shortcuts */
+    protected static final long WAIT_AFTER_SHORTCUT_TIMEOUT = 0;
     
     private static final int sequence[][] = {{MENU_MODE, POPUP_MODE, SHORTCUT_MODE, API_MODE}, 
                                              {POPUP_MODE, MENU_MODE, SHORTCUT_MODE, API_MODE}, 
@@ -73,14 +80,14 @@ public class Action {
     protected String popupPath;
     /** SystemAction class of current action or null when API_MODE is not supported */    
     protected Class systemActionClass;
-    /** shortcut of current action or null when SHORTCUT_MODE is not supported */    
-    protected Shortcut shortcut;
+    /** array of shortcuts of current action or null when SHORTCUT_MODE is not supported */    
+    protected Shortcut[] shortcuts;
     
     /** creates new Action instance without API_MODE and SHORTCUT_MODE support
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
     public Action(String menuPath, String popupPath) {
-        this(menuPath, popupPath, null, null);
+        this(menuPath, popupPath, null, (Shortcut[])null);
     }
     
     /** creates new Action instance without SHORTCUT_MODE support
@@ -88,7 +95,15 @@ public class Action {
      * @param popupPath action path in popup menu (use null value if popup mode is not supported)
      * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
     public Action(String menuPath, String popupPath, String systemActionClass) {
-        this(menuPath, popupPath, systemActionClass, null);
+        this(menuPath, popupPath, systemActionClass, (Shortcut[])null);
+    }
+    
+    /** creates new Action instance without API_MODE support
+     * @param shortcuts array of Shortcut instances (use null value if shorcut mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
+    public Action(String menuPath, String popupPath, Shortcut[] shortcuts) {
+        this(menuPath, popupPath, null, shortcuts);
     }
     
     /** creates new Action instance without API_MODE support
@@ -96,15 +111,15 @@ public class Action {
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode shell is not supported) */    
     public Action(String menuPath, String popupPath, Shortcut shortcut) {
-        this(menuPath, popupPath, null, shortcut);
+        this(menuPath, popupPath, null, new Shortcut[] {shortcut});
     }
-    
+
     /** creates new Action instance
-     * @param shortcut Shortcut String (use null value if menu mode is not supported)
+     * @param shortcuts array of Shortcut instances (use null value if shortcut mode is not supported)
      * @param menuPath action path in main menu (use null value if menu mode is not supported)
      * @param popupPath action path in popup menu (use null value if popup mode is not supported)
      * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
-    public Action(String menuPath, String popupPath, String systemActionClass, Shortcut shortcut) {
+    public Action(String menuPath, String popupPath, String systemActionClass, Shortcut[] shortcuts) {
         this.menuPath = menuPath;
         this.popupPath = popupPath;
         if (systemActionClass==null) {
@@ -114,12 +129,22 @@ public class Action {
         } catch (ClassNotFoundException e) {
             this.systemActionClass = null;
         }            
-        this.shortcut = shortcut;
+        this.shortcuts = shortcuts;
+    }
+    
+    /** creates new Action instance
+     * @param shortcut Shortcut String (use null value if menu mode is not supported)
+     * @param menuPath action path in main menu (use null value if menu mode is not supported)
+     * @param popupPath action path in popup menu (use null value if popup mode is not supported)
+     * @param systemActionClass String class name of SystemAction (use null value if API mode is not supported) */    
+    public Action(String menuPath, String popupPath, String systemActionClass, Shortcut shortcut) {
+        this(menuPath, popupPath, systemActionClass, new Shortcut[] {shortcut});
     }
     
     static {
         if (JemmyProperties.getCurrentProperty("Action.DefaultMode")==null)
             JemmyProperties.setCurrentProperty("Action.DefaultMode", new Integer(POPUP_MODE));
+        Timeouts.initDefault("Action.WaitAfterShortcutTimeout", WAIT_AFTER_SHORTCUT_TIMEOUT);
     }
     
     private void perform(int mode) {
@@ -389,18 +414,22 @@ public class Action {
     }
     
     /** performs action through shortcut  
-     * @throws UnsupportedOperationException */    
+     * @throws UnsupportedOperationException if no shortcut is defined */
     public void performShortcut() {
-        if (shortcut==null)
+        if (shortcuts == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
-        new KeyRobotDriver(null).pushKey(null, shortcut.getKeyCode(), shortcut.getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+        }
+        for(int i=0; i<shortcuts.length; i++) {
+            new KeyRobotDriver(null).pushKey(null, shortcuts[i].getKeyCode(), shortcuts[i].getKeyModifiers(), JemmyProperties.getCurrentTimeouts().create("Timeouts.DeltaTimeout"));
+            JemmyProperties.getProperties().getTimeouts().sleep("Action.WaitAfterShortcutTimeout");
+        }
         try {
             Thread.sleep(AFTER_ACTION_WAIT_TIME);
         } catch (Exception e) {
             throw new JemmyException("Sleeping interrupted", e);
         }
     }
-
+    
     /** performs action through shortcut
      * @param node node to be action performed on 
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
@@ -412,8 +441,9 @@ public class Action {
      * @param nodes nodes to be action performed on 
      * @throws UnsupportedOperationException when action does not support shortcut mode */    
     public void performShortcut(Node[] nodes) {
-        if (shortcut==null)
+        if (shortcuts == null) {
             throw new UnsupportedOperationException(getClass().toString()+" does not define shortcut");
+        }
         testNodes(nodes);
         nodes[0].select();
         for (int i=1; i<nodes.length; i++)
