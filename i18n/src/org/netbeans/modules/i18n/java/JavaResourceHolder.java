@@ -64,7 +64,7 @@ public class JavaResourceHolder extends ResourceHolder {
             return null;
 
         Element.ItemElem item = getItem(key);
-        return item == null ? null : item.getValue();
+        return item == null ? null : UtilConvert.unicodesToChars(item.getValue());
     }
 
     /** Implemenst superclass abstract method. Gets comment for specified key. 
