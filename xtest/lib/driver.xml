@@ -80,9 +80,10 @@ Microsystems, Inc. All Rights Reserved.
      <list list="${xtest.execute}" prefix="xtest.execute_actions"/>
    </target>
 
-   <target name="start" depends="init,install-ide">
+   <target name="start" depends="init,localresults-clean,install-ide">
      <antcall target="checkout-system"/>
      <antcall target="checkout-modules"/>
+     <mkdir dir="${xtest.results}"/>
      <for list="${xtest.instance.list}" delimiters="," property="xtest.instancecfg">
        <antcall target="test-one-repository"/>
      </for>
@@ -125,7 +126,6 @@ Microsystems, Inc. All Rights Reserved.
    <target name="build" depends="actionlist" if="xtest.execute_actions.build">
      <property name="xtest.nobuildxtest" value="true"/>
      <ant dir="${xtest.instance.dir}" target="cleantests"/>
-     <ant dir="${xtest.instance.dir}" target="cleantests"/>
      <ant dir="${xtest.instance.dir}" target="buildtests">
         <property name="xtest.source.location" value="ide"/>
         <property name="netbeans.home" value="${ide.home}"/>
@@ -138,14 +138,19 @@ Microsystems, Inc. All Rights Reserved.
    
    <target name="execute" depends="actionlist" if="xtest.execute_actions.execute">
      <property name="xtest.nobuildxtest" value="true"/>
-     <ant dir="${xtest.instance.dir}" target="cleanresults"/>
-     <ant dir="${xtest.instance.dir}" target="localresults-clean"/>
+     <!-- <ant dir="${xtest.instance.dir}" target="cleanresults"/>
+     <ant dir="${xtest.instance.dir}" target="localresults-clean"/> -->
+     
      <ant dir="${xtest.instance.dir}" target="runtests">
        	<property name="netbeans.home" value="${ide.home}"/>
       	<property name="xtest.mode" value="ide"/>
       	<property name="xtest.noboot" value="true"/>
  	<property name="xtest.source.location" value="ide"/>
      </ant>
+   </target>
+   
+   <target name="localresults-clean">
+        <delete dir="${xtest.results}"/>
    </target>
 
   <!-- ================= -->
