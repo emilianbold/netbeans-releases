@@ -189,6 +189,12 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     return findSessionFolder ("Menu");
   }
 
+  /** Default folder for actions pool.
+  */
+  public DataFolder actions () {
+    return findSessionFolder ("Actions");
+  }
+
   /** Default folder for bookmarks.
   */
   public DataFolder bookmarks () {
@@ -232,6 +238,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  20   Gandalf   1.19        6/8/99   Ian Formanek    Added method actions() to
+*       obtain folder for ActionsPool
 *  19   Gandalf   1.18        5/27/99  Jaroslav Tulach Executors rearanged.
 *  18   Gandalf   1.17        5/7/99   Jan Jancura     Places.Nodes.packages () 
 *       method added
