@@ -193,7 +193,7 @@ public class UnixBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
                 &&  url.getPath () != null)               
                     url = new java.net.URL ("http", "localhost", getInternalServerPort (), 
                         "/servlet/org.netbeans.modules.extbrowser.JavaDocServlet"+
-                        url.getPath()+
+                        (url.getPath().startsWith ("/")? url.getPath(): "/"+url.getPath())+
                         ((url.getRef()!=null)?"#"+url.getRef():"")); // NOI18N
                 else
                     return;

@@ -60,9 +60,6 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     /** component displayed in NB window */
     private HtmlBrowser.Impl   browserComp;
 
-    /** setting for this module */
-    private static ExtBrowserSettings settings = (ExtBrowserSettings) SharedClassObject.findObject (ExtBrowserSettings.class, true);
-    
     /** requested URL */
     private URL url;
     
@@ -243,7 +240,7 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
                 &&  url.getPath () != null)               
                     url = new java.net.URL ("http", "localhost", getInternalServerPort (), 
                         "/servlet/org.netbeans.modules.extbrowser.JavaDocServlet"+
-                        url.getPath()+
+                        (url.getPath().startsWith ("/")? url.getPath(): "/"+url.getPath())+
                         ((url.getRef()!=null)?"#"+url.getRef():"")); // NOI18N
                 else
                     return;
@@ -255,20 +252,20 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
 
             String winID;
             // IE problem
-            if (settings.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+            if (ExtBrowserSettings.OPTIONS.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
                 winID = "0xFFFFFFFF";
             else
                 winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
             if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
                 
             try {
-                data = reqDdeMessage (settings.getBrowser (),"WWW_Activate",winID,3000);
+                data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_Activate",winID,3000);
             }
             catch (NbBrowserException ex) {
                 // try to start browser and activet it again
                 data = null;
-                if (settings.isStartWhenNotRunning ()) {
-                    String b = getBrowserPath (settings.getBrowser ());
+                if (ExtBrowserSettings.OPTIONS.isStartWhenNotRunning ()) {
+                    String b = getBrowserPath (ExtBrowserSettings.OPTIONS.getBrowser ());
                     if (b != null) {
                         if (b.charAt(0) == '"') {
                             int from, to;
@@ -283,7 +280,7 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
                         Runtime.getRuntime ().exec (b);
                         // wait for browser start
                         Thread.currentThread ().sleep (7000);
-                        data = reqDdeMessage (settings.getBrowser (),"WWW_Activate",winID,3000);
+                        data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_Activate",winID,3000);
                         hasNoWindow = false;
                     }
                 }
@@ -300,7 +297,7 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
                 return;
             }
             
-            if (settings.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+            if (ExtBrowserSettings.OPTIONS.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
                 winID = hasNoWindow? "0": "-1";
             else
                 winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
@@ -309,9 +306,9 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
             // nbfs can be displayed internally and in ext. viewer too
             String args1;
             args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
-            data = reqDdeMessage (settings.getBrowser (),"WWW_OpenURL",args1,3000); // NOI18N
+            data = reqDdeMessage (ExtBrowserSettings.OPTIONS.getBrowser (),"WWW_OpenURL",args1,3000); // NOI18N
             if (data != null && data.length >= 4) {
-                if (!settings.getBrowser ().equals ("IEXPLORE")) {
+                if (!ExtBrowserSettings.OPTIONS.getBrowser ().equals ("IEXPLORE")) {
                     currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
                     if (currWinID < 0) currWinID = -currWinID;
                 }
