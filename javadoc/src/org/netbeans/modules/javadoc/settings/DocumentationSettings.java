@@ -218,7 +218,10 @@ public class DocumentationSettings extends SystemOption {
     }
     
     JavadocType setDefaultJavadocExecutor() {
-        JavadocType javadocType = new ExternalJavadocSettingsService();
+        JavadocType javadocType = (JavadocType)Lookup.getDefault().lookup(ExternalJavadocSettingsService.class);
+        //ServiceType.Registry.find("org.netbeans.ExternalJavadocSettingsService");
+        //ServiceType
+        //new ExternalJavadocSettingsService();
         setExecutor(javadocType);
         return javadocType;        
     }    
