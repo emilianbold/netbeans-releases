@@ -151,12 +151,13 @@ public class NbEditorUI extends ExtEditorUI {
       Action ea = getEditorAction();
       Action sa = getSystemAction();
       if (ea != null && sa != null) {
-        if (sa instanceof CallbackSystemAction) {
+/*        if (sa instanceof CallbackSystemAction) {
           CallbackSystemAction csa = (CallbackSystemAction)sa;
           if (csa.getActionPerformer() == this) {
             csa.setActionPerformer(null);
           }
         }
+*/
 
         if (syncEnabling && enabledPropertySyncL != null) {
           ea.removePropertyChangeListener(enabledPropertySyncL);
@@ -169,7 +170,7 @@ public class NbEditorUI extends ExtEditorUI {
         editorAction.removePropertyChangeListener(enabledPropertySyncL);
       }
 
-      if (systemAction != null) {
+/*      if (systemAction != null) {
         if (systemAction instanceof CallbackSystemAction) {
           CallbackSystemAction csa = (CallbackSystemAction)systemAction;
           if (!csa.getSurviveFocusChange() || csa.getActionPerformer() == this) {
@@ -177,6 +178,7 @@ public class NbEditorUI extends ExtEditorUI {
           }
         }
       }
+*/
 
       editorAction = null;
       systemAction = null;
@@ -280,6 +282,7 @@ public class NbEditorUI extends ExtEditorUI {
 
 /*
  * Log
+ *  5    Jaga      1.4         4/3/00   Miloslav Metelka no performer clearing
  *  4    Jaga      1.3         3/27/00  Miloslav Metelka checking focus surviving
  *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
