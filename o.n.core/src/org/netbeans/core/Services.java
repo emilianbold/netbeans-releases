@@ -237,14 +237,19 @@ final class Services extends ServiceType.Registry {
     public static NewType[] createNewTypes (Class clazz) {
         synchronized (INSTANCE) {
             List l = new LinkedList ();
+            
+            // set of allready added classes
+            Set added = new HashSet ();            
 
             // construct new service types from the registered sections
             Iterator it = sections.iterator ();
             while (it.hasNext ()) {
                 ManifestSection.ServiceSection ss = (ManifestSection.ServiceSection)it.next ();
                 try {
-                    if (clazz.isInstance(ss.getServiceType ())) {
+                    Class instanceClass = ss.getServiceType ().getClass ();
+                    if (clazz.isAssignableFrom(instanceClass) && !added.contains(instanceClass)) {
                       l.add (new NSNT (clazz, ss));
+                      added.add (clazz);
                     }
                 } catch (InstantiationException ex) {
                       TopManager.getDefault ().getErrorManager ().notify (
@@ -368,7 +373,8 @@ final class Services extends ServiceType.Registry {
         
         public void create () throws java.io.IOException {
             try {
-                ServiceType st = ss.createServiceType();
+                ServiceType st = (ServiceType)ss.getServiceType ().getClass ().newInstance ();
+                // JST: Try this at least for this moment ServiceType st = ss.createServiceType();
                 INSTANCE.addServiceType (st);
             } catch (Exception ex) {
                 IOException newEx = new IOException (ex.getMessage ());
@@ -415,6 +421,14 @@ final class Services extends ServiceType.Registry {
 
 /*
 * $Log$
+* Revision 1.30  2000/06/21 14:03:08  jtulach
+* Services now create default instance of its class and do not deserialize their
+* values. This is a (hopefully) temporary hack to solve the problematic confclict
+* between modules that would like to define more instances of the same class, but
+* wants only the default instace (created by default constructor) be offered for
+* creation. Other solutions to this problem would be based on enhancing the manifest
+* for the services, which is probably the direction we should choose in the future.
+*
 * Revision 1.29  2000/06/19 08:22:53  anovak
 * doinit = false moved to setServiceTypes
 * previous code might be unsafe...
