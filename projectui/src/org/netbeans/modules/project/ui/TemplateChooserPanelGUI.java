@@ -16,6 +16,8 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.ContainerOrderFocusTraversalPolicy;
 import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -37,6 +39,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.api.project.ProjectInformation;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -65,12 +68,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension (560, 350);
     
-    private final String[] recommendedTypes;
+    // private final String[] recommendedTypes = null;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private final ExplorerManager manager;
     
-    public TemplateChooserPanelGUI(Project p, String[] recommendedTypes) {
-        this.recommendedTypes = recommendedTypes;
+    public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
+        /* this.recommendedTypes = recommendedTypes; */
         manager = new ExplorerManager();
         DataFolder templates = DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Templates")); // NOI18N
         manager.setRootContext(new FilterNode(templates.getNodeDelegate(), new TemplateChildren(templates)));
@@ -176,7 +179,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         projectsComboBox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         templatesPanel = new javax.swing.JPanel();
-        showAllTemplatesCheckBox = new javax.swing.JCheckBox();
+        showRecommendedTemplatesCheckBox = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
         descriptionScrollPane = new javax.swing.JScrollPane();
         jTextArea1 = new javax.swing.JTextArea();
@@ -213,15 +216,14 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         gridBagConstraints.weighty = 1.0;
         add(templatesPanel, gridBagConstraints);
 
-        showAllTemplatesCheckBox.setMnemonic('A');
-        showAllTemplatesCheckBox.setText("Only Show File Types Supported in Selected Project");
-        showAllTemplatesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        showAllTemplatesCheckBox.setEnabled(false);
+        showRecommendedTemplatesCheckBox.setMnemonic('A');
+        showRecommendedTemplatesCheckBox.setText("Only Show File Types Supported in Selected Project");
+        showRecommendedTemplatesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 12, 0);
-        add(showAllTemplatesCheckBox, gridBagConstraints);
+        add(showRecommendedTemplatesCheckBox, gridBagConstraints);
 
         jLabel3.setText("Description:");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -256,13 +258,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     private javax.swing.JLabel jLabel3;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JComboBox projectsComboBox;
-    private javax.swing.JCheckBox showAllTemplatesCheckBox;
+    private javax.swing.JCheckBox showRecommendedTemplatesCheckBox;
     private javax.swing.JPanel templatesPanel;
     // End of variables declaration//GEN-END:variables
     
-    private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
+    // private static final Comparator NATURAL_NAME_SORT = Collator.getInstance();
     
-    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ChangeListener /*, Comparator/*<DataObject>*/ {
+    private final class TemplateChildren extends Children.Keys/*<DataObject>*/ implements ChangeListener, ActionListener /*, Comparator/*<DataObject>*/ {
         
         private final DataFolder folder;
         
@@ -272,13 +274,15 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         
         protected void addNotify() {
             super.addNotify();
-            showAllTemplatesCheckBox.addChangeListener(this);
+            showRecommendedTemplatesCheckBox.addChangeListener(this);
+            projectsComboBox.addActionListener( this );
             updateKeys();
         }
         
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
-            showAllTemplatesCheckBox.removeChangeListener(this);
+            showRecommendedTemplatesCheckBox.removeChangeListener(this);
+            projectsComboBox.removeActionListener( this );
             super.removeNotify();
         }
         
@@ -286,11 +290,12 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             // SortedSet/*<DataObject>*/ l = new TreeSet(this);
             List l = new ArrayList();
             DataObject[] kids = folder.getChildren();
+            String[] recommendedTypes = getRecommendedTypes();
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];
                 FileObject prim = d.getPrimaryFile();
                 if ( acceptTemplate( d, prim ) ) { 
-                    if (!showAllTemplatesCheckBox.isSelected() && recommendedTypes != null) {
+                    if ( showRecommendedTemplatesCheckBox.isSelected() && recommendedTypes != null) {
                         // XXX assert recommendedTypes != null;
                         boolean ok = false;
                         for (int j = 0; j < recommendedTypes.length; j++) {
@@ -318,11 +323,22 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             }
         }
         
-        public void stateChanged(ChangeEvent e) {
+        // State listener ------------------------------------------------------
+        
+        public void stateChanged( ChangeEvent e ) {
+            updateKeys();
+        }
+        
+        // ActionListener ------------------------------------------------------
+        
+        public void actionPerformed( ActionEvent e ) {
             updateKeys();
         }
         
         /** Uncoment if you want to have the templates sorted alphabeticaly
+         
+        // Comparator ---------------------------------------------------------- 
+         
         public int compare(Object o1, Object o2) {
             DataObject d1 = (DataObject)o1;
             DataObject d2 = (DataObject)o2;
@@ -336,6 +352,14 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
         }
         */
 
+        // Private methods -----------------------------------------------------
+        
+        private String[] getRecommendedTypes() {
+            Project project = (Project)projectsComboBox.getSelectedItem();
+            RecommendedTemplates rt = (RecommendedTemplates)project.getLookup().lookup( RecommendedTemplates.class );
+            return rt == null ? null :rt.getRecommendedTypes();
+        }
+        
         private boolean acceptTemplate( DataObject d, FileObject primaryFile ) {
             
             if (d instanceof DataFolder )  {

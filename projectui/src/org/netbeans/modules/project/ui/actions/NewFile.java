@@ -55,7 +55,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener {
 
     protected void actionPerformed( Lookup context ) {
 
-        NewFileWizard wd = new NewFileWizard( preselectedProject( context ), null );
+        NewFileWizard wd = new NewFileWizard( preselectedProject( context ) /* , null */ );
 
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {

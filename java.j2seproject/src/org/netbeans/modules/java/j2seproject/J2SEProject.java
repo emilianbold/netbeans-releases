@@ -57,6 +57,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -158,6 +159,7 @@ final class J2SEProject implements Project, AntProjectListener {
                 "${build.dir}", // NOI18N
             }),
             fileBuilt,
+            new RecommendedTemplatesImpl(),
         });
     }
 
@@ -326,6 +328,23 @@ final class J2SEProject implements Project, AntProjectListener {
             };
         }
 
+    }
+    
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates {
+        
+        // List of primarily supported templates
+        
+        private static final String[] TYPES = new String[] { 
+            "templateType_Java",        // NOI18N
+            "templateType_JavaBeans",   // NOI18N
+            "templateType_JavaForms",   // NOI18N
+            "templateType_J2SE",        // NOI18N
+        };
+        
+        public String[] getRecommendedTypes() {
+            return TYPES;
+        }
+        
     }
     
 }

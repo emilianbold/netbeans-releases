@@ -42,16 +42,16 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
     private TemplateChooserPanelGUI gui;
 
     private Project p;
-    private String[] recommendedTypes;
+    // private String[] recommendedTypes;
 
-    TemplateChooserPanel( Project p, String recommendedTypes[] ) {
+    TemplateChooserPanel( Project p /*, String recommendedTypes[] */ ) {
         this.p = p;
-        this.recommendedTypes = recommendedTypes;
+        /* this.recommendedTypes = recommendedTypes; */
     }
 
     public Component getComponent() {
         if (gui == null) {
-            gui = new TemplateChooserPanelGUI(p, recommendedTypes);
+            gui = new TemplateChooserPanelGUI(p /*, recommendedTypes */ );
             gui.addChangeListener(this);
         }
         return gui;

@@ -40,17 +40,17 @@ import org.openide.util.HelpCtx;
 public final class NewFileWizard extends TemplateWizard {
         
     private Project p;
-    private String[] recommendedTypes;
+    // private String[] recommendedTypes;
 
-    public NewFileWizard( Project p, String recommendedTypes[] ) {
+    public NewFileWizard( Project p /*, String recommendedTypes[] */ ) {
         this.p = p;
-        this.recommendedTypes = recommendedTypes;        
+        // this.recommendedTypes = recommendedTypes;        
         setTitle( "New File" );
         setTitleFormat( new MessageFormat( "{0}") );
     }
 
     protected org.openide.WizardDescriptor.Panel createTemplateChooser() {
-        return new TemplateChooserPanel( p, recommendedTypes );
+        return new TemplateChooserPanel( p /*, recommendedTypes */ );
 
     }        
 
