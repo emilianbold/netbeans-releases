@@ -130,10 +130,10 @@ Microsystems, Inc. All Rights Reserved.
                     packagenames="org.netbeans.api.xml.*,org.netbeans.spi.xml.*"
                     doctitle="NetBeans XML Tools  APIs"
                     windowtitle="NetBeans XML Tools APIs"
-                    overview="doc/doc-files/overview.html"
+                    overview="doc/overview.html"
         >
               <sourcepath>
-                <pathelement location="doc/doc-files"/>
+                <pathelement location="doc"/> <!-- doc-files -->
                 <pathelement location="src"/>
               </sourcepath>        
              <classpath>        

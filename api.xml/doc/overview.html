@@ -1,0 +1,70 @@
+<!--
+   -                 Sun Public License Notice
+   - 
+   - The contents of this file are subject to the Sun Public License
+   - Version 1.0 (the "License"). You may not use this file except in
+   - compliance with the License. A copy of the License is available at
+   - http://www.sun.com/
+   - 
+   - The Original Code is NetBeans. The Initial Developer of the Original
+   - Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+   - Microsystems, Inc. All Rights Reserved.
+  -->
+
+<HTML>
+<BODY>
+XML Tools API overview.
+
+<h2>Status</h2>
+
+The first stable API version is planned to be finalized till NetBeans 3.4 release.
+See also <a href="doc-files/apichanges.html">API changes</a> document.
+
+<h2>Purpose</h2>
+XML tools API simplifies writing inter-operable modules handling user's XML
+resources. It also improves consistency of user experience as it introduces
+minimum standard behavior support for all XML domains.
+
+<h2>Supported Use Cases</h2>
+
+<h3>Actions</h3>
+XML is general document format that allows to define document structure 
+and semantics. It influences behavior of common user's actions. Particular
+behavior of such action depends on specifics of defined semantics. This
+can be modeled in OpenIDE APIs using cookies. XML tools API defines set of
+common cookies {@link org.netbeans.api.xml.cookies} and support for their providers
+{@link org.netbeans.spi.xml.cookies}.
+<p>A user can take a cookie action from the action pool and put it on a data
+object serving particular cookie. The action is performed via served cookie
+that is aware of actual behavioural enhancement for given data object.
+
+<h3>User's XML Document Parsing</h3>
+All standard XML processors APIs define call-back interfaces that must be provided
+by clients. Further evaluation identifies one type of application wide
+call-back interface - entity resolution (e.g. in SAX called 
+{@link org.xml.sax.EntityResolver}). XML tools API introduces notion of context
+user's entity catalog service  {@link org.netbeans.api.xml.services.UserCatalog}
+back-ended by plugged in providers.
+<p>A user has all their entity registrations at one place for given context and
+these are shared by all processors handling user's documents in the context.
+
+<h3>Unification&amp;Integration</h3>
+Standard XML APIs (DOM, TrAX, SAX, OpenIDE) define a API for the same purpose
+several times to avoid dependencies.
+{@link org.netbeans.api.xml.parsers} provides classes bridging between them.
+It also contains utility classes such as DTD parser.
+
+<h3>Model</h3>
+Looking for model and 2-way editing support? We are looking for ideas
+how to define it!
+
+
+<!-- Contributors & Reviewers:
+
+   Libor Kramolis
+   Svatopluk Dedic
+   Jaroslav Tulach
+   Petr Kuzel
+ -->
+
+</BODY></HTML>
