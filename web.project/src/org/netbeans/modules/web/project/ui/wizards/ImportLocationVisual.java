@@ -152,6 +152,17 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
             return false; // Display name not specified
         }
         
+        File projectLocation;
+        if (locationComputed)
+            projectLocation = ProjectChooser.getProjectsFolder();
+        else
+            projectLocation = new File(projectLocationTextField.getText());
+        if (projectLocation.exists() && !projectLocation.canWrite()) {
+            // Read only project location
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportLocationVisual.class,"MSG_ProjectLocationRO")); //NOI18N
+            return false;
+        }
+        
         File destFolder = new File(projectLocationTextField.getText());
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
@@ -449,7 +460,7 @@ public class ImportLocationVisual extends SettingsPanel implements HelpCtx.Provi
         if (locationModified) //modified by the user, don't compute the location
             return;
         
-        File projectLocation = ProjectChooser.getProjectsFolder();        
+        File projectLocation = ProjectChooser.getProjectsFolder();
         StringBuffer folder = new StringBuffer(projectLocation.getAbsolutePath());
         if (!folder.toString().endsWith(File.separator))
             folder.append(File.separatorChar);

@@ -163,6 +163,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             return false; // Display name not specified
         }
         
+        File prjParent = new File(projectLocationTextField.getText().trim());
+        if (prjParent.exists() && !prjParent.canWrite()) {
+            // Read only project location
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectLocationRO")); //NOI18N
+            return false;
+        }
+        
         File destFolder = new File(createdFolderTextField.getText());
         File[] children = destFolder.listFiles();
         if (destFolder.exists() && children != null && children.length > 0) {
