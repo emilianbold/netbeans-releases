@@ -1,9 +1,9 @@
 OpenIDE-Module: com.netbeans.developer.modules.javadoc/1
 OpenIDE-Module-Name: Javadoc
 OpenIDE-Module-Install: com/netbeans/developer/modules/javadoc/JavadocModule.class
-OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1, org.openidex.util/1 > 0.9.1
-OpenIDE-Module-Specification-Version: 0.9.3
-OpenIDE-Module-Implementation-Version: 0.9.3
+OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1, org.openidex.util/1 > 0.9.2
+OpenIDE-Module-Specification-Version: 0.9.4
+OpenIDE-Module-Implementation-Version: 0.9.4
 
 Name: com/netbeans/developer/modules/javadoc/settings/DocumentationSettings.class
 OpenIDE-Module-Class: Option
