@@ -15,6 +15,12 @@ package org.netbeans.modules.schema2beans;
 
 import java.beans.*;
 
+/**
+ * @author cliffwd
+ *
+ * All generated beans that use the runtime will implement this interface.
+ * It allows for some navigation and reflection.
+ */
 public interface Bean {
     public void addPropertyChangeListener(PropertyChangeListener l);
     public void removePropertyChangeListener(PropertyChangeListener l);
@@ -54,4 +60,9 @@ public interface Bean {
     public BaseProperty getProperty();
     public BaseProperty getProperty(String propName);
     public BaseProperty[] listProperties();
+
+    /**
+     * Find all child beans and put them into the give beans List.
+     */
+    public void childBeans(boolean recursive, java.util.List beans);
 }
