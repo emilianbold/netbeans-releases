@@ -47,6 +47,8 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
     private boolean directories = true;
     /** Flag indicating whether to choose files. Default value is <code>true</code>. */
     private boolean files = true;
+    /** Flag indicating whether to hide files marked as hidden. Default value is <code>false</code>. */
+    private boolean fileHiding = false;
     /** Filter for files to show. */
     private javax.swing.filechooser.FileFilter fileFilter;
     /** Current firectory. */
@@ -76,6 +78,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         directories = true;
         files = true;
         fileFilter = null;
+        fileHiding = false;
 
         Object dirs = env.getFeatureDescriptor().getValue(FileEditor.PROPERTY_SHOW_DIRECTORIES);
         if (dirs instanceof Boolean) {
@@ -118,6 +121,11 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         } else {
             mode = directories ? JFileChooser.DIRECTORIES_ONLY :
                 JFileChooser.FILES_AND_DIRECTORIES; // both false, what now? XXX warn
+        }
+        
+        Object fileHide = env.getFeatureDescriptor().getValue(FileEditor.PROPERTY_FILE_HIDING);
+        if (fileHide instanceof Boolean) {
+            fileHiding = ((Boolean)fileHide).booleanValue();
         }
         
         if (env.getFeatureDescriptor() instanceof Node.Property){
@@ -207,6 +215,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
                     chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
                     break;
             }
+            chooser.setFileHidingEnabled(fileHiding);
 
             chooser.setControlButtonsAreShown(false);
 

@@ -63,6 +63,9 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     /** Name of the property obtained from the feature descriptor. */
     static final String PROPERTY_BASE_DIR = "baseDir"; // NOI18N
     
+    /** Name of the property obtained from the feature descriptor. */
+    static final String PROPERTY_FILE_HIDING = "file_hiding"; // NOI18N
+    
     /** Openning mode.*/
     private int mode = JFileChooser.FILES_AND_DIRECTORIES;
     
@@ -70,6 +73,8 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     private boolean directories = true;
     /** Flag indicating whether to choose files. Default value is <code>true</code>. */
     private boolean files = true;
+    /** Flag indicating whether to hide files marked as hidden. Default value is <code>false</code>. */
+    private boolean fileHiding = false;
     /** Filter for files to show. */
     private javax.swing.filechooser.FileFilter fileFilter;
     /** Current firectory. */
@@ -102,6 +107,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         directories = true;
         files = true;
         fileFilter = null;
+        fileHiding = false;
 
         Object dirs = env.getFeatureDescriptor().getValue(PROPERTY_SHOW_DIRECTORIES);
         if (dirs instanceof Boolean) {
@@ -144,6 +150,11 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
         } else {
             mode = directories ? JFileChooser.DIRECTORIES_ONLY :
                 JFileChooser.FILES_AND_DIRECTORIES; // both false, what now? XXX warn
+        }
+        
+        Object fileHide = env.getFeatureDescriptor().getValue(PROPERTY_FILE_HIDING);
+        if (fileHide instanceof Boolean) {
+            fileHiding = ((Boolean)fileHide).booleanValue();
         }
         
         if (env.getFeatureDescriptor() instanceof Node.Property){
@@ -226,6 +237,7 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
                     chooser.setDialogTitle (getString ("CTL_DialogTitleDirs"));
                     break;
             }
+            chooser.setFileHidingEnabled(fileHiding);
 
             chooser.setControlButtonsAreShown(false);
 
