@@ -29,10 +29,11 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="junit framework is set to ${junit.framework.jar}"/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/junit/**"/>
-      <classpath>
-        <!-- Since junit.jar is not included in extra binaries, use the one in xtest dir -->
-	<!-- <pathelement location="${binroot}/junit/release/lib/ext/junit.jar"/> -->
+      <classpath>        
 	<pathelement location="${junit.framework.jar}"/>
+         <fileset dir="../openide/netbeans/lib">
+            <include name="openide*.jar" />
+         </fileset>
       </classpath>
     </javac>
   </target>
