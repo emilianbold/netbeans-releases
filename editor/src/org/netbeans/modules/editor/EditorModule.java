@@ -76,6 +76,8 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  10   Gandalf   1.9         4/23/99  Miloslav Metelka Differrent document 
+ *       constructor
  *  9    Gandalf   1.8         4/13/99  Ian Formanek    Fixed bug #1518 - 
  *       java.lang.NoClassDefFoundError: 
  *       com/netbeans/developer/modules/text/NbEditorBaseKit thrown on startup.
