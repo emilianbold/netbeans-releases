@@ -295,7 +295,8 @@ final class ViewHierarchy {
     
     /** Set active mode view. */
     private void setActiveModeView(ModeView modeView) {
-        if(modeView == activeModeView) {
+        //#39729 fix - when main window has focus, do not discard (in SDI the actual component can be hidden
+        if(modeView == activeModeView && !mainWindow.isActive()) {
             return;
         }
         
