@@ -146,7 +146,7 @@ public final class SettingChildren extends FilterNode.Children {
                 Utilities.loadImage ("org/netbeans/core/resources/setting-defined.gif"), // NOI18N
                 Utilities.loadImage ("org/netbeans/core/resources/setting-ignored.gif"), // NOI18N
                 Utilities.loadImage ("org/netbeans/core/resources/setting-inherited.gif"), // NOI18N
-                Utilities.loadImage ("org/netbeans/core/resources/empty.gif") // NOI18N
+                Utilities.loadImage ("org/openide/resources/actions/empty.gif") // NOI18N
             });
         }
 
