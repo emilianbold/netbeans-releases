@@ -7,6 +7,3 @@ OpenIDE-Module-Specification-Version: 0.1
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > 0.1, org.netbeans.modules.editor/1 > 1.7
 Class-Path: docs/xml-text-edit.jar
-
-Name: org/netbeans/modules/xml/text/indent/XMLIndentEngine.class
-OpenIDE-Module-Class: Service

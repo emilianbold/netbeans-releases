@@ -15,4 +15,15 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
+
+    <folder name="Services">
+
+        <folder name="IndentEngine">
+            <file name="org-netbeans-modules-xml-text-settings-XMLIndentEngine.settings" url="XMLIndentEngine.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.text.indent.Bundle"/>
+            </file>
+        </folder> <!-- IndentEngine -->
+
+    </folder> <!-- Services -->
+
 </filesystem>
