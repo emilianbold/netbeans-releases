@@ -44,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
         <makeparserdb db="netbeans/system/ParserDB/JavaHelpAPI" sources="../../core/javahelp/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/SettingsAPI" sources="../../core/settings/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/JavaSupportAPIs" sources="../../java/api/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/JavaHierarchyAPI" sources="../../java/srcmodel/src" nbroot="../.."/>
     </target>
 
     <target name="collect-javadoc">
@@ -62,6 +63,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../core/settings/javadoc/SettingsAPI.zip" tofile="netbeans/docs/SettingsAPI.zip"/>
         <ant dir="../../java/api" target="javadoc"/>
         <copy file="../../java/api/javadoc/JavaSupportAPIs.zip" tofile="netbeans/docs/JavaSupportAPIs.zip"/>
+        <ant dir="../../java/srcmodel" target="javadoc"/>
+        <copy file="../../java/srcmodel/javadoc/JavaHierarchyAPI.zip" tofile="netbeans/docs/JavaHierarchyAPI.zip"/>
     </target>
 
     <target name="netbeans" depends="jars,parser-db,collect-javadoc" description="Build complete module.">
