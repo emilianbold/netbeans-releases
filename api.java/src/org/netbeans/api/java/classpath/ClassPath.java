@@ -755,6 +755,7 @@ public final class ClassPath {
         private static String getPath (FileObject fo) {
             if (fo == null)
                 return null;
+            // XXX why can't this just use fo.getURL()?
             File f = FileUtil.toFile(fo);
             if (f == null)
                 return null;
