@@ -101,7 +101,13 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
             return;
 
         // select the tab
-        ((JTabbedPane)container).setSelectedIndex(selectedTab);
+        JTabbedPane tabbedPane = (JTabbedPane) container;
+        tabbedPane.setSelectedIndex(selectedTab);
+
+        // workaround for JTabbedPane bug 4190719
+        Component comp = tabbedPane.getSelectedComponent();
+        if (comp != null)
+            comp.setVisible(true);
     }
 
     /** This method should calculate position (index) for a component dragged
