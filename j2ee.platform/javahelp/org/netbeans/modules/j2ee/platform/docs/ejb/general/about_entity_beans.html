@@ -19,27 +19,36 @@
 <p>Each entity bean represents a set of data, such as the fields in a database 
   record. Each instance of the entity bean contains one element of that data, 
   such as a row from a database table.</p>
+<p>There are two types of persistence for entity beans, bean-managed and container-managed:</p>
+<ul>
+  <li><b>Bean-managed persistence.</b> The entity bean code that you write contains 
+    the calls that access the database, making its code potentially dependent 
+    on a particular database vendor and more complex, but providing you with more 
+    control over how the bean accesses a database. </li>
+  <li><b>Container-managed persistence.</b> The bean uses the persistence provided 
+    by the EJB container, which automatically generates the necessary database 
+    access calls. The code you write for the entity bean does not include these 
+    calls, enabling you to concentrate on business logic. The bean is simpler 
+    and more flexible than one with bean-managed persistence, but it is also dependent 
+    on a container for database access. </li>
+</ul>
+<!-- Should describe the following:
+	* Business methods
+	* Finders
+	* Selects
+	* CMP fields
+	* Relationships
+	* Transactions - still need to figure this shit out
+-->
 <p>Methods of the entity bean's home interface enable a client (any user of the 
   bean) to find entities already in the database and insert new entities into 
   the database. These methods are defined in the J2EE<sup><small>TM</small></sup> 
   specification.</p>
-<p>In addition, an entity bean can have business methods for operating on data.</p>
 <p>Entity beans can be shared by multiple clients. Because the clients might want 
   to change the same data, entity beans should use transactions. Typically, the 
-  EJB container provides transaction management. 
-  <!--In this case, you specify the transaction attributes in the bean's property sheet. You do not have to code the transaction boundaries in the bean because the container marks the boundaries for you.-->
-</p>
+  EJB container provides transaction management. </p>
 <p>The state of an entity bean is saved in a storage mechanism, such as a database, making the state  persistent. Persistence means that the entity bean's state exists beyond the lifetime of the application or the J2EE server process. The data in a database is persistent because it still exists even after you shut down the database server or the applications it services. </p>
-<p>There are two types of persistence for entity beans, bean-managed and container-managed:</p>
-<ul>
-  
-<li><b>Bean-managed persistence.</b> The entity bean code that you write contains the calls that access the database, making its code potentially dependent on a particular database vendor and more complex, but providing you with more control over how the bean accesses a database. </li>
-<li><b>Container-managed persistence.</b> The bean uses the persistence provided 
-    by the EJB container, which automatically generates the necessary database access calls. The code  you write for the entity bean does not include these calls,  enabling
-  
-  you  to concentrate on business logic. The bean is simpler and more flexible than one with bean-managed persistence, 
-    but it is also dependent on a container for database access. </li>
-</ul>
+<h3>Why Use Entity Beans?</h3>
 <p>You should probably use an entity bean (rather than a session bean) under the following conditions: </p>
 <ul>
 <li>The bean represents a business entity, not a procedure. For example, <tt>CreditCardEJB</tt> would be an entity bean, but <tt>CreditCardVerifierEJB</tt> would probably be a session bean. </li>

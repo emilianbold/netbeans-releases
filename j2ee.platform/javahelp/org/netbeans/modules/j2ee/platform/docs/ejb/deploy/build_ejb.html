@@ -12,49 +12,22 @@
 <body>
 <h2>Building an EJB Module</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>In general, you build an EJB module project just as you would build any other 
-  project. The main difference is whether the EJB module is built individually 
-  or as part of an enterprise application. If you build an EJB module individually, 
-  the IDE packages the necessary JAR files with the EJB module JAR file. If, on 
-  the other hand, you build the EJB module as part of a J2EE application, the 
-  IDE packages all of the necessary JAR files as part of the J2EE application 
-  and not as part of the individual modules.</p>
-<table border="0" >
-  <tr valign="top"> 
-    <td><img src="../../images/tip.gif" alt="tip" ></td>
-    <td>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-        <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
-        <param name="viewerActivator" value="javax.help.LinkLabel">
-        <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="400,220">
-        <param name="text" value="standard projects">
-        <param name="textFontSize" value="small">
-        <param name="textFontFamily" value="SansSerif">
-        <param name="textFontStyle" value="italic">
-        <param name="textFontWeight" value="bold">
-        <param name="textColor" value="blue">
-      </object>. <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
-        <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
-        <param name="viewerActivator" value="javax.help.LinkLabel">
-        <param name="viewerStyle" value="javax.help.Popup">
-        <param name="viewerSize" value="400,220">
-        <param name="text" value="Free-form projects">
-        <param name="textFontSize" value="small">
-        <param name="textFontFamily" value="SansSerif">
-        <param name="textFontStyle" value="italic">
-        <param name="textFontWeight" value="bold">
-        <param name="textColor" value="blue">
-      </object> are built according to the instructions in your project's Ant 
-      script.</td>
-  </tr>
-</table>
-<p><b>To build an EJB module individually:</b></p>
+<p>There are two ways to build an EJB module:</p>
+<ul>
+  <li><b>As a stand-alone EJB module.</b> The IDE packages the necessary JAR files 
+    with the EJB module JAR file. </li>
+  <li><b>As part of a J2EE application.</b> The IDE packages all of the necessary 
+    JAR files as part of the J2EE application and not as part of the individual 
+    modules.</li>
+</ul>
+<p><b>To build a stand-alone EJB module:</b></p>
 <ul>
   <li>Right-click the EJB module project in the Projects window and choose Build 
     Project. Or, if the EJB module project is the main project, choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
     Main Project (F11).</li>
 </ul>
-<p>When you build a project individually, the IDE does the following:</p>
+<p>When you build a EJB module project as a stand-alone module, the IDE does the 
+  following:</p>
 <ul>
   <li>Compiles the classes to the project's <tt>build/jar</tt> folder.</li>
   <li>Places any JAR files that are one your project's classpath and are scheduled 
@@ -85,15 +58,36 @@
   <li>Builds the enterprise application EAR file to the enterprise application 
     project's <tt>dist</tt> folder.</li>
 </ul>
-<table border="0" >
-  <tr valign="top"> 
-    <td><img src="../../images/tip.gif" alt="tip" ></td>
-    <td> You can mark a classpath item for inclusion in deployment in the EJB 
-      module's Project Properties dialog box. Right-click the module's Libraries 
-      node and choose Properties, then select the checkbox for each classpath 
-      item you want to include in deployment.</td>
-  </tr>
-</table>
+<p><b>Notes:</b> 
+<ul class="note">
+  <li>The information in this page only applies to <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="standard projects">
+      <param name="textFontSize" value="small">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object>. <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="Free-form projects">
+      <param name="textFontSize" value="small">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object> are built according to the instructions in your project's Ant script.</li>
+  <li>You can mark a classpath item for inclusion in deployment in the EJB module's 
+    Project Properties dialog box. Right-click the module's Libraries node and 
+    choose Properties, then select the checkbox for each classpath item you want 
+    to include in deployment.</li>
+</ul>
 <table border="0">
   <tr>
     <th colspan="2" align="left" ><a name="seealso">See Also</a></th>

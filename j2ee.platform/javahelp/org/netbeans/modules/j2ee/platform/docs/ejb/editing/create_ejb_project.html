@@ -17,49 +17,42 @@
 
 <h2>Creating an EJB Module Project</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You develop enterprise beans in the IDE by creating an EJB module project. 
-  An EJB module project creates one EJB module JAR file, which can contain multiple 
-  enterprise beans. The IDE maintains information about the EJB module in the 
-  module's deployment descriptors. </p>
-<p>You can create an EJB module by doing any of the following:</p>
-<ul>
-  <li>Creating a new Enterprise Application project with an empty EJB module project.</li>
-  <li>Create an empty EJB module project. You can manually add the EJB module 
-    to an enterprise application or deploy it as a stand-alone EJB module.</li>
-  <li>Import existing enterprise bean code into a standard project. A standard 
-    project uses an IDE-generated build script to build, run, and debug your project.
-<p> You can import an individual EJB module using the Enterprise JavaBeans 
-      Module with Existing Sources template, or import an entire enterprise application 
-      using the Existing Blueprint Application template. For Existing Blueprint 
-      Application projects, the project's folder structure must adhere to the 
-      J2EE Blueprints recomendations. For Enterprise JavaBeans Module with Existing 
-      Sources projects, the module can have any folder structure. 
+<ol>
+  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
+    Project (Ctrl-Shift-N) from the main window.</li>
+  <li>From the Enterprise category, select one of the following project templates: 
+    <ul>
+      <li><a href="../../enterprise/csh/CompleteEarProjectWizardIterator.html">Enterprise 
+        Application</a>. Lets you create an EJB module project as part of an empty 
+        enterprise application.</li>
+      <li><a href="../../enterprise/csh/ImportBlueprintEarWizardIterator.html">Existing 
+        Blueprints Application</a>. Imports an existing enterprise application.</li>
+      <li><a href="../csh/ejb_new_wizard.html">EJB Module</a>. Creates an empty 
+        EJB module project.</li>
+      <li><a href="../csh/ejb_with_source_wizard1.html">EJB Module with Existing 
+        Sources</a>. Imports an existing EJB module into a standard project.</li>
+      <li><a href="../csh/ejb_with_source_wizard1.html">EJB Module with Existing 
+        Ant Script</a>. Imports an existing EJB module into a free-form project.</li>
+    </ul>
   </li>
-</ul>
+  <li>Follow the steps in the rest of the wizard.</li>
+</ol>
+<b>Notes:</b> 
 <ul class="note">
+  <li>When importing an existing EJB module, the module can have any folder structure. 
+    When importing an existing BluePrints application, the project's folder structure 
+    must adhere to the J2EE Blueprints recomendations. For more information, see:
+	<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/blueprints/code/projectconventions.html">
+    <param name="text" value="<html><u>http://java.sun.com/blueprints/code/projectconventions.html</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+  </object>.</li>
   <li>The IDE only supports J2EE 1.4 EJB modules and automatically updates all 
     J2EE 1.3 EJB modules to J2EE 1.4. The J2EE 1.4 specification is fully backwards-compatible, 
     so upgrading the specification level does not change the behaviour of your 
     code.</li>
 </ul>
-<p><b>To create an EJB module project:</b></p>
-<ol>
-  <li>Choose File <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;New 
-    Project (Ctrl-Shift-N) from the main window.</li>
-  <li>From the Enterprise category, select one of the EJB module project templates. 
-  </li>
-  <li>Follow the steps in the rest of the wizard. For more information, see the 
-    following topics:</li>
-  <ul>
-    <li><a href="../../enterprise/csh/CompleteEarProjectWizardIterator.html">Enterprise 
-      Application Wizard</a></li>
-    <li><a href="../../enterprise/csh/ImportBlueprintEarWizardIterator.html">Existing 
-      Blueprints Application Wizard</a></li>
-    <li><a href="../csh/ejb_new_wizard.html">Enterprise JavaBeans Module Wizard</a></li>
-    <li><a href="../csh/ejb_with_source_wizard1.html">Enterprise JavaBeans Module 
-      with Existing Sources Wizard</a></li>
-  </ul>
-</ol>
 <table border="0">
   <tr> 
     <th colspan="2" align="left" ><a name="seealso">See Also</a></th>

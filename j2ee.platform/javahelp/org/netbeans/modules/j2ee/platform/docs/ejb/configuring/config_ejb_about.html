@@ -22,18 +22,38 @@
 <p>Basic project settings like the EJB module's source roots and classpath are 
   set in the module's Project Properties dialog box. You open this dialog box 
   by right-clicking the EJB module's project node and choosing Properties.</p>
-<p>For standard projects, you can add source roots in the Sources page of the 
-  Project Properties dialog box. You can quickly add to the compilation and test 
-  classpath by right-clicking the Libraries or Test Libraries node in the Projects 
-  window. To further configure the classpath, or to specify which items should 
-  be included in deployment, use the Libraries page of the Project Properties 
-  dialog box.</p>
-<p>For free-form projects, there are no Libraries or Test Libraries nodes. The 
-  classpath and source roots are managed completely by your project's Ant script. 
-  In the Sources and Classpath pages of the Project Properties dialog, you just 
-  configure the project to match the settings that already exist in your Ant script. 
-  This tells the IDE which classes to offer for debugging, code completion, and 
-  so forth.</p>
+<p>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_standard.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="standard projects">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, you can add source roots in the Sources page of the Project Properties 
+  dialog box. You can quickly add to the compilation and test classpath by right-clicking 
+  the Libraries or Test Libraries node in the Projects window. To further configure 
+  the classpath, or to specify which items should be included in deployment, use 
+  the Libraries page of the Project Properties dialog box.</p>
+<p>For <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="nbdocs:/org/netbeans/modules/usersguide/project/csh/glossary_freeform.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="free-form projects">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object>, there are no Libraries or Test Libraries nodes. The classpath and 
+  source roots are managed completely by your project's Ant script. In the Sources 
+  and Classpath pages of the Project Properties dialog, you just configure the 
+  project to match the settings that already exist in your Ant script. This tells 
+  the IDE which classes to offer for debugging, code completion, and so forth.</p>
 <h3>Deployment Settings</h3>
 <p>There are several key steps to configuring deployment settings:</p>
 <ul>
@@ -59,11 +79,22 @@
     </ul>
   </li>
   <li><b>Configuring deployment descriptors.</b> The IDE automatically updates 
-    your deployment descriptors as you code your EJB module. Whenever you insert 
-    a call to an enterprise bean or create select or finder methods, the IDE automatically 
-    enters the necessary information in your deployment descriptors. You can manually 
-    configure your deployment descriptors by expanding the EJB module's Configuration 
-    Files node and double-clicking <tt>ejb-jar.xml</tt> or <tt>sun-ejb-jar.xml</tt>.</li>
+    your <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+      <param name="content" value="../glossary/deploymentdesc.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="deployment descriptors">
+      <param name="textFontSize" value="small">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object> as you code your EJB module. Whenever you insert a call to an enterprise 
+    bean or create select or finder methods, the IDE automatically enters the 
+    necessary information in your deployment descriptors. You can manually configure 
+    your deployment descriptors by expanding the EJB module's Configuration Files 
+    node and double-clicking <tt>ejb-jar.xml</tt> or <tt>sun-ejb-jar.xml</tt>.</li>
 </ul>
 <table border="0">
   <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
