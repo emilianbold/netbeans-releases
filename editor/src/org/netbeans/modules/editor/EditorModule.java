@@ -246,6 +246,13 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
 
 	private Hashtable delegate;
 
+        /** kits registered by put() into this hackmap. They
+         * are added to delegate too, but the delegate
+         * can contain additional kits registered before
+         * the hackp was installed.
+         */
+        private Hashtable override;
+
         HackMap(Hashtable h) {
             delegate = h;
         }
@@ -271,7 +278,15 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         }
         
         public synchronized Object get(Object key) {
-            Object retVal = super.get(key);
+            Object retVal = null;
+            
+            if (override != null) {
+                retVal = override.get(key);
+            }
+            
+            if (retVal == null) {
+                retVal = super.get(key);
+            }
 
 	    if (retVal == null && key instanceof String) {
 		retVal = findKit((String)key);
@@ -289,6 +304,11 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         }
         
         public synchronized Object put(Object key, Object value) {
+            if (override == null) {
+                override = new Hashtable();
+            }
+            override.put(key, value);
+
             if (delegate == null) {
                 delegate = new Hashtable();
             }
