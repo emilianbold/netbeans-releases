@@ -45,6 +45,11 @@ Microsystems, Inc. All Rights Reserved.
       <exclude name="**/org/openide/util/WeakListener13.java" unless="jdk13proxies"/>
       <!-- Needs core, it is deprecated anyway: -->
       <exclude name="org/openide/loaders/ExtensionListEditor.java"/>
+      <bootclasspath>
+        <!-- XXX not nice to use undocumented property here: -->
+        <pathelement path="${sun.boot.class.path}"/>
+        <pathelement location="openide-13javac-workaround.jar"/>
+      </bootclasspath>
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
@@ -66,11 +71,15 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
   
-  <target name="compile" depends="compile-regular,compile-preprocessed">
-  </target>
+  <target name="compile" depends="13javac-workaround,compile-regular,compile-preprocessed"/>
   
   <target name="compile-preprocessed" depends="preprocess" >
     <javac srcdir="compatkit-work" destdir="compatkit-work" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <bootclasspath>
+        <!-- XXX not nice to use undocumented property here: -->
+        <pathelement path="${sun.boot.class.path}"/>
+        <pathelement location="openide-13javac-workaround.jar"/>
+      </bootclasspath>
       <classpath>
         <pathelement location="src"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
@@ -106,8 +115,41 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/explorer/view/BeanTreeView.java"/>
     </preprocess>
   </target>
+
+  <target name="13javac-workaround" depends="init">
+    <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
+    <!-- situations where one package contains a public class and a public -->
+    <!-- inner class of the same name: though the inner class should be qualified -->
+    <!-- by its outer class, something gets confused and the compiler thinks -->
+    <!-- it cannot find the simple class whenever it is used. -->
+    <!-- Forcing use of 1.2 compiler is possible with -Dbuild.compiler=classic, -->
+    <!-- but this slows down builds, messes up Jikes users, and is not apparently -->
+    <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
+    <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+      <!-- Compare inner classes of Actions: -->
+      <include name="org/openide/awt/ToolbarButton.java"/>
+      <include name="org/openide/awt/ToolbarToggleButton.java"/>
+      <!-- Compare inner class of RequestProcessor: -->
+      <include name="org/openide/util/Task.java"/>
+      <!-- Included because Task imports it: -->
+      <include name="org/openide/util/TaskListener.java"/>
+    </javac>
+    <jar jarfile="openide-13javac-workaround.jar"
+         basedir="src"
+         compress="false">
+      <include name="org/openide/awt/ToolbarButton.class"/>
+      <include name="org/openide/awt/ToolbarButton$*.class"/>
+      <include name="org/openide/awt/ToolbarToggleButton.class"/>
+      <include name="org/openide/awt/ToolbarToggleButton$*.class"/>
+      <include name="org/openide/util/Task.class"/>
+      <include name="org/openide/util/Task$*.class"/>
+      <include name="org/openide/util/TaskListener.class"/>
+      <include name="org/openide/util/TaskListener$*.class"/>
+    </jar>
+  </target>
   
-  <target name="jars" depends="compile">
+  <target name="jars" depends="compile,13javac-workaround">
     <mkdir dir="netbeans/lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -118,26 +160,6 @@ Microsystems, Inc. All Rights Reserved.
 	    compress="false">
       <locale name="ja"/>
     </locjar>
-    <!-- JDK 1.3 Javac at least on Linux has a serious bug as regards -->
-    <!-- situations where one package contains a public class and a public -->
-    <!-- inner class of the same name: though the inner class should be qualified -->
-    <!-- by its outer class, something gets confused and the compiler thinks -->
-    <!-- it cannot find the simple class whenever it is used. -->
-    <!-- Forcing use of 1.2 compiler is possible with -Dbuild.compiler=classic, -->
-    <!-- but this slows down builds, messes up Jikes users, and is not apparently -->
-    <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
-    <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
-    <jar jarfile="openide-13javac-workaround.jar"
-         basedir="src"
-         compress="false">
-      <!-- Compare inner classes of Actions: -->
-      <include name="org/openide/awt/ToolbarButton*.class"/>
-      <exclude name="org/openide/awt/ToolbarButtonUI*.class"/>
-      <include name="org/openide/awt/ToolbarToggleButton*.class"/>
-      <!-- Compare inner class of RequestProcessor: -->
-      <include name="org/openide/util/Task*.class"/>
-      <exclude name="org/openide/util/TaskListener*.class"/>
-    </jar>
     <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
     <!-- are trying to make their code obsolete! -->
     <mkdir dir="netbeans/lib/patches"/>
