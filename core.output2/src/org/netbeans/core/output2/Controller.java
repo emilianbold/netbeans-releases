@@ -825,12 +825,11 @@ public class Controller { //XXX public only for debug access to logging code
             popup.setInvoker(null);
             popup.putClientProperty ("container", null); //NOI18N
             popup.putClientProperty ("component", null); //NOI18N
-
+            popup.removePopupMenuListener(this);
         }
         
         public void popupMenuCanceled(PopupMenuEvent e) {
-            ((JPopupMenu) e.getSource()).removeAll();
-            ((JPopupMenu) e.getSource()).setInvoker(null);
+            popupMenuWillBecomeInvisible(e);
         }
         
         public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
