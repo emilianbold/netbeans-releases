@@ -32,6 +32,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance" />
         </folder>
     </folder>
 
@@ -47,6 +49,10 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
+            <file name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance/org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance/org-openide-actions-StartDebuggerAction.instance" boolvalue="true" />
             <file name="org-openide-actions-StartDebuggerAction.instance"/>
             <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-FinishDebuggerAction.instance" boolvalue="true" />
             <file name="org-openide-actions-FinishDebuggerAction.instance"/>
