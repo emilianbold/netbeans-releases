@@ -386,7 +386,7 @@ public class ServerInstance implements Node.Cookie {
     //------------------------------------------------------------
     // multiplexor state-machine core
     private boolean startTarget(Target target, DeployProgressUI ui, boolean debugMode) {
-        if (isReallyRunning())
+        if (!debugMode && isReallyRunning())
             return true;
         
         StartServer ss = checkForSupportStartDM(ui);
