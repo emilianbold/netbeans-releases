@@ -46,7 +46,7 @@ public class DocumentImpl extends AbstractNode implements org.w3c.dom.Document {
     }
     
     public org.w3c.dom.DOMImplementation getImplementation() {
-        return null;
+        return new DOMImplementationImpl();
     }
     
     public org.w3c.dom.Element createElementNS(String str, String str1) throws org.w3c.dom.DOMException {
