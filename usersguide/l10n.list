@@ -1,4 +1,5 @@
 usersguide/j2seexamples/src/org/netbeans/modules/java/examples/Bundle.properties
+usersguide/j2seexamples/src/org/netbeans/modules/java/examples/resources/descriptions/*.html
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.html
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.hs
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.xml
