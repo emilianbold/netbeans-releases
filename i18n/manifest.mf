@@ -4,5 +4,4 @@ OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.prope
 OpenIDE-Module-Specification-Version: 0.9
 OpenIDE-Module-Implementation-Version: 0.9
 OpenIDE-Module-Install: com/netbeans/developer/modules/i18n/PropertiesFormModule.class
-OpenIDE-Module-Update-Location: http://update.netbeans.com/developer30/updateInfo?rn={$netbeans.regnum}
 
