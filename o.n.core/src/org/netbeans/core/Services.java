@@ -149,7 +149,9 @@ public final class Services extends ServiceType.Registry implements LookupListen
             return;
         }
         
-        HashMap services = new HashMap(20); // <service name, DataObject>
+        arr = ensureSingleness(arr);
+        
+        HashMap services = new HashMap(20); // <service type, DataObject>
         searchServices(NbPlaces.findSessionFolder("Services").getPrimaryFile(), services); // NOI18N
         
         // storing services
@@ -157,8 +159,8 @@ public final class Services extends ServiceType.Registry implements LookupListen
         Iterator it = arr.iterator();
         while (it.hasNext()) {
             ServiceType st = (ServiceType) it.next();
-            String stName = st.getName();
-            DataObject dobj = (DataObject) services.get(stName);
+            DataObject dobj = (DataObject) services.get(st);
+            
             if (dobj != null) {
                 // store existing
                 try {
@@ -166,7 +168,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                 } catch (IOException ex) {
                     TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
                 }
-                services.remove(stName);
+                services.remove(st);
             } else {
                 dobj = storeNewServiceType(st);
             }
@@ -239,6 +241,24 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
     }
     
+    /** ensure that instance of the service type will be listed just once.
+     */
+    private List ensureSingleness(List l) {
+        List newList = new ArrayList(l.size());
+        Iterator it = l.iterator();
+        
+        while (it.hasNext()) {
+            ServiceType stype = (ServiceType) it.next();
+            if (newList.contains(stype)) {
+                continue;
+            } else {
+                newList.add(stype);
+            }
+        }
+        
+        return newList;
+    }
+    
     /** search all data objects containing service type instance. */
     private void searchServices(FileObject folder, Map services) {
         FileObject[] fobjs = folder.getChildren();
@@ -255,7 +275,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                     
                     if (instanceOf(inst, ServiceType.class)) {
                         ServiceType ser = (ServiceType) inst.instanceCreate();
-                        services.put(ser.getName(), dobj);
+                        Object oldSt = services.put(ser, dobj);
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                 } catch (Exception ex) {
@@ -265,6 +285,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
     }
     
+    /** test if instance cookie is instance of clazz*/
     private static boolean instanceOf(InstanceCookie inst, Class clazz) {
         if (inst instanceof InstanceCookie.Of) {
             return ((InstanceCookie.Of) inst).instanceOf(clazz);
