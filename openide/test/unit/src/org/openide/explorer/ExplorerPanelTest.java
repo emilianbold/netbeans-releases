@@ -223,7 +223,7 @@ public class ExplorerPanelTest extends NbTestCase {
         java.awt.datatransfer.StringSelection ss = new java.awt.datatransfer.StringSelection ("Hi");
         ec.setContents(ss, ss);
         
-        assertEquals ("The node was queried with new selection", ss, enabledNode.lastTransferable);
+        assertTranferables (ss, enabledNode.lastTransferable);
         
         stopActions (manager);
 
@@ -233,17 +233,53 @@ public class ExplorerPanelTest extends NbTestCase {
         java.awt.datatransfer.StringSelection ns = new java.awt.datatransfer.StringSelection ("New Selection");
         ec.setContents(ns, ns);
 
-        assertEquals ("The node was not queiried, still remembers ss", ss, enabledNode.lastTransferable);
+        assertTranferables (ss, enabledNode.lastTransferable);
         
         startActions (manager);
         
         assertFalse ("The selected node is the disabled one, so now we are disabled", paste.isEnabled ());
-        assertEquals("Now the disabled node was queried", ns, disabledNode.lastTransferable);
+        assertTranferables (ns, disabledNode.lastTransferable);
         
         
         ns = new java.awt.datatransfer.StringSelection("Another Selection");
         ec.setContents(ns, ns);
-        assertEquals("Now the node was queried once more", ns, disabledNode.lastTransferable);
+        assertTranferables (ns, disabledNode.lastTransferable);
+    }
+    
+    /** Compares whether two transferables are the same.
+     */
+    private static void assertTranferables (java.awt.datatransfer.Transferable t1, java.awt.datatransfer.Transferable t2) 
+    throws Exception {
+       // if (t1 == t2) return;
+        
+        java.awt.datatransfer.DataFlavor[] arr1 = t1.getTransferDataFlavors ();
+        java.awt.datatransfer.DataFlavor[] arr2 = t2.getTransferDataFlavors ();
+        
+        assertEquals ("Flavors are the same", 
+            Arrays.asList (arr1),
+            Arrays.asList (arr2)
+        );
+        
+        for (int i = 0; i < arr1.length; i++) {
+            Object f1 = convert (t1.getTransferData(arr1[i]));
+            Object f2 = convert (t2.getTransferData(arr1[i]));
+            
+            assertEquals (i + " flavor " + arr1[i], f1, f2);
+        }
+    }
+    
+    private static Object convert (Object obj) throws Exception {
+        if (obj instanceof java.io.StringReader) {
+            java.io.StringReader sr = (java.io.StringReader)obj;
+            StringBuffer sb = new StringBuffer ();
+            for (;;) {
+                int ch = sr.read ();
+                if (ch == -1) return sb.toString ();
+                sb.append ((char)ch);
+            }
+        }
+        
+        return obj;
     }
     
     /** Test root node. */
