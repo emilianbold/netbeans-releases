@@ -140,7 +140,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     private String getDebugType() {
         TomcatManager m = getTomcatManager();
         if (m != null){
-            return  m.getDebugType();
+            return NbBundle.getMessage(DebuggingTypeEditor.class, m.getDebugType());
         };
         return null;
     }

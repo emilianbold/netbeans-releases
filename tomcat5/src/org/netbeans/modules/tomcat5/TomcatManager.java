@@ -44,9 +44,6 @@ import org.openide.xml.XMLUtil;
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.ide.StartTomcat;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
-import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
-
-import org.openide.util.NbBundle;
 
 import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.*;
@@ -112,15 +109,13 @@ public class TomcatManager implements DeploymentManager {
     public static final Integer DEFAULT_ADMIN_PORT = new Integer(8005);
 
     /** default value for property debugging type*/
-    public static final String DEFAULT_DEBUG_TYPE_UNIX = 
-        NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_socket");
+    public static final String DEFAULT_DEBUG_TYPE_UNIX = "SEL_debuggingType_socket";  // NOI18N  
 
     /** default value for property debugging type*/
-    public static final String DEFAULT_DEBUG_TYPE_WINDOWS = 
-        NbBundle.getMessage (DebuggingTypeEditor.class, "SEL_debuggingType_shared");
+    public static final String DEFAULT_DEBUG_TYPE_WINDOWS = "SEL_debuggingType_shared";  // NOI18N 
 
     /** default value for property shared memory*/
-    public static final String DEFAULT_SHARED_MEMORY = NbBundle.getMessage (TomcatManager.class, "LBL_Tomcat_shared_memory_id");
+    public static final String DEFAULT_SHARED_MEMORY = "tomcat_shared_memory_id";  // NOI18N
 
     /** path to server xml */
     public static final String SERVERXML_PATH = File.separator + "conf" + File.separator + "server.xml";  // NOI18N
