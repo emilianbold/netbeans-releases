@@ -225,7 +225,8 @@
 <mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" />
 
 <!--nodes for filesystems in Filesystem Settings-->
-<mapID target="org.netbeans.core.ExJarFileSystem" url="filesystems/filesystems_settings.html" />
+<!--org.netbeans.core.ExJarFileSystem is used for JAR filesystem node in Explorer-->
+<mapID target="org.netbeans.core.ExJarFileSystem" url="filesystems/filesystems_node-JAR.html" />
 <mapID target="org.netbeans.core.JarFileSystem" url="filesystems/filesystems_settings.html" />
 <mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
 <mapID target="org.netbeans.core.LocalFileSystem" url="filesystems/filesystems_settings.html" />
@@ -235,6 +236,8 @@
 
    <!--Filesystems node--> 
    <mapID target="org.netbeans.core.DesktopNode$ProjectSettingsNode" url="pending.html" />
+   
+   <mapID target="org.openide.filesystems.LocalFileSystem" url="filesystems/filesystems_node-dir.html" />
 
    <mapID target="org.netbeans.core.ExJarFileSystem_properties" url="filesystems/filesystems_JARpropsheet.html" />
    <mapID target="org.netbeans.core.ExJarFileSystem_expert" url="filesystems/filesystems_JARpropsheet.html" />
@@ -252,7 +255,7 @@
    <mapID target="org.netbeans.core.filesystems.MIMEResolverImpl.FileTypeNode" url="pending.html" />         
 
    <mapID target="org.netbeans.core.ExLocalFileSystem" url="pending.html" />
-   <mapID target="org.netbeans.core.ExJarFileSystem" url="pending.html" />
+
    <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalJarFileSystem" url="pending.html" />
    <mapID target="org.netbeans.modules.usersguide.UGModule$GlobalLocalFileSystem" url="pending.html" />
    <mapID target="org.netbeans.core.projects.SystemFileSystem" url="pending.html" />
