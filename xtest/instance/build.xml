@@ -20,6 +20,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="build.sysclasspath" value="ignore"/>
 
+    <property name="xtest.results" location="results"/>
+
     <property name="xtest.home" location=".."/>
     <property name="xtest.basedir" location="../.."/>
     <property name="xtest.uploaddir" location="results"/>
@@ -43,6 +45,8 @@ Microsystems, Inc. All Rights Reserved.
         </nbtaskdef>
         <nbtaskdef classpath="${xtest.home}/lib/xtest.jar;${xtest.home}/lib/xalan.jar;${xtest.home}/lib/xerces.jar">
             <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
+            <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
+            <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
     </target>
@@ -75,7 +79,7 @@ Microsystems, Inc. All Rights Reserved.
             <param name="target.name" value="runtest-helper"/>
             <param name="running.mode" value="run"/>
         </antcall>
-        
+        <!--
         <xreport tofile="summary.xml" 
                  resultsdir="${xtest.uploaddir}"
                  statusfailed="xtest.failed">
@@ -91,6 +95,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <copy file="${xtest.home}/xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
         
+        -->
         <antcall target="mail"/>
                
     </target>
@@ -156,10 +161,12 @@ Microsystems, Inc. All Rights Reserved.
             <property name="xtest.testtype" value="${xtest.testtype}"/>
             <property name="xtest.attribs" value="${xtest.attribs}"/>
         </ant>        
+        <!--
         <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
         <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
             <fileset dir="${xtest.basedir}/${xtest.module}/test/results/${xtest.testtype}/"/>
         </copy>
+        -->
     </target>
 
     <!-- helper can be executed only by target executor -->
@@ -201,6 +208,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="executor">
+        <mkdir dir="${xtest.results}"/>
+        <getResultsDirs testRunDirProperty="xtest.results.testrun.dir"/>
+        <testruninfo outFile="${xtest.results.testrun.dir}/xmlresults/testrun.xml"
+            config="${xtest.config}" name="${xtest.instance.name}"/>
         <xtest-runner targetname="${target.name}"
                       targetParamModule="xtest.module"
                       targetParamTesttype="xtest.testtype"
