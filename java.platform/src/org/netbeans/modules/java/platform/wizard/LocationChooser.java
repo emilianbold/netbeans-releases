@@ -22,6 +22,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
 
 import org.openide.*;
 import org.openide.filesystems.*;
@@ -131,7 +133,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         }
     }
 
-    private static class PlatformAccessory extends JComponent {        
+    private static class PlatformAccessory extends JPanel {
 
         private JTextField tf;
 
@@ -143,9 +145,10 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             this.tf.setText(type);
         }
         
-        
 
         private void initComponents () {
+            this.getAccessibleContext().setAccessibleName (NbBundle.getMessage(LocationChooser.class,"AN_LocationChooserAccessiory"));
+            this.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(LocationChooser.class,"AD_LocationChooserAccessiory"));
             GridBagLayout l = new GridBagLayout();
             this.setLayout (l);
             JLabel label = new JLabel (NbBundle.getMessage(LocationChooser.class,"TXT_PlatformType"));
