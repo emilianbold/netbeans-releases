@@ -731,8 +731,8 @@ public class EjbJarProjectProperties {
             Element data = antProjectHelper.getPrimaryConfigurationData(true);
             org.w3c.dom.Document doc = data.getOwnerDocument();
             NodeList libs = data.getElementsByTagNameNS(EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, "included-library"); //NOI18N
-            for (int i = 0; i < libs.getLength(); i++) {
-                Node n = libs.item(i);
+            while (libs.getLength() > 0) {
+                Node n = libs.item(0);
                 n.getParentNode().removeChild(n);
             }
             for ( Iterator it = ((List)value).iterator(); it.hasNext(); ) {
