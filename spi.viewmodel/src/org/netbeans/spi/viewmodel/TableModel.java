@@ -35,8 +35,6 @@ public interface TableModel extends Model {
      * @param node a object returned from 
      *         {@link org.netbeans.spi.viewmodel.TreeModel#getChildren} for this row
      * @param columnID a id of column defined by {@link ColumnModel#getID}
-     * @throws ComputingException if the value is not known yet and will 
-     *         be computed later
      * @throws UnknownTypeException if there is no TableModel defined for given
      *         parameter type
      *

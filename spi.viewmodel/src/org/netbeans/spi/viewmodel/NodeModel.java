@@ -25,10 +25,6 @@ public interface NodeModel extends Model {
     /**
      * Returns display name for given node.
      *
-     * @throws  ComputingException if the display name resolving process 
-     *          is time consuming, and the value will be updated later
-     * @throws  UnknownTypeException if this NodeModel implementation is not
-     *          able to resolve display name for given node type
      * @return  display name for given node
      */
     public abstract String getDisplayName (Object node) 
@@ -37,8 +33,6 @@ public interface NodeModel extends Model {
     /**
      * Returns icon for given node.
      *
-     * @throws  ComputingException if the icon resolving process 
-     *          is time consuming, and the value will be updated later
      * @throws  UnknownTypeException if this NodeModel implementation is not
      *          able to resolve icon for given node type
      * @return  icon for given node
@@ -49,8 +43,6 @@ public interface NodeModel extends Model {
     /**
      * Returns tooltip for given node.
      *
-     * @throws  ComputingException if the tooltip resolving process 
-     *          is time consuming, and the value will be updated later
      * @throws  UnknownTypeException if this NodeModel implementation is not
      *          able to resolve tooltip for given node type
      * @return  tooltip for given node

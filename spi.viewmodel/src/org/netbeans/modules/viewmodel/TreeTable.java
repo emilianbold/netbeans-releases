@@ -119,7 +119,6 @@ ExplorerManager.Provider, PropertyChangeListener, TreeExpansionListener {
 //            treeTable.setToolTipText (model.getShortDescription (
 //                model.getRoot ()
 //            ));
-//        } catch (ComputingException ex) {
 //        } catch (UnknownTypeException ex) {
 //            ex.printStackTrace ();
 //        }

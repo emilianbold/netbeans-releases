@@ -298,6 +298,36 @@ public class TreeModelNode extends AbstractNode {
         }
     }
     
+    private static String i (String text) {
+        if (text.startsWith ("<html>")) {
+            if (text.indexOf ("<i>") > 0) return text;
+            text = text.substring (6, text.length () - 7);
+        }
+        return "<html><i>" + text + "</i></html>";
+    }
+    
+    private static String htmlValue (String name) {
+        if (name.startsWith ("<html>")) return name;
+        else return null;
+    }
+    
+    private static String removeHTML (String text) {
+        text = text.replaceAll ("<i>", "");
+        text = text.replaceAll ("</i>", "");
+        text = text.replaceAll ("<b>", "");
+        text = text.replaceAll ("</b>", "");
+        text = text.replaceAll ("<html>", "");
+        text = text.replaceAll ("</html>", "");
+        text = text.replaceAll ("</font>", "");
+        int i = text.indexOf ("<font");
+        while (i >= 0) {
+            int j = text.indexOf (">", i);
+            text = text.substring (0, i) + text.substring (j + 1);
+            i = text.indexOf ("<font");
+        }
+        return text;
+    }
+    
     
     // innerclasses ............................................................
     
@@ -408,7 +438,6 @@ public class TreeModelNode extends AbstractNode {
 //                String name = null;
 //                try {
 //                    name = model.getDisplayName (tmn.object);
-//                } catch (ComputingException e) {
 //                } catch (UnknownTypeException e) {
 //                }
 //                if (name != null)
@@ -482,7 +511,7 @@ public class TreeModelNode extends AbstractNode {
                 if (value == null)
                     value = "";
                 else
-                    value = i ((String) value);
+                    properties.put (id + "#html", i ((String) value));
             }
             properties.put (id, value);
             
@@ -491,7 +520,17 @@ public class TreeModelNode extends AbstractNode {
                 public void run () {
                     try {
                         Object value = model.getValueAt (object, id);
-                        properties.put (id, value);
+                        if (value instanceof String) {
+                            properties.put (id, removeHTML ((String) value));
+                            properties.put (
+                                id + "#html", 
+                                htmlValue ((String) value)
+                            );
+                            System.out.println("set value " + value);
+                            System.out.println("          " + removeHTML ((String) value));
+                            System.out.println("          " + htmlValue ((String) value));
+                        } else
+                            properties.put (id, value);
                         firePropertyChange (id, null, value);
                     } catch (UnknownTypeException e) {
                         if (!(object instanceof String)) {
@@ -500,19 +539,20 @@ public class TreeModelNode extends AbstractNode {
                             System.out.println (model);
                             System.out.println ();
                         }
+                    } catch (Throwable t) {
+                        t.printStackTrace();
                     }
                 }
             });
             
+            // 4) return value
             return value;
         }
         
-        String i (String text) {
-            if (text.startsWith ("<html>")) {
-                if (text.indexOf ("<i>") > 0) return text;
-                text = text.substring (6, text.length () - 7);
-            }
-            return "<html><i>" + text + "</i></html>";
+        public Object getValue (String attributeName) {
+            if (attributeName.equals ("htmlDisplayValue"))
+                return properties.get (id + "#html");
+            return super.getValue (attributeName);
         }
         
         public void setValue (Object v) throws IllegalAccessException, 

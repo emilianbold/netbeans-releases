@@ -41,10 +41,6 @@ public interface TreeModelFilter extends Model {
      *
      * @param   original the original tree model
      * @param   parent a parent of returned nodes
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getChildren (...)</code> method call only!
      *
@@ -62,10 +58,6 @@ public interface TreeModelFilter extends Model {
      * 
      * @param   original the original tree model
      * @param   node the parent node
-     * @throws  NoInformationException if the set of children can not be 
-     *          resolved
-     * @throws  ComputingException if the children resolving process 
-     *          is time consuming, and will be performed off-line 
      * @throws  UnknownTypeException if this TreeModel implementation is not
      *          able to resolve children for given node type
      *

@@ -38,8 +38,6 @@ public interface TableModelFilter extends Model {
      * @param   original the original table model
      * @param   node a object returned from {@TreeModel#getChildren} for this row
      * @param   columnID a id of column defined by {@link ColumnModel#getID}
-     * @throws  ComputingException if the value is not known yet and will 
-     *          be computed later
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getValueAt (...)</code> method call only!
      *

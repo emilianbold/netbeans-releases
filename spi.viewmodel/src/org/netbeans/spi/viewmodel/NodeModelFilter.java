@@ -26,8 +26,6 @@ public interface NodeModelFilter extends Model {
      * Returns filterred display name for given node. You should not 
      * throw UnknownTypeException directly from this method!
      *
-     * @throws  ComputingException if the display name resolving process 
-     *          is time consuming, and the value will be updated later
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getDisplayName (...)</code> method call only!
      * @return  display name for given node
@@ -39,8 +37,6 @@ public interface NodeModelFilter extends Model {
      * Returns filterred icon for given node. You should not throw 
      * UnknownTypeException directly from this method!
      *
-     * @throws  ComputingException if the icon resolving process 
-     *          is time consuming, and the value will be updated later
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getIconBase (...)</code> method call only!
      * @return  icon for given node
@@ -52,8 +48,6 @@ public interface NodeModelFilter extends Model {
      * Returns filterred tooltip for given node. You should not throw 
      * UnknownTypeException directly from this method!
      *
-     * @throws  ComputingException if the tooltip resolving process 
-     *          is time consuming, and the value will be updated later
      * @throws  UnknownTypeException this exception can be thrown from 
      *          <code>original.getShortDescription (...)</code> method call only!
      * @return  tooltip for given node

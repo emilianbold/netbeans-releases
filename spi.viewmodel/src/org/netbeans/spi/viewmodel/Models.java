@@ -469,8 +469,6 @@ public final class Models {
          * @param   parent a parent of returned nodes
          * @throws  NoInformationException if the set of children can not be 
          *          resolved
-         * @throws  ComputingException if the children resolving process 
-         *          is time consuming, and will be performed off-line 
          * @throws  UnknownTypeException if this TreeModel implementation is not
          *          able to resolve dchildren for given node type
          *
@@ -488,8 +486,6 @@ public final class Models {
          * @param   node the parent node
          * @throws  NoInformationException if the set of children can not be 
          *          resolved
-         * @throws  ComputingException if the children resolving process 
-         *          is time consuming, and will be performed off-line 
          * @throws  UnknownTypeException if this TreeModel implementation is not
          *          able to resolve children for given node type
          *
@@ -568,8 +564,6 @@ public final class Models {
         /**
          * Returns display name for given node.
          *
-         * @throws  ComputingException if the display name resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve display name for given node type
          * @return  display name for given node
@@ -582,8 +576,6 @@ public final class Models {
         /**
          * Returns icon for given node.
          *
-         * @throws  ComputingException if the icon resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve icon for given node type
          * @return  icon for given node
@@ -596,8 +588,6 @@ public final class Models {
         /**
          * Returns tooltip for given node.
          *
-         * @throws  ComputingException if the tooltip resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve tooltip for given node type
          * @return  tooltip for given node
@@ -674,8 +664,6 @@ public final class Models {
          *
          * @param node a object returned from {@TreeModel#getChildren} for this row
          * @param columnID a id of column defined by {@link ColumnModel#getID}
-         * @throws ComputingException if the value is not known yet and will 
-         *         be computed later
          * @throws UnknownTypeException if there is no TableModel defined for given
          *         parameter type
          *
@@ -1074,8 +1062,6 @@ public final class Models {
          *
          * @param node a object returned from {@TreeModel#getChildren} for this row
          * @param columnID a id of column defined by {@link ColumnModel#getID}
-         * @throws ComputingException if the value is not known yet and will 
-         *         be computed later
          * @throws UnknownTypeException if there is no TableModel defined for given
          *         parameter type
          *
@@ -1372,8 +1358,6 @@ public final class Models {
         /**
          * Returns display name for given node.
          *
-         * @throws  ComputingException if the display name resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve display name for given node type
          * @return  display name for given node
@@ -1403,8 +1387,6 @@ public final class Models {
         /**
          * Returns tooltip for given node.
          *
-         * @throws  ComputingException if the tooltip resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve tooltip for given node type
          * @return  tooltip for given node
@@ -1434,8 +1416,6 @@ public final class Models {
         /**
          * Returns icon for given node.
          *
-         * @throws  ComputingException if the icon resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve icon for given node type
          * @return  icon for given node
@@ -1532,10 +1512,6 @@ public final class Models {
          * Returns number of children for given node.
          * 
          * @param   node the parent node
-         * @throws  NoInformationException if the set of children can not be 
-         *          resolved
-         * @throws  ComputingException if the children resolving process 
-         *          is time consuming, and will be performed off-line 
          * @throws  UnknownTypeException if this TreeModel implementation is not
          *          able to resolve children for given node type
          *
@@ -1581,8 +1557,6 @@ public final class Models {
         /**
          * Returns display name for given node.
          *
-         * @throws  ComputingException if the display name resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve display name for given node type
          * @return  display name for given node
@@ -1595,8 +1569,6 @@ public final class Models {
         /**
          * Returns icon for given node.
          *
-         * @throws  ComputingException if the icon resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve icon for given node type
          * @return  icon for given node
@@ -1609,8 +1581,6 @@ public final class Models {
         /**
          * Returns tooltip for given node.
          *
-         * @throws  ComputingException if the tooltip resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve tooltip for given node type
          * @return  tooltip for given node
@@ -1653,8 +1623,6 @@ public final class Models {
          * @param node a object returned from 
          *         {@link org.netbeans.spi.viewmodel.TreeModel#getChildren} for this row
          * @param columnID a id of column defined by {@link ColumnModel#getID}
-         * @throws ComputingException if the value is not known yet and will 
-         *         be computed later
          * @throws UnknownTypeException if there is no TableModel defined for given
          *         parameter type
          *
@@ -2085,8 +2053,6 @@ public final class Models {
         /**
          * Returns icon for given node.
          *
-         * @throws  ComputingException if the icon resolving process 
-         *          is time consuming, and the value will be updated later
          * @throws  UnknownTypeException if this NodeModel implementation is not
          *          able to resolve icon for given node type
          * @return  icon for given node
