@@ -205,7 +205,10 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
                                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                             MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
-                                                new Object[] {UtilConvert.unicodesToChars(item.getKey())}
+                                                new Object[] {
+                                                    UtilConvert.unicodesToChars(item.getKey()),
+                                                    Util.getLocaleLabel(getFileEntry())
+                                                }
                                             ),
                                             NotifyDescriptor.ERROR_MESSAGE);
                                         TopManager.getDefault().notify(msg);
