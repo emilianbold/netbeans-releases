@@ -79,6 +79,7 @@
 	<mapID target="deploying_tasks" url="web/webmod/run_web_quickref.html" />
 	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
 	<mapID target="add_web_to_j2ee_app" url="web/warpkg/add_web_to_j2ee_app.html" /> 
+
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="about_web_service_rpc" url="web/webservice/about_jwsd_rpc.html" />
 	<mapID target="about_web_service_message" url="web/webservice/about_jwsd_message.html" />
@@ -86,6 +87,8 @@
 	<mapID target="tweak_wsdl" url="web/webservice/tweak_wsdl.html" />
 	<mapID target="about_wscompile" url="web/webservice/about_wscompile.html" />
 	<mapID target="select_wscompile_ws" url="web/webservice/select_wscompile_ws.html" />
+	<mapID target="compile_doc" url="web/webservice/compile_doc.html" />
+	<mapID target="compile_rpc" url="web/webservice/compile_rpc.html" />
         <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
