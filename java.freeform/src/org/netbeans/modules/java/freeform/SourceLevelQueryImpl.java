@@ -21,6 +21,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -30,7 +31,7 @@ import org.w3c.dom.Element;
  * Specifies the Java source level (for example 1.4) to use for freeform sources.
  * @author Jesse Glick
  */
-final class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
+final class SourceLevelQueryImpl implements SourceLevelQueryImplementation, AntProjectListener {
     
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
@@ -45,6 +46,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         this.helper = helper;
         this.evaluator = evaluator;
         this.aux = aux;
+        this.helper.addAntProjectListener(this);
     }
     
     public synchronized String getSourceLevel(FileObject file) {
@@ -88,6 +90,15 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         return null;
     }
     
+    public void propertiesChanged(org.netbeans.spi.project.support.ant.AntProjectEvent ev) {
+    }
+
+    public void configurationXmlChanged(org.netbeans.spi.project.support.ant.AntProjectEvent ev) {
+        synchronized (this) {
+            this.sourceLevels.clear();
+        }
+    }
+    
     /**
      * Get the source level indicated in a compilation unit (or null if none is indicated).
      */
@@ -98,6 +109,6 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation {
         } else {
             return null;
         }
-    }
+    }   
     
 }
