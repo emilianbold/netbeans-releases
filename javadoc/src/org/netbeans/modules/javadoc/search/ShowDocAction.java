@@ -107,15 +107,17 @@ public class ShowDocAction extends CookieAction {
         // no editor underneath the node --> node's name is the only searchable text.
         if (ec != null) {
             JEditorPane[] panes = ec.getOpenedPanes();
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            for (int i = 0; i < panes.length; i++) {
-                if (activetc.isAncestorOf(panes[i])) {
-                    // we have found the correct JEditorPane
-                    String s = extractTextFromPane(panes[i]);
-                    if (s != null)
-                        return s;
-                    else
-                        break;
+            if (panes != null) {
+                TopComponent activetc = TopComponent.getRegistry().getActivated();
+                for (int i = 0; i < panes.length; i++) {
+                    if (activetc.isAncestorOf(panes[i])) {
+                        // we have found the correct JEditorPane
+                        String s = extractTextFromPane(panes[i]);
+                        if (s != null)
+                            return s;
+                        else
+                            break;
+                    }
                 }
             }
         }
