@@ -537,18 +537,22 @@ public class DefaultClassPathProvider implements ClassPathProvider {
             this.support.removePropertyChangeListener (l);
         }
         
-        public synchronized void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
-            if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
-                GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
-                this.cachedCompiledClassPath = null;
+        public void pathsAdded(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
+            synchronized (this) {
+                if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
+                    GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
+                    this.cachedCompiledClassPath = null;
+                }
             }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }    
     
-        public synchronized void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
-            if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
-                GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
-                this.cachedCompiledClassPath = null;
+        public void pathsRemoved(org.netbeans.api.java.classpath.GlobalPathRegistryEvent event) {
+            synchronized (this) {
+                if (ClassPath.COMPILE.equals(event.getId()) || ClassPath.SOURCE.equals(event.getId())) {
+                    GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
+                    this.cachedCompiledClassPath = null;
+                }
             }
             this.support.firePropertyChange(PROP_RESOURCES,null,null);
         }
