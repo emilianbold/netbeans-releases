@@ -359,9 +359,10 @@ public class RADComponent implements FormDesignValue {
         
         if (formModel.getVariablePool().findVariableType(value) != null) {
             IllegalArgumentException iae =
-                new IllegalArgumentException("Component name already int use"); // NOI18N
+                new IllegalArgumentException("Component name already in use"); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
-                iae, FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"));
+                iae, ErrorManager.USER, null, 
+                FormEditor.getFormBundle().getString("ERR_COMPONENT_NAME_ALREADY_IN_USE"), null, null);
             throw iae;
         }
 
@@ -369,7 +370,8 @@ public class RADComponent implements FormDesignValue {
             IllegalArgumentException iae =
                 new IllegalArgumentException("Invalid component name"); // NOI18N
             TopManager.getDefault ().getErrorManager().annotate(
-                iae, FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"));
+                iae, ErrorManager.USER, null, 
+                FormEditor.getFormBundle().getString("ERR_INVALID_COMPONENT_NAME"), null, null);
             throw iae;
         }
         
