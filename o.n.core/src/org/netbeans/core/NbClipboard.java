@@ -135,47 +135,8 @@ public final class NbClipboard extends ExClipboard
                 if (lastWindowActivated != 0 && lastWindowActivated+100 < System.currentTimeMillis()) {
                     lastWindowActivated = 0;
                     
-                    //
-                    // following code could be greatly simplified by implementing 
-                    // API enhancement in issue 16849 - we would just use:
-                    //
-                    // syncTask.schedule(0);
-                    // syncTask.waitFinished (100);
-                    //
-                    // instead we have to mangle with notify, wait synchronized 
-                    // and TaskListener:
-                    
-                    class Wait implements org.openide.util.TaskListener {
-                        private boolean waiting;
-                        
-                        public synchronized void taskFinished (org.openide.util.Task t) {
-                            t.removeTaskListener (this);
-                            log.log (log.INFORMATIONAL, "Additional refresh - taskFinished"); // NOI18N
-                            if (waiting) {
-                                waiting = false;
-                                notify ();
-                            }
-                        }
-
-                        public synchronized void block () {
-                            try {
-                                log.log (log.INFORMATIONAL, "Waiting for system clipboard to refresh"); // NOI18N
-                                waiting = true;
-                                wait (100);
-                                if (waiting) {
-                                    log.log (log.INFORMATIONAL, "Has not refreshed meanwhile"); // NOI18N
-                                }
-                            } catch (InterruptedException ex) {
-                                // ok do nothing.
-                            }
-                        }
-                    }
-                    Wait w = new Wait ();
-                    synchronized (w) {
-                        syncTask.schedule(0);
-                        syncTask.addTaskListener(w);
-                        w.block ();
-                    }
+                    syncTask.schedule(0);
+                    syncTask.waitFinished (100);
                 }
                 
                 
