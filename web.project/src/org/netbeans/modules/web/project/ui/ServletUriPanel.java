@@ -38,7 +38,12 @@ public class ServletUriPanel extends javax.swing.JPanel {
     }
     
     public String getServletUri() {
-        return (String)jComboBox1.getSelectedItem();
+        String servletUri = (String)jComboBox1.getSelectedItem();
+        
+        if (servletUri != null && servletUri.length() > 0 && servletUri.charAt(0) != '/')
+            servletUri = "/" + servletUri;
+        
+        return servletUri;
     }
     
     /** This method is called from within the constructor to
