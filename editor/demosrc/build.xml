@@ -1,0 +1,70 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="standalone-editor" default="standalone" basedir=".">
+
+  <property name="target_dir" value="../netbeans/standalone" />
+  
+  <target name="init">
+     <mkdir dir="${target_dir}" />
+     <copy file="../netbeans/modules/ext/nb-editor.jar" tofile="${target_dir}/nb-editor.jar" />
+  </target>
+  
+  <target name="editor" depends="init">
+     <ant dir=".." target="jars" />
+  </target>
+
+  <target name="compile" depends="editor">
+     <javac srcdir="base" destdir="base" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+       <classpath>
+        <pathelement location="${target_dir}/nb-editor.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+  <target name="jars" depends="compile">
+     <jar jarfile="${target_dir}/editor.jar"
+           basedir="base"
+	   excludes="base/settings.properties"
+           excludesfile="../../nbbuild/standard-jar-excludes.txt"
+           compress="false">
+     </jar>
+  </target>
+
+   <target name="standalone" depends="jars">
+     <copy file="base/run.sh" tofile="netbeans/standalone/run.sh" />
+     <copy file="base/settings.properties" tofile="${target_dir}/settings.properties" />
+
+     <mkdir dir="${target_dir}/ParserDB" />
+     <copy todir="${target_dir}/ParserDB">
+        <fileset dir="../release/system/ParserDB" />
+     </copy>
+
+     <mkdir dir="${target_dir}/DTDs" />
+     <copy todir="${target_dir}/DTDs">
+        <fileset dir="../src/org/netbeans/modules/editor/resources/DTDs" />
+     </copy>
+   </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="base">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete dir="${target_dir}"/>
+  </target>
+
+</project>
+
