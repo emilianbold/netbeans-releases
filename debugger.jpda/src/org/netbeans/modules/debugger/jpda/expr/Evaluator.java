@@ -672,29 +672,64 @@ public class Evaluator implements JavaParserVisitor {
             return visit(first, data);
 
         case JavaParserTreeConstants.JJTNAME:
+        {
             String identifier = (String) visit(first, data);
             if (identifier.indexOf('.') == -1) {
                 return new Identifier(true, frame.thisObject(), frame.location().declaringType(), identifier);
             }
-            String typeOrVariable = identifier.substring(0, identifier.lastIndexOf('.'));
-            Value variable = null;
+
+            // check for variable dereference:  var.toString
+            int idx = identifier.indexOf('.');
+            String name = identifier.substring(0, idx);
+
+            ObjectReference member = null;
             try {
-                variable = evaluateVariable(new Identifier(true, frame.thisObject(), frame.location().declaringType(), typeOrVariable));
+                Value variable = evaluateVariable(new Identifier(true, frame.thisObject(), frame.location().declaringType(), name));
+                Assert.assertAssignable(variable, ObjectReference.class, node, "objectReferenceRequiredOnDereference", variable);
+                member = (ObjectReference) variable;
             } catch (EvaluationException e) {
                 // not a variable
             }
-            if (variable != null) {
+
+            ReferenceType type = null;
+            if (member == null) {
+                // type declaration first: System.out, or java.lang.System.out.println
+                for (;;) {
+                    try {
+                        type = resolveType(name);
+                        break;
+                    } catch (EvaluationException e) {
+                        // unknown type
+                    } catch (IncompatibleThreadStateException e) {
+                        Assert.error(node, "internalError");
+                    }
+                    idx = identifier.indexOf('.', idx + 1);
+                    if (idx == -1) break;
+                    name = identifier.substring(0, idx);
+                }
+                if (type == null) Assert.error(node, "unknownType", identifier);
+            }
+
+            // resolve dereferences until the last name component
+            for (;;) {
+                int idx2 = identifier.indexOf('.', idx + 1);
+                int idx22 = idx2;
+                if (idx2 == -1) {
+                    idx2 = identifier.length();
+                }
+                Identifier ident;
+                if (member != null) {
+                    ident = new Identifier(false, member, identifier.substring(idx + 1, idx2));
+                } else {
+                    ident = new Identifier(false, type, identifier.substring(idx + 1, idx2));
+                }
+                if (idx22 == -1) return ident;
+                Value variable = evaluateVariable(ident);
                 Assert.assertAssignable(variable, ObjectReference.class, node, "objectReferenceRequiredOnDereference", variable);
-                return new Identifier(false, (ObjectReference) variable, identifier.substring(identifier.lastIndexOf('.') + 1));
+                member = (ObjectReference) variable;
+                idx = idx2;
             }
-
-            try {
-                ReferenceType type = resolveType(typeOrVariable);
-                return new Identifier(false, type, identifier.substring(identifier.lastIndexOf('.') + 1));
-            } catch (Exception e) {
-                return Assert.error(node, "unknownType", typeOrVariable);
-            }
-
+        }
         case JavaParserTreeConstants.JJTRESULTTYPE:
             Object type = first.jjtAccept(this, data);
             if (type instanceof ReferenceType) {
