@@ -33,10 +33,12 @@ Microsystems, Inc. All Rights Reserved.
         <module name="java/api" testtypes="unit" attributes="stable"/>
         <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
         <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
+        <module name="java/javacore" testtypes="unit" attributes="stable"/>
         <module name="java/platform" testtypes="unit" attributes="stable"/>
         <module name="java/project" testtypes="unit" attributes="stable"/>
         <module name="projects/projectui" testtypes="unit" attributes="stable"/>
         <module name="projects/libraries" testtypes="unit" attributes="stable"/>
+        <module name="refactoring" testtypes="unit" attributes="stable"/>
         <!-- removed (not runnable): html, schema2beans -->
         <!-- other candidate modules in current default moduleconfig: autoupdate core/execution core/favorites core/multiview core/output2 core/settings core/windows debuggercore debuggerjpda editor editor/fold editor/util extbrowser httpserver j2eeserver java/javacore mdr openide/masterfs refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser web/webapi xml/api xml/core xml/schema xml/text-edit xml/xsl -->
     </config>
