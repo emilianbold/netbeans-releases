@@ -286,31 +286,29 @@ class CmpRelationshipsDialogHelper {
         }
 
         public void setFieldStates(FormRoleHelper opositeRole) {
-            if(lastCreateField != isCreateCmrField()) {
-                lastCreateField = isCreateCmrField();
-                String fieldName = getFieldName();
-                if (lastCreateField) {
-                    if (fieldName.length() == 0) {
-                        setFieldName(lastFieldName);
-                    }
-                    fieldNameTextField.setEnabled(true);
-                    setLocalGetter(lastGetter);
-                    getterCheckBox.setEnabled(true);
-                    setLocalSetter(lastSetter);
-                    setterCheckBox.setEnabled(true);
-                } else {
-                    lastGetter = getterCheckBox.isSelected();
-                    lastSetter = setterCheckBox.isSelected();
-                    if (fieldName.length() > 0) {
-                        lastFieldName = fieldName;
-                    }
-                    setFieldName(null);
-                    fieldNameTextField.setEnabled(false);
-                    setLocalGetter(false);
-                    getterCheckBox.setEnabled(false);
-                    setLocalSetter(false);
-                    setterCheckBox.setEnabled(false);
+            lastCreateField = isCreateCmrField();
+            String fieldName = getFieldName();
+            if (lastCreateField) {
+                if (fieldName.length() == 0) {
+                    setFieldName(lastFieldName);
                 }
+                fieldNameTextField.setEnabled(true);
+                setLocalGetter(lastGetter);
+                getterCheckBox.setEnabled(true);
+                setLocalSetter(lastSetter);
+                setterCheckBox.setEnabled(true);
+            } else {
+                lastGetter = getterCheckBox.isSelected();
+                lastSetter = setterCheckBox.isSelected();
+                if (fieldName.length() > 0) {
+                    lastFieldName = fieldName;
+                }
+                setFieldName(null);
+                fieldNameTextField.setEnabled(false);
+                setLocalGetter(false);
+                getterCheckBox.setEnabled(false);
+                setLocalSetter(false);
+                setterCheckBox.setEnabled(false);
             }
             boolean opositeMultiple = opositeRole.isMultiple();
             String fieldType = getFieldType();
