@@ -56,7 +56,7 @@ class FileChooser extends JFileChooser {
         // don't offer C:\Document and Settings\joeuser as the default starting
         // point in the file chooser on Windows
         
-        if (Utilities.isWindows() && getCurrentDirectory() != null) {
+        if (Utilities.isWindows() && getCurrentDirectory() == null) {
             String dir = System.getProperty("user.home");   //NOI18N
             if (dir != null && dir.startsWith(":\\", 1)) { // NOI18N
                 dir = dir.substring(0, 3);
