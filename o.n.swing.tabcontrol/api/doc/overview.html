@@ -15,6 +15,12 @@ Where these classes differ from JTabbedPane is as follows:
 <li>Very granular event model - TabDataModel is designed on the assumption that the application may atomically add/remove/modify discontiguous ranges of tabs, their contents, titles or icons, and that such operations should be handled atomically, generating a single event/repaint</li>
 </ul>
 
+Note that <a href="org/netbeans/swing/popupswitcher/package-summary.html">org.netbeans.swing.popupswitcher</a>
+package is part of this module only due to dependencies which preclude to put
+it into the core/windows which would be probably better place since the package
+is used by both of these modules. Therefore the package is not intended for
+external use in the meantime unless you are aware of this issue.
+
 <h2>How it works</h2>
 
 Pending... <a href="architecture-summary.html">Architecture Summary is available</a>.
