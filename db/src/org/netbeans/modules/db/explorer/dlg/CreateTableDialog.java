@@ -239,8 +239,12 @@ public class CreateTableDialog {
                               else
                                 cmd.setObjectOwner((String)ownercombo.getSelectedItem());
                               
-                              CreateIndex icmd = spec.createCommandCreateIndex(tablename);
-                              icmd.setIndexName(tablename+"_IDX"); // NOI18N
+                              /* this variables and operation provide support for
+                               * creating indexes for primary or unique keys,
+                               * most of database are creating indexes by myself,
+                               * support was removed */
+                              //CreateIndex icmd = spec.createCommandCreateIndex(tablename);
+                              //icmd.setIndexName(tablename+"_IDX"); // NOI18N
                               org.netbeans.lib.ddl.impl.TableColumn cmdcol = null;
                               Enumeration enu = data.elements();
                               while (enu.hasMoreElements()) {
@@ -260,13 +264,15 @@ public class CreateTableDialog {
                                   String defval = enuele.getDefaultValue();
                                   if (defval != null && defval.length() > 0)
                                       cmdcol.setDefaultValue(defval);
-                                  if (enuele.isIndexed()) {
-                                      org.netbeans.lib.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
-                                  }
+                                  // index support removed!
+                                  //if (enuele.isIndexed()) {
+                                  //    org.netbeans.lib.ddl.impl.TableColumn icol = icmd.specifyColumn(name);
+                                  //}
                               }
 
                               cbuff.add(cmd);
-                              if (icmd.getColumns().size()>0) cbuff.add(icmd);
+                              // index support removed!
+                              //if (icmd.getColumns().size()>0) cbuff.add(icmd);
 
                               //execute DDL command
                               cbuff.execute();
