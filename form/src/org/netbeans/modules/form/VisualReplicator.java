@@ -438,34 +438,35 @@ public class VisualReplicator {
         throws Exception
     {
         Object clone;
-        boolean convertedToRPC;
+        Object compClone = null;
+
         if (needsConversion(metacomp)) { // clone with conversion
             clone = cloneComponentWithConversion(
                     metacomp,
                     metacomp == getTopMetaComponent() ? requiredTopClass : null,
                     relativeProperties);
-            convertedToRPC = clone instanceof RootPaneContainer
-                && !(metacomp.getBeanInstance() instanceof RootPaneContainer);
+
+            if (clone instanceof RootPaneContainer
+                  && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
+                compClone = // the cloned component was put to the content pane
+                    ((RootPaneContainer)clone).getContentPane().getComponent(0);
         }
-        else { // just clone the bean otherwise
+        else // just clone the bean
             clone = metacomp.cloneBeanInstance(relativeProperties);
-            convertedToRPC = false;
-        }
+
+        if (compClone == null)
+            compClone = clone;
 
         metaToClone.put(metacomp, clone);
         cloneToMeta.put(clone, metacomp);
 
-        if (clone instanceof java.beans.DesignMode)
-            ((java.beans.DesignMode)clone).setDesignTime(true);
+        if (compClone instanceof java.beans.DesignMode)
+            ((java.beans.DesignMode)compClone).setDesignTime(
+                                                 getDesignRestrictions() != 0);
 
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
-            final Container cont = (Container)
-                (convertedToRPC ? // if converted to RootPaneContainer,
-                  // the cloned container was put to the content pane
-                ((RootPaneContainer)clone).getContentPane().getComponent(0)
-                : // otherwise it's the clone itself
-                clone);
+            final Container cont = (Container) compClone;
             final Container contDelegate = metacont.getContainerDelegate(cont);
 
             // copy menu
@@ -488,7 +489,7 @@ public class VisualReplicator {
                                                           relativeProperties);
 
                 // add cloned subcomponents to container
-                if (!(clone instanceof JToolBar))
+                if (!(cont instanceof JToolBar))
                     laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
                 else { // a L&F workaround for JToolBar (MetalToobarUI)
                     SwingUtilities.invokeLater(new Runnable() {
@@ -512,7 +513,7 @@ public class VisualReplicator {
                                   && type != RADMenuItemComponent.T_SEPARATOR ?
                     cloneComponent(menuItemComp, relativeProperties) : null;
 
-                addToMenu(clone, menuItem);
+                addToMenu(compClone, menuItem);
             }
         }
 
