@@ -78,6 +78,9 @@ public class BeanInfoGeneration extends JellyTestCase {
     /** setUp method  */
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
+
+        new EventTool().waitNoEvent(DELAY);
+        new PropertiesAction().perform();
         
         FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
@@ -87,7 +90,6 @@ public class BeanInfoGeneration extends JellyTestCase {
         } catch (IOException e) {
             fail(e);
         }
-        new PropertiesAction().perform();
     }
     
     /** tearDown method */
@@ -97,7 +99,7 @@ public class BeanInfoGeneration extends JellyTestCase {
         
         Utilities.delete(NAME_TEST_FILE + ".java");
         Utilities.delete(NAME_TEST_FILE + "BeanInfo.java");
-        
+        new RepositoryTabOperator().getRootNode().select();
         /*
         FilesystemNode fsNode = new FilesystemNode(repositoryRootNode, sampleDir);
         fsNode.unmount();
