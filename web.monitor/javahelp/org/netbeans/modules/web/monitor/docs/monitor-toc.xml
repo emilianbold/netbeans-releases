@@ -12,17 +12,17 @@
 <toc version="2.0">
 
 <!-- last updated 09Feb04 -->
-<tocitem text="Core IDE Help">
-<tocitem text="HTTP Monitor">
+<tocitem text="IDE Configuration">
+<tocitem text="Using the HTTP Monitor">
     <!-- ctx_monitorintro is csh for F1 on HTTP Monitor -->
-    <tocitem text="Monitoring Data Flow on the Web Server" target="ctx_monitorintro" /> 
-	<tocitem text="Viewing HTTP Monitor Data Records" target="monitor_view" /> 
-	<tocitem text="Using the HTTP Monitor Toolbar" target="monitor_sort" />
-	<!-- monitor_resend is csh for Help button on Edit and replay dialog -->
-	<tocitem text="Editing and Replaying Monitor Data Records" target="monitor_resend" /> 
-	<tocitem text="Saving HTTP Monitor Data Records" target="monitor_store" />  
-	<tocitem text="Deleting HTTP Monitor Data Records" target="monitor_delete" />
-        <tocitem text="Deploying the HTTP Monitor for a Web Module" target="monitor_servconfig" />
+    <tocitem text="About the HTTP Monitor" target="ctx_monitorintro" />
+    <tocitem text="Working with the HTTP Monitor" target="monitor_process" />
+    <tocitem text="HTTP Monitor Tasks: Quick Reference" target="monitor_quickref" />
+    <tocitem text="Setting Up the HTTP Monitor" target="monitor_display" />
+    <tocitem text="Analyzing HTTP Requests" target="monitor_view" />  
+    <!-- monitor_resend is csh for Help button on Edit and replay dialog -->
+    <tocitem text="Saving HTTP Request Records" target="monitor_store" />
+    <tocitem text="Replaying HTTP Requests" target="monitor_resend" /> 
 </tocitem>
 </tocitem>
 </toc>
