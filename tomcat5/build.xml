@@ -46,6 +46,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
         <pathelement location="${nb_root}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+        <pathelement location="${nb_root}/libs/external/xerces-2.6.0.jar"/>
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
