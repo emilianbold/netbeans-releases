@@ -13,9 +13,10 @@
 
 package gui.propertyeditors;
 
-import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.ColorProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
+
 import org.netbeans.jellytools.properties.editors.ColorCustomEditorOperator;
 
 import org.netbeans.junit.NbTestSuite;
@@ -107,12 +108,12 @@ public class PropertyType_Color extends PropertyEditorsTest {
         String returnValue;
         PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
         
-        returnValue = new Property(propertiesTab, propertyName_L).getValue();
+        returnValue = new ColorProperty(propertiesTab, propertyName_L).getValue();
         err.println("GET VALUE = [" + returnValue + "].");
         
         // hack for color poperty, this action expects, that right value is displayed as tooltip
-        returnValue = new Property(propertiesTab, propertyName_L).valueButtonOperator().getToolTipText();
-        err.println("GET VALUE TOOLTIP = [" + returnValue + "].");
+        //        returnValue = new Property(propertiesTab, propertyName_L).valueButtonOperator().getToolTipText();
+        //        err.println("GET VALUE TOOLTIP = [" + returnValue + "].");
         
         return returnValue;
     }

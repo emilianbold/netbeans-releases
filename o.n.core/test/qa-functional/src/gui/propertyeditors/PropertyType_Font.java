@@ -14,7 +14,7 @@
 package gui.propertyeditors;
 
 import java.util.StringTokenizer;
-import org.netbeans.jellytools.properties.Property;
+import org.netbeans.jellytools.properties.FontProperty;
 import org.netbeans.jellytools.properties.PropertySheetOperator;
 import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 
@@ -116,12 +116,12 @@ public class PropertyType_Font extends PropertyEditorsTest {
         String returnValue;
         PropertySheetTabOperator propertiesTab = new PropertySheetTabOperator(new PropertySheetOperator(propertiesWindow));
         
-        returnValue = new Property(propertiesTab, propertyName_L).getValue();
+        returnValue = new FontProperty(propertiesTab, propertyName_L).getValue();
         err.println("GET VALUE = [" + returnValue + "].");
         
         // hack for color poperty, this action expects, that right value is displayed as tooltip
-        returnValue = new Property(propertiesTab, propertyName_L).valueButtonOperator().getToolTipText();
-        err.println("GET VALUE TOOLTIP = [" + returnValue + "].");
+//        returnValue = new Property(propertiesTab, propertyName_L).valueButtonOperator().getToolTipText();
+//        err.println("GET VALUE TOOLTIP = [" + returnValue + "].");
         
         return returnValue;
     }

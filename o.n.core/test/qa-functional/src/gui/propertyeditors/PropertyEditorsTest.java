@@ -60,8 +60,8 @@ public abstract class PropertyEditorsTest extends JellyTestCase {
     
     
     public void setUp() {
-        //err = System.out;
-        err = getLog();
+        err = System.out;
+        //err = getLog();
         log = getRef();
         
         try {

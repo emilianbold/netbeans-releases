@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,12 +45,12 @@ public class PropertyType_boolean extends PropertyEditorsTest {
     }
     
     public void testByComboFalse(){
-        propertyValue_L = Boolean.FALSE.toString().substring(0,1).toUpperCase()+Boolean.FALSE.toString().substring(1);
+        propertyValue_L = Boolean.FALSE.toString();
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
     public void testByComboTrue(){
-        propertyValue_L = Boolean.TRUE.toString().substring(0,1).toUpperCase()+Boolean.TRUE.toString().substring(1);
+        propertyValue_L = Boolean.TRUE.toString();
         setByCombo(propertyName_L, propertyValue_L, true);
     }
     
