@@ -15,7 +15,6 @@ package org.netbeans.modules.form;
 
 import java.beans.*;
 import org.openide.nodes.Node;
-import org.openide.explorer.propertysheet.editors.NodePropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 
@@ -32,9 +31,9 @@ import org.openide.explorer.propertysheet.ExPropertyEditor;
  *
  * Second:
  *     void initPropertyEditor(PropertyEditor prEd);
- * initializes property editor for a property - beacause property editors
- * are usually constructed with no parameters, but often needs some
- * context (e.g. FormAwareEditor needs FormModel).
+ * initializes property editor for a property - property editors are usually
+ * constructed with no parameters, but often needs some context
+ * (e.g. FormAwareEditor needs FormModel).
  *
  * Third:
  *     FormModel getFormModel();
@@ -54,10 +53,7 @@ public interface FormPropertyContext {
 
     /** 
      * Support for default implementation of FormPropertyContext interface.
-     * One FormModel and one Node instances are needed for now.
-     * Currently FormAwareEditor and NodePropertyEditor are recognized
-     * and initialized. It may change in the future...
-     * To use this class, implement methods getFormModel() and getNode().
+     * A FormModel must be supplied in addition to use this support.
      */
     public static abstract class DefaultSupport implements FormPropertyContext {
 
@@ -65,7 +61,7 @@ public interface FormPropertyContext {
             FormModel formModel = getFormModel();
             return formModel != null;
         }
-        
+
         public void initPropertyEditor(PropertyEditor prEd) {
             FormModel formModel = getFormModel();
 
