@@ -282,7 +282,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
 
                             public void paint (Graphics g) {
                                 //          super.paint (g);
-                                FontEditor.this.paintValue (g, new Rectangle (0, 0, getSize ().width - 1, getSize ().height - 1));
+                                FontEditor.this.paintValue (g, new Rectangle (0, 0, this.getSize ().width - 1, this.getSize ().height - 1));
                             }
                         };
             p.add ("Center", pp); // NOI18N
@@ -361,27 +361,3 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     }
 
 }
-
-/*
- * Log
- *  11   Gandalf   1.10        1/13/00  Petr Jiricka    i18n
- *  10   Gandalf   1.9         1/13/00  Pavel Buzek     
- *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         9/10/99  Ian Formanek    Removed deprecated code
- *  7    Gandalf   1.6         8/17/99  Ian Formanek    Generated serial version
- *       UID
- *  6    Gandalf   1.5         8/17/99  Petr Nejedly    fixed #3416
- *  5    Gandalf   1.4         7/13/99  Ian Formanek    Implements 
- *       XMLPropertyEditor
- *  4    Gandalf   1.3         7/8/99   Jesse Glick     Context help.
- *  3    Gandalf   1.2         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         3/4/99   Jan Jancura     bundle moved
- *  1    Gandalf   1.0         1/5/99   Ian Formanek    
- * $
- */
-
-
-
-

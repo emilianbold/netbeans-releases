@@ -97,14 +97,14 @@ public class BundleEditPanel extends javax.swing.JPanel {
 	        if (table != null) {
 	            javax.swing.table.JTableHeader header = table.getTableHeader();
 	            if (header != null) {
-	                setForeground(header.getForeground());
-	                setBackground(header.getBackground());
-	                setFont(header.getFont());
+	                this.setForeground(header.getForeground());
+	                this.setBackground(header.getBackground());
+	                this.setFont(header.getFont());
 	            }
                 }
 
                 setText((value == null) ? "" : value.toString()); // NOI18N
-		setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
+		this.setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder")); // NOI18N
 	        return this;
             }
         };
@@ -190,7 +190,7 @@ public class BundleEditPanel extends javax.swing.JPanel {
                         // In each iteration highlight one occurence of findString in this cell.
                         while((index = text.indexOf(findString, index)) >= 0) {
 
-                            int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+getInsets().left;
+                            int x = (int)g.getFontMetrics().getStringBounds(text.substring(0, index), g).getWidth()+this.getInsets().left;
 
                             g.setColor(settings.getHighlightBackground());
                             g.fillRect(x, 0, width, g.getClipBounds().height);

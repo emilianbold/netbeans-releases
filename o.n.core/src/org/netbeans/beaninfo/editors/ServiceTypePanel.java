@@ -243,9 +243,9 @@ public class ServiceTypePanel extends ExplorerPanel {
                 final int ii = i;
                 nue[i] = new Node.PropertySet () {
                              {
-                                 setName (sets[ii].getName ());
-                                 setDisplayName (sets[ii].getDisplayName ());
-                                 setShortDescription (sets[ii].getShortDescription ());
+                                 this.setName (sets[ii].getName ());
+                                 this.setDisplayName (sets[ii].getDisplayName ());
+                                 this.setShortDescription (sets[ii].getShortDescription ());
                              }
                              public Node.Property[] getProperties () {
                                  Node.Property[] props = sets[ii].getProperties ();

@@ -118,9 +118,9 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
 
         void initRBImages() {
             Toolkit toolkit = Toolkit.getDefaultToolkit();
-            java.net.URL source = getClass().getResource("radbutt1.gif");
+            java.net.URL source = this.getClass().getResource("radbutt1.gif");
             radButtIcon1 = toolkit.getImage(source);
-            source = getClass().getResource("radbutt2.gif");
+            source = this.getClass().getResource("radbutt2.gif");
             radButtIcon2 = toolkit.getImage(source);
 
             MediaTracker mt = new MediaTracker(this);

@@ -1372,21 +1372,21 @@ public class RADComponent {
 
         class EventEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
             public String getAsText() {
-                if (getValue() == null)
+                if (this.getValue() == null)
                     return FormEditor.getFormBundle().getString("CTL_NoEvent");
                 else
-                    return(String) getValue();
+                    return(String) this.getValue();
             }
 
             public void setAsText(String selected) {
                 HandlerSetChange change = new HandlerSetChange();
-                if (getValue() == null) {               // new event
+                if (this.getValue() == null) {               // new event
                     change.getAdded().add(selected);
                 } else {                                 // rename
                     change.getRenamedNewNames().add(selected);
                     change.getRenamedOldNames().add(getAsText());
                 }
-                setValue(change);
+                this.setValue(change);
             }
 
             public boolean supportsEditingTaggedValues() {
@@ -1447,7 +1447,7 @@ public class RADComponent {
                             if (isNew) {
                                 HandlerSetChange change = new HandlerSetChange();
                                 change.getAdded().add(selected);
-                                setValue(change);
+                                EventEditor.this.setValue(change);
                                 eventCombo.addItem(selected);
                             }
                             event.gotoEventHandler(selected);

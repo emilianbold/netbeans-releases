@@ -217,14 +217,14 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
         void setValue( ColoringBean c ) {
             value = c;
-            repaint();
+            this.repaint();
         }
 
         public void paint( java.awt.Graphics g ) {
             if (value != null) {
                 Coloring coloring = value.coloring.apply( value.defaultColoring );
 
-                java.awt.Rectangle box = getBounds();
+                java.awt.Rectangle box = this.getBounds();
 
                 // clear background
                 g.setColor(coloring.getBackColor());
@@ -395,35 +395,3 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
     }
 
 }
-
-/*
- * Log
- *  20   Jaga      1.12.1.3.1.23/24/00  Miloslav Metelka 
- *  19   Jaga      1.12.1.3.1.13/21/00  Miloslav Metelka 
- *  18   Jaga      1.12.1.3.1.03/15/00  Miloslav Metelka after structural change
- *  17   Gandalf-post-FCS1.12.1.3    3/8/00   Petr Nejedly    fix for 
- *       firePropertyChange
- *  16   Gandalf-post-FCS1.12.1.2    3/1/00   Petr Nejedly    
- *  15   Gandalf-post-FCS1.12.1.1    2/29/00  Petr Nejedly    compilation fix
- *  14   Gandalf-post-FCS1.12.1.0    2/28/00  Petr Nejedly    Redesign of 
- *       ColoringEditor
- *  13   Gandalf   1.12        2/16/00  Petr Nejedly    Changed behaviour of 
- *       Inherited checkboxes
- *  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
- *  11   Gandalf   1.10        1/11/00  Petr Nejedly    ScrollPane, distribution
- *       of changes
- *  10   Gandalf   1.9         1/4/00   Miloslav Metelka 
- *  9    Gandalf   1.8         12/28/99 Miloslav Metelka 
- *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
- *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
- *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
- *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
- *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
- * $
- */

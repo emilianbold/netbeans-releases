@@ -486,8 +486,8 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
             static final long serialVersionUID =-8877709520578055594L;
             /** Creates a new MyListCellRenderer */
             public MyListCellRenderer () {
-                setOpaque (true);
-                setBorder (new EmptyBorder (1, 1, 1, 1));
+                this.setOpaque (true);
+                this.setBorder (new EmptyBorder (1, 1, 1, 1));
             }
 
             /** Overrides default preferredSize impl.
@@ -496,7 +496,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
             */
             public Dimension getPreferredSize () {
                 try {
-                    FontMetrics fontMetrics = getFontMetrics(getFont());
+                    FontMetrics fontMetrics = this.getFontMetrics(this.getFont());
                     return new Dimension (
                                fontMetrics.stringWidth (names [index]) + 30,
                                fontMetrics.getHeight () + 4
@@ -507,7 +507,7 @@ public final class ColorEditor implements PropertyEditor, org.openide.explorer.p
             }
 
             public void paint (Graphics g) {
-                Dimension rectangle = getSize ();
+                Dimension rectangle = this.getSize ();
                 Color color = g.getColor ();
 
                 if (selected) g.setColor (UIManager.getColor ("List.selectionBackground")); // NOI18N
