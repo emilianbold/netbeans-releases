@@ -503,6 +503,10 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="Services">
 
+    <folder name="Browsers">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+    </folder>
+
     <folder name="Hidden">
       <attr name="hidden" boolvalue="true" />
 
