@@ -218,17 +218,24 @@ public class PaletteItem implements java.io.Serializable {
     }
 
     public boolean isBorder() {
-        getBeanClass();
+        if (getBeanClass() == null)
+            return false;
+
         return BorderInfo.class.isAssignableFrom(beanClass)
                || Border.class.isAssignableFrom(beanClass);
     }
 
     public boolean isVisual() {
-        return Component.class.isAssignableFrom(getBeanClass());
+        if (getBeanClass() == null)
+            return false;
+
+        return Component.class.isAssignableFrom(beanClass);
     }
 
     public boolean isLayout() {
-        getBeanClass();
+        if (getBeanClass() == null)
+            return false;
+
         return LayoutSupportDelegate.class.isAssignableFrom(beanClass)
                || LayoutManager.class.isAssignableFrom(beanClass);
     }
@@ -251,7 +258,9 @@ public class PaletteItem implements java.io.Serializable {
     } */
 
     public boolean isMenu() {
-        getBeanClass();
+        if (getBeanClass() == null)
+            return false;
+
         return MenuBar.class.isAssignableFrom(beanClass) ||
             PopupMenu.class.isAssignableFrom(beanClass) ||
             JMenuBar.class.isAssignableFrom(beanClass) ||
