@@ -54,6 +54,8 @@ public class IndexSearch
             extends TopComponent
     implements Externalizable {
 
+    private static final String INDEX_SEARCH_HELP_CTX_KEY = "javadoc.search.window"; //NO I18N
+    
     //static final long serialVersionUID =3206093459760846163L;
     private static ResourceBundle bundle = null;
         
@@ -237,7 +239,7 @@ public class IndexSearch
     }
     
     public HelpCtx getHelpCtx () {
-        return new HelpCtx (IndexSearch.class);
+        return new HelpCtx (INDEX_SEARCH_HELP_CTX_KEY);
     }
 
     /** This method is called from within the constructor to
