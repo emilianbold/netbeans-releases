@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
@@ -36,6 +34,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 
 
 /**
@@ -46,7 +45,13 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
     
     private static final long serialVersionUID = 1L;
 //    private boolean imp = true;
-    
+
+    // Make sure list of steps is accurate.
+    private static final String[] STEPS = new String[]{
+                NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
+                NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LAB_ConfigureSourceRoots") //NOI18N
+            };
+
     /** Create a new wizard iterator. */
     public ImportEjbJarProjectWizardIterator() {}
     
@@ -56,14 +61,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
             new PanelSourceFolders.Panel()
         };
     }
-    
-    private String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
-            NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"LAB_ConfigureSourceRoots") //NOI18N
-        };
-    }
-    
+
     public Set/*<DataObject>*/ instantiate() throws IOException/*, IllegalStateException*/ {
         Set resultSet = new HashSet ();
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
@@ -116,24 +114,7 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
         this.wiz = wiz;
         index = 0;
         panels = createPanels();
-        // Make sure list of steps is accurate.
-        String[] steps = createSteps();
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            if (steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent)c;
-                // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-            }
-        }
+        Utils.setSteps(panels, STEPS);
     }
 
     public void uninitialize(WizardDescriptor wiz) {
