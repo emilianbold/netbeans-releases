@@ -282,7 +282,7 @@ private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN
           
             value = newValue;
             defaultCheckBox.setSelected( false ); // uncheck default
-            firePropertyChange( PROP_VALUE, null, null );
+            PropWithDefaultPanel.this.firePropertyChange( PROP_VALUE, null, null );
             repaint(); // XXX - Hack for PropertyPanel not updating 
           }
         }
@@ -299,12 +299,17 @@ private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN
           } else { // checked, provide model with default color
             value = null;
             modelSetValue( defaultValue );
-            firePropertyChange( PROP_VALUE, null, null );
+            PropWithDefaultPanel.this.firePropertyChange( PROP_VALUE, null, null );
           }
         }
       } );
       add( defaultCheckBox, BorderLayout.SOUTH );
     }
+
+//    public void firePropertyChange( String s, Object old, Object newVal ) {
+//      super.firePropertyChange( s, old, newVal );
+//    }
+
     
     public void setValue( Object value ) {
       this.value = value;
@@ -396,28 +401,3 @@ private void fontCheckBoxActionPerformed (java.awt.event.ActionEvent evt) {//GEN
   }
   
 }
-
-/*
- * Log
- *  14   Gandalf-post-FCS1.12.1.0    2/28/00  Petr Nejedly    Redesign of 
- *       ColoringEditor
- *  13   Gandalf   1.12        2/16/00  Petr Nejedly    Changed behaviour of 
- *       Inherited checkboxes
- *  12   Gandalf   1.11        1/13/00  Miloslav Metelka Localization
- *  11   Gandalf   1.10        1/11/00  Petr Nejedly    ScrollPane, distribution
- *       of changes
- *  10   Gandalf   1.9         1/4/00   Miloslav Metelka 
- *  9    Gandalf   1.8         12/28/99 Miloslav Metelka 
- *  8    Gandalf   1.7         11/14/99 Miloslav Metelka 
- *  7    Gandalf   1.6         11/5/99  Jesse Glick     Context help jumbo 
- *       patch.
- *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  5    Gandalf   1.4         8/9/99   Ian Formanek    Generated Serial Version
- *       UID
- *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
- *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 
- *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
- *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
- * $
- */
