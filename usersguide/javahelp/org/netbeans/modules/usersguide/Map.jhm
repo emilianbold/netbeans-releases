@@ -37,7 +37,7 @@
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
 
 <mapID target="files.diff" url="files/files_diff.html" />
-<mapID target="files.icons" url="files/files_icons.html" />
+<!--<mapID target="files.icons" url="files/files_icons.html" />-->
 <mapID target="files.ignore-files" url="files/files_ignore-files.html" />
 <mapID target="files.search" url="files/files_search.html" />
 <mapID target="files.template" url="files/files_template.html" />
@@ -94,6 +94,7 @@
 <mapID target="java.java_sources" url="java/java_sources.html" />
 <mapID target="java.encoding" url="java/encoding.html" />
 
+<mapID target="comp_about" url="compile/comp_about.html" />
 <mapID target="comp_classpath" url="compile/comp_classpath.html" />
 <mapID target="comp_dependencies" url="compile/comp_dependencies.html" />
 <mapID target="comp_file" url="compile/comp_file.html" />
@@ -104,6 +105,7 @@
 <mapID target="comp_libraries" url="compile/comp_libraries.html" />
 <mapID target="output.window" url="run/output_window.html" />
 
+<mapID target="run_about" url="run/run_about.html" />
 <mapID target="run_app" url="run/run_app.html" />
 <mapID target="run_args" url="run/run_args.html" />
 <mapID target="run_classpath" url="run/run_classpath.html" />
@@ -924,22 +926,18 @@
 
    <mapID target="org.netbeans.modules.editor.options.BaseOptionsBeanInfo$AbbrevMapEditor" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType" url="javadoc/jdk_search_engine.html" /> 
-   <mapID target="org.netbeans.modules.javadoc.search.Jdk12SearchType_japan" url="javadoc/japanese_search_engine.html" /> 
-   <mapID target="org.netbeans.modules.javadoc.search.JavaDocSearchType" url="javadoc/searchengine.html" /> 
-
    <mapID target="org.netbeans.modules.javadoc.search.IndexSearch" url="pending.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentTopComponent" url="pending.html" />
    <mapID target="org.netbeans.modules.javadoc.comments.AutoCommentAction" url="pending.html" />
    <mapID target="org.netbeans.modules.javadoc.comments.CorrectJavaDocAction" url="javadoc/accuracy.html" />
-
+   <mapID target="javadoc.auto.comment" url="javadoc/auto_comment_window.html" />
+   
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentPanel.dialog" url="pending.html"  />
    <mapID target="org.netbeans.modules.javadoc.GenerateDocAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormCustomEditorAdvanced" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
-   <mapID target="org.netbeans.modules.javadoc.settings.DocumentationSettings" url="javadoc/customize.html" />
 
    <mapID target="org.netbeans.modules.editor.options.AllOptions" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.options.BaseOptions" url="pending.html" />

@@ -47,11 +47,11 @@
   </tocitem>
 
   <tocitem text="Working with Files" >
-    <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
     <tocitem text="Searching Files" target="files.search" />
+    <tocitem text="Comparing Two Files in the IDE" target="files.diff" />
     <tocitem text="Creating a Template" target="files.template" />
     <tocitem text="Working with Unknown File Extensions" target="files.unknown" />
-    <tocitem text="Specifying Files to Ignore" target="tbd" />
+    <tocitem text="Specifying Files to Ignore" target="files.ignore-files" />
   </tocitem>
 
   <tocitem text="Using Version Control with the IDE" >
@@ -208,19 +208,19 @@
     <tocitem text="Encapsulating Fields" target="refactor.encapsulateField" />   
   </tocitem>
   <tocitem text="Building Java Applications" >
-     <tocitem text="About Building" target="tbd" />
+     <tocitem text="About Building Java Applications" target="comp_about" />
      <tocitem text="Working with Builds" target="comp_process" />
      <tocitem text="Building Tasks: Quick Reference" target="comp_quickref" />
      <tocitem text="Building a Project" target="comp_project" />
      <tocitem text="Compiling a Single File" target="comp_file" />
-     <tocitem text="Setting the Compilation Classpath" target="comp_classpath" />
-     <tocitem text="Creating Build Dependencies Between Projects" target="comp_dependencies" />
+     <tocitem text="Managing the Classpath" target="comp_classpath" />
+     <tocitem text="Creating Dependencies Between Projects" target="comp_dependencies" />
      <tocitem text="Building a JAR File" target="comp_jar" />
      <tocitem text="Output Window" target="output.window"/>
   </tocitem>
 
   <tocitem text="Running Java Applications" >
-    <tocitem text="About Running Java Applications" target="tbd" />
+    <tocitem text="About Running Java Applications" target="run_about" />
     <tocitem text="Working with Project Execution" target="run_process" />
     <tocitem text="Running Tasks: Quick Reference" target="run_quickref" />
     <tocitem text="Running an Application" target="run_app" />
@@ -236,6 +236,7 @@
     <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
     <tocitem text="Attaching Source Code to Java Class Libraries" target="debug.source"></tocitem>
+    <tocitem text="Writing A Debug Target for a Freeform Project" target="proj_free_debug" />
     <tocitem text="Setting Breakpoints">
       <tocitem text="Breakpoints in the IDE" target="breakpoint.about"/>
       <tocitem text="Setting a Java Breakpoint" target="breakpoint.setting"/>
@@ -255,11 +256,6 @@
       <tocitem text="Debugging Threads in the IDE" target="debug.threads"/>
       <tocitem text="Using the Call Stack" target="debug.callstack"/>
       <tocitem text="Popping a Call From the Call Stack" target="debug.pop"/>
-    </tocitem>
-    <tocitem text="Debugging Freeform Projects">
-      <tocitem text="About Debugging Freeform Projects" target="tbd"/>
-      <tocitem text="Writing a Debug Target for a Freeform Project" target="tbd"/>
-      <tocitem text="Debugging Single Files in a Freeform Project" target="tbd"/>
     </tocitem>
   </tocitem>
 
