@@ -311,7 +311,7 @@ public final class EclipseProject implements Comparable {
                 logger.info("Not able to resolve absolute path for classpath" + // NOI18N
                         " entry \"" + entry.getRawPath() + "\". This classpath" + // NOI18N
                         " entry is external source which points to PATH VARIABLE" + // NOI18N
-                        " which points to final destination. This future will be" + // NOI18N
+                        " which points to final destination. This feature will be" + // NOI18N
                         " supported in future version of Importer."); // NOI18N
                 entry.setType(ClassPathEntry.TYPE_UNKNOWN);
             }
