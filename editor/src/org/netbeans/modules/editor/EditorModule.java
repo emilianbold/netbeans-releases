@@ -46,11 +46,6 @@ import com.netbeans.developer.modules.text.java.JCStorage;
 */
 public class EditorModule extends ModuleInstall {
 
-  private static final String DB_DIR = "ParserDB";
-  private static final String JDK12 = "jdk12";
-  private static final String JCS_EXT = "jcs";
-  private static final String JDK12_JAR
-      = "/com/netbeans/developer/modules/text/java/jdk12.jar";
 
   private static final String MIME_PLAIN = "text/plain";
   private static final String MIME_JAVA = "text/x-java";
@@ -100,37 +95,8 @@ public class EditorModule extends ModuleInstall {
     // Customized dialog creator
     DialogSupport.setDialogCreator(new NbDialogCreator());
 
-    // Java Completion support
     FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-    FileObject rootFolder = rfs.getRoot();
-    FileObject dbFolder = rootFolder.getFileObject(DB_DIR);
-    if (dbFolder == null) {
-      try {
-        dbFolder = rootFolder.createFolder(DB_DIR);
-      } catch (IOException e) {
-        // probably exists or cannot be created
-      }
-    }
-
-    if (dbFolder != null) {
-      FileObject jdkFO = dbFolder.getFileObject(JDK12, JCS_EXT);
-      if (jdkFO == null) { // jdk12 database doesn't exist
-        try {
-          InputStream is = this.getClass().getResourceAsStream(JDK12_JAR);
-          if (is != null) {
-            FileUtil.extractJar(dbFolder, is);
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    }
-
-    File rootDir = org.openide.execution.NbClassPath.toFile (rfs.getRoot ());
-    if (rootDir != null) {
-      File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
-      JCStorage.init(dbDir);
-    }
+    JCStorage.init(rfs.getRoot());
 
     // Indentation engines registration
     registerIndents();
@@ -190,6 +156,7 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  34   Gandalf   1.33        11/8/99  Miloslav Metelka 
  *  33   Gandalf   1.32        10/29/99 Jaroslav Tulach Does not cast to 
  *       LocalFileSystem
  *  32   Gandalf   1.31        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
