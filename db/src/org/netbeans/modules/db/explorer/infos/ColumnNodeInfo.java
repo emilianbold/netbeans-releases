@@ -237,4 +237,14 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             throw new DatabaseException(e.getMessage());
         }
     }
+
+    /**
+     * Using name of column for hashCode computation.
+     *
+     * @return  computed hashCode based on name of column
+     */
+    public int hashCode() {
+        return getName().hashCode();
+    }
+    
 }
