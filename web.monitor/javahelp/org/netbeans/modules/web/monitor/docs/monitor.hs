@@ -7,7 +7,7 @@
 <!-- last updated 08feb02-->
 
   <!-- title -->
-  <title>HTTP Monitor Documentation</title>
+  <title>HTTP Monitor</title>
   
   <!-- maps -->
   <maps>

@@ -23,7 +23,7 @@ help\
 	<mapID target="monitor_servconfig" url="monitor/servconfig.html" />
 
 	<mapID target="org.netbeans.modules.web.monitor.client.MonitorAction"
-url="ctx_monitorintro.html" />
+url="monitor/ctx_monitorintro.html" />
 
 
 
