@@ -419,10 +419,12 @@
     <tocitem text="CVS Filesystem Properties" target="cvs.filesystemproperties" />
     <tocitem text="Managing Connections to Remote Repositories" target="cvs.password" />
   </tocitem>
-  <tocitem text="Integrating a Version Control System" target="vcs.vcsgeneric">
-    <tocitem text="Mounting a Directory With Version Control" target="vcsgeneric.mounting" />
+  <tocitem text="Working With Generic VCS Support" target="vcs.vcsgeneric">
+    <tocitem text="Mounting a Directory With Generic VCS Support" target="vcsgeneric.mounting" />
+    <tocitem text="Mounting a CVS Directory With Generic VCS Support" target="vcsgeneric.custom-cvs" />
     <tocitem text="Mounting a PVCS Directory" target="vcsgeneric.custom-pvcs" />
     <tocitem text="Mounting a Visual Source Safe Directory" target="vcsgeneric.custom-vss" />
+    <tocitem text="Generic VCS Wizard" target="vcsgeneric.wizard" />
     <tocitem text="Creating a Custom VCS Profile" target="vcsgeneric.newprofile" />
     <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
     <tocitem text="Setting Advanced Options for VCS Commands" target="vcsgeneric.command-opts" />
@@ -436,7 +438,7 @@
     <tocitem text="Runtime Variables" target="vcsgeneric.vars-runtime" />
     <tocitem text="Substitution Formats for Variables" target="vcsgeneric.vars-subcode" />
     <tocitem text="Reconfiguring a VCS Filesystem" target="vcsgeneric.settings" />
-    <tocitem text="VCS Filesystems Properties" target="vcsgeneric.filesystemproperties" />
+    <tocitem text="Generic VCS Filesystems Properties" target="vcsgeneric.filesystemproperties" />
   </tocitem>
     <tocitem text="Using VCS Groups" target="vcs.groups" >
     <tocitem text="Adding and Deleting VCS Groups" target="vcs.groupsadd" />
