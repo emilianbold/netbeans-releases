@@ -49,11 +49,11 @@ import org.netbeans.modules.tomcat5.nodes.DebuggingTypeEditor;
 
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.debugger.AbstractDebuggerInfo;
-import org.netbeans.modules.debugger.CoreDebugger;
-import org.netbeans.modules.debugger.AbstractDebugger;
-import org.openide.debugger.DebuggerInfo;
-import org.openide.debugger.Debugger;
+//import org.netbeans.modules.debugger.AbstractDebuggerInfo;
+//import org.netbeans.modules.debugger.CoreDebugger;
+//import org.netbeans.modules.debugger.AbstractDebugger;
+//import org.openide.debugger.DebuggerInfo;
+//import org.openide.debugger.Debugger;
 import org.openide.util.Lookup;
 
 /** DeploymentManager that can deploy to 
@@ -338,42 +338,42 @@ public class TomcatManager implements DeploymentManager {
         
         boolean found = false;
         
-        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
-
-        if (d == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
-            return false;
-        }
-
-        DebuggerInfo serverDInfo = null;
-        String serverPName = "";
-
-        int debuggers = d.getDebuggers().length;
-        try {
-            serverDInfo = getStartTomcat().getDebugInfo(null);
-        } catch (Exception e) {
-            // don't care - just a try
-        }
-
-        if (serverDInfo == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
-        }
-        if (serverDInfo instanceof AbstractDebuggerInfo) {
-            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
-        }
-
-        for (int i=0; i < debuggers; i++) {
-            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
-                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
-                if (di instanceof AbstractDebuggerInfo) {
-                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
-                    if (serverPName.equalsIgnoreCase(pname)) {
-                        found = true;
-                        break;
-                    } 
-                }
-            }
-        }
+//        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
+//
+//        if (d == null) {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
+//            return false;
+//        }
+//
+//        DebuggerInfo serverDInfo = null;
+//        String serverPName = "";
+//
+//        int debuggers = d.getDebuggers().length;
+//        try {
+//            serverDInfo = getStartTomcat().getDebugInfo(null);
+//        } catch (Exception e) {
+//            // don't care - just a try
+//        }
+//
+//        if (serverDInfo == null) {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+//        }
+//        if (serverDInfo instanceof AbstractDebuggerInfo) {
+//            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
+//        }
+//
+//        for (int i=0; i < debuggers; i++) {
+//            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
+//                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
+//                if (di instanceof AbstractDebuggerInfo) {
+//                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
+//                    if (serverPName.equalsIgnoreCase(pname)) {
+//                        found = true;
+//                        break;
+//                    } 
+//                }
+//            }
+//        }
 
         return found;
     }
@@ -385,44 +385,44 @@ public class TomcatManager implements DeploymentManager {
     public boolean isSuspended() {
         boolean suspended = false;
         
-        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
-
-        if (d == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
-            return false;
-        }
-
-        DebuggerInfo serverDInfo = null;
-        String serverPName = "";
-
-        int debuggers = d.getDebuggers().length;
-        try {
-            serverDInfo = getStartTomcat().getDebugInfo(null);
-        } catch (Exception e) {
-            // don't care - just a try
-        }
-
-        if (serverDInfo == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
-        }
-        if (serverDInfo instanceof AbstractDebuggerInfo) {
-            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
-        }
-
-        for (int i=0; i < debuggers; i++) {
-            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
-                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
-                if (di instanceof AbstractDebuggerInfo) {
-                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
-                    if (serverPName.equalsIgnoreCase(pname)) {
-                        if (((AbstractDebugger)d.getDebuggers()[i]).getState() == Debugger.DEBUGGER_STOPPED) {
-                            suspended = true;
-                            break;
-                        }
-                    } 
-                }
-            }
-        }
+//        CoreDebugger d = (CoreDebugger)Lookup.getDefault().lookup (Debugger.class);
+//
+//        if (d == null) {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Debugger cannot be found in lookup.");
+//            return false;
+//        }
+//
+//        DebuggerInfo serverDInfo = null;
+//        String serverPName = "";
+//
+//        int debuggers = d.getDebuggers().length;
+//        try {
+//            serverDInfo = getStartTomcat().getDebugInfo(null);
+//        } catch (Exception e) {
+//            // don't care - just a try
+//        }
+//
+//        if (serverDInfo == null) {
+//            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "DebuggerInfo cannot be found for: " + this.toString());
+//        }
+//        if (serverDInfo instanceof AbstractDebuggerInfo) {
+//            serverPName = ((AbstractDebuggerInfo)serverDInfo).getProcessName();
+//        }
+//
+//        for (int i=0; i < debuggers; i++) {
+//            if (d.getDebuggers()[i] instanceof AbstractDebugger) {
+//                DebuggerInfo di = ((AbstractDebugger)d.getDebuggers()[i]).getDebuggerInfo();
+//                if (di instanceof AbstractDebuggerInfo) {
+//                    String pname = ((AbstractDebuggerInfo)di).getProcessName();
+//                    if (serverPName.equalsIgnoreCase(pname)) {
+//                        if (((AbstractDebugger)d.getDebuggers()[i]).getState() == Debugger.DEBUGGER_STOPPED) {
+//                            suspended = true;
+//                            break;
+//                        }
+//                    } 
+//                }
+//            }
+//        }
 
         return suspended;
     }

@@ -29,7 +29,6 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/execution/deprecated.dir}/${nb.modules/autoload.dir}/org-openide-execution-deprecated.jar"/>
         <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
         <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-        <pathelement location="${debuggercore/oldapi.dir}/${nb.modules/autoload.dir}/openide-debugger.jar"/> <!-- XXX -->
         <pathelement location="${schema2beans/rt.dir}/${nb.modules/autoload.dir}/schema2beans.jar"/>
         <pathelement location="${j2eeserver.dir}/${nb.modules/autoload.dir}/j2eeserver.jar"/>
         <pathelement location="${nb_all}/j2eeserver/external/ejb20.jar"/>

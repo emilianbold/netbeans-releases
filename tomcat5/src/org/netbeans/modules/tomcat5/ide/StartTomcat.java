@@ -38,8 +38,8 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.openide.debugger.DebuggerInfo;
-import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+//import org.openide.debugger.DebuggerInfo;
+//import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
 import org.openide.filesystems.*;
 
 import org.w3c.dom.Document;
@@ -196,26 +196,26 @@ public final class StartTomcat extends StartServer implements ProgressObject
         return this;
     }
 
-    public DebuggerInfo getDebugInfo(Target target) { 
-        RemoteDebuggerInfo rdi;
-        String dbgType = tm.getDebugType();
-        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
-            Integer dbgPort = tm.getDebugPort();
-            if (dbgPort != null) {
-                rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue());  // NOI18N
-            } else {
-                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
-            }
-        } else {
-            String shmem = tm.getSharedMemory();
-            if (shmem != null) {
-                rdi = new RemoteDebuggerInfo("localhost", shmem);
-            } else {
-                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
-            }
-        }
-        return rdi;
-    }
+//    public DebuggerInfo getDebugInfo(Target target) { 
+//        RemoteDebuggerInfo rdi;
+//        String dbgType = tm.getDebugType();
+//        if ((dbgType == null) || (dbgType.toLowerCase().indexOf("socket") > -1)) {
+//            Integer dbgPort = tm.getDebugPort();
+//            if (dbgPort != null) {
+//                rdi = new RemoteDebuggerInfo("localhost", dbgPort.intValue());  // NOI18N
+//            } else {
+//                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_DEBUG_PORT.intValue());  // NOI18N
+//            }
+//        } else {
+//            String shmem = tm.getSharedMemory();
+//            if (shmem != null) {
+//                rdi = new RemoteDebuggerInfo("localhost", shmem);
+//            } else {
+//                rdi = new RemoteDebuggerInfo("localhost", TomcatManager.DEFAULT_SHARED_MEMORY);
+//            }
+//        }
+//        return rdi;
+//    }
     
     private class StartRunnable implements Runnable {
         
