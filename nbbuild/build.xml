@@ -878,14 +878,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
         &lt;/apis&gt;
       </echo>
       
-      <concat destfile="modules_exported_interfaces/doc.gen" >
+      <concat destfile="modules_javadoc/index.xml" >
           <fileset dir="modules_exported_interfaces" includes="header.gen" />
           <fileset dir="modules_exported_interfaces" includes="*" excludes="*.gen" />
           <fileset dir="modules_exported_interfaces" includes="footer.gen" />
       </concat>
       
       <style 
-        in="modules_exported_interfaces/doc.gen" 
+        in="modules_javadoc/index.xml" 
         out="modules_javadoc/index.html" 
         style="javadoctools/export2html.xsl"
       />
