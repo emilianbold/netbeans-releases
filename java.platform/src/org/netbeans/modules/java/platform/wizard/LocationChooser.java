@@ -65,7 +65,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             this.accessory.setType ("");    //NOI18N
             File file = this.getSelectedFile();
             if (file != null) {
-                FileObject fo = FileUtil.toFileObject (file);
+                FileObject fo = FileUtil.toFileObject (FileUtil.normalizeFile(file));
                 if (fo != null) {
                     for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
                         PlatformInstall install = (PlatformInstall) it.next ();
@@ -300,7 +300,7 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
             if (f.isFile ()) {
                 return false;
             }
-            FileObject fo = FileUtil.toFileObject(f);
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
             if (fo == null) {
                 return false;
             }
