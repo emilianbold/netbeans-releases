@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.StringTokenizer;
+import org.openide.ErrorManager;
 
 import org.openide.util.SharedClassObject;
 
@@ -68,9 +69,9 @@ public class NbServletsInterceptor extends BaseInterceptor {
 	    addNbServlets( ctx );
 
 	} catch (Exception e) {
-            // PENDING: use ErrorManager to report this
-            String msg = "NbServletsInterceptor failed"; // NOI18N
-	    System.out.println(msg);
+            ErrorManager em = ErrorManager.getDefault();
+            em.annotate(e, "NbServletsInterceptor failed"); // NOI18N
+	    em.notify(ErrorManager.INFORMATIONAL, e);
 	}
 
     }

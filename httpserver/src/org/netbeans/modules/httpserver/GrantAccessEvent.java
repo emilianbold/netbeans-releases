@@ -16,19 +16,6 @@ package org.netbeans.modules.httpserver;
 import java.util.EventObject;
 import java.net.InetAddress;
 
-// TODO:
-// The idea is that the HttpServer will have listeners
-// and when request arrives, it creates this event
-// for (l in listeners) {
-//   l.grantAccess (accessEvent);
-//   if (accessEvent.isGranted ()) {
-//     ...
-//     return;
-//   };
-// }
-
-
-
 /** This event is sent to access listeners to
 * ask them, whether the access to specified resource is
 * allowed.

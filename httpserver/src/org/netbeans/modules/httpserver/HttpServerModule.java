@@ -303,8 +303,6 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         }
         
         public void resultChanged (LookupEvent evt) {
-	    // XXX tracing
-
             RequestProcessor.getDefault ().post (this);
         }
         

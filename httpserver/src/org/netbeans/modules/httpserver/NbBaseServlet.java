@@ -137,7 +137,9 @@ public abstract class NbBaseServlet extends HttpServlet {
                 String ext = pathI.substring(ind + 1);
                 encoding = FileUtil.getMIMEType(ext);
             }
-            // PENDING - URL com/ behaves incorrectly
+            // resources like com/ or org/ are in our classpath but have 
+            // zero lenght - use repository to get directory listing of items 
+            // tha are mounted
             if (encoding == null) {
                 encoding = "content/unknown"; // NOI18N
             }
