@@ -104,7 +104,8 @@ abstract class DefaultParser  extends DefaultHandler {
             is = fo.getInputStream();
             in.setByteStream(is);
             in.setSystemId(fo.getURL().toExternalForm());
-
+            customizeInputSource(in);
+            
             parser.parse(in);
 
         } catch (IOException io) {
@@ -147,6 +148,9 @@ abstract class DefaultParser  extends DefaultHandler {
         }                        
     }
 
+
+    protected void customizeInputSource(InputSource in) {
+    }
     
     /**
      * Parser default file object
