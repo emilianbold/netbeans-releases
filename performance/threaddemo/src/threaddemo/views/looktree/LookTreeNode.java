@@ -166,7 +166,7 @@ abstract class LookTreeNode implements LookListener {
     
     public LookTreeNode getChild( int index ) {
         
-        if ( children[index] == null ) {
+        if (children == null || children[index] == null) {
             Object o = getChildrenList().get(index);
             LookTreeNode ltn = new ChildLookTreeNode(findLook(o, getSelector()), o, this, index);
             children[index] = ltn; 
@@ -197,7 +197,8 @@ abstract class LookTreeNode implements LookListener {
     }
     
     public boolean isLeaf() {
-        return getLook().isLeaf( representedObject, getLookup() ).booleanValue();
+        Boolean b = getLook().isLeaf(representedObject, getLookup());
+        return b != null ? b.booleanValue() : false;
     }
     
     // Implementation of LookListener ------------------------------------------
