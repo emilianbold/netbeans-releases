@@ -18,10 +18,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -104,7 +102,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     
     public synchronized void run () {
         // PENDING check whether is runs or not
-        String uri = tm.getUri ();
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
         if (base == null) {
@@ -157,6 +154,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             );
         }
         
+        // XXX probably better is to check exit status before reporting COMPLETED
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.COMPLETED));
     }
     

@@ -13,15 +13,7 @@
 
 package org.netbeans.modules.tomcat5;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import javax.enterprise.deploy.model.DDBeanRoot;
-import javax.enterprise.deploy.model.DeployableObject;
-import javax.enterprise.deploy.spi.DConfigBeanRoot;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.exceptions.BeanNotFoundException;
-import javax.enterprise.deploy.spi.exceptions.ConfigurationException;
 
 /** Dummy implementation of target for Tomcat 5 server
  *
