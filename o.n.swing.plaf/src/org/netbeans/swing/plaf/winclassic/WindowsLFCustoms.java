@@ -74,6 +74,8 @@ public final class WindowsLFCustoms extends LFCustoms {
                 "ToggleButton.font", patch2Tahoma("ToggleButton.font"), //NOI18N
                 "Tree.font", patch2Tahoma("Tree.font"), //NOI18N
                 "Viewport.font", patch2Tahoma("Viewport.font"), //NOI18N
+                "windowTitleFont", patch2Tahoma("windowTitleFont"), //NOI18N
+                "controlFont", patch2Tahoma("controlFont"), //NOI18N
 
                 //Work around a bug in windows which sets the text area font to
                 //"MonoSpaced", causing all accessible dialogs to have monospaced text
