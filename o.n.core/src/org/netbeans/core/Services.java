@@ -586,21 +586,30 @@ final class Services extends ServiceType.Registry {
         return;
       }
       
-      TreeSet ll = new TreeSet (this);
+      List ll = new LinkedList ();
       Iterator it = c.iterator ();
       while (it.hasNext ()) {
-        ServiceType s = (ServiceType)it.next ();
+        ServiceType s = (ServiceType) it.next ();
+        // This is apparently to be expected:
         if (s.getClass () != cl) continue;
         
+        // Weird but I think necessary... --jglick
         it.remove ();
         ll.add (s);
       }
-      
+
+      // Again weird but errors otherwise... --jglick
       if (!ll.isEmpty ()) {
         // update current state
-        all = ll;
-        def = (ServiceType) all.first ();
-        setKeys (ll);
+        def = ll.isEmpty () ? null : (ServiceType) ll.get (0);
+        all = new TreeSet (this);
+        all.addAll (ll);
+        setKeys (all);
+
+        it = all.iterator ();
+        while (it.hasNext ()) refreshKey (it.next ());
+
+        firePropertyChange ();
       }
       
     }
@@ -630,6 +639,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  6    Gandalf   1.5         10/4/99  Jesse Glick     Make Default action on 
+*       service types.
 *  5    Gandalf   1.4         10/1/99  Jesse Glick     Cleanup of service type 
 *       name presentation.
 *  4    Gandalf   1.3         9/21/99  Jaroslav Tulach Updates the list of 
