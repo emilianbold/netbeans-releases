@@ -143,7 +143,9 @@ final class BeanCodeManager
                 if (prop instanceof RADProperty) {
                     Method propMethod = ((RADProperty)prop)
                                 .getPropertyDescriptor().getWriteMethod();
-                    if (propMethod.equals(statement.getMetaObject())) {
+                    if (propMethod != null
+                        && propMethod.equals(statement.getMetaObject()))
+                    {
                         CodeExpression propExp =
                             statement.getStatementParameters()[0];
                         FormCodeSupport.readPropertyExpression(
@@ -207,11 +209,17 @@ final class BeanCodeManager
                     }
             }
 
+            // code statements can be managed automatically only for
+            // writable properties of RADProperty class
             if (!(property instanceof RADProperty))
                 continue;
 
             Method statementMethod = ((RADProperty)property)
                              .getPropertyDescriptor().getWriteMethod();
+            if (statementMethod == null)
+                continue; // not a writable property
+
+            // get all statements of beanExpression which use statementMethod
             Iterator it = CodeStructure.getDefinedStatementsIterator(
                                                        beanExpression);
             CodeStatement[] existingStatements =
