@@ -376,6 +376,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                 if (tbp instanceof JButton) {
                                     JButton jtbp = (JButton)tbp;
                                     jtbp.setBorderPainted(false);
+                                    jtbp.setContentAreaFilled(false);
                                     jtbp.addMouseListener(sharedMouseListener);
                                 }
 
@@ -383,6 +384,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                                 add((Component)obj);
                                 if (obj instanceof JButton) {
                                     JButton button = (JButton)obj;
+                                    button.setContentAreaFilled(false);
                                     button.setBorderPainted(false);
                                     button.addMouseListener(sharedMouseListener);
                                 }
@@ -429,6 +431,7 @@ final class NbEditorToolBar extends JToolBar implements SettingsChangeListener {
                             }
                         }
 
+                        button.setContentAreaFilled(false);
                         button.setBorderPainted(false);
                         button.addActionListener(sharedActionListener);
                         button.addMouseListener(sharedMouseListener);
