@@ -1027,7 +1027,6 @@
    <mapID target="org.netbeans.core.execution.ProcessNode" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="objects/objects_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="objects/objects_runtime.html" /> 
-   <mapID target="org.netbeans.core.output.OutputSettings" url="configure/output.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext" url="workspace/workspace_jump.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceContext$TopFramePasteType" url="pending.html" /> 
    <mapID target="org.netbeans.core.windows.nodes.WorkspaceNewType" url="pending.html" /> 

@@ -10,8 +10,7 @@ core/ide/release/shortcuts.pdf
 core/javahelp/src/**/Bundle.properties
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpPage.html
 core/javahelp/src/org/netbeans/modules/javahelp/resources/masterHelpSet.xml
-core/output/src/**/Bundle.properties
+core/output2/src/**/Bundle.properties
 core/settings/src/**/Bundle.properties
-core/term/src/**/Bundle.properties
 core/ui/**/Bundle.properties
 core/windows/src/**/Bundle.properties

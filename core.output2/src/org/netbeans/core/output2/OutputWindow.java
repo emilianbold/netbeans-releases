@@ -1,0 +1,280 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.core.output2;
+
+import org.netbeans.core.output2.ui.AbstractOutputTab;
+import org.netbeans.core.output2.ui.AbstractOutputWindow;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+
+import java.awt.*;
+import java.util.HashSet;
+import org.openide.ErrorManager;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
+
+/**
+ * An output window.  Note this class contains no logic of interest - all
+ * events of interest are passed to the <code>Controller</code> which
+ * manages this instance (and possibly others).
+ * <p>
+ * The mechanism for displaying/not displaying the tabbed pane is handled in
+ * the superclass, which overrides addImpl() and remove() to automatically install
+ * the tabbed pane if more than one view is added, and remove it if only one
+ * is present - so it is enough to simply call add() and remove() with instances
+ * of OutputTab and the management of tabs will be taken care of automatically.
+ *
+ */
+public class OutputWindow extends AbstractOutputWindow {
+    private Controller controller;
+    static OutputWindow DEFAULT = null;
+
+    public OutputWindow() {
+        this (new Controller());
+    }
+
+    protected void closeRequest(AbstractOutputTab tab) {
+        controller.close (this, (OutputTab) tab, false);
+    }
+
+    OutputWindow (Controller controller) {
+        if (Controller.log) Controller.log("Created an output window");
+        this.controller = controller;
+        setDisplayName (NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT")); //NOI18N
+    }
+    
+    public static synchronized OutputWindow findDefault() {
+        if (DEFAULT == null) {
+            //If settings file is correctly defined call of WindowManager.findTopComponent() will
+            //call TestComponent00.getDefault() and it will set static field component.
+            TopComponent tc = WindowManager.getDefault().findTopComponent("output"); // NOI18N
+            if (tc != null) {
+                if (!(tc instanceof OutputWindow)) {
+                    //This should not happen. Possible only if some other module
+                    //defines different settings file with the same name but different class.
+                    //Incorrect settings file?
+                    IllegalStateException exc = new IllegalStateException
+                    ("Incorrect settings file. Unexpected class returned." // NOI18N
+                    + " Expected:" + OutputWindow.class.getName() // NOI18N
+                    + " Returned:" + tc.getClass().getName()); // NOI18N
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    //Fallback to accessor reserved for window system.
+                    tc = OutputWindow.getDefault();
+                }
+            } else {
+                tc = OutputWindow.getDefault();
+            }
+        }
+        return DEFAULT;
+    }
+    /* Singleton accessor reserved for window system ONLY. Used by window system to create
+     * TestComponent00 instance from settings file when method is given. Use <code>findDefault</code>
+     * to get correctly deserialized instance of TestComponent00. */
+    public static synchronized OutputWindow getDefault() {
+        if (DEFAULT == null) {
+            DEFAULT = new OutputWindow();
+        }
+        return DEFAULT;
+    }
+
+    public int getPersistenceType() {
+        return PERSISTENCE_ALWAYS;
+    }
+
+    public String preferredID() {
+        return "output"; //NOI18N
+    }
+
+    public Object readResolve() throws java.io.ObjectStreamException {
+        return getDefault();
+    }
+
+    Controller getController() {
+        return controller;
+    }
+
+    public void requestVisible () {
+        if (isOpened() && isShowing()) {
+            if (!isActivated()) {
+                if (Controller.log) Controller.log ("requestvisible");
+                super.requestVisible();
+            }
+        } else {
+            if (Controller.log) Controller.log ("CALLING OPEN() ON OUTPUT WINDOW!");
+            open();
+        }
+        super.requestVisible();
+    }
+
+    private boolean activated = false;
+    protected void componentActivated () {
+        super.componentActivated();
+        activated = true;
+        controller.notifyActivated (this);
+        AbstractOutputTab tab = getSelectedTab();
+        if (tab != null) {
+             tab.requestFocus();
+        }
+    }
+
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        activated = false;
+        controller.notifyDeactivated (this);
+    }
+
+    protected void removed(AbstractOutputTab view) {
+        if (Controller.log) Controller.log ("Tab has been removed.  Notifying controller.");
+        controller.notifyRemoved(this, (OutputTab) view);
+    }
+
+    protected void selectionChanged(AbstractOutputTab former, AbstractOutputTab current) {
+        controller.selectionChanged (this, (OutputTab) former, (OutputTab) current);
+    }
+
+    public void lineClicked(OutputTab outputComponent, int line) {
+        controller.lineClicked (this, outputComponent, line);
+    }
+
+    public void postPopupMenu(OutputTab outputComponent, Point p, Component src) {
+        controller.postPopupMenu (this, outputComponent, p, src);
+    }
+
+    public void caretEnteredLine(OutputTab outputComponent, int line) {
+        controller.caretEnteredLine(this, outputComponent, line);
+    }
+
+    public void documentChanged(OutputTab comp) {
+        controller.documentChanged (this, comp);
+    }
+
+    private HashSet hiddenTabs = null;
+    public void putHiddenView (OutputTab comp) {
+        if (hiddenTabs == null) {
+            hiddenTabs = new HashSet();
+        }
+        comp.putClientProperty("outputWindow", this); //NOI18N
+        hiddenTabs.add(comp);
+        synchronized (getTreeLock()) {
+            if (comp.getParent() != null) {
+                comp.getParent().remove(comp);
+            }
+        }
+    }
+
+    public void removeHiddenView (OutputTab comp) {
+        hiddenTabs.remove(comp);
+        comp.putClientProperty("outputWindow", null); //NOI18N
+    }
+
+    public void setSelectedTab (AbstractOutputTab op) {
+        if (op.getParent() == null && hiddenTabs.contains((OutputTab) op)) {
+            removeHiddenView ((OutputTab) op);
+            add((OutputTab) op);
+        }
+        super.setSelectedTab (op);
+    }
+
+    protected void updateSingletonName(AbstractOutputTab tab, String name) {
+        String winName = NbBundle.getMessage(OutputWindow.class, "LBL_OUTPUT"); //NOI18N
+        if (name != null) {
+            String newName = hackHtml(NbBundle.getMessage(OutputWindow.class,
+                "FMT_OUTPUT", new Object[] {winName, name})); //NOI18N
+            setDisplayName(newName);
+        } else {
+            setDisplayName(winName);
+        }
+    }
+
+    private String hackHtml (String name) {
+        //XXX only until TopComponent.getHtmlDisplayName() in place
+        if (name.indexOf ("<html>") != -1) {
+            name = Utilities.replaceString(name, "<html>", ""); //NOI18N
+            return "<html>" + name; //NOI18N
+        } else {
+            return name;
+        }
+    }
+
+    public OutputTab[] getHiddenTabs() {
+        if (hiddenTabs != null && !hiddenTabs.isEmpty()) {
+            OutputTab[] result = new OutputTab[hiddenTabs.size()];
+            result = (OutputTab[]) hiddenTabs.toArray(result);
+            return result;
+        }
+        return new OutputTab[0];
+    }
+
+    public OutputTab getTabForIO (NbIO io) {
+        AbstractOutputTab[] views = getTabs();
+        for (int i=0; i < views.length; i++) {
+            if (((OutputTab) views[i]).getIO() == io) {
+                return ((OutputTab) views[i]);
+            }
+        }
+        OutputTab[] hidden = getHiddenTabs();
+        for (int i=0; i < hidden.length; i++) {
+            if (hidden[i].getIO() == io) {
+                return hidden[i];
+            }
+        }
+        return null;
+    }
+
+    public void eventDispatched(AWTEvent event) {
+        if (event instanceof IOEvent) { //Could conceivably be something else if some lib uses the same ID range
+            if (Controller.log) Controller.log ("Event received: " + event);
+            IOEvent ioe = (IOEvent) event;
+            NbIO io = ioe.getIO();
+            int command = ioe.getCommand();
+            boolean value = ioe.getValue();
+            Object data = ioe.getData();
+            OutputTab comp = getTabForIO (io);
+            if (command == IOEvent.CMD_DETACH) {
+                if (!ioe.isConsumed()) {
+                    //Can be used by ModuleInstall to dispose of the current output window if desired
+                    ioe.consume();
+                    DEFAULT = null;
+                    return;
+                }
+            }
+//            } else if ((command == IOEvent.CMD_CREATE || command == IOEvent.CMD_RESET) && !ioe.isConsumed()) {
+                if (Controller.log) Controller.log ("Passing command to controller " + event);
+                controller.performCommand (this, comp, io, command, value, data);
+                ioe.consume();
+//            }
+        }
+    }
+
+    public void hasSelectionChanged(OutputTab tab, boolean val) {
+        controller.hasSelectionChanged(this, tab, val);
+    }
+
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void hasOutputListenersChanged(OutputTab tab, boolean hasOutputListeners) {
+        controller.hasOutputListenersChanged(this, tab, hasOutputListeners);
+    }
+
+    public void inputEof(OutputTab tab) {
+        if (Controller.log) Controller.log ("Input EOF on " + this);
+        controller.inputEof(this, tab);
+    }
+
+    public void inputSent(OutputTab c, String txt) {
+        if (Controller.log) Controller.log ("Notifying controller input sent " + txt);
+        controller.notifyInput(this, c, txt);
+    }
+}

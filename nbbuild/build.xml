@@ -169,6 +169,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/term..."/>
     <ant dir="../core/term" target="netbeans"/>
   </target>
+  <target name="all-core/output2" depends="all-openide,all-openide/io">
+    <echo message="Building module core/output2..."/>
+    <ant dir="../core/output2" target="netbeans"/>
+  </target> 
   <target name="all-core/ui" depends="all-openide">
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
@@ -1106,7 +1110,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <!-- #27098: MakeParserDB requires several modules to have been successfully built. -->
   <!-- Target all/mmm should depend on makeparserdb-modules if mmm/build.xml uses <makeparserdb>. -->
-  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output,all-core/term"/>
+  <target name="makeparserdb-modules" depends="all-openide,all-openide/loaders,all-openide/execution,all-openide/io,all-core,all-classfile,all-java/api,all-java/srcmodel,all-java,all-editor,all-debuggercore/oldapi,all-core/execution,all-core/output2"/>
   
   <!-- build NBMs for selected modules -->
   <target name="build-nbms" depends="init">

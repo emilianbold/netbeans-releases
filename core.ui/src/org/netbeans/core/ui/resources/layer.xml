@@ -381,11 +381,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/ideSettings.gif" />
         </file>
         
-        <file name="org-netbeans-core-output-OutputSettings.settings" url="OutputSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/outputSettings.gif" />
-        </file>
-        
         <file name="org-openide-text-PrintSettings.settings" url="PrintSettings.settings">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/printSettings.gif" />
@@ -413,10 +408,6 @@ Microsystems, Inc. All Rights Reserved.
                     <file name="Menu.instance">
                         <attr name="instanceCreate" newvalue="org.netbeans.core.windows.services.MenuFolderNode" />
                         <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
-                    </file>
-
-                    <file name="org-netbeans-core-output-OutputSettings.shadow">
-                        <attr name="originalFile" stringvalue="Services/org-netbeans-core-output-OutputSettings.settings"/>
                     </file>
 
                     <file name="Toolbar.instance">

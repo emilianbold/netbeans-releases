@@ -1013,11 +1013,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         //Issue 40343 - don't allow global node selection to survive a project change
         ((RegistryImpl) WindowManagerImpl.getInstance().getRegistry()).clearNodesForProjectChange();
         
-        //See if this is first load
-        if (changeHandler != null) {
-            //Ugly hack.  See comment below.
-            discardReferencesHack();
-        }
         //long start = System.currentTimeMillis();
         
         //Clear set of used tc_id
@@ -1050,28 +1045,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         //long diff = end - start;
         //System.out.println("Loading of window system takes " + diff + " ms");
         return wmc;
-    }
-    
-    /** XXX This is a hack:  The output window caches its default
-     * instance, so that the default instance can be looked up without violating
-     * thread safety for the window system.  However, this results in assorted
-     * other bugs with the output window moving around and retaining tabs 
-     * (and potentially their nodes) across a project change.
-     * <p>
-     * What is really needed here is some notification API that will allow
-     * objects which hold references that should not survive a project change
-     * to hold them - or making some of the basic winsys component lookup stuff
-     * thread-safe. */
-    private void discardReferencesHack() {
-        try {
-            ClassLoader ldr = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
-            Class clazz = ldr.loadClass("org.netbeans.core.output.OutputView"); //NOI18N
-            java.lang.reflect.Method method = clazz.getDeclaredMethod ("discardDefault", null); //NOI18N
-            method.setAccessible(true);
-            method.invoke (null, null);
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        }
     }
     
     /** Saves window system configuration to disk.
