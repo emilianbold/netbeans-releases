@@ -737,17 +737,13 @@ public class JavaBeansUtil {
             Object[] p = new Object[] {value};
             return c.newInstance(p);
         } catch (NoSuchMethodException me) {
-            me.printStackTrace();
-            throw new RuntimeException(me.getMessage());
+            throw new RuntimeException(me);
         } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         } catch (java.lang.IllegalAccessException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         } catch (java.lang.reflect.InvocationTargetException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 

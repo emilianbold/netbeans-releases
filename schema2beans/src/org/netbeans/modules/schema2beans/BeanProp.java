@@ -544,19 +544,19 @@ public class BeanProp implements BaseProperty {
             }
 		} catch(IllegalArgumentException e) {
             e.printStackTrace();
-            System.out.println("bean: " + this.getName() + "dtdname: " +
+            System.err.println("bean: " + this.getName() + "dtdname: " +
                                this.getDtdName() +
                                "class: " + this.getPropertyClass());
             Object o = this.getValue(i);
             if (o != null)
-                System.out.println("elt: " + o.toString() + " - " +
+                System.err.println("elt: " + o.toString() + " - " +
                                    o.getClass());
             else
-                System.out.println("elt is null for index " + i);
+                System.err.println("elt is null for index " + i);
 
             try {
                 this.getBean().write(System.out);
-                System.out.println(this.getBean().dumpDomNode());
+                System.err.println(this.getBean().dumpDomNode());
             } catch (java.io.IOException e2) {
             }
             throw e;
