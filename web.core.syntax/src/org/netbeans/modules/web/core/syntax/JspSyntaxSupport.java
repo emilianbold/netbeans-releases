@@ -633,7 +633,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             directiveTagFileData.put("include", directiveJspData.get("include"));      // NOI18N
             directiveTagFileData.put("tag", new String[]      // NOI18N
                     {"body-content", "description", "display-name","dynamic-attributes", // NOI18N
-                     "example",  "import", "isELEnabled", "isScriptingEnabled", // NOI18N
+                     "example",  "import", "isELIgnored", "isScriptingEnabled", // NOI18N
                      "large-icon", "language", "pageEncoding", "small-icon" //NOI18N
                       }); 
             directiveTagFileData.put("taglib", directiveJspData.get("taglib")); // NOI18N
