@@ -182,10 +182,10 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
-	 includes="**/org/apache/catalina/**"
+	 includes="**/monitor/catalina/**"
 	 excludes="**/SCCS/**,**/CVS/**">
        <classpath>
-          <pathelement location="${nbextra}/web/servletapi23/release/modules/ext/servlet-2.3.jar"/> 
+          <pathelement location="${servlet23}"/>
           <pathelement location="extra/catalina.jar"/> 
        </classpath>
      </javac>
