@@ -70,11 +70,11 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangePropertyNameAndType"));
-        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeMode"));
-        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOptionsForListener"));
-        //suite.addTest(new ChangingOfBeanPropertyProperties("testDeleteAnyPropertiesAndEvents"));
-        //suite.addTest(new ChangingOfBeanPropertyProperties("testChangeSourceCode"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testChangePropertyNameAndType"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testChangeMode"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOptionsForListener"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testDeleteAnyPropertiesAndEvents"));
+        suite.addTest(new ChangingOfBeanPropertyProperties("testChangeSourceCode"));
         suite.addTest(new ChangingOfBeanPropertyProperties("testChangeOfStyleOfDeclaredVariable"));
         return suite;
     }

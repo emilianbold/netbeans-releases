@@ -33,6 +33,9 @@ import org.netbeans.junit.NbTestSuite;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 
@@ -87,6 +90,11 @@ public class CreateNewNonIndexedProperty extends JellyTestCase {
         System.out.println("########  "+getName()+"  #######");
         Utilities.mountSampledir();
         
+        OptionsOperator optionsOperator = OptionsOperator.invoke();
+        optionsOperator.selectOption("Editing"+"|"+"Beans Property");
+        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
+        new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
+
         FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
         

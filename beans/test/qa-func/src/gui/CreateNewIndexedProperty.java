@@ -25,6 +25,7 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewWizardOperator;
 import org.netbeans.jellytools.TargetLocationStepOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.MountLocalAction;
 import org.netbeans.jellytools.actions.NewTemplateAction;
@@ -33,6 +34,8 @@ import org.netbeans.jellytools.nodes.FilesystemNode;
 import org.netbeans.jellytools.nodes.FolderNode;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jellytools.properties.ComboBoxProperty;
+import org.netbeans.jellytools.properties.PropertySheetTabOperator;
 import org.openide.actions.SaveAllAction;
 import org.openide.filesystems.FileObject;
 
@@ -93,6 +96,11 @@ public class CreateNewIndexedProperty extends JellyTestCase {
         // redirect jemmy trace and error output to a log
         System.out.println("########  "+getName()+"  #######");
         Utilities.mountSampledir();
+
+        OptionsOperator optionsOperator = OptionsOperator.invoke();
+        optionsOperator.selectOption("Editing"+"|"+"Beans Property");
+        PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(optionsOperator);
+        new ComboBoxProperty(propertySheetTabOperator, "Style of Declared Variable").setValue("this.property_Value");
         
         FileObject testFile = Repository.getDefault().findResource("gui/data/" + NAME_TEST_FILE + ".java");
         FileObject destination = Repository.getDefault().findFileSystem(sampleDir.replace('\\', '/')).getRoot();
