@@ -790,8 +790,22 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      * @param limit maximal allowed heap size of the structure
      */
     public static void assertSize(String message, Collection roots, int limit) {
+	assertSize(message, roots, limit, null);
+    }
+
+    /** Assert size of some structure. Traverses the whole reference
+     * graph of objects accessible from given roots and check its size
+     * against the limit.
+     * @param message the text to show when test fails.
+     * @param roots the collection of root objects from which to traverse
+     * @param limit maximal allowed heap size of the structure
+     * @param skip Array of objects used as a boundary during heap scanning,
+     *        neither these objects nor references from these objects
+     *        are counted.
+     */
+    public static void assertSize(String message, Collection roots, int limit, Object[] skip) {
         try {
-            Collection c = MemoryCounter.countInstances(roots);
+            Collection c = MemoryCounter.countInstances(roots, skip);
             int sum = 0;
             for(Iterator it = c.iterator(); it.hasNext(); ) {
                 MemoryCounter.ClassInfo ci = (MemoryCounter.ClassInfo)it.next();
@@ -814,7 +828,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 		fail(sb.toString());
             }
         } catch (Exception e) {
-            fail("Could not traverse ferefence graph");
+            fail("Could not traverse reference graph");
         }
     }
 
