@@ -15,6 +15,6 @@ public class ListTestVectorForN extends ListTest {
     }
 
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( ListTestVectorForN.class ) );
+	simpleRun( ListTestVectorForN.class );
     }
 }

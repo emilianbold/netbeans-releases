@@ -128,7 +128,7 @@ public class RunnableMethod extends Benchmark {
     }
 
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( RunnableMethod.class ) );
+	simpleRun( RunnableMethod.class );
     }    
     
     /* ----------------------------- */

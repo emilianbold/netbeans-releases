@@ -15,6 +15,6 @@ public class ListTestLinkedList extends ListTest {
     }
 
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( ListTestLinkedList.class ) );
+	simpleRun( ListTestLinkedList.class );
     }    
 }

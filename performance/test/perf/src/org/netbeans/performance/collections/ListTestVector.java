@@ -15,6 +15,6 @@ public class ListTestVector extends ListTest {
     }
 
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( ListTestVector.class ) );
+	simpleRun( ListTestVector.class );
     }
 }

@@ -15,6 +15,6 @@ public class ListTestArrayListForN extends ListTest {
     }
     
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( ListTestArrayListForN.class ) );
+	simpleRun( ListTestArrayListForN.class );
     }
 }

@@ -96,7 +96,7 @@ public class ExceptionConstruct extends Benchmark {
 
     
     public static void main( String[] args ) {
-	junit.textui.TestRunner.run( new junit.framework.TestSuite( ExceptionConstruct.class ) );
+	simpleRun( ExceptionConstruct.class );
     }
 
 }
