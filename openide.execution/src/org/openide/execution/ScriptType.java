@@ -32,7 +32,7 @@ public abstract class ScriptType extends org.openide.ServiceType {
     /**
      * The script type can decide whether it will be able to execute
      * the given file object.
-     * @param fileName
+     * @param fo a file to test
      * @return true if the script can operate on this file
      */
     public abstract boolean acceptFileObject(FileObject fo);
@@ -69,8 +69,8 @@ public abstract class ScriptType extends org.openide.ServiceType {
     
     /**
      * Execute the script given in the form of a Reader.
-     * @param is
-     * @param context
+     * @param r the contents of the script
+     * @param context the context in which to evaluate it
      * @return whatever is the result of the script. It can be null.
      */
     public abstract void exec(java.io.Reader r, Context context) throws InvocationTargetException;

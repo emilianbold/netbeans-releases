@@ -23,18 +23,18 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+    
+    <path id="cp">
+        <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
+        <pathelement location="${nb_all}/openide/netbeans/lib/openide.jar"/>
+        <fileset dir="../external">
+            <include name="xml-apis*.jar" />
+        </fileset>
+    </path>
 
     <target name="compile">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-            <classpath>
-                <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-                <fileset dir="${nb_all}/openide/netbeans/lib">
-                    <include name="openide*.jar" />
-                </fileset>
-                <fileset dir="../external">
-                    <include name="xml-apis*.jar" />
-                </fileset>
-            </classpath>
+            <classpath refid="cp"/>
         </javac>
     </target>
 
@@ -76,8 +76,6 @@ Microsystems, Inc. All Rights Reserved.
       <delete file="core-settings.nbm"/>
       <delete dir="netbeans"/>
       <delete dir="Info"/>
-      <delete file="SettingsAPI.zip"/>
-      <delete dir="SettingsAPI"/>
       <delete dir="javadoc"/>
     </target>
 
@@ -85,66 +83,23 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="reload"/>
     </target>
 
-    <target name="javadoc" description="Create Settings API documentation." depends="settingsapis">
-      <copy todir="javadoc/">
-        <fileset dir=".">
-          <include name="SettingsAPI/**"/>
-          <include name="SettingsAPI.zip"/>
-        </fileset>
-      </copy>
-    </target>
-
-    <!-- Settings API documentation -->
-    <target name="settingsapis" description="Create Settings API documentation.">
-        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
-        <property name="openide-docs-location" value="http://www.netbeans.org/download/apis"/>
-        <property name="openide.package-list.loc" location="${nbroot}/openide/OpenAPIs"/>
-        <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-        <echo message="Build Settings API documentation..."/>
-        <delete dir="SettingsAPI"/>
-        <mkdir dir="SettingsAPI"/>
-        <javadoc destdir="SettingsAPI"
-                 packagenames="org.netbeans.spi.settings"
-                 doctitle="NetBeans Settings API"
-                 use="true"
-                 bottom="${apis-footer}"
-                 splitindex="true"
-                 author="false"
-                 version="false"
-                 maxmemory="64m"
-            >
-            <sourcepath>
-              <pathelement location="api/doc"/>
-              <pathelement location="src"/>
-            </sourcepath>
-            <classpath>
-              <fileset dir="${nb_all}/openide/netbeans/lib">
-                <include name="openide*.jar" />
-              </fileset>
-                <fileset dir="../external">
-                    <include name="xml-apis*.jar" />
-                </fileset>
-            </classpath>
-            <link href="${jdk-docs-location}"
-                  offline="true"
-                  packagelistLoc="${nb_all}/openide/api/doc"
-            />
-            <link href="${openide-docs-location}"
-                  offline="true"
-                  packagelistLoc="${openide.package-list.loc}"
-            />
-        </javadoc>
-        <replace dir="SettingsAPI" token="@FOOTER@" value="${apis-footer}">
-          <include name="**/doc-files/*.html"/>
-        </replace>
-        <replace dir="SettingsAPI" token="@OPENAPI@" value="${openide-docs-location}">
-          <include name="**/doc-files/*.html"/>
-        </replace>
+    <target name="javadoc" description="Build Javadoc.">
+        <!-- Do this before so <checklinks> will find it and not report it as an error: -->
+        <mkdir dir="javadoc/SettingsAPI/org/netbeans/spi/settings/doc-files"/>
         <copy file="src/org/netbeans/modules/settings/resources/properties-1_0.dtd"
-          tofile="SettingsAPI/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
-        <zip zipfile="SettingsAPI.zip" basedir="SettingsAPI"/>
-  </target>
-
+              tofile="javadoc/SettingsAPI/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
+        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
+        <property name="_cp" refid="cp"/>
+        <ant dir="../../nbbuild" antfile="template.xml" target="javadoc">
+            <property name="javadoc.base" location="."/>
+            <property name="javadoc.name" value="SettingsAPI"/>
+            <property name="javadoc.title" value="Settings API"/>
+            <property name="javadoc.packages" value="org.netbeans.spi.settings"/>
+            <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.main.page" value="org/netbeans/spi/settings/doc-files/api.html"/>
+        </ant>
+    </target>
+    
   <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
       <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
       <!-- 1.3: treated as a name relative to XML file. -->

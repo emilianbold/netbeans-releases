@@ -78,85 +78,17 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
   
-    <target name="javadoc-check-timestamps">
-        <uptodate property="javadoc-up-to-date" targetfile="javadoc/InputOutputAPI.zip">
-            <srcfiles dir="src">
-                <include name="org/openide/**/*.java"/>
-            </srcfiles>
-            <srcfiles dir="../api/doc">
-                <include name="*.css"/>
-            </srcfiles>
-        </uptodate>
-    </target>
-    <target name="javadoc" depends="javadoc-check-timestamps" unless="javadoc-up-to-date">
-        <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
-        <property name="openide-docs-location" value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
-        <tstamp/>
-        <property name="javadoc-footer" value='&lt;font size="-2" color="gray"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;'/>
-        <mkdir dir="javadoc/InputOutputAPI"/>
-        <javadoc author="false" destdir="javadoc/InputOutputAPI" stylesheetfile="../api/doc/javadoc.css" windowtitle="NetBeans Input/Output API" splitindex="true" use="true" version="false">
-            <sourcepath>
-                <pathelement location="src"/>
-            </sourcepath>
-            <classpath refid="cp"/>
-            <package name="org.openide.windows"/>
-            <group>
-                <title>Input/Output API</title>
-                <package name="org.openide.windows"/>
-            </group>
-            <link href="${jdk-docs-location}" offline="true" packagelistloc="../api/doc"/>
-            <link href="${openide-docs-location}" offline="true" packagelistloc="../javadoc/OpenAPIs"/>
-            <doctitle>NetBeans Input/Output API</doctitle>
-            <bottom>${javadoc-footer}</bottom>
-        </javadoc>
-        <copy todir="javadoc/InputOutputAPI">
-            <fileset dir="../api/doc">
-                <include name="*.css"/>
-            </fileset>
-        </copy>
-        <replace dir="javadoc/InputOutputAPI">
-            <include name="**/doc-files/*.html"/>
-            <include name="**/package-summary.html"/>
-            <replacefilter token="@JDK@" value="${jdk-docs-location}"/>
-            <replacefilter token="@OPENIDE@" value="${openide-docs-location}"/>
-            <replacefilter token="@IO@" value="${io-docs-location}"/>
-            <replacefilter token="@FOOTER@" value="${javadoc-footer}"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="">
-            <include name="*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../">
-            <include name="*/*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../../">
-            <include name="*/*/*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../../../">
-            <include name="*/*/*/*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../../../../">
-            <include name="*/*/*/*/*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../../../../../">
-            <include name="*/*/*/*/*/*.html"/>
-        </replace>
-        <replace dir="javadoc/InputOutputAPI" token="@TOP@" value="../../../../../../">
-            <include name="*/*/*/*/*/*/*.html"/>
-        </replace>
-        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
-            <classpath>
-                <pathelement location="../../nbbuild/nbantext.jar"/>
-                <fileset dir="../../core/external">
-                    <include name="regexp*.jar"/>
-                </fileset>
-            </classpath>
-        </taskdef>
-        <checklinks basedir="javadoc/InputOutputAPI" checkexternal="false">
-            <include name="overview-summary.html"/>
-            <include name="**/package-summary.html"/>
-            <include name="**/doc-files/**/*.html"/>
-        </checklinks>
-        <zip zipfile="javadoc/InputOutputAPI.zip" basedir="javadoc/InputOutputAPI"/>
+    <target name="javadoc" description="Build Javadoc.">
+        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
+        <property name="_cp" refid="cp"/>
+        <ant dir="../../nbbuild" antfile="template.xml" target="javadoc">
+            <property name="javadoc.base" location="."/>
+            <property name="javadoc.name" value="InputOutputAPI"/>
+            <property name="javadoc.title" value="Input/Output API"/>
+            <property name="javadoc.packages" value="org.openide.windows"/>
+            <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.docfiles" location="../../nbbuild/dummy"/>
+        </ant>
     </target>
   
     <target name="clean">

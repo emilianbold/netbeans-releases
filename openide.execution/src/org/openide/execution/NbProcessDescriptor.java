@@ -55,7 +55,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
 
     /** Create a new descriptor for the specified process, classpath switch, and classpath.
     * @param processName     the name of the executable to run
-    * @param argument string for formating of arguments (may be {@link Utilities#parseParameters quoted})
+    * @param arguments string for formating of arguments (may be {@link Utilities#parseParameters quoted})
     */
     public NbProcessDescriptor(String processName, String arguments) {
         this (processName, arguments, null);
@@ -63,7 +63,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
 
     /** Create a new descriptor for the specified process, classpath switch, and classpath.
     * @param processName     the name of the executable to run
-    * @param argument string for formating of arguments (may be {@link Utilities#parseParameters quoted})
+    * @param arguments string for formating of arguments (may be {@link Utilities#parseParameters quoted})
     * @param info info how to format the arguments (human-readable string)
     */
     public NbProcessDescriptor(String processName, String arguments, String info) {

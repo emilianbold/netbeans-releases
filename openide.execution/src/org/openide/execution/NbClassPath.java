@@ -208,7 +208,7 @@ public final class NbClassPath extends Object implements java.io.Serializable {
 
     /** Take one file object and try to convert it into a local file.
     * The conversion can succeed only if the file object's file system
-    * supports work with {@link FileSystem.Environment}.
+    * supports work with {@link org.openide.filesystems.FileSystem.Environment}.
     *
     * @param fo file object to convert
     * @return disk file for that file object, or <code>null</code> if there is no corresponding disk file

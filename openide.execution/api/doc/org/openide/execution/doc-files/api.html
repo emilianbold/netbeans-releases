@@ -72,7 +72,7 @@ several ways to do this:
 
 <li>Look for a registered executors in the system's services registry. The
 
-<a href="../../doc-files/services-api.html#use-find">Services API</a>
+<a href="@OPENIDE@/org/openide/doc-files/services-api.html#use-find">Services API</a>
 
 describes several ways to do this generically for all service
 types; to look specifically for executors, you may use the
@@ -158,11 +158,11 @@ properly to the <code>ExecCookie</code>, invoking it with
 
 This cookie may be obtained by a call to
 
-<a href="../../loaders/DataObject.html#getCookie(java.lang.Class)"><code>DataObject.getCookie(Class)</code></a>
+<a href="@OPENIDE@/org/openide/loaders/DataObject.html#getCookie(java.lang.Class)"><code>DataObject.getCookie(Class)</code></a>
 
 or
 
-<a href="../../nodes/Node.html#getCookie(java.lang.Class)"><code>Node.getCookie(Class)</code></a>,
+<a href="@OPENIDE@/org/openide/nodes/Node.html#getCookie(java.lang.Class)"><code>Node.getCookie(Class)</code></a>,
 
 as appropriate.
 
@@ -183,11 +183,11 @@ first if requested.
 First of all, the required superclass <code>Executor</code> is
 actually a subclass of
 
-<a href="../../ServiceType.html"><code>ServiceType</code></a>,
+<a href="@OPENIDE@/org/openide/ServiceType.html"><code>ServiceType</code></a>,
 
 meaning that you should refer to the
 
-<a href="../../doc-files/services-api.html#create">Services API</a>
+<a href="@OPENIDE@/org/openide/doc-files/services-api.html#create">Services API</a>
 
 for general information about configurability, persistence,
 installation, and so on. The remainder of this section will only
@@ -269,7 +269,7 @@ much as the super constructor, and then contain some additional
 information concerning values for the new tags. In the constructor,
 use
 
-<a href="../../util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
+<a href="@OPENIDE@/org/openide/util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
 
 to retrieve the map from tags to their values (which will already
 have <code>ProcessExecutor.Format</code>'s standard tags for the
@@ -392,7 +392,7 @@ on the task returned from
 
 and then
 
-<a href="../../windows/InputOutput.html#getOut()"><code>InputOutput.getOut()</code></a>
+<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html#getOut()"><code>InputOutput.getOut()</code></a>
 
 and so on. Now you can just copy characters from one stream to the
 other.
@@ -558,7 +558,7 @@ sources should not be used during compilation).
 
 and along similar lines,
 
-<a href="../../compiler/ExternalCompilerGroup.Format.html"><code>ExternalCompilerGroup.Format</code></a>
+<a href="@OPENIDE/COMPILER@/org/openide/compiler/ExternalCompilerGroup.Format.html"><code>ExternalCompilerGroup.Format</code></a>
 
 (as well as analogous classes in the standard debugger implementation)
 
@@ -570,7 +570,7 @@ implementations are useful for two reasons:
 
 <li>They extend
 
-<a href="../../util/MapFormat.html"><code>MapFormat</code></a>,
+<a href="@OPENIDE@/org/openide/util/MapFormat.html"><code>MapFormat</code></a>,
 
 a highly flexible <code>Format</code> implementation which permits
 substitution by named keys (and is also normally used to implement
@@ -594,13 +594,13 @@ Customizing these formats is easy. Just extend <code>MapFormat</code>
 or one of the more specialized formats just mentioned, passing in any
 required arguments to the superclass constructor; then use
 
-<a href="../../util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
+<a href="@OPENIDE@/org/openide/util/MapFormat.html#getMap()"><code>MapFormat.getMap()</code></a>
 
 to retrieve the key-value mapping and modify it with any additional
 keys you like (do not include the delimiters of the tokens, by default
 curly braces, in the keys themselves).
 
-<a href="../../util/MapFormat.html#processKey(java.lang.String)"><code>MapFormat.processKey(String)</code></a>
+<a href="@OPENIDE@/org/openide/util/MapFormat.html#processKey(java.lang.String)"><code>MapFormat.processKey(String)</code></a>
 
 and other advanced features of <code>MapFormat</code> may be used to
 give greater flexibility.
@@ -614,7 +614,7 @@ follows: in the implementation of
 
 (or
 
-<a href="../../compiler/ExternalCompilerGroup.html#createProcess(org.openide.execution.NbProcessDescriptor, java.lang.String[])"><code>ExternalCompilerGroup.createProcess(...)</code></a>),
+<a href="@OPENIDE/COMPILER@/org/openide/compiler/ExternalCompilerGroup.html#createProcess(org.openide.execution.NbProcessDescriptor, java.lang.String[])"><code>ExternalCompilerGroup.createProcess(...)</code></a>),
 
 create a new instance of the desired format (usually your own
 subclass); pass it as arguments <code>NbClassPath</code> objects
@@ -645,7 +645,7 @@ coverage of executed code.
 
 <p>First it is necessary to describe the
 
-<a href="../../windows/InputOutput.html"><code>InputOutput</code></a>
+<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html"><code>InputOutput</code></a>
 
 interface which is common to both forms of support. This interface is
 essentially an abstract description of the public capabilities of an
@@ -661,7 +661,7 @@ implementation:
 
 <li>You may use
 
-<a href="../../windows/IOProvider.html#getIO(java.lang.String, boolean)"><code>IOProvider.getIO(String,boolean)</code></a>
+<a href="@OPENIDE/IO@/org/openide/windows/IOProvider.html#getIO(java.lang.String, boolean)"><code>IOProvider.getIO(String,boolean)</code></a>
 
 to create an Output Window tab with a specified name and return its
 <code>InputOutput</code> representative. Or, try to reuse an existing tab of the same name, if there is one.
@@ -680,7 +680,7 @@ probably named after the supplied task name. The returned
 
 <li>You may use the constant
 
-<a href="../../windows/InputOutput.html#NULL"><code>InputOutput.NULL</code></a>
+<a href="@OPENIDE/IO@/org/openide/windows/InputOutput.html#NULL"><code>InputOutput.NULL</code></a>
 
 to indicate that no I/O at all is desired for a task - that is, its I/O
 streams will be trapped, but writes will be discarded and reads will
@@ -723,7 +723,7 @@ supplied runnable; it will all be handled. Runnable-spawned code which
 is destined for other thread groups will not be handled, however; for
 example,
 
-<a href="../../util/RequestProcessor.html#postRequest(java.lang.Runnable)"><code>RequestProcessor.postRequest(Runnable)</code></a>
+<a href="@OPENIDE@/org/openide/util/RequestProcessor.html#postRequest(java.lang.Runnable)"><code>RequestProcessor.postRequest(Runnable)</code></a>
 
 will execute code in the IDE's main thread group, not the one created
 by the execution engine.
@@ -825,7 +825,7 @@ is subject to the security manager. Such "untrusted" code is probably
 restricted from security-sensitive calls (but do not count on it).
 Such code can still call
 
-<a href="../../LifecycleManager.html#exit()"><code>LifecycleManager.exit()</code></a>
+<a href="@OPENIDE@/org/openide/LifecycleManager.html#exit()"><code>LifecycleManager.exit()</code></a>
 
 to explicitly exit the IDE.
 
@@ -867,7 +867,7 @@ the <code>execute</code> method instead.
 
 <li>Other exceptions are wrapped in
 
-<a href="../../util/io/FoldingIOException.html#FoldingIOException(java.lang.Throwable)"><code>new FoldingIOException(Throwable)</code></a>.
+<a href="@OPENIDE@/org/openide/util/io/FoldingIOException.html#FoldingIOException(java.lang.Throwable)"><code>new FoldingIOException(Throwable)</code></a>.
 
 </ol>
 
