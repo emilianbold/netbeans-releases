@@ -529,6 +529,10 @@ Microsystems, Inc. All Rights Reserved.
                 <public publicId="-//Forte for Java//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
                 <public publicId="-//NetBeans IDE//DTD toolbar//EN" uri="nbresboot:/org/netbeans/core/windows/toolbars/toolbar.dtd" />
 
+                <!-- FileSystems stuff -->
+                <public publicId="-//NetBeans//DTD Filesystem 1.0//EN" uri="nbresboot:/org/openide/filesystems/filesystem.dtd"/>
+                <public publicId="-//NetBeans//DTD DefaultAttributes 1.0//EN" uri="nbresboot:/org/openide/filesystems/attributes.dtd"/>
+
             </catalog>    
             ]]>
             <!-- Optimization only: -->
