@@ -69,7 +69,7 @@
 <!--<mapID target="gui.mdi" url="gui/gui_mdi.html" />-->
 <mapID target="gui.configuring" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
-<mapID target="gui.source.modifying.property" url="gui/gui_modifyinitproperty.html" />
+<mapID target="gui.source.modifying.property" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_testing.html" />
 
@@ -630,7 +630,7 @@
   <mapID target="org.openide.actions.ToolsAction" url="pending.html" />
   <mapID target="org.openide.src.nodes.DefaultFactory$ElementCategoryNode" url="pending.html" /> 
 
-   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="configure/setup_1.html" />
+   <mapID target="org.netbeans.core.actions.SetupWizardAction" url="pending.html" />
    <mapID target="org.netbeans.core.actions.SettingsAction" url="pending.html" />
 
    <mapID target="org.netbeans.beaninfo.editors.BeanEditor" url="pending.html" />
@@ -650,7 +650,7 @@
 
 
       
-   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/menu_customize.html" /> 
+   <mapID target="org.netbeans.core.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
    <mapID target="org.netbeans.core.actions.DockingAction" url="pending.html" />
    <mapID target="org.netbeans.core.actions.EditorViewAction" url="pending.html" /> 
    <mapID target="org.netbeans.core.actions.ExecutionViewAction" url="pending.html" /> 
@@ -676,8 +676,8 @@
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.GraphicalDiffVisualizer" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.visualizer.TextDiffVisualizer" url="files/files_diff.html" />
    <mapID target="org.netbeans.modules.diff.builtin.DefaultDiff" url="files/files_diff.html" />
-   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
-   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs-nb/vcs_mergeresolve.html" />
+   <mapID target="org.netbeans.modules.merge.Merge.visualizers" url="vcs-nb/vcs_mergeresolve.html" />
+   <mapID target="org.netbeans.modules.merge.builtin.visualizer.GraphicalMergeVisualizer" url="vcs-nb/vcs_mergeresolve.html" />
 <!--possibly remap the following target to configure_options.html -->
    <mapID target="org.netbeans.core.IDESettings" url="configure/system_settings.html" /> 
    <mapID target="org.netbeans.core.NbMainExplorer" url="pending.html" /> 
@@ -697,11 +697,11 @@
    <mapID target="org.netbeans.core.execution.ProcessNode" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/files_runtime.html" /> 
-   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/toolbar_customize.html" /> 
+   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> 
 
  <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars-->  
-   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/menu_customize.html" /> 
-   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/toolbar_customize.html" /> 
+   <mapID target="org.netbeans.core.windows.services.MenuFolderNode" url="configure/workspace/menu_customize.html" /> 
+   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> 
       
    <mapID target="org.netbeans.core.output.OutputTab" url="pending.html" />
    <mapID target="org.netbeans.core.actions.NextOutJumpAction" url="pending.html" /> 
@@ -834,7 +834,7 @@
    <mapID target="org.netbeans.modules.editor.java.JCProviderPanel" url="pending.html" />
    <mapID target="org.netbeans.editor.ext.JCView" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_globalsettings.html" />
+   <mapID target="org.netbeans.modules.vcscore.settings.GeneralVcsSettingsNode" url="vcs-nb/vcs_configure.html" />
 
    <mapID target="org.netbeans.modules.vcs.RetrievingDialog" url="pending.html" />
    <mapID target="org.netbeans.modules.debugger.support.nodes.DebuggerView" url="pending.html" />
@@ -843,7 +843,7 @@
    <!--Begin helpIDs for Versioning Explorer-->
    <mapID target="org.netbeans.modules.diff.PatchAction" url="vcs-nb/vcs_diff.html" />
    <!--csh for versioning menu items-->
-   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcsgroups/vcs_groups.html" />
+   <mapID target="org.netbeans.modules.vcscore.grouping.VcsGroupMenuAction" url="vcs-nb/vcs_groups.html" />
 
    <!--csh for java actions-->
    <mapID target="org.netbeans.modules.java.imptool.ImpToolAction" url="java/imt/import.html" />
@@ -865,10 +865,10 @@
    <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
    <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.Settings" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="modules/autoupdate.html" />
-   <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.XMLAutoupdateType" url="configure/modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.Settings" url="configure/modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.ModuleAutoUpdater.UpdateAction" url="configure/modules/autoupdate.html" />
+   <mapID target="org.netbeans.modules.autoupdate.UpdateAction" url="configure/modules/autoupdate.html" />
    
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    <!--TODO - help topic for Actions dialog; if topic is written, close 39369 -->
@@ -879,7 +879,7 @@
 
    <mapID target="org.netbeans.core.actions.ConfigureShortcutsAction" url="shortcuts/kybdshortcuts.html" />
    <mapID target="org.netbeans.core.NbNodeOperation.customize" url="pending.html" />
-   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="configure/workspace/workspace_jump.html" />
+   <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="configure/workspace/window_managing.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
