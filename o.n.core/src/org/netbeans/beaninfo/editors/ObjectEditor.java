@@ -320,9 +320,15 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     private Node itemToNode (Lookup.Item item) {
         String id = item.getId ();
-        if (id.startsWith ("FL[")) { // NOI18N
+        
+        // DANGER!!!
+        // The following condition assumes that
+        // the lookup id's names are in the form XX[/path/
+        // If they are not the itemToNode will
+        // return root()
+        
+        if ((id.length()>3) &&(id.charAt(2) == '[')) {
             id = id.substring (3);
-            
             // try to find the node from root node
             StringTokenizer tok = new StringTokenizer (id, "/"); // NOI18N
             Node root = root ();
@@ -349,14 +355,8 @@ implements ExPropertyEditor, PropertyChangeListener {
                 return root;
             }
         }
-        
         // default fallback for not recognized items
-        try {
-            return new org.openide.nodes.BeanNode (item.getInstance ());
-        } catch (java.beans.IntrospectionException ex) {
-            return org.openide.nodes.Node.EMPTY;
-        }
+        return root();
     }
-    
 }
 
