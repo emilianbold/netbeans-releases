@@ -21,6 +21,7 @@ import javax.xml.parsers.*;
 import org.w3c.dom.*;
 import org.xml.sax.*;
 
+
 /**
  * Utility class collecting library methods related to XML processing.
  *
@@ -35,11 +36,61 @@ public final class XMLUtil extends Object {
             ErrorHandler errorHandler,             
             EntityResolver entityResolver
         ) throws IOException, SAXException {
+
+	// Workaround because of Xerces parser - it didn't allow java encoding
+	// by default. There was not problem found in other parsers.
+	// If no exerces parser we'll use standard JAXP
+	Class xercesParser = null;
+	try {
+	    xercesParser = Class.forName("org.apache.xerces.parsers.DOMParser");
+	}
+	catch( Exception ex ) {
+	    // Class don't exists - we have no xerces parser....
+	}
+	if (xercesParser != null) {
+
+	    System.out.println("Using xerces");
+	    // We don't like it, but we have to use it, so deal with using reflection API
+	    try {
+		// Create DOMParser using default constructor
+		Object parser = xercesParser.newInstance();
+		Class[] paramT1 = {String.class, Boolean.TYPE};
+		Object[] param1 = {"http://apache.org/xml/features/allow-java-encodings",new Boolean(true)};
+		// parser.setFeature("http://apache.org/xml/features/allow-java-encodings", true);
+		xercesParser.getMethod("setFeature",paramT1).invoke(parser,param1);
+
+		if (errorHandler != null) {
+		    Class[] paramT2 = {ErrorHandler.class};
+		    Object[] param2 = {errorHandler};
+		    //parser.setErrorHandler(errorHandler);
+		    xercesParser.getMethod("setErrorHandler",paramT2).invoke(parser,param2);
+		    
+		}
         
+		if (entityResolver != null) {
+		    Class[] paramT3 = {EntityResolver.class};
+		    Object[] param3 = {entityResolver};
+		    //parser.setEntityResolver(entityResolver);
+		    xercesParser.getMethod("setEntityResolver",paramT3).invoke(parser,param3);
+		}
+		Class[] paramT4 = {InputSource.class};
+		Object[] param4 = {input};
+		//parser.parse( input );
+		xercesParser.getMethod("parse",paramT4).invoke(parser,param4);
+
+		//return parser.getDocument();
+		return 
+		    (Document) xercesParser.getMethod("getDocument",null).invoke(parser,null);
+	    } 
+	    catch (Exception e) {
+		System.err.println("could not set parser feature");
+		e.printStackTrace();
+	    }
+	}
+
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();        
         factory.setValidating(validate);
         factory.setNamespaceAware(namespaceAware);            
-    
         DocumentBuilder builder = null;
         try {
              builder = factory.newDocumentBuilder();
@@ -83,7 +134,7 @@ public final class XMLUtil extends Object {
     }
     
     static void write(Document doc, Writer out) throws IOException {
-        write( doc, out, "UFT-8" );
+        write( doc, out, "UTF-8" );
     }
         
     private static void write(Document doc, Object out, String encoding) throws IOException {
