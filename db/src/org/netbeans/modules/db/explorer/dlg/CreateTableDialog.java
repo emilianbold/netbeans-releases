@@ -163,6 +163,7 @@ public class CreateTableDialog {
             table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
             table.setToolTipText(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             table.getAccessibleContext().setAccessibleName(bundle.getString("ACS_CreateTableColumnTableA11yName"));
+            table.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableColumnTableA11yDesc"));
             JScrollPane scrollpane = new JScrollPane(table);
             scrollpane.setBorder(new BevelBorder(BevelBorder.LOWERED));
             scrollpane.setPreferredSize(new Dimension(300,150));
@@ -320,6 +321,8 @@ public class CreateTableDialog {
                   }
                }
             };
+
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CreateTableDialogA11yDesc"));
 
             addbtn.doClick();
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("CreateTableDialogTitle"), true, listener); // NOI18N

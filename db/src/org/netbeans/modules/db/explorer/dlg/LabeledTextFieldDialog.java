@@ -25,12 +25,9 @@ import org.openide.DialogDisplayer;
 import org.netbeans.modules.db.explorer.*;
 
 /**
-* xxx
-*
 * @author Slavek Psenicka
 */
-public class LabeledTextFieldDialog
-{
+public class LabeledTextFieldDialog {
     boolean result = false;
     Dialog dialog = null;
     Object combosel = null;
@@ -39,10 +36,9 @@ public class LabeledTextFieldDialog
     JButton edButton;
     JLabel label;
     final String original_notes;
-    static private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
-    public LabeledTextFieldDialog(String title, String lab, String notes)
-    {
+    public LabeledTextFieldDialog(String title, String lab, String notes) {
         original_notes = notes;
         try {
             JPanel pane = new JPanel();
@@ -81,6 +77,7 @@ public class LabeledTextFieldDialog
 
             JLabel desc = new JLabel(bundle.getString("RecreateTableRenameNotes")); // NOI18N
             desc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
+            desc.setDisplayedMnemonic(bundle.getString("RecreateTableRenameNotes_Mnemonic").charAt(0));  // NOI18N
             con.anchor = GridBagConstraints.WEST;
             con.gridx = 0;
             con.gridy = 2;
@@ -156,13 +153,15 @@ public class LabeledTextFieldDialog
             });
 
             ActionListener listener = new ActionListener() {
-                                          public void actionPerformed(ActionEvent event) {
-                                              if (event.getSource() == DialogDescriptor.OK_OPTION) {
-                                                  result = true;
-                                              } else
-                                                  result = false;;
-                                          }
-                                      };
+                public void actionPerformed(ActionEvent event) {
+                    if (event.getSource() == DialogDescriptor.OK_OPTION)
+                        result = true;
+                    else
+                        result = false;;
+                }
+            };
+
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableDialogA11yDesc"));
 
             DialogDescriptor descriptor = new DialogDescriptor(pane, title, true, listener);
             dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -172,40 +171,26 @@ public class LabeledTextFieldDialog
         }
     }
 
-    public boolean run()
-    {
-        if (dialog != null) dialog.setVisible(true);
+    public boolean run() {
+        if (dialog != null)
+            dialog.setVisible(true);
+        
         return result;
     }
 
-    public String getStringValue()
-    {
+    public String getStringValue() {
         return field.getText();
     }
 
-    public String getEditedCommand()
-    {
+    public String getEditedCommand() {
         return notesarea.getText();
     }
 
-    public boolean isEditable()
-    {
+    public boolean isEditable() {
         return notesarea.isEditable();
     }
 
-    public void setStringValue(String val)
-    {
+    public void setStringValue(String val) {
         field.setText(val);
     }
 }
-/*
- * <<Log>>
- *  5    Gandalf   1.4         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         9/8/99   Slavek Psenicka adaptor changes
- *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         5/14/99  Slavek Psenicka 
- * $
- */

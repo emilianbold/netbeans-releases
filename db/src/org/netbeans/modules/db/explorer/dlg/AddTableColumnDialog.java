@@ -52,7 +52,7 @@ public class AddTableColumnDialog {
     JComboBox coltypecombo, idxcombo;
     JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
     DataModel dmodel = new DataModel();
-    private static ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
+    private ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle"); //NOI18N
 
     public AddTableColumnDialog(final Specification spe, final DatabaseNodeInfo nfo) {
         spec = spe;
@@ -398,6 +398,7 @@ public class AddTableColumnDialog {
             idxcombo = new JComboBox(new Vector(ixmap.keySet()));
             idxcombo.setToolTipText(bundle.getString("ACS_AddTableColumnIndexNameComboBoxA11yDesc"));
             idxcombo.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnIndexNameComboBoxA11yName"));
+            idxcombo.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnIndexNameComboBoxA11yDesc"));
             //idxcombo.setSelectedIndex(0);
             pane.add(idxcombo, con);
 
@@ -433,6 +434,7 @@ public class AddTableColumnDialog {
             checkfield.addFocusListener(fldlistener);
             checkfield.setToolTipText(bundle.getString("ACS_AddTableColumnCheckTextAreaA11yDesc"));
             checkfield.getAccessibleContext().setAccessibleName(bundle.getString("ACS_AddTableColumnCheckTextAreaA11yName"));
+            checkfield.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnCheckTextAreaA11yDesc"));
             JScrollPane spane = new JScrollPane(checkfield);
             pane.add(spane, con);
 
@@ -558,6 +560,8 @@ public class AddTableColumnDialog {
                       }
                   };
 
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddTableColumnDialogA11yDesc"));
+                  
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddColumnDialogTitle"), true, listener); //NOI18N
             // inbuilt close of the dialog is only after CANCEL button click
             // after OK button is dialog closed by hand

@@ -156,6 +156,8 @@ public class AddDriverDialog {
                 }
             };
 
+            pane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_AddDriverDialogA11yDesc"));
+
             DialogDescriptor descriptor = new DialogDescriptor(pane, bundle.getString("AddDriverDialogTitle"), true, listener); //NOI18N
             Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
             descriptor.setClosingOptions(closingOptions);
