@@ -32,14 +32,12 @@ import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerat
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
-import org.netbeans.modules.java.ui.nodes.JavaSourceNodeFactory;
 import org.netbeans.modules.javacore.api.JavaModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
@@ -262,26 +260,13 @@ public class Utils {
 
     public static void activateRenameClassUI(String fullClassName) {
         JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
-//        new RefactoringPanel(new RenameRefactoringUI(javaClass));
     }
 
-    private static void test(JavaClass javaClass, SourceGroup sourceGroup) {
-        Node node = JavaSourceNodeFactory.getDefault().createClassNode(javaClass);
-//        MoveClassAction moveClassAction = new MoveClassAction();
-//        RenameAction renameAction = new RenameAction();
-        Node[] nodes = new Node[]{node};
-//        renameAction.processContext(nodes, null);
-//        moveClassAction.enable(nodes);
-//        moveClassAction.setJavaClass(javaClass);
-//        moveClassAction.setSourceGroup(sourceGroup);
-//        moveClassAction.performAction();
-        nodes[0].toString();
-    }
-
-    public static void activateMoveClassUI(String fullClassName, SourceGroup sourceGroup) {
+    public static void activateMoveClassUI(FileObject ejbJarFile, String fullClassName, SourceGroup sourceGroup) {
         JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
-        //new RefactoringPanel(new MoveClassUI(javaClass));
-        test(javaClass, sourceGroup);
+        MoveClassAction moveClassAction = new MoveClassAction();
+        moveClassAction.init(ejbJarFile, javaClass, sourceGroup);
+        moveClassAction.performAction(null);
     }
 
     public static ClassElement getBeanClass(FileObject ejbJarFile, final Ejb ejb) {
