@@ -48,7 +48,7 @@ public class OptionsAction extends CallableSystemAction {
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/sessionSettings.gif";
+    return "/com/netbeans/developer/impl/resources/sessionSettings.gif"; // NOI18N
   }
 
   public HelpCtx getHelpCtx() {
@@ -97,6 +97,7 @@ public class OptionsAction extends CallableSystemAction {
 
 /* 
 * Log
+*  3    Gandalf   1.2         1/12/00  Ales Novak      i18n
 *  2    Gandalf   1.1         12/7/99  David Simonek   top component inner class
 *       made public
 *  1    Gandalf   1.0         12/3/99  David Simonek   

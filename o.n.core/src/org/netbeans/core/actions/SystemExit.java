@@ -45,7 +45,7 @@ public class SystemExit extends CallableSystemAction {
   * @return name of the action's icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/exit.gif";
+    return "/com/netbeans/developer/impl/resources/actions/exit.gif"; // NOI18N
   }
 
   public void performAction() {
@@ -58,6 +58,7 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  17   Gandalf   1.16        1/12/00  Ales Novak      i18n
  *  16   Gandalf   1.15        12/1/99  Petr Hrebejk    Save before exit moved 
  *       to NbTopManager
  *  15   Gandalf   1.14        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

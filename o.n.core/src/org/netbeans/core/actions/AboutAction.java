@@ -39,7 +39,7 @@ public class AboutAction extends CallableSystemAction {
   * @return URL to the action icon
   */
   public String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/about.gif";
+    return "/com/netbeans/developer/impl/resources/actions/about.gif"; // NOI18N
   }
 
   public HelpCtx getHelpCtx() {
@@ -54,6 +54,7 @@ public class AboutAction extends CallableSystemAction {
 
 /*
  * Log
+ *  9    Gandalf   1.8         1/12/00  Ales Novak      i18n
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         6/24/99  Jesse Glick     Gosh-honest HelpID's.

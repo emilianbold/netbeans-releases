@@ -49,13 +49,14 @@ static final long serialVersionUID =-4072717465854016148L;
   * @return resource for the action icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/frames/globalProperties.gif";
+    return "/com/netbeans/developer/impl/resources/frames/globalProperties.gif"; // NOI18N
   }
 
 }
 
 /*
 * Log
+*  7    src-jtulach1.6         1/12/00  Ales Novak      i18n
 *  6    src-jtulach1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  5    src-jtulach1.4         8/9/99   Ian Formanek    Generated Serial Version 

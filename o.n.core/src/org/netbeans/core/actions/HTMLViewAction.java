@@ -34,7 +34,7 @@ public class HTMLViewAction extends CallableSystemAction {
   * @return name of resource for icon
   */
   protected String iconResource () {
-    return "/com/netbeans/developer/impl/resources/actions/htmlView.gif";
+    return "/com/netbeans/developer/impl/resources/actions/htmlView.gif"; // NOI18N
   }
 
   public void performAction() {
@@ -45,7 +45,7 @@ public class HTMLViewAction extends CallableSystemAction {
     } catch (java.net.MalformedURLException e) {
       tm.showUrl (IDESettings.getRealHomeURL ());
     }
-    tm.setStatusText ("");
+    tm.setStatusText (""); // NOI18N
   }
 
   public String getName() {
@@ -61,6 +61,7 @@ public class HTMLViewAction extends CallableSystemAction {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/12/00  Ales Novak      i18n
  *  13   Gandalf   1.12        1/5/00   Jan Jancura     Bug 4872
  *  12   Gandalf   1.11        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
