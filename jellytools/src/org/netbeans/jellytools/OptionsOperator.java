@@ -309,16 +309,8 @@ public class OptionsOperator extends NbFrameOperator {
      * @param value String value to be choosed in the combobox.
      */
     protected void editLevel(int rowIndex, int colIndex, String value) {
-        //TBD is it possible to avoid robot using here?
         Point pnt = treeTable().getPointToClick(rowIndex, colIndex);
         treeTable().clickOnCell(rowIndex, colIndex);
-        /*
-        new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().
-                             create("EventDispatcher.RobotAutoDelay")).
-            clickMouse(treeTable(), pnt.x, pnt.y, 
-                       1, Operator.getDefaultMouseButton(),
-                       0, getTimeouts().create("ComponentOperator.MouseClickTimeout"));
-        */
         JComboBoxOperator combo = new JComboBoxOperator(treeTable());
         getTimeouts().sleep("OptionsOperator.BeforeEditingTimeout");
         combo.selectItem(value);

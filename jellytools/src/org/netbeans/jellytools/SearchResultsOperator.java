@@ -288,9 +288,9 @@ public class SearchResultsOperator extends NbFrameOperator {
     /**
      * Double clicks on position in list.
      */
-    //TBD should return SourceEditorOperator
-    public void showPosition(String position) {
+    public EditorWindowOperator showPosition(String position) {
         lstPositions().clickOnItem(position, 1);
+        return(new EditorWindowOperator());
     }
 
     /**
