@@ -214,16 +214,32 @@ abstract class FakeComponentPeer implements FakePeer
     }
 
     public Image createImage(ImageProducer producer) {
-        return _delegate.createImage(producer);
+        return getToolkit().createImage(producer);
     }
 
     public Image createImage(int width, int height) {
-        return _delegate.createImage(width, height);
+        return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
     }
 
     // JDK 1.4 (VolatileImage not before 1.4)
     public VolatileImage createVolatileImage(int width, int height) {
+        GraphicsConfiguration gc = getGraphicsConfiguration();
+        if (gc != null) {
+            try {
+                java.lang.reflect.Method m = GraphicsConfiguration.class.getMethod(
+                    "createCompatibleVolatileImage", // NOI18N
+                    new Class[] { Integer.TYPE, Integer.TYPE });
+                if (m != null) {
+                    return (VolatileImage) m.invoke(
+                             gc,
+                             new Object[] { new Integer(width),
+                                            new Integer(height) });
+                }
+            }
+            catch (Exception ex) {} // ignore
+        }
         return null;
+//        return gc != null ? gc.createCompatibleVolatileImage(width, height) : null;
     }
 
     public boolean prepareImage(Image img, int w, int h,
@@ -240,8 +256,7 @@ abstract class FakeComponentPeer implements FakePeer
 
     // JDK 1.3
     public GraphicsConfiguration getGraphicsConfiguration() {
-        //return _target.getGraphicsConfiguration();
-        return null;                // XXX
+        return _target.getGraphicsConfiguration();
     }
 
     // JDK 1.4
