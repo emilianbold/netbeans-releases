@@ -44,6 +44,10 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     /** Set<FileSystem> covering all FileSystems we're listening on */
     private WeakSet knownFileSystems = new WeakSet();
     
+    /** error manager to log what is happening here */
+    private final ErrorManager err = ErrorManager.getDefault().getInstance("org.openide.loaders.DataObject.find"); // NOI18N
+    private final boolean errLog = err.isLoggable(err.INFORMATIONAL);
+    
     /** the pool for all objects. Use getPOOL method instead of direct referencing
      * this field.
      */
@@ -123,8 +127,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     /** Calls into FolderLoader. Setups security condition to allow DataObject constructor
      * to succeed.
      */
-    public static MultiDataObject createMultiObject (DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original)
-    throws java.io.IOException {
+    public static MultiDataObject createMultiObject(DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
         MultiDataObject ret;
         
         Object prev = FIND.get ();
@@ -249,6 +252,12 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 break;
             }
             
+            if (errLog) {
+                err.log (ErrorManager.INFORMATIONAL, "Enter recognition block: " + Thread.currentThread()); // NOI18N
+                err.log (ErrorManager.INFORMATIONAL, "            waiting for: " + fo); // NOI18N
+                err.log (ErrorManager.INFORMATIONAL, "        blocking thread: " + atomic); // NOI18N
+                err.log (ErrorManager.INFORMATIONAL, "             blocked on: " + blocked); // NOI18N
+            }
             try {
                 wait ();
             } catch (InterruptedException ex) {
@@ -402,11 +411,21 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     */
     public void notifyCreation (DataObject obj) {
         synchronized (this) {
+            if (errLog) {
+                err.log (ErrorManager.INFORMATIONAL, "Notify created: " + obj.getPrimaryFile() + " by " + Thread.currentThread()); // NOI18N
+            }
+            
             if (toNotify.isEmpty()) {
+                if (errLog) {
+                    err.log (ErrorManager.INFORMATIONAL, "  but toNotify is empty"); // NOI18N
+                }
                 return;
             }
             
             if (!toNotify.remove (obj.item)) {
+                if (errLog) {
+                    err.log (ErrorManager.INFORMATIONAL, "  the item is not there: " + toNotify); // NOI18N
+                }
                 return;
             }
             
@@ -466,6 +485,11 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
 
                 if (!toNotify.contains (obj.item)) {
                     return;
+                }
+                
+                if (errLog) {
+                    err.log (ErrorManager.INFORMATIONAL, "waitTillNotified: " + Thread.currentThread()); // NOI18N
+                    err.log (ErrorManager.INFORMATIONAL, "      waitingFor: " + obj.getPrimaryFile()); // NOI18N
                 }
 
                 wait (SAFE_NOTIFY_DELAY);
