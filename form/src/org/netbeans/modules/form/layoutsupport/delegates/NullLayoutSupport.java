@@ -35,9 +35,9 @@ public class NullLayoutSupport extends AbsoluteLayoutSupport {
     private static Method setBoundsMethod;
     
     /** The icon for NullLayout. */
-    private static String iconURL = "/org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif"; // NOI18N
+    private static String iconURL = "org/netbeans/modules/form/layoutsupport/resources/NullLayout.gif"; // NOI18N
     /** The icon for NullLayout. */
-    private static String icon32URL = "/org/netbeans/modules/form/layoutsupport/resources/NullLayout32.gif"; // NOI18N    
+    private static String icon32URL = "org/netbeans/modules/form/layoutsupport/resources/NullLayout32.gif"; // NOI18N    
 
     /** Gets the supported layout manager class - this one is rather special,
      * it's null.

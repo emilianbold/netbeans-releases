@@ -70,7 +70,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
     private PropertySheetView sheet;
 
     /** The icon for ComponentInspector */
-    private static String iconURL = "/org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
+    private static String iconURL = "org/netbeans/modules/form/resources/inspector.gif"; // NOI18N
 
     static final long serialVersionUID =4248268998485315927L;
 

@@ -79,8 +79,7 @@ public class FormDesigner extends TopComponent
     private RADComponent connectionTarget;
     
     /** The icons for FormDesigner */
-    private static String iconURL = "/org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
-    private static String icon32URL = "/org/netbeans/modules/form/resources/formDesigner32.gif"; // NOI18N
+    private static String iconURL = "org/netbeans/modules/form/resources/formDesigner.gif"; // NOI18N
     
     /** The FormLoaderSettings instance */
     private static FormLoaderSettings formSettings = FormEditor.getFormSettings();

@@ -46,10 +46,10 @@ public class AbsoluteLayoutSupport extends AbstractLayoutSupport {
 
     /** The icon for AbsoluteLayout. */
     private static String iconURL =
-        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif"; // NOI18N
+        "org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout.gif"; // NOI18N
     /** The icon for AbsoluteLayout. */
     private static String icon32URL =
-        "/org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout32.gif"; // NOI18N
+        "org/netbeans/modules/form/layoutsupport/resources/AbsoluteLayout32.gif"; // NOI18N
 
     private static Constructor constrConstructor;
 

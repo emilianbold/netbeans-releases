@@ -27,8 +27,8 @@ import org.openide.util.Utilities;
 public class FormDataLoaderBeanInfo extends SimpleBeanInfo {
     
     /** The icons for Form */
-    private static String iconURL = "/org/netbeans/modules/form/resources/form.gif"; // NOI18N
-    private static String icon32URL = "/org/netbeans/modules/form/resources/form32.gif"; // NOI18N    
+    private static String iconURL = "org/netbeans/modules/form/resources/form.gif"; // NOI18N
+    private static String icon32URL = "org/netbeans/modules/form/resources/form32.gif"; // NOI18N    
 
     
     public BeanInfo[] getAdditionalBeanInfo() {

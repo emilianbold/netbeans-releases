@@ -55,10 +55,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
 {
     /** Default icon URL. */
     private static String iconURL =
-        "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"; // NOI18N
+        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout.gif"; // NOI18N
     /** Default icon URL. */
     private static String icon32URL =
-        "/org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
+        "org/netbeans/modules/form/layoutsupport/resources/AbstractLayout32.gif"; // NOI18N
 
     /** ResourceBundle for all support classes in form module. */
     private static ResourceBundle bundle = null;

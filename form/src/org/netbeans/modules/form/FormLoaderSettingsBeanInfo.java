@@ -34,8 +34,8 @@ import org.netbeans.modules.form.palette.*;
 public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
     /** The icons for Settings */
-    private static String iconURL = "/org/netbeans/modules/form/resources/formSettings.gif"; // NOI18N
-    private static String icon32URL = "/org/netbeans/modules/form/resources/formSettings32.gif"; // NOI18N
+    private static String iconURL = "org/netbeans/modules/form/resources/formSettings.gif"; // NOI18N
+    private static String icon32URL = "org/netbeans/modules/form/resources/formSettings32.gif"; // NOI18N
 
     /** Descriptor of valid properties
      * @return array of properties
