@@ -890,7 +890,9 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             //PENDING - message text:
             String msgNoTargetsFound = NbBundle.getMessage(
                                         getClass(),
-                                        "MSG_NoTestTarget",             //NOI18N
+                                        refFileObject.isFolder()
+                                                ? "MSG_NoTestTarget_Fo" //NOI18N
+                                                : "MSG_NoTestTarget_Fi",//NOI18N
                                         refFileObject.getNameExt());
             setMessage(msgNoTargetsFound, MSG_TYPE_NO_TARGET_FOLDERS);
             disableComponents();

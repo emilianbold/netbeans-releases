@@ -404,20 +404,26 @@ public final class Utils {
         for (int i = 0; i < rootURLs.length; i++) {
             if ((sourceRoots[i] = URLMapper.findFileObject(rootURLs[i]))
                     == null) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL,
+                int severity = ErrorManager.INFORMATIONAL;
+                if (ErrorManager.getDefault().isNotifiable(severity)) {
+                    ErrorManager.getDefault().notify(
+                        severity,
                         new IllegalStateException(
                            "No FileObject found for the following URL: "//NOI18N
                            + rootURLs[i]));
+                }
                 continue;
             }
             if (FileOwnerQuery.getOwner(sourceRoots[i]) != project) {
-                ErrorManager.getDefault().notify(
-                        ErrorManager.INFORMATIONAL,
+                int severity = ErrorManager.INFORMATIONAL;
+                if (ErrorManager.getDefault().isNotifiable(severity)) {
+                    ErrorManager.getDefault().notify(
+                        severity,
                         new IllegalStateException(
                     "Source root found by FileOwnerQuery points "       //NOI18N
                     + "to a different project for the following URL: "  //NOI18N
                     + rootURLs[i]));
+                }
                 continue;
             }
             count++;

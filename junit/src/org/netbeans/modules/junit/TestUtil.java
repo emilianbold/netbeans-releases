@@ -531,16 +531,18 @@ public class TestUtil {
                     "Source root found by FileOwnerQuery points "       //NOI18N
                     + "to a different project for the following URL: "  //NOI18N
                     + rootURLs[i]));
+                sourceRoots[i] = null;
                 someSkipped = true;
                 continue;
             }
         }
         
         if (someSkipped) {
-            sourceRoots = (FileObject[]) skipNulls(sourceRoots);
-            if (sourceRoots.length == 0) {
+            Object roots[] = skipNulls(sourceRoots);
+            if (roots.length == 0) {
                 return new Object[0];
             }
+            sourceRoots = (FileObject[]) roots;
         }
         
         /* .) find SourceGroups corresponding to the FileObjects: */
