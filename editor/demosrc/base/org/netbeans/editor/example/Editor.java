@@ -436,6 +436,12 @@ public class Editor extends javax.swing.JFrame {
         fileChooser = new JFileChooser( currentPath );
         
         fileChooser.setFileView( new FileView() {
+	    // JDK1.2 compatibility fix
+	    public String getName( File f ) { return null; }
+	    public String getDescription( File f ) { return null; }
+	    public String getTypeDescription( File f ) { return null; }
+	    public Boolean isTraversable( File f ) { return null; }
+	    
             public Icon getIcon( File f ) {
                 if( f.isDirectory() ) return null;
                 KitInfo ki = KitInfo.getKitInfoForFile( f );
