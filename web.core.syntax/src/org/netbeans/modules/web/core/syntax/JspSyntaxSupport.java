@@ -13,8 +13,10 @@
 
 package org.netbeans.modules.web.core.syntax;
 
+import java.io.File;
 import java.util.*;
 import java.io.IOException;
+import java.net.URL;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
@@ -36,6 +38,9 @@ import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import java.util.*;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
+
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
@@ -537,15 +542,29 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private static void initCompletionData() {
         if (standardTagDatas == null) {
+            final String helpFiles = "docs/syntaxref12.zip";
+            File f = InstalledFileLocator.getDefault().locate(helpFiles, null, false); //NoI18N
+            String url = "";
+            if (f != null){
+                try {
+                    URL urll = f.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    url = urll.toString();
+                }
+                catch (java.net.MalformedURLException e){
+                    err.notify(ErrorManager.EXCEPTION, e);
+                    // nothing to do
+                }
+            }
             standardTagDatas = new TagInfo[] {  
               new TagInfo ("fallback", null, TagInfo.BODY_CONTENT_JSP, "alternative text to browsers that do not support OBJECT or EMBED",    // NOI18N
                 null, null, new TagAttributeInfo[] {}),
-              new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, "forwards request to another URL",    // NOI18N
+              new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1212.html", // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("page", true, "", true)}),       // NOI18N
-              new TagInfo ("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, "gets bean property",           // NOI18N
+              new TagInfo ("getProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref1213.html",           // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", false, "", false),       // NOI18N
                                                      new TagAttributeInfo ("property", false, "", false)}), // NOI18N
-              new TagInfo ("include", null, TagInfo.BODY_CONTENT_JSP, "includes another page",              // NOI18N
+              new TagInfo ("include", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1214.html",              // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("flush", true, "", false),       // NOI18N
                                                      new TagAttributeInfo ("page", true, "", true)}),       // NOI18N
               new TagInfo ("param", null, TagInfo.BODY_CONTENT_EMPTY, "specifies parameter",                // NOI18N
@@ -553,7 +572,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                                                      new TagAttributeInfo ("value", true, "", true)}),      // NOI18N
               new TagInfo ("params", null, TagInfo.BODY_CONTENT_JSP, "contains parameters",                 // NOI18N
                 null, null, new TagAttributeInfo[] {}),
-              new TagInfo ("plugin", null, TagInfo.BODY_CONTENT_JSP, "adds plugin to a page",               // NOI18N
+              new TagInfo ("plugin", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1215.html",               // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("align", false, "", false),      // NOI18N
                                                      new TagAttributeInfo ("archive", false, "", false),    // NOI18N
                                                      new TagAttributeInfo ("code", true, "", false),        // NOI18N
@@ -567,12 +586,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                                                      new TagAttributeInfo ("type", true, "", false),        // NOI18N
                                                      new TagAttributeInfo ("vspace", false, "", false),     // NOI18N
                                                      new TagAttributeInfo ("width", false, "", false)}),    // NOI18N
-              new TagInfo ("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, "sets bean property",           // NOI18N
+              new TagInfo ("setProperty", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref1216.html",           // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("name", false, "", true),        // NOI18N
                                                      new TagAttributeInfo ("param", false, "", false),      // NOI18N
                                                      new TagAttributeInfo ("property", false, "", false),   // NOI18N
                                                      new TagAttributeInfo ("value", false, "", true)}),     // NOI18N
-              new TagInfo ("useBean", null, TagInfo.BODY_CONTENT_JSP, "loads a bean to be used in JSP",     // NOI18N
+              new TagInfo ("useBean", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref1217.html",     // NOI18N
                 null, null, new TagAttributeInfo[] { new TagAttributeInfo ("beanName", false, "", false),   // NOI18N
                                                      new TagAttributeInfo ("class", false, "", false),      // NOI18N
                                                      new TagAttributeInfo ("id", false, "", false),         // NOI18N
