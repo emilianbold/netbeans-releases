@@ -35,12 +35,13 @@ import java.util.ArrayList;
  *
  * @author  nn136682
  */
-public class InstanceTargetXNode extends FilterXNode {
+public class InstanceTargetXNode extends FilterXNode implements ServerInstance.RefreshListener {
     private ServerTarget instanceTarget;
     private ServerInstance instance;
     
     public InstanceTargetXNode(Node instanceNode, ServerInstance instance) {
         this(instanceNode, Node.EMPTY, instance);
+        instance.addRefreshListener(this);
     }
     
     public InstanceTargetXNode(Node instanceNode, Node xnode, ServerInstance instance) {
