@@ -61,6 +61,8 @@ public final class ClassNameTextField extends JTextField {
     public static final int STATUS_EMPTY = 1;
     /** status: the class name is not valid */
     public static final int STATUS_INVALID = 2;
+    /** */
+    public static final int STATUS_VALID_NOT_DEFAULT = 3;
 
     /**
      * internal status - when the text is empty or when it ends with a dot
@@ -79,6 +81,8 @@ public final class ClassNameTextField extends JTextField {
     private ChangeListener changeListener;
     /** */
     private ChangeEvent changeEvent;
+    /** */
+    private String defaultText;
 
     /**
      * Creates an empty text-field.
@@ -98,6 +102,24 @@ public final class ClassNameTextField extends JTextField {
     public ClassNameTextField(String text) {
         super(text == null ? "" : text);                                //NOI18N
         setupDocumentListener();
+    }
+    
+    /**
+     */
+    public void setDefaultText(String defaultText) {
+        if ((defaultText == null) && (this.defaultText == null)
+             || (defaultText != null) && defaultText.equals(this.defaultText)) {
+            return;
+        }
+        
+        String oldDefaultText = this.defaultText;
+        this.defaultText = defaultText;
+        
+        if ((defaultText != null)
+                || (externalStatusValid
+                    && (externalStatus == STATUS_VALID_NOT_DEFAULT))) {
+            statusMaybeChanged();
+        }
     }
     
     /**
@@ -167,7 +189,10 @@ public final class ClassNameTextField extends JTextField {
         int internalStatus = documentListener.status;
         switch (internalStatus) {
             case STATUS_VALID:
-                externalStatus = STATUS_VALID;
+                externalStatus = (defaultText == null)
+                                        || defaultText.equals(getText())
+                                 ? STATUS_VALID
+                                 : STATUS_VALID_NOT_DEFAULT;
                 break;
             case STATUS_BEFORE_PART:
                 externalStatus = (getText().length() == 0) ? STATUS_EMPTY
@@ -202,7 +227,7 @@ public final class ClassNameTextField extends JTextField {
     
     /**
      */
-    private void statusMaybeChanged(int newInternalStatus) {
+    private void statusMaybeChanged() {
         externalStatusValid = false;
 
         if (changeListener != null) {
@@ -238,7 +263,9 @@ public final class ClassNameTextField extends JTextField {
 
             if (newStatus != status) {
                 status = newStatus;
-                statusMaybeChanged(status);
+                statusMaybeChanged();
+            } else if ((status == STATUS_VALID) && (defaultText != null)) {
+                statusMaybeChanged();     //maybe default <--> not default
             }
 
             assert length == getDocument().getLength();
@@ -298,7 +325,9 @@ public final class ClassNameTextField extends JTextField {
              */
             if ((newStatus != status) || wasEmpty) {
                 status = newStatus;
-                statusMaybeChanged(status);
+                statusMaybeChanged();
+            } else if ((status == STATUS_VALID) && (defaultText != null)) {
+                statusMaybeChanged();     //maybe default <--> not default
             }
 
             assert length == getDocument().getLength();
@@ -359,7 +388,9 @@ public final class ClassNameTextField extends JTextField {
              */
             if ((newStatus != status) || (length == 0)) {
                 status = newStatus;
-                statusMaybeChanged(status);
+                statusMaybeChanged();
+            } else if ((status == STATUS_VALID) && (defaultText != null)) {
+                statusMaybeChanged();     //maybe default <--> not default
             }
 
             assert length == getDocument().getLength();

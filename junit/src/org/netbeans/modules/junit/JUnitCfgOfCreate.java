@@ -133,8 +133,10 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
     private static final int MSG_TYPE_INVALID_CHKBOXES = 1;
     /** layer index for a message about invalid class name */
     private static final int MSG_TYPE_CLASSNAME_INVALID = 2;
+    /** layer index for a message about non-default class name */
+    private static final int MSG_TYPE_CLASSNAME_NOT_DEFAULT = 3;
     /** */
-    private MessageStack msgStack = new MessageStack(3);
+    private MessageStack msgStack = new MessageStack(4);
 
     /**
      * Creates a JUnit configuration panel.
@@ -509,13 +511,23 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             case ClassNameTextField.STATUS_INVALID:
                 //PENDING - polish the message:
                 key = "MSG_InvalidClassName";                           //NOI18N
+                break;
+            case ClassNameTextField.STATUS_VALID_NOT_DEFAULT:
+                //PENDING - polish the message:
+                key = "MSG_ClassNameNotDefault";                        //NOI18N
+                break;
+        }
+        if (state != ClassNameTextField.STATUS_VALID_NOT_DEFAULT) {
+            setMessage(null, MSG_TYPE_CLASSNAME_NOT_DEFAULT);
         }
         setMessage((key != null)
                            ? NbBundle.getMessage(getClass(), key)
                            : null,
                    MSG_TYPE_CLASSNAME_INVALID);
         
-        classNameValid = (state == ClassNameTextField.STATUS_VALID);
+        classNameValid =
+                (state == ClassNameTextField.STATUS_VALID)
+                || (state == ClassNameTextField.STATUS_VALID_NOT_DEFAULT);
     }
     
     /**
@@ -801,6 +813,7 @@ public final class JUnitCfgOfCreate extends SelfResizingPanel
             if (tfClassName != null) {
                 String prefilledName = className + TEST_CLASS_SUFFIX;
                 tfClassName.setText(prefilledName);
+                tfClassName.setDefaultText(prefilledName);
                 tfClassName.setCaretPosition(prefilledName.length());
             }
         } else if (singlePackage) {
