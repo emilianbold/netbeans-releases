@@ -59,8 +59,6 @@ import org.openide.windows.WindowManager;
  */
 public class MergeDialogComponent extends TopComponent implements ChangeListener {
     
-    public static final String MERGE_MODE = "MergeModeName";
-    
     public static final String PROP_PANEL_CLOSING = "panelClosing"; // NOI18N
     public static final String PROP_ALL_CLOSED = "allPanelsClosed"; // NOI18N
     public static final String PROP_ALL_CANCELLED = "allPanelsCancelled"; // NOI18N
@@ -76,10 +74,6 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         helpButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Help_Mnemonic").charAt(0));  // NOI18N
         initListeners();
         putClientProperty("PersistenceType", "Never");
-        // http://www.netbeans.org/issues/show_bug.cgi?id=24199
-        // the TabPolicy property's value makes sure that the tab is not shown 
-        // for the topcomponent when it is alone in the mode.
-        putClientProperty("TabPolicy", "HideWhenAlone");        
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(MergeDialogComponent.class, "ACSN_Merge_Dialog_Component")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MergeDialogComponent.class, "ACSD_Merge_Dialog_Component")); // NOI18N
@@ -293,26 +287,8 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         mergeTabbedPane.addMouseListener(new PopupMenuImpl());
         mergeTabbedPane.addChangeListener(this);
     }
-    
-    protected Mode getDockingMode(Workspace workspace) {
-        Mode mode = workspace.findMode(MERGE_MODE);
-        if (mode == null) {
-            mode = workspace.createMode(
-                MERGE_MODE, getName(),
-                MergeDialogComponent.class.getResource(
-                    "/org/netbeans/modules/merge/builtin/visualizer/mergeModeIcon.gif" // NOI18N
-            ));
-        }
-        return mode;
-    }
-    
+
     public void open(Workspace workspace) {
-        //System.out.println("workspace = "+workspace);
-        if (workspace == null) {
-            workspace = WindowManager.getDefault().getCurrentWorkspace();
-        }
-        Mode mergeMode = getDockingMode(workspace);
-        mergeMode.dockInto(this);
         super.open(workspace);
         requestFocus();
     }

@@ -28,12 +28,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.openide.NotifyDescriptor;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
-import org.openide.windows.Mode;
-import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
+import org.openide.windows.*;
 
 import org.netbeans.api.diff.Diff;
 //import org.netbeans.api.diff.DiffWrapperPanel;
@@ -350,25 +347,7 @@ public class DefaultDiff extends Diff implements Serializable {
             getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffTopComponent.class, "ACSD_Diff_Top_Component")); // NOI18N
         }
         
-        protected Mode getDockingMode(Workspace workspace) {
-            Mode mode = workspace.findMode(CloneableEditorSupport.EDITOR_MODE);
-            if (mode == null) {
-                mode = workspace.createMode(
-                CloneableEditorSupport.EDITOR_MODE, getName(),
-                CloneableEditorSupport.class.getResource(
-                "/org/openide/resources/editorMode.gif" // NOI18N
-                ));
-            }
-            return mode;
-        }
-        
         public void open(Workspace workspace) {
-            //System.out.println("workspace = "+workspace);
-            if (workspace == null) {
-                workspace = WindowManager.getDefault().getCurrentWorkspace();
-            }
-            Mode editorMode = getDockingMode(workspace);
-            editorMode.dockInto(this);
             super.open(workspace);
             //diffPanel.open();
             requestFocus();
