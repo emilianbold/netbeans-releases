@@ -1487,15 +1487,16 @@ DOCTYPE_LOOP:
         }
         
         private void trace (String msg) {
-            String location = "";
-            if (locator != null) {
-                String entity = locator.getSystemId ();
-                int index = entity.lastIndexOf ('/');
-                entity = entity.substring (index > 0 ? index : 0);
-                location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
+            if ( Util.THIS.isLoggable() ) {
+                String location = "";
+                if (locator != null) {
+                    String entity = locator.getSystemId ();
+                    int index = entity.lastIndexOf ('/');
+                    entity = entity.substring (index > 0 ? index : 0);
+                    location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
+                }            
+                Util.THIS.debug ("X2T " + location + " " + msg);  // NOI18N
             }
-            
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("X2T " + location + " " + msg);  // NOI18N
         }
         
         private void doAssert (boolean asrt) {

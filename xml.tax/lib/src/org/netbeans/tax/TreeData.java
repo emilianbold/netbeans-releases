@@ -138,10 +138,9 @@ public abstract class TreeData extends TreeChild {
     
     
     /**
-     * @throws ReadOnlyException
      * @throws InvalidArgumentException
      */
-    public final String substringData (int offset, int count) throws ReadOnlyException, InvalidArgumentException {
+    public final String substringData (int offset, int count) throws InvalidArgumentException {
         try {
             return data.substring (offset, offset + count);
         } catch (IndexOutOfBoundsException ex) {
