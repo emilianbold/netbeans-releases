@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -18,14 +18,16 @@ import java.util.*;
 
 import org.apache.tools.ant.* ;
 import org.apache.tools.ant.taskdefs.* ;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.Path;
 
 /** This task runs the JHIndexer task multiple times, once for each
  * language, and automatically creates the appropriate regular
  * expressions to choose the files for each language.  This task
  * greatly reduces the amount of Ant code required to run JHIndexer
- * especially when there are helpsets for multiple languages in the 
+ * especially when there are helpsets for multiple languages in the
  * same directory tree.
- * 
+ *
  * @author Jerry Huth (email: jerry@solidstep.com)
  */
 public class LocJHIndexer extends MatchingTask {
@@ -33,16 +35,18 @@ public class LocJHIndexer extends MatchingTask {
   protected File basedir = null ;
   protected String dbdir = null ;
   protected String locales = null ;
-  protected File jhall = null ;
+  protected String jhall = null ;
 
-  /** Set the location of <samp>jhall.jar</samp> (JavaHelp tools library). */
-  public void setJhall (File jhall) {
+  /** Specify a regular expression to find <samp>jhall.jar</samp>
+   * (JavaHelp tools library).
+   */
+  public void setJhall( String jhall) {
     this.jhall = jhall;
   }
 
   /** Get the jhall jar file to use. */
-  protected File getJhall() {
-    File ret = null ;
+  protected String getJhall() {
+    String ret = null ;
     String prop = null ;
 
     // Use the attribute if specified. //
@@ -54,7 +58,7 @@ public class LocJHIndexer extends MatchingTask {
       // Else look for the global property. //
       prop = project.getProperty( "locjhindexer.jhall") ;
       if( prop != null) {
-	ret = new File( prop) ;
+	ret = prop ;
       }
     }
 
@@ -66,7 +70,7 @@ public class LocJHIndexer extends MatchingTask {
     basedir = dir ;
   }
 
-  /** Set the name of the search database directory (which is under 
+  /** Set the name of the search database directory (which is under
    * <samp>basedir/&lt;locale></samp>)
    */
   public void setDbdir( String dir) {
@@ -92,13 +96,13 @@ public class LocJHIndexer extends MatchingTask {
     StringTokenizer tokenizer = null ;
     String loc = null ;
 
-    if( getJhall() == null) 
+    if( getJhall() == null)
       throw new BuildException( "Must specify the jhall attribute") ;
-    if( dbdir == null || dbdir.trim().equals( "")) 
+    if( dbdir == null || dbdir.trim().equals( ""))
       throw new BuildException( "Must specify the dbdir attribute") ;
-    if( basedir == null) 
+    if( basedir == null)
       throw new BuildException( "Must specify the basedir attribute") ;
-    if( locs == null || locs.trim().equals( "")) 
+    if( locs == null || locs.trim().equals( ""))
       throw new BuildException( "Must specify the locales attribute") ;
 
     // I couldn't get it to work unless I explicitly added the task def here. //
@@ -127,7 +131,7 @@ public class LocJHIndexer extends MatchingTask {
       tokenizer = new StringTokenizer( helpset_locs, ", ") ;
       while( tokenizer.hasMoreTokens()) {
 	loc = tokenizer.nextToken() ;
-	
+
 	// Run the JHIndexer for this locale. //
 	RunForLocale( loc) ;
       }
@@ -156,14 +160,29 @@ public class LocJHIndexer extends MatchingTask {
     jhindexer.init() ;
 
     jhindexer.setIncludes( locale + "/**/*.htm*") ;
-    jhindexer.setExcludes( locale + "/" + dbdir + "/" + "," + 
+    jhindexer.setExcludes( locale + "/" + dbdir + "/" + "," +
 			   locale + "/credits.htm*") ;
     jhindexer.setBasedir( new File( basedir + "/")) ;
     jhindexer.setDb( new File( basedir + "/" + locale + "/" + dbdir)) ;
     jhindexer.setLocale( locale) ;
-    jhindexer.setJhall( getJhall()) ;
+    setJHLib( jhindexer) ;
 
     jhindexer.execute() ;
+  }
+
+  protected void setJHLib( JHIndexer jhindexer) {
+    String jhlib ;
+    int idx ;
+    FileSet fs ;
+
+    // Break the regular expression up into directory and file //
+    // components.  Create a fileset for it.		       //
+    jhlib = getJhall() ;
+    idx = jhlib.lastIndexOf( "/") ;
+    fs = new FileSet() ;
+    fs.setDir( new File( jhlib.substring( 0, idx))) ;
+    fs.setIncludes( jhlib.substring( idx+1)) ;
+    jhindexer.createClasspath().addFileset( fs) ;
   }
 
   protected class LocHelpsetFilter implements FilenameFilter {
