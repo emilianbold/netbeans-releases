@@ -146,7 +146,7 @@ public class FormEditorModule extends ModuleInstall {
             // install actions into menu
             Utilities2.createAction(InstallBeanAction.class,
                                     DataFolder.create(org.openide.TopManager.getDefault().getPlaces().folders().menus(), "Tools"), // NOI18N
-                                    "UnmountFSAction", true, true, false, false // NOI18N
+                                    "ToolsAction", true, true, false, false // NOI18N
                                     );
 
             Utilities2.createAction(ComponentInspectorAction.class,
