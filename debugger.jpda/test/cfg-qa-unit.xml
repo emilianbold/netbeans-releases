@@ -14,10 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="jpdadebugger unit test config">
 
-    <testbag testattribs="full" executor="ide" name="Presence" resultsprocessor="qa-unit">
+    <testbag testattribs="full,presence" executor="ide" name="Presence" resultsprocessor="qa-unit">
        <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
                 <include name="org/netbeans/test/debugger/basic/ActionsPresenceTestCase.class"/>
                 <include name="org/netbeans/test/debugger/basic/MenusPresenceTestCase.class"/>
                 <include name="org/netbeans/test/debugger/basic/ToolBarsPresenceTestCase.class"/>
@@ -25,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
+    <testbag testattribs="experimental" executor="ide" name="Breakpoints" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
@@ -43,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full" executor="ide" name="Bugs" resultsprocessor="qa-unit">
+    <testbag testattribs="experimental" executor="ide" name="Bugs" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
@@ -52,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="full" executor="ide" name="Watches" resultsprocessor="qa-unit">
+    <testbag testattribs="experimental" executor="ide" name="Watches" resultsprocessor="qa-unit">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/test/debugger/Util/GuiRunDebugger.class"/>
