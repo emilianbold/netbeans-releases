@@ -120,12 +120,12 @@ final class Services extends ServiceType.Registry implements Comparator {
         synchronized (INSTANCE) {
             sections.add (s);
             recomputeKinds ();
-            supp.firePropertyChange (PROP_KINDS, null, null);
             
             // adds also default instance of this service
             current.add (s.getServiceType());
             servicesChangedNotify();
         }
+        supp.firePropertyChange (PROP_KINDS, null, null);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
 
     }
@@ -524,6 +524,10 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.40  2001/02/19 10:48:27  dstrupl
+* #9656 Deadlock while building. I hope that this will fix it.
+* The whole synchronization on INSTANCE might be reviewed.
+*
 * Revision 1.39  2000/11/30 17:08:33  jtulach
 * ServiceType.createClone ()
 *
