@@ -365,8 +365,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
             if (moduleLoc.length() > 0) {
                 File f = new File(moduleLoc);
-                FileObject fo = FileUtil.toFileObject(f);
-                presetSecondPanel(fo);
+                FileObject fo;
+                try {
+                    fo = FileUtil.toFileObject(f);
+                } catch (IllegalArgumentException exc) {
+                    return; //invalid file object
+                }
+                if (fo != null)
+                    presetSecondPanel(fo);
             }
         }
         
