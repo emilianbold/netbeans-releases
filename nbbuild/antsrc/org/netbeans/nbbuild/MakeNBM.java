@@ -359,7 +359,7 @@ public class MakeNBM extends MatchingTask {
         {
             // Looks like ANT 1.2 so use setCompress with String
             Class[] params = {String.class};
-            Object[] objs = {"false"};
+            Object[] objs = {"true"};
             try {
                 Zip.class.getDeclaredMethod("setCompress",params).invoke(jar,objs);
             }
