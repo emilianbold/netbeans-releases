@@ -18,6 +18,7 @@ import javax.swing.JButton;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -256,7 +257,13 @@ public class UpdateHelper {
                 case Node.ELEMENT_NODE:
                     Element oldElement = (Element) node;
                     newNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
-                    copyDocument(doc,oldElement,(Element)newNode);
+                    NamedNodeMap m = oldElement.getAttributes();
+                    Element newElement = (Element) newNode;
+                    for (int index = 0; index < m.getLength(); index++) {
+                        Node attr = m.item(index);
+                          newElement.setAttribute(attr.getNodeName(), attr.getNodeValue());
+                    }
+                    copyDocument(doc,oldElement,newElement);
                     break;
                 case Node.TEXT_NODE:
                     Text oldText = (Text) node;
