@@ -268,10 +268,14 @@ public class Property {
     
     /** Sets value of this property to specified text. If a new value is
      * not accepted, an information or error dialog is displayed by IDE.
+     * If property is not writable JemmyException is thrown.
      * @param textValue text to be set in property (e.g. "a new value",
      * "a new item from list", "false", "TRUE")
      */
     public void setValue(String textValue) {
+        if(!isEnabled()) {
+            throw new JemmyException("Property \""+getName()+"\" is read only.");
+        }
         PropertyEditor pe = property.getPropertyEditor();
         try {
             pe.setAsText(textValue);
@@ -414,7 +418,7 @@ public class Property {
      * @return true if this property is enabled, false otherwise
      */
     public boolean isEnabled() {
-        return getRenderer().isEnabled();
+        return property.canWrite();
     }
     
     /** Returns true if this property can be edited as text by inplace text field.
