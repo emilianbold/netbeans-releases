@@ -412,9 +412,9 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         protected void createPopupMenu() {
             popupMenu=new JPopupMenu();
         }
-        protected void addMenuItem(String action) {
+        protected void addMenuItem(String action, Icon icon) {
             if (popupMenu==null) popupMenu=new JPopupMenu();
-            JMenuItem it=new JMenuItem("Add "+action);
+            JMenuItem it=new JMenuItem("Add "+action, icon);
             it.addActionListener(this);
             popupMenu.add(it);
         }
@@ -488,8 +488,8 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             setAttribute("prio", value);
         }
         protected void createPopupMenu() {
-            addMenuItem("Property");
-            addMenuItem("TestSet");
+            addMenuItem("Property", propertyIcon);
+            addMenuItem("TestSet", testsetIcon);
         }
         private boolean findElement(String id, String name) {
             Document d=((Element)getUserObject()).getOwnerDocument();
@@ -547,7 +547,7 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             return getDirectory();
         }
         protected void createPopupMenu() {
-            addMenuItem("PatternSet");
+            addMenuItem("PatternSet", patternsetIcon);
         }
         public String errorMessage() {
             return toString().length()==0?"directory attribute is required":"";
@@ -574,8 +574,8 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             return "<html><i>PatternSet";
         }
         protected void createPopupMenu() {
-            addMenuItem("Include");
-            addMenuItem("Exclude");
+            addMenuItem("Include", includeIcon);
+            addMenuItem("Exclude", excludeIcon);
         }
         public String errorMessage() {
             return "";
@@ -631,10 +631,10 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
             super(e);
         }
         protected void createPopupMenu() {
-            addMenuItem("TestBag");
-            addMenuItem("Executor");
-            addMenuItem("Compiler");
-            addMenuItem("ResultProcessor");
+            addMenuItem("TestBag", testbagIcon);
+            addMenuItem("Executor", executorIcon);
+            addMenuItem("Compiler", compilerIcon);
+            addMenuItem("ResultProcessor", resultIcon);
         }
         public String errorMessage() {
             return super.errorMessage()+(containsChild(TestBag.class)?"":"TestBag element is required<br>")+(containsChild(Executor.class)?"":"Executor element is required<br>")+(containsChild(ResultsProcessor.class)?"":"ResultsProcessor element is required");
