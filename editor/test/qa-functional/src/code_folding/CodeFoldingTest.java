@@ -21,6 +21,8 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
  */
   public class CodeFoldingTest extends EditorTestCase {
       
+    private final int COLLAPSE_EXPAND_DELAY = 200;  
+      
     /** Creates a new instance of Main */
     public CodeFoldingTest(String testMethodName) {
         super(testMethodName);
@@ -116,7 +118,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         
         // wait a while
         try {
-            Thread.currentThread().sleep(100);
+            Thread.currentThread().sleep(COLLAPSE_EXPAND_DELAY);
         } catch (InterruptedException ex) {
         }
         
@@ -132,7 +134,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         
         // wait a while
         try {
-            Thread.currentThread().sleep(100);
+            Thread.currentThread().sleep(COLLAPSE_EXPAND_DELAY);
         } catch (InterruptedException ex) {
         }
     }
@@ -144,7 +146,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         
         // wait a while
         try {
-            Thread.currentThread().sleep(100);
+            Thread.currentThread().sleep(COLLAPSE_EXPAND_DELAY);
         } catch (InterruptedException ex) {
         }
     }
@@ -156,7 +158,7 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         
         // wait a while
         try {
-            Thread.currentThread().sleep(100);
+            Thread.currentThread().sleep(COLLAPSE_EXPAND_DELAY);
         } catch (InterruptedException ex) {
         }
     }
