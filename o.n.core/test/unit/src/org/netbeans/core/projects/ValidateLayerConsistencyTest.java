@@ -64,6 +64,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue;
             }
             
+            if ("Shortcuts/C-BACK_QUOTE.shadow".equals(fo.getPath())) {
+                // #46753
+                continue;
+            }
+            
             java.util.Enumeration attrs = fo.getAttributes();
             while (attrs.hasMoreElements()) {
                 String name = (String)attrs.nextElement();
