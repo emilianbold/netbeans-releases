@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -25,7 +26,9 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.explorer.ExplorerManager;
@@ -115,7 +118,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         return null;
     }
-    
+
     public void propertyChange (PropertyChangeEvent event) {
         if (event.getSource() == this.categoriesPanel) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals (event.getPropertyName())) {
@@ -134,7 +137,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
-                                this.description.setEditorKit(new HTMLEditorKit());
                                 this.description.setPage (descURL);                                                                
                                 return;
                             } catch (IOException e) {
@@ -156,7 +158,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
-                                this.description.setEditorKit(new HTMLEditorKit());
                                 this.description.setPage (descURL);                                
                             } catch (IOException e) {
                                 this.description.setText (ResourceBundle.getBundle("org/netbeans/modules/project/ui/Bundle").getString("TXT_NoDescription"));
@@ -180,6 +181,21 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.categoriesPanel.addPropertyChangeListener(this);                        
         this.projectsPanel.addPropertyChangeListener(this);
         this.description.setEditorKit(new HTMLEditorKit());
+    }
+
+    public void addNotify() {
+        super.addNotify();
+        
+        // override the Swing default CSS to make the HTMLEditorKit use the
+        // same font as the rest of the UI.  This must be done in addNotify()
+        // because before the components are realized the font sizes are wrong
+        // on GTKLookAndFeel
+
+        HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
+        StyleSheet css = htmlkit.getStyleSheet();
+        Font f = jLabel1.getFont();
+        css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                    .append("pt; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
     }
     
     /** This method is called from within the constructor to
