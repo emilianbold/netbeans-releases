@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.properties/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/properties/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.12
+OpenIDE-Module-Specification-Version: 1.13
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Layer: org/netbeans/modules/properties/Layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 4.39
@@ -9,4 +9,4 @@ OpenIDE-Module-Public-Packages: org.netbeans.modules.properties.*
 
 Name: org/netbeans/modules/properties/PropertiesDataLoader.class
 OpenIDE-Module-Class: Loader
-Install-Before: org.netbeans.modules.text.TXTDataObject
+

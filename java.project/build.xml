@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
         <property file="spec-ver.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.0"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${java.project.impl.version}"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>

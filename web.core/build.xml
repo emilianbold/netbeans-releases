@@ -59,7 +59,6 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../../xml/spec-vers.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.18"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="-"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
                 <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.java/1,
@@ -89,5 +88,3 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
 </project>
-
-

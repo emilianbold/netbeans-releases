@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.j2eeserver/3
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.3
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/deployment/impl/layer.xml
 OpenIDE-Module-Install: org/netbeans/modules/j2ee/deployment/impl/Install.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/deployment/impl/Bundle.properties
@@ -8,3 +8,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/deployment/impl/Bund
 Name: org/netbeans/modules/j2ee/deployment/config/ConfigDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+

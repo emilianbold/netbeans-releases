@@ -20,23 +20,22 @@ Microsystems, Inc. All Rights Reserved.
         <property file="spec-vers.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="${multiview.spec.version}.${multiview.impl.version}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="${multiview.spec.version}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${multiview.impl.version}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
                 <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
-                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>
         </jar>
     </target>
     
-<!--    MVInnerComponentGetLookupTest extends  org.openide.windows.TopComponentGetLookupTest, needs to compile openide tests first
--->
+    <!-- MVInnerComponentGetLookupTest extends org.openide.windows.TopComponentGetLookupTest; -->
+    <!-- needs to compile openide tests first -->
     <target name="build-openide">
         <ant dir="../../openide/test" target="buildtests"/>
     </target>
-    <target name="test-build" depends="build-openide, projectized.test-build">
-    </target>
-    
+    <target name="test-build" depends="build-openide,projectized.test-build"/>
 
 </project>

@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
         <property file="../project/spec-ver.properties"/>
         <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
             <manifest>
-                <attribute name="OpenIDE-Module-Specification-Version" value="1.0"/>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
                 <attribute name="OpenIDE-Module-Module-Dependencies" value="org.apache.tools.ant.module/3 > 3.9, org.netbeans.api.java/1, org.netbeans.modules.ant.browsetask, org.netbeans.modules.debugger.jpda.ant, org.netbeans.modules.java.platform/0, org.netbeans.modules.java.project/0 = ${java.project.impl.version}, org.netbeans.modules.junit/2, org.netbeans.modules.project.ant/0, org.netbeans.modules.projectapi/0, org.netbeans.modules.project.libraries/0, org.netbeans.modules.projectuiapi/0, org.netbeans.modules.queries/0, org.openide.src, org.openide.loaders, org.openide.execution > 1.2, org.netbeans.modules.javacore/1, org.netbeans.jmi.javamodel/1"/>
