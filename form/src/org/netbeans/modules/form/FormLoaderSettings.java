@@ -382,7 +382,9 @@ public class FormLoaderSettings extends SystemOption {
         variablesLocal = value;
 
         int varType = variablesLocal ?
-            CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL) :
+            CodeVariable.LOCAL | (variablesModifier & CodeVariable.FINAL)
+                               | CodeVariable.EXPLICIT_DECLARATION
+            :
             CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 
@@ -400,7 +402,9 @@ public class FormLoaderSettings extends SystemOption {
         variablesModifier = value;
 
         int varType = variablesLocal ?
-            CodeVariable.LOCAL | variablesModifier :
+            CodeVariable.LOCAL | variablesModifier
+                               | CodeVariable.EXPLICIT_DECLARATION
+            :
             CodeVariable.FIELD | variablesModifier;
         CodeStructure.setGlobalDefaultVariableType(varType);
 

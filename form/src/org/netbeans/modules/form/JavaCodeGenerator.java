@@ -220,7 +220,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
 
                 public Object getValue() {
-                    return new Boolean(component.getAuxValue(AUX_VARIABLE_MODIFIER) == null);
+                    return new Boolean(
+                        component.getAuxValue(AUX_VARIABLE_MODIFIER) == null
+                        && component.getAuxValue(AUX_VARIABLE_LOCAL) == null);
                 }
 
                 public boolean canWrite() {
@@ -300,7 +302,8 @@ class JavaCodeGenerator extends CodeGenerator {
                                | ~(CodeVariable.ALL_MODIF_MASK
                                      | CodeVariable.SCOPE_MASK);
                     if (Boolean.TRUE.equals(value))
-                        varType |= CodeVariable.LOCAL;
+                        varType |= CodeVariable.LOCAL
+                                   | CodeVariable.EXPLICIT_DECLARATION;
                     else
                         varType |= CodeVariable.FIELD
                                    | formSettings.getVariablesModifier();
@@ -569,6 +572,9 @@ class JavaCodeGenerator extends CodeGenerator {
         try {
             initCodeWriter.write(INIT_COMPONENTS_HEADER);
 
+            if (addLocalVariables(initCodeWriter))
+                initCodeWriter.write("\n");
+
             RADComponent[] nonVisualComponents = formModel.getNonVisualComponents();
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addCreateCode(nonVisualComponents[i], initCodeWriter);
@@ -576,9 +582,6 @@ class JavaCodeGenerator extends CodeGenerator {
             RADComponent top = formModel.getTopRADComponent();
             addCreateCode(top, initCodeWriter);
             initCodeWriter.write("\n");
-
-            if (addLocalVariables(initCodeWriter))
-                initCodeWriter.write("\n");
 
             for (int i = 0; i < nonVisualComponents.length; i++) {
                 addInitCode(nonVisualComponents[i], initCodeWriter, 0);
@@ -862,19 +865,16 @@ class JavaCodeGenerator extends CodeGenerator {
                                          CreationDescriptor.CHANGED_ONLY);
                 
                 Class[] exceptions = creator.getExceptionTypes();
-                boolean generateTryCode = needToGenerateTryCode(exceptions);
-                
-                if (!generateTryCode)
-                    initCodeWriter.write(varBuf.toString());
-                else if ((varType & declareMask) == CodeVariable.LOCAL) {
-                    initCodeWriter.write(varBuf.toString());
-                    initCodeWriter.write(";\n"); // NOI18N
-                }
-                
-                if (generateTryCode) {
+                if (needTryCode(exceptions)) {
+                    if ((varType & declareMask) == CodeVariable.LOCAL) {
+                        initCodeWriter.write(varBuf.toString());
+                        initCodeWriter.write(";\n"); // NOI18N
+                    }
                     initCodeWriter.write("try {\n"); // NOI18N
                     initCodeWriter.write(var.getName());
-                } else {
+                }
+                else {
+                    initCodeWriter.write(varBuf.toString());
                     exceptions = null;
                 }
 
@@ -1110,7 +1110,7 @@ class JavaCodeGenerator extends CodeGenerator {
                // if the setter throws checked exceptions,
                // we must generate try/catch block around it.
                 Class[] exceptions = writeMethod.getExceptionTypes();
-                if (needToGenerateTryCode(exceptions)) {
+                if (needTryCode(exceptions)) {
                     initCodeWriter.write("try {\n"); // NOI18N
                 } else {
                     exceptions = null;
@@ -1177,7 +1177,7 @@ class JavaCodeGenerator extends CodeGenerator {
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
                 Class[] exceptions = eventAddMethod.getExceptionTypes();
-                if (needToGenerateTryCode(exceptions)) {
+                if (needTryCode(exceptions)) {
                     initCodeWriter.write("try {\n"); // NOI18N
                 } else {
                     exceptions = null;
@@ -1315,9 +1315,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private boolean needToGenerateTryCode(Class[] exceptions)
-        throws IOException
-    {
+    private boolean needTryCode(Class[] exceptions) {
         if (exceptions != null)
             for (int i=0; i < exceptions.length; i++)
                 if (Exception.class.isAssignableFrom(exceptions[i])
