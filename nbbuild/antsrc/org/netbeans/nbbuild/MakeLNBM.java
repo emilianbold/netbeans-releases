@@ -59,7 +59,7 @@ public class MakeLNBM extends MatchingTask {
 		try {
 		    InputStream is = new FileInputStream (file);
 		    try {
-			Reader r = new InputStreamReader (is, "UTF-8");
+			Reader r = new InputStreamReader (is, "UTF-8"); //NOI18N
 			char[] buf = new char[4096];
 			int len;
 			while ((len = r.read (buf)) != -1)
@@ -84,7 +84,7 @@ public class MakeLNBM extends MatchingTask {
 	    // </description>
 	    t = t.trim ();
 	    int min = Integer.MAX_VALUE;
-	    StringTokenizer tok = new StringTokenizer (t, "\n");
+	    StringTokenizer tok = new StringTokenizer (t, "\n"); //NOI18N
 	    boolean first = true;
 	    while (tok.hasMoreTokens ()) {
 		String line = tok.nextToken ();
@@ -103,14 +103,14 @@ public class MakeLNBM extends MatchingTask {
 	    if (min == 0) {
 		text.append (t);
 	    } else {
-		tok = new StringTokenizer (t, "\n");
+		tok = new StringTokenizer (t, "\n"); //NOI18N
 		first = true;
 		while (tok.hasMoreTokens ()) {
 		    String line = tok.nextToken ();
 		    if (first) {
 			first = false;
 		    } else {
-			text.append ('\n');
+			text.append ('\n'); //NOI18N
 			line = line.substring (min);
 		    }
 		    text.append (line);
@@ -136,17 +136,17 @@ public class MakeLNBM extends MatchingTask {
 	private void addSeparator () {
 	    if (text.length () > 0) {
 		// some sort of separator
-		if (text.charAt (text.length () - 1) != '\n')
-		    text.append ('\n');
-		text.append ("-----------------------------------------------------\n");
+		if (text.charAt (text.length () - 1) != '\n') //NOI18N
+		    text.append ('\n'); //NOI18N
+		text.append ("-----------------------------------------------------\n"); //NOI18N
 	    }
 	}
 	public String getText () {
-            String nocdata = getProject().getProperty("makenbm.nocdata");
+            String nocdata = getProject().getProperty("makenbm.nocdata"); //NOI18N
             if (nocdata != null && Project.toBoolean(nocdata)) {
                 return xmlEscape(text.toString());
             } else {
-                return "<![CDATA[" + text.toString () + "]]>";
+                return "<![CDATA[" + text.toString () + "]]>"; //NOI18N
             }
 	}
         /** You can either set a name for the blurb, or using the <code>file</code> attribute does this.
@@ -199,17 +199,17 @@ public class MakeLNBM extends MatchingTask {
         for (int i = 0; i < max; i++) {
             char c = s.charAt(i);
             switch (c) {
-                case '<':
-                    s2.append("&lt;");
+                case '<': //NOI18N
+                    s2.append("&lt;"); //NOI18N
                     break;
-                case '>':
-                    s2.append("&gt;");
+                case '>': //NOI18N
+                    s2.append("&gt;"); //NOI18N
                     break;
-                case '&':
-                    s2.append("&amp;");
+                case '&': //NOI18N
+                    s2.append("&amp;"); //NOI18N
                     break;
-                case '"':
-                    s2.append("&quot;");
+                case '"': //NOI18N
+                    s2.append("&quot;"); //NOI18N
                     break;
                 default:
                     s2.append(c);
@@ -313,11 +313,11 @@ public class MakeLNBM extends MatchingTask {
     }
     /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) throws MalformedURLException {
-        if (distribution.startsWith("http://")) {
+        if (distribution.startsWith("http://")) { //NOI18N
             this.distribution = distribution;
         } else {
             // workaround for typical bug in build script
-            this.distribution = "http://" + distribution;
+            this.distribution = "http://" + distribution; //NOI18N
         }
     }
     public Blurb createLicense () {
@@ -350,9 +350,12 @@ public class MakeLNBM extends MatchingTask {
         if (manifest != null && module != null)
             throw new BuildException("cannot set both manifest and module for makenbm", location);
 	// Will create a file Info/info.xml to be stored alongside netbeans/ contents.
-	File infodir = new File (topdir, "Info");
+	File infodir = new File (topdir, "Info"); //NOI18N
 	infodir.mkdirs ();
-	File infofile = new File (infodir, "info.xml");
+	File infofile = new File (infodir, "info.xml"); //NOI18N
+	if (infofile.exists ()) {
+            infofile.delete();
+        }
         Attributes attr = null;
         if (module != null) {
             // The normal case; read attributes from its manifest and maybe bundle.
@@ -362,7 +365,7 @@ public class MakeLNBM extends MatchingTask {
                 JarFile modulejar = new JarFile(module);
                 try {
                     attr = modulejar.getManifest().getMainAttributes();
-                    String bundlename = attr.getValue("OpenIDE-Module-Localizing-Bundle");
+                    String bundlename = attr.getValue("OpenIDE-Module-Localizing-Bundle"); //NOI18N
                     if (bundlename != null) {
                         Properties p = new Properties();
                         ZipEntry bundleentry = modulejar.getEntry(bundlename);
@@ -375,7 +378,7 @@ public class MakeLNBM extends MatchingTask {
                             }
                         } else {
                             // Not found in main JAR, check locale variant JAR.
-                            File variant = new File(new File(module.getParentFile(), "locale"), module.getName());
+                            File variant = new File(new File(module.getParentFile(), "locale"), module.getName()); //NOI18N
                             if (! variant.isFile()) throw new BuildException(bundlename + " not found in " + module, location);
                             long vmMod = variant.lastModified();
                             if (mostRecentInput < vmMod) mostRecentInput = vmMod;
@@ -398,7 +401,7 @@ public class MakeLNBM extends MatchingTask {
                         while (it.hasNext()) {
                             Map.Entry entry = (Map.Entry)it.next();
                             String name = (String)entry.getKey();
-                            if (! name.startsWith("OpenIDE-Module-")) continue;
+                            if (! name.startsWith("OpenIDE-Module-")) continue; //NOI18N
                             attr.putValue(name, (String)entry.getValue());
                         }
                     } // else all loc attrs in main manifest, OK
@@ -436,50 +439,50 @@ public class MakeLNBM extends MatchingTask {
 		try {
                     PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8"));
 		    // Begin writing XML.
-                    ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
+                    ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //NOI18N
+                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">"); //NOI18N
 		    if( attr != null) {
-		      String codenamebase = attr.getValue ("OpenIDE-Module");
+		      String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
 		      if (codenamebase == null)
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
 		      // Strip major release number if any.
 		      codenamebase = getCodenameBase( codenamebase) ;
-		      ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\"");
+		      ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\""); //NOI18N
 		    }
 		    else {
-		      ps.print( "<module ");
+		      ps.print( "<module "); //NOI18N
 		      if( modInfo != null && !modInfo.trim().equals( "")) {
 			String codenamebase = getCodenameBase( modInfo) ;
-			ps.println( "codenamebase=\"" + xmlEscape(codenamebase) + "\"");
+			ps.println( "codenamebase=\"" + xmlEscape(codenamebase) + "\""); //NOI18N
 		      }
 		      else {
-			ps.println( "") ;
+			ps.println( "") ; //NOI18N
 		      }
 		    }
 		    if (homepage != null)
-                        ps.println ("        homepage=\"" + xmlEscape(homepage) + "\"");
+                        ps.println ("        homepage=\"" + xmlEscape(homepage) + "\""); //NOI18N
 		    if (distribution != null)
-                        ps.println ("        distribution=\"" + xmlEscape(distribution) + "\"");
+                        ps.println ("        distribution=\"" + xmlEscape(distribution) + "\""); //NOI18N
 		    // Here we only write a name for the license.
 		    if (license != null) {
 			String name = license.getName ();
 			if (name == null)
 			    throw new BuildException ("Every license must have a name or file attribute", location);
-                        ps.println ("        license=\"" + xmlEscape(name) + "\"");
+                        ps.println ("        license=\"" + xmlEscape(name) + "\""); //NOI18N
 		    }
-		    ps.println ("        downloadsize=\"0\"");
+		    ps.println ("        downloadsize=\"0\""); //NOI18N
                     if (needsrestart != null)
-                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\"");
-		    ps.println (">");
+                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
+		    ps.println (">"); //NOI18N
 		    if (description != null) {
-			ps.print ("  <description>");
+			ps.print ("  <description>"); //NOI18N
 			ps.print (description.getText ());
-			ps.println ("</description>");
+			ps.println ("</description>"); //NOI18N
                     }
 
 		    // Write manifest attributes.
 		    if( attr != null) {
-		        ps.print ("  <manifest ");
+		        ps.print ("  <manifest "); //NOI18N
 			boolean firstline = true;
 		        List attrNames = new ArrayList(attr.size()); // List<String>
 			Iterator it = attr.keySet().iterator();
@@ -492,43 +495,43 @@ public class MakeLNBM extends MatchingTask {
 			    String name = (String)it.next();
 			    // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
 			    //  and www/www/dtds/autoupdate-info-1_0.dtd):
-			    if (! name.startsWith("OpenIDE-Module")) continue;
-			    if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
-			    if (name.equals("OpenIDE-Module-Install")) continue;
-			    if (name.equals("OpenIDE-Module-Layer")) continue;
-			    if (name.equals("OpenIDE-Module-Description")) continue;
-			    if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
-			    if (name.equals("OpenIDE-Module-Public-Packages")) continue;
+			    if (! name.startsWith("OpenIDE-Module")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Install")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Layer")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Description")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue; //NOI18N
+			    if (name.equals("OpenIDE-Module-Public-Packages")) continue; //NOI18N
 			    if (firstline)
 			        firstline = false;
 			    else
 			      ps.print ("            ");
-			    ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\"");
+			    ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\""); //NOI18N
 			}
-			ps.println ("  />");
+			ps.println ("  />"); //NOI18N
 		    }
-		    else if( modInfo != null && !modInfo.trim().equals( "")) {
+		    else if( modInfo != null && !modInfo.trim().equals( "")) { //NOI18N
 		      String specver, majorver ;
 
 		      // Write the l10n tag and lang/branding codes. //
-		      ps.println("  <l10n ");
-		      if( langCode != null && !langCode.trim().equals( "")) {
-			ps.println( "        langcode=\"" + xmlEscape(langCode) + "\"") ;
+		      ps.println("  <l10n "); //NOI18N
+		      if( langCode != null && !langCode.trim().equals( "")) { //NOI18N
+			ps.println( "        langcode=\"" + xmlEscape(langCode) + "\"") ; //NOI18N
 		      }
 		      if( brandingCode != null && !brandingCode.trim().equals( "")) {
-			ps.println( "        brandingcode=\"" + xmlEscape(brandingCode) + "\"") ;
+			ps.println( "        brandingcode=\"" + xmlEscape(brandingCode) + "\"") ; //NOI18N
 		      }
 
 		      // Write the major version if possible. //
 		      majorver = getMajorVer( modInfo) ;
-		      if( majorver != null && !majorver.trim().equals( "")) {
-			ps.println( "        module_major_version=\"" + xmlEscape(majorver) + "\"") ;
+		      if( majorver != null && !majorver.trim().equals( "")) { //NOI18N
+			ps.println( "        module_major_version=\"" + xmlEscape(majorver) + "\"") ; //NOI18N
 		      }
 
 		      // Write the spec version if possible. //
 		      specver = getSpecVer( modInfo) ;
 		      if( specver != null && !specver.trim().equals( "")) {
-			ps.println( "        module_spec_version=\"" + xmlEscape(specver) + "\"") ;
+			ps.println( "        module_spec_version=\"" + xmlEscape(specver) + "\"") ; //NOI18N
 		      }
 
 		      // Read localizing bundle and write relevant attr's. //
@@ -536,19 +539,19 @@ public class MakeLNBM extends MatchingTask {
 			writeLocBundleAttrs( ps) ;
 		      }
 
-		      ps.println( "  />") ;
+		      ps.println( "  />") ; //NOI18N
 		    }
 
 		    // Maybe write out license text.
 		    if (license != null) {
-                        ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
+                        ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">"); //NOI18N
 			ps.print (license.getText ());
-			ps.println ("</license>");
+			ps.println ("</license>"); //NOI18N
 		    }
                     if (notification != null) {
-                        ps.print("  <module_notification>");
+                        ps.print("  <module_notification>"); //NOI18N
                         ps.print(notification.getText());
-                        ps.println("</module_notification>");
+                        ps.println("</module_notification>"); //NOI18N
 		    }
 		    if (externalPackages != null) {
 			Enumeration exp = externalPackages.elements();
@@ -558,13 +561,13 @@ public class MakeLNBM extends MatchingTask {
 				externalPackage.targetName == null ||
 				externalPackage.startUrl == null)
 				throw new BuildException("Must define name, targetname, starturl for external package");
-			    ps.print("  <external_package ");
-			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" ");
-			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" ");
-			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\"");
+			    ps.print("  <external_package "); //NOI18N
+			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" "); //NOI18N
+			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" "); //NOI18N
+			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\""); //NOI18N
 			    if (externalPackage.description != null)
-				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\"");
-			    ps.println("/>");
+				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\""); //NOI18N
+			    ps.println("/>"); //NOI18N
 			}
 		    }
 		    ps.println ("</module>");
@@ -580,12 +583,12 @@ public class MakeLNBM extends MatchingTask {
 	// JAR it all up together.
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
-	Jar jar = (Jar) project.createTask ("jar");
+	Jar jar = (Jar) project.createTask ("jar"); //NOI18N
 	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
         jar.setCompress(true);
-	//jar.createInclude ().setName ("netbeans/");
-	//jar.createInclude ().setName ("Info/info.xml");
+	//jar.createInclude ().setName ("netbeans/"); //NOI18N
+	//jar.createInclude ().setName ("Info/info.xml"); //NOI18N
         jar.addFileset (getFileSet());
 	jar.setLocation (location);
 	jar.init ();
@@ -603,23 +606,23 @@ public class MakeLNBM extends MatchingTask {
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
                 log ("Signing NBM file " + file);
-                SignJar signjar = (SignJar) project.createTask ("signjar");
+                SignJar signjar = (SignJar) project.createTask ("signjar"); //NOI18N
                 //I have to use Reflection API, because there was changed API in ANT1.5
                 try {
                     try {
                         Class[] paramsT = {String.class};
                         Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
                         Object[] paramsV2 = {file.getAbsolutePath()};
-                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 ); //NOI18N
+                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 ); //NOI18N
                     } catch (NoSuchMethodException ex1) {
                         //Probably ANT 1.5
                         try {
                             Class[] paramsT = {File.class};
                             Object[] paramsV1 = {signature.keystore};
                             Object[] paramsV2 = {file};
-                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 ); //NOI18N
+                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 ); //NOI18N
                         } catch (NoSuchMethodException ex2) {
 			    //Probably ANT1.5.3
 			    try {
@@ -627,8 +630,8 @@ public class MakeLNBM extends MatchingTask {
 				Class[] paramsT2 = {String.class};
 				Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
 				Object[] paramsV2 = {file};
-				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 );
-				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 );
+				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 ); //NOI18N
+				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 ); //NOI18N
 			    }   catch (NoSuchMethodException ex3) {
                                 throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
                             }
@@ -654,10 +657,12 @@ public class MakeLNBM extends MatchingTask {
         FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
         fs.setDir (topdir);
 
-	if (isStandardInclude)
-	    fs.createInclude ().setName ("netbeans/");
+	if (isStandardInclude) {
+	  fs.createInclude ().setName ("netbeans/"); //NOI18N
+	  fs.createExclude ().setName ("netbeans/update_tracking/*.xml"); //NOI18N
+	}
 
-	fs.createInclude ().setName ("Info/info.xml");
+	fs.createInclude ().setName ("Info/info.xml"); //NOI18N
         return fs;
     }
 
@@ -683,7 +688,7 @@ public class MakeLNBM extends MatchingTask {
 
   protected String getCodenameBase( String openide_module) {
     String ret = openide_module ;
-    int idx = ret.indexOf ('/');
+    int idx = ret.indexOf ('/'); //NOI18N
     if (idx != -1) {
       ret = ret.substring (0, idx);
     }
@@ -695,9 +700,9 @@ public class MakeLNBM extends MatchingTask {
     int first_idx, second_idx ;
 
     // If there are 2 slashes. //
-    first_idx = mod_info.indexOf( '/') ;
+    first_idx = mod_info.indexOf( '/') ; //NOI18N
     if( first_idx != -1) {
-      second_idx = mod_info.indexOf( '/', first_idx+1) ;
+      second_idx = mod_info.indexOf( '/', first_idx+1) ; //NOI18N
       if( second_idx != -1) {
 
 	// Return the string after the second slash. //
@@ -706,7 +711,7 @@ public class MakeLNBM extends MatchingTask {
     }
 
     // Return null rather than an empty string. //
-    if( ret != null && ret.trim().equals( "")) {
+    if( ret != null && ret.trim().equals( "")) { //NOI18N
       ret = null ;
     }
     return( ret) ;
@@ -717,9 +722,9 @@ public class MakeLNBM extends MatchingTask {
     int first_idx, second_idx ;
 
     // If there are 2 slashes. //
-    first_idx = mod_info.indexOf( '/') ;
+    first_idx = mod_info.indexOf( '/') ; //NOI18N
     if( first_idx != -1) {
-      second_idx = mod_info.indexOf( '/', first_idx+1) ;
+      second_idx = mod_info.indexOf( '/', first_idx+1) ; //NOI18N
       if( second_idx != -1) {
 
 	// Return the string between the slashes. //
@@ -733,7 +738,7 @@ public class MakeLNBM extends MatchingTask {
     }
 
     // Return null rather than an empty string. //
-    if( ret != null && ret.trim().equals( "")) {
+    if( ret != null && ret.trim().equals( "")) { //NOI18N
       ret = null ;
     }
     return( ret) ;
@@ -783,8 +788,8 @@ public class MakeLNBM extends MatchingTask {
       req = manOrModReq ;
     }
     else {
-      s = project.getProperty( "makenbm.manOrModReq") ;
-      if( s != null && !s.equals( "")) {
+      s = project.getProperty( "makenbm.manOrModReq") ; //NOI18N
+      if( s != null && !s.equals( "")) { //NOI18N
 	req = project.toBoolean( s) ;
       }
     }
@@ -809,13 +814,13 @@ public class MakeLNBM extends MatchingTask {
       throw new BuildException() ;
     }
 
-    s = p.getProperty( "OpenIDE-Module-Name") ;
-    if( writeProp( "OpenIDE-Module-Name", s, ps)) {
+    s = p.getProperty( "OpenIDE-Module-Name") ; //NOI18N
+    if( writeProp( "OpenIDE-Module-Name", s, ps)) { //NOI18N
       hadone = true ;
     }
 
-    s = p.getProperty( "OpenIDE-Module-Long-Description") ;
-    if( writeProp( "OpenIDE-Module-Long-Description", s, ps)) {
+    s = p.getProperty( "OpenIDE-Module-Long-Description") ; //NOI18N
+    if( writeProp( "OpenIDE-Module-Long-Description", s, ps)) { //NOI18N
       hadone = true ;
     }
 
@@ -829,7 +834,7 @@ public class MakeLNBM extends MatchingTask {
 			       PrintWriter ps) {
     boolean ret = false ;
     if( val != null) {
-      ps.println( name + "=\"" + xmlEscape(val) +"\"") ;
+      ps.println( name + "=\"" + xmlEscape(val) +"\"") ; //NOI18N
       ret = true ;
     }
     return( ret) ;

@@ -56,7 +56,7 @@ public class MakeNBM extends MatchingTask {
 		try {
 		    InputStream is = new FileInputStream (file);
 		    try {
-			Reader r = new InputStreamReader (is, "UTF-8");
+			Reader r = new InputStreamReader (is, "UTF-8"); //NOI18N
 			char[] buf = new char[4096];
 			int len;
 			while ((len = r.read (buf)) != -1)
@@ -81,7 +81,7 @@ public class MakeNBM extends MatchingTask {
 	    // </description>
 	    t = t.trim ();
 	    int min = Integer.MAX_VALUE;
-	    StringTokenizer tok = new StringTokenizer (t, "\n");
+	    StringTokenizer tok = new StringTokenizer (t, "\n"); //NOI18N
 	    boolean first = true;
 	    while (tok.hasMoreTokens ()) {
 		String line = tok.nextToken ();
@@ -100,14 +100,14 @@ public class MakeNBM extends MatchingTask {
 	    if (min == 0) {
 		text.append (t);
 	    } else {
-		tok = new StringTokenizer (t, "\n");
+		tok = new StringTokenizer (t, "\n"); //NOI18N
 		first = true;
 		while (tok.hasMoreTokens ()) {
 		    String line = tok.nextToken ();
 		    if (first) {
 			first = false;
 		    } else {
-			text.append ('\n');
+			text.append ('\n'); //NOI18N
 			line = line.substring (min);
 		    }
 		    text.append (line);
@@ -133,17 +133,17 @@ public class MakeNBM extends MatchingTask {
 	private void addSeparator () {
 	    if (text.length () > 0) {
 		// some sort of separator
-		if (text.charAt (text.length () - 1) != '\n')
-		    text.append ('\n');
-		text.append ("-----------------------------------------------------\n");
+		if (text.charAt (text.length () - 1) != '\n') //NOI18N
+		    text.append ('\n'); //NOI18N
+		text.append ("-----------------------------------------------------\n"); //NOI18N
 	    }
 	}
 	public String getText () {
-            String nocdata = getProject().getProperty("makenbm.nocdata");
+            String nocdata = getProject().getProperty("makenbm.nocdata"); //NOI18N
             if (nocdata != null && Project.toBoolean(nocdata)) {
                 return xmlEscape(text.toString());
             } else {
-                return "<![CDATA[" + text.toString () + "]]>";
+                return "<![CDATA[" + text.toString () + "]]>"; //NOI18N
             }
 	}
         /** You can either set a name for the blurb, or using the <code>file</code> attribute does this.
@@ -196,17 +196,17 @@ public class MakeNBM extends MatchingTask {
         for (int i = 0; i < max; i++) {
             char c = s.charAt(i);
             switch (c) {
-                case '<':
-                    s2.append("&lt;");
+                case '<': //NOI18N
+                    s2.append("&lt;"); //NOI18N
                     break;
-                case '>':
-                    s2.append("&gt;");
+                case '>': //NOI18N
+                    s2.append("&gt;"); //NOI18N
                     break;
-                case '&':
-                    s2.append("&amp;");
+                case '&': //NOI18N
+                    s2.append("&amp;"); //NOI18N
                     break;
-                case '"':
-                    s2.append("&quot;");
+                case '"': //NOI18N
+                    s2.append("&quot;"); //NOI18N
                     break;
                 default:
                     s2.append(c);
@@ -304,11 +304,11 @@ public class MakeNBM extends MatchingTask {
     }
     /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) throws MalformedURLException {
-        if (distribution.startsWith("http://")) {
+        if (distribution.startsWith("http://")) { //NOI18N
             this.distribution = distribution;
         } else {
             // workaround for typical bug in build script
-            this.distribution = "http://" + distribution;
+            this.distribution = "http://" + distribution; //NOI18N
         }
     }
     public Blurb createLicense () {
@@ -346,9 +346,12 @@ public class MakeNBM extends MatchingTask {
 	overrideLicenseIfNeeded() ;
 
 	// Will create a file Info/info.xml to be stored alongside netbeans/ contents.
-	File infodir = new File (topdir, "Info");
+	File infodir = new File (topdir, "Info"); //NOI18N
 	infodir.mkdirs ();
-	File infofile = new File (infodir, "info.xml");
+	File infofile = new File (infodir, "info.xml"); //NOI18N
+	if (infofile.exists ()) {
+            infofile.delete();
+        }
         Attributes attr = null;
         if (module != null) {
             // The normal case; read attributes from its manifest and maybe bundle.
@@ -358,7 +361,7 @@ public class MakeNBM extends MatchingTask {
                 JarFile modulejar = new JarFile(module);
                 try {
                     attr = modulejar.getManifest().getMainAttributes();
-                    String bundlename = attr.getValue("OpenIDE-Module-Localizing-Bundle");
+                    String bundlename = attr.getValue("OpenIDE-Module-Localizing-Bundle"); //NOI18N
                     if (bundlename != null) {
                         Properties p = new Properties();
                         ZipEntry bundleentry = modulejar.getEntry(bundlename);
@@ -371,8 +374,8 @@ public class MakeNBM extends MatchingTask {
                             }
                         } else {
                             // Not found in main JAR, check locale variant JAR.
-                            File variant = new File(new File(module.getParentFile(), "locale"), module.getName());
-                            if (! variant.isFile()) throw new BuildException(bundlename + " not found in " + module, location);
+                            File variant = new File(new File(module.getParentFile(), "locale"), module.getName()); //NOI18N
+                            if (! variant.isFile()) throw new BuildException(bundlename + " not found in " + module, location); //NOI18N
                             long vmMod = variant.lastModified();
                             if (mostRecentInput < vmMod) mostRecentInput = vmMod;
                             ZipFile variantjar = new ZipFile(variant);
@@ -394,7 +397,7 @@ public class MakeNBM extends MatchingTask {
                         while (it.hasNext()) {
                             Map.Entry entry = (Map.Entry)it.next();
                             String name = (String)entry.getKey();
-                            if (! name.startsWith("OpenIDE-Module-")) continue;
+                            if (! name.startsWith("OpenIDE-Module-")) continue; //NOI18N
                             attr.putValue(name, (String)entry.getValue());
                         }
                     } // else all loc attrs in main manifest, OK
@@ -430,41 +433,41 @@ public class MakeNBM extends MatchingTask {
 	    try {
 		OutputStream infoStream = new FileOutputStream (infofile);
 		try {
-                    PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8"));
+                    PrintWriter ps = new PrintWriter(new OutputStreamWriter(infoStream, "UTF-8")); //NOI18N
 		    // Begin writing XML.
-                    ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
-		    String codenamebase = attr.getValue ("OpenIDE-Module");
+                    ps.println ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); //NOI18N
+                    ps.println("<!DOCTYPE module PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">"); //NOI18N
+		    String codenamebase = attr.getValue ("OpenIDE-Module"); //NOI18N
 		    if (codenamebase == null)
 			throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
 		    // Strip major release number if any.
-		    int idx = codenamebase.lastIndexOf ('/');
+		    int idx = codenamebase.lastIndexOf ('/'); //NOI18N
 		    if (idx != -1) codenamebase = codenamebase.substring (0, idx);
-		    ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\"");
+		    ps.println ("<module codenamebase=\"" + xmlEscape(codenamebase) + "\""); //NOI18N
 		    if (homepage != null)
-                        ps.println ("        homepage=\"" + xmlEscape(homepage) + "\"");
+                        ps.println ("        homepage=\"" + xmlEscape(homepage) + "\""); //NOI18N
 		    if (distribution != null)
-                        ps.println ("        distribution=\"" + xmlEscape(distribution) + "\"");
+                        ps.println ("        distribution=\"" + xmlEscape(distribution) + "\""); //NOI18N
 		    // Here we only write a name for the license.
 		    if (license != null) {
 			String name = license.getName ();
 			if (name == null)
 			    throw new BuildException ("Every license must have a name or file attribute", location);
-                        ps.println ("        license=\"" + xmlEscape(name) + "\"");
+                        ps.println ("        license=\"" + xmlEscape(name) + "\""); //NOI18N
 		    }
-		    ps.println ("        downloadsize=\"0\"");
+		    ps.println ("        downloadsize=\"0\""); //NOI18N
                     if (needsrestart != null)
-                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\"");
-		    ps.println (">");
+                        ps.println ("        needsrestart=\"" + xmlEscape(needsrestart) + "\""); //NOI18N
+		    ps.println (">"); //NOI18N
 		    if (description != null) {
-			ps.print ("  <description>");
+			ps.print ("  <description>"); //NOI18N
 			ps.print (description.getText ());
-			ps.println ("</description>");
+			ps.println ("</description>"); //NOI18N
                     }
                     if (notification != null) {
-                        ps.print("  <module_notification>");
+                        ps.print("  <module_notification>"); //NOI18N
                         ps.print(notification.getText());
-                        ps.println("</module_notification>");
+                        ps.println("</module_notification>"); //NOI18N
 		    }
 		    if (externalPackages != null) {
 			Enumeration exp = externalPackages.elements();
@@ -474,17 +477,17 @@ public class MakeNBM extends MatchingTask {
 				externalPackage.targetName == null ||
 				externalPackage.startUrl == null)
 				throw new BuildException("Must define name, targetname, starturl for external package");
-			    ps.print("  <external_package ");
-			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" ");
-			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" ");
-			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\"");
+			    ps.print("  <external_package "); //NOI18N
+			    ps.print("name=\""+xmlEscape(externalPackage.name)+"\" "); //NOI18N
+			    ps.print("target_name=\""+xmlEscape(externalPackage.targetName)+"\" "); //NOI18N
+			    ps.print("start_url=\""+xmlEscape(externalPackage.startUrl)+"\""); //NOI18N
 			    if (externalPackage.description != null)
-				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\"");
-			    ps.println("/>");
+				ps.print(" description=\""+xmlEscape(externalPackage.description)+"\""); //NOI18N
+			    ps.println("/>"); //NOI18N
 			}
 		    }
 		    // Write manifest attributes.
-		    ps.print ("  <manifest ");
+		    ps.print ("  <manifest "); //NOI18N
 		    boolean firstline = true;
                     List attrNames = new ArrayList(attr.size()); // List<String>
                     Iterator it = attr.keySet().iterator();
@@ -497,27 +500,27 @@ public class MakeNBM extends MatchingTask {
                         String name = (String)it.next();
                         // Ignore irrelevant attributes (cf. www/www/dtds/autoupdate-catalog-2_0.dtd
                         //  and www/www/dtds/autoupdate-info-2_0.dtd):
-                        if (! name.startsWith("OpenIDE-Module")) continue;
-                        if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue;
-                        if (name.equals("OpenIDE-Module-Install")) continue;
-                        if (name.equals("OpenIDE-Module-Layer")) continue;
-                        if (name.equals("OpenIDE-Module-Description")) continue;
-                        if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue;
-                        if (name.equals("OpenIDE-Module-Public-Packages")) continue;
+                        if (! name.startsWith("OpenIDE-Module")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Localizing-Bundle")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Install")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Layer")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Description")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Package-Dependency-Message")) continue; //NOI18N
+                        if (name.equals("OpenIDE-Module-Public-Packages")) continue; //NOI18N
 			if (firstline)
 			    firstline = false;
 			else
 			    ps.print ("            ");
-                        ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\"");
+                        ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\""); //NOI18N
 		    }
-		    ps.println ("  />");
+		    ps.println ("  />"); //NOI18N
 		    // Maybe write out license text.
 		    if (license != null) {
-                        ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">");
+                        ps.print ("  <license name=\"" + xmlEscape(license.getName ()) + "\">"); //NOI18N
 			ps.print (license.getText ());
-			ps.println ("</license>");
+			ps.println ("</license>"); //NOI18N
 		    }
-		    ps.println ("</module>");
+		    ps.println ("</module>"); //NOI18N
                     ps.flush();
 		} finally {
 		    infoStream.close ();
@@ -529,12 +532,12 @@ public class MakeNBM extends MatchingTask {
 	// JAR it all up together.
 	long jarModified = file.lastModified (); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
-	Jar jar = (Jar) project.createTask ("jar");
+	Jar jar = (Jar) project.createTask ("jar"); //NOI18N
 	jar.setJarfile (file);
 	//jar.setBasedir (topdir.getAbsolutePath ());
         jar.setCompress(true);
-	//jar.createInclude ().setName ("netbeans/");
-	//jar.createInclude ().setName ("Info/info.xml");
+	//jar.createInclude ().setName ("netbeans/"); //NOI18N
+	//jar.createInclude ().setName ("Info/info.xml"); //NOI18N
         jar.addFileset (getFileSet());
 	jar.setLocation (location);
 	jar.init ();
@@ -563,23 +566,23 @@ public class MakeNBM extends MatchingTask {
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
                 log ("Signing NBM file " + file);
-                SignJar signjar = (SignJar) project.createTask ("signjar");
+                SignJar signjar = (SignJar) project.createTask ("signjar"); //NOI18N
                 //I have to use Reflection API, because there was changed API in ANT1.5
                 try {
                     try {
                         Class[] paramsT = {String.class};
                         Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
                         Object[] paramsV2 = {file.getAbsolutePath()};
-                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                        signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 ); //NOI18N
+                        signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 ); //NOI18N
                     } catch (NoSuchMethodException ex1) {
                         //Probably ANT 1.5
                         try {
                             Class[] paramsT = {File.class};
                             Object[] paramsV1 = {signature.keystore};
                             Object[] paramsV2 = {file};
-                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 );
-                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 );
+                            signjar.getClass().getDeclaredMethod( "setKeystore", paramsT ).invoke( signjar, paramsV1 ); //NOI18N
+                            signjar.getClass().getDeclaredMethod( "setJar", paramsT ).invoke( signjar, paramsV2 ); //NOI18N
                         }
                         catch (NoSuchMethodException ex2) {
 			    //Probably ANT1.5.2
@@ -588,8 +591,8 @@ public class MakeNBM extends MatchingTask {
 				Class[] paramsT2 = {String.class};
 				Object[] paramsV1 = {signature.keystore.getAbsolutePath()};
 				Object[] paramsV2 = {file};
-				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 );
-				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 );
+				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 ); //NOI18N
+				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 ); //NOI18N
 			    }
 			    catch (NoSuchMethodException ex3) {
 				
@@ -617,10 +620,12 @@ public class MakeNBM extends MatchingTask {
         FileSet fs = fileset;		//makes in apperance to excludes and includes files defined in XML
         fs.setDir (topdir);
 
-	if (isStandardInclude)
-	    fs.createInclude ().setName ("netbeans/");
+	if (isStandardInclude) {
+	    fs.createInclude ().setName ("netbeans/"); //NOI18N
+	    fs.createExclude ().setName ("netbeans/update_tracking/*.xml"); //NOI18N
+        }
 
-	fs.createInclude ().setName ("Info/info.xml");
+	fs.createInclude ().setName ("Info/info.xml"); //NOI18N
         return fs;
     }
 
@@ -653,7 +658,7 @@ public class MakeNBM extends MatchingTask {
    *  otherwise return null.
    */
   protected String getLicenseOverride() {
-    String s = getProject().getProperty( "makenbm.override.license") ;
+    String s = getProject().getProperty( "makenbm.override.license") ; //NOI18N
     if( s != null) {
       if( s.equals( "")) {
 	s = null ;
@@ -671,9 +676,9 @@ public class MakeNBM extends MatchingTask {
    *  otherwise return null.
    */
   protected String getURLOverride() {
-    String s = getProject().getProperty( "makenbm.override.url") ;
+    String s = getProject().getProperty( "makenbm.override.url") ; //NOI18N
     if( s != null) {
-      if( s.equals( "")) {
+      if( s.equals( "")) { //NOI18N
 	s = null ;
       }
     }
