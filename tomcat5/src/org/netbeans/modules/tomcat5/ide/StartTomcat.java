@@ -16,7 +16,6 @@ package org.netbeans.modules.tomcat5.ide;
 import java.io.*;
 import java.util.*;
 
-import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
