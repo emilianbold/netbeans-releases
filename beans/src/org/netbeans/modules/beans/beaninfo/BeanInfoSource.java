@@ -66,9 +66,10 @@ public class BeanInfoSource extends Object {
    * was created from netbeans template.
    */
   boolean isNbBeanInfo() {
-
-    if ( !exists() || javaEditor == null ) 
+  
+    if ( !exists() || javaEditor == null ) {
       return false;
+    }
     
     JavaEditor.InteriorSection pis = javaEditor.findInteriorSection( PROPERTIES_SECTION );
     JavaEditor.InteriorSection eis = javaEditor.findInteriorSection( EVENTSETS_SECTION );
@@ -107,7 +108,13 @@ public class BeanInfoSource extends Object {
      }
             
   }   
-          
+
+  /** Deletes the BeanInfo */
+  void delete() throws java.io.IOException {
+    biDataObject.delete();
+  }
+  
+  
   /** Creates beanInfo data object */
   void createFromTemplate() {
 

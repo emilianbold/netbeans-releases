@@ -215,6 +215,10 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
    * @return the property
    */
  
+  void fire () { 
+    firePropertyChange( null, null, null );  
+  }
+  
   protected Node.Property createModeProperty(boolean canW) {
     return new PatternPropertySupport(PROP_MODE, int.class, canW) {
 
@@ -235,6 +239,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
           pattern.patternAnalyser.setIgnore( true );
           ((PropertyPattern)pattern).setMode(((Integer)val).intValue());
           pattern.patternAnalyser.setIgnore( false );
+          setIconBase( resolveIconBase() );
         }
         catch (SourceException e) {
           throw new InvocationTargetException(e);
@@ -317,6 +322,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  4    Gandalf   1.3         7/28/99  Petr Hrebejk    Property Mode change fix
 *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
 *       patterns resolving
 *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.

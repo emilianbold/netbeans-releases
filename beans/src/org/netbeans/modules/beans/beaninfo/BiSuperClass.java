@@ -58,10 +58,7 @@ class BiSuperClass extends Object {
         }
 
      
-      
-      //System.out.println ( ce.getName() );  
-      ce = ClassElement.forName( ce.getSuperclass().getFullName() );
-      
+      ce = ce.getSuperclass() == null ? null : ClassElement.forName( ce.getSuperclass().getFullName() );      
     }
 
     /*
@@ -89,6 +86,7 @@ class BiSuperClass extends Object {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    

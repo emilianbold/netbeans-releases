@@ -293,7 +293,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     super.destroy();
   }
 
-
+  
   // ================== Pattern listener =================================
 
   public void propertyChange(PropertyChangeEvent evt) {

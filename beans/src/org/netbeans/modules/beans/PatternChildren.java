@@ -135,6 +135,7 @@ public class PatternChildren extends ClassChildren {
   /** Creates node for given key. 
   */
   protected Node[] createNodes (Object key ) {
+    
     if (key instanceof IdxPropertyPattern)
       return new Node[] { new IdxPropertyPatternNode((IdxPropertyPattern)key, wri) };
     if (key instanceof PropertyPattern) 
@@ -150,6 +151,7 @@ public class PatternChildren extends ClassChildren {
   // Utility methods --------------------------------------------------------------------
 
   protected Collection getKeysOfType (int elementType) {
+    
     LinkedList keys = (LinkedList) super.getKeysOfType (elementType);
     
     if ((elementType & PatternFilter.PROPERTY) != 0)  
@@ -212,6 +214,7 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         7/28/99  Petr Hrebejk    Property Mode change fix
  *  8    Gandalf   1.7         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  7    Gandalf   1.6         7/21/99  Petr Hrebejk    Debug messages removed

@@ -214,19 +214,25 @@ public class BiAnalyser extends Object implements Node.Cookie {
   void regenerateSource() {
 
     if ( bis.exists() ) {
-      /*
-      System.out.println ( "EXISTS BI " );
       if ( !bis.isNbBeanInfo() ) {
-        System.out.println ( "AILIEN" );
         String mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoExists" );
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
         TopManager.getDefault().notify( nd );
         if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
           return;
         }
+        
+        try {
+          bis.delete();
+        }
+        catch ( java.io.IOException e ) {
+          mssg = NbBundle.getBundle(BiAnalyser.class).getString( "MSG_BeanInfoCantDelete" );
+          nd = new NotifyDescriptor.Message ( mssg );
+          TopManager.getDefault().notify( nd );
+          return;
+        }
         bis.createFromTemplate();
       }
-      */
     }
     else {
       bis.createFromTemplate();
@@ -602,6 +608,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  3    Gandalf   1.2         7/28/99  Petr Hrebejk    Property Mode change fix
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
  *       generation fix
  *  1    Gandalf   1.0         7/26/99  Petr Hrebejk    

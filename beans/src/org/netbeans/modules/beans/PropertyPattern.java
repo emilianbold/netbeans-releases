@@ -183,6 +183,7 @@ public class PropertyPattern extends Pattern {
   
   /** Returns the mode of the property READ_WRITE, READ_ONLY or WRITE_ONLY */
   public int getMode() {
+
     if ( setterMethod != null && getterMethod != null )
       return READ_WRITE;
     else if ( getterMethod != null && setterMethod == null )
@@ -195,6 +196,7 @@ public class PropertyPattern extends Pattern {
 
   /** Sets the property to be writable */
   public void setMode( int mode ) throws SourceException {
+    
     if ( getMode() == mode )
       return;
 
@@ -218,7 +220,12 @@ public class PropertyPattern extends Pattern {
         deleteGetterMethod();
       break;
     }
-    
+  
+    /*
+    System.out.println ( "Mode setted "  + this );
+    System.out.println ( "Getter " + getterMethod );
+    System.out.println ( "Setter " + setterMethod );
+    */
   }
   
   /** Returns the getter method */
@@ -441,6 +448,7 @@ public class PropertyPattern extends Pattern {
   void generateGetterMethod( ) throws SourceException {
     generateGetterMethod( null, false );
   }
+
   void generateGetterMethod( String body, boolean javadoc ) throws SourceException {
 
     ClassElement declaringClass = getDeclaringClass();
@@ -468,7 +476,6 @@ public class PropertyPattern extends Pattern {
       throw new SourceException();
     }
     else {
-      //System.out.println ( "Adding getter method" );
       declaringClass.addMethod( newGetter );
       getterMethod = newGetter;
       }
@@ -560,6 +567,8 @@ public class PropertyPattern extends Pattern {
       declaringClass.removeField( estimatedField );
       //System.out.println ("removing estimated field");
       }
+
+    estimatedField = null;
   }
 
 
@@ -578,7 +587,7 @@ public class PropertyPattern extends Pattern {
       }
     else {   
       declaringClass.removeMethod( getterMethod );
-      //System.out.println ("removing getter");
+      getterMethod = null;
       }
   }
 
@@ -596,9 +605,11 @@ public class PropertyPattern extends Pattern {
       throw new SourceException();
       }
     else {
+      //System.out.println ( "removing setter " + setterMethod );
       declaringClass.removeMethod( setterMethod );
-      //System.out.println ("removing setter");
+      setterMethod = null;
       }
+
   }
   
   // Property change support -------------------------------------------------------------------------
@@ -633,6 +644,7 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 

@@ -552,6 +552,7 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
     else {
       declaringClass.removeMethod( indexedGetterMethod );
+      indexedGetterMethod = null;
     }
   }
   
@@ -569,7 +570,9 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
     else {
       declaringClass.removeMethod( indexedSetterMethod );
+      indexedSetterMethod = null;
     }
+
     
   }
 
@@ -618,6 +621,7 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
  *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
  *       patterns resolving
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
