@@ -148,9 +148,9 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         
     }
     
-    public void initialDeploy (Target t, String path) {
+    public void initialDeploy (Target t, String path, File dir) {
         this.tmId = new TomcatModule (t, path);
-        command = "deploy?path="+tmId.getPath (); // NOI18N
+        command = "deploy?path=" + tmId.getPath () + "&war=" + dir.getName (); // NOI18N
         cmdType = CommandType.DISTRIBUTE;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);

@@ -570,18 +570,19 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
             tmi.reload ((TomcatModule)module);
             return tmi;
         } else {
+            final P p = new P (module);
+            p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
             Task t = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     try {
-                        pes.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.RUNNING));
-                        pes.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
-
+                        p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
+                        
                     } catch (Throwable e) {
                         e.printStackTrace();
                     }
                 }
             });
-            return this;
+            return p;
         }
     }
     
@@ -611,7 +612,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     
     public ProgressObject initialDeploy (Target target, javax.enterprise.deploy.model.DeployableObject app, DeploymentConfiguration configuration, File dir) {
         TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-        tmi.initialDeploy (target, ((WebappConfiguration)configuration).getPath ());
+        tmi.initialDeploy (target, ((WebappConfiguration)configuration).getPath (), dir);
         return tmi;
     }
     
@@ -658,4 +659,54 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         }
     }
     
+    public String toString () {
+        return "StartTomcat [" + tm + "]";
+    }
+    
+    private static class P implements ProgressObject {
+        
+        ProgressEventSupport supp = new ProgressEventSupport (this);
+        TargetModuleID tmid;
+        
+        P (TargetModuleID tmid) {
+            this.tmid = tmid;
+        }
+        
+        public void addProgressListener (javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
+            supp.addProgressListener (progressListener);
+        }
+        
+        public void removeProgressListener (javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
+            supp.removeProgressListener (progressListener);
+        }
+        
+        public javax.enterprise.deploy.spi.status.ClientConfiguration getClientConfiguration (javax.enterprise.deploy.spi.TargetModuleID targetModuleID) {
+            return null;
+        }
+        
+        public javax.enterprise.deploy.spi.status.DeploymentStatus getDeploymentStatus () {
+            return supp.getDeploymentStatus ();
+        }
+        
+        public javax.enterprise.deploy.spi.TargetModuleID[] getResultTargetModuleIDs () {
+            return new TargetModuleID [] {tmid};
+        }
+        
+        public boolean isCancelSupported () {
+            return false;
+        }
+        
+        public boolean isStopSupported () {
+            return false;
+        }
+        
+        public void cancel () throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
+            throw new OperationUnsupportedException ("");
+        }
+        
+        public void stop () throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
+            throw new OperationUnsupportedException ("");
+        }
+        
+    }
 }

@@ -38,4 +38,7 @@ public class TomcatTarget implements Target {
         return desc;
     }
     
+    public String toString () {
+        return name;
+    }
 }
