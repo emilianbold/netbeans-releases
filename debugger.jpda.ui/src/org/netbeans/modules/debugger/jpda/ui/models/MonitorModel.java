@@ -67,10 +67,12 @@ NodeActionsProvider {
                 int i = 0;
                 Object[] os = new Object [to - from];
                 if ( (contended != null) &&
-                     (from < 1) && (to > 0)
+                     (from  == 0) && (to > 0)
                 ) os [i++] = new ContendedMonitor (contended);
                 if ( (owned.length > 0) &&
-                     (from < 2) && (to > 1)
+                     ( ((contended != null) && (from < 2) && (to > 1)) ||
+                       ((contended == null) && (from == 0) && (to > 0))
+                     )
                 ) os [i++] = new OwnedMonitors (owned);
                 return os;
             } catch (ObjectCollectedException e) {
