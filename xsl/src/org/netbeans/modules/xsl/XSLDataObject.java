@@ -33,6 +33,7 @@ import org.netbeans.modules.xml.core.XMLDataObjectLook;
 import org.netbeans.modules.xml.core.text.TextEditorSupport;
 import org.netbeans.modules.xml.core.sync.*;
 import org.netbeans.modules.xml.core.cookies.*;
+import org.netbeans.modules.xsl.cookies.ScenarioSupport;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
 
 /**
@@ -80,6 +81,9 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         // add TransformableCookie
         Source source = DataObjectAdapters.source (this);
         set.add (new TransformableSupport (source));
+
+        set.add (new ScenarioSupport (this));
+    
     }
 
 
