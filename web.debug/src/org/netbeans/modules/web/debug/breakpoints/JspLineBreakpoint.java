@@ -89,7 +89,8 @@ public class JspLineBreakpoint extends Breakpoint {
         Utils.getEM().log("jsp url: " + url);
         Utils.getEM().log("servletClass: " + servletClass);
         LineBreakpoint javalb = LineBreakpoint.create(servletClass, lineNumber);
-
+        javalb.setHidden(true);
+        
         d.addBreakpoint(javalb);
         
         b.setURL(url);
@@ -117,6 +118,9 @@ public class JspLineBreakpoint extends Breakpoint {
         if (s == suspend) return;
         int old = suspend;
         suspend = s;
+        if (javalb != null) {
+            javalb.setSuspend(s);
+        }
         pcs.firePropertyChange(PROP_SUSPEND, old, s);
     }
     
@@ -186,6 +190,9 @@ public class JspLineBreakpoint extends Breakpoint {
     public void disable() {
         if (!enabled) return;
         enabled = false;
+        if (javalb != null) {
+            javalb.disable();
+        }
         pcs.firePropertyChange(PROP_ENABLED, true, false);
     }
     
@@ -195,6 +202,9 @@ public class JspLineBreakpoint extends Breakpoint {
     public void enable() {
         if (enabled) return;
         enabled = true;
+        if (javalb != null) {
+            javalb.enable();
+        }
         pcs.firePropertyChange(PROP_ENABLED, false, true);
     }
 
@@ -239,6 +249,9 @@ public class JspLineBreakpoint extends Breakpoint {
         if (ln == lineNumber) return;
         int old = lineNumber;
         lineNumber = ln;
+        if (javalb != null) {
+            javalb.setLineNumber(ln);
+        }
         pcs.firePropertyChange(PROP_LINE_NUMBER, old, getLineNumber());
     }
     
@@ -254,6 +267,9 @@ public class JspLineBreakpoint extends Breakpoint {
         ) return;
         String old = condition;
         condition = c;
+        if (javalb != null) {
+            javalb.setCondition(c);
+        }        
         pcs.firePropertyChange(PROP_CONDITION, old, condition);
     }
     
