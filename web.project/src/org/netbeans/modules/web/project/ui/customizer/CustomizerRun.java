@@ -109,13 +109,14 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         jLabelContextPathDesc = new javax.swing.JLabel();
         jLabelRelativeURL = new javax.swing.JLabel();
         jTextFieldRelativeURL = new javax.swing.JTextField();
+        jLabelURLExample = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
-        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
+        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 0);
@@ -189,7 +190,6 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 24, 11, 0);
         add(jLabelRelativeURL, gridBagConstraints);
 
@@ -202,6 +202,18 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
         add(jTextFieldRelativeURL, gridBagConstraints);
         jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeRun_RelativeURL_A11YDesc"));
+
+        jLabelURLExample.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_RelativeURLExample"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 11, 11, 11);
+        add(jLabelURLExample, gridBagConstraints);
+        jLabelURLExample.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_RelativeURLExample_A11YDesc"));
 
     }//GEN-END:initComponents
 
@@ -229,6 +241,7 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, HelpCt
     private javax.swing.JLabel jLabelContextPathDesc;
     private javax.swing.JLabel jLabelRelativeURL;
     private javax.swing.JLabel jLabelServer;
+    private javax.swing.JLabel jLabelURLExample;
     private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldRelativeURL;
     // End of variables declaration//GEN-END:variables
