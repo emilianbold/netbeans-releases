@@ -18,7 +18,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <property name="nbroot" location="../.."/>
     <property name="openide" location="${nbroot}/openide"/>
-    <property name="openide.jar" location="${openide}/netbeans/lib/openide.jar"/>
+    <property name="util.jar" location="${openide}/util/netbeans/lib/openide-util.jar"/>
+    <property name="nodes.jar" location="${openide}/nodes/netbeans/lib/openide-nodes.jar"/>
+    <property name="actions.jar" location="${openide}/actions/netbeans/lib/openide-actions.jar"/>
+    <property name="explorer.jar" location="${openide}/explorer/netbeans/lib/openide-explorer.jar"/>
+    <property name="text.jar" location="${openide}/text/netbeans/lib/openide-text.jar"/>
+    <property name="dialogs.jar" location="${openide}/dialogs/netbeans/lib/openide-dialogs.jar"/>
+    <property name="windows.jar" location="${openide}/windows/netbeans/lib/openide-windows.jar"/>
     <property name="looks" location="${openide}/looks"/>
     <property name="looks.jar" location="${looks}/netbeans/modules/autoload/openide-looks.jar"/>
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
@@ -33,7 +39,14 @@ Microsystems, Inc. All Rights Reserved.
     <property name="logging.properties" location="logging.properties"/>
 
     <path id="build.cp">
-        <pathelement location="${openide.jar}"/>
+        <pathelement location="${util.jar}"/>
+        <pathelement location="${nodes.jar}"/>
+        <pathelement location="${actions.jar}"/>
+        <pathelement location="${explorer.jar}"/>
+        <pathelement location="${text.jar}"/>
+        <pathelement location="${dialogs.jar}"/>
+        <!-- Just for CloneableEditorSupport: -->
+        <pathelement location="${windows.jar}"/>
         <pathelement location="${looks.jar}"/>
         <pathelement location="${Spin.jar}"/>
         <fileset dir="${nbroot}/libs/external">
@@ -73,7 +86,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="build-complete" depends="compile">
         <jar jarfile="threaddemo-complete.jar" manifest="manifest.mf" compress="true">
             <fileset dir="src"/>
-            <zipfileset src="${openide.jar}"/>
+            <zipfileset src="${util.jar}"/>
+            <zipfileset src="${nodes.jar}"/>
+            <zipfileset src="${actions.jar}"/>
+            <zipfileset src="${explorer.jar}"/>
+            <zipfileset src="${text.jar}"/>
+            <zipfileset src="${dialogs.jar}"/>
+            <zipfileset src="${windows.jar}"/>
             <zipfileset src="${looks.jar}"/>
             <zipfileset src="${Spin.jar}"/>
             <!-- Xerces -->
@@ -131,6 +150,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.2/docs/api"/>
         <property name="javadoc.web.root" value="http://www.netbeans.org/download/dev/javadoc"/>
         <property name="javadoc.docs.openide" value="${javadoc.web.root}/OpenAPIs"/>
+        <property name="javadoc.docs.openide/looks" value="${javadoc.web.root}/LooksAPI"/>
         <javadoc destdir="javadoc" source="1.4">
             <classpath>
                 <path refid="build.cp"/>
@@ -141,6 +161,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src"/>
             <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="${nbroot}/openide/api/doc"/>
             <link href="${javadoc.docs.openide}" offline="true" packagelistloc="${nbroot}/openide/javadoc/OpenAPIs"/>
+            <link href="${javadoc.docs.openide/looks}" offline="true" packagelistloc="${nbroot}/openide/looks/javadoc/LooksAPI"/>
         </javadoc>
     </target>
     
