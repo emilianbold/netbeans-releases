@@ -321,54 +321,24 @@ public class JHIndexer extends MatchingTask {
                 } finally {
                     os.close ();
                 }
-                Java java = (Java) project.createTask ("java");
-                java.setClasspath(classpath);
-                java.setClassname ("com.sun.java.help.search.Indexer");
-                java.createArg ().setValue ("-c");
-                java.createArg ().setFile (config);
-                java.createArg ().setValue ("-db");
-                java.createArg ().setFile (db);
-                if (locale != null) {
-                    java.createArg ().setValue("-locale");
-                    java.createArg ().setValue(locale);
-                }
-                java.setFailonerror (true);
-                // Does not work when run using Ant support internally to the IDE:
-                // IllegalAccessError since some classes are
-                // loaded from jhall.jar, some from startup jh.jar, and some loaded from
-                // jh.jar are package private, thus attempts to access them from classes
-                // loaded from jhall.jar is illegal. So we fork.
-                if (System.getProperty ("org.openide.version") != null) {
-                    java.setFork (true);
-                }
-                java.init ();
-                java.setLocation (location);
-                java.execute ();
-                // A failed attempt to make it work inside the IDE with internal execution.
-                // For unknown reasons (I do not have full JavaHelp source), running internally
-                // throws FileNotFoundException: ...../JavaHelpSearch/TMAP (No such file or directory)
-                // from MemoryRAFFile constructor in the indexer.
-                /*
-                Path classpath = new Path (project);
-                classpath.createPathElement ().setLocation (jhall);
                 AntClassLoader loader = new AntClassLoader (project, classpath);
-                loader.addLoaderPackageRoot ("javax.help");
-                loader.addLoaderPackageRoot ("com.sun.java.help");
                 try {
                     Class clazz = loader.loadClass ("com.sun.java.help.search.Indexer");
                     Method main = clazz.getMethod ("main", new Class[] { String[].class });
-                    try {
-                        main.invoke (null, new Object[] { new String[] { "-c", config.getAbsolutePath (), "-db", db.getAbsolutePath () } });
-                    } catch (SecurityException se) {
-                        // Ignore, probably just System.exit() being called or something.
-                        se.printStackTrace ();//XXX
+                    List args = Arrays.asList(new String[] {
+                        "-c", config.getAbsolutePath(),
+                        "-db", db.getAbsolutePath()
+                    });
+                    if (locale != null) {
+                        args.add("-locale");
+                        args.add(locale);
                     }
+                    main.invoke(null, new Object[] {args.toArray(new String[args.size()])});
                 } catch (InvocationTargetException ite) {
                     throw new BuildException ("Could not run indexer", ite.getTargetException (), location);
                 } catch (Exception e) { // ClassNotFoundException, NoSuchMethodException, ...
                     throw new BuildException ("Could not run indexer", e, location);
                 }
-                 */
             } finally {
                 config.delete ();
             }
