@@ -460,7 +460,7 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
