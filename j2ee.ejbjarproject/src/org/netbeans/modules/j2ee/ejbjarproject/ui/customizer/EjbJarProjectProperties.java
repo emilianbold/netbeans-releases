@@ -369,8 +369,13 @@ public class EjbJarProjectProperties {
                 EjbJarImplementation ejbJarImplementation = (EjbJarImplementation)project.getLookup().lookup(EjbJarImplementation.class);
                 if (ejbJarImplementation != null) {
                     FileObject ddFo = ejbJarImplementation.getDeploymentDescriptor();
-                    if (ddFo != null)
-                        DDProvider.getDefault().getDDRoot(ddFo).setVersion(new BigDecimal(EjbJar.VERSION_2_1));
+                    if (ddFo != null) {
+                        EjbJar ddRoot = DDProvider.getDefault().getDDRoot(ddFo);
+                        if (ddRoot != null) {
+                            ddRoot.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
+                            ddRoot.write(ddFo);
+                        }
+                    }
                 }
             }
             
