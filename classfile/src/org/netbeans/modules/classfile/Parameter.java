@@ -96,7 +96,11 @@ public final class Parameter extends Field {
         ClassFile classFile;
         String signature;
         LocalVariableTableEntry[] localVars;
+
+        /** the current local variable array position */
         int ivar;
+
+        /** the current character in the type signature */
         int isig;
         
         /** 
@@ -139,20 +143,24 @@ public final class Parameter extends Field {
                             break;
                         case 'B':
                         case 'C':
-                        case 'D':
                         case 'F':
                         case 'I':
-                        case 'J':
                         case 'S':
                         case 'Z':
                         case 'V': {
                             String type = signature.substring(sigStart, ++isig);
                             return new Parameter(name, type, classFile);
                         }
+                        case 'D':
+                        case 'J': {
+                            ivar++;  // longs and doubles take two slots
+                            String type = signature.substring(sigStart, ++isig);
+                            return new Parameter(name, type, classFile);
+                        }
                         case 'L': {
-                            int end = signature.indexOf(';', isig);
-                            String type = signature.substring(isig + 1, end).replace('/', '.');
-                            isig = end + 1;
+                            int end = signature.indexOf(';', isig) + 1;
+                            String type = signature.substring(isig, end);
+                            isig = end;
                             return new Parameter(name, type, classFile);
                         }
 
