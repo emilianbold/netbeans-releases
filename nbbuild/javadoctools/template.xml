@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="template" default="die" basedir=".">
+
+    <description><![CDATA[
+Templated targets:
+
+------------------------------ javadoc ------------------------
+${javadoc.base}       top dir of module, e.g. "${nb_all}/foo" ("." from your build script)
+${javadoc.name}       name of docs folder, e.g. "FooAPI"
+${javadoc.title}      display title of docs, e.g. "Foo API"
+${javadoc.packages}   list of packages to build, e.g. "org.netbeans.api.foo,org.netbeans.spi.foo"
+${javadoc.classpath}  classpath for source files (probably same as what you use for <javac>)
+${javadoc.arch}       architecture summary of the module
+Optional:
+${javadoc.main.page}  link to main page, e.g. org/netbeans/api/foo/doc-files/api.html
+${javadoc.docfiles}   set to some dummy dir like nbbuild/dummy if you have no doc-files; default ${javadoc.base}/api/doc
+${javadoc.apichanges} API change list XML file; default no change list
+${javadoc.overview}   Overview HTML file; default a generic page
+${javadoc.check.external.links}  set to "true" to check external HTTP links
+
+To call this script you MUST use the form of <ant> with the 'dir' attribute. This
+script expects that its basedir is the directory containing it. If you use only
+the 'antfile' attribute the basedir will be copied from your script, which will
+cause it to fail.
+]]></description>
+
+    <target name="die">
+        <fail>Use this script only from other scripts, to call templated targets.</fail>
+    </target>
+
+    <!-- javadoc -->
+
+    <target name="javadoc-init">
+        <!-- Output dir (will create ${javadoc.name}/ and ${javadoc.name}.zip beneath this): -->
+        <property name="javadoc.out" location="${javadoc.base}/javadoc"/>
+        <property name="javadoc.out.dir" location="${javadoc.out}/${javadoc.name}"/>
+        <property name="javadoc.out.zip" location="${javadoc.out}/${javadoc.name}.zip"/>
+        <!-- Source files: -->
+        <property name="javadoc.src" location="${javadoc.base}/src"/>
+        <!-- Extra HTML files, normally in **/doc-files/*.html: -->
+        <property name="javadoc.docfiles" location="${javadoc.base}/api/doc"/>
+        <property name="javadoc.overview" location="overview-generic.html"/>
+        <property name="javadoc.apichanges" location="apichanges-empty.xml"/>
+        <!-- Docs to link to: -->
+        <property name="javadoc.docs.jdk" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
+        <property name="javadoc.docs.openide" value="http://www.netbeans.org/download/dev/javadoc/OpenAPIs"/>
+        <property name="javadoc.docs.openide/io" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
+        <property name="javadoc.docs.openide/execution" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
+        <property name="javadoc.docs.openide/compiler" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
+        <property name="javadoc.docs.openide/deprecated" value="http://www.netbeans.org/download/dev/javadoc/DeprecatedAPIs"/>
+        <property name="javadoc.docs.core/javahelp" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
+        <!-- add more here as needed... -->
+        <property name="javadoc.css.dir" location="."/>
+        <property name="javadoc.css.main" location="${javadoc.css.dir}/javadoc.css"/>
+        <fileset id="javadoc.css.files" dir="${javadoc.css.dir}">
+            <include name="*.css"/>
+        </fileset>
+        <property name="javadoc.check.external.links" value="false"/>
+    </target>
+
+    <target name="javadoc-check-timestamps" depends="javadoc-init">
+        <uptodate property="javadoc.up.to.date" targetfile="${javadoc.out.zip}">
+            <srcfiles dir="${javadoc.src}">
+                <include name="**/*.java"/>
+            </srcfiles>
+            <srcfiles dir="${javadoc.docfiles}"/>
+            <srcfiles refid="javadoc.css.files"/>
+            <srcfiles dir=".">
+                <include name="apichanges.xsl"/>
+            </srcfiles>
+            <!-- These should already be absolute paths, so dir does not matter: -->
+            <srcfiles dir="../dummy">
+                <include name="${javadoc.apichanges}"/>
+                <include name="${javadoc.arch}"/>
+            </srcfiles>
+        </uptodate>
+    </target>
+
+    <target name="javadoc-make-plain-title" unless="javadoc.main.page">
+        <property name="javadoc.hyperlinked.title" value="${javadoc.title}"/>
+    </target>
+
+    <target name="javadoc-make-hyperlinked-title" if="javadoc.main.page">
+        <property name="javadoc.hyperlinked.title" value='&lt;a href="@TOP@${javadoc.main.page}"&gt;${javadoc.title}&lt;/a&gt;'/>
+    </target>
+
+    <target name="javadoc" description="Build Javadoc and associated documentation for a module." depends="javadoc-init,javadoc-check-timestamps,javadoc-make-plain-title,javadoc-make-hyperlinked-title" unless="javadoc.up.to.date">
+        <tstamp/>
+        <property name="javadoc.footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
+        <mkdir dir="${javadoc.out.dir}"/>
+        <javadoc author="false" destdir="${javadoc.out.dir}" packagenames="${javadoc.packages}" stylesheetfile="${javadoc.css.main}" windowtitle="NetBeans ${javadoc.title}" overview="${javadoc.overview}" splitindex="true" use="true" version="false">
+            <sourcepath>
+                <pathelement location="${javadoc.docfiles}"/>
+                <pathelement location="${javadoc.src}"/>
+            </sourcepath>
+            <classpath path="${javadoc.classpath}"/>
+            <!-- XXX note, this does not support more than one group -->
+            <group packages="${javadoc.packages}">
+                <title>${javadoc.hyperlinked.title}</title>
+            </group>
+            <link href="${javadoc.docs.jdk}" offline="true" packagelistloc="../../openide/api/doc"/>
+            <link href="${javadoc.docs.openide}" offline="true" packagelistloc="../../openide/javadoc/OpenAPIs"/>
+            <link href="${javadoc.docs.openide/io}" offline="true" packagelistloc="../../openide/io/javadoc/InputOutputAPI"/>
+            <link href="${javadoc.docs.openide/execution}" offline="true" packagelistloc="../../openide/execution/javadoc/ExecutionAPI"/>
+            <link href="${javadoc.docs.openide/compiler}" offline="true" packagelistloc="../../openide/compiler/javadoc/CompilerAPI"/>
+            <link href="${javadoc.docs.core/javahelp}" offline="true" packagelistloc="../../core/javahelp/javadoc/JavaHelpAPI"/>
+            <doctitle>NetBeans ${javadoc.title}</doctitle>
+            <bottom>${javadoc.footer}</bottom>
+            <!-- XXX in Ant 1.5.1 add: <tag name="beaninfo" scope="methods" description="Bean info:"/> -->
+        </javadoc>
+        <copy todir="${javadoc.out.dir}">
+            <fileset refid="javadoc.css.files"/>
+        </copy>
+        <ant dir="../../libs/external" target="unscramble"/>
+        <xmlvalidate file="${javadoc.apichanges}" failonerror="true"/>
+        <style in="${javadoc.apichanges}" out="${javadoc.out.dir}/apichanges.html" style="apichanges.xsl">
+            <param name="javadoc-url-base" expression="http://www.netbeans.org/download/dev/javadoc/${javadoc.name}"/>
+        </style>
+        <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
+            <classpath>
+                <pathelement location="../nbantext.jar"/>
+            </classpath>
+        </taskdef>
+        <!-- Warn about incorrect question version, but do not make build fail: -->
+        <property name="arch.warn" value="true"/>
+        <arch answers="${javadoc.arch}" output="${javadoc.out.dir}/architecture-summary.html" stylesheet="prose.css" overviewlink="overview-summary.html" footer="@FOOTER@"/>
+        <replace dir="${javadoc.out.dir}">
+            <include name="**/doc-files/*.html"/>
+            <include name="**/package-summary.html"/>
+            <include name="apichanges.html"/>
+            <include name="architecture-summary.html"/>
+            <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>
+            <replacefilter token="@OPENIDE@" value="${javadoc.docs.openide}"/>
+            <replacefilter token="@OPENIDE/IO@" value="${javadoc.docs.openide/io}"/>
+            <replacefilter token="@OPENIDE/EXECUTION@" value="${javadoc.docs.openide/execution}"/>
+            <replacefilter token="@OPENIDE/COMPILER@" value="${javadoc.docs.openide/compiler}"/>
+            <replacefilter token="@OPENIDE/DEPRECATED@" value="${javadoc.docs.openide/deprecated}"/>
+            <replacefilter token="@CORE/JAVAHELP@" value="${javadoc.docs.core/javahelp}"/>
+            <replacefilter token="@FOOTER@" value="${javadoc.footer}"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="">
+            <include name="*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../">
+            <include name="*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../">
+            <include name="*/*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../">
+            <include name="*/*/*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../">
+            <include name="*/*/*/*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../">
+            <include name="*/*/*/*/*/*.html"/>
+        </replace>
+        <replace dir="${javadoc.out.dir}" token="@TOP@" value="../../../../../../">
+            <include name="*/*/*/*/*/*/*.html"/>
+        </replace>
+        <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
+            <classpath>
+                <pathelement location="../nbantext.jar"/>
+                <fileset dir="../../core/external">
+                    <include name="regexp*.jar"/>
+                </fileset>
+            </classpath>
+        </taskdef>
+        <checklinks basedir="${javadoc.out.dir}" checkexternal="${javadoc.check.external.links}">
+            <include name="overview-summary.html"/>
+            <include name="apichanges.html"/>
+            <include name="architecture-summary.html"/>
+            <include name="**/package-summary.html"/>
+            <include name="**/doc-files/**/*.html"/>
+            <!-- Make hyperlinks point to the source files, not the copied files: -->
+            <mapper type="glob" from="${javadoc.out.dir}/overview-summary.html" to="${javadoc.overview}"/>
+            <mapper type="glob" from="${javadoc.out.dir}/*/package-summary.html" to="${javadoc.docfiles}/*/package.html"/>
+            <mapper type="glob" from="${javadoc.out.dir}/apichanges.html" to="${javadoc.apichanges}"/>
+            <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
+            <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.docfiles}/*.html"/>
+        </checklinks>
+        <zip zipfile="${javadoc.out.zip}" basedir="${javadoc.out.dir}"/>
+    </target>
+
+</project>

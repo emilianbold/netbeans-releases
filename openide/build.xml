@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -28,14 +28,6 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
-  <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
-    <classpath>
-      <pathelement location="../nbbuild/nbantext.jar"/>
-      <fileset dir="../core/external">
-        <include name="regexp*.jar"/>
-      </fileset>
-    </classpath>
-  </taskdef>
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
 
@@ -553,13 +545,16 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- Open API documentation. -->
+
   <target name="open-apis-check-existence-1" unless="open-apis-force-rebuild">
     <available property="open-apis-exists" file="javadoc/OpenAPIs.zip"/>
   </target>
+
   <target name="open-apis-check-existence" depends="open-apis-check-existence-1" unless="open-apis-exists">
     <property name="open-apis-force-rebuild" value="true"/>
     <echo message="Open APIs are not built at all, will be created."/>
   </target>
+
   <target name="open-apis-check-timestamps-1" depends="open-apis-check-existence" unless="open-apis-force-rebuild">
     <uptodate property="open-apis-up-to-date" targetfile="javadoc/OpenAPIs.zip">
       <srcfiles dir="src">
@@ -568,10 +563,18 @@ Microsystems, Inc. All Rights Reserved.
       <srcfiles dir="api/doc">
         <include name="org/openide/"/>
         <include name="overview.html"/>
+        <include name="changes/apichanges.xml"/>
+      </srcfiles>
+      <srcfiles dir="../nbbuild/javadoctools">
+        <include name="apichanges.xsl"/>
         <include name="*.css"/>
+      </srcfiles>
+      <srcfiles dir="arch">
+        <include name="*.xml"/>
       </srcfiles>
     </uptodate>
   </target>
+
   <target name="open-apis-check-timestamps" depends="open-apis-check-timestamps-1" unless="open-apis-up-to-date">
     <property name="open-apis-force-rebuild" value="true"/>
     <echo>Open APIs are out of date and will be rebuilt.
@@ -579,13 +582,28 @@ To avoid rebuilding them after every change in API sources,
 use -Dopen-apis-up-to-date=true
 </echo>
   </target>
+
   <target name="open-apis-maybe-skip" depends="open-apis-check-timestamps" unless="open-apis-force-rebuild">
     <echo>Not building Open APIs because they are up-to-date...
 To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
 </echo>
   </target>
+
   <target name="javadoc" depends="init,open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
+    <taskdef name="checklinks" classname="org.netbeans.nbbuild.CheckLinks">
+      <classpath>
+        <pathelement location="../nbbuild/nbantext.jar"/>
+        <fileset dir="../core/external">
+          <include name="regexp*.jar"/>
+        </fileset>
+      </classpath>
+    </taskdef>
+    <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
+      <classpath>
+        <pathelement location="../nbbuild/nbantext.jar"/>
+      </classpath>
+    </taskdef>
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4.1/docs/api"/>
     <property name="execution-docs-location" value="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI"/>
     <property name="io-docs-location" value="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI"/>
@@ -593,7 +611,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <property name="compiler-docs-location" value="http://www.netbeans.org/download/dev/javadoc/CompilerAPI"/>
     <property name="javahelp-docs-location" value="http://www.netbeans.org/download/dev/javadoc/JavaHelpAPI"/>
     <tstamp/>
-    <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+    <property name="open-apis-footer" value='&lt;span class="footnote"&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/span&gt;'/>
     <echo message="Build Open API documentation..."/>
     <mkdir dir="javadoc/OpenAPIs"/>
     <javadoc destdir="javadoc/OpenAPIs"
@@ -607,7 +625,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              author="false"
              version="false"
              maxmemory="64m"
-	     stylesheetfile="api/doc/javadoc.css"
+	     stylesheetfile="../nbbuild/javadoctools/javadoc.css"
     >
       <sourcepath>
         <pathelement location="api/doc"/>
@@ -642,24 +660,40 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              packages="org.openide.options"/>
       <group title="&lt;a href=&quot;@TOP@org/openide/util/doc-files/api.html&quot;&gt;Utility Classes&lt;/a&gt;"
              packages="org.openide.awt:org.openide.util:org.openide.util.enum:org.openide.util.io:org.openide.xml"/>
-      <!-- XXX in Ant 1.5.1 add: <tag name="beaninfo" scope="methods" description="Bean info:"/> -->
     </javadoc>
     <copy todir="javadoc/OpenAPIs">
-      <fileset dir="api/doc">
+      <fileset dir="../nbbuild/javadoctools">
         <include name="*.css"/>
       </fileset>
     </copy>
+    <ant dir="../libs/external" target="unscramble"/>
+    <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
+    <style in="api/doc/changes/apichanges.xml" out="javadoc/OpenAPIs/apichanges.html" style="../nbbuild/javadoctools/apichanges.xsl"/>
+    <mkdir dir="javadoc/OpenAPIs/arch"/>
+    <arch answers="arch/arch-openide-modules.xml" output="javadoc/OpenAPIs/arch/openide-modules.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-dialogs.xml" output="javadoc/OpenAPIs/arch/openide-dialogs.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-lookup.xml" output="javadoc/OpenAPIs/arch/openide-lookup.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-filesystems.xml" output="javadoc/OpenAPIs/arch/openide-filesystems.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-datasystems.xml" output="javadoc/OpenAPIs/arch/openide-datasystems.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-nodes.xml" output="javadoc/OpenAPIs/arch/openide-nodes.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-explorer.xml" output="javadoc/OpenAPIs/arch/openide-explorer.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-actions.xml" output="javadoc/OpenAPIs/arch/openide-actions.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-windowsystem.xml" output="javadoc/OpenAPIs/arch/openide-windowsystem.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-utilities.xml" output="javadoc/OpenAPIs/arch/openide-utilities.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-editor.xml" output="javadoc/OpenAPIs/arch/openide-editor.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
+    <arch answers="arch/arch-openide-propertysheet.xml" output="javadoc/OpenAPIs/arch/openide-propertysheet.html" stylesheet="../prose.css" overviewlink="../overview-summary.html" footer="@FOOTER@"/>
     <replace dir="javadoc/OpenAPIs">
       <include name="**/doc-files/*.html"/>
       <include name="**/package-summary.html"/>
+      <include name="apichanges.html"/>
+      <include name="arch/*.html"/>
       <replacefilter token="@JDK@" value="${jdk-docs-location}"/>
-      <replacefilter token="@EXECUTION@" value="${execution-docs-location}"/>
-      <replacefilter token="@IO@" value="${io-docs-location}"/>
-      <replacefilter token="@COMPILER@" value="${compiler-docs-location}"/>
-      <replacefilter token="@JAVAHELP@" value="${javahelp-docs-location}"/>
+      <replacefilter token="@OPENIDE/EXECUTION@" value="${execution-docs-location}"/>
+      <replacefilter token="@OPENIDE/IO@" value="${io-docs-location}"/>
+      <replacefilter token="@OPENIDE/COMPILER@" value="${compiler-docs-location}"/>
+      <replacefilter token="@CORE/JAVAHELP@" value="${javahelp-docs-location}"/>
       <replacefilter token="@FOOTER@" value="${open-apis-footer}"/>
     </replace>
-    <replace file="javadoc/OpenAPIs/overview-summary.html" token="@DATE@" value="${TODAY}"/>
     <replace dir="javadoc/OpenAPIs" token="@TOP@" value="">
       <include name="*.html"/>
     </replace>
@@ -685,15 +719,19 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
     <property name="javadoc.check.external.links" value="false"/>
     <checklinks basedir="javadoc/OpenAPIs" checkexternal="${javadoc.check.external.links}">
       <include name="overview-summary.html"/>
+      <include name="apichanges.html"/>
       <include name="**/package-summary.html"/>
       <include name="**/doc-files/**/*.html"/>
       <!-- Make hyperlinks point to the source files, not the copied files: -->
       <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/overview-summary.html" to="${basedir}/api/doc/overview.html"/>
       <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/*/package-summary.html" to="${basedir}/api/doc/*/package.html"/>
+      <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/apichanges.html" to="${basedir}/api/doc/changes/apichanges.xml"/>
+      <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/arch/*.html" to="${basedir}/arch/arch-*.xml"/>
       <mapper type="glob" from="${basedir}/javadoc/OpenAPIs/*.html" to="${basedir}/api/doc/*.html"/>
     </checklinks>
     <zip zipfile="javadoc/OpenAPIs.zip" basedir="javadoc/OpenAPIs"/>
   </target>
+
   <target name="apis-tidy" description="Run the Tidy HTML checker on API prose documents.">
     <apply parallel="true" failonerror="true" executable="tidy">
       <fileset dir="api/doc">
@@ -813,17 +851,13 @@ Included in JDK 1.3, else you may need to download it separately."/>
     <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
   </target>
 
-  <target name="openidex-all" depends="netbeans">
-    <ant dir="../openidex"/>
-  </target>
-  <target name="example-globalactions" depends="jars,openidex-all">
+  <target name="example-globalactions" depends="jars">
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/globalactions/"/>
       <classpath>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../openidex/netbeans/modules/autoload/openidex.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodules"/>
@@ -970,14 +1004,4 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 
     </target>
 
-    <target name="init-dtd">
-        <ant dir="../libs/external" target="unscramble"/>
-    </target>
-    <target name="apichanges-check" depends="init-dtd" description="Check syntax of API changes list.">
-        <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
-    </target>
-    <target name="apichanges-generate" depends="init-dtd" description="Regenerate HTML from XML API changes list.">
-        <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="api/doc/changes/apichanges.xsl"/>
-    </target>
-    
 </project>

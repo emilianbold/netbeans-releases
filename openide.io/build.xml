@@ -81,12 +81,13 @@ Microsystems, Inc. All Rights Reserved.
     <target name="javadoc" description="Build Javadoc.">
         <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
         <property name="_cp" refid="cp"/>
-        <ant dir="../../nbbuild" antfile="template.xml" target="javadoc">
+        <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="InputOutputAPI"/>
             <property name="javadoc.title" value="Input/Output API"/>
             <property name="javadoc.packages" value="org.openide.windows"/>
             <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.arch" location="../arch/arch-openide-io.xml"/>
         </ant>
     </target>
   

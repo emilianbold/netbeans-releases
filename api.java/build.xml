@@ -75,7 +75,7 @@ Microsystems, Inc. All Rights Reserved.
   
   <target name="javadoc">
     <property name="_cp" refid="cp"/>
-    <ant dir="../../nbbuild" antfile="template.xml" target="javadoc">
+    <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
 	<property name="javadoc.base" location="."/>
 	<property name="javadoc.docfiles" location="doc"/> <!-- nonstandard naming convention -->
 	<property name="javadoc.name" value="JavaSupportAPIs"/>
@@ -83,7 +83,9 @@ Microsystems, Inc. All Rights Reserved.
 	<property name="javadoc.packages" value="org.netbeans.api.java.classpath"/>
 	<property name="javadoc.classpath" value="${_cp}"/>
 	<property name="javadoc.main.page" value="org/netbeans/api/java/classpath/doc-files/api.html"/>
-        <!-- XXX include doc/doc-files/overview.html when possible -->
+        <property name="javadoc.overview" location="doc/overview.html"/>
+        <property name="javadoc.apichanges" location="doc/changes/apichanges.xml"/>
+        <property name="javadoc.arch" location="../arch/arch-java-api.xml"/>
     </ant>
   </target>
 
