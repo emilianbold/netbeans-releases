@@ -52,14 +52,14 @@ HTML contents of the document, with substitutions.
           name CDATA #REQUIRED
           type (import|export) #REQUIRED
           category %category; #REQUIRED
-          url CDATA #REQUIRED
+          url CDATA #IMPLIED
 >
 
 <!ELEMENT property %Flow; >
 <!ATTLIST property
           name CDATA #REQUIRED
           category %category; #REQUIRED
-          url CDATA #REQUIRED
+          url CDATA #IMPLIED
 >
 
 <!-- now the content of included questions file -->
