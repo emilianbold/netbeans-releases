@@ -375,29 +375,12 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     /**
-     * Create the data model from file object. Called from constructor.
-     *
-     * @return true if model was succesfully created, false otherwise
-     */
-    protected boolean createModelFromFileObject(FileObject fo) throws IOException {
-        return parse(createInputSource());
-    }
-
-    /**
      * Update data model from document text . Called when something is changed in xml editor.
      *
      * @return true if model was succesfully created, false otherwise
      */
     protected boolean updateModelFromDocument() throws IOException {
         return parse(createInputSource());
-    }
-
-    /**
-     * Called on close-discard option.
-     * The data model is updated from corresponding file object(s).
-     */
-    protected void reloadModelFromFileObject() throws IOException {
-        parse(new InputSource(getPrimaryFile().getInputStream()));
     }
 
     private boolean parse(InputSource is) throws IOException {

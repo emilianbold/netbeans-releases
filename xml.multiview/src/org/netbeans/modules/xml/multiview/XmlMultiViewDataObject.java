@@ -64,7 +64,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         /** Implements <code>SaveCookie</code> interface. */
         public void save() throws java.io.IOException {
             editor.saveDocument();
-            setModified(false);
         }
     };
 
@@ -72,10 +71,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
-        try {
-            createModelFromFileObject(pf);
-        } catch (IOException ex) {
-        }
+        documentUpdated();
     }
     
     public org.openide.nodes.Node.Cookie createCookie(Class clazz) {
@@ -104,15 +100,14 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     XmlMultiViewEditorSupport getEditorSupport() {
         return (XmlMultiViewEditorSupport)getCookie(XmlMultiViewEditorSupport.class);
     }
-    /** Create the data model from file object. Called from constructor.
-    * @return true if model was succesfully created, false otherwise
-    */
-    protected abstract boolean createModelFromFileObject(FileObject fo) throws java.io.IOException;
-    
-    /** Called on close-discard option.
-    * The data model is updated from corresponding file object(s).
-    */
-    protected abstract void reloadModelFromFileObject() throws java.io.IOException;
+
+    /**
+     * Called on close-discard option.
+     * The data model is updated from corresponding file object(s).
+     */
+    protected void reloadModelFromFileObject() throws java.io.IOException {
+        editor.openDocument();
+    }
     
     /** Update data model from document text . Called when something is changed in xml editor. 
     * @return true if model was succesfully created, false otherwise
@@ -162,7 +157,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     * @exception IOException if some problem occurs
     */
     protected InputStream createInputStream() throws java.io.IOException {
-        return editor.getInputStream();
+        return createEditorSupport().getInputStream();
     }
     
     /** This method is used for obtaining the current source of xml document.
