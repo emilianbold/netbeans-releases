@@ -1,0 +1,16 @@
+ <!-- Document Type Declaration for toolbar configuration xml files. -->
+
+  <!-- Root element of toolbar configuration. It's a list of Rows. -->
+  <!ELEMENT Configuration (Row+)>
+
+  <!-- Toolbar configuration row. It's a list of Toolbars. -->
+  <!ELEMENT Row (Toolbar*)>
+
+  <!-- Toolbar configuration Toolbar. It contains name of toolbar,
+  it's position and switch of toolbar visibility. -->
+  <!ELEMENT Toolbar EMPTY>
+  <!ATTLIST Toolbar
+    name CDATA #REQUIRED
+    position CDATA #IMPLIED
+    visible (true | false) #IMPLIED
+  >
