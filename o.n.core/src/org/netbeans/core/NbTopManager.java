@@ -141,7 +141,7 @@ public class NbTopManager extends TopManager {
   /** @return default root of keyboard shortcuts */
   public MutableKeymap getGlobalKeymap () {
     if (shortcutContext == null) {
-      shortcutContext = null;// PENDING new ShortcutContext ();
+      shortcutContext = new NbKeymap ();
     }
     return shortcutContext;
   }
