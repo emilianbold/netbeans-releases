@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
             
         <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
-        <pathelement location="${editor.dir}/${nb.modules.dir}/ext/nb-editor.jar"/>
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
             
         <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
             
