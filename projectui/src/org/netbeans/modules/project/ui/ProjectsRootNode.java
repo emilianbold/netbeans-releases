@@ -198,13 +198,20 @@ public class ProjectsRootNode extends AbstractNode {
                 nodes = PhysicalView.createNodesForProject( project );
             }            
             else if ( lvp == null ) {
-                nodes = new Node[] { Node.EMPTY };
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply LogicalViewProvider in it's lookup"); // NOI18N
+                nodes = PhysicalView.createNodesForProject( project );
+                if ( nodes.length > 0 ) {
+                    nodes = new Node[] { nodes[0] };
+                }
+                else {
+                    nodes = new Node[] { Node.EMPTY };
+                }
             }
             else {
                 nodes = new Node[] { lvp.createLogicalView() };
                 if (nodes[0].getLookup().lookup(Project.class) != project) {
                     // Various actions, badging, etc. are not going to work.
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view");
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view"); // NOI18N
                 }
             }
 
