@@ -22,6 +22,7 @@ Microsystems, Inc. All Rights Reserved.
     <Toolbar name="Build" />
     <Toolbar name="Debug" visible="false" />
     <Toolbar name="DebugFull" />
+    <Toolbar name="Task" visible="false" />
     <Toolbar name="Memory" visible="false" />
   </Row>
   <Row>
