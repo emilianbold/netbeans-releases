@@ -137,7 +137,7 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
 
     <xsl:template match="module">
-            <xsl:variable name="interfaces" select="api[@type='export' and generate-id() = generate-id(key('apiNames', @name))]" />
+            <xsl:variable name="interfaces" select="descendant::api[@type='export' and generate-id() = generate-id(key('apiNames', @name))]" />
             <xsl:variable name="module.name" select="@name" />
             <xsl:variable name="arch.stylesheet" select="@stylesheet" />
             <xsl:variable name="arch.overviewlink" select="@overviewlink" />
