@@ -176,6 +176,9 @@ public abstract class NbTopManager extends TopManager {
             "org.netbeans.core.NbTopManager$Lkp" // NOI18N
           );
         }
+        
+        // read environment properties from external file, if any
+        readEnvMap ();
     }
     
     /** Puts a property into the system ones, but only if the value is not null.
@@ -783,6 +786,38 @@ public abstract class NbTopManager extends TopManager {
       return htmlViewer;
 }
 
+    /** Reads system properties from a file on a disk and stores them 
+     * in System.getPropeties ().
+     */
+    private static void readEnvMap () {
+        java.util.Properties env = System.getProperties ();
+        String envfile = System.getProperty("netbeans.osenv"); // NOI18N
+        if (envfile != null) {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(envfile)));
+                
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null)
+                        break;
+                    
+                    int i = line.indexOf("=");
+                    String key = line.substring(0, i);
+                    String value = line.substring(i + 1);
+                    if (i >= 0) {
+                        env.put("Env-" + key, value); // NOI18N
+                        env.put("env-" + key.toLowerCase (), value); // NOI18N
+                    }
+                }
+            }
+            catch (IOException ignore) {
+                TopManager.getDefault ().getErrorManager ().notify (
+                    ErrorManager.INFORMATIONAL, ignore
+                );
+            }
+        }
+    }
 
 
     /**
