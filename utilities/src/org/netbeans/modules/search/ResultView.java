@@ -206,6 +206,12 @@ final class ResultView extends TopComponent
         return node;
     }
     
+    /** Overriden to explicitely set persistence type of ResultView
+     * to PERSISTENCE_ALWAYS */
+    public int getPersistenceType() {
+        return TopComponent.PERSISTENCE_ALWAYS;
+    }
+    
     /**
      * Resolves to the {@linkplain #getDefault default instance} of this class.
      *
