@@ -187,6 +187,10 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         removeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACS_LBL_RemovePropertyButton"));
     }
     
+    public boolean requestFocusInWindow() {
+        return table.requestFocusInWindow();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -212,6 +216,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
 
         setLayout(new java.awt.GridBagLayout());
 
+        setFocusCycleRoot(true);
         tablePanel.setLayout(new java.awt.GridBagLayout());
 
         table.setCellSelectionEnabled(true);
