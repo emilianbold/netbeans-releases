@@ -2291,21 +2291,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             throw ex;
         }
 
-        FileLock lock = null;
-
-        try {
-            lock = formFile.lock();
-        }
-        catch (IOException ex) {
-            PersistenceException pe = new PersistenceException(
-                                        ex, "Cannot obtain lock on form file"); // NOI18N
-            ErrorManager.getDefault().annotate(
-                ex,
-                FormUtils.getFormattedBundleString("FMT_ERR_CannotLockFormFile", // NOI18N
-                                      new Object[] { formFile.getNameExt() }));
-            throw pe;
-        }
-
         StringBuffer buf1 = new StringBuffer();
         StringBuffer buf2 = new StringBuffer();
 
@@ -2397,6 +2382,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
             savedVariables.clear();
 
         // write the data
+        FileLock lock = null;
+        try {
+            lock = formFile.lock();
+        }
+        catch (IOException ex) {
+            PersistenceException pe = new PersistenceException(
+                                        ex, "Cannot obtain lock on form file"); // NOI18N
+            ErrorManager.getDefault().annotate(
+                ex,
+                FormUtils.getFormattedBundleString("FMT_ERR_CannotLockFormFile", // NOI18N
+                                      new Object[] { formFile.getNameExt() }));
+            throw pe;
+        }
+
         java.io.OutputStream os = null;
         try {
             os = formFile.getOutputStream(lock);
@@ -2418,7 +2417,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     os.close();
             }
             catch (IOException ex) {} // ignore
-
             lock.releaseLock();
         }
     }
