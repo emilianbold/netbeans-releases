@@ -554,9 +554,13 @@ is divided into following sections:
             </bootclasspath>
             </xsl:if>
         </nbjpdaconnect>
-        <nbbrowse url="${{client.url}}"/>
+        <antcall target="debug-display-browser"/>
     </target>
     
+    <target name="debug-display-browser" if="do.display.browser">
+        <nbbrowse url="${{client.url}}"/>
+    </target>
+            
     <target name="debug-single">
         <xsl:attribute name="if">netbeans.home</xsl:attribute>
         <xsl:attribute name="depends">init,compile,compile-jsps,-do-compile-single-jsp,debug</xsl:attribute>
