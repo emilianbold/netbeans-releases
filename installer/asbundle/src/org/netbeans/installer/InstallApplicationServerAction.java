@@ -318,8 +318,27 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                 logEvent(this, Log.DBG,"Deleting -> " + imageDirPath);
                 Util.deleteDirectory(new File(imageDirPath));
                 logEvent(this, Log.DBG,"Deleted -> " + imageDirPath);
-            }            
-        }catch (Exception ex) {
+            }
+            
+            //Delete properties file
+            File file = new File(nbInstallDir,"enterprise1/config/J2EE/InstalledServers/J2EESDK.properties");
+            if (file.exists()) {
+                File parent = file.getParentFile();
+                logEvent(this, Log.DBG, "Delete: " + file);
+                file.delete();
+                if (parent.listFiles().length == 0) {
+                    file = parent;
+                    parent = file.getParentFile();
+                    logEvent(this, Log.DBG, "Delete: " + file);
+                    file.delete();
+                    if (parent.listFiles().length == 0) {
+                        file = parent;
+                        logEvent(this, Log.DBG, "Delete: " + file);
+                        file.delete();
+                    }
+                }
+            }
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
