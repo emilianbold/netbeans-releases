@@ -26,7 +26,6 @@ import org.openide.TopManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.core.windows.nodes.TabbedContainerUIPropertyEditor;
 import org.netbeans.core.windows.nodes.UIModePropertyEditor;
 import org.openide.ErrorManager;
 
@@ -40,7 +39,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
     	    ResourceBundle bundleUIMode = NbBundle.getBundle(UIModePropertyEditor.class);
-    	    ResourceBundle bundleTabbedContainerUI = NbBundle.getBundle(TabbedContainerUIPropertyEditor.class);
             ResourceBundle bundleMiniStatusBar = NbBundle.getBundle(MiniStatusBar.class);
 
             PropertyDescriptor[] desc = new PropertyDescriptor[] {
@@ -68,8 +66,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getWWWBrowser", "setWWWBrowser"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_UIMODE, IDESettings.class, 
                                                "getUIMode", "setUIMode"), // NOI18N
-                       new PropertyDescriptor (IDESettings.PROP_TABBEDCONTAINERUI, IDESettings.class, 
-                                               "getTabbedContainerUI", "setTabbedContainerUI"), // NOI18N
                        new PropertyDescriptor (IDESettings.PROP_SHOW_TOOLTIPS_IN_IDE, IDESettings.class,
                                                "getShowToolTipsInIDE", "setShowToolTipsInIDE"), // NOI18N                                               
                        new PropertyDescriptor (IDESettings.PROP_MINI_STATUS_BAR_STATE, IDESettings.class,
@@ -110,17 +106,12 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
             desc[11].setShortDescription(bundleUIMode.getString("HINT_UI_Mode"));
             desc[11].setPropertyEditorClass(UIModePropertyEditor.class);
 
-            desc[12].setDisplayName(bundleTabbedContainerUI.getString("PROP_TabbedContainerUI"));
-            desc[12].setShortDescription(bundleTabbedContainerUI.getString("HINT_TabbedContainerUI"));
-            desc[12].setPropertyEditorClass(TabbedContainerUIPropertyEditor.class);
-            desc[12].setHidden(true);
-            
-            desc[13].setDisplayName (Main.getString ("PROP_SHOW_TOOLTIPS_IN_IDE"));
-            desc[13].setShortDescription (Main.getString ("HINT_SHOW_TOOLTIPS_IN_IDE"));            
+            desc[12].setDisplayName (Main.getString ("PROP_SHOW_TOOLTIPS_IN_IDE"));
+            desc[12].setShortDescription (Main.getString ("HINT_SHOW_TOOLTIPS_IN_IDE"));            
 
-            desc[14].setDisplayName (bundleMiniStatusBar.getString("PROP_MINI_STATUS_BAR_STATE"));
-            desc[14].setShortDescription (bundleMiniStatusBar.getString("HINT_MINI_STATUS_BAR_STATE"));
-            //desc[14].setHidden (true);
+            desc[13].setDisplayName (bundleMiniStatusBar.getString("PROP_MINI_STATUS_BAR_STATE"));
+            desc[13].setShortDescription (bundleMiniStatusBar.getString("HINT_MINI_STATUS_BAR_STATE"));
+            //desc[13].setHidden (true);
 
             return desc;
         } catch (IntrospectionException ex) {

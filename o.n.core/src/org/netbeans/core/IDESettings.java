@@ -44,7 +44,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import org.netbeans.core.windows.TabbedContainerUIManager;
+//import org.netbeans.core.windows.TabbedContainerUIManager;
 import org.netbeans.core.windows.UIModeManager;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.windows.WindowManager;
@@ -81,8 +81,6 @@ public class IDESettings extends SystemOption {
     public static final String PROP_WWWBROWSER = "WWWBrowser"; // NOI18N
     /** UI Mode */
     public static final String PROP_UIMODE = "UIMode"; // NOI18N
-    /** UI of JTabbedPane component */
-    public static final String PROP_TABBEDCONTAINERUI = "TabbedContainerUI"; // NOI18N
 
     /** proxy host VM property key */
     public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
@@ -117,7 +115,6 @@ public class IDESettings extends SystemOption {
     private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
     
     private static int uiMode = UIModeManager.MDI_MODE;
-    private TabbedContainerUIManager tabbedContainerUIManager = null;
 
     /** Getter for properties file with proxy properties. Installer provides
      * this file.*/
@@ -518,14 +515,6 @@ public class IDESettings extends SystemOption {
         return uiMode;
     }
 
-    public void setTabbedContainerUI (int tabbedContainerUI) {
-        getTabbedContainerUIManager().setTabbedContainerUI(tabbedContainerUI);
-    }
-
-    public int getTabbedContainerUI () {
-        return getTabbedContainerUIManager().getTabbedContainerUI();
-    }
-
     // PRIVATE METHODS
     
     /** Returns the default value for the http.nonProxyHosts system property. <br>
@@ -543,11 +532,4 @@ public class IDESettings extends SystemOption {
         return nonProxy;
     }
 
-    private TabbedContainerUIManager getTabbedContainerUIManager () {
-        if(tabbedContainerUIManager == null) {
-            tabbedContainerUIManager = ((WindowManagerImpl)WindowManager.getDefault()).
-                                        tabbedContainerUIManager();
-        }
-        return tabbedContainerUIManager;
-    }
 }
