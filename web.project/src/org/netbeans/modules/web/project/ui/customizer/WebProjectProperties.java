@@ -187,7 +187,8 @@ public class WebProjectProperties {
     private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
     private List javacClasspath;
-    
+    private List warIncludes;
+
     public WebProjectProperties(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         this.project = project;
         this.properties = new HashMap();
@@ -220,7 +221,7 @@ public class WebProjectProperties {
             javacClasspath = (List) value;
         } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
             assert value instanceof List : "Wrong format of property " + propertyName; //NOI18N
-            writeWarIncludes ((List) value, antProjectHelper, refHelper);
+            warIncludes = (List) value;
         }
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
         pi.setValue( value );
@@ -234,7 +235,7 @@ public class WebProjectProperties {
         if (JAVAC_CLASSPATH.equals (propertyName)) {
             return javacClasspath;
         } else if (WAR_CONTENT_ADDITIONAL.equals (propertyName)) {
-            return readWarIncludes(antProjectHelper, refHelper);
+            return warIncludes;
         }
 
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
@@ -316,6 +317,7 @@ public class WebProjectProperties {
             }
         }
         javacClasspath = readJavacClasspath (antProjectHelper, refHelper);
+        warIncludes = readWarIncludes(antProjectHelper, refHelper);
     }
     
     /** Transforms all the Objects from GUI controls into String Ant 
@@ -399,6 +401,7 @@ public class WebProjectProperties {
                     antProjectHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
                     antProjectHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
                     writeJavacClasspath (javacClasspath, antProjectHelper, refHelper);
+                    writeWarIncludes (warIncludes, antProjectHelper, refHelper);
                     ProjectManager.getDefault ().saveProject (project);
                     return null;
                 }
