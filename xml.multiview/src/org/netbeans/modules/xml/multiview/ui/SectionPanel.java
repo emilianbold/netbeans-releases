@@ -49,10 +49,18 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
      */
 
     public SectionPanel(SectionView sectionView, Node explorerNode, Object key) {
-        this(sectionView, explorerNode, explorerNode.getDisplayName(), key);
+        this(sectionView, explorerNode, key, false);
+    }
+
+    public SectionPanel(SectionView sectionView, Node explorerNode, Object key, boolean autoExpand) {
+        this(sectionView, explorerNode, explorerNode.getDisplayName(), key, autoExpand);
     }
 
     public SectionPanel(SectionView sectionView, Node node, String title, Object key) {
+        this(sectionView, node, title, key, false);
+    }
+
+    public SectionPanel(SectionView sectionView, Node node, String title, Object key, boolean autoExpand) {
         this.sectionView = sectionView;
         this.title = title;
         this.node = node;
@@ -78,6 +86,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
                 popup.show(foldButton, e.getX(), e.getY());
             }
         });
+        if(autoExpand) {
+            open();
+        }
     }
 
     private void openCustomPanel() {
