@@ -367,6 +367,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         return xmlTC;
     }
     
+    void setXmlTopComponent(TopComponent xmlTC) {
+        this.xmlTC=xmlTC;
+    }
+    
     void setLastOpenView(int index) {
         lastOpenView=index;
     }

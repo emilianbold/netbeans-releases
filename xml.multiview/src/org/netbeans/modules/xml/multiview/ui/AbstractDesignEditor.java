@@ -18,6 +18,8 @@ import java.awt.BorderLayout;
 import java.beans.*;
 import javax.swing.JComponent;
 import javax.swing.ActionMap;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 
 import org.openide.util.Lookup;
 import org.openide.nodes.*;
@@ -26,6 +28,7 @@ import org.openide.explorer.ExplorerUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
+import org.openide.actions.SaveAction;
 
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
@@ -64,7 +67,12 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
         this.manager = new ExplorerManager();
         
         ActionMap map = this.getActionMap ();
-
+        
+        SaveAction act = (SaveAction)SaveAction.findObject(SaveAction.class);
+        KeyStroke stroke = (KeyStroke)act.getValue(Action.ACCELERATOR_KEY);
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(stroke, "save"); //NOI18N
+        map.put("save", act); //NOI18N
+        
         // following line tells the top component which lookup should be associated with it
         associateLookup (ExplorerUtils.createLookup (manager, map));
         initComponents();

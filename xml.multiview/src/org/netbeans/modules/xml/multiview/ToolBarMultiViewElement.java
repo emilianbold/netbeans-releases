@@ -19,6 +19,7 @@ import org.openide.util.lookup.Lookups;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.*;
 import org.openide.explorer.view.*;
+import org.openide.util.lookup.ProxyLookup;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
@@ -75,11 +76,13 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     }
     
     public javax.swing.Action[] getActions() {
-        return new javax.swing.Action[]{};
+        return dObj.getEditorSupport().getXmlTopComponent().getActions();
     }
     
     public org.openide.util.Lookup getLookup() {
-        return Lookups.fixed(new Object[] {this});
+        return new ProxyLookup(new org.openide.util.Lookup[] {
+            dObj.getNodeDelegate().getLookup()
+        });
     }
     
     public javax.swing.JComponent getToolbarRepresentation() {

@@ -75,11 +75,11 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
 
     public void componentShowing() {
     }
-
+    
     public javax.swing.Action[] getActions() {
-        return new javax.swing.Action[]{};
+        return xmlTopComp.getActions();
     }
-
+    
     public org.openide.util.Lookup getLookup() {
         if (xmlTopComp!=null) 
             return xmlTopComp.getLookup();
@@ -122,8 +122,8 @@ public class XmlMultiViewElement implements MultiViewElement, java.io.Serializab
             if (support!=null) {
                 if (undoRedo==null) undoRedo = support.getUndoRedo0();
                 support.setMVTC(callback.getTopComponent());
+                support.setXmlTopComponent(xmlTopComp);
             }
         }
     }
-
 }
