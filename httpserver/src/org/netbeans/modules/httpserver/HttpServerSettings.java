@@ -73,9 +73,6 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     public static final String PROP_RUNNING            = "running"; // NOI18N
     public static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
 
-    /** bundle to obtain text information from */
-    private static ResourceBundle bundle = NbBundle.getBundle(HttpServerSettings.class);
-
     /** port */
     //  private static int port = 8082; //8080
     private static final int DEFAULT_PORT = 8082;
@@ -122,7 +119,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** human presentable name */
     public String displayName() {
-        return bundle.getString("CTL_HTTP_settings");
+        return NbBundle.getBundle(HttpServerSettings.class).getString("CTL_HTTP_settings");
     }
 
     /** getter for running status */
@@ -161,12 +158,12 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         else {
             currentRetries = 0;
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                               bundle.getString("MSG_HTTP_SERVER_START_FAIL"), // NOI18N
+                                               NbBundle.getBundle(HttpServerSettings.class).getString("MSG_HTTP_SERVER_START_FAIL"), // NOI18N
                                                NotifyDescriptor.Message.WARNING_MESSAGE));
             int p = getPort ();
             if (p < 1024 && inited && Utilities.isUnix()) {
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                               bundle.getString("MSG_onlyRootOnUnix"), // NOI18N
+                                               NbBundle.getBundle(HttpServerSettings.class).getString("MSG_onlyRootOnUnix"), // NOI18N
                                                NotifyDescriptor.WARNING_MESSAGE));
             }
 
