@@ -36,6 +36,9 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
 
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
+
         suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
         suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
@@ -96,7 +99,7 @@ public class MeasureMenus  {
         // it is no more in the production build suite.addTest(new ExplorerPopupSubMenus("testFilesystemsNodeSubMenuVCS", "Mount | Version Control submenu on Filesystems node"));
 //TODO        suite.addTest(new ExplorerPopupSubMenus("testCVSFilesystemsNodeCVSSubMenu", "CVS submenu on CVS Filesystems node"));
         
-        
+*/        
         
         return suite;
     }

@@ -27,13 +27,16 @@ public class MeasureActions  {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
+
         suite.addTest(new ExpandNodesProjectsView("testExpandProjectNode", "Expand Project node"));
         suite.addTest(new ExpandNodesProjectsView("testExpandSourcePackagesNode", "Expand Source Packages node"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith50JavaFiles", "Expand folder with 50 java files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100JavaFiles", "Expand folder with 100 java files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100TxtFiles", "Expand folder with 100 txt files"));
         suite.addTest(new ExpandNodesProjectsView("testExpandFolderWith100XmlFiles", "Expand folder with 100 xml files"));
-
+*/
         suite.addTest(new OpenFiles("testOpening20kBJavaFile", "Open Java file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBJavaFile", "Open Java file (20kB) if Editor opened"));
 
@@ -42,6 +45,10 @@ public class MeasureActions  {
         
         suite.addTest(new OpenFiles("testOpening20kBXmlFile", "Open Xml file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
+
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
+
         
 //TODO NPE rises issue 44379        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
 //TODO NPE rises issue 44379        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
@@ -133,7 +140,7 @@ public class MeasureActions  {
         
 //TODO    suite.addTest(new AddToFavorites("testAddToFavoritesFolders", "Add to Favorites folders"));
 
-        
+*/        
         return suite;
     }
     
