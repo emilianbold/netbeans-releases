@@ -33,6 +33,7 @@ import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataNode;
 
 /*import org.netbeans.modules.web.project.WebModuleUtils;
 import org.netbeans.modules.web.project.WebModule;
@@ -113,14 +114,17 @@ public class JspContextInfoImpl extends JspContextInfo {
      * @return an Image which is dislayed in the explorer for the file. 
      */
     public java.awt.Image getIcon(Document doc, FileObject fo){
-        /*Project project = getProject(doc);
-        if (project != null) {
-            ProjectMember pm = project.getProjectMember(fo);
-            org.openide.nodes.Node node= org.netbeans.api.nodes2looks.Nodes.node
-                (pm, null, ProjectUtil.lookSelector(project.getDescriptor()));            
-            return node.getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-        }*/
-        return null;
+        
+        java.awt.Image icon = null;
+        
+        try {
+            icon = DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
+        }
+        catch(org.openide.loaders.DataObjectNotFoundException e) {
+            e.printStackTrace(System.out);
+        }
+        
+        return icon;
     }
     
    
@@ -132,6 +136,8 @@ public class JspContextInfoImpl extends JspContextInfo {
         return null;
     }
     
+    
+    
     public JSPColoringData getJSPColoringData (Document doc, FileObject fo) {
         TagLibParseSupport sup = getTagLibParseSupport (doc, fo);
         if (sup != null) {
@@ -139,4 +145,13 @@ public class JspContextInfoImpl extends JspContextInfo {
         }
         return null;
     }
+    
+    public org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo getCachedOpenInfo(Document doc, FileObject fo) {
+        TagLibParseSupport sup = getTagLibParseSupport (doc, fo);
+        if (sup != null) {
+            return sup.getCachedOpenInfo();
+        }
+        return null;
+    }
+    
 }

@@ -34,7 +34,7 @@ import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
-
+import java.util.*;
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
@@ -70,6 +70,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     /** Data for completion: TreeMap for standard JSP tags 
     * (tag name, array of attributes). */
     private static TagInfo[] standardTagDatas;
+    
+    /** Data for completion, when the pege is in XML syntax
+     **/
+    private static TagInfo[] xmlTagDatas;
+    
     /** Data for completion: TreeMap for JSP directives
     * (directive name, array of attributes). */
     private static TreeMap directiveJspData;
@@ -91,11 +96,24 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /** Special bracket finder is used when caret is in JSP context */
     private boolean useCustomBracketFinder = true;
+    
+    private boolean isXmlSyntax = false;
 
     /** Creates new HTMLSyntaxSupport */
+    
     public JspSyntaxSupport(BaseDocument doc) {
         super(doc);
         fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        isXmlSyntax = false;
+    }
+    
+    public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
+        this(doc);
+        isXmlSyntax = isXml;
+    }
+    
+    public boolean isXmlSyntax(){
+        return isXmlSyntax;
     }
     
     private JspParserAPI.ParseResult getParseResult() {
@@ -357,11 +375,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllTags(String prefix) {
         List items = new ArrayList();
         
+        
+        
         // standard JSP tags (jsp:)
         initCompletionData();
         if (STANDARD_JSP_PREFIX.equals(prefix)) {
-            for (int i=0; i<standardTagDatas.length; i++) {
-                items.add (standardTagDatas[i]);
+            TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+            for (int i=0; i<stanTagDatas.length; i++) {
+                items.add (stanTagDatas[i]);
             }
         }
 
@@ -405,9 +426,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // attributes for standard JSP tags (jsp:)
         initCompletionData();
         if (STANDARD_JSP_PREFIX.equals(prefix)) {
-            for (int i=0; i<standardTagDatas.length; i++) {
-                if (standardTagDatas[i].getTagName ().equals (tag)) {
-                    TagAttributeInfo[] attrs = standardTagDatas[i].getAttributes ();
+            TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+            for (int i=0; i<stanTagDatas.length; i++) {
+                if (stanTagDatas[i].getTagName ().equals (tag)) {
+                    TagAttributeInfo[] attrs = stanTagDatas[i].getAttributes ();
                     for (int j=0; j<attrs.length; j++) 
                         items.add (attrs[j]);
                     break;
@@ -450,6 +472,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllDirectives() {
         initCompletionData();
         List items = new ArrayList();
+        
+        //Is xml syntax? => return nothing.
+        if (isXmlSyntax) return items;
+        
         TreeMap directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
             directiveData = directiveTagFileData;
@@ -465,6 +491,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllDirectiveAttributes(String directive) {
         initCompletionData();
         List items = new ArrayList();
+        //Is xml syntax? => return nothing.
+        if (isXmlSyntax) return items;
+        
         TreeMap directiveData;
         if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
             directiveData = directiveTagFileData;
@@ -519,7 +548,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     private static void initCompletionData() {
         if (standardTagDatas == null) {
-            standardTagDatas = new TagInfo[] {
+            standardTagDatas = new TagInfo[] {  
               new TagInfo ("fallback", null, TagInfo.BODY_CONTENT_JSP, "alternative text to browsers that do not support OBJECT or EMBED",    // NOI18N
                 null, null, new TagAttributeInfo[] {}),
               new TagInfo ("forward", null, TagInfo.BODY_CONTENT_JSP, "forwards request to another URL",    // NOI18N
@@ -559,8 +588,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                                                      new TagAttributeInfo ("class", false, "", false),      // NOI18N
                                                      new TagAttributeInfo ("id", false, "", false),         // NOI18N
                                                      new TagAttributeInfo ("scope", false, "", false),      // NOI18N
-                                                     new TagAttributeInfo ("type", false, "", false)}),     // NOI18N
+                                                     new TagAttributeInfo ("type", false, "", false)})     // NOI18N
             };
+            
         }
     
         if (directiveJspData == null) {
@@ -581,20 +611,66 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             directiveTagFileData.put("attribute", new String[]      // NOI18N
                     {"description", "fragment", "name", "required", "rtexprvalue", "type"});// NOI18N 
             // fill in the data, both directive names and attribute names should be in alphabetical order
-            directiveTagFileData.put("include", new String[]   // NOI18N
-                {"file"});      // NOI18N
+            directiveTagFileData.put("include", directiveJspData.get("include"));      // NOI18N
             directiveTagFileData.put("tag", new String[]      // NOI18N
                     {"body-content", "description", "display-name","dynamic-attributes", // NOI18N
                      "example",  "import", "isELEnabled", "isScriptingEnabled", // NOI18N
                      "large-icon", "language", "pageEncoding", "small-icon" //NOI18N
                       }); 
-            directiveTagFileData.put("taglib", new String[]    // NOI18N
-            {"prefix", "uri"}); // NOI18N
+            directiveTagFileData.put("taglib", directiveJspData.get("taglib")); // NOI18N
             directiveTagFileData.put("variable", new String[]      // NOI18N
                     {"declare", "description", "fragment","name-from-attribute", // NOI18N
                      "name-given",  "scope", "variable-class" // NOI18N
                       }); 
         }
+        
+        if (xmlTagDatas == null) {
+            String [] attr = (String[])directiveJspData.get("page");
+            TagAttributeInfo[] tagAttrInfos = new TagAttributeInfo [attr.length];
+            for (int i = 0; i < attr.length; i++)
+                tagAttrInfos[i] = new TagAttributeInfo (attr[i], false, "",  false);
+            
+            xmlTagDatas = new TagInfo[] {
+                new TagInfo ("directive.page", null, TagInfo.BODY_CONTENT_EMPTY, "",
+                    null, null, tagAttrInfos),
+                    /*new TagAttributeInfo[] { new TagAttributeInfo ("autoFlush", false, "", false),
+                                                    new TagAttributeInfo ("buffer", false, "", false),
+                                                    new TagAttributeInfo ("contentType", false, "", false),
+                                                    new TagAttributeInfo ("errorPage", false, "", false),
+                                                    new TagAttributeInfo ("extends", false, "", false),
+                                                    new TagAttributeInfo ("import", false, "", false),
+                                                    new TagAttributeInfo ("info", false, "", false),
+                                                    new TagAttributeInfo ("isErrorPage", false, "", false),
+                                                    new TagAttributeInfo ("isThreadSafe", false, "", false),
+                                                    new TagAttributeInfo ("language", false, "", false),
+                                                    new TagAttributeInfo ("pageEncoding", false, "", false),
+                                                    new TagAttributeInfo ("session", false, "", false)}),*/
+               new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+                  null, null, new TagAttributeInfo[] {}),
+               new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+                  null, null, new TagAttributeInfo[] {}),
+               new TagInfo ("scriptlet", null, TagInfo.BODY_CONTENT_JSP, "",                 // NOI18N
+                  null, null, new TagAttributeInfo[] {}),
+            };
+            ArrayList list = new ArrayList();
+            for (int i = 0; i < xmlTagDatas.length; i++)
+                list.add(xmlTagDatas[i]);
+            for (int i = 0; i < standardTagDatas.length; i++)
+                list.add(standardTagDatas[i]);
+         
+            Collections.sort(list,  new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
+                }
+            });
+            xmlTagDatas = new TagInfo[list.size()];
+            for (int i = 0; i < list.size(); i++)
+                xmlTagDatas[i] = (TagInfo)list.get(i);
+        }
+        
+        
+                  
+        
     }
     
     public String toString() {
@@ -1096,9 +1172,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }*/
                 if (STANDARD_JSP_PREFIX.equals (prefix)) { 
                     initCompletionData ();
-                    for (int i=0; i<standardTagDatas.length; i++) {
-                        if (standardTagDatas[i].getTagName ().equals (name)) {
-                            ti = standardTagDatas[i];
+                    TagInfo[] stanTagDatas = isXmlSyntax ? xmlTagDatas : standardTagDatas;
+                    for (int i=0; i<stanTagDatas.length; i++) {
+                        if (stanTagDatas[i].getTagName ().equals (name)) {
+                            ti = stanTagDatas[i];
                             break;
                         }
                     }
@@ -1359,6 +1436,5 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             return (moveCount != 0);
         }
 
-    }
-
+    }    
 }

@@ -51,6 +51,7 @@ import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
+import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 
 /**
  * Editor kit implementation for JSP content type
@@ -160,7 +161,9 @@ public class JSPKit extends NbEditorKit {
 
     /** Create syntax support */
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-        return new JspSyntaxSupport(doc);
+        FileObject fobj = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        return new JspSyntaxSupport(doc, 
+            JspContextInfo.getContextInfo().getCachedOpenInfo(doc, fobj).isXmlSyntax());
     }
 
     /** Returns completion for given language (MIME type).
