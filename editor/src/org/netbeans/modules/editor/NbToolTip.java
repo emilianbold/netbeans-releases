@@ -192,7 +192,10 @@ public class NbToolTip extends FileChangeAdapter {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (Annotation.PROP_SHORT_DESCRIPTION.equals(propName)) {
-                tts.setToolTipText(((Annotation)evt.getSource()).getShortDescription());
+                String tipText = (String)evt.getNewValue();
+                if (tipText != null) {
+                    tts.setToolTipText(tipText);
+                }
                 
             } else if (ToolTipSupport.PROP_STATUS.equals(propName)) {
                 if (((Integer)evt.getNewValue()).intValue() == ToolTipSupport.STATUS_HIDDEN) {
