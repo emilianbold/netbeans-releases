@@ -54,7 +54,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
         new PropertyDescriptor (IDESettings.PROP_USE_PROXY, IDESettings.class,
                                 "getUseProxy", "setUseProxy"),
         new PropertyDescriptor (IDESettings.PROP_PROXY_HOST, IDESettings.class,
-                                "getProxtHost", "setProxtHost"),
+                                "getProxyHost", "setProxyHost"),
         new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
                                 "getProxyPort", "setProxyPort"),
       };
@@ -214,6 +214,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  8    Gandalf   1.7         7/21/99  Ian Formanek    Fixed last change
  *  7    Gandalf   1.6         7/21/99  Ian Formanek    settings for proxy, 
  *       property output detail level hidden
  *  6    Gandalf   1.5         7/20/99  Ian Formanek    Removed 
