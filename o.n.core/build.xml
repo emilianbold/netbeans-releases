@@ -15,31 +15,49 @@ Microsystems, Inc. All Rights Reserved.
 <project name="core" default="nbm" basedir=".">
   <target name="compile">
     <!-- What pitomec...? This should be fixed, probably TSM cannot even access these classes at runtime: -->
-    <javac srcdir="src"
-           destdir="src"
-	   includes="**/org/netbeans/core/execution/TopSecurityManager.java"
-           classpath="../icebrowser/release/modules/ext/icebrowserlitebean.jar:../openide/netbeans/lib/openide.jar:release/lib/ext/regexp.jar:release/lib/ext/jaxp.jar:release/lib/ext/parser.jar:release/lib/ext/jh.jar"/>
+    <javac srcdir="src" destdir="src">
+      <include name="**/org/netbeans/core/execution/TopSecurityManager.java"/>
+      <classpath>
+        <pathelement location="../icebrowser/release/modules/ext/icebrowserlitebean.jar"/>
+	<pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="release/lib/ext/regexp.jar"/>
+	<pathelement location="release/lib/ext/jaxp.jar"/>
+	<pathelement location="release/lib/ext/parser.jar"/>
+	<pathelement location="release/lib/ext/jh.jar"/>
+      </classpath>
+    </javac>
     <ant dir="../core" target="compile-1.2.2">
       <property name="build.compile" value="classic"/>
     </ant>
-    <javac srcdir="src"
-           destdir="src"
-	   excludes="**/org/netbeans/core/execution/TopSecurityManager.java **/org/netbeans/core/ui/NewNewAction.java"
-           classpath="../openide/netbeans/lib/openide.jar:release/lib/ext/regexp.jar:release/lib/ext/jaxp.jar:release/lib/ext/parser.jar:release/lib/ext/jh.jar"/>
-    <javac srcdir="libsrc"
-           destdir="libsrc"/>
+    <javac srcdir="src" destdir="src">
+      <exclude name="**/org/netbeans/core/execution/TopSecurityManager.java"/>
+      <exclude name="**/org/netbeans/core/ui/NewNewAction.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="release/lib/ext/regexp.jar"/>
+	<pathelement location="release/lib/ext/jaxp.jar"/>
+	<pathelement location="release/lib/ext/parser.jar"/>
+	<pathelement location="release/lib/ext/jh.jar"/>
+      </classpath>
+    </javac>
+    <javac srcdir="libsrc" destdir="libsrc"/>
   </target>
   <target name="compile-1.2.2">
     <!-- Compiler bugs. -->
-    <javac srcdir="src"
-           destdir="src"
-	   includes="**/org/netbeans/core/ui/NewNewAction.java"
-           classpath="../openide/netbeans/lib/openide.jar:release/lib/ext/regexp.jar:release/lib/ext/jaxp.jar:release/lib/ext/parser.jar:release/lib/ext/jh.jar"/>
+    <javac srcdir="src" destdir="src">
+      <include name="**/org/netbeans/core/ui/NewNewAction.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="release/lib/ext/regexp.jar"/>
+	<pathelement location="release/lib/ext/jaxp.jar"/>
+	<pathelement location="release/lib/ext/parser.jar"/>
+	<pathelement location="release/lib/ext/jh.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="tojar">
     <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
-    <tojar srcdir="src"
-           unpackeddir="tojar"/>
+    <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/lib/ext"/>
@@ -47,19 +65,18 @@ Microsystems, Inc. All Rights Reserved.
          basedir="src"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
+    <!-- XXX does this really need to be built? -->
     <jar jarfile="netbeans/lib/ext/regexp.jar"
          basedir="libsrc"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
   <target name="release">
-    <copydir src="release"
-             dest="netbeans"
-	     excludes="**/lib/ext/regexp.jar"/>
+    <copydir src="release" dest="netbeans">
+      <exclude name="**/lib/ext/regexp.jar"/>
+    </copydir>
   </target>
   <target name="nbm" depends="jars,release">
-    <zip zipfile="core.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="core.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>

@@ -14,9 +14,12 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="debuggercore" default="nbm" basedir=".">
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
@@ -27,8 +30,6 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="nbm" depends="jars">
-    <zip zipfile="debuggercore.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="debuggercore.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>

@@ -14,13 +14,23 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="editor" default="nbm" basedir=".">
   <target name="compile">
-    <javac srcdir="libsrc"
-           destdir="libsrc"
-           classpath="../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar:../core/release/lib/ext/regexp.jar"/>
-    <!-- XXX illegal dependency on core! -->
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../core/netbeans/lib/developer.jar:libsrc:../openide/netbeans/lib/openide.jar:../openidex/netbeans/modules/openidex.jar:../core/release/lib/ext/regexp.jar"/>
+    <javac srcdir="libsrc" destdir="libsrc">
+      <classpath>
+       <pathelement location="../openide/netbeans/lib/openide.jar"/>
+       <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+       <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+       <!-- XXX illegal dependency on core! -->
+       <pathelement location="../core/netbeans/lib/developer.jar"/>
+       <pathelement location="libsrc"/>
+       <pathelement location="../openide/netbeans/lib/openide.jar"/>
+       <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
+       <pathelement location="../core/release/lib/ext/regexp.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
@@ -36,12 +46,9 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="release">
-    <copydir src="release"
-             dest="netbeans"/>
+    <copydir src="release" dest="netbeans"/>
   </target>
   <target name="nbm" depends="jars,release">
-    <zip zipfile="editor.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="editor.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>

@@ -15,19 +15,26 @@ Microsystems, Inc. All Rights Reserved.
 <project name="beans" default="nbm" basedir=".">
   <target name="compile">
     <!-- Placate compiler. -->
-    <javac srcdir="src"
-           destdir="src"
-	   includes="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"
-           classpath="../openide/netbeans/lib/openide.jar:../java/netbeans/modules/java.jar:{java.home}/lib/tools.jar"/>
-    <javac srcdir="src"
-           destdir="src"
-	   excludes="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"
-           classpath="../openide/netbeans/lib/openide.jar:../java/netbeans/modules/java.jar:{java.home}/lib/tools.jar"/>
+    <javac srcdir="src" destdir="src">
+      <include name="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="../java/netbeans/modules/java.jar"/>
+	<pathelement location="{java.home}/lib/tools.jar"/>
+      </classpath>
+    </javac>
+    <javac srcdir="src" destdir="src">
+      <exclude name="**/org/netbeans/modules/beans/beaninfo/GenerateBeanInfoAction.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+	<pathelement location="../java/netbeans/modules/java.jar"/>
+	<pathelement location="{java.home}/lib/tools.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="tojar">
     <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar"/>
-    <tojar srcdir="src"
-           unpackeddir="tojar"/>
+    <tojar srcdir="src" unpackeddir="tojar"/>
   </target>
   <target name="jars" depends="compile,tojar">
     <mkdir dir="netbeans/modules"/>
@@ -38,8 +45,6 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="nbm" depends="jars">
-    <zip zipfile="beans.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="beans.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>

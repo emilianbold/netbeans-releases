@@ -12,11 +12,15 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- ToDo: may need to ensure that SearchTask.java is compiled before Utilities2.java -->
+<!--       due to an obscure 1.3 compiler bug                                         -->
 <project name="openidex" default="nbm" basedir=".">
   <target name="compile">
-    <javac srcdir="src"
-           destdir="src"
-           classpath="../openide/netbeans/lib/openide.jar"/>
+    <javac srcdir="src" destdir="src">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules"/>
@@ -27,8 +31,6 @@ Microsystems, Inc. All Rights Reserved.
 	 compress="false"/>
   </target>
   <target name="nbm" depends="jars">
-    <zip zipfile="openidex.nbm"
-         includes="netbeans/"
-	 basedir="."/>
+    <zip zipfile="openidex.nbm" includes="netbeans/" basedir="."/>
   </target>
 </project>
