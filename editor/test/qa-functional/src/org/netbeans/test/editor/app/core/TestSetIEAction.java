@@ -28,6 +28,8 @@ import javax.swing.SwingUtilities;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.editor.java.JavaIndentEngine;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.test.editor.app.Main;
@@ -36,6 +38,7 @@ import org.netbeans.test.editor.app.core.properties.BadPropertyNameException;
 import org.netbeans.test.editor.app.core.properties.Properties;
 import org.netbeans.test.editor.app.gui.actions.TestDeleteAction;
 import org.netbeans.test.editor.app.gui.tree.ActionsCache;
+import org.openide.util.Lookup;
 import org.w3c.dom.Element;
 
 /**
@@ -100,33 +103,33 @@ public class TestSetIEAction extends TestSetAction {
     
     public void perform() {
         super.perform();
-        Scheduler.getDefault().addTask(new Thread() {
-            public void run() {
-                IndentEngine toSet = getIndentEngine();
-                
-                if (toSet == null) {
-                    System.err.println("TestSetIEAction: perform: Trying to set null indent engine!");
-                    return;
-                }
-                
-                EditorKit kit = Main.frame.getEditor().getUI().getEditorKit(Main.frame.getEditor());
-                
-                if (kit == null) {
-                    System.err.println("TestSetIEAction: perform: kit == null!");
-                    return;
-                }
-                
-                Class kitClass = kit.getClass();
-                
-                BaseOptions options = BaseOptions.getOptions(kitClass);
-                
-                if (options != null) {
-                    options.setIndentEngine(toSet);
-                } else {
-                    System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
-                }
-            }
-        });
+        IndentEngine toSet = getIndentEngine();
+        
+        if (toSet == null) {
+            System.err.println("TestSetIEAction: perform: Trying to set null indent engine!");
+            return;
+        }
+        
+        //        EditorKit kit = Main.frame.getEditor().getUI().getEditorKit(Main.frame.getEditor());
+        EditorKit kit = Main.frame.getEditor().getEditorKit();
+        
+        if (kit == null) {
+            System.err.println("TestSetIEAction: perform: kit == null!");
+            return;
+        }
+        
+        Class kitClass = kit.getClass();
+        
+        BaseOptions options = BaseOptions.getOptions(kitClass);
+        
+        if (options != null) {
+//HACK --> workaround to Issue #25784                        
+            Lookup.getDefault().lookup(toSet.getClass());
+            
+            options.setIndentEngine(toSet);
+        } else {
+            System.err.println("TestSetIEAction: perform kit class " + kitClass + " not found.");
+        }
     }
     
     /** Getter for property IndentEngine.
@@ -205,5 +208,19 @@ public class TestSetIEAction extends TestSetAction {
             a.add(item.getName());
         }
         return (String[])(a.toArray(new String[a.size()]));
+    }
+    
+    public static void main(String[] args) {
+        TestSetIEAction act=new TestSetIEAction("action");
+        String[] names=act.getIndentEnginesNames();
+        IndentEngine eng;
+        String id=null;
+        for (int i=0;i < names.length;i++) {
+            eng=act.findIndentEngine(names[i]);
+            Lookup.Template tmp = new Lookup.Template(null, null, eng);
+            Lookup.Item item = Lookup.getDefault().lookupItem(tmp);
+            if (item != null) id = item.getId();
+            System.err.println("ID for "+names[i]+": "+id);
+        }
     }
 }
