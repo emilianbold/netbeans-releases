@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import com.netbeans.ide.nodes.Node;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
@@ -109,7 +110,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     newComponents[newComponents.length - 1] = comp;
     comp.initParent (this);
     subComponents = newComponents;
-    getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
+    getNodeReference ().getChildren ().add (new Node[] { new RADComponentNode (comp) });
   }
 
   public void remove (RADVisualComponent comp) {
@@ -142,6 +143,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  11   Gandalf   1.10        5/16/99  Ian Formanek    
  *  10   Gandalf   1.9         5/15/99  Ian Formanek    
  *  9    Gandalf   1.8         5/15/99  Ian Formanek    
  *  8    Gandalf   1.7         5/14/99  Ian Formanek    
