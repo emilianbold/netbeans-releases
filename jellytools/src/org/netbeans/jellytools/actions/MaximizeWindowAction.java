@@ -85,11 +85,16 @@ public class MaximizeWindowAction extends Action {
      * which is activated before the action.
      * @param tco top component operator which should be activated and maximized
      */
-    public void performAPI(TopComponentOperator tco) {
+    public void performAPI(final TopComponentOperator tco) {
         tco.makeComponentVisible();
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
-        ModeImpl mode = (ModeImpl)wm.findMode((TopComponent)tco.getSource());
-        wm.setMaximizedMode(mode);
+        // run in dispatch thread
+        tco.getQueueTool().invokeSmoothly(new Runnable() {
+            public void run() {
+                WindowManagerImpl wm = WindowManagerImpl.getInstance();
+                ModeImpl mode = (ModeImpl)wm.findMode((TopComponent)tco.getSource());
+                wm.setMaximizedMode(mode);
+            }
+        });
     }
     
     /** Throws UnsupportedOperationException because MaximizeWindowAction doesn't have

@@ -295,7 +295,13 @@ public class PropertySheetOperator extends TopComponentOperator {
      */
     public void close() {
         if(getSource() instanceof TopComponent) {
-            if(((TopComponent)getSource()).canClose()) {
+            // run in dispatch thread
+            boolean canClose = runMapping(new MapBooleanAction("canClose") {
+                public boolean map() {
+                    return ((TopComponent)getSource()).canClose();
+                }
+             });
+            if(canClose) {
                 // if it is regular TopComponent and it can be closed
                 super.close();
                 return;
@@ -323,7 +329,7 @@ public class PropertySheetOperator extends TopComponentOperator {
         // frame in SDI.
         Frame[] frames;
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        if(mwo.isMDI()) {
+        if(mwo.isCompactMode()) {
             frames = new Frame[] {(Frame)mwo.getSource()};
         } else {
             frames = Frame.getFrames();

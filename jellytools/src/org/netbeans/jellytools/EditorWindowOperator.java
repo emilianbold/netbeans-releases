@@ -20,6 +20,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.tabcontrol.TabbedAdapter;
 import org.netbeans.core.windows.view.ui.tabcontrol.ViewTabUI;
 import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
@@ -76,8 +77,7 @@ public class EditorWindowOperator extends JFrameOperator {
      * documents and no block further execution.
      */
     public void closeDiscard() {
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
-        Iterator iter = mode.getOpenedTopComponents().iterator();
+        Iterator iter = findEditorMode().getOpenedTopComponents().iterator();
         while(iter.hasNext()) {
             EditorOperator.close((TopComponent)iter.next(), false);
         }
@@ -113,8 +113,14 @@ public class EditorWindowOperator extends JFrameOperator {
      * @see EditorOperator
      */
     public EditorOperator getEditor() {
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
-        return new EditorOperator(mode.getSelectedTopComponent().getName());
+        final ModeImpl mode = findEditorMode();
+        // run in dispatch thread
+        String name = (String)getQueueTool().invokeSmoothly(new QueueTool.QueueAction("getSelectedTopComponent().getName()") {    // NOI18N
+            public Object launch() {
+                return mode.getSelectedTopComponent().getName();
+            }
+        });
+        return new EditorOperator(name);
     }
     
     /** Selects page with given label and returns EditorOperator instance of
@@ -189,7 +195,7 @@ public class EditorWindowOperator extends JFrameOperator {
      */
     public void selectDocument(int index) {
         clickControlButton(1);
-        JTableOperator tableOper = new JTableOperator(new JDialogOperator(this));
+        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
         tableOper.selectCell(index, 0);
     }
 
@@ -199,7 +205,7 @@ public class EditorWindowOperator extends JFrameOperator {
      */
     public void selectDocument(String name) {
         clickControlButton(1);
-        JTableOperator tableOper = new JTableOperator(new JDialogOperator(this));
+        JTableOperator tableOper = new JTableOperator(MainWindowOperator.getDefault());
         int row = tableOper.findCellRow(name);
         if(row > -1) {
             tableOper.selectCell(row, 0);
@@ -236,5 +242,17 @@ public class EditorWindowOperator extends JFrameOperator {
     /** Performs verification by accessing all sub-components */    
     public void verify() {
         getEditor().verify();
+    }
+    
+    /** Finds editor mode within IDE window system.
+     * @return editor mode instance
+     */
+    private ModeImpl findEditorMode() {
+        // run in dispatch thread
+        return (ModeImpl)getQueueTool().invokeSmoothly(new QueueTool.QueueAction("findMode") {    // NOI18N
+            public Object launch() {
+                return WindowManagerImpl.getInstance().findMode("editor"); //NOI18N
+            }
+        });
     }
 }
