@@ -118,8 +118,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- If #2, #3, or #4 are seen to fail, just add them above, no big deal. -->
                 <!-- But if #6 is seen failing, please file a bug report, that is more serious. -->
                 <include name="org/openide/nodes/*.class"/>
-                <!-- #28198 -->
-                <exclude name="org/openide/nodes/FilterNodeTest.class/testEquals"/>
                 <include name="org/openide/options/*Test.class"/>
                 <include name="org/openide/util/*.class"/>
                 <!-- excluded, needs an ide executor -->
@@ -176,8 +174,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- Nodes -->
                 <!-- include name="org/openide/nodes/FilterNodeTest.class"/ -->
                 <include name="org/openide/nodes/CookieSetTest*class"/>
-                <!-- #28198 -->
-                <include name="org/openide/nodes/FilterNodeTest.class/testEquals"/>
                 <!-- #24851: -->
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
