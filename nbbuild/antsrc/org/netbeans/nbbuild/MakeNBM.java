@@ -252,6 +252,7 @@ public class MakeNBM extends Task {
     private String needsrestart = null;
     private String moduleauthor = null;
     private String releasedate = null;
+    private String jarSignerMaxMemory = "96m";
     private Blurb license = null;
     private Blurb description = null;
     private Blurb notification = null;
@@ -310,6 +311,10 @@ public class MakeNBM extends Task {
     /** Name of module's author. */
     public void setModuleauthor (String author) {
         this.moduleauthor = author;
+    }
+    /** Maximum memory allowed to be used by jarsigner task. Default is 96 MB. */
+    public void setJarSignerMaxMemory (String jsmm) {
+        this.jarSignerMaxMemory = jsmm;
     }
     /** Release date of NBM. */
     public void setReleasedate (String date) {
@@ -645,6 +650,7 @@ public class MakeNBM extends Task {
                 signjar.setStorepass (signature.storepass);
                 signjar.setAlias (signature.alias);
                 signjar.setLocation(getLocation());
+                signjar.setMaxmemory(this.jarSignerMaxMemory);
                 signjar.init ();
                 signjar.execute ();
             }
