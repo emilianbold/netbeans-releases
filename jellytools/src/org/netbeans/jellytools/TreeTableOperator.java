@@ -14,7 +14,9 @@ package org.netbeans.jellytools;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Rectangle;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.tree.TreePath;
@@ -28,6 +30,7 @@ import org.netbeans.jemmy.drivers.SupportiveDriver;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JScrollPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.util.EmptyVisualizer;
@@ -268,6 +271,34 @@ public class TreeTableOperator extends JTableOperator {
                                                 (int)point.getX(), 
                                                 (int)point.getY(), 
                                                 mouseButton));
+        }
+        
+        /**
+         * Scrolls to a path if the tree is on a JScrollPane component.
+         * @param path TreePath where to scroll
+         */
+        public void scrollToPath(TreePath path) {
+            makeComponentVisible();
+            //try to find JScrollPane under.
+            JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
+            					       JScrollPaneFinder(ComponentSearcher.
+            								 getTrueChooser("JScrollPane")));
+            if(scroll == null) {
+                return;
+            }
+            JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
+            scroller.copyEnvironment(this);
+            scroller.setVisualizer(new EmptyVisualizer());
+            Rectangle rect = getPathBounds(path);
+            if(rect != null) {
+                scroller.scrollToComponentRectangle(getRealOperator().getSource(), 
+                                                    (int)rect.getX(),
+                                                    (int)rect.getY(),
+                                                    (int)rect.getWidth(),
+                                                    (int)rect.getHeight());
+            } else {
+                throw(new NoSuchPathException(path));
+            }
         }
     }
     
