@@ -29,6 +29,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,8 +57,12 @@ public class Templates {
      * WizardIteartor associated with particular template.
      */
     public static FileObject getTemplate( WizardDescriptor wizardDescriptor ) {
+        assert wizardDescriptor != null : "wizardDescriptor cannot be null.";
         if ( wizardDescriptor instanceof TemplateWizard ) {
-            return ((TemplateWizard)wizardDescriptor).getTemplate().getPrimaryFile();            
+            DataObject template = ((TemplateWizard)wizardDescriptor).getTemplate();
+            if (template != null) {
+                return template.getPrimaryFile();            
+            }
         }
         return (FileObject) wizardDescriptor.getProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE );
     }

@@ -58,7 +58,10 @@ public final class NewFileWizard extends TemplateWizard {
                         setCurrentProject (newProject);
                         try {
                             //reload (DataObject.find (Templates.getTemplate (NewFileWizard.this)));
-                            Hacks.reloadPanelsInWizard (NewFileWizard.this, DataObject.find (Templates.getTemplate (NewFileWizard.this)));
+                            // bugfix #44481, check if the template is null
+                            if (Templates.getTemplate (NewFileWizard.this) != null) {
+                                Hacks.reloadPanelsInWizard (NewFileWizard.this, DataObject.find (Templates.getTemplate (NewFileWizard.this)));
+                            }
                         } catch (DataObjectNotFoundException ex) {
                             ex.printStackTrace();
                         }
