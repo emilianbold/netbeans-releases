@@ -396,7 +396,6 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     public List/*WsCompileEditorSupport.ServiceSettings*/ getServices() {
         List serviceList = new ArrayList();
         
-        // Implementation from getServiceClients() -- FIXME
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagName(WebServicesConstants.WEB_SERVICES);
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -473,7 +472,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     }
     
     // Implementation of WebServiceClientSupportImpl
-    public void addServiceClient(String serviceName, String packageName, FileObject configFile, StubDescriptor stubDescriptor) {
+    public void addServiceClient(String serviceName, String packageName, String sourceUrl, FileObject configFile, StubDescriptor stubDescriptor) {
         // !PW FIXME I have two concerns with this implementation:
         // 1. Since it modifies project.xml, I suspect it should be acquiring
         //    ProjectManager.mutex() for write access.
@@ -531,6 +530,9 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             Element clientElementStubType = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_STUB_TYPE);
             clientElement.appendChild(clientElementStubType);
             clientElementStubType.appendChild(doc.createTextNode(stubDescriptor.getName()));
+            Element clientElementSourceUrl = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, CLIENT_SOURCE_URL);
+            clientElement.appendChild(clientElementSourceUrl);
+            clientElementSourceUrl.appendChild(doc.createTextNode(sourceUrl));
             helper.putPrimaryConfigurationData(data, true);
             needsSave = true;
         }
@@ -910,6 +912,100 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         return result;
     }
 
+    public String getWsdlSource(String serviceName) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        String wsdlSource = null;
+        
+        Element clientElement = getWebServiceClientNode(data, serviceName);
+        if(clientElement != null) {
+            NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
+                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            if(fromWsdlList.getLength() == 1) {
+                Element fromWsdlElement = (Element) fromWsdlList.item(0);
+                NodeList nl = fromWsdlElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        wsdlSource = n.getNodeValue();
+                    }
+                }
+            }
+        }
+        
+        return wsdlSource;
+    }
+    
+    public void setWsdlSource(String serviceName, String wsdlSource) {
+        Element data = helper.getPrimaryConfigurationData(true);
+        Document doc = data.getOwnerDocument();
+        boolean needsSave = false;
+
+        Element clientElement = getWebServiceClientNode(data, serviceName);
+        if(clientElement != null) {
+            NodeList fromWsdlList = clientElement.getElementsByTagNameNS(
+                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.CLIENT_SOURCE_URL);
+            if(fromWsdlList.getLength() > 0) {
+                Element fromWsdlElement = (Element) fromWsdlList.item(0);
+                NodeList nl = fromWsdlElement.getChildNodes();
+                if(nl.getLength() > 0) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    n.setNodeValue(wsdlSource);
+                } else {
+                    fromWsdlElement.appendChild(doc.createTextNode(wsdlSource));
+                }
+            } else {
+                Element clientElementSourceUrl = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, CLIENT_SOURCE_URL);
+                clientElement.appendChild(clientElementSourceUrl);
+                clientElementSourceUrl.appendChild(doc.createTextNode(wsdlSource));
+            }
+            
+            needsSave = true;
+        }
+        
+        // !PW Save the project if we were able to make the change.
+        if(needsSave) {
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } catch(IOException ex) {
+                NotifyDescriptor desc = new NotifyDescriptor.Message(
+                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(desc);
+            }
+        }
+    }
+    
+    private Element getWebServiceClientNode(Element data, String serviceName) {
+        Element clientElement = null;
+        NodeList nodes = data.getElementsByTagName(WebServicesConstants.WEB_SERVICE_CLIENTS);
+        
+        if(nodes.getLength() != 0) {
+            Element clientElements = (Element) nodes.item(0);
+            NodeList clientNameList = clientElements.getElementsByTagNameNS(
+                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
+            for(int i = 0; i < clientNameList.getLength(); i++ ) {
+                Element clientNameElement = (Element) clientNameList.item(i);
+                NodeList nl = clientNameElement.getChildNodes();
+                if(nl.getLength() == 1) {
+                    org.w3c.dom.Node n = nl.item(0);
+                    if(n.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+                        String name = n.getNodeValue();
+                        if(serviceName.equals(name)) {
+                            org.w3c.dom.Node node = clientNameElement.getParentNode();
+                            clientElement = (node instanceof Element) ? (Element) node : null;
+                            break;
+                        }
+                    } else {
+                        // !PW FIXME node is wrong type?! - log message or trace?
+                    }
+                }
+            }
+        }
+        
+        return clientElement;
+    }
+    
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
         StubDescriptor.SEI_SERVICE_STUB,
