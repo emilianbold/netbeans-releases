@@ -675,7 +675,7 @@ public class RADComponent {
     private IndexedPropertyDescriptor desc;
     
     RADIndexedPropertyImpl (IndexedPropertyDescriptor desc) {
-      super (desc.getPropertyType (), desc.getIndexedPropertyType ());
+      super (getIndexedType (desc), desc.getIndexedPropertyType ());
       this.desc = desc;
       PropertyEditor[] allEditors = FormPropertyEditorManager.getAllEditors (desc.getIndexedPropertyType (), false);
       if ((allEditors != null) && (allEditors.length > 0)) {
@@ -863,7 +863,23 @@ public class RADComponent {
 //      return java.beans.PropertyEditorManager.findEditor (elementType);
 //    }
   }
-  
+
+  /** Utility method for obtaining array type for indexed properties */  
+  private static Class getIndexedType (IndexedPropertyDescriptor desc) {
+    Class valueType = desc.getPropertyType ();
+    if (valueType == null) {
+      try {
+        valueType = org.openide.TopManager.getDefault ().systemClassLoader ().loadClass (
+          "[L" + desc.getIndexedPropertyType ().getName () + ";"
+        );
+      } catch (Exception e) {
+        valueType = Object[].class;
+      }
+    }
+    return valueType;
+  }
+
+
   abstract class EventProperty extends PropertySupport.ReadWrite {
     EventsList.Event event;
 
@@ -940,6 +956,9 @@ public class RADComponent {
 
 /*
  * Log
+ *  27   Gandalf   1.26        7/2/99   Ian Formanek    Fixed bug #2310 - 
+ *       Selecting multiple components in Form Window (Hold CTRL) throws an 
+ *       exception
  *  26   Gandalf   1.25        6/30/99  Ian Formanek    Added hasHiddenState 
  *       method
  *  25   Gandalf   1.24        6/30/99  Ian Formanek    AuxiliaryValue -> 
