@@ -1189,36 +1189,11 @@ public class BaseOptions extends OptionSupport {
         Boolean val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_ENABLE);
         map.put(SettingsNames.CODE_FOLDING_ENABLE, val);
         
-        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_METHOD);
-        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_METHOD, val);
-
-        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS);
-        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS, val);
-
-        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT);
-        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT, val);
-
-        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC);
-        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC, val);
-
-        val = (Boolean)getSettingValue(SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
-        map.put(SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, val);
-        
         return map;
     }
     
     public void setCodeFoldingProps(Map props){
         String name = SettingsNames.CODE_FOLDING_ENABLE;
-        setSettingValue(name, props.get(name));
-        name = SettingsNames.CODE_FOLDING_COLLAPSE_METHOD;
-        setSettingValue(name, props.get(name));
-        name = SettingsNames.CODE_FOLDING_COLLAPSE_INNERCLASS;
-        setSettingValue(name, props.get(name));
-        name = SettingsNames.CODE_FOLDING_COLLAPSE_IMPORT;
-        setSettingValue(name, props.get(name));
-        name = SettingsNames.CODE_FOLDING_COLLAPSE_JAVADOC;
-        setSettingValue(name, props.get(name));
-        name = SettingsNames.CODE_FOLDING_COLLAPSE_INITIAL_COMMENT;
         setSettingValue(name, props.get(name));
     }
         

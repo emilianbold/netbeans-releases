@@ -13,31 +13,34 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
-import javax.swing.KeyStroke;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.MultiKeymap;
 import org.netbeans.editor.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 import org.openide.util.actions.SystemAction;
 
 /**
+ *  Code Folding action displayed under Menu/View/
  *
- * @author  Martin Roskanin
+ *  @author  Martin Roskanin
  */
-public abstract class NbCodeFoldingAction extends SystemAction {
+public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu{
 
+    
     /** Creates a new instance of NbCodeFoldingAction */
     public NbCodeFoldingAction() {
     }
@@ -46,8 +49,10 @@ public abstract class NbCodeFoldingAction extends SystemAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
-    /** Delegates action to specific folding action */
-    protected abstract void delegateAction(ActionEvent evt, JTextComponent target);
+    public String getName() {
+        return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
+            "generate-fold-popup"); //NOI18N
+    }        
 
     private static boolean isOpen(Document doc){
         if (doc==null) return false;
@@ -68,129 +73,51 @@ public abstract class NbCodeFoldingAction extends SystemAction {
         return false;
     }
 
+    /** Get a menu item that can present this action in a {@link javax.swing.JMenu}.
+    * @return the representation for this action
+    */
+    public JMenuItem getMenuPresenter(){
+        return new CodeFoldsMenu(getName());
+    }
+    
     private static JTextComponent getComponent(){
         return Utilities.getLastActiveComponent();
     }
     
     public void actionPerformed (java.awt.event.ActionEvent ev){
-        JTextComponent component = Utilities.getLastActiveComponent();
-        if (component !=null && isOpen(component.getDocument())) {
-            delegateAction(ev, component);
-        }
-    }
-
-    private static Action getDelegateAction(String actionName){
-        BaseKit bk = BaseKit.getKit(BaseKit.class);
-        if (bk!=null){
-            return bk.getActionByName(actionName);
-        }
-        return null;
     }
     
-    private static KeyStroke getKeystroke(Action a){
-        BaseKit bk = BaseKit.getKit(BaseKit.class);
-        if (bk!=null){
-            MultiKeymap mkm = bk.getKeymap();
-            KeyStroke[] ks = mkm.getKeyStrokesForAction(a);
-            if (ks != null && ks.length > 0) {
-                for (int i = 0; i<ks.length; i++){
-                    if ((ks[i].getKeyCode() == KeyEvent.VK_MULTIPLY) ||
-                        ks[i].getKeyCode() == KeyEvent.VK_ADD){
-                            return ks[i];
+    private BaseKit getKit(){
+        JTextComponent component = getComponent();
+        return (component == null) ? BaseKit.getKit(NbEditorKit.class) : Utilities.getKit(component);
+    }
+
+    
+    public class CodeFoldsMenu extends JMenu{
+        public CodeFoldsMenu(){
+            super();
+        }
+        
+        public CodeFoldsMenu(String s){
+            super(s);
+        }
+        
+        public JPopupMenu getPopupMenu(){
+            JPopupMenu pm = super.getPopupMenu();
+            pm.removeAll();
+            Action action = getKit().getActionByName(NbEditorKit.generateFoldPopupAction);
+            if (action instanceof BaseAction){
+                JTextComponent component = Utilities.getLastActiveComponent();
+                JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(component);
+                if (menu!=null){
+                    Component comps[] = menu.getMenuComponents();
+                    for (int i=0; i<comps.length; i++){
+                        pm.add(comps[i]);
                     }
                 }
-                return ks[0];
-            }            
-        }
-        return null;
-    }
-
-    
-    public static class CollapseAll extends NbCodeFoldingAction{
-        public CollapseAll(){
-        }
-
-        public boolean isEnabled(){
-            putValue(Action.ACCELERATOR_KEY, getKeystroke(getDelegateAction(BaseKit.collapseAllFoldsAction)));
-            return super.isEnabled();
-        }
-        
-        public String getName() {
-            return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
-                "collapse-all"); //NOI18N
-        }        
-
-        protected void delegateAction(ActionEvent evt, JTextComponent target){
-            Action action = getDelegateAction(BaseKit.collapseAllFoldsAction);
-            if (action instanceof BaseAction){
-                ((BaseAction)action).actionPerformed(evt, target);
             }
-        }
-    }
-    
-    public static class CollapseFold extends NbCodeFoldingAction{
-        public CollapseFold(){
-        }
-
-        public boolean isEnabled(){
-            putValue(Action.ACCELERATOR_KEY, getKeystroke(getDelegateAction(BaseKit.collapseFoldAction)));
-            return super.isEnabled();
-        }
-        
-        public String getName() {
-            return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
-                "collapse-fold"); //NOI18N
-        }        
-
-        protected void delegateAction(ActionEvent evt, JTextComponent target){
-            Action action = getDelegateAction(BaseKit.collapseFoldAction);
-            if (action instanceof BaseAction){
-                ((BaseAction)action).actionPerformed(evt, target);
-            }
-        }
-    }
-
-    public static class ExpandAll extends NbCodeFoldingAction{
-        public ExpandAll(){
-        }
-
-        public boolean isEnabled(){
-            putValue(Action.ACCELERATOR_KEY, getKeystroke(getDelegateAction(BaseKit.expandAllFoldsAction)));
-            return super.isEnabled();
-        }
-        
-        public String getName() {
-            return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
-                "expand-all"); //NOI18N
-        }        
-
-        protected void delegateAction(ActionEvent evt, JTextComponent target){
-            Action action = getDelegateAction(BaseKit.expandAllFoldsAction);
-            if (action instanceof BaseAction){
-                ((BaseAction)action).actionPerformed(evt, target);
-            }
-        }
-    }
-    
-    public static class ExpandFold extends NbCodeFoldingAction{
-        public ExpandFold(){
-        }
-
-        public boolean isEnabled(){
-            putValue(Action.ACCELERATOR_KEY, getKeystroke(getDelegateAction(BaseKit.expandFoldAction)));
-            return super.isEnabled();
-        }
-        
-        public String getName() {
-            return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
-                "expand-fold"); //NOI18N
-        }        
-
-        protected void delegateAction(ActionEvent evt, JTextComponent target){
-            Action action = getDelegateAction(BaseKit.expandFoldAction);
-            if (action instanceof BaseAction){
-                ((BaseAction)action).actionPerformed(evt, target);
-            }
+            pm.pack();
+            return pm;
         }
     }
     

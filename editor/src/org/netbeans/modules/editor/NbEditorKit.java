@@ -622,7 +622,8 @@ public class NbEditorKit extends ExtKit {
 
         private void addAcceleretors(Action a, JMenuItem item, JTextComponent target){
             // Try to get the accelerator
-            Keymap km = target.getKeymap();
+            Keymap km = (target == null) ? BaseKit.getKit(BaseKit.class).getKeymap() :
+                    target.getKeymap();
             if (km != null) {
                 KeyStroke[] keys = km.getKeyStrokesForAction(a);
                 if (keys != null && keys.length > 0) {
@@ -653,8 +654,10 @@ public class NbEditorKit extends ExtKit {
         
         protected void addAction(JTextComponent target, JMenu menu,
         String actionName) {
-            BaseKit kit = Utilities.getKit(target);
+            BaseKit kit = (target == null) ? BaseKit.getKit(BaseKit.class) : Utilities.getKit(target);
             if (kit == null) return;
+            boolean foldingEnabled = (target == null) ? false :
+                ((Boolean)Settings.getValue(Utilities.getKitClass(target), SettingsNames.CODE_FOLDING_ENABLE)).booleanValue();
             Action a = kit.getActionByName(actionName);
             if (a != null) {
                 JMenuItem item = null;
@@ -667,7 +670,7 @@ public class NbEditorKit extends ExtKit {
                         item = new JMenuItem(itemText);
                         item.addActionListener(a);
                         addAcceleretors(a, item, target);
-                        item.setEnabled(a.isEnabled());
+                        item.setEnabled(a.isEnabled() && foldingEnabled);
                         Object helpID = a.getValue ("helpID");
                         if (helpID != null && (helpID instanceof String))
                             item.putClientProperty ("HelpID", helpID);
@@ -683,15 +686,17 @@ public class NbEditorKit extends ExtKit {
             }
         }        
         
+        protected void addAdditionalItems(JTextComponent target, JMenu menu){
+        }
+        
         public JMenuItem getPopupMenuItem(JTextComponent target) {
             JMenu menu = new JMenu(org.openide.util.NbBundle.getBundle (NbEditorKit.class).
                 getString(generateFoldPopupAction));
-            
             addAction(target, menu, BaseKit.collapseFoldAction);
             addAction(target, menu, BaseKit.expandFoldAction);
             addAction(target, menu, BaseKit.collapseAllFoldsAction);
             addAction(target, menu, BaseKit.expandAllFoldsAction);
-            
+            addAdditionalItems(target, menu);
             return menu;
         }
     
