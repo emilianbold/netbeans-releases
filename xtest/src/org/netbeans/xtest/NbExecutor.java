@@ -94,47 +94,59 @@ public class NbExecutor extends Task {
               MConfig.Test test = (MConfig.Test) tests.nextElement();
               File outputfile = null;
               try {  
-                Ant   callee = (Ant) getProject().createTask( "ant" );
-                String       pattern;
+                Java  callee = (Java) getProject().createTask( "java" );
                 
                 callee.setOwningTarget(target);
                 callee.setTaskName(getTaskName());
                 callee.setLocation(location);
                 callee.init();
 
-                callee.setTarget(targetName);
-                callee.setDir(project.getBaseDir());
-                callee.setAntfile(project.getProperty("ant.file"));
-
-                Property paramModule = callee.createProperty();
-                Property paramTestType = callee.createProperty();
-                Property paramTestAttribute = callee.createProperty();
+                callee.setClassname("org.apache.tools.ant.Main");
+                callee.createClasspath().setPath(project.getProperty("java.class.path"));
+                callee.setFork(true);
+                callee.setFailonerror(true);
                 
-                paramModule.setName(targetParamModule);
-                paramModule.setValue(test.getModule());
-                paramTestType.setName(targetParamTestType);
-                paramTestType.setValue(test.getType());
-                paramTestAttribute.setName(targetParamTestAttributes);
-                paramTestAttribute.setValue(test.getAttributesAsString());
+                callee.setDir(project.getBaseDir());
+                callee.createArg().setLine("-buildfile " + project.getProperty("ant.file"));
+
+                outputfile = getLogFile(test.getModule() + "_" + test.getType());
+                if (outputfile != null) {
+                    //callee.setOutput(outputfile);
+                    callee.createArg().setLine("-logfile " + outputfile);
+                }
+                
+                callee.createArg().setValue(targetName);
+
+                callee.createArg().setValue("-D"  +targetParamModule + "=" + test.getModule());
+                callee.createArg().setValue("-D"  +targetParamTestType + "=" + test.getType());
+                callee.createArg().setValue("-D"  +targetParamTestAttributes + "=" + test.getAttributesAsString());
 
                 Set set = props.entrySet();
                 Iterator it = set.iterator();
                 while (it.hasNext()) {
                     Map.Entry map = (Map.Entry) it.next();
-                    Property newproperty = callee.createProperty();
-                    newproperty.setName((String)map.getKey());
-                    newproperty.setValue((String)map.getValue());
+                    callee.createArg().setValue("-D" + (String)map.getKey() + "=" + (String)map.getValue());
                 }
                 
+                Hashtable ps = project.getProperties();
+                Enumeration enum = ps.keys();
+                while (enum.hasMoreElements()) {
+                    String name = (String) enum.nextElement();
+                    String value = (String) ps.get(name);
+                    if (!name.startsWith("java")) callee.createArg().setValue("-D" + name + "=" + value);
+                }
                 
-                outputfile = getLogFile(test.getModule() + "_" + test.getType());
-                if (outputfile != null) 
-                    callee.setOutput(outputfile.getAbsolutePath());
+                log("Executing module " + test.getModule() + ", testtype " + test.getType() + " at " + new Date().toLocaleString());
+                if (outputfile != null) log("Output is redirected to " + outputfile.getAbsolutePath());
                 callee.execute(); 
+                log("Executed successfully.");
               }
               catch (BuildException e) {
-                  log("Exception during executiong test (module="+test.getModule()+",type="+test.getType()+"):\n"+e.toString(),Project.MSG_ERR);
-                  logError("module="+test.getModule()+",type="+test.getType()+": "+e.toString(),outputfile);
+                  String msg = "ERROR executing test (module="+test.getModule()+",type="+test.getType()+").\n" +
+                               (outputfile == null ? "" : "Look at " + outputfile.getName() + " for more details.\n") +
+                               e.toString();
+                  log(msg,Project.MSG_ERR);
+                  logError(msg,outputfile);
               }
             }
             if (mode.equalsIgnoreCase("run") && msetup != null) executeStop(msetup);
