@@ -43,8 +43,81 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="src" excludesfile="../../nbbuild/standard-jar-excludes.txt"/>
         </jar>
     </target>
+    
+    <target name="nbantext-src">
+        <!-- See #31368 -->
+        <mkdir dir="tmp/nbantext-src"/>
+        <copy todir="tmp/nbantext-src">
+            <fileset dir="../../nbbuild/antsrc">
+                <include name="org/netbeans/nbbuild/Arch.java"/>
+                <include name="org/netbeans/nbbuild/Arch.xsl"/>
+                <include name="org/netbeans/nbbuild/Arch.dtd"/>
+                <include name="org/netbeans/nbbuild/Arch-api-questions.xml"/>
+                <include name="org/netbeans/nbbuild/CheckHelpSets.java"/>
+                <include name="org/netbeans/nbbuild/CheckLinks.java"/>
+                <include name="org/netbeans/nbbuild/CreateModuleXML.java"/>
+                <include name="org/netbeans/nbbuild/JHIndexer.java"/>
+                <include name="org/netbeans/nbbuild/MakeListOfNBM.java"/>
+                <include name="org/netbeans/nbbuild/MakeNBM.java"/>
+                <include name="org/netbeans/nbbuild/MakeParserDB.java"/>
+                <include name="org/netbeans/nbbuild/MakeUpdateDesc.java"/>
+                <include name="org/netbeans/nbbuild/UpdateTracking.java"/>
+                <include name="org/netbeans/nbbuild/XMLUtil.java"/>
+                <include name="org/netbeans/nbbuild/package.html"/>
+            </fileset>
+        </copy>
+        <path id="nbantext-cp">
+            <fileset dir="../..">
+                <include name="nbbuild/external/ant-1.*.jar"/>
+                <include name="nbbuild/external/jhall*.jar"/>
+                <include name="core/external/xml-apis*.jar"/>
+                <include name="core/external/xerces*.jar"/>
+                <include name="core/external/regexp*.jar"/>
+            </fileset>
+        </path>
+    </target>
+    
+    <target name="nbantext-jars" depends="nbantext-src">
+        <javac srcdir="tmp/nbantext-src" destdir="tmp/nbantext-src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+            <classpath refid="nbantext-cp"/>
+        </javac>
+        <mkdir dir="netbeans/antlib"/>
+        <jar jarfile="netbeans/antlib/nbantext.jar" compress="true">
+            <fileset dir="tmp/nbantext-src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </jar>
+    </target>
+    
+    <target name="javadoc-check-timestamps" depends="nbantext-src">
+        <uptodate property="javadoc.up.to.date" targetfile="netbeans/docs/NetBeansAntTasks.zip">
+            <srcfiles dir="tmp/nbantext-src">
+                <include name="**/*.java"/>
+                <include name="**/*.html"/>
+            </srcfiles>
+        </uptodate>
+    </target>
 
-    <target name="netbeans" depends="jars" description="Build complete module.">
+    <target name="nbantext-javadoc" depends="javadoc-check-timestamps" unless="javadoc.up.to.date">
+        <mkdir dir="tmp/nbantext-javadoc"/>
+        <tstamp/>
+        <javadoc destdir="tmp/nbantext-javadoc" windowtitle="NetBeans Ant Tasks" author="false" nodeprecatedlist="true" notree="true" nohelp="true">
+            <package name="org.netbeans.nbbuild"/>
+            <sourcepath>
+                <pathelement location="tmp/nbantext-src"/>
+            </sourcepath>
+            <classpath refid="nbantext-cp"/>
+            <doctitle>NetBeans Ant Tasks</doctitle>
+            <bottom><![CDATA[<font size="-2" color="gray">Built on ${TODAY}.&nbsp;&nbsp;|&nbsp;&nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.</font>]]></bottom>
+            <link href="http://nagoya.apache.org/gump/javadoc/ant/build/javadocs" offline="true" packagelistloc="../../nbbuild/antsrc"/>
+        </javadoc>
+        <mkdir dir="netbeans/docs"/>
+        <zip zipfile="netbeans/docs/NetBeansAntTasks.zip" compress="true">
+            <fileset dir="tmp/nbantext-javadoc"/>
+        </zip>
+    </target>
+
+    <target name="netbeans" depends="jars,nbantext-jars,nbantext-javadoc" description="Build complete module.">
         <genlist targetname="nbm" outputfiledir="netbeans"/>
     </target>
 
@@ -77,6 +150,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="manifest-subst.mf"/>
         <delete file="apisupport-ant.nbm"/>
         <delete dir="netbeans"/>
+        <delete dir="tmp"/>
         <delete dir="Info"/>
     </target>
 
