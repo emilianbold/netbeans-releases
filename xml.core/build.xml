@@ -42,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="compile" depends="generate-user-handler,projectized.compile">
+        <!-- removing temporary org.w3c package from src folder -->
         <delete dir="src/org/w3c"/>
     </target>
 
