@@ -93,17 +93,17 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             String uninstDir  = j2seInstallDir + File.separator + "_uninst";
 	    if (!Util.isWindowsOS()) {
 		String j2seInstallScript = uninstDir + File.separator 
-                                         + "j2se-install.template";
+                + "j2se-install.template";
 		createInstallScript(j2seInstallScript, "custom-install");
 		String j2seUninstallScript = uninstDir + File.separator 
-		                           + "j2se-uninstall.template";
+		+ "j2se-uninstall.template";
 		createUninstallScript(j2seUninstallScript, "uninstall.sh");
 	    } else {
 		String j2seInstallScript = uninstDir + File.separator 
-                                         + "custom-install.template";
+                + "custom-install.template";
 		createInstallScriptWindows(j2seInstallScript, "custom-install.bat");
 		String j2seUninstallScript = uninstDir + File.separator 
-		                           + "custom-uninstall.template";
+		+ "custom-uninstall.template";
 		createUninstallScriptWindows(j2seUninstallScript, "custom-uninstall.bat");
             }
             String execName;
@@ -118,7 +118,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 paramCount = 1;
                 driveName = "";                
             }
-            else if (Util.isWindowsOS()){
+            else if (Util.isWindowsOS()) {
                 driveName = j2seInstallDir.substring(0, j2seInstallDir.indexOf(File.separator));
                 execName = "custom-install.bat";
                 paramCount = 5;
@@ -136,11 +136,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             
 	    // Put the command and arguments together for windows
             if (Util.isWindowsNT() || Util.isWindows98()) {
-                cmdArray[0]  = execPath
-                               + " /s /v\"/qn ADDLOCAL=ToolsFeature,DemosFeature,SourceFeature INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
-                envP = new String[2];
-                envP[0] = "TMP=" + tempDir;
-                envP[1] = "TEMP=" + tempDir;
+                cmdArray[0] = j2seInstallDir + File.separator + execName
+                + " /s /v\"/qn ADDLOCAL=ToolsFeature,DemosFeature,SourceFeature INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
+                //envP = new String[2];
+                //envP[0] = "TMP=" + tempDir;
+                //envP[1] = "TEMP=" + tempDir;
             } else if (Util.isWindowsOS()) {
                 cmdArray[0] = execPath;
                 cmdArray[1] = "\"" + logPath + "\""; //logfile
@@ -150,7 +150,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             } else {
                 cmdArray[0] = execPath;
             }
-
+            
 	    // Invoke the correct command
             logEvent(this, Log.DBG,"Start Invoking: cmdArray -> " + Arrays.asList(cmdArray).toString());
             runCommand(cmdArray, envP, support);
@@ -171,18 +171,19 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 }
             }
             
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
         logEvent(this, Log.DBG,"J2SE installation took: (ms) " + (System.currentTimeMillis() - currtime));
     }
     
+    /** Does nothing. JDK is not uninstalled by jdkbundle uninstaller. */
     public void uninstall(ProductActionSupport support) {
         long currtime = System.currentTimeMillis();
         logEvent(this, Log.DBG,"Uninstalling -> ");
-        statusDesc = resolveString("$L(com.sun.installer.InstallerResources,UNINSTALLING_WAIT_MSG)");
-        support.getOperationState().setStatusDescription(statusDesc);
+        //statusDesc = resolveString("$L(com.sun.installer.InstallerResources,UNINSTALLING_WAIT_MSG)");
+        //support.getOperationState().setStatusDescription(statusDesc);
         
         try {
             init(support);
@@ -191,7 +192,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             
             logEvent(this, Log.DBG,"Do nothing here -> " + j2seInstallDir);
             
-        }catch (Exception ex) {
+        } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
         }
