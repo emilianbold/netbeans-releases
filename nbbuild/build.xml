@@ -26,14 +26,32 @@ treefs (complete yet?)
 workspaceswitcher
 -->
 
-<project name="nbbuild" default="depucelee" basedir=".">
+<project name="nbbuild" default="all" basedir=".">
 
-  <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
-  <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
-  <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
-  <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
+  <!-- To make people happy who want to do `ant clean all': -->
+  <target name="all" depends="depucelee"/>
 
-  <target name="init">
+  <target name="bootstrap"
+          description="Bootstrap NetBeans-specific Ant extensions.">
+    <echo message="Bootstrapping NetBeans-specific Ant extensions..."/>
+    <javac srcdir="antsrc" destdir="antsrc" deprecation="true"/>
+    <jar jarfile="nbantext.jar" basedir="antsrc">
+      <exclude name="**/*.java"/>
+    </jar>
+  </target>
+
+  <target name="init" depends="bootstrap">
+    <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
+    <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
+    <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
+    <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
+    <!-- Overridable. Note: need not necessarily be a number at all): -->
+    <property name="buildnumber" value="dev-000"/>
+    <property name="binroot" value=".."/>
+    <!-- Best to leave this alone, though, unless you know what you are doing: -->
+    <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
+    <!-- But this it is OK to change: -->
+    <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true"/>
     <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
     <property name="moduleconfig" value="stable"/>
     <!-- You can also explicitly set a particular list of modules if you prefer: -->
@@ -43,32 +61,17 @@ workspaceswitcher
       <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,projects,text,utilities"/>
       <config name="stable" modules="ant,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscore,vcscvs,web"/>
-      <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
-      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,jarpackager,java,javadoc,projects,properties,serialversion,sysprops,text,utilities"/>
+      <config name="ide-hacker" modules="ant,apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
       <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
-      <config name="sandwich" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,objectbrowser,properties,text,utilities,vcscvs,web"/>
+      <config name="sandwich" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,objectbrowser,properties,text,utilities,vcscore,vcscvs,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
       <config name="bloated-plus-extrabins" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,javaembeddedserver,jini,makefile,multicompile,objectbrowser,projects,properties,remotefs,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,web"/>
     </configmods>
-  </target>
-
-  <!-- Ditto (note: need not necessarily be a number at all): -->
-  <property name="buildnumber" value="dev-000"/>
-
-  <property name="binroot" value=".."/>
-
-  <!-- Best to leave this alone, though, unless you know what you are doing: -->
-  <property name="firststart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true"/>
-  <!-- But this it is OK to change: -->
-  <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true"/>
-
-  <target name="look-for-binaries">
     <available property="have-binaries-already" file="../core/release/lib/ext/jh.jar"/>
   </target>
-  <target name="check-for-binaries" depends="look-for-binaries" unless="have-binaries-already">
-    <echo message="ERROR: you seem to be missing the required download of"/>
-    <echo message="       binaries which are required to build the IDE."/>
-    <echo message="       Please see: http://www.netbeans.org/downloads.html"/>
+
+  <target name="check-for-binaries" depends="init" unless="have-binaries-already">
+    <fail message="You seem to be missing the required download of binaries which are required to build the IDE. Please see: http://www.netbeans.org/downloads.html"/>
   </target>
 
   <!-- How to build the IDE core: -->
@@ -255,7 +258,7 @@ workspaceswitcher
 
   <target name="virgin" depends="init,build-messaging"
           description="Create a virgin build that has never been started.">
-    <!-- Automatically include openide and core, these are mandatory -->
+    <!-- Automatically include openide and core and openidex, these are mandatory -->
     <mkdir dir="virgin"/>
     <nbmerge dest="virgin" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
@@ -271,19 +274,28 @@ workspaceswitcher
     <chmod file="firststart/bin/fastjavac/fastjavac.linux" perm="ugo+x"/>
     <chmod file="firststart/bin/fastjavac/fastjavac.sun" perm="ugo+x"/>
     <chmod file="firststart/bin/fastjavac/fastjavac.sun.intel" perm="ugo+x"/>
-    <echo message="Starting the IDE..."/>
-    <echo message="(This both acts as a test, and primes some files"/>
-    <echo message="to make the first user start faster and better.)"/>
+    <echo>Starting the IDE...
+(This both acts as a test, and primes some files
+to make the first user start faster and better.)
+</echo>
     <!-- XXX should perhaps preset JAVA_PATH to ${java.home} or something? -->
     <!-- XXX better would be to scan first start log for stacktraces and just show those; -->
     <!-- possibly after filtering for duplicates or something like this. -->
     <!-- Timeout is ten minutes; should be enough for valid first start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
     <!-- missing initial W intentional, to make it case-insensitive: -->
-    <exec os="indows" dir="firststart/bin" command="runide.exe ${firststart.args}" failonerror="yes" timeout="600000"/>
-    <exec os="Linux" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
-    <exec os="SunOS" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
-    <exec os="Solaris" dir="firststart/bin" command="sh runide.sh ${firststart.args}" failonerror="yes" timeout="600000"/>
+    <exec os="indows" dir="firststart/bin" executable="runide.exe" failonerror="yes" timeout="600000">
+      <arg line="${firststart.args}"/>
+    </exec>
+    <exec os="Linux" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
+      <arg line="runide.sh ${firststart.args}"/>
+    </exec>
+    <exec os="SunOS" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
+      <arg line="runide.sh ${firststart.args}"/>
+    </exec>
+    <exec os="Solaris" dir="firststart/bin" executable="sh" failonerror="yes" timeout="600000">
+      <arg line="runide.sh ${firststart.args}"/>
+    </exec>
     <echo message="Successfully started, cleaning up detritus..."/>
     <move file="firststart/system/ide.log" tofile="NetBeans-${buildnumber}.log"/>
     <delete file="firststart/system/project.basic"/>
@@ -298,10 +310,11 @@ Build number: ${buildnumber}
   <target name="depucelee" depends="firststart"
           description="Create a complete build, including first start and final ZIP file.">
     <zip zipfile="NetBeans-${buildnumber}.zip" basedir="firststart"/>
-    <echo message="Build created; see NetBeans-${buildnumber}.zip (in nbbuild/)."/>
-    <echo message="If you like, you may run the IDE straight from"/>
-    <echo message="the nbbuild/firststart/bin/ directory."/>
-    <echo message="(For example, type: ant tryme)"/>
+    <echo>Build created; see NetBeans-${buildnumber}.zip (in nbbuild/).
+If you like, you may run the IDE straight from
+the nbbuild/firststart/bin/ directory.
+(For example, type: ant tryme)
+</echo>
   </target>
 
   <target name="check-for-firststart">
@@ -310,7 +323,7 @@ Build number: ${buildnumber}
   <target name="maybe-firststart" depends="check-for-firststart" unless="have-firststart">
     <ant dir="." target="firststart"/>
   </target>
-  <target name="tryme" depends="maybe-firststart"
+  <target name="tryme" depends="init,maybe-firststart"
           description="Try running the IDE interactively (build it first if needed).">
     <exec os="indows" dir="firststart/bin" executable="runide.exe" failonerror="yes">
       <arg line="${tryme.args}"/>
@@ -459,15 +472,56 @@ Build number: ${buildnumber}
     </makeupdatedesc>
   </target>
 
+  <target name="bootstrap-javadoc"
+          description="Generate Javadoc for Ant extensions.">
+    <mkdir dir="www/nbantext-javadoc"/>
+    <tstamp/>
+    <!-- XXX if there is org.apache.tools.ant.* docs online, link to them -->
+    <javadoc sourcepath="antsrc"
+             destdir="www/nbantext-javadoc"
+             packagenames="org.netbeans.nbbuild.*"
+             windowtitle="NetBeans Ant Extensions"
+             doctitle="Extended Ant Tasks for Building NetBeans"
+             nodeprecatedlist="true"
+             notree="true"
+             noindex="true"
+             nohelp="true"
+             nonavbar="true"
+             author="false"
+             version="false"
+             bottom="Built on ${TODAY}"
+    />
+  </target>
+
+  <!-- XXX should this run `clean' target with moduleconfig=bloated?? -->
+  <target name="real-clean" depends="clean"
+          description="Clean everything possible.">
+    <echo message="Cleaning old builds..."/>
+    <delete>
+      <fileset dir=".">
+        <include name="NetBeans-*.log"/>
+        <include name="NetBeans-*.zip"/>
+      </fileset>
+    </delete>
+    <!-- This step must be last: -->
+    <echo message="Cleaning NetBeans-specific Ant extensions..."/>
+    <delete file="nbantext.jar"/>
+    <delete>
+      <fileset dir="antsrc">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+  </target>
+
   <target name="localclean">
     <delete dir="virgin"/>
     <delete dir="firststart"/>
-    <echo message="Manually delete unwanted builds as needed."/>
   </target>
 
   <target name="clean" depends="init,localclean"
-          description="Clean out all build products.">
+          description="Clean out (almost) all build products.">
     <cleanall topdir=".." modules="openide,openidex,core,${modules}" targetname="clean"/>
+    <echo message="Run `ant real-clean' if desired."/>
   </target>
 
 </project>
