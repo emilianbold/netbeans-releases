@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -43,7 +43,6 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.openide.ErrorManager;
 import org.openide.execution.NbClassPath;
@@ -349,6 +348,7 @@ public final class AntBridge {
         for (int i = 0; i < libs.length; i++) {
             cp.add(libs[i]);
         }
+        // XXX consider adding ${user.home}/.ant/lib/*.jar (org.apache.tools.ant.launch.Launcher.USER_LIBDIR)
         NbClassPath extra = AntSettings.getDefault().getExtraClasspath();
         String extrapath = extra.getClassPath();
         if (extrapath.startsWith("\"") && extrapath.endsWith("\"")) { // NOI18N
