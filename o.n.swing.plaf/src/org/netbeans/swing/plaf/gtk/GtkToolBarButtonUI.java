@@ -66,18 +66,11 @@ class GtkToolBarButtonUI extends ButtonUI implements ChangeListener {
     
     private void paintBackground (Graphics2D g, AbstractButton b, Rectangle r) {
         if (!b.isEnabled()) {
-            if (!isLast(b)) {
-                drawDivider ((Graphics2D)g, r);
-            }
         } else if (b.getModel().isPressed()) {
             compositeColor (g, r, Color.BLUE, 0.3f);
         } else if (b.getModel().isSelected()) {
             compositeColor (g, r, new Color (0, 120, 255), 0.2f);;
-        } else {
-            if (!isLast(b)) {
-                drawDivider ((Graphics2D)g, r);
-            }
-        }
+        } 
     }
     
     private void compositeColor (Graphics2D g, Rectangle r, Color c, float alpha) {
@@ -89,21 +82,6 @@ class GtkToolBarButtonUI extends ButtonUI implements ChangeListener {
 
         g.fillRect (r.x, r.y, r.width, r.height);
         g.setComposite(comp);
-    }
-    
-    private void drawDivider (Graphics2D g, Rectangle r) {
-        /*
-        g.setColor (Color.GRAY);
-        Composite comp = g.getComposite();
-        
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        g.drawLine (r.width-1, 0, r.width-1, r.height-1);
-        g.setComposite(comp);
-         */
-    }
-    
-    private static boolean isLast (AbstractButton b) {
-        return b == b.getParent().getComponent(b.getParent().getComponentCount()-1);
     }
     
     private static boolean isFirst (AbstractButton b) {
@@ -164,7 +142,7 @@ class GtkToolBarButtonUI extends ButtonUI implements ChangeListener {
         return result;
     }
     
-    private static final int minButtonSize = 24;
+    private static final int minButtonSize = 32;
     public Dimension getPreferredSize(JComponent c) {
         if (c instanceof AbstractButton) {
             Icon ic = getIconForState((AbstractButton) c);

@@ -98,6 +98,8 @@ public class AdaptiveMatteBorder implements Border {
             g.fillRect(x, y + h - 1, w, 1);
         }
         
+        boolean isViewTab = isViewTab(c);
+        
         if (shadowDepth > 1) {
             Rectangle clip = g.getClipBounds();
             boolean clipTouchesRight = ((clip.x + clip.width) >= (x + w));
@@ -109,10 +111,10 @@ public class AdaptiveMatteBorder implements Border {
             
                 Color curr;
                 for (int i = 1; i < shadowDepth; i++) {
-                    curr = colorTowards (base, ctrl, shadowDepth, i);
+                    curr = colorTowards (base, ctrl, shadowDepth, i+1);
                     g.setColor (curr);
                     if (clipTouchesRight && ins.right > 0) {
-                        g.fillRect(x + w - 1 + i, y + i, 1, h);
+                        g.fillRect(x + w - 1 + i, y + (isViewTab ? 0 : i), 1, h);
                     }
                     if (clipTouchesBottom && ins.bottom > 0) {
                         g.fillRect(x + i, y + h - 1 + i, w - 1, 1);
@@ -126,12 +128,47 @@ public class AdaptiveMatteBorder implements Border {
 //    private static int[] xpoints = new int[4];
 //    private static int[] ypoints = new int[4];
     
+    static boolean isViewTab (Component c) {
+        if (c.getParent() instanceof JComponent) {
+            JComponent jc = (JComponent) c.getParent();
+            Object o = jc.getClientProperty("viewType");
+            if (o != null && o instanceof Integer) {
+                return ((Integer) o).intValue() == 0;
+            }
+        }
+        return false;
+    }
 
     private static final float[] comps = new float[4];
+    private static final float[] targs = new float[4];
+    
     static final Color colorTowards (Color base, Color target, float steps, float step) {
         base.getColorComponents(comps);
-        comps[3] = 1f - (step / steps);
-        return new Color (comps[0], comps[1], comps[2], comps[3]);
+        target.getColorComponents(targs);
+        
+        comps[3] = 1.0f; //No transparency, performance problems
+        
+        float factor = (step / steps);
+        
+        for (int i=0; i < 3; i++) {
+            comps[i] = saturate(comps[i] - (factor * (comps[i] - targs[i])));
+        }
+        
+        
+//        comps[3] = 1f - (step / steps);
+        Color result = new Color (comps[0], comps[1], comps[2], comps[3]);
+        return result;
+    }
+    
+    private static final float saturate (float f) {
+        float orig = f;
+        if (f > 1) {
+            f = 1;
+        }
+        if (f < 0) {
+            f = 0;
+        }
+        return f;
     }
     
 }

@@ -310,6 +310,9 @@ public class TabbedContainer extends JComponent {
         this.locationInformer = locationInformer;
         initialized = true;
         updateUI();
+        //A few borders and such will check this
+        //@see org.netbeans.swing.plaf.gtk.AdaptiveMatteBorder
+        putClientProperty ("viewType", new Integer(type)); //NOI18N
     }
 
     public void updateUI() {

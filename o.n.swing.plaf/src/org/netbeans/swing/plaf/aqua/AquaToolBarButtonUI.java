@@ -1,4 +1,16 @@
 /*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+/*
  * AquaToolBarButtonUI.java
  *
  * Created on January 17, 2004, 1:54 PM
@@ -59,17 +71,10 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
     
     private void paintBackground (Graphics2D g, AbstractButton b, Rectangle r) {
         if (!b.isEnabled()) {
-            if (!isLast(b)) {
-                drawDivider ((Graphics2D)g, r);
-            }
         } else if (b.getModel().isPressed()) {
             compositeColor (g, r, Color.BLUE, 0.3f);
         } else if (b.getModel().isSelected()) {
             compositeColor (g, r, new Color (0, 120, 255), 0.2f);;
-        } else {
-            if (!isLast(b)) {
-                drawDivider ((Graphics2D)g, r);
-            }
         }
     }
     
@@ -84,20 +89,6 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         g.setComposite(comp);
     }
     
-    private void drawDivider (Graphics2D g, Rectangle r) {
-        /*
-        g.setColor (Color.GRAY);
-        Composite comp = g.getComposite();
-        
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.3f));
-        g.drawLine (r.width-1, 0, r.width-1, r.height-1);
-        g.setComposite(comp);
-         */
-    }
-    
-    private static boolean isLast (AbstractButton b) {
-        return b == b.getParent().getComponent(b.getParent().getComponentCount()-1);
-    }
     
     private static boolean isFirst (AbstractButton b) {
         if (b.getParent() != null && b.getParent().getComponentCount() > 1) {
@@ -157,7 +148,7 @@ class AquaToolBarButtonUI extends ButtonUI implements ChangeListener {
         return result;
     }
     
-    private static final int minButtonSize = 24;
+    private static final int minButtonSize = 32;
     public Dimension getPreferredSize(JComponent c) {
         if (c instanceof AbstractButton) {
             Icon ic = getIconForState((AbstractButton) c);
