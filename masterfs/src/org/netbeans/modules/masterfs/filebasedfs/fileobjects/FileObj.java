@@ -140,8 +140,8 @@ final class FileObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
-//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
-//        stopWatch.start();                
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
+        stopWatch.start();                
         if (isValid()) {
             final long oldLastModified = lastModified;
             setLastModified(getFileName().getFile().lastModified());
@@ -155,7 +155,7 @@ final class FileObj extends BaseFileObj {
                 fireFileDeletedEvent(expected);    
             }            
         }                 
-//        stopWatch.stop();
+        stopWatch.stop();
     }
     
 

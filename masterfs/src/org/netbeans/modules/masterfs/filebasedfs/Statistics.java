@@ -22,10 +22,10 @@ import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 public final class Statistics {
     /** Creates a new instance of Statistics */
     
-//    public static final Statistics.TimeConsumer REFRESH_FOLDER = 
-//            new Statistics.TimeConsumer("Folder refresh");//NOI18N
-//    public static final Statistics.TimeConsumer REFRESH_FILE = 
-//            new Statistics.TimeConsumer("File refresh");//NOI18N    
+    public static final Statistics.TimeConsumer REFRESH_FOLDER = 
+            new Statistics.TimeConsumer("Folder refresh");//NOI18N
+    public static final Statistics.TimeConsumer REFRESH_FILE = 
+            new Statistics.TimeConsumer("File refresh");//NOI18N    
     public static final Statistics.TimeConsumer REFRESH_FS = 
             new Statistics.TimeConsumer("FileSystem refresh");//NOI18N    
     public static final Statistics.TimeConsumer LISTENERS_CALLS = 
@@ -80,7 +80,15 @@ public final class Statistics {
             return numberOfCalls;
         }        
         
-        
+        public void reset() {
+    	    elapsedTime = 0;
+            numberOfCalls = 0;
+        }
+
+        public String toString() {
+            return description + ": " + numberOfCalls + " calls in " + elapsedTime + "ms";
+        }
+		
         private void incrementNumerOfCalls() {
             numberOfCalls++;
             

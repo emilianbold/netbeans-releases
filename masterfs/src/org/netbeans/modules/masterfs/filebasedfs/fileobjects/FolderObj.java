@@ -213,8 +213,8 @@ public final class FolderObj extends BaseFileObj {
 
 
     public final void refresh(final boolean expected) {
-//        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
-//        stopWatch.start();
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
+        stopWatch.start();
 
         if (isValid()) {
             boolean isFileCreatedFired = false;
@@ -295,7 +295,7 @@ public final class FolderObj extends BaseFileObj {
                 fireFileDeletedEvent(expected);    
             }
         }         
-//        stopWatch.stop();        
+        stopWatch.stop();        
     }
     
     //TODO: rewrite partly and check FileLocks for existing FileObjects

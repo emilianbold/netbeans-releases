@@ -20,6 +20,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.actions.SystemAction;
+import org.openide.ErrorManager;
 
 import java.io.File;
 import java.util.*;
@@ -116,6 +117,20 @@ public final class FileBasedFileSystem extends FileSystem {
         
         getFactory().refreshAll(expected);
         stopWatch.stop();
+	
+        // print refresh stats unconditionally in trunk
+        ErrorManager.getDefault().log(ErrorManager.WARNING,
+            "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
+            Statistics.REFRESH_FS.toString() + "\n  " +
+            Statistics.LISTENERS_CALLS.toString() + "\n  " + 
+            Statistics.REFRESH_FOLDER.toString() + "\n  " + 
+            Statistics.REFRESH_FILE.toString() + "\n"
+        );
+
+        Statistics.REFRESH_FS.reset();
+        Statistics.LISTENERS_CALLS.reset();
+        Statistics.REFRESH_FOLDER.reset();
+        Statistics.REFRESH_FILE.reset();
     }
 
     public final boolean isReadOnly() {
