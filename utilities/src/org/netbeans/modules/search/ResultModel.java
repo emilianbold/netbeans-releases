@@ -149,13 +149,6 @@ public class ResultModel implements TaskListener {
         }
  */ // PENDING important
 
-        if(!done) {
-            root.setDisplayName(MessageFormat.format(
-                NbBundle.getBundle(ResultModel.class).getString("TXT_RootSearchedNodes"),
-                new Object[] {Integer.toString(getFound())}
-            ));
-        }
-
         return true;
     }
 
@@ -276,7 +269,9 @@ public class ResultModel implements TaskListener {
     /** Gets display name for root node. Utilitty method. */
     private String getRootDisplayName() {
         if (!isDone()) {
-            return NbBundle.getBundle(ResultModel.class).getString("TEXT_SEARCHING___");
+            return NbBundle.getMessage(ResultModel.class,
+                                       "TXT_RootSearchedNodes",         //NOI18N
+                                       Integer.toString(getFound()));
         }
 
         int found = getFound();
