@@ -209,7 +209,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/term..."/>
     <ant dir="../core/term" target="netbeans"/>
   </target>
-  <target name="all-core/ui" depends="all-openide,all-core">
+  <target name="all-core/ui" depends="all-openide,all-core,all-core/windows">
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
   </target>
@@ -580,7 +580,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/suggestions/ui..."/>
     <ant dir="../tasklist/suggestions/ui" target="netbeans"/>
   </target>
-  <target name="all-tasklist/docscan" depends="all-openide,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
+  <target name="all-tasklist/docscan" depends="all-openide,all-java/api,all-projects/projectapi,all-projects/projectuiapi,all-tasklist/api,all-tasklist/core,all-tasklist/suggestions">
     <echo message="Building module tasklist/docscan..."/>
     <ant dir="../tasklist/docscan" target="netbeans"/>
   </target>
