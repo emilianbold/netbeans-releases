@@ -99,7 +99,7 @@ public abstract class PresentableFileEntry extends FileEntry implements Node.Coo
   };
 
   /** array of cookies for this entry */
-  private CookieSet cookieSet;
+  private transient CookieSet cookieSet;
 
   /** Creates new presentable file entry initially attached to a given file object.
   * @param obj the data object this entry belongs to
