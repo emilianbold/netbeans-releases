@@ -215,6 +215,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module bookmarks ..."/>
     <ant dir="../contrib/bookmarks" target="netbeans"/>
   </target>
+  <target name="all-contrib/htmldiff" depends="all-openide,all-diff">
+    <echo message="Building module htmldiff ..."/>
+    <ant dir="../contrib/htmldiff" target="netbeans"/>
+  </target>
   <target name="all-core/windows" depends="all-openide,all-openide/loaders,all-core">
     <echo message="Building module core/windows..."/>
     <ant dir="../core/windows" target="netbeans"/>
