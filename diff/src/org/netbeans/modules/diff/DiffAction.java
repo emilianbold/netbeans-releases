@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,6 +27,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.options.SystemOption;
 import org.openide.util.RequestProcessor;
@@ -65,23 +66,25 @@ public class DiffAction extends NodeAction {
         return NbBundle.getMessage(DiffAction.class, "CTL_DiffActionName");
     }
     
+    static FileObject getFileFromNode(Node node) {
+        FileObject fo = (FileObject) node.getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            DataObject dobj = (DataObject) node.getCookie(DataObject.class);
+            if (dobj instanceof DataShadow) {
+                dobj = ((DataShadow) dobj).getOriginal();
+            }
+            if (dobj != null) {
+                fo = dobj.getPrimaryFile();
+            }
+        }
+        return fo;
+    }
+    
     public boolean enable(Node[] nodes) {
         //System.out.println("DiffAction.enable() = "+(nodes.length == 2));
         if (nodes.length == 2) {
-            FileObject fo1 = (FileObject) nodes[0].getLookup().lookup(FileObject.class);
-            FileObject fo2 = (FileObject) nodes[1].getLookup().lookup(FileObject.class);
-            if (fo1 == null) {
-                DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
-                if (do1 != null) {
-                    fo1 = do1.getPrimaryFile();
-                }
-            }
-            if (fo2 == null) {
-                DataObject do2 = (DataObject) nodes[1].getCookie(DataObject.class);
-                if (do2 != null) {
-                    fo2 = do2.getPrimaryFile();
-                }
-            }
+            FileObject fo1 = getFileFromNode(nodes[0]);
+            FileObject fo2 = getFileFromNode(nodes[1]);
             if (fo1 != null && fo2 != null) {
                 if (fo1.isData() && fo2.isData()) {
                     Diff d = Diff.getDefault();
@@ -104,12 +107,9 @@ public class DiffAction extends NodeAction {
     public void performAction(Node[] nodes) {
         ArrayList fos = new ArrayList();
         for (int i = 0; i < nodes.length; i++) {
-            FileObject fo = (FileObject) nodes[i].getLookup().lookup(FileObject.class);
+            FileObject fo = getFileFromNode(nodes[i]);
             if (fo != null) {
                 fos.add(fo);
-            } else {
-                DataObject dd = (DataObject) (nodes[i].getCookie(DataObject.class));
-                if (dd != null) fos.add(dd.getPrimaryFile());
             }
         }
         if (fos.size() < 2) return ;

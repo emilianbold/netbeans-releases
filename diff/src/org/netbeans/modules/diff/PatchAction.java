@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -78,13 +78,8 @@ public class PatchAction extends NodeAction {
 
     public boolean enable(Node[] nodes) {
         if (nodes.length == 1) {
-            DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
-            if (do1 != null) {
-                if (do1 instanceof org.openide.loaders.InstanceDataObject) {
-                    return false;
-                }
-                FileObject fo = do1.getPrimaryFile();
-                //if (fo.isFolder()) return false;
+            FileObject fo = DiffAction.getFileFromNode(nodes[0]);
+            if (fo != null) {
                 try {
                     FileSystem fs = fo.getFileSystem();
                     if (fs.isDefault()) {
@@ -109,9 +104,8 @@ public class PatchAction extends NodeAction {
     }
     
     public void performAction(Node[] nodes) {
-        DataObject do1 = (DataObject) nodes[0].getCookie(DataObject.class);
-        if (do1 != null) {
-            final FileObject fo = do1.getPrimaryFile();
+        final FileObject fo = DiffAction.getFileFromNode(nodes[0]);
+        if (fo != null) {
             final File patch = getPatchFor(fo);
             if (patch == null) return ;
             RequestProcessor.getDefault().post(new Runnable () {
