@@ -32,26 +32,11 @@
 # By default, same as nbjdk. However you may wish to run tests with a
 # different VM.
 #
-# ant=/opt/ant-1.4.1/bin/ant
-# Ant 1.4.1 installation directory. 1.5.x is not yet officially supported.
-# If you want to build Javadoc (e.g. ../user.build.properties contains moduleconfig=stable-with-apisupport),
-# use a version of Ant 1.4.1 that does *not* include Crimson in its lib/ dir (it has a bug that interacts with Ant 1.4).
-# Anyway Crimson is bundled in JDK 1.4 so you must in that case set the boot classpath
-# to include Xerces and use it. E.g.
-# ant=/opt/ant-1.4.1/bin/ant-with-xerces
-# ---%<--- /opt/ant-1.4.1/bin/ant-with-xerces
-# #!/bin/sh
-# export ANT_OPTS="-Djavax.xml.parsers.SAXParserFactory=org.apache.xerces.jaxp.SAXParserFactoryImpl $ANT_OPTS"
-# export CLASSPATH=/space/src/nb_all/core/external/xml-apis-1.0b2.jar:/space/src/nb_all/core/external/xerces-2.0.2.jar
-# exec /space/ant14/bin/ant "$@"
-# ---%<---
-# where /opt/ant-1.4.1/lib/ contains just ant.jar and optional.jar.
-# YOU MUST TEST WITH 1.4.1 IF EDITING BUILD SCRIPTS
+# ant=/opt/ant-1.5.3/bin/ant
+# Ant 1.5.3 installation directory.
 #
-# testant=/opt/ant-1.4.1/bin/ant
-# Ant 1.4.1 installation directory for use with XTest. 1.5.x is not yet officially supported.
+# testant=/opt/ant-1.5.3/bin/ant
 # By default, same as ant.
-# YOU MUST TEST WITH 1.4.1 IF EDITING BUILD SCRIPTS
 #
 # doclean=no
 # if set to "no", do not clean sources before starting (do an incremental build)
@@ -121,9 +106,9 @@ then
         echo "You need to set the variable 'nbjdk' to a JDK 1.4 installation" 1>&2
         exit 2
     fi
-    if $ant -version 2>&1 | fgrep -q -v 1.4
+    if $ant -version 2>&1 | fgrep -q -v 1.5.3
     then
-        echo "You need to set the variable 'ant' to an Ant 1.4.1 binary" 1>&2
+        echo "You need to set the variable 'ant' to an Ant 1.5.3 binary" 1>&2
         exit 2
     fi
 fi
