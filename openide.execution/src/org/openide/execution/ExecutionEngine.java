@@ -58,6 +58,8 @@ public abstract class ExecutionEngine extends Object {
     * in the system.
     *
     * @return class path to libraries
+     * @deprecated There are generally no excuses to be using this method as part of a normal module;
+     * its exact meaning is vague, and probably not what you want.
     */
     protected abstract NbClassPath createLibraryPath ();
     
