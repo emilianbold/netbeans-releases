@@ -20,20 +20,7 @@ Microsystems, Inc. All Rights Reserved.
         <patternset id="main.module.files">
             <include name="${module.jar}"/>
             <include name="${nb.lib.dir}/ide.ks"/>
-            <include name="${nb.bin.dir}/.runide_defaults.sh"/>
-            <include name="${nb.bin.dir}/ide.cfg"/>
-            <include name="${nb.bin.dir}/macosx_launcher.dmg"/>
-            <include name="${nb.lib/ext.dir}/boot.jar"/>
-            <!--
-            <include name="${nb.bin.dir}/ide.policy"/>
-            <include name="${nb.bin.dir}/security.policy"/>
-            <include name="${nb.bin.dir}/runide.exe"/>
-            <include name="${nb.bin.dir}/runide.sh"/>
-            <include name="${nb.bin.dir}/runide_exe_defaults"/>
-            <include name="${nb.bin.dir}/runideopenvms.com"/>
-            <include name="${nb.bin.dir}/runideos2.cmd"/>
-            <include name="${nb.bin.dir}/runidew.exe"/>
-            -->
+            <include name="${nb.bin.dir}/nbexec*"/>
             <include name="${nb.system.dir}/ModuleAutoDeps/org-netbeans-core.xml"/>
             <include name="CREDITS.html"/>
         </patternset>
