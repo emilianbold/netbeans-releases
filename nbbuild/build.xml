@@ -340,10 +340,11 @@ to make the first user start faster and better.)
     <delete file="netbeans/beans/libs.properties"/>
     <echo file="netbeans/build_info">NetBeans dev build
 ------------------
-Branch: ${branch}
-Number: ${buildnumber}
-Locale: ${locale}
-Date: ${TODAY}
+Number:   ${buildnumber}
+Date:     ${TODAY}
+Branding:
+Branch:   dev
+Tag:
 </echo>
   </target>
 
