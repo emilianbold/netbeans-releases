@@ -17,20 +17,21 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.Icon;
 
 import org.netbeans.modules.xml.spi.model.*;
 import org.openide.util.enum.*;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 
 /**
  *
  * @author  asgeir@dimonsoftware.com
  */
-public class XSLGrammarQuery {
+public class XSLGrammarQuery implements GrammarQuery{
 
     private final static Map elementDecls = new HashMap();
     
@@ -256,9 +257,12 @@ public class XSLGrammarQuery {
         attrDecls.put("fallback", new HashSet(Arrays.asList(new String[]{spaceAtt})));
                         
     }
+    
+    private String xslNamespacePrefix;
        
     /** Creates a new instance of XSLGrammarQuery */
-    public XSLGrammarQuery() {
+    public XSLGrammarQuery(String xslNamespacePrefix) {
+        this.xslNamespacePrefix = xslNamespacePrefix;
     }
     
     /**
@@ -270,9 +274,58 @@ public class XSLGrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ELEMENT_NODEs) that can be queried on name, and attributes
      *         Every list member represents one possibility.  
      */
-    public Enumeration queryElements(HintContext ctx) {
+    public Enumeration queryElements(HintContext ctx) {        
+        Node node = ((Node)ctx).getParentNode();        
+        Set elements;
+        
+        String xslNamespaceWithColon = xslNamespacePrefix + ":";
+        if (node instanceof Element) {
+            Element el = (Element) node;
+            if (el.getTagName().startsWith(xslNamespaceWithColon)) {
+                String parentName = el.getTagName().substring(xslNamespaceWithColon.length());
+                elements = (Set) elementDecls.get(parentName);
+            } else {
+                // Children of result elements should always be the template set
+                elements = template;
+            }
+         } else if (node instanceof Document) {
+            elements = elementDecls.keySet();
+        } else {
+            return EmptyEnumeration.EMPTY;
+        }
+                        
+        if (elements == null) return EmptyEnumeration.EMPTY;
+        String prefix = ctx.getCurrentPrefix();
         QueueEnumeration list = new QueueEnumeration();
-        return list;
+                
+        if (prefix.startsWith(xslNamespaceWithColon) || xslNamespaceWithColon.startsWith(prefix)) {
+            // Add XSL elements
+//            boolean namespaceOrLessEntered = prefix.length() <= xslNamespaceWithColon.length();
+            Iterator it = elements.iterator();
+            while ( it.hasNext()) {
+                Object next = it.next();
+                if (next instanceof String) {
+                    String nextText = xslNamespaceWithColon + (String)next;
+                    if (nextText.startsWith(prefix)) {
+                        list.put(new MyElement(nextText));
+                    }
+                }
+            }
+        }
+        
+        if (elements.contains(resultElements)) {
+            Set dummyResultSet = new HashSet(Arrays.asList(new String[]{
+                        "html","body","head","p","table","tr","td","br"}));        
+            Iterator it = dummyResultSet.iterator();
+            while ( it.hasNext()) {
+                Object next = it.next();
+                if (((String)next).startsWith(prefix)) {
+                    list.put(new MyElement((String)next));
+                }
+             }
+        }
+        
+        return list;                        
     }
 
     /**
@@ -284,7 +337,38 @@ public class XSLGrammarQuery {
      *         Every list member represents one possibility.  
      */
     public Enumeration queryAttributes(HintContext ctx) {
+        Element el = ((Attr)ctx).getOwnerElement();
+        if (el == null) return EmptyEnumeration.EMPTY;
+        NamedNodeMap existingAttributes = el.getAttributes();
+        String xslNamespaceWithColon = xslNamespacePrefix + ":";
+        
+        Set possibleAttributes;
+        if (el.getTagName().startsWith(xslNamespaceWithColon)) {
+            // Attributes of XSL element
+            possibleAttributes = (Set) attrDecls.get(el.getTagName().substring(xslNamespaceWithColon.length()));
+        } else {
+            // Attributes of Result element
+            possibleAttributes = new HashSet(resultElementAttr.size());
+            Iterator it = resultElementAttr.iterator();
+            while ( it.hasNext()) {
+                possibleAttributes.add(xslNamespaceWithColon + (String) it.next());
+            }
+        }
+        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;
+        
+        String prefix = ctx.getCurrentPrefix();
+        
         QueueEnumeration list = new QueueEnumeration();
+        Iterator it = possibleAttributes.iterator();
+        while ( it.hasNext()) {
+            String next = (String) it.next();
+            if (next.startsWith(prefix)) {
+                if (existingAttributes.getNamedItem(next) == null) {
+                    list.put(new MyAttr(next));
+                }
+            }
+        }
+        
         return list;
     }
 
@@ -300,8 +384,7 @@ public class XSLGrammarQuery {
      *         Every list member represents one possibility.  
      */
     public Enumeration queryValues(HintContext ctx) {
-        QueueEnumeration list = new QueueEnumeration();
-        return list;
+       return EmptyEnumeration.EMPTY;
     }
 
     /**
@@ -309,8 +392,7 @@ public class XSLGrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (ENTITY_REFERENCE_NODEs)
      */
     public Enumeration queryEntities(String prefix) {
-        QueueEnumeration list = new QueueEnumeration();
-        return list;
+       return EmptyEnumeration.EMPTY;
     }
 
     /**
@@ -318,7 +400,298 @@ public class XSLGrammarQuery {
      * @return enumeration of <code>GrammarResult</code>s (NOTATION_NODEs)
      */    
     public Enumeration queryNotations(String prefix) {
-        QueueEnumeration list = new QueueEnumeration();
-        return list;
+        return EmptyEnumeration.EMPTY;
+    }
+    
+    // Result classes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+    private static abstract class AbstractResultNode implements Node, GrammarResult {
+        
+        private static final String domExText = "This read-only implementation supports DOM level 1 Core and XML module.";  //NOI18N;
+        
+        public String getNodeName() {
+            return null;
+        }
+
+        /**
+         * @return false
+         */
+        public boolean isSupported(String feature, String version) {
+            return "1.0".equals(version);
+        }
+
+        public void setPrefix(String str) throws org.w3c.dom.DOMException {
+            throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getPrefix() {
+            return null;    // some client determines DOM1 by NoSuchMethodError
+        }
+
+        public org.w3c.dom.Node getPreviousSibling() {
+            return null;
+        }
+
+        //!!! rather abstract to force all to reimplement
+        public abstract short getNodeType();
+
+        public org.w3c.dom.Document getOwnerDocument() {
+            // let it be the first item
+            return null;
+        }
+
+        public org.w3c.dom.Node replaceChild(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public org.w3c.dom.Node cloneNode(boolean param) {
+            return (Node) this;  //we are immutable, only problem with references may appear
+        }
+
+        public org.w3c.dom.Node getNextSibling() {
+            return null;
+        }
+
+        public org.w3c.dom.Node insertBefore(org.w3c.dom.Node node, org.w3c.dom.Node node1) throws org.w3c.dom.DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getNamespaceURI() {
+            return null;    // some client determines DOM1 by NoSuchMethodError
+        }
+
+        public org.w3c.dom.NamedNodeMap getAttributes() {
+            return null;
+        }
+
+        public org.w3c.dom.NodeList getChildNodes() {       
+            return null;
+        }
+
+        public String getNodeValue() throws org.w3c.dom.DOMException {
+            // attribute, text, pi data
+            return null;
+        }
+
+        public org.w3c.dom.Node appendChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getLocalName() {
+            return null;    // some client determines DOM1 by NoSuchMethodError
+        }
+
+        public org.w3c.dom.Node getParentNode() {
+            return null;
+        }
+
+        public void setNodeValue(String str) throws org.w3c.dom.DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public org.w3c.dom.Node getLastChild() {
+            return null;
+        }
+
+        public boolean hasAttributes() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void normalize() {
+            // ignore
+        }
+
+        public org.w3c.dom.Node removeChild(org.w3c.dom.Node node) throws org.w3c.dom.DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        /**
+         * @return false
+         */
+        public boolean hasChildNodes() {
+            return false;
+        }
+
+        /**
+         * @return null
+         */
+        public org.w3c.dom.Node getFirstChild() {
+            return null;
+        }
+
+
+        // A bonus Element interface ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+
+        public NodeList getElementsByTagNameNS(String namespaceURI, String localName) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getAttributeNS(String namespaceURI, String localName) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getAttribute(String name) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public Attr removeAttributeNode(Attr oldAttr) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public Attr getAttributeNode(String name) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public boolean hasAttribute(String name) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getTagName() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+       }
+
+        public Attr getAttributeNodeNS(String namespaceURI, String localName) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void removeAttribute(String name) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public Attr setAttributeNodeNS(Attr newAttr) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void setAttribute(String name, String value) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public NodeList getElementsByTagName(String name) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public boolean hasAttributeNS(String namespaceURI, String localName) {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public Attr setAttributeNode(Attr newAttr) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void removeAttributeNS(String namespaceURI, String localName) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void setAttributeNS(String namespaceURI, String qualifiedName, String value) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+
+        // A bonus Attr implementation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        public boolean getSpecified() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getName() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public Element getOwnerElement() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public void setValue(String value) throws DOMException {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        public String getValue() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+
+        // Notation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+        public String getPublicId() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }        
+
+        public String getSystemId() {
+           throw new DOMException(DOMException.NOT_SUPPORTED_ERR, domExText);
+        }
+        
+        public Icon getIcon(int kind) {
+            return null;
+        }
+        
+        /**
+         * @output provide additional information simplifiing decision
+         */
+        public String getDescription() {
+            return getNodeName() + " desc";
+        }
+        
+        /**
+         * @output text representing name of suitable entity
+         * //??? is it really needed
+         */
+        public String getText() {
+            return getNodeName();
+        }
+        
+        /**
+         * @output name that is presented to user
+         */
+        public String getDisplayName() {
+            return getNodeName() + " disp";
+        }
+        
+    }
+        
+    private static class MyElement extends AbstractResultNode implements Element {
+        
+        private String name;
+        
+        MyElement(String name) {
+            this.name = name;
+        }
+        
+        public short getNodeType() {
+            return Node.ELEMENT_NODE;
+        }
+        
+        public String getNodeName() {
+            return name;
+        }
+        
+        public String getTagName() {
+            return name;
+        }
+        
+    }
+
+    private static class MyAttr extends AbstractResultNode implements Attr {
+        
+        private String name;
+        
+        MyAttr(String name) {
+            this.name = name;
+        }
+        
+        public short getNodeType() {
+            return Node.ATTRIBUTE_NODE;
+        }
+        
+        public String getNodeName() {
+            return name;
+        }
+        
+        public String getName() {
+            return name;                
+        }
+
+        public String getValue() {
+            return null;  //??? what spec says
+        }
+        
     }
 }
