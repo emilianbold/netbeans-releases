@@ -208,7 +208,6 @@ public class NbTopManager extends TopManager {
       notify(nd);
     }
     else {
-      t.printStackTrace();
       super.notifyException (t);
     }
   }
