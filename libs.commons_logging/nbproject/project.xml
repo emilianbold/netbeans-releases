@@ -15,8 +15,8 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.libs.jini.jsk_platform</code-name-base>
-            <path>jini/libs/jsk_platform</path>
+            <code-name-base>org.netbeans.libs.jini.sun_util</code-name-base>
+            <path>jini/libs/sun_util</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
@@ -28,21 +28,6 @@ Microsystems, Inc. All Rights Reserved.
             </module-dependencies>
             <public-packages>
                 <subpackages>com.sun.jini</subpackages>
-                <package>net.jini</package>
-                <package>net.jini.activation</package>
-                <package>net.jini.config</package>
-                <package>net.jini.constraint</package>
-                <package>net.jini.core</package>
-                <package>net.jini.discovery</package>
-                <package>net.jini.export</package>
-                <package>net.jini.id</package>
-                <package>net.jini.iiop</package>
-                <package>net.jini.io</package>
-                <package>net.jini.jeri</package>
-                <package>net.jini.jrmp</package>
-                <package>net.jini.loader</package>
-                <package>net.jini.security</package>
-                <package>net.jini.url</package>
             </public-packages>
         </data>
     </configuration>
