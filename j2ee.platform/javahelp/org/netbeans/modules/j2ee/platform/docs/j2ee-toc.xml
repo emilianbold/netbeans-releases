@@ -25,7 +25,7 @@
             <tocitem text="Enterprise Application Tasks: Quick Reference" target="tbd" />
         </tocitem>
         <tocitem text="Creating and Configuring Enterprise Applications" >
-            <tocitem text="Creating an Enterprise Application Project" target="tbd" />
+            <tocitem text="Creating an Enterprise Application Project" target="ent_app_creating" />
             <tocitem text="Importing an Existing Enterprise Application" target="tbd" />
             <tocitem text="Addind a Module to an Enterprise Application" target="tbd" />
             <tocitem text="Adding a Library to an Enterprise Application" target="tbd" />
