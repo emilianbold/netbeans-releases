@@ -17,6 +17,15 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.sysclasspath" value="ignore"/>
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
+  <property name="xtest.license.file" location="xtest-license.txt"/>
+  <property name="nbext" value="../nbbuild"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+
+  <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
   
   <target name="prepare-junit-extensions">
     <ant dir="../junit" antfile="build.xml" target="jar-junit-extensions"/>
@@ -151,8 +160,12 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src">
         <include name="**/*.class"/>
       </fileset>
+      <fileset dir="modulesrc">
+        <include name="**/*.class"/>
+      </fileset>
     </delete>
     <delete file="manifest-subst.mf"/>
+    <delete file="module-manifest-subst.mf"/>
     <delete dir="lib/patches"/>
     <delete file="lib/xtest.jar"/>
     <delete file="lib/junit-ext.jar"/>
@@ -163,6 +176,8 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
   </target>
   
   <target name="real-clean" depends="clean">
@@ -222,4 +237,31 @@ Microsystems, Inc. All Rights Reserved.
      <ant dir="../nbbuild" antfile="build.xml" target="all-xtest"/>
   </target>
 
+  <target name="timestamp" unless="buildnumber">
+    <tstamp>
+        <format property="buildnumber" pattern="yyyyMMddhhmm"/>
+    </tstamp>
+  </target>
+
+  <target name="nbm" depends="makedist,timestamp">
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="module-manifest.mf" tofile="module-manifest-subst.mf" filtering="on"/>
+    <mkdir dir="netbeans/modules"/>
+    <locjar jarfile="netbeans/modules/xtest.jar"
+         manifest="module-manifest-subst.mf"
+         basedir="modulesrc"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="false">
+    </locjar>
+    <mkdir dir="netbeans/xtest-distribution"/>
+    <unzip src="xtest-distribution.zip" dest="netbeans/xtest-distribution" />
+    <makenbm file="xtest.nbm"
+             topdir="."
+             module="netbeans/modules/xtest.jar"
+             homepage="http://xtest.${homepage.base}"
+	         distribution="http://${dist.base}/xtest.nbm">
+      <license file="${xtest.license.file}"/>
+<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
+    </makenbm>
+  </target>
 </project>
