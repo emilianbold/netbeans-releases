@@ -316,19 +316,18 @@ public class AllOptionsFolder{
     }
     
     private static void updateOptions(){
-        synchronized (INSTALLED_OPTIONS_LOCK){
-            Iterator i = installedOptions.values().iterator();        
-            while (i.hasNext()){
-                Object obj = i.next();
-                if (obj instanceof BaseOptions){
-                    BaseOptions bo = (BaseOptions)obj;
-                    if (bo != null){
-                        bo.initPopupMenuItems();
-                    }
+        uninstallOption();        
+        List installedOpts = new ArrayList(installedOptions.values());
+        Iterator i = installedOpts.iterator();        
+        while (i.hasNext()){
+            Object obj = i.next();
+            if (obj instanceof BaseOptions){
+                BaseOptions bo = (BaseOptions)obj;
+                if (bo != null){
+                    bo.initPopupMenuItems();
                 }
             }
         }
-        uninstallOption();        
     }
     
     /** Returns true if BaseOptions has been initialized */
