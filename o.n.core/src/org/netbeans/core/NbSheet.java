@@ -113,7 +113,8 @@ public final class NbSheet extends TopComponent {
         // is docked in this mode
         // it's workaround, should be solved throgh some Mode API in future
         // # 16888. Properties sheet is in single mode in SDI only.
-        putClientProperty("NamingType", "SDIOnlyCompName"); // NOI18N
+        //Bugfix #36087: Fix naming type
+        putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
         // Force winsys to not show tab when this comp will be alone
         putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
 
