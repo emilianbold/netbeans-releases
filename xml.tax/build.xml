@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
+    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -57,6 +58,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="libsrc"/>
             </classpath>
         </javac>
+
+        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="init,compile">
@@ -73,6 +76,7 @@ Microsystems, Inc. All Rights Reserved.
                 manifest="manifest-subst.mf"
                 compress="false">
             <fileset dir="src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
+            <fileset dir="compat/src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
             <locale name="ja"/>
         </locjar>
     </target>
@@ -119,6 +123,8 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="netbeans"/>
         <delete dir="Info"/>
         <delete dir="javadoc"/>
+
+        <for-each locations="compat"/>
     </target>
 
     <target name="all" depends="clean,nbm"/>
