@@ -29,11 +29,13 @@ import java.util.TreeSet;
 
 import org.openide.*;
 import org.openide.actions.OpenAction;
+import org.openide.cookies.CompilerCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeListener;
 import org.openide.text.*;
@@ -42,12 +44,13 @@ import org.openide.util.actions.*;
 import org.openide.windows.*;
 
 
-/** Object that provides main functionality for properties data loader.
-* This class is final only for performance reasons,
-* can be unfinaled if desired.
-*
-* @author Ian Formanek
-*/
+/** 
+ * Object that provides main functionality for properties data loader.
+ * This class is final only for performance reasons,
+ * can be unfinaled if desired.
+ *
+ * @author Ian Formanek
+ */
 public final class PropertiesDataObject extends MultiDataObject {
     
     /** Generated Serialized Version UID. */
@@ -63,12 +66,14 @@ public final class PropertiesDataObject extends MultiDataObject {
     public static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
 
     /** Structural view of the dataobject */
-    protected transient BundleStructure bundleStructure;
+    private transient BundleStructure bundleStructure;
 
+    /** Helper variable. Flag if cookies were initialized. */
+    private transient boolean cookiesInitialized = false;
+    
 
     /** Constructor. */
-    public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
-    throws DataObjectExistsException {
+    public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader) throws DataObjectExistsException {
         super(obj, loader);
         // use editor support
         initialize();
@@ -78,10 +83,46 @@ public final class PropertiesDataObject extends MultiDataObject {
     /** Initializes the object. Used by construction and deserialized. */
     private void initialize() {
         bundleStructure = null;
-        getCookieSet().add(new PropertiesOpen(this));
-        getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
     }
 
+    
+    /** Overrides superclass method. */
+    public CookieSet getCookieSet() {
+        if(!cookiesInitialized) {
+            initCookieSet();
+        }
+        return super.getCookieSet();
+    }
+    
+    /** 
+     * Overrides superclass method.
+     * Look for a cookie in the current cookie set matching the requested class.
+     *
+     * @param type the class to look for
+     * @return an instance of that class, or <code>null</code> if this class of cookie
+     *    is not supported
+     */
+    public Node.Cookie getCookie(Class type) {
+        if(CompilerCookie.class.isAssignableFrom(type)) {
+            return null;
+        }
+        
+        if(!cookiesInitialized) {
+            initCookieSet();
+        }
+        return super.getCookie(type);
+    }
+
+    /** Helper method. Actually lazilly creating cookie when first asked.*/
+    private synchronized void initCookieSet() {
+        if (cookiesInitialized) {
+            return;
+        }
+        super.getCookieSet().add(new PropertiesOpen(this));
+        super.getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
+        cookiesInitialized = true;
+    }
+    
     /** Returns the support object for JTable-editing. Should be used by all subentries as well */
     public PropertiesOpen getOpenSupport () {
         return (PropertiesOpen)getCookie(OpenCookie.class);
