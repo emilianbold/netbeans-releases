@@ -73,9 +73,9 @@ public class AdditionalWizardPanel extends JPanel {
         //Accessibility   
         sourceCombo.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(AdditionalWizardPanel.class).getString("ACS_sourceCombo"));        
         
+        setComboModel(sourceMap);        
+        sourceComboActionPerformed(null); // update additional compoment
         addAdditionalComponent();
-
-        setComboModel(sourceMap);
     }
 
     
@@ -143,7 +143,6 @@ public class AdditionalWizardPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        sourceLabel.setText(NbBundle.getBundle(AdditionalWizardPanel.class).getString("LBL_Source"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceLabel, gridBagConstraints);
@@ -187,8 +186,8 @@ public class AdditionalWizardPanel extends JPanel {
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel sourceLabel;
     private javax.swing.JComboBox sourceCombo;
+    private javax.swing.JLabel sourceLabel;
     // End of variables declaration//GEN-END:variables
 
     /** <code>WizardDescriptor.Panel</code> used for <code>AdditionalPanel</code>. 

@@ -107,8 +107,6 @@ public class ResourceWizardPanel extends JPanel {
 
     /** Does additional components initialization. Sets mnemonics. */
     private void postInitComponents() {
-        resourcesLabel.setLabelFor(resourcesTable);
-        resourcesLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_SelectedSources_Mnem").charAt(0));
         addAllButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_SelectResourceAll_Mnem").charAt(0));
         addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_SelectResource_Mnem").charAt(0));
     }
@@ -159,7 +157,7 @@ public class ResourceWizardPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        resourcesLabel = new javax.swing.JLabel();
+        descTextArea = new javax.swing.JTextArea();
         jScrollPane1 = new javax.swing.JScrollPane();
         resourcesTable = new javax.swing.JTable();
         addAllButton = new javax.swing.JButton();
@@ -167,10 +165,16 @@ public class ResourceWizardPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        resourcesLabel.setText(NbBundle.getBundle(ResourceWizardPanel.class).getString("LBL_SelectedSources"));
+        descTextArea.setColumns(20);
+        descTextArea.setEditable(false);
+        descTextArea.setLineWrap(true);
+        descTextArea.setText(Util.getString("MSG_ResourcePanel_desc"));
+        descTextArea.setWrapStyleWord(true);
+        descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(resourcesLabel, gridBagConstraints);
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(descTextArea, gridBagConstraints);
 
         resourcesTable.setModel(tableModel);
         jScrollPane1.setViewportView(resourcesTable);
@@ -195,6 +199,7 @@ public class ResourceWizardPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 0);
         add(addAllButton, gridBagConstraints);
@@ -304,11 +309,11 @@ public class ResourceWizardPanel extends JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel resourcesLabel;
     private javax.swing.JButton addButton;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable resourcesTable;
     private javax.swing.JButton addAllButton;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextArea descTextArea;
     // End of variables declaration//GEN-END:variables
 
     /** Table model for this class. */

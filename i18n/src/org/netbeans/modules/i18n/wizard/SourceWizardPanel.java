@@ -98,8 +98,6 @@ public class SourceWizardPanel extends JPanel {
 
     /** Does additional init work. Sets mnemonics. */
     private void postInitComponents() {
-        sourcesLabel.setLabelFor(sourcesList);
-        sourcesLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_SelectedSources_Mnem").charAt(0));
         addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_AddSource_Mnem").charAt(0));
         removeButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_RemoveSource_Mnem").charAt(0));
     }
@@ -129,7 +127,7 @@ public class SourceWizardPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        sourcesLabel = new javax.swing.JLabel();
+        descTextArea = new javax.swing.JTextArea();
         jScrollPane1 = new javax.swing.JScrollPane();
         sourcesList = new javax.swing.JList();
         addButton = new javax.swing.JButton();
@@ -137,10 +135,14 @@ public class SourceWizardPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        sourcesLabel.setText(NbBundle.getBundle(SourceWizardPanel.class).getString("LBL_SelectedSources"));
+        descTextArea.setEditable(false);
+        descTextArea.setLineWrap(true);
+        descTextArea.setText(Util.getString("MSG_SorcesPanel_desc"));
+        descTextArea.setOpaque(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(sourcesLabel, gridBagConstraints);
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(descTextArea, gridBagConstraints);
 
         sourcesList.setCellRenderer(new DataObjectListCellRenderer());
         jScrollPane1.setViewportView(sourcesList);
@@ -165,6 +167,7 @@ public class SourceWizardPanel extends JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 0);
         add(addButton, gridBagConstraints);
@@ -265,11 +268,11 @@ public class SourceWizardPanel extends JPanel {
     }//GEN-LAST:event_addButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel sourcesLabel;
-    private javax.swing.JButton addButton;
     private javax.swing.JList sourcesList;
+    private javax.swing.JButton addButton;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton removeButton;
+    private javax.swing.JTextArea descTextArea;
     // End of variables declaration//GEN-END:variables
 
 
