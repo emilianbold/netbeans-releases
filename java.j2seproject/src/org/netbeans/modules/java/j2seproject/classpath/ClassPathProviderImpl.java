@@ -127,6 +127,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getCompileTimeClasspath(FileObject file) {
         int type = getType(file);
+        return this.getCompileTimeClasspath(type);
+    }
+    
+    private ClassPath getCompileTimeClasspath(int type) {        
         if (type < 0 || type > 1) {
             // Not a source file.
             return null;
@@ -180,6 +184,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getSourcepath(FileObject file) {
         int type = getType(file);
+        return this.getSourcepath(type);
+    }
+    
+    private ClassPath getSourcepath(int type) {
         if (type < 0 || type > 1) {
             // Unknown.
             return null;
@@ -231,28 +239,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return new ClassPath[]{getBootClassPath()};
         }
         if (ClassPath.COMPILE.equals(type)) {
-            List/*<ClassPath>*/ l = new ArrayList(2);
-            FileObject d = getPrimarySrcDir();
-            if (d != null) {
-                l.add(getCompileTimeClasspath(d));
-            }
-            d = getTestSrcDir();
-            if (d != null) {
-                l.add(getCompileTimeClasspath(d));
-            }
-            return (ClassPath[])l.toArray(new ClassPath[l.size()]);
+            ClassPath[] l = new ClassPath[2];
+            l[0] = getCompileTimeClasspath(0);
+            l[1] = getCompileTimeClasspath(1);
+            return l;
         }
         if (ClassPath.SOURCE.equals(type)) {
-            List/*<ClassPath>*/ l = new ArrayList(2);
-            FileObject d = getPrimarySrcDir();
-            if (d != null) {
-                l.add(getSourcepath(d));
-            }
-            d = getTestSrcDir();
-            if (d != null) {
-                l.add(getSourcepath(d));
-            }
-            return (ClassPath[])l.toArray(new ClassPath[l.size()]);
+            ClassPath[] l = new ClassPath[2];
+            l[0] = getSourcepath(0);
+            l[1] = getSourcepath(1);
+            return l;
         }
         assert false;
         return null;

@@ -99,7 +99,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 FileObject srcFile = null;
                 if (srcDir != null) {
                     srcFile = this.helper.resolveFileObject(srcDir);
-                    if (FileUtil.isArchiveFile(srcFile)) {
+                    if (srcFile != null && FileUtil.isArchiveFile(srcFile)) {
                         srcFile = FileUtil.getArchiveRoot (srcFile);
                     }                
                 }               

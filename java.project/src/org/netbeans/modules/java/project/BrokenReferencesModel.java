@@ -147,11 +147,7 @@ public class BrokenReferencesModel extends AbstractListModel {
                 continue;
             }
             String[] vals = PropertyUtils.tokenizePath(prop);
-            
-            // XXX: perhaps I could check here also that correctly resolved
-            // path point to an existing file? For foreign file references it
-            // make sence.
-            
+                        
             // no check whether after evaluating there are still some 
             // references which could not be evaluated
             for (int j=0; j<vals.length; j++) {
@@ -191,18 +187,7 @@ public class BrokenReferencesModel extends AbstractListModel {
             String key = (String)entry.getKey();
             String value = (String)entry.getValue();
             if (key.startsWith("project.")) { // NOI18N
-                File f;
-                if (helper != null) {
-                    f = new File(helper.resolvePath(value));
-                } else {
-                    f = new File(value);
-                    if (!f.exists()) {
-                        // perhaps the file is relative?
-                        String basedir = evaluator.getProperty("basedir");
-                        assert basedir != null;
-                        f = new File(new File(basedir), value);
-                    }
-                }
+                File f = getFile(helper, evaluator, value);
                 if (f.exists()) {
                     continue;
                 }
@@ -213,8 +198,30 @@ public class BrokenReferencesModel extends AbstractListModel {
                 }
                 set.add(new OneReference(REF_TYPE_PROJECT, key, true));
             }
+            else if (key.startsWith("file.reference")) {    //NOI18N
+                File f = getFile(helper, evaluator, value);
+                if (f.exists() || all.indexOf(value) == -1) {
+                    continue;
+                }
+                set.add(new OneReference(REF_TYPE_FILE, key, true));
+            }
         }
         return set;
+    }
+    
+    private static File getFile (AntProjectHelper helper, PropertyEvaluator evaluator, String name) {
+        if (helper != null) {
+            return new File(helper.resolvePath(name));
+        } else {
+            File f = new File(name);
+            if (!f.exists()) {
+                // perhaps the file is relative?
+                String basedir = evaluator.getProperty("basedir");
+                assert basedir != null;
+                f = new File(new File(basedir), name);
+            }
+            return f;
+        }
     }
 
     private static Set getPlatforms(PropertyEvaluator evaluator, String[] platformsProps, boolean abortAfterFirstProblem) {
