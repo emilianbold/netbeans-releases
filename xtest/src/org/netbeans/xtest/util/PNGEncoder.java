@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.File;
 
 import java.util.zip.CRC32;
 import java.util.zip.Deflater;
@@ -185,7 +186,7 @@ public class PNGEncoder extends Object {
     /** Static method performing screen capture into PNG image format file with given fileName
      * @param rect Rectangle of screen to be captured
      * @param fileName file name for screen capture PNG image file */    
-    public static void captureScreen(Rectangle rect, String fileName) {
+    public static void captureScreen(Rectangle rect, String fileName) throws IOException, AWTException {
         captureScreen(rect, fileName, GREYSCALE_MODE);
     }
 
@@ -193,23 +194,17 @@ public class PNGEncoder extends Object {
      * @param rect Rectangle of screen to be captured
      * @param mode image color mode
      * @param fileName file name for screen capture PNG image file */    
-    public static void captureScreen(Rectangle rect, String fileName, byte mode) {
-        try {
-            BufferedImage capture=new Robot().createScreenCapture(rect);
-            BufferedOutputStream file=new BufferedOutputStream(new FileOutputStream(fileName));
-            PNGEncoder encoder=new PNGEncoder(file, mode);
-            encoder.encode(capture);
-        } catch (AWTException awte) {
-            awte.printStackTrace();
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-        }
+    public static void captureScreen(Rectangle rect, String fileName, byte mode) throws IOException, AWTException {        
+        BufferedImage capture=new Robot().createScreenCapture(rect);
+        BufferedOutputStream file=new BufferedOutputStream(new FileOutputStream(fileName));
+        PNGEncoder encoder=new PNGEncoder(file, mode);
+        encoder.encode(capture);
     }
 
      /** Static method performing one component screen capture into PNG image format file with given fileName
       * @param comp Component to be captured
       * @param fileName String image target filename */    
-    public static void captureScreen(Component comp, String fileName) {
+    public static void captureScreen(Component comp, String fileName)  throws IOException, AWTException {
         captureScreen(comp, fileName, GREYSCALE_MODE);
     }
     
@@ -217,7 +212,7 @@ public class PNGEncoder extends Object {
      * @param comp Component to be captured
      * @param fileName String image target filename
      * @param mode image color mode */    
-    public static void captureScreen(Component comp, String fileName, byte mode) {
+    public static void captureScreen(Component comp, String fileName, byte mode) throws IOException, AWTException  {
 	captureScreen(new Rectangle(comp.getLocationOnScreen(),
 				    comp.getSize()),
 		      fileName, mode);
@@ -226,14 +221,49 @@ public class PNGEncoder extends Object {
     
     /** Static method performing whole screen capture into PNG image format file with given fileName
      * @param fileName String image target filename */    
-    public static void captureScreen(String fileName) {
+    public static void captureScreen(String fileName)  throws IOException, AWTException {
         captureScreen(fileName, GREYSCALE_MODE);
     }
     
     /** Static method performing whole screen capture into PNG image format file with given fileName
      * @param fileName String image target filename
      * @param mode image color mode */    
-    public static void captureScreen(String fileName, byte mode) {
+    public static void captureScreen(String fileName, byte mode) throws IOException, AWTException {
 	captureScreen(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()), fileName, mode);
+    }
+    
+    /** Static method performing whole screen capture into PNG image format file to given ide userdir
+     * @param ideUserdir - directory where userdir is stored
+     * @param fileName - filename of the dump
+     * @return true if the screendump was sucessfull
+     */
+    public static void captureScreenToIdeUserdir(String ideUserdir, String fileName) throws IOException, AWTException {
+        if (ideUserdir != null) {
+            File ideDir = new File(ideUserdir);
+            if (ideDir.isDirectory()) {
+                File sysDir = new File(ideDir,"system");
+                if (sysDir.isDirectory()) {
+                    File screenshotDir = new File(sysDir,"screenshots");
+                    if (!screenshotDir.exists()) {
+                        boolean result = screenshotDir.mkdir();
+                        if (result == false) {
+                            throw new IOException("Cannot create screenshots directory in "+screenshotDir.getPath());
+                        }
+                    } else if (!screenshotDir.isDirectory()) {
+                        throw new IOException("Screenshots file exists, but is not a directory: "+screenshotDir.getPath());
+                    }                    
+                    String screenShotFilename = screenshotDir.getPath()+File.separator+fileName;
+                    // capture the screenshot
+                    PNGEncoder.captureScreen(screenShotFilename);
+                    return;
+                } else {
+                    throw new IOException("Cannot create screendump, ide userdir/system "+sysDir.getPath()+" is not a valid directory");
+                }
+            } else {
+                throw new IOException("Cannot create screendump, ide userdir: "+ideDir.getPath()+" is not a valid directory");
+            }
+        } else {
+            throw new IOException("Cannot create screendump, ide userdir is not defined");
+        }
     }
 }

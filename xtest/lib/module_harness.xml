@@ -306,13 +306,13 @@ Microsystems, Inc. All Rights Reserved.
 
         <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
-              failonerror="no" timeout="${xtest.ide.timeout}">
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}">
 	    	  <arg line="${args}"/>
         </ideexec>
         
         <ideexec dir="${netbeans.home}/bin" executable="sh"  
               os="Linux SunOS Solaris"
-              failonerror="no" timeout="${xtest.ide.timeout}">
+              failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}">
             <arg line="runide.sh ${args}"/>
         </ideexec>
 
@@ -489,8 +489,8 @@ Microsystems, Inc. All Rights Reserved.
         <available file="${xtest.workdir}/sys/ide/output" type="dir" property="xtest.ide.output.exists"/>
         <antcall target="copy-output"/>
         <!-- copy ide screenshot image -->
-        <available file="${xtest.workdir}/sys/ide/system/screenshot.png" type="file" property="xtest.ide.screenshot.exists"/>
-        <antcall target="copy-ide-screenshot"/>
+        <available file="${xtest.workdir}/sys/ide/system/screenshots" type="dir" property="xtest.ide.screenshot.exists"/>
+        <antcall target="copy-ide-screenshots"/>
         <!-- copy ide.zip -->
         <condition property="xtest.userdir.move">
            <equals arg1="${xtest.archive.ide.userdir}" arg2="true"/>
@@ -509,8 +509,10 @@ Microsystems, Inc. All Rights Reserved.
         </copy>
     </target>
     
-    <target name="copy-ide-screenshot" if="xtest.ide.screenshot.exists">
-        <copy file="${xtest.workdir}/sys/ide/system/screenshot.png" todir="${xtest.current.results}/sys/ide"/>           
+    <target name="copy-ide-screenshots" if="xtest.ide.screenshot.exists">
+        <copy todir="${xtest.current.results}/sys/ide/screenshots">
+            <fileset dir="${xtest.workdir}/sys/ide/system/screenshots"/>
+        </copy>
     </target>
     
     
