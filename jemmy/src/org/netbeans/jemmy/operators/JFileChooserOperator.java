@@ -213,12 +213,15 @@ public class JFileChooserOperator extends JComponentOperator
      */
     public JButton getApproveButton() {
         String aText = getApproveButtonText();
+        if(aText == null) 
+            aText = getUI().getApproveButtonText((JFileChooser)getSource());
         if(aText != null) {
             return((JButton)innerSearcher.
                    findComponent(new ButtonFinder(aText)));
         } else {
             throw(new JemmyException("JFileChooser.getApproveButtonText() " +
-                                     "returns null"));
+                                     "and getUI().getApproveButtonText " +
+                                     "return null"));
         }
     }
 

@@ -72,13 +72,14 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 		return(null);
 	    }
 	    itemOper.copyEnvironment(oper);
-	    return(push(itemOper, (oper instanceof JMenuBarOperator) ? ((JMenuBar)oper.getSource()) : null, 
+	    return(push(itemOper, null, (oper instanceof JMenuBarOperator) ? ((JMenuBar)oper.getSource()) : null, 
                         chooser, 1, true));
 	} else {
-	    return(push(oper, null, chooser, 0, true));
+	    return(push(oper, null, null, chooser, 0, true));
 	}
     }
-    protected Object push(ComponentOperator oper, JMenuBar menuBar, 
+    protected Object push(ComponentOperator oper, ComponentOperator lastItem,
+                          JMenuBar menuBar, 
                           PathChooser chooser, int depth, boolean pressMouse) {
         try {
             oper.waitComponentVisible(true);
@@ -87,7 +88,9 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
             throw(new JemmyException("Interrupted!", e));
         }
 	MouseDriver mDriver = DriverManager.getMouseDriver(oper);
-        mDriver.enterMouse(oper);
+        //mDriver.enterMouse(oper);
+        //use enhanced algorithm instead
+        smartMove(lastItem, oper);
 	if(depth > chooser.getDepth() - 1) {
             if(oper instanceof JMenuOperator &&
                menuBar != null && isMenuBarSelected(menuBar)) {
@@ -107,7 +110,7 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
 	if(item instanceof JMenu) {
 	    JMenuOperator mo = new JMenuOperator((JMenu)item);
 	    mo.copyEnvironment(oper);
-	    return(push(mo, null, chooser, depth + 1, false));
+	    return(push(mo, oper, null, chooser, depth + 1, false));
 	} else {
 	    JMenuItemOperator mio = new JMenuItemOperator(item);
 	    mio.copyEnvironment(oper);
@@ -116,9 +119,63 @@ public class DefaultJMenuDriver extends LightSupportiveDriver implements MenuDri
             } catch(InterruptedException e) {
                 throw(new JemmyException("Interrupted!", e));
             }
+            //move here first
+            smartMove(oper, mio);
 	    DriverManager.getButtonDriver(oper).push(mio);
 	    return(item);
 	}
+    }
+    private void smartMove(ComponentOperator last, ComponentOperator oper) {
+        if(last == null) {
+            oper.enterMouse();
+            return;
+        }
+        //get all the coordinates first
+        //previous item
+        long lastXl, lastXr, lastYl, lastYr;
+        lastXl = (long)last.getSource().getLocationOnScreen().getX();
+        lastXr = lastXl + last.getSource().getWidth();
+        lastYl = (long)last.getSource().getLocationOnScreen().getY();
+        lastYr = lastYl + last.getSource().getHeight();
+        //this item
+        long operXl, operXr, operYl, operYr;
+        operXl = (long)oper.getSource().getLocationOnScreen().getX();
+        operXr = operXl + oper.getSource().getWidth();
+        operYl = (long)oper.getSource().getLocationOnScreen().getY();
+        operYr = operYl + oper.getSource().getHeight();
+        //get the overlap borders
+        long overXl, overXr, overYl, overYr;
+        overXl = (lastXl > operXl) ? lastXl : operXl;
+        overXr = (lastXr < operXr) ? lastXr : operXr;
+        overYl = (lastYl > operYl) ? lastYl : operYl;
+        overYr = (lastYr < operYr) ? lastYr : operYr;
+        //now, let's see ...
+        //what if it overlaps by x?
+        if(overXl < overXr) {
+            //good - move mose to the center of the overlap
+            last.moveMouse((int)((overXr - overXl) / 2 - lastXl),
+                           last.getCenterY());
+            //move mouse inside
+            oper.moveMouse((int)((overXr - overXl) / 2 - operXl),
+                           oper.getCenterY());
+            //done - now move to the center
+            oper.enterMouse();
+            return;
+        }
+        //ok, what if it overlaps by y?
+        if(overYl < overYr) {
+            //good - move mose to the center of the overlap
+            last.moveMouse(last.getCenterX(),
+                           (int)((overYr - overYl) / 2 - lastYl));
+            //move mouse inside
+            oper.moveMouse(last.getCenterX(),
+                           (int)((overYr - overYl) / 2 - operYl));
+            //done - now move to the center
+            oper.enterMouse();
+            return;
+        }
+        //well - can't help it
+        oper.enterMouse();
     }
     protected JPopupMenu waitPopupMenu(final ComponentOperator oper) {
         return((JPopupMenu)JPopupMenuOperator.waitJPopupMenu(new ComponentChooser() {

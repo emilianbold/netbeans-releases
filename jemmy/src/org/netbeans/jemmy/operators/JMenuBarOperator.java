@@ -221,7 +221,7 @@ public class JMenuBarOperator extends JComponentOperator
 		    return(result);
 		}
 		public String getDescription() {
-		    return("Menu pushing");
+		    return(JMenuOperator.createDescription(choosers));
 		}
 	    }, getTimeouts().getTimeout("JMenuOperator.PushMenuTimeout")));
     }

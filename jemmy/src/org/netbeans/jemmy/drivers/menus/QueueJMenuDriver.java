@@ -34,6 +34,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.drivers.DescriptablePathChooser;
 import org.netbeans.jemmy.drivers.LightSupportiveDriver;
 import org.netbeans.jemmy.drivers.MenuDriver;
 import org.netbeans.jemmy.drivers.MouseDriver;
@@ -123,7 +124,11 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
         queueTool.waitEmpty(10);
         queueTool.waitEmpty(10);
         //end of 1.5 workaround
-        result = runAction(action, oper, oper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout"));
+        result = runAction(action, oper, 
+                           oper.getTimeouts().getTimeout("ComponentOperator.WaitComponentTimeout"),
+                           (chooser instanceof DescriptablePathChooser) ? 
+                           ((DescriptablePathChooser)chooser).getDescription() : 
+                           "Menu pushing");
         if(result instanceof JMenu) {
             for(int i = 1; i < chooser.getDepth(); i++) {
                 final JMenu menu = (JMenu)result;
@@ -138,19 +143,23 @@ public class QueueJMenuDriver extends LightSupportiveDriver implements MenuDrive
                             }
                         }
                     };
-                result = (JMenuItem)runAction(action, oper, oper.getTimeouts().getTimeout("JMenuOperator.WaitPopupTimeout"));
+                result = (JMenuItem)runAction(action, oper, 
+                                              oper.getTimeouts().getTimeout("JMenuOperator.WaitPopupTimeout"),
+                                              (chooser instanceof DescriptablePathChooser) ? 
+                                              ((DescriptablePathChooser)chooser).getDescription() : 
+                                              "Menu pushing");
             }
         }
         return(result);
     }
 
-    private JMenuItem runAction(final OneReleaseAction action, ComponentOperator env, long waitingTime) {
+    private JMenuItem runAction(final OneReleaseAction action, ComponentOperator env, long waitingTime, final String description) {
         Waiter waiter = new Waiter(new Waitable() {
                 public Object actionProduced(Object param) {
                     return(queueTool.invokeSmoothly(action));
                 }
                 public String getDescription() {
-                    return("Menu pushing");
+                    return(description);
                 }
             });
         waiter.setOutput(env.getOutput().createErrorOutput());

@@ -25,7 +25,8 @@ fi
 echo "RESOURCE_FILE = `$JEMMY_ROOT/util/path_convert $TEST_SUITE/gui_resource`" >> properties
 RESOURCE_FILE=`$JEMMY_ROOT/util/path_convert $TEST_SUITE/gui_resource`
 
-CLASSPATH=$JEMMY_ROOT/testsuite/classes:$JEMMY_ROOT/classes:$JEMMY_ROOT/jemmy:$JEMMY_ROOT/common:$JEMMY_ROOT/fjie:$CLASSPATH
+#CLASSPATH=$JEMMY_ROOT/testsuite/classes:$JEMMY_ROOT/classes:$JEMMY_ROOT/jemmy:$JEMMY_ROOT/common:$JEMMY_ROOT/fjie:$CLASSPATH
+CLASSPATH=$JEMMY_ROOT/build/classes:$JEMMY_ROOT/build/test/classes:$JEMMY_ROOT/jemmy:$CLASSPATH
 export CLASSPATH
 
 prop_file=`pwd`/properties

@@ -21,6 +21,7 @@ import org.netbeans.jemmy.CharBindingMap;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.ComponentSearcher;
 import org.netbeans.jemmy.EventDispatcher;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.QueueTool;
@@ -796,7 +797,15 @@ public class ComponentOperator extends Operator
      * Uses visualizer defined by setVisualiser() method.
      */
     public void makeComponentVisible() {
-	getVisualizer().makeVisible((ComponentOperator)this);
+        getVisualizer().makeVisible((ComponentOperator)this);
+        /*
+        final ComponentOperator compOper = (ComponentOperator)this;
+        runMapping(new MapVoidAction("add") {
+                public void map() {
+                    getVisualizer().makeVisible(compOper);
+                }
+            });
+        */
     }
 
     /**
@@ -841,7 +850,7 @@ public class ComponentOperator extends Operator
     }
 
     /**
-     * Waits for component enabled.
+     * Waits for the component to be enabled.
      * @throws TimeoutExpiredException
      * @throws InterruptedException
      */
@@ -865,6 +874,19 @@ public class ComponentOperator extends Operator
 			 times.getTimeout("ComponentOperator.WaitComponentEnabledTimeout"));
 	waiter.setTimeouts(times);
 	waiter.waitAction(getSource());
+    }
+
+    /**
+     * Waits for the component to be enabled.
+     * per request: 37831
+     * @throws TimeoutExpiredException
+     */
+    public void wtComponentEnabled() {
+        try {
+            waitComponentEnabled();
+        } catch(InterruptedException e) {
+            throw(new JemmyException("Interrupted!", e));
+        }
     }
 
     /**

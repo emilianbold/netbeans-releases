@@ -29,6 +29,7 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
 import org.netbeans.jemmy.drivers.MenuDriver;
+import org.netbeans.jemmy.drivers.DescriptablePathChooser;
 import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.drivers.PathChooser;
 
@@ -315,7 +316,7 @@ implements Outputable, Timeoutable{
 		    return(result);
 		}
 		public String getDescription() {
-		    return("Menu pushing");
+		    return(createDescription(choosers));
 		}
 	    }, getTimeouts().getTimeout("JMenuOperator.PushMenuTimeout")));
     }
@@ -877,14 +878,28 @@ implements Outputable, Timeoutable{
     //End of mapping                                      //
     ////////////////////////////////////////////////////////
 
-    static PathChooser converChoosers(final ComponentChooser[] choosers) {
-	return(new PathChooser() {
+    static String createDescription(ComponentChooser[] choosers) {
+        String description="(";
+        for(int i = 0; i < choosers.length; i++) {
+            if(i > 0)
+                description = description + ", ";
+            description = description + choosers[i].getDescription();
+        }
+        description = description + ")";
+        return("Menu pushing: " + description);
+    }
+
+    static DescriptablePathChooser converChoosers(final ComponentChooser[] choosers) {
+	return(new DescriptablePathChooser() {
 		public boolean checkPathComponent(int depth, Object component) {
 		    return(choosers[depth].checkComponent((Component)component));
 		}
 		public int getDepth() {
 		    return(choosers.length);
 		}
+                public String getDescription() {
+                    return(createDescription(choosers));
+                }
 	    });
     }
 
