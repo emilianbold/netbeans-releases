@@ -338,6 +338,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
                 return;
             }
             AuxiliaryConfiguration aux = Util.getAuxiliaryConfiguration(projectHelper);
+            WebProjectGenerator.putWebSourceFolder(projectHelper, panel.getWebSrcFolder());
             WebProjectGenerator.putWebModules(projectHelper, aux, panel.getWebModules());
         }
 

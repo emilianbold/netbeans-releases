@@ -54,6 +54,16 @@ public class WebProjectGenerator {
         if (foldersEl == null) {
             foldersEl = doc.createElementNS(NS_GENERAL, "folders"); // NOI18N
             Util.appendChildElement(data, foldersEl, rootElementsOrder);
+        } else {
+            List l = Util.findSubElements(foldersEl);
+            for (int i = 0; i < l.size(); i++) {
+                Element e = (Element) l.get(i);
+                Element te = Util.findElement(e, "type", NS_GENERAL);
+                if (Util.findText(te).equals("doc_root")) {
+                    foldersEl.removeChild(e);
+                    break;
+                }
+            }        
         }
         Element viewEl = Util.findElement(data, "view", NS_GENERAL); // NOI18N
         if (viewEl == null) {
@@ -64,7 +74,19 @@ public class WebProjectGenerator {
         if (itemsEl == null) {
             itemsEl = doc.createElementNS(NS_GENERAL, "items"); // NOI18N
             Util.appendChildElement(viewEl, itemsEl, viewElementsOrder);
+        } else {
+            List l = Util.findSubElements(itemsEl);
+            for (int i = 0; i < l.size(); i++) {
+                Element e = (Element) l.get(i);
+                if (e.hasAttribute("style")) {
+                    if (e.getAttribute("style").equals("tree")) {
+                        itemsEl.removeChild(e);
+                        break;
+                    }
+                }
+            }
         }
+        
         Iterator it1 = sources.iterator();
         while (it1.hasNext()) {
             String path = (String)it1.next();
