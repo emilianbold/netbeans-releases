@@ -32,7 +32,6 @@ import org.openide.util.WeakListeners;
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
     
-//    private static final String SRC_DIR = "src.dir"; // NOI18N
     private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
     private static final String DIST_JAR = "dist.jar"; // NOI18N
     private static final String DOC_BASE_DIR = "web.docbase.dir"; // NOI18N
@@ -145,21 +144,22 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
     
     private ClassPath getCompileTimeClasspath(int type) {        
-        if (type < 0 || type > 1) {
+        if ((type < 0 || type > 2) && type != 5) {
             // Not a source file.
             return null;
         }
-        ClassPath cp = cache[2+type];
+        if (type == 2)
+            type = 0;
+        
+        ClassPath cp = cache[3+type];
         if ( cp == null) {
             if (type == 0) {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); // NOI18N
+                cp = ClassPathFactory.createClassPath(new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); //NOI18N
             }
             else {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
+                cp = ClassPathFactory.createClassPath(new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); //NOI18N
             }
-            cache[2+type] = cp;
+            cache[3+type] = cp;
         }
         
         return cp;
@@ -173,13 +173,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // run.classpath since that does not actually contain the file!
             // (It contains file:$projdir/build/classes/ instead.)
             return null;
-        } else if (type > 1) {
-            type-=2;            //Compiled source transform into source
         }
         switch (type){
-            case 2: type = 0; break;
+            case 2:
             case 3:
-            case 4: type -=3; break;
+            case 4: type -= 2; break;
+            case 5: type = 0; break;
         }
         
         ClassPath cp = cache[6+type];
@@ -223,8 +222,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
                     cp = ClassPathFactory.createClassPath(new JspClassPathImplementation(helper, evaluator));
                     break;
             }
+            cache[type] = cp;
         }
-        cache[type] = cp;
         return cp;
     }
     
@@ -260,16 +259,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return new ClassPath[]{getBootClassPath()};
         }
         if (ClassPath.COMPILE.equals(type)) {
-            ClassPath[] l = new ClassPath[2];
+            ClassPath[] l = new ClassPath[1];
             l[0] = getCompileTimeClasspath(0);
-            l[1] = getCompileTimeClasspath(1);
             return l;
         }
         if (ClassPath.SOURCE.equals(type)) {
-            ClassPath[] l = new ClassPath[3];
+            ClassPath[] l = new ClassPath[2];
             l[0] = getSourcepath(0);
-            l[1] = getSourcepath(1);
-            l[2] = getSourcepath(2);
+            l[1] = getSourcepath(2);
             return l;
         }
         assert false;
