@@ -131,7 +131,7 @@ All Rights Reserved.
         <war basedir="release" 
             compress="false"
             webxml="web.xml"
-            warfile="netbeans.war"/>
+            warfile="${netbeans.dest}.war"/>
     </target>
         
     <target depends="jars" name="create-jnlp-jars">
@@ -190,7 +190,7 @@ All Rights Reserved.
         <delete file="manifest-subst.mf"/>
         <delete dir="javadoc"/>
         <delete dir="release"/>
-        <delete file="netbeans.war"/>
+        <delete file="${netbeans.dest}.war"/>
     </target>
 
     <target depends="clean" name="real-clean">
