@@ -27,6 +27,8 @@ public interface ActionsFactory {
     
     public Action openSubprojectsAction(); 
     
-    public Action closeProjectAction(); 
+    public Action closeProjectAction();
+    
+    public Action newFileAction();
         
 }
