@@ -23,7 +23,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class PropertyEditorColor extends ValidatePropertyEditors {
+public class PropertyEditorColor extends PropertyEditors {
     
     /** Creates a new instance of ValidatePropertyEditorColor */
     public PropertyEditorColor(String testName) {

@@ -13,8 +13,6 @@
 
 package gui.window;
 
-import gui.window.windowOperators.ProxyConfiguration;
-
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.WizardOperator;
 

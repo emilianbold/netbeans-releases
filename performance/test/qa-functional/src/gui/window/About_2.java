@@ -20,7 +20,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class About_2 extends ValidateAbout {
+public class About_2 extends About {
     About about;
     
     /** Creates a new instance of ValidateAbout_2 */
