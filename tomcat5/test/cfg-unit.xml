@@ -23,13 +23,23 @@ Microsystems, Inc. All Rights Reserved.
     "**/*Hid.*"
 -->
 
-<mconfig name="Web-core unit test config">
+<mconfig name="tomcatint-tomcat5 unit test config">
    
     <!-- stable testbag  -->
     <testbag testattribs="stable" executor="code" name="stable tests (no ide)" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
                <include name="**/*Test.class"/>
+               <exclude name="**/Deployment*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+   
+    <!-- stable testbag  -->
+    <testbag testattribs="deployment" executor="code" name="deployment tests (with Tomcat)" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+               <include name="**/Deployment*Test.class"/>
             </patternset>
         </testset>
     </testbag>
