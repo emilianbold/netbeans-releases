@@ -181,11 +181,11 @@ public class TomcatManager implements DeploymentManager {
             int portIndex = theUri.indexOf (':');
             String host = theUri.substring (0, portIndex - 1);
             setHost (host);
-            System.out.println("host:"+host);
+            //System.out.println("host:"+host);
             int portEnd = theUri.indexOf ('/');
             portEnd = portEnd > 0 ? portEnd : theUri.length ();
             String port = theUri.substring (portIndex, portEnd - 1);
-            System.out.println("port:"+port);
+            //System.out.println("port:"+port);
             try {
                 setServerPort (Integer.valueOf (port));
             } catch (NumberFormatException nef) {
@@ -291,19 +291,22 @@ public class TomcatManager implements DeploymentManager {
         if (catalinaFS!=null) return catalinaFS;
         File baseDir = getCatalinaBaseDir();
         if (baseDir==null) baseDir = getCatalinaHomeDir();
+        if (!baseDir.exists()) createBaseDir(baseDir,getCatalinaHomeDir());
         if (baseDir==null) return null;
         catalinaFS = findFileSystem(baseDir);
-        if (catalinaFS==null) {
-            catalinaFS = new LocalFileSystem();
-            try {
-                ((LocalFileSystem)catalinaFS).setRootDirectory(baseDir);
-                catalinaFS.setHidden(true);
-                Repository.getDefault().addFileSystem(catalinaFS);
-            } catch (Exception ex) {
-                org.openide.ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ex);
-            }
-        }
+        if (catalinaFS==null) createCatalinaBaseFileSystem(baseDir);
         return catalinaFS;
+    }
+    
+    public void createCatalinaBaseFileSystem(File baseDir) {
+        catalinaFS = new LocalFileSystem();
+        try {
+            ((LocalFileSystem)catalinaFS).setRootDirectory(baseDir);
+            catalinaFS.setHidden(true);
+            Repository.getDefault().addFileSystem(catalinaFS);
+        } catch (Exception ex) {
+            org.openide.ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, ex);
+        }  
     }
 
     private FileSystem findFileSystem(java.io.File file) {
@@ -997,6 +1000,166 @@ public class TomcatManager implements DeploymentManager {
             }
             return null;
         }
+    }
+    /** Initializes base dir for use with Tomcat 5.0.x. 
+     *  @param baseDir directory for base dir.
+     *  @param homeDir directory to copy config files from.
+     *  @return File with absolute path for created dir or <CODE>null</CODE> when ther is an error.
+     */    
+    public File createBaseDir(File baseDir, File homeDir) {
+        File targetFolder;
+        if (!baseDir.isAbsolute ()) {
+            baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
+            targetFolder = new File(System.getProperty("netbeans.user"));
+
+        } else {
+            targetFolder = baseDir.getParentFile ();
+        }
+        
+        try {
+            
+            if (targetFolder == null) {
+                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find parent folder for base dir "+baseDir.getPath ());
+                return null;
+            }
+            File baseDirFO = new File (targetFolder, baseDir.getName ());
+            baseDirFO.mkdir ();
+                        
+            // create directories
+            String [] subdirs = new String [] { 
+                "conf",   // NOI18N
+                "conf/Catalina",   // NOI18N
+                "conf/Catalina/localhost",   // NOI18N
+                "logs",   // NOI18N
+                "work",   // NOI18N
+                "temp",   // NOI18N
+                "webapps" // NOI18N
+            };
+            for (int i = 0; i<subdirs.length; i++) {
+                File dest = new File (baseDirFO, subdirs [i]);
+                dest.mkdirs ();
+            }
+            // copy config files
+            String [] files = new String [] { 
+                "conf/catalina.policy",   // NOI18N
+                "conf/catalina.properties",   // NOI18N
+                "conf/server.xml",   // NOI18N
+                "conf/tomcat-users.xml",   // NOI18N
+                "conf/web.xml",   // NOI18N
+                "conf/Catalina/localhost/admin.xml",   // NOI18N
+                "conf/Catalina/localhost/manager.xml",   // NOI18N
+                "conf/Catalina/localhost/balancer.xml"   // NOI18N
+            };
+            String [] patternFrom = new String [] { 
+                null, 
+                null, 
+                "</Host>",   // NOI18N
+                "</tomcat-users>",   // NOI18N
+                null, 
+                "docBase=\"../server/webapps/admin\"", 
+                "docBase=\"../server/webapps/manager\"",
+                "docBase=\"balancer\""
+            };
+            String [] patternTo = new String [] { 
+                null, 
+                null, 
+                "<Context path=\"\" docBase=\""+new File (homeDir, "webapps/ROOT").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
+                "</Host>",   // NOI18N
+                "<user username=\"ide\" password=\"ide_manager\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
+                null, 
+                "docBase=\""+new File (homeDir, "server/webapps/admin").getAbsolutePath ()+"\"",   // NOI18N
+                "docBase=\""+new File (homeDir, "server/webapps/manager").getAbsolutePath ()+"\"",   // NOI18N
+                "docBase=\""+new File (homeDir, "webapps/balancer").getAbsolutePath ()+"\""   // NOI18N
+            };
+            for (int i = 0; i<files.length; i++) {
+                // get folder from, to, name and ext
+                int slash = files[i].lastIndexOf ('/');
+                String sfolder = files[i].substring (0, slash);
+                File fromDir = new File (homeDir, sfolder); // NOI18N
+                File toDir = new File (baseDir, sfolder); // NOI18N
+
+                if (patternTo[i] == null) {
+                    FileInputStream is = new FileInputStream (new File (fromDir, files[i].substring (slash+1)));
+                    FileOutputStream os = new FileOutputStream (new File (toDir, files[i].substring (slash+1)));
+                    try {
+                        final byte[] BUFFER = new byte[4096];
+                        int len;
+
+                        for (;;) {
+                            len = is.read (BUFFER);
+                            if (len == -1) break;
+                            os.write (BUFFER, 0, len);
+                        }
+                    } catch (java.io.IOException ioe) {
+                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+                    } finally {
+                        try { if (os != null) os.close (); } catch (java.io.IOException ioe) { // ignore this
+                        }
+                        try { if (is != null) is.close (); } catch (java.io.IOException ioe) { // ignore this 
+                        }
+                    }
+                }
+                else {
+                    // use patched version
+                    if (!copyAndPatch (
+                        new File (fromDir, files[i].substring (slash+1)), 
+                        new File (toDir, files[i].substring (slash+1)), 
+                        patternFrom[i],
+                        patternTo[i]
+                        )) {
+                        ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file "+files[i]);
+                        return null;
+                    }
+                }
+            }        
+        } catch (java.io.IOException ioe) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            return null;
+        }
+        return baseDir;
+    }
+    
+    /** Copies server.xml file and patches appBase="webapps" to
+     * appBase="$CATALINA_HOME/webapps" during the copy.
+     * @return success status.
+     */
+    private boolean copyAndPatch (File src, File dst, String from, String to) {
+        java.io.Reader r = null;
+        java.io.Writer out = null;
+        try {
+            r = new BufferedReader (new InputStreamReader (new FileInputStream (src), "utf-8")); // NOI18N
+            StringBuffer sb = new StringBuffer ();
+            final char[] BUFFER = new char[4096];
+            int len;
+
+            for (;;) {
+                len = r.read (BUFFER);
+                if (len == -1) break;
+                sb.append (BUFFER, 0, len);
+            }
+            int idx = sb.toString ().indexOf (from);
+            if (idx >= 0) {
+                sb.replace (idx, idx+from.length (), to);  // NOI18N
+            }
+            else {
+                // Something unexpected
+                TomcatFactory.getEM ().log (ErrorManager.WARNING, "Pattern "+from+" not found in "+src.getPath ());
+            }
+            out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream (dst), "utf-8")); // NOI18N
+            out.write (sb.toString ());
+            
+        } catch (java.io.IOException ioe) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ioe);
+            return false;
+        } finally {
+            try { if (out != null) out.close (); } catch (java.io.IOException ioe) { // ignore this
+            }
+            try { if (r != null) r.close (); } catch (java.io.IOException ioe) { // ignore this 
+            }
+        }
+        return true;
     }
     
 }
