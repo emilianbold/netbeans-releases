@@ -244,16 +244,16 @@ public class IDESettings extends SystemOption {
         return new HelpCtx (IDESettings.class);
     }
 
-    /** Getter for Hashtable of loaded jars with beans in previous Netbeans session.
-    * Names of Jars which are not in this table will be auto loaded in next Netbeans
+    /** Getter for Hashtable of loaded jars with beans in previous NetBeans session.
+    * Names of Jars which are not in this table will be auto loaded in next NetBeans
     * startup.
     */
     public Hashtable getLoadedBeans() {
         return alreadyLoadedBeans;
     }
 
-    /** Setter for Hashtable of loaded jars with beans in previous Netbeans session.
-    * Names of Jars which are not in this table will be auto loaded in next Netbeans
+    /** Setter for Hashtable of loaded jars with beans in previous NetBeans session.
+    * Names of Jars which are not in this table will be auto loaded in next NetBeans
     * startup.
     */
     public void setLoadedBeans(Hashtable table) {
