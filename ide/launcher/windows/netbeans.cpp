@@ -23,6 +23,7 @@ static char* getUserHomeFromRegistry(char* userhome);
 static char* GetStringValue(HKEY key, const char *name);
 static void parseConfigFile(const char* path);
 static void parseArgs(int argc, char *argv[]);
+static int dirExists(const char* path);
 
 static char userdir[MAX_PATH] = "c:\\nbuser";
 static char options[4098] = "";
@@ -47,7 +48,7 @@ int WINAPI
 #endif    
 
     char topdir[MAX_PATH];
-    char buf[MAX_PATH], *pc;
+    char buf[MAX_PATH * 10], *pc;
   
     GetModuleFileName(0, buf, sizeof buf);
 
@@ -81,28 +82,35 @@ int WINAPI
     char cmdline2[10240];
     
     if (dirs[0] == '\0') {
-        WIN32_FIND_DATA ffd;
-        HANDLE ffh;
-        
-        sprintf(buf, "%s\\extra", topdir);
-    
-        memset(&ffd, 0, sizeof ffd);
-        ffd.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
-        ffh = FindFirstFile(buf, &ffd);
-        if (ffh != INVALID_HANDLE_VALUE) {
-            FindClose(ffh);
-            sprintf(dirs, "%s\\%s;%s\\%s;%s\\%s",
-                    topdir, "\\nb4.0", topdir, "\\ide4", topdir, "\\extra");
+        sprintf(buf, "%s\\ide5", topdir);
+        if (dirExists(buf)) {
+            sprintf(dirs, "%s\\%s;%s\\%s",
+                    topdir, "\\nb4.1", topdir, "\\ide5");
         } else {
             sprintf(dirs, "%s\\%s;%s\\%s",
-                    topdir, "\\nb4.0", topdir, "\\ide4" );
+                    topdir, "\\nb4.0", topdir, "\\ide4");
+        }
+        sprintf(buf, "%s\\enterprise1", topdir);
+        if (dirExists(buf)) {
+            sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\enterprise1");
+            strcpy(dirs, buf);
+        }
+        sprintf(buf, "%s\\extra", topdir);
+        if (dirExists(buf)) {
+            sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\extra");
+            strcpy(dirs, buf);
         }
     }
     if (extradirs[0] != '\0') {
         strcat(strcat(dirs, ";"), extradirs);
     }
     
-    sprintf(nbexec, "%s\\platform4\\lib\\nbexec.exe", topdir);
+    sprintf(buf, "%s\\platform5", topdir);
+    if (dirExists(buf)) {
+        sprintf(nbexec, "%s\\platform5\\lib\\nbexec.exe", topdir);
+    } else {
+        sprintf(nbexec, "%s\\platform4\\lib\\nbexec.exe", topdir);
+    }
     sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
@@ -400,5 +408,20 @@ void parseArgs(int argc, char *argv[]) {
                 }
             }
         }
+    }
+}
+
+int dirExists(const char* path) {
+    WIN32_FIND_DATA ffd;
+    HANDLE ffh;
+    
+    memset(&ffd, 0, sizeof ffd);
+    ffd.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
+    ffh = FindFirstFile(path, &ffd);
+    if (ffh != INVALID_HANDLE_VALUE) {
+        FindClose(ffh);
+        return 1;
+    } else {
+        return 0;
     }
 }
