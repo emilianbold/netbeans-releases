@@ -15,7 +15,10 @@
 package org.netbeans.modules.editor;
 
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Map;
@@ -201,10 +204,11 @@ public class EditorModule extends ModuleInstall {
         ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).addOperationListener(operationListener);
 
         if (repoListen==null){
-            repoListen=new RepositListener();
             Repository repo = Repository.getDefault();
             if (repo!=null){
+                repoListen=new RepositListener();
                 repo.addRepositoryListener(repoListen);
+                listenOnProjects(repoListen, true);
             }
         }
 
@@ -214,10 +218,8 @@ public class EditorModule extends ModuleInstall {
     public void uninstalled() {
 
         if (repoListen!=null){
-            Repository repo = Repository.getDefault();
-            if (repo!=null){
-                repo.removeRepositoryListener(repoListen);
-            }
+            Repository.getDefault().removeRepositoryListener(repoListen);
+            listenOnProjects(repoListen, false);
         }
         
         AllOptionsFolder.unregisterModuleRegListener();
@@ -523,7 +525,9 @@ public class EditorModule extends ModuleInstall {
         }
     }
     
-    class RepositListener implements org.openide.filesystems.RepositoryListener {
+    class RepositListener implements org.openide.filesystems.RepositoryListener, PropertyChangeListener {
+        
+        private boolean ignoreRepositoryChanges;
         
         /** Creates new RepositListener */
         public RepositListener() {
@@ -534,7 +538,7 @@ public class EditorModule extends ModuleInstall {
         }
         
         public void fileSystemAdded(RepositoryEvent ev){
-            if (Boolean.getBoolean("netbeans.full.hack") == true){ //NOI18N
+            if (Boolean.getBoolean("netbeans.full.hack") == true || ignoreRepositoryChanges){ //NOI18N
                 return; 
             }
             WindowManager wm = getWindowManager();
@@ -555,7 +559,7 @@ public class EditorModule extends ModuleInstall {
         }
         
         public void fileSystemRemoved(RepositoryEvent ev){
-            if (Boolean.getBoolean("netbeans.full.hack") == true){ //NOI18N
+            if (Boolean.getBoolean("netbeans.full.hack") == true || ignoreRepositoryChanges){ //NOI18N
                 return;
             }
 
@@ -578,7 +582,33 @@ public class EditorModule extends ModuleInstall {
         public void fileSystemPoolReordered(RepositoryReorderedEvent ev){
         }
     
-}
-    
-    
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ("nb-projects-beforeOpenProject".equals(evt.getPropertyName())) { //NOI18N
+                ignoreRepositoryChanges = true;
+                JCStorage.getStorage().ignoreChanges(true, evt.getOldValue() != null);
+            }
+            if ("nb-projects-afterOpenProject".equals(evt.getPropertyName())) { //NOI18N
+                ignoreRepositoryChanges = false;
+                JCStorage.getStorage().ignoreChanges(false, false);
+            }
+        }
+    }
+
+    // don't hold anything from projects modules allowing it to be succesfully uninstalled
+    private void listenOnProjects(PropertyChangeListener listener, boolean add) {
+        try {
+            ClassLoader classLoader = (ClassLoader) Lookup.getDefault().lookup(ClassLoader.class);
+            Class cpnClass = classLoader.loadClass("org.netbeans.modules.projects.CurrentProjectNode"); //NOI18N
+            Method m = cpnClass.getDeclaredMethod("getDefault", new Class [0]); //NOI18N
+            Node cpn = (Node) m.invoke(null, new Class [0]);
+
+            if (add) {
+                cpn.addPropertyChangeListener(repoListen);
+            } else {
+                cpn.removePropertyChangeListener(repoListen);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
 }
