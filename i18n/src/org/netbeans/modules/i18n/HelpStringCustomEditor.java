@@ -53,7 +53,10 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         list.setBackground(new Color(SystemColor.window.getRGB()));
         
         comboLabel.setText(comboText);
+        comboLabel.setDisplayedMnemonic(comboText.charAt((0))); // so ugly...        
         listLabel.setText(I18nUtil.getBundle().getString("LBL_Arguments"));
+        listLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Arguments_Mnem")).charAt(0));
+        
     }
 
     /**
@@ -75,11 +78,11 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         list = new javax.swing.JList();
         comboLabel = new javax.swing.JLabel();
         listLabel = new javax.swing.JLabel();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         combo.setEditable(true);
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -88,23 +91,20 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         gridBagConstraints1.weightx = 1.0;
         add(combo, gridBagConstraints1);
         
-        
-        
         list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         list.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 listKeyPressed(evt);
             }
-        }
-        );
+        });
+        
         list.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 listMouseClicked(evt);
             }
-        }
-        );
-        scrollPane.setViewportView(list);
+        });
         
+        scrollPane.setViewportView(list);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -115,17 +115,15 @@ public class HelpStringCustomEditor extends JPanel implements EnhancedCustomProp
         gridBagConstraints1.weighty = 1.0;
         add(scrollPane, gridBagConstraints1);
         
-        
         comboLabel.setText("comboLabel");
-        
+        comboLabel.setLabelFor(combo);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(comboLabel, gridBagConstraints1);
         
-        
         listLabel.setText("listLabel");
-        
+        listLabel.setLabelFor(list);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;

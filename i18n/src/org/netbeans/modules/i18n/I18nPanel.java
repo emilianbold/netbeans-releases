@@ -155,85 +155,71 @@ public class I18nPanel extends JPanel {
         replaceButton = new javax.swing.JButton();
         skipButton = new javax.swing.JButton();
         infoButton = new javax.swing.JButton();
-        helpButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        helpButton = new javax.swing.JButton();
         propertyPanel = propertyPanel; // Ugly trick to cheat form.
         resourcePanel = createResourcePanel();
+        jPanel1 = new javax.swing.JPanel();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
-        buttonsPanel.setLayout(new java.awt.GridBagLayout());
-        java.awt.GridBagConstraints gridBagConstraints2;
+        buttonsPanel.setLayout(new java.awt.GridLayout(1, 5, 5, 0));
         
+        replaceButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_ReplaceButton_Mnem")).charAt(0));
         replaceButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_ReplaceButton"));
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.insets = new java.awt.Insets(17, 12, 11, 0);
-        gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints2.weightx = 1.0;
-        buttonsPanel.add(replaceButton, gridBagConstraints2);
+        buttonsPanel.add(replaceButton);
         
-        
+        skipButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_SkipButton_Mnem")).charAt(0));
         skipButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_SkipButton"));
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.insets = new java.awt.Insets(17, 5, 11, 0);
-        gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
-        buttonsPanel.add(skipButton, gridBagConstraints2);
+        buttonsPanel.add(skipButton);
         
-        
+        infoButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_InfoButton_Mnem")).charAt(0));
         infoButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_InfoButton"));
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.insets = new java.awt.Insets(17, 5, 11, 0);
-        gridBagConstraints2.anchor = java.awt.GridBagConstraints.EAST;
-        buttonsPanel.add(infoButton, gridBagConstraints2);
+        buttonsPanel.add(infoButton);
         
+        cancelButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_CancelButton"));
+        buttonsPanel.add(cancelButton);
         
+        helpButton.setMnemonic((java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_HelpButton_Mnem")).charAt(0) );
         helpButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_HelpButton"));
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
             }
-        }
-        );
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.gridx = 4;
-        gridBagConstraints2.gridy = 0;
-        gridBagConstraints2.insets = new java.awt.Insets(17, 5, 11, 11);
-        buttonsPanel.add(helpButton, gridBagConstraints2);
+        });
         
-        
-        cancelButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/i18n/Bundle").getString("CTL_CancelButton"));
-        gridBagConstraints2 = new java.awt.GridBagConstraints();
-        gridBagConstraints2.gridx = 3;
-        gridBagConstraints2.gridy = 0;
-        gridBagConstraints2.insets = new java.awt.Insets(17, 5, 11, 0);
-        buttonsPanel.add(cancelButton, gridBagConstraints2);
-        
+        buttonsPanel.add(helpButton);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.weightx = 1.0;
+        gridBagConstraints1.insets = new java.awt.Insets(17, 0, 11, 11);
         add(buttonsPanel, gridBagConstraints1);
-        
-        
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(propertyPanel, gridBagConstraints1);
         
-        
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(resourcePanel, gridBagConstraints1);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.weightx = 1.0;
+        add(jPanel1, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -253,10 +239,11 @@ public class I18nPanel extends JPanel {
   private javax.swing.JButton replaceButton;
   private javax.swing.JButton skipButton;
   private javax.swing.JButton infoButton;
-  private javax.swing.JButton helpButton;
   private javax.swing.JButton cancelButton;
+  private javax.swing.JButton helpButton;
   private javax.swing.JPanel propertyPanel;
   private javax.swing.JPanel resourcePanel;
+  private javax.swing.JPanel jPanel1;
   // End of variables declaration//GEN-END:variables
 
 }

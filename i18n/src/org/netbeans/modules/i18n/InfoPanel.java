@@ -94,28 +94,24 @@ public abstract class InfoPanel extends JPanel {
         componentText = new javax.swing.JTextField();
         propertyLabel = new javax.swing.JLabel();
         propertyText = new javax.swing.JTextField();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         stringLabel.setText(bundle.getString("CTL_StringLabel"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(stringLabel, gridBagConstraints1);
         
-        
         stringText.setEditable(false);
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(12, 11, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(stringText, gridBagConstraints1);
         
-        
         foundInLabel.setText(bundle.getString("CTL_FoundInLabel"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -123,9 +119,7 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(foundInLabel, gridBagConstraints1);
         
-        
         foundInText.setEditable(false);
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
@@ -134,9 +128,7 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(foundInText, gridBagConstraints1);
         
-        
         componentLabel.setText(bundle.getString("CTL_ComponentLabel"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
@@ -144,9 +136,7 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(componentLabel, gridBagConstraints1);
         
-        
         componentText.setEditable(false);
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 2;
@@ -155,9 +145,7 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(componentText, gridBagConstraints1);
         
-        
         propertyLabel.setText(bundle.getString("CTL_PropertyLabel"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
@@ -165,9 +153,7 @@ public abstract class InfoPanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(propertyLabel, gridBagConstraints1);
         
-        
         propertyText.setEditable(false);
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 3;

@@ -132,93 +132,97 @@ public class PropertyPanel extends JPanel {
         valueText = new javax.swing.JTextArea();
         keyBundleCombo = new javax.swing.JComboBox();
         replaceFormatTextField = new javax.swing.JTextField();
-        replaceFormatButton = new javax.swing.JButton();
         replaceFormatLabel = new javax.swing.JLabel();
+        replaceFormatButton = new javax.swing.JButton();
+        jPanel1 = new javax.swing.JPanel();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
+        
         commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
+        commentLabel.setLabelFor(commentText);
+        commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Comment_Mnem")).charAt(0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(commentLabel, gridBagConstraints1);
         
         commentText.setColumns(40);
         commentText.setRows(3);
-        
         commentText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 commentTextFocusLost(evt);
             }
-        }
-        );
+        });
         
         commentScroll.setViewportView(commentText);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 1;
-        gridBagConstraints1.gridwidth = 2;
+        gridBagConstraints1.gridy = 2;
+        gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(commentScroll, gridBagConstraints1);
         
         keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 0;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(keyLabel, gridBagConstraints1);
-        
-        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
+        keyLabel.setLabelFor(keyBundleCombo);
+        keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Key_Mnem")).charAt(0));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 11, 0);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        add(keyLabel, gridBagConstraints1);
+        
+        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
+        valueLabel.setLabelFor(valueText);
+        valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Value_Mnem")).charAt(0));
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 0;
+        gridBagConstraints1.gridy = 4;
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 11, 0);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(valueLabel, gridBagConstraints1);
         
         valueText.setColumns(40);
         valueText.setRows(3);
-        
         valueText.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 valueTextFocusLost(evt);
             }
-        }
-        );
+        });
         
         valueScroll.setViewportView(valueText);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 3;
-        gridBagConstraints1.gridwidth = 2;
+        gridBagConstraints1.gridy = 4;
+        gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 11, 11);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(valueScroll, gridBagConstraints1);
         
         keyBundleCombo.setEditable(true);
-        
         keyBundleCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 keyBundleComboActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
-        gridBagConstraints1.gridy = 2;
-        gridBagConstraints1.gridwidth = 2;
+        gridBagConstraints1.gridy = 3;
+        gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
         add(keyBundleCombo, gridBagConstraints1);
         
         replaceFormatTextField.setEditable(false);
@@ -226,34 +230,41 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
+        gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(replaceFormatTextField, gridBagConstraints1);
-        
-        replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
-        
-        replaceFormatButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                replaceFormatButtonActionPerformed(evt);
-            }
-        }
-        );
-        
-        gridBagConstraints1 = new java.awt.GridBagConstraints();
-        gridBagConstraints1.gridx = 2;
-        gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 5, 0, 11);
-        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
-        add(replaceFormatButton, gridBagConstraints1);
         
         replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(0, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(replaceFormatLabel, gridBagConstraints1);
+        
+        replaceFormatButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Format_Mnem")).charAt(0));
+        replaceFormatButton.setText(I18nUtil.getBundle().getString("CTL_Format"));
+        replaceFormatButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                replaceFormatButtonActionPerformed(evt);
+            }
+        });
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 3;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.insets = new java.awt.Insets(11, 5, 0, 11);
+        gridBagConstraints1.anchor = java.awt.GridBagConstraints.EAST;
+        add(replaceFormatButton, gridBagConstraints1);
+        
+        gridBagConstraints1 = new java.awt.GridBagConstraints();
+        gridBagConstraints1.gridx = 1;
+        gridBagConstraints1.gridy = 1;
+        gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints1.weightx = 1.0;
+        add(jPanel1, gridBagConstraints1);
         
     }//GEN-END:initComponents
 
@@ -337,8 +348,9 @@ public class PropertyPanel extends JPanel {
     private javax.swing.JTextArea valueText;
     private javax.swing.JComboBox keyBundleCombo;
     private javax.swing.JTextField replaceFormatTextField;
-    private javax.swing.JButton replaceFormatButton;
     private javax.swing.JLabel replaceFormatLabel;
+    private javax.swing.JButton replaceFormatButton;
+    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
 
 }

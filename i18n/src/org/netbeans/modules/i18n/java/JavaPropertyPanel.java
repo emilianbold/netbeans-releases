@@ -54,21 +54,23 @@ public class JavaPropertyPanel extends PropertyPanel {
     private void initComponents() {
         argumentsButton = new JButton();
         argumentsButton.setText(I18nUtil.getBundle().getString("CTL_Arguments"));
+        argumentsButton.setMnemonic((I18nUtil.getBundle().getString("CTL_Arguments_Mnem")).charAt(0));
         argumentsButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 argumentsButtonActionPerformed(evt);
             }
         }
         );
-
+        
         GridBagConstraints gridBagConstraints;        
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.insets = new Insets(0, 12, 11, 11);
-        gridBagConstraints.anchor = GridBagConstraints.NORTHEAST;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 1;
+        gridBagConstraints.insets = new Insets(11, 5, 0, 0);
+        gridBagConstraints.anchor = GridBagConstraints.EAST;
         add(argumentsButton, gridBagConstraints);
+                        
     }
 
     /** Action handler for arguments button. */

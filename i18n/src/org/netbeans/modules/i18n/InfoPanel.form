@@ -9,7 +9,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="stringLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_StringLabel" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -31,7 +31,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="foundInLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_FoundInLabel" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -53,7 +53,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="componentLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_ComponentLabel" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -75,7 +75,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="propertyLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_PropertyLabel" replaceFormat="bundle.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>

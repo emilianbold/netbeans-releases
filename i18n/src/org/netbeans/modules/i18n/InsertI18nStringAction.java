@@ -3,7 +3,7 @@
  * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
- * compliance with the License. A copy of the License is available at
+ * compliance with the License. A copy of the License isdi available at
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
@@ -54,8 +54,8 @@ public class InsertI18nStringAction extends CookieAction {
     private WeakReference topComponentWRef = new WeakReference(null);
     
     /** Generated serial version UID. */
-    static final long serialVersionUID =-7002111874047983222L;
-
+    static final long serialVersionUID =-7002111874047983222L;       
+    
     
     /** 
      * Actually performs InsertI18nStringAction
@@ -110,27 +110,31 @@ public class InsertI18nStringAction extends CookieAction {
         
         i18nPanel.setI18nString(support.getDefaultI18nString());
         
-        JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));
+        JButton OKButton = new JButton(I18nUtil.getBundle().getString("CTL_OKButton"));        
         JButton cancelButton = new JButton(I18nUtil.getBundle().getString("CTL_CancelButton"));
 
         JPanel buttonPanel = new JPanel(new GridBagLayout());
-
-        // OK button.
+        JPanel rightPanel = new JPanel(new java.awt.GridLayout(1, 2, 5, 0));
+        
+        rightPanel.add(OKButton); 
+        rightPanel.add(cancelButton);
+                
+                
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = GridBagConstraints.EAST;
-        gridBagConstraints.fill = GridBagConstraints.NONE;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 0.0;        
-        buttonPanel.add(OKButton, gridBagConstraints); 
+        buttonPanel.add(new JPanel(), gridBagConstraints); 
 
-        // Cancel button.
+        
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);        
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 0);        
         gridBagConstraints.weightx = 0.0;
-        buttonPanel.add(cancelButton, gridBagConstraints);
+        buttonPanel.add(rightPanel, gridBagConstraints);        
 
         // Panel.
         gridBagConstraints.gridx = 0;
@@ -217,7 +221,7 @@ public class InsertI18nStringAction extends CookieAction {
             topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
             topComponent.setLayout(new BorderLayout());
             topComponent.add(panel, BorderLayout.CENTER);
-            topComponent.setName(sourceDataObject.getName());
+            topComponent.setName(sourceDataObject.getName());           
 
             // dock into I18N mode if possible
             Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
