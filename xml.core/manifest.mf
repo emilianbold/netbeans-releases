@@ -14,6 +14,3 @@ OpenIDE-Module-Class: Loader
 Name: org/netbeans/modules/xml/core/DTDDataLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.netbeans.modules.text.TXTDataObject
-
-Name: org/netbeans/modules/xml/core/settings/CoreSettings.class
-OpenIDE-Module-Class: Option

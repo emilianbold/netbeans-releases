@@ -66,8 +66,8 @@ Microsystems, Inc. All Rights Reserved.
   <!-- register services with Lookup -->
   
   <folder name="Services">
-    <folder name="Hidden">
 
+    <folder name="Hidden">
       <!-- Comment reason: becuase of module separation and cleaning.
       <file name="org.netbeans-modules-xml-cookies.xml">
         <![CDATA[
@@ -80,8 +80,8 @@ Microsystems, Inc. All Rights Reserved.
         ]]>
       </file>
       -->
+    </folder> <!-- Hidden -->
 
-    </folder>
     <folder name="Looks">
       <file name="org.netbeans.modules.xml.core.XMLDefaultLook$Basic.xml">
 	<![CDATA[
@@ -91,8 +91,27 @@ Microsystems, Inc. All Rights Reserved.
                 </Look>
         ]]>
       </file>
-    </folder>
-  </folder>
+    </folder> <!-- Looks -->
+
+    <!-- Settings -->
+    <file name="org-netbeans-modules-xml-core-settings-CoreSettings.settings" url="CoreSettings.xml">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.settings.Bundle"/>
+    </file>
+
+  </folder> <!-- Services -->
+
+  <folder name="UI">
+    <folder name="Services">
+      <folder name="XML">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle"/>
+        <file name="org-netbeans-modules-xml-core-settings-CoreSettings.shadow">
+<![CDATA[Services/org-netbeans-modules-xml-core-settings-CoreSettings.settings
+SystemFileSystem
+]]>
+        </file>
+      </folder> <!-- XML -->
+    </folder> <!-- Settings -->
+  </folder> <!-- UI -->
 
   <!-- register actions to action pool -->
   
