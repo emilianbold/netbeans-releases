@@ -45,7 +45,7 @@ import org.openide.util.NbBundle;
  * can be unfinaled if desired.
  * @author Ian Formanek
  */
-public final class PropertiesLocaleNode extends FileEntryNode implements CookieSet.Factory {
+public final class PropertiesLocaleNode extends FileEntryNode implements CookieSet.Factory, Node.Cookie {
 
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
@@ -152,6 +152,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
     /** Returns all the item in addition to "normal" cookies. Overrides superclass method. */
     public Node.Cookie getCookie(Class cls) {
         if (cls.isInstance(getFileEntry())) return getFileEntry();
+        if (cls == PropertiesLocaleNode.class) return this;
         return super.getCookie(cls);
     }
 

@@ -44,10 +44,8 @@ public class LangRenameAction extends RenameAction {
     /** Performs action. Overrides superclass method. */
     protected void performAction (Node[] activatedNodes) {
         Node n = activatedNodes[0]; // we supposed that one node is activated
-        if (!(n instanceof PropertiesLocaleNode))
-            throw new IllegalStateException("Resource Bundle: Node is not PropertiesLocaleNode (renaming language)"); // NOI18N
-        
-        PropertiesLocaleNode pln = (PropertiesLocaleNode)n;
+        Node.Cookie cake = n.getCookie(PropertiesLocaleNode.class);
+        PropertiesLocaleNode pln = (PropertiesLocaleNode)cake;
 
         String lang = Util.getLocalePartOfFileName (pln.getFileEntry());
         if (lang.length() > 0)
@@ -68,7 +66,7 @@ public class LangRenameAction extends RenameAction {
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                     MessageFormat.format(
                         NbBundle.getBundle("org.openide.actions.Bundle").getString("MSG_BadFormat"),
-                        new Object[] {n.getName()}),
+                        new Object[] {pln.getName()}),
                     NotifyDescriptor.ERROR_MESSAGE);
                         
                 DialogDisplayer.getDefault().notify(msg);
