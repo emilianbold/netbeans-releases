@@ -188,7 +188,8 @@ public class UpdateHelper {
      */
     public synchronized boolean isCurrent () {
         if (this.isCurrent == null) {
-            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/3",true) != null ? //NOI18N
+            this.isCurrent = this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/1",true) == null 
+                    && this.cfg.getConfigurationFragment("data","http://www.netbeans.org/ns/j2ee-ejbjarproject/2",true) == null? //NOI18N
                 Boolean.TRUE : Boolean.FALSE;
         }
         return isCurrent.booleanValue();
