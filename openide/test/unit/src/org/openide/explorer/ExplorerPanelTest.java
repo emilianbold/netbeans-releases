@@ -47,6 +47,11 @@ public class ExplorerPanelTest extends NbTestCase {
     /** explorer manager to work on */
     private ExplorerManager manager;
     
+    
+    
+    /** need it for stopActions here */
+    private ExplorerPanel ep;
+    
     public ExplorerPanelTest(java.lang.String testName) {
         super(testName);
     }
@@ -83,13 +88,25 @@ public class ExplorerPanelTest extends NbTestCase {
         Object[] arr = createManagerAndContext ();
         manager = (ExplorerManager)arr[0];
         context = (Lookup)arr[1];
+        
     }
     
     /** Creates a manager to operate on.
      */
     protected Object[] createManagerAndContext () {
-        ExplorerPanel p = new ExplorerPanel (null, false);
-        return new Object[] { p.getExplorerManager(), p.getLookup() };
+        ep = new ExplorerPanel (null, false);
+        return new Object[] { ep.getExplorerManager(), ep.getLookup() };
+    }
+    
+    /** Instructs the actions to stop/
+     */
+    protected void stopActions (ExplorerManager em) {
+        ep.componentDeactivated ();
+    }
+    /** Instructs the actions to start again.
+     */
+    protected void startActions(ExplorerManager em) {
+        ep.componentActivated();
     }
     
     /** Tests whether the cut, copy (callback) actions are enabled/disabled
@@ -199,6 +216,34 @@ public class ExplorerPanelTest extends NbTestCase {
         
         manager.setSelectedNodes (new Node[] { enabledNode });
         assertTrue ("Paste enabled again", paste.isEnabled ());
+        
+        org.openide.util.datatransfer.ExClipboard ec = (org.openide.util.datatransfer.ExClipboard)Lookup.getDefault().lookup (org.openide.util.datatransfer.ExClipboard.class);
+        assertNotNull ("Without ExClipboard this will not work much", ec);
+        
+        java.awt.datatransfer.StringSelection ss = new java.awt.datatransfer.StringSelection ("Hi");
+        ec.setContents(ss, ss);
+        
+        assertEquals ("The node was queried with new selection", ss, enabledNode.lastTransferable);
+        
+        stopActions (manager);
+
+        manager.setSelectedNodes(new Node[] { disabledNode });
+        assertTrue("Paste still enabled as we are not listening", paste.isEnabled());
+        
+        java.awt.datatransfer.StringSelection ns = new java.awt.datatransfer.StringSelection ("New Selection");
+        ec.setContents(ns, ns);
+
+        assertEquals ("The node was not queiried, still remembers ss", ss, enabledNode.lastTransferable);
+        
+        startActions (manager);
+        
+        assertFalse ("The selected node is the disabled one, so now we are disabled", paste.isEnabled ());
+        assertEquals("Now the disabled node was queried", ns, disabledNode.lastTransferable);
+        
+        
+        ns = new java.awt.datatransfer.StringSelection("Another Selection");
+        ec.setContents(ns, ns);
+        assertEquals("Now the node was queried once more", ns, disabledNode.lastTransferable);
     }
     
     /** Test root node. */
@@ -219,6 +264,7 @@ public class ExplorerPanelTest extends NbTestCase {
         public boolean canCut;
         public boolean canDelete;
         public PasteType[] types = new PasteType[0];
+        public java.awt.datatransfer.Transferable lastTransferable;
         
         public int countCopy;
         public int countCut;
@@ -267,6 +313,7 @@ public class ExplorerPanelTest extends NbTestCase {
         }
         
         protected void createPasteTypes(java.awt.datatransfer.Transferable t, java.util.List s) {
+            this.lastTransferable = t;
             s.addAll (Arrays.asList (types));
         }
         
