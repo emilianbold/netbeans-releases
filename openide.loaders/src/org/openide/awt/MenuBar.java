@@ -323,16 +323,16 @@ public class MenuBar extends JMenuBar implements Externalizable {
             } else {
                 if (obj instanceof Presenter.Toolbar) {
                     retVal = ((Presenter.Toolbar)obj).getToolbarPresenter();
-                    
-                    if (obj instanceof JButton) { // tune the presenter a bit
-                        ((JButton)obj).setBorderPainted(false);
-                    }
                 } else if (obj instanceof Action) {
                     Action a = (Action) obj;
                     JButton button = new JButton();
                     Actions.connect(button, a);
                     retVal = button;                    
                 }                
+            }
+            if (retVal instanceof JButton) { // tune the presenter a bit
+                ((JButton)retVal).setBorderPainted(false);
+                ((JButton)retVal).setMargin(new java.awt.Insets(0, 2, 0, 2));
             }
             return retVal;
         }
