@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -156,9 +156,11 @@ public class BuildInfo {
 				}
 			}
 		});
-		for (int i=0; i < patches.length; i++) {
-			urls.add(BuildInfo.getURL(patches[i]));
-		}
+                if(patches != null) {
+                    for (int i=0; i < patches.length; i++) {
+                            urls.add(BuildInfo.getURL(patches[i]));
+                    }
+                }
 
 		// get locale jars (just the ones starting with core)
 		File[] locales = (new File(libDir,"locale")).listFiles(new FilenameFilter() {
