@@ -165,7 +165,6 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 2, 6);
         add(message, gridBagConstraints);
 
-        content.setPrototypeCellValue("0123456789012345678912345");
         jScrollPane1.setViewportView(content);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
