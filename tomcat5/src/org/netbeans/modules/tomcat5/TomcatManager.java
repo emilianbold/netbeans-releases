@@ -765,6 +765,14 @@ public class TomcatManager implements DeploymentManager {
         }
         ip.setProperty(SERVER_PORT, port.toString());
     }
+    
+    public void setAdminPort(Integer port) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip == null) {
+            return;
+        }
+        ip.setProperty(ADMIN_PORT, port.toString());
+    }
 
     public Server getRoot() {
         

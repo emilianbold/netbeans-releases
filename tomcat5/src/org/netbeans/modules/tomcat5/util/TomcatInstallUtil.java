@@ -6,13 +6,18 @@
 
 package org.netbeans.modules.tomcat5.util;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.*;
 
 import org.openide.ErrorManager;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.tomcat5.config.*;
 import org.netbeans.modules.tomcat5.TomcatFactory;
+import org.netbeans.modules.tomcat5.TomcatManager;
+
+import org.w3c.dom.Document;
+import org.apache.xml.serialize.*;
 
 /**
  *
@@ -130,6 +135,85 @@ public class TomcatInstallUtil {
             TomcatFactory.getEM ().log ("T5Util.getHost: " + host);             // NOI18N
         }
         return host;
+    }
+    
+    /** @return text (suitable for printing to XML file) for a given XML document.
+     * this method uses org.apache.xml.serialize.XMLSerializer class for printing XML file
+     */
+    public static String getDocumentText(Document doc) {
+        OutputFormat format = new OutputFormat ();
+        format.setPreserveSpace (true);
+        StringWriter sw = new StringWriter();
+        org.w3c.dom.Element rootElement = doc.getDocumentElement();
+        if (rootElement==null) return null;
+        try {
+            XMLSerializer ser = new XMLSerializer (sw, format);
+            ser.serialize (rootElement);
+            // Apache serializer also fails to include trailing newline, sigh.
+            sw.write('\n');
+            return sw.toString();
+        }catch(IOException ex) {
+            System.out.println("ex="+ex);
+            //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            return rootElement.toString();
+        }
+        finally {
+            try {
+                sw.close();
+            } catch(IOException ex) {
+                System.out.println("ex="+ex);
+                //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
+    }
+    
+    public static void updateDocument(javax.swing.text.Document doc, String newDoc, String prefixMark) throws javax.swing.text.BadLocationException {
+        int origLen = doc.getLength();
+        String origDoc = doc.getText(0, origLen);
+        int prefixInd=0;
+        if (prefixMark!=null) {
+            prefixInd = origDoc.indexOf(prefixMark);
+            if (prefixInd>0) {
+                origDoc=doc.getText(prefixInd,origLen-prefixInd);
+            }
+            else {
+                prefixInd=0;
+            }
+            int prefixIndNewDoc=newDoc.indexOf(prefixMark);
+            if (prefixIndNewDoc>0)
+                newDoc=newDoc.substring(prefixIndNewDoc);
+        }
+        
+        if (origDoc.equals(newDoc)) {
+            // no change in document
+            return;
+        }
+        
+        doc.remove(prefixInd, origLen - prefixInd);
+        doc.insertString(prefixInd, newDoc, null);
+    }
+    /** The method is useful to notify the user that Tomcat must be restarted 
+     *
+    */
+    public static void notifyToRestart(final TomcatManager mng) {
+        org.openide.util.RequestProcessor.getDefault().post( new Runnable() {
+            public void run() {
+                if (mng.getStartTomcat().isRunning()) {
+                    DialogDisplayer disp = DialogDisplayer.getDefault();
+                    disp.notify(new NotifyDescriptor.Message(
+                     org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatRestart")));
+                }
+            }
+        });
+    }
+    
+    /** The method is useful to notify the user that changes cannot be performed 
+     *
+    */
+    public static void notifyThatRunning(final TomcatManager mng) {
+        DialogDisplayer disp = DialogDisplayer.getDefault();
+        disp.notify(new NotifyDescriptor.Message(
+         org.openide.util.NbBundle.getMessage(TomcatInstallUtil.class,"MSG_TomcatIsRunning")));
     }
     
 }
