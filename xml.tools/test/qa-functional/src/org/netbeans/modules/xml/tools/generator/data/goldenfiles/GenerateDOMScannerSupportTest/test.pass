@@ -15,6 +15,7 @@ package org.netbeans.modules.xml.tools.generator.data;
  * @see org.w3c.dom.Document
  * @see org.w3c.dom.Element
  * @see org.w3c.dom.NamedNodeMap
+ *
  */
 public class BooksScanner {
     /** org.w3c.dom.Document document */
