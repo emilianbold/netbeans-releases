@@ -222,18 +222,25 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     /** Fires info for all listeners of given type.
     * @param ev the event
     */
-    public synchronized void fireEvent (ConnectionCookie.Event ev) {
+    public void fireEvent (ConnectionCookie.Event ev) {
         LinkedList list;
-        ConnectionCookie.Type type = ev.getType ();
+        ConnectionCookie.Type type;
+        boolean persistent;
+        
+        synchronized (this) {
+            type = ev.getType ();
 
-        boolean persistent = type.isPersistent ();
-        if (persistent) {
-            list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
-        } else {
-            list = listeners;
+            persistent = type.isPersistent ();
+            if (persistent) {
+                list = (LinkedList)entry.getFile ().getAttribute (EA_LISTENERS);
+            } else {
+                list = listeners;
+            }
+
+            if (list == null) return;
+         
+            list = (LinkedList)list.clone ();
         }
-
-        if (list == null) return;
 
         int size = list.size ();
 
