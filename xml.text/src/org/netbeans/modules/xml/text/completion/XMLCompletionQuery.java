@@ -567,8 +567,6 @@ class XMLCompletionQuery implements CompletionQuery {
          */
         public synchronized GrammarQuery getGrammar(int timeout) {
             
-            System.err.println("State " + state);
-            
             switch (state) {
                 case VALID:
                     return grammar;
