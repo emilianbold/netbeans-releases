@@ -50,7 +50,7 @@ public class JavaOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     
     public JavaOptionsBeanInfo() {
-        super("/org/netbeans/modules/editor/resources/javaOptions"); // NOI18N
+        super("/org/netbeans/modules/java/editor/resources/javaOptions"); // NOI18N
 
     }
 

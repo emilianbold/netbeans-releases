@@ -42,7 +42,7 @@ public class HTMLOptionsBeanInfo extends BaseOptionsBeanInfo {
     };
 
     public HTMLOptionsBeanInfo() {
-        super("/org/netbeans/modules/editor/resources/htmlOptions"); // NOI18N
+        super("/org/netbeans/modules/html/editor/resources/htmlOptions"); // NOI18N
     }
 
     protected String[] getPropNames() {

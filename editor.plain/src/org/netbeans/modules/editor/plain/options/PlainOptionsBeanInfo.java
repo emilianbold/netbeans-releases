@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
 public class PlainOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     public PlainOptionsBeanInfo() {
-        this("/org/netbeans/modules/editor/resources/plainOptions"); // NOI18N
+        this("/org/netbeans/modules/editor/plain/resources/plainOptions"); // NOI18N
     }
 
     public PlainOptionsBeanInfo(String iconPrefix) {
