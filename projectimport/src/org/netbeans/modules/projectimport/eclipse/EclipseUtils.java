@@ -27,10 +27,19 @@ public class EclipseUtils {
      * Returns whether there is a valid project in the given
      * <code>projectDir</code>.
      */
+    public static boolean isRegularProject(String projectDir) {
+        return projectDir != null &&
+                isRegularProject(new File(projectDir));
+    }
+    
+    /**
+     * Returns whether there is a valid project in the given
+     * <code>projectDir</code>.
+     */
     public static boolean isRegularProject(File projectDir) {
         return projectDir.isDirectory() &&
                 new File(projectDir, EclipseProject.PROJECT_FILE).isFile(); // &&
-//                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
+        //                new File(projectDir, EclipseProject.CLASSPATH_FILE).isFile();
     }
     
     /**

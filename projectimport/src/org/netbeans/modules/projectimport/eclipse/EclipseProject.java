@@ -267,6 +267,13 @@ public final class EclipseProject implements Comparable {
         // set abs. path default (null)
         entry.setAbsolutePath(null);
         
+        // try to resolve entry as a CONTAINER
+        if (entry.getType() == ClassPathEntry.TYPE_CONTAINER) {
+            // we don't support CONTAINERs so we don't care about them here
+            // (we support JRE/JDK containers but those are solved elsewhere)
+            return;
+        }
+        
         // try to resolve entry as a VARIABLE
         if (entry.getType() == ClassPathEntry.TYPE_VARIABLE) {
             String rawPath = entry.getRawPath();
@@ -317,10 +324,14 @@ public final class EclipseProject implements Comparable {
             }
             return;
         }
+        
+        // not VARIABLE, not PROJECT, not LINK -> either source root or library
         if (entry.isRawPathRelative()) {
+            // internal src or lib
             entry.setAbsolutePath(projectDir.getAbsolutePath() + File.separator
                     + entry.getRawPath());
         } else {
+            // external src or lib
             entry.setAbsolutePath(entry.getRawPath());
         }
     }

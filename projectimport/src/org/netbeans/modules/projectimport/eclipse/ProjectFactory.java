@@ -26,7 +26,7 @@ import org.netbeans.modules.projectimport.ProjectImporterException;
  *
  * @author mkrauskopf
  */
-final class ProjectFactory {
+public final class ProjectFactory {
     
     /** Logger for this class. */
     private static final Logger logger =
@@ -38,7 +38,7 @@ final class ProjectFactory {
     private ProjectFactory() {/*empty constructor*/}
     
     /** Returns ProjectFactory instance. */
-    static ProjectFactory getInstance() {
+    public static ProjectFactory getInstance() {
         return instance;
     }
     
@@ -50,7 +50,7 @@ final class ProjectFactory {
      * @throws ProjectImporterException if project in the given
      *     <code>projectDir</code> is not a valid Eclipse project.
      */
-    EclipseProject load(File projectDir) throws
+    public EclipseProject load(File projectDir) throws
             ProjectImporterException {
         Workspace workspace = Workspace.createWorkspace(projectDir.getParentFile());
         if (workspace != null) {

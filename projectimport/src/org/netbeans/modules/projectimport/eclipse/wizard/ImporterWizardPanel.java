@@ -88,7 +88,11 @@ abstract class ImporterWizardPanel extends JPanel
         }
     }
     
-    /** Sets error message used by importer wizard. */
+    /** 
+     * Sets error message used by importer wizard. Consequently sets validity of
+     * this panel. If the given <code>newError</code> is null panel is
+     * considered valid. Invalid otherwise.
+     */
     protected void setErrorMessage(String newError) {
         boolean changed =
                 (errorMessage == null && newError != null) ||

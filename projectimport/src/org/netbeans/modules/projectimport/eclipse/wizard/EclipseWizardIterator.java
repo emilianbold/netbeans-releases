@@ -13,13 +13,17 @@
 
 package org.netbeans.modules.projectimport.eclipse.wizard;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.projectimport.ProjectImporterException;
 import org.netbeans.modules.projectimport.eclipse.EclipseProject;
+import org.netbeans.modules.projectimport.eclipse.ProjectFactory;
 import org.openide.WizardDescriptor;
 
 /**
@@ -35,7 +39,7 @@ final class EclipseWizardIterator implements
     private ProjectSelectionPanel projectPanel;
     private ImporterWizardPanel current;
     
-    private boolean hasNext = true;
+    private boolean hasNext;
     private boolean hasPrevious;
     
     private EclipseProject eclProject;
@@ -54,7 +58,19 @@ final class EclipseWizardIterator implements
     
     /** Returns projects selected by selection panel */
     Set getProjects() {
-        return projectPanel.getProjects();
+        if (workspacePanel.isWorkspaceChosen()) {
+            return projectPanel.getProjects();
+        } else {
+            Set prjs = new HashSet();
+            try {
+                prjs.add(ProjectFactory.getInstance().load(
+                        new File(workspacePanel.getProjectDir())));
+            } catch (ProjectImporterException e) {
+                System.err.println("MK> ProjectImporterException catched: " + e);
+                e.printStackTrace();
+            }
+            return prjs;
+        }
     }
     
     /**
@@ -62,14 +78,17 @@ final class EclipseWizardIterator implements
      * required and selected projects)
      */
     int getNumberOfImportedProject() {
-        return projectPanel.getNumberOfImportedProject();
+        return (workspacePanel.isWorkspaceChosen() ?
+            projectPanel.getNumberOfImportedProject() : 1);
     }
     
     /**
      * Returns destination directory where new NetBeans projects will be stored.
      */
     String getDestination() {
-        return projectPanel.getDestination();
+        return (workspacePanel.isWorkspaceChosen() ?
+            projectPanel.getDestination() :
+            workspacePanel.getProjectDestinationDir());
     }
     
     public void addChangeListener(ChangeListener l) {
@@ -134,6 +153,13 @@ final class EclipseWizardIterator implements
     }
     
     public void stateChanged(javax.swing.event.ChangeEvent e) {
+        if (current == workspacePanel && current.isValid()) {
+            if (workspacePanel.isWorkspaceChosen()) {
+                hasNext = true;
+            } else {
+                hasNext = false;
+            }
+        }
         updateErrorMessage();
     }
     
