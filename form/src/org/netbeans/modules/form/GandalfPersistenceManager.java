@@ -1263,7 +1263,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                 propertyNames);
 
             layoutParams = new CodeExpression[2];
-            layoutParams[0] = layoutSupport.getContainerCodeExpression();
+            layoutParams[0] = layoutSupport.getContainerDelegateCodeExpression();
             layoutParams[1] = createExpressionForProperty(
                 codeStructure, Integer.TYPE,
                 axis >= 0 ? propertyValues[axis] : new Integer(javax.swing.BoxLayout.X_AXIS),
