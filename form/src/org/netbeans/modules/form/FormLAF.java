@@ -123,6 +123,19 @@ class FormLAF {
                 defaultLookAndFeel = (LookAndFeel)
                                      Class.forName(lafName).newInstance();
                 defaultLookAndFeel.initialize();
+                
+                // call src.get() on each key to force LazyValues to be init'ed
+                // see javax.swing.UIDefaults to see why
+                UIDefaults defaults = defaultLookAndFeel.getDefaults();
+                Object[] keys = defaults.keySet().toArray();
+                for (int i=0; i < keys.length; i++) {
+                    // Do not resolve icons - some L&Fs don't provide icons for all keys (see #44482)
+                    if (!(keys[i] instanceof String) || (((String)keys[i])).indexOf("Icon") == -1) { // NOI18N
+                        defaults.get(keys[i]);
+                    }
+                }
+        
+
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -167,12 +180,6 @@ class FormLAF {
     }
 
     private static void copyMap(Map dest, Map src) {
-        // call src.get() on each key to force LazyValues to be init'ed
-        // see javax.swing.UIDefaults to see why
-        Object[] keys = src.keySet().toArray();
-        for (int i=0; i < keys.length; i++)
-            src.get(keys[i]);
-        
         dest.putAll(src);
     }
 }
