@@ -156,6 +156,8 @@ public class BridgeImpl implements BridgeInterface {
             if (useStatusLine) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_target_failed_status"));
             }
+            out.close();
+            err.close();
             return false;
         }
         
@@ -198,6 +200,8 @@ public class BridgeImpl implements BridgeInterface {
             logger.buildFinished(ev);
         } finally {
             AntBridge.restoreSystemOutErr();
+            out.close();
+            err.close();
         }
         
         // Now check to see if the Project defined any cool new custom tasks.
