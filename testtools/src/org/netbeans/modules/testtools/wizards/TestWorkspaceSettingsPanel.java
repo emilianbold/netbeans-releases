@@ -97,9 +97,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         panel.setLayout(new java.awt.GridBagLayout());
 
-        levelLabel.setText("Test Workspace possition in CVS: ");
-        levelLabel.setDisplayedMnemonic(87);
+        levelLabel.setDisplayedMnemonic('W');
         levelLabel.setLabelFor(levelCombo);
+        levelLabel.setText("Test Workspace possition in CVS: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -128,9 +128,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(levelCombo, gridBagConstraints);
 
-        typeLabel.setText("Default Test Type: ");
-        typeLabel.setDisplayedMnemonic(84);
+        typeLabel.setDisplayedMnemonic('T');
         typeLabel.setLabelFor(typeField);
+        typeLabel.setText("Default Test Type: ");
         typeLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -160,9 +160,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(typeField, gridBagConstraints);
 
-        attrLabel.setText("Default Attributes: ");
-        attrLabel.setDisplayedMnemonic(65);
+        attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
+        attrLabel.setText("Default Attributes: ");
         attrLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -217,9 +217,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
         panel.add(advancedCheck, gridBagConstraints);
 
-        netbeansLabel.setText("Netbeans Home: ");
-        netbeansLabel.setDisplayedMnemonic(78);
+        netbeansLabel.setDisplayedMnemonic('N');
         netbeansLabel.setLabelFor(netbeansField);
+        netbeansLabel.setText("Netbeans Home: ");
         netbeansLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -249,9 +249,9 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(netbeansField, gridBagConstraints);
 
-        xtestLabel.setText("XTest Home: ");
-        xtestLabel.setDisplayedMnemonic(88);
+        xtestLabel.setDisplayedMnemonic('X');
         xtestLabel.setLabelFor(xtestField);
+        xtestLabel.setText("XTest Home: ");
         xtestLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -282,8 +282,8 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         panel.add(xtestField, gridBagConstraints);
 
         netbeansButton.setText("...");
-        netbeansButton.setPreferredSize(new java.awt.Dimension(30, 20));
         netbeansButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        netbeansButton.setPreferredSize(new java.awt.Dimension(30, 20));
         netbeansButton.setEnabled(false);
         netbeansButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -302,8 +302,8 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         panel.add(netbeansButton, gridBagConstraints);
 
         xtestButton.setText("...");
-        xtestButton.setPreferredSize(new java.awt.Dimension(30, 20));
         xtestButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        xtestButton.setPreferredSize(new java.awt.Dimension(30, 20));
         xtestButton.setEnabled(false);
         xtestButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,8 +332,8 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
 
         add(panel, "ok");
 
-        stopLabel.setText("Test Workspace exists in selected package or has invalid name.");
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        stopLabel.setText("Test Workspace exists in selected package or has invalid name.");
         add(stopLabel, "stop");
 
     }//GEN-END:initComponents
@@ -502,23 +502,23 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel stopLabel;
-    private javax.swing.JButton xtestButton;
-    private javax.swing.JLabel levelLabel;
-    private javax.swing.JLabel xtestLabel;
-    private javax.swing.JTextField xtestField;
-    private javax.swing.JLabel typeLabel;
-    private javax.swing.JButton netbeansButton;
-    private javax.swing.JCheckBox advancedCheck;
-    private javax.swing.JTextField typeField;
-    private javax.swing.JPanel panel;
     private javax.swing.JSeparator separator2;
     private javax.swing.JSeparator separator1;
-    private javax.swing.JLabel attrLabel;
-    private javax.swing.JTextField attrField;
-    private javax.swing.JLabel netbeansLabel;
     private javax.swing.JComboBox levelCombo;
+    private javax.swing.JTextField typeField;
+    private javax.swing.JButton xtestButton;
+    private javax.swing.JLabel typeLabel;
+    private javax.swing.JButton netbeansButton;
     private javax.swing.JTextField netbeansField;
+    private javax.swing.JLabel stopLabel;
+    private javax.swing.JTextField xtestField;
+    private javax.swing.JLabel levelLabel;
+    private javax.swing.JLabel netbeansLabel;
+    private javax.swing.JLabel xtestLabel;
+    private javax.swing.JTextField attrField;
+    private javax.swing.JCheckBox advancedCheck;
+    private javax.swing.JPanel panel;
+    private javax.swing.JLabel attrLabel;
     // End of variables declaration//GEN-END:variables
     
 }

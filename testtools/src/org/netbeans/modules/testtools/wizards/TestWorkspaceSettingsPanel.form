@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,124"/>
-  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,124"/>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
   <SubComponents>
@@ -18,11 +18,11 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="levelLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Test Workspace possition in CVS: "/>
             <Property name="displayedMnemonic" type="int" value="87"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="levelCombo" type="bean"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Test Workspace possition in CVS: "/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -41,7 +41,6 @@
               </StringArray>
             </Property>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="levelComboActionPerformed"/>
           </Events>
@@ -53,11 +52,11 @@
         </Component>
         <Component class="javax.swing.JLabel" name="typeLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Default Test Type: "/>
             <Property name="displayedMnemonic" type="int" value="84"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="typeField" type="bean"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Default Test Type: "/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
@@ -70,7 +69,6 @@
           <Properties>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="typeFieldFocusGained"/>
           </Events>
@@ -82,11 +80,11 @@
         </Component>
         <Component class="javax.swing.JLabel" name="attrLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Default Attributes: "/>
             <Property name="displayedMnemonic" type="int" value="65"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="attrField" type="bean"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Default Attributes: "/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
@@ -99,7 +97,6 @@
           <Properties>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="attrFieldFocusGained"/>
           </Events>
@@ -120,7 +117,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Advanced Settings"/>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="advancedCheckActionPerformed"/>
           </Events>
@@ -132,11 +128,11 @@
         </Component>
         <Component class="javax.swing.JLabel" name="netbeansLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Netbeans Home: "/>
             <Property name="displayedMnemonic" type="int" value="78"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="netbeansField" type="bean"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="Netbeans Home: "/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
@@ -149,7 +145,6 @@
           <Properties>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="netbeansFieldFocusGained"/>
           </Events>
@@ -161,11 +156,11 @@
         </Component>
         <Component class="javax.swing.JLabel" name="xtestLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="XTest Home: "/>
             <Property name="displayedMnemonic" type="int" value="88"/>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="xtestField" type="bean"/>
             </Property>
+            <Property name="text" type="java.lang.String" value="XTest Home: "/>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Constraints>
@@ -178,7 +173,6 @@
           <Properties>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="xtestFieldFocusGained"/>
           </Events>
@@ -191,15 +185,14 @@
         <Component class="javax.swing.JButton" name="netbeansButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="..."/>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[30, 20]"/>
             </Property>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[30, 20]"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="netbeansButtonActionPerformed"/>
           </Events>
@@ -212,15 +205,14 @@
         <Component class="javax.swing.JButton" name="xtestButton">
           <Properties>
             <Property name="text" type="java.lang.String" value="..."/>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[30, 20]"/>
             </Property>
-            <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[30, 20]"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>
-
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="xtestButtonActionPerformed"/>
           </Events>
@@ -241,8 +233,8 @@
     </Container>
     <Component class="javax.swing.JLabel" name="stopLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Test Workspace exists in selected package or has invalid name."/>
         <Property name="horizontalAlignment" type="int" value="0"/>
+        <Property name="text" type="java.lang.String" value="Test Workspace exists in selected package or has invalid name."/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">

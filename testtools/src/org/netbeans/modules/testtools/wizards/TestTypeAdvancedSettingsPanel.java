@@ -76,17 +76,17 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         setLayout(new java.awt.GridBagLayout());
 
-        excludesLabel.setText("Compilation Exclude Pattern: ");
-        excludesLabel.setDisplayedMnemonic(88);
+        excludesLabel.setDisplayedMnemonic('X');
         excludesLabel.setLabelFor(excludesField);
+        excludesLabel.setText("Compilation Exclude Pattern: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(excludesLabel, gridBagConstraints);
 
         excludesField.setText("**/data/**");
@@ -98,26 +98,26 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(excludesField, gridBagConstraints);
 
-        compileLabel.setText("Compliation Class Path: ");
-        compileLabel.setDisplayedMnemonic(67);
+        compileLabel.setDisplayedMnemonic('C');
         compileLabel.setLabelFor(compileField);
+        compileLabel.setText("Compliation Class Path: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(compileLabel, gridBagConstraints);
 
         compileField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -128,17 +128,17 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(compileField, gridBagConstraints);
 
         compileButton.setText("...");
-        compileButton.setPreferredSize(new java.awt.Dimension(30, 20));
         compileButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        compileButton.setPreferredSize(new java.awt.Dimension(30, 20));
         compileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 compileButtonActionPerformed(evt);
@@ -147,25 +147,25 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(compileButton, gridBagConstraints);
 
-        executeLabel.setText("Execution Extra Jars: ");
-        executeLabel.setDisplayedMnemonic(69);
+        executeLabel.setDisplayedMnemonic('E');
         executeLabel.setLabelFor(executeField);
+        executeLabel.setText("Execution Extra Jars: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(executeLabel, gridBagConstraints);
 
         executeField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -176,17 +176,17 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(executeField, gridBagConstraints);
 
         executeButton.setText("...");
-        executeButton.setPreferredSize(new java.awt.Dimension(30, 20));
         executeButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        executeButton.setPreferredSize(new java.awt.Dimension(30, 20));
         executeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executeButtonActionPerformed(evt);
@@ -195,25 +195,25 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(executeButton, gridBagConstraints);
 
-        jvmLabel.setText("Command Line Suffix: ");
-        jvmLabel.setDisplayedMnemonic(83);
+        jvmLabel.setDisplayedMnemonic('S');
         jvmLabel.setLabelFor(jvmField);
+        jvmLabel.setText("Command Line Suffix: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jvmLabel, gridBagConstraints);
 
         jvmField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -227,23 +227,23 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jvmField, gridBagConstraints);
 
-        jemmyLabel.setText("Jemmy Jar Home: ");
-        jemmyLabel.setDisplayedMnemonic(77);
+        jemmyLabel.setDisplayedMnemonic('M');
         jemmyLabel.setLabelFor(jemmyField);
+        jemmyLabel.setText("Jemmy Jar Home: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(jemmyLabel, gridBagConstraints);
 
         jemmyField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -254,17 +254,17 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jemmyField, gridBagConstraints);
 
         jemmyButton.setText("...");
-        jemmyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jemmyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jemmyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jemmyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jemmyButtonActionPerformed(evt);
@@ -273,25 +273,25 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(jemmyButton, gridBagConstraints);
 
-        jellyLabel.setText("Jelly Jar Home: ");
-        jellyLabel.setDisplayedMnemonic(76);
+        jellyLabel.setDisplayedMnemonic('L');
         jellyLabel.setLabelFor(jellyField);
+        jellyLabel.setText("Jelly Jar Home: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(jellyLabel, gridBagConstraints);
 
         jellyField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -302,17 +302,17 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 11, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(jellyField, gridBagConstraints);
 
         jellyButton.setText("...");
-        jellyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jellyButton.setMinimumSize(new java.awt.Dimension(30, 20));
+        jellyButton.setPreferredSize(new java.awt.Dimension(30, 20));
         jellyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jellyButtonActionPerformed(evt);
@@ -321,12 +321,12 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
         add(jellyButton, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -482,23 +482,23 @@ public class TestTypeAdvancedSettingsPanel extends JPanel implements WizardDescr
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jemmyButton;
     private javax.swing.JLabel executeLabel;
-    private javax.swing.JButton compileButton;
-    private javax.swing.JLabel jemmyLabel;
-    private javax.swing.JLabel jvmLabel;
-    private javax.swing.JTextField executeField;
-    private javax.swing.JTextField jemmyField;
-    private javax.swing.JTextField jvmField;
-    private javax.swing.JLabel compileLabel;
+    private javax.swing.JTextField jellyField;
     private javax.swing.JLabel jellyLabel;
     private javax.swing.JButton jellyButton;
+    private javax.swing.ButtonGroup buttonGroup;
+    private javax.swing.JTextField excludesField;
+    private javax.swing.JTextField jemmyField;
+    private javax.swing.JLabel excludesLabel;
+    private javax.swing.JTextField jvmField;
+    private javax.swing.JLabel jemmyLabel;
+    private javax.swing.JLabel jvmLabel;
+    private javax.swing.JButton jemmyButton;
     private javax.swing.JButton executeButton;
     private javax.swing.JTextField compileField;
-    private javax.swing.JTextField jellyField;
-    private javax.swing.ButtonGroup buttonGroup;
-    private javax.swing.JLabel excludesLabel;
-    private javax.swing.JTextField excludesField;
+    private javax.swing.JTextField executeField;
+    private javax.swing.JButton compileButton;
+    private javax.swing.JLabel compileLabel;
     // End of variables declaration//GEN-END:variables
     
 }

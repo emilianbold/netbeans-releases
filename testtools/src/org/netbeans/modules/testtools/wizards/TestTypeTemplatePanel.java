@@ -85,9 +85,9 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText("Name: ");
-        nameLabel.setDisplayedMnemonic(78);
+        nameLabel.setDisplayedMnemonic('N');
         nameLabel.setLabelFor(nameField);
+        nameLabel.setText("Name: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -115,9 +115,9 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
-        templateLabel.setText("Select a Template: ");
-        templateLabel.setDisplayedMnemonic(84);
+        templateLabel.setDisplayedMnemonic('T');
         templateLabel.setLabelFor(templateCombo);
+        templateLabel.setText("Select a Template: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -144,9 +144,9 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
-        descriptionLabel.setText("Template Description: ");
-        descriptionLabel.setDisplayedMnemonic(68);
+        descriptionLabel.setDisplayedMnemonic('D');
         descriptionLabel.setLabelFor(htmlBrowser);
+        descriptionLabel.setText("Template Description: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -160,15 +160,15 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
         descriptionPanel.setLayout(new java.awt.CardLayout());
 
         descriptionPanel.setPreferredSize(new java.awt.Dimension(400, 200));
-        noDescription.setText("No description");
         noDescription.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        noDescription.setText("No description");
         descriptionPanel.add(noDescription, "no");
 
-        htmlBrowser.setEnableLocation(false);
-        htmlBrowser.setStatusLineVisible(false);
-        htmlBrowser.setPreferredSize(new java.awt.Dimension(400, 200));
-        htmlBrowser.setToolbarVisible(false);
         htmlBrowser.setEnableHome(false);
+        htmlBrowser.setEnableLocation(false);
+        htmlBrowser.setPreferredSize(new java.awt.Dimension(400, 200));
+        htmlBrowser.setStatusLineVisible(false);
+        htmlBrowser.setToolbarVisible(false);
         htmlBrowser.setAutoscrolls(true);
         descriptionPanel.add(htmlBrowser, "yes");
 
@@ -268,14 +268,14 @@ public class TestTypeTemplatePanel extends JPanel implements WizardDescriptor.Pa
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JLabel templateLabel;
-    private javax.swing.JTextField nameField;
     private org.openide.awt.HtmlBrowser htmlBrowser;
-    private javax.swing.JPanel descriptionPanel;
-    private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JComboBox templateCombo;
     private javax.swing.JLabel noDescription;
+    private javax.swing.JComboBox templateCombo;
+    private javax.swing.JTextField nameField;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JPanel descriptionPanel;
+    private javax.swing.JLabel templateLabel;
+    private javax.swing.JLabel descriptionLabel;
     // End of variables declaration//GEN-END:variables
     
 }

@@ -72,15 +72,15 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText("Test Bag Name: ");
-        nameLabel.setDisplayedMnemonic(110);
+        nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(nameField);
+        nameLabel.setText("Test Bag Name: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -94,21 +94,21 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
+        executorLabel.setDisplayedMnemonic('X');
         executorLabel.setText("Executor:");
-        executorLabel.setDisplayedMnemonic(88);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 0.01;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 4, 4);
         add(executorLabel, gridBagConstraints);
 
         ideRadio.setMnemonic('D');
@@ -118,10 +118,10 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(ideRadio, gridBagConstraints);
 
         codeRadio.setMnemonic('C');
@@ -130,23 +130,23 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 10.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 4, 4);
         add(codeRadio, gridBagConstraints);
 
-        attrLabel.setText("Attributes: ");
-        attrLabel.setDisplayedMnemonic(65);
+        attrLabel.setDisplayedMnemonic('A');
         attrLabel.setLabelFor(attrField);
+        attrLabel.setText("Attributes: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(attrLabel, gridBagConstraints);
 
         attrField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -160,21 +160,21 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(attrField, gridBagConstraints);
 
-        includeLabel.setText("Execution Include Pattern: ");
-        includeLabel.setDisplayedMnemonic(73);
+        includeLabel.setDisplayedMnemonic('I');
         includeLabel.setLabelFor(includeField);
+        includeLabel.setText("Execution Include Pattern: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(includeLabel, gridBagConstraints);
 
         includeField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -188,23 +188,23 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(includeField, gridBagConstraints);
 
-        excludeLabel.setText("Execution Exclude Pattern: ");
-        excludeLabel.setDisplayedMnemonic(69);
+        excludeLabel.setDisplayedMnemonic('E');
         excludeLabel.setLabelFor(excludeField);
+        excludeLabel.setText("Execution Exclude Pattern: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(excludeLabel, gridBagConstraints);
 
         excludeField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -218,7 +218,7 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
         gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -308,17 +308,17 @@ public class TestBagSettingsPanel extends JPanel implements WizardDescriptor.Fin
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JRadioButton ideRadio;
-    private javax.swing.JLabel includeLabel;
-    private javax.swing.JTextField nameField;
-    private javax.swing.JTextField includeField;
-    private javax.swing.JLabel executorLabel;
-    private javax.swing.JLabel attrLabel;
-    private javax.swing.JTextField attrField;
-    private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JLabel excludeLabel;
+    private javax.swing.JTextField includeField;
+    private javax.swing.JRadioButton ideRadio;
+    private javax.swing.JTextField nameField;
+    private javax.swing.ButtonGroup buttonGroup;
+    private javax.swing.JLabel includeLabel;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JLabel executorLabel;
     private javax.swing.JRadioButton codeRadio;
+    private javax.swing.JTextField attrField;
+    private javax.swing.JLabel attrLabel;
     private javax.swing.JTextField excludeField;
     // End of variables declaration//GEN-END:variables
     

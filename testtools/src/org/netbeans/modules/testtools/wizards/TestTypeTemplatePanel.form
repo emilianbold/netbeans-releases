@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-114"/>
-  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,1,-114"/>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Name: "/>
         <Property name="displayedMnemonic" type="int" value="78"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="nameField" type="bean"/>
         </Property>
+        <Property name="text" type="java.lang.String" value="Name: "/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -22,7 +22,6 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JTextField" name="nameField">
-
       <Events>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="nameFieldFocusGained"/>
       </Events>
@@ -34,11 +33,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="templateLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Select a Template: "/>
         <Property name="displayedMnemonic" type="int" value="84"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="templateCombo" type="bean"/>
         </Property>
+        <Property name="text" type="java.lang.String" value="Select a Template: "/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -47,7 +46,6 @@
       </Constraints>
     </Component>
     <Component class="javax.swing.JComboBox" name="templateCombo">
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="templateComboActionPerformed"/>
       </Events>
@@ -59,11 +57,11 @@
     </Component>
     <Component class="javax.swing.JLabel" name="descriptionLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Template Description: "/>
         <Property name="displayedMnemonic" type="int" value="68"/>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="htmlBrowser" type="bean"/>
         </Property>
+        <Property name="text" type="java.lang.String" value="Template Description: "/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -87,8 +85,8 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="noDescription">
           <Properties>
-            <Property name="text" type="java.lang.String" value="No description"/>
             <Property name="horizontalAlignment" type="int" value="0"/>
+            <Property name="text" type="java.lang.String" value="No description"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
@@ -98,13 +96,13 @@
         </Component>
         <Component class="org.openide.awt.HtmlBrowser" name="htmlBrowser">
           <Properties>
+            <Property name="enableHome" type="boolean" value="false"/>
             <Property name="enableLocation" type="boolean" value="false"/>
-            <Property name="statusLineVisible" type="boolean" value="false"/>
             <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[400, 200]"/>
             </Property>
+            <Property name="statusLineVisible" type="boolean" value="false"/>
             <Property name="toolbarVisible" type="boolean" value="false"/>
-            <Property name="enableHome" type="boolean" value="false"/>
             <Property name="autoscrolls" type="boolean" value="true"/>
           </Properties>
           <Constraints>

@@ -80,18 +80,20 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         testCases = new javax.swing.JList();
         nameLabel = new javax.swing.JLabel();
         templateLabel = new javax.swing.JLabel();
+        separator = new javax.swing.JSeparator();
+        separator2 = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weightx = 10.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(testCaseTypes, gridBagConstraints);
 
         caseName.setText("testMyTestCase");
@@ -108,20 +110,20 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 3.0;
+        gridBagConstraints.weightx = 10.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(caseName, gridBagConstraints);
 
         add.setMnemonic('a');
         add.setText("Add");
-        add.setPreferredSize(new java.awt.Dimension(80, 27));
         add.setMinimumSize(new java.awt.Dimension(80, 27));
+        add.setPreferredSize(new java.awt.Dimension(80, 27));
         add.setEnabled(false);
         add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -130,18 +132,19 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
         add(add, gridBagConstraints);
 
         remove.setMnemonic('r');
         remove.setText("Remove");
-        remove.setPreferredSize(new java.awt.Dimension(80, 27));
         remove.setMinimumSize(new java.awt.Dimension(80, 27));
+        remove.setPreferredSize(new java.awt.Dimension(80, 27));
         remove.setEnabled(false);
         remove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -150,17 +153,19 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
         add(remove, gridBagConstraints);
 
         up.setMnemonic('u');
         up.setText("Up");
-        up.setPreferredSize(new java.awt.Dimension(80, 27));
         up.setMinimumSize(new java.awt.Dimension(80, 27));
+        up.setPreferredSize(new java.awt.Dimension(80, 27));
         up.setEnabled(false);
         up.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,16 +175,18 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
         add(up, gridBagConstraints);
 
         down.setMnemonic('d');
         down.setText("Down");
-        down.setPreferredSize(new java.awt.Dimension(80, 27));
         down.setMinimumSize(new java.awt.Dimension(80, 27));
+        down.setPreferredSize(new java.awt.Dimension(80, 27));
         down.setEnabled(false);
         down.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -188,13 +195,14 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 100.0;
         add(down, gridBagConstraints);
 
         testCases.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -203,39 +211,55 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 4.0;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 11, 0);
+        gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(scroll, gridBagConstraints);
 
-        nameLabel.setText("Test Case Name:");
-        nameLabel.setDisplayedMnemonic(110);
+        nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(caseName);
+        nameLabel.setText("Test Case Name:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 3.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(nameLabel, gridBagConstraints);
 
-        templateLabel.setText("Template:");
-        templateLabel.setDisplayedMnemonic(116);
+        templateLabel.setDisplayedMnemonic('t');
         templateLabel.setLabelFor(testCaseTypes);
+        templateLabel.setText("Template:");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0.1;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(templateLabel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 0, 11);
+        gridBagConstraints.weightx = 100.0;
+        gridBagConstraints.weighty = 0.1;
+        add(separator, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(17, 0, 0, 0);
+        gridBagConstraints.weightx = 100.0;
+        gridBagConstraints.weighty = 0.1;
+        add(separator2, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -343,16 +367,18 @@ public class TestCasesPanel extends JPanel implements WizardDescriptor.FinishPan
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox testCaseTypes;
+    private javax.swing.JSeparator separator2;
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JScrollPane scroll;
+    private javax.swing.JSeparator separator;
+    private javax.swing.JButton down;
+    private javax.swing.JButton add;
+    private javax.swing.JButton up;
     private javax.swing.JTextField caseName;
     private javax.swing.JLabel templateLabel;
-    private javax.swing.JComboBox testCaseTypes;
-    private javax.swing.JButton up;
-    private javax.swing.JButton remove;
-    private javax.swing.JButton down;
     private javax.swing.JList testCases;
-    private javax.swing.JButton add;
+    private javax.swing.JScrollPane scroll;
+    private javax.swing.JButton remove;
     // End of variables declaration//GEN-END:variables
 
 }

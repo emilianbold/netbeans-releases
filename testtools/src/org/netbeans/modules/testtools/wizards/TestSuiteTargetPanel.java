@@ -88,19 +88,19 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(408, 334));
         setMinimumSize(new java.awt.Dimension(135, 156));
-        nameLabel.setText("Name: ");
-        nameLabel.setDisplayedMnemonic(110);
+        setPreferredSize(new java.awt.Dimension(408, 334));
+        nameLabel.setDisplayedMnemonic('n');
         nameLabel.setLabelFor(nameField);
+        nameLabel.setText("Name: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameLabel, gridBagConstraints);
 
         nameField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -114,23 +114,23 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(nameField, gridBagConstraints);
 
-        packageLabel.setText("Package: ");
-        packageLabel.setDisplayedMnemonic(112);
+        packageLabel.setDisplayedMnemonic('p');
         packageLabel.setLabelFor(packageField);
+        packageLabel.setText("Package: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(packageLabel, gridBagConstraints);
 
         packageField.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -144,23 +144,23 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(packageField, gridBagConstraints);
 
-        templateLabel.setText("Select a Template: ");
-        templateLabel.setDisplayedMnemonic(84);
+        templateLabel.setDisplayedMnemonic('T');
         templateLabel.setLabelFor(templateCombo);
+        templateLabel.setText("Select a Template: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(templateLabel, gridBagConstraints);
 
         templateCombo.addActionListener(new java.awt.event.ActionListener() {
@@ -173,37 +173,38 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(templateCombo, gridBagConstraints);
 
-        descriptionLabel.setText("Template Description: ");
-        descriptionLabel.setDisplayedMnemonic(68);
+        descriptionLabel.setDisplayedMnemonic('D');
         descriptionLabel.setLabelFor(htmlBrowser);
+        descriptionLabel.setText("Template Description: ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.insets = new java.awt.Insets(17, 11, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(descriptionLabel, gridBagConstraints);
 
         descriptionPanel.setLayout(new java.awt.CardLayout());
 
         descriptionPanel.setPreferredSize(new java.awt.Dimension(400, 200));
-        noDescription.setText("No description");
         noDescription.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        noDescription.setText("No description");
         descriptionPanel.add(noDescription, "no");
 
-        htmlBrowser.setEnableLocation(false);
-        htmlBrowser.setStatusLineVisible(false);
-        htmlBrowser.setPreferredSize(new java.awt.Dimension(400, 200));
-        htmlBrowser.setToolbarVisible(false);
         htmlBrowser.setEnableHome(false);
+        htmlBrowser.setEnableLocation(false);
+        htmlBrowser.setPreferredSize(new java.awt.Dimension(400, 200));
+        htmlBrowser.setStatusLineVisible(false);
+        htmlBrowser.setToolbarVisible(false);
         htmlBrowser.setAutoscrolls(true);
         descriptionPanel.add(htmlBrowser, "yes");
 
@@ -213,10 +214,10 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 11, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 100.0;
         gridBagConstraints.weighty = 100.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         add(descriptionPanel, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -315,16 +316,16 @@ public class TestSuiteTargetPanel extends JPanel implements WizardDescriptor.Pan
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JLabel packageLabel;
-    private javax.swing.JLabel templateLabel;
-    private javax.swing.JTextField nameField;
-    private javax.swing.JTextField packageField;
     private org.openide.awt.HtmlBrowser htmlBrowser;
-    private javax.swing.JPanel descriptionPanel;
-    private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JComboBox templateCombo;
     private javax.swing.JLabel noDescription;
+    private javax.swing.JComboBox templateCombo;
+    private javax.swing.JTextField nameField;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JPanel descriptionPanel;
+    private javax.swing.JLabel templateLabel;
+    private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JTextField packageField;
+    private javax.swing.JLabel packageLabel;
     // End of variables declaration//GEN-END:variables
      
 }

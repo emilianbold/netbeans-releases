@@ -77,8 +77,8 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
         panel.add(defaultCheck, gridBagConstraints);
 
+        systemLabel.setDisplayedMnemonic('W');
         systemLabel.setText("Windows System: ");
-        systemLabel.setDisplayedMnemonic(87);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -128,8 +128,8 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
 
         add(panel, "ok");
 
-        stopLabel.setText("Test Type with this name already exists or has invalid name.");
         stopLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        stopLabel.setText("Test Type with this name already exists or has invalid name.");
         add(stopLabel, "stop");
 
     }//GEN-END:initComponents
@@ -203,14 +203,14 @@ public class TestTypeSettingsPanel extends JPanel implements WizardDescriptor.Pa
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton mdiRadio;
-    private javax.swing.JLabel stopLabel;
-    private javax.swing.JCheckBox defaultCheck;
-    private javax.swing.JPanel panel;
-    private javax.swing.JLabel systemLabel;
-    private javax.swing.JRadioButton sdiRadio;
     private javax.swing.ButtonGroup buttonGroup;
     private javax.swing.JCheckBox jemmyCheck;
+    private javax.swing.JRadioButton mdiRadio;
+    private javax.swing.JRadioButton sdiRadio;
+    private javax.swing.JLabel stopLabel;
+    private javax.swing.JCheckBox defaultCheck;
+    private javax.swing.JLabel systemLabel;
+    private javax.swing.JPanel panel;
     // End of variables declaration//GEN-END:variables
     
 }
