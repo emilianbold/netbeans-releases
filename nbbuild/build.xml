@@ -1415,9 +1415,9 @@ the ${netbeans.dest}/bin/ directory.
       <param name="one.cluster.dependencies" value="${one-cluster-dependencies}"/>
       <param name="one.cluster.name" value="${one.cluster.name}"/>
     </antcall>
-    <mkdir dir="${netbeans.dest}"/>
+    <mkdir dir="${netbeans.dest.dir}"/>
     <nbmerge failonerror="${stop.when.broken.modules}" 
-             dest="${netbeans.dest}" 
+             dest="${netbeans.dest.dir}" 
              topdir="${nb_all}" 
              fixedmodules="${nb.cluster.platform}" 
              modules="${one-cluster-modules}"
