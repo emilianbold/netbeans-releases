@@ -390,6 +390,10 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return layoutDelegate.getCustomizerClass();
     }
 
+    public Component getSupportCustomizer() {
+        return layoutDelegate.getSupportCustomizer();
+    }
+
     // code meta data
     public CodeGroup getLayoutCode() {
         return layoutDelegate.getLayoutCode();

@@ -262,12 +262,26 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         return propertySets;
     }
 
-    /** !! Currently not available for custom implementations !!
-     * Returns a class of a customizer for the whole layout (an analogy to
-     * the JavaBean customizer). The class should be a Component and Customizer.
-     * @return layout customizer class, null if no customizer is provided
+    /** Returns a class of a customizer for the layout manager being used as
+     * a JavaBean. The class should be a java.awt.Component and
+     * java.beans.Customizer. The default implementation tries to get the
+     * customizer class from layout manager's BeanInfo.
+     * @return layout bean customizer class, null if no customizer is provided
      */
     public Class getCustomizerClass() {
+        return metaLayout == null ? null :
+            metaLayout.getBeanInfo().getBeanDescriptor().getCustomizerClass();
+    }
+
+    /** Returns an instance of a special customizer provided by the layout
+     * delegate. This customizer need not implement java.beans.Customizer,
+     * because its creation is under full control of the layout delegate - and
+     * vice versa, the customizer can have full control over the layout
+     * delegate (unlike the bean customizer which operates only with layout
+     * manager bean instance). The default implementation returns null.
+     * @return instance of layout support customizer
+     */
+    public Component getSupportCustomizer() {
         return null;
     }
 

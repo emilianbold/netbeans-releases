@@ -15,16 +15,15 @@ package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
 import java.util.*;
-import java.beans.Customizer;
+import java.beans.*;
+import java.security.*;
 
+import org.openide.ErrorManager;
 import org.openide.nodes.*;
-import org.openide.actions.*;
-import org.openide.loaders.*;
-import org.openide.cookies.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
+
 import org.netbeans.modules.form.*;
-import org.netbeans.modules.form.actions.*;
+import org.netbeans.modules.form.actions.SelectLayoutAction;
 
 /**
  * @author Tomas Pavek
@@ -69,36 +68,6 @@ public class LayoutNode extends FormNode
         return layoutSupport.getPropertySets();
     }
 
-    public boolean hasCustomizer() {
-        return !layoutSupport.getMetaContainer().isReadOnly()
-               && layoutSupport.getCustomizerClass() != null;
-    }
-
-    public Component getCustomizer() {
-        Class customizerClass = layoutSupport.getCustomizerClass();
-        if (customizerClass == null)
-            return null;
-
-        Object customizer;
-        try {
-            customizer = customizerClass.newInstance();
-        }
-        catch (InstantiationException e) {
-            return null;
-        }
-        catch (IllegalAccessException e) {
-            return null;
-        }
-        if (customizer instanceof Component 
-                && customizer instanceof Customizer)
-        {
-            ((java.beans.Customizer)customizer).setObject(
-                                            layoutSupport.getLayoutDelegate());
-            return (Component) customizer;
-        }
-        else return null;
-    }
-
     protected SystemAction[] createActions() {
         ArrayList actions = new ArrayList(10);
 
@@ -114,6 +83,107 @@ public class LayoutNode extends FormNode
         SystemAction[] array = new SystemAction[actions.size()];
         actions.toArray(array);
         return array;
+    }
+
+    public boolean hasCustomizer() {
+        return !layoutSupport.getMetaContainer().isReadOnly()
+               && layoutSupport.getCustomizerClass() != null;
+    }
+
+    public Component getCustomizer() {
+        Class customizerClass = layoutSupport.getCustomizerClass();
+        if (customizerClass == null)
+            return null;
+
+        Component supportCustomizer = layoutSupport.getSupportCustomizer();
+        if (supportCustomizer != null)
+            return supportCustomizer;
+
+        // create bean customizer for layout manager
+        Object customizerObject;
+        try {
+            customizerObject = customizerClass.newInstance();
+        }
+        catch (InstantiationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            return null;
+        }
+        catch (IllegalAccessException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            return null;
+        }
+
+        if (customizerObject instanceof Component 
+            && customizerObject instanceof Customizer)
+        {
+            Customizer customizer = (Customizer) customizerObject;
+            customizer.setObject(
+                layoutSupport.getPrimaryContainerDelegate().getLayout());
+
+            customizer.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    Node.Property[] properties;
+                    if (evt.getPropertyName() != null) {
+                        Node.Property changedProperty =
+                            layoutSupport.getLayoutProperty(evt.getPropertyName());
+                        if (changedProperty != null)
+                            properties = new Node.Property[] { changedProperty };
+                        else return; // non-existing property?
+                    }
+                    else {
+                        properties = layoutSupport.getAllProperties();
+                        evt = null;
+                    }
+
+                    updatePropertiesFromCustomizer(properties, evt);
+                }
+            });
+
+            return (Component) customizer;
+        }
+
+        return null;
+    }
+
+    private void updatePropertiesFromCustomizer(
+                     final Node.Property[] properties,
+                     final PropertyChangeEvent evt)
+    {
+        // just for sure we run this as privileged to avoid security problems,
+        // the property change can be fired from untrusted bean customizer code
+        AccessController.doPrivileged(new PrivilegedAction() {
+            public Object run() {
+                try {
+                    PropertyChangeEvent ev = evt == null ? null :
+                         new PropertyChangeEvent(
+                               layoutSupport.getLayoutDelegate(),
+                               evt.getPropertyName(),
+                               evt.getOldValue(), evt.getNewValue());
+
+                    for (int i=0; i < properties.length; i++) {
+                        if (properties[i] instanceof FormProperty)
+                            ((FormProperty)properties[i]).reinstateProperty();
+                        // [there should be something for Node.Property too]
+
+                        if (ev != null)
+                            layoutSupport.containerLayoutChanged(ev);
+                    }
+
+                    if (ev == null) // anonymous property changed
+                        layoutSupport.containerLayoutChanged(null);
+                        // [but this probably won't do anything...]
+                }
+                catch (PropertyVetoException ex) {
+                    // the change is not accepted, but what can we do here?
+                    // java.beans.Customizer has no veto capabilities
+                }
+                catch (Exception ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+
+                return null;
+            }
+        });
     }
 
 /*    public HelpCtx getHelpCtx() {

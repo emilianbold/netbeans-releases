@@ -45,13 +45,20 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         return GridBagLayout.class;
     }
 
-    /** Returns a class of a customizer for the whole layout (an analogy to
-     * the JavaBean customizer). GridBagCustomizer is special internal class
-     * using private form editor features.
-     * @return layout customizer class, null if no customizer is provided
+    /** Returns a class of customizer for GridBagLayout.
+     * @return layout customizer class
      */
     public Class getCustomizerClass() {
         return GridBagCustomizer.class;
+    }
+
+    /** Creates an instance of customizer for GridBagLayout.
+     * @return layout customizer class
+     */
+    public Component getSupportCustomizer() {
+        GridBagCustomizer customizer = new GridBagCustomizer();
+        customizer.setObject(this);
+        return customizer;
     }
 
     /** This method is called when switching layout - giving an opportunity to

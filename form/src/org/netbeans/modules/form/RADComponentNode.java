@@ -20,6 +20,7 @@ import java.util.*;
 import java.beans.*;
 import java.security.*;
 
+import org.openide.ErrorManager;
 import org.openide.actions.*;
 import org.openide.cookies.*;
 import org.openide.loaders.*;
@@ -332,14 +333,12 @@ public class RADComponentNode extends FormNode
         try {
             customizerObject = customizerClass.newInstance();
         }
-        catch (InstantiationException e1) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e1.printStackTrace();
+        catch (InstantiationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             return null;
         }
-        catch (IllegalAccessException e2) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                e2.printStackTrace();
+        catch (IllegalAccessException e) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
             return null;
         }
 
@@ -366,13 +365,17 @@ public class RADComponentNode extends FormNode
                                                          evt.getPropertyName());
                     if (changedProperty != null)
                         properties = new FormProperty[] { changedProperty };
-                    else return;
+                    else return; // non-existing property?
                 }
-                else properties = component.getAllBeanProperties();
+                else {
+                    properties = component.getAllBeanProperties();
+                    evt = null;
+                }
 
                 updatePropertiesFromCustomizer(properties, evt);
             }
         });
+        // [undo/redo for customizer probably does not work]
 
         return (Component) customizerObject;
     }
@@ -385,6 +388,9 @@ public class RADComponentNode extends FormNode
         // the property change is fired from untrusted bean customizer code
         AccessController.doPrivileged(new PrivilegedAction() {
             public Object run() {
+                Object oldValue = evt != null ? evt.getOldValue() : null;
+                Object newValue = evt != null ? evt.getNewValue() : null;
+
                 for (int i=0; i < properties.length; i++) {
                     FormProperty prop = properties[i];
                     if (FormUtils.isIgnoredProperty(component.getBeanClass(),
@@ -393,13 +399,11 @@ public class RADComponentNode extends FormNode
 
                     try {
                         prop.reinstateProperty();
-                        if (prop.isChanged())
-                            prop.propertyValueChanged(evt.getOldValue(),
-                                                      evt.getNewValue());
+//                        if (prop.isChanged()) // [what if changed to default value?]
+                        prop.propertyValueChanged(oldValue, newValue);
                     }
                     catch (Exception ex) { // unlikely to happen
-                        if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                            ex.printStackTrace();
+                        ex.printStackTrace();
                     }
                 }
                 return null;

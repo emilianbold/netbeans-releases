@@ -114,12 +114,30 @@ public interface LayoutSupportDelegate {
      */
     Node.PropertySet[] getPropertySets();
 
-    /** !! Currently not supported for custom implementations !!
-     * Returns a class of a customizer for the whole layout (an analogy to
-     * the JavaBean customizer). The class should be a Component and Customizer.
+    /** Returns a class of a customizer for the layout manager being used as
+     * a JavaBean. The class should be a java.awt.Component and
+     * java.beans.Customizer. Such a customizer is usually provided with the
+     * layout bean itself, specified in BeanInfo class. When the customizer is
+     * to be used, it is instantiated and given the reference layout manager
+     * instance (using Customizer.setObject(...) method).
+     * Note: If the layout delegate provides special customizer from
+     * getSupportCustomizer() method, it should still return its class here so
+     * it is apparent that there is some customizer provided.
      * @return layout customizer class, null if no customizer is provided
      */
     Class getCustomizerClass();
+
+    /** Returns an instance of a special customizer provided by the layout
+     * delegate. This customizer need not implement java.beans.Customizer,
+     * because its creation is under full control of the layout delegate - and
+     * vice versa, the customizer can have full control over the layout
+     * delegate (unlike the bean customizer which operates only with layout
+     * manager bean instance).
+     * Note: If the layout delegate provides the customizer here, the class of
+     * the customizer should be also returned from getCustomizerClass() method.
+     * @return instance of layout support customizer
+     */
+    Component getSupportCustomizer();
 
     /** Gets the complete code for setting up the layout (including adding
      * components).
