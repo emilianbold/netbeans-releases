@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.java.j2seproject;
 
+import java.awt.Dialog;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +25,13 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -34,6 +39,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /** Action provider of the J2SE project. This is the place where to do
@@ -72,6 +78,7 @@ class J2SEActionProvider implements ActionProvider {
     
     // Ant project helper of the project
     private AntProjectHelper antProjectHelper;
+    
         
     /** Map from commands to ant targets */
     Map/*<String,String[]>*/ commands;
@@ -153,7 +160,28 @@ class J2SEActionProvider implements ActionProvider {
             }
             p.setProperty("fix.includes", path); // NOI18N
             targetNames = new String[] {"debug-fix"}; // NOI18N
-        } 
+        }
+        else if (command.equals (COMMAND_RUN)) {
+            EditableProperties ep = antProjectHelper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
+
+            // check project's main class
+            String mainClass = (String)ep.get ("main.class"); // NOI18N
+            
+            while (!isSetMainClass (mainClass)) {
+                // show warning, if cancel then return
+                if (showMainClassWarning (mainClass, antProjectHelper.getDisplayName (), ep)) return ;
+                mainClass = (String)ep.get ("main.class"); // NOI18N
+                antProjectHelper.putProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+            }
+            
+
+            p = new Properties();
+            p.setProperty("main.class", mainClass); // NOI18N
+            targetNames = (String[])commands.get(COMMAND_RUN);
+            if (targetNames == null) {
+                throw new IllegalArgumentException(COMMAND_RUN);
+            }
+        }
         else {
             p = null;
             targetNames = (String[])commands.get(command);
@@ -243,5 +271,36 @@ class J2SEActionProvider implements ActionProvider {
         }
         return null;
     }    
+    
+    private boolean isSetMainClass (String mainClass) {
+        return (mainClass != null && mainClass.length () > 0);
+    }
+    
+    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {
+        boolean canceled;
+        
+        // main class goes wrong => warning
+        MainClassWarning panel = new MainClassWarning (antProjectHelper.getDisplayName (), project.getSourceDirectory ());
+
+        Object[] options = new Object[] {
+            NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK"), // NOI18N
+            DialogDescriptor.CANCEL_OPTION
+        };
+        DialogDescriptor desc = new DialogDescriptor (panel,
+                NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", antProjectHelper.getDisplayName ()), // NOI18N
+            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+        Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
+        dlg.setVisible (true);
+        if (desc.getValue() != options[0]) {
+            canceled = true;
+        } else {
+            mainClass = panel.getSelectedMainClass ();
+            canceled = false;
+            ep.put ("main.class", mainClass == null ? "" : mainClass); // NOI18N
+        }
+        dlg.dispose();            
+
+        return canceled;
+    }
         
 }

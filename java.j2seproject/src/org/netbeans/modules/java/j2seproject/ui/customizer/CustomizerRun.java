@@ -32,6 +32,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -44,6 +45,7 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
     private J2SEProjectProperties j2seProperties;
     private VisualPropertySupport vps;
     private VisualClasspathSupport vcs;
+    private VisualMainClassSupport vms;
     
     /** Creates new form CustomizerCompile */
     public CustomizerRun( J2SEProjectProperties j2seProperties ) {
@@ -59,17 +61,26 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
             jButtonRemove,
             jButtonMoveUp,
             jButtonMoveDown );
+        //FileObject sourceRoot = (FileObject)j2seProperties.get (J2SEProjectProperties.SRC_DIR);
+        Object object = j2seProperties.get (J2SEProjectProperties.SRC_DIR);
+//        if (object == null) {
+//            System.out.println("### Object[]: null");
+//        } else {
+//            System.out.println("### Object[" + object.getClass () + "]: " + object);
+//        }
+        vms = new VisualMainClassSupport (jTextFieldMainClass, jButtonMainClass, null);
     }
     
     
     public void initValues() {
         
-        vps.register( jTextFieldMainClass, J2SEProjectProperties.MAIN_CLASS  );
+        //vps.register( jTextFieldMainClass, J2SEProjectProperties.MAIN_CLASS  );
+        vps.register (vms, J2SEProjectProperties.MAIN_CLASS);
         vps.register( jTextFieldArgs, J2SEProjectProperties.APPLICATION_ARGS );
         vps.register( vcs, J2SEProjectProperties.RUN_CLASSPATH );
    
         // XXX Probably remove the button
-        jButtonMainClass.setVisible( false );
+        jButtonMainClass.setVisible( true );
         jButtonEdit.setVisible( false );
     } 
         
@@ -109,16 +120,18 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel {
         add(jLabelMainClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 0);
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(jTextFieldMainClass, gridBagConstraints);
 
         jButtonMainClass.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
+        jButtonMainClass.setPreferredSize(new java.awt.Dimension(89, 18));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 12, 12);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jButtonMainClass, gridBagConstraints);
 
         jLabelArgs.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
