@@ -175,6 +175,8 @@ public abstract class CLIHandler extends Object {
      * @see #initialize(Args, Integer, List)
      */
     static final class Status {
+        public static final int CANNOT_CONNECT = -255;
+        
         private final File lockFile;
         private final int port;
         private final int exitCode;
@@ -233,10 +235,11 @@ public abstract class CLIHandler extends Object {
      * @param classloader to find command CLIHandlers in
      * @param doAllInit if true, run all WHEN_INIT handlers now; else wait for {@link #finishInitialization}
      * @param failOnUnknownOptions if true, fail (status 2) if some options are not recognized (also checks for -? and -help)
+     * @param cleanLockFile removes lock file if it appears to be dead
      * @return the file to be used as lock file or null parsing of args failed
      */
-    static Status initialize(String[] args, ClassLoader loader, boolean doAllInit, boolean failOnUnknownOptions) {
-        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions);
+    static Status initialize(String[] args, ClassLoader loader, boolean doAllInit, boolean failOnUnknownOptions, boolean cleanLockFile) {
+        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions, cleanLockFile);
     }
     
     /**
@@ -252,9 +255,10 @@ public abstract class CLIHandler extends Object {
      * @param handlers all handlers to use
      * @param doAllInit if true, run all WHEN_INIT handlers now; else wait for {@link #finishInitialization}
      * @param failOnUnknownOptions if true, fail (status 2) if some options are not recognized (also checks for -? and -help)
+     * @param cleanLockFile removes lock file if it appears to be dead
      * @return a status summary
      */
-    static Status initialize(final Args args, Integer block, final List handlers, boolean doAllInit, final boolean failOnUnknownOptions) {
+    static Status initialize(final Args args, Integer block, final List handlers, boolean doAllInit, final boolean failOnUnknownOptions, boolean cleanLockFile) {
         // initial parsing of args
         {
             int r = notifyHandlers(args, handlers, WHEN_BOOT, false, failOnUnknownOptions);
@@ -452,8 +456,12 @@ public abstract class CLIHandler extends Object {
                         // connection failed, the port is dead
                         enterState(33, block);
                     }
-                    // remove the file and try once more
-                    lockFile.delete();
+                    if (cleanLockFile) {
+                        // remove the file and try once more
+                        lockFile.delete();
+                    } else {
+                        return new Status (Status.CANNOT_CONNECT);
+                    }
                 }
             }
             

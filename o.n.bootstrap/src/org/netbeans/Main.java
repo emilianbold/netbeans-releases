@@ -97,7 +97,21 @@ public class Main extends Object {
         // Evaluate command line interfaces and lock the user directory
         //
         
-        CLIHandler.Status result = CLIHandler.initialize(args, loader, false, true);
+        CLIHandler.Status result;
+        result = CLIHandler.initialize(args, loader, false, true, false);
+        if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
+            int value = javax.swing.JOptionPane.showConfirmDialog (
+                null, 
+                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunning"), 
+                java.util.ResourceBundle.getBundle("org/netbeans/Bundle").getString("MSG_AlreadyRunningTitle"), 
+                javax.swing.JOptionPane.OK_CANCEL_OPTION,
+                javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            if (value == javax.swing.JOptionPane.OK_OPTION) {
+                result = CLIHandler.initialize(args, loader, false, true, true);
+            }
+            
+        }
         int res = result.getExitCode();
         if (res == -1) {
             // Connected to another running NB instance and succeeded in making a call.
