@@ -15,7 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
-import org.netbeans.core.NbPresenter;
+import org.netbeans.core.windows.NbPresenter;
 import org.netbeans.core.windows.frames.InternalFrameTypeImpl;
 import org.netbeans.core.windows.frames.TopFrameTypeImpl;
 import org.netbeans.jellytools.*;
