@@ -194,9 +194,9 @@
 <!--csh page for projects|settings|Java Source|Import Management Tool Settings-->
 <mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" />
 <!--csh page for Import Management Tool panels-->
-<mapID target="org.netbeans.modules.java.import.FqnPanel" url="java/imt/resolve-ids.html" />
-<mapID target="org.netbeans.modules.java.import.ImportPanel" url="java/imt/create-imports.html" />
-<mapID target="org.netbeans.modules.java.import.ResolvePanel" url="java/imt/remove-unused.html" />
+<mapID target="java.import.FqnPanel" url="java/imt/resolve-ids.html" />
+<mapID target="java.import.ImportPanel" url="java/imt/create-imports.html" />
+<mapID target="java.import.ResolvePanel" url="java/imt/remove-unused.html" />
 <!-- Following csh page hooked to sync intro for now; should write a more specific page -->
 <mapID target="java.sync.csh.confirmchanges" url="java/synchronizing/intro.html" />
 <!-- Following csh page hooked to both method and constructor customizer dialogs -->
@@ -429,9 +429,6 @@
 <mapID target="cvs.filesystemproperties" url="vcs-nb/cvs-nb/cvs_fsproperties.html" />
 <mapID target="cvs.settings" url="vcs-nb/cvs-nb/cvs_settings.html" />
 <mapID target="cvs.customizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
-<mapID target="cvs.customizer-basic" url="vcs-nb/cvs-nb/cvs_customizer-basic.html" />
-<mapID target="cvs.customizer-server" url="vcs-nb/cvs-nb/cvs_customizer-server.html" />
-<mapID target="cvs.customizer-mount" url="vcs-nb/cvs-nb/cvs_customizer-mount.html" />
 <mapID target="cvs.commands" url="vcs-nb/cvs-nb/cvs_commands.html" />
 <mapID target="cvs.commandopts-save" url="vcs-nb/cvs-nb/cvs_commandopts-save.html" />
 <mapID target="cvs.merge" url="vcs-nb/cvs-nb/cvs_merge.html" />
@@ -806,8 +803,8 @@
    <mapID target="org.netbeans.modules.form.actions.SelectLayoutAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.actions.ShowGridAction" url="pending.html" />
    <mapID target="org.netbeans.modules.form.actions.TestModeAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="pending.html" />
-   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="pending.html" />
+   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.installBean" url="beans/adding.html" />
+   <mapID target="org.netbeans.modules.form.palette.BeanInstaller.selectPaletteCategory" url="beans/adding.html" />
    <mapID target="org.netbeans.modules.form.palette.ComponentPalette" url="pending.html" /> 
    <mapID target="org.netbeans.modules.form.palette.ComponentPalette.selectionButton" url="pending.html" />
    <mapID target="org.netbeans.modules.form.palette.ComponentPalette.connectionButton" url="pending.html" /> 
@@ -960,12 +957,16 @@
    <mapID target="org.netbeans.modules.group.CreateGroupAction" url="pending.html" />
    <!--Mount CVS Wizard; Versioning | Mount CVS; on all wizard panes-->
    <mapID target="org.netbeans.modules.vcscore.wizard.mountcvs.WDPanel" url="vcs-nb/cvs-nb/cvs_wizard.html" />
+   <!--csh for VCS Generic mount wizard-->
+   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.AdvancedPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
+   <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.EnvironmentPanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
    <!--csh for CVS Password Manager-->
    <mapID target="org.netbeans.modules.cvsclient.login.LoginManagerAction" url="vcs-nb/cvs-nb/cvs_password.html" />
    <!--csh for Verify VCS Group-->
    <mapID target="org.netbeans.modules.vcscore.ui.VerifyGroupPanel" url="vcs-nb/vcsgroups/vcs_groupsverify.html" />
    <!--csh for Javacvs Customizer-->
-   <mapID target="org.netbeans.modules.cvsclient.customizers.NbJavaCvsCustomizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
+   <mapID target="org.netbeans.modules.cvsclient.customizer.NbJavaCvsCustomizer" url="vcs-nb/cvs-nb/cvs_customizer.html" />
 
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
