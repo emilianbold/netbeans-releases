@@ -262,7 +262,7 @@ public class I18nManager {
                     i18nMode = currentWs[i].createMode(
                         I18N_MODE,
                         NbBundle.getBundle(I18nModule.class).getString("CTL_I18nDialogTitle"),
-                        I18nSupport.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
+                        I18nManager.class.getResource("/org/netbeans/modules/i18n/i18nAction.gif") // NOI18N
                     );
                 }
                 i18nMode.dockInto(topComponent);
