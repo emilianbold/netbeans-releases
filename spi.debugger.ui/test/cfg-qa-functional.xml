@@ -19,6 +19,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="gui/debuggercore/StartDebugger.class"/>
                 <include name="gui/debuggercore/Breakpoints.class"/>
+                <include name="gui/debuggercore/Actions.class"/>
                 <include name="gui/debuggercore/LocalVariables.class"/>
                 <include name="gui/debuggercore/Watches.class"/>
                 <include name="gui/debuggercore/Views.class"/>
@@ -66,6 +67,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
+    <testbag testattribs="actions" executor="ide" name="Actions" resultsprocessor="qa-functional">
+       <testset dir="qa-functional/src">
+            <patternset>
+                <include name="gui/debuggercore/Actions.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
 
     <compiler name="default-compiler" default="true" antfile="build-qa-functional.xml" target="qa-functional-compiler"/>
