@@ -113,7 +113,7 @@
 
     <mapID target="about_ent_apps" url="enterprise/general/about_ent_apps.html" />
     <mapID target="ent_app_process" url="enterprise/general/ent_app_process.html" />
-    <mapID target="ent_app_process" url="enterprise/general/ent_app_creating.html" />
+    <mapID target="ent_app_creating" url="enterprise/general/ent_app_creating.html" />
     
 
 <!-- End of Enterprise Application help -->
