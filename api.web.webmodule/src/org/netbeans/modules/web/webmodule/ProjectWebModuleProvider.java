@@ -16,7 +16,6 @@ package org.netbeans.modules.web.webmodule;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 
 public class ProjectWebModuleProvider implements WebModuleProvider {
