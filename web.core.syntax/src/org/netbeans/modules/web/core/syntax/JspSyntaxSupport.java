@@ -1425,8 +1425,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         } while (elem == null && offset >= 0);
         return elem;
     }
-
+    
     public List getPossibleEndTags (int offset, String pattern) throws BadLocationException {
+        return getPossibleEndTags(offset, pattern, false); //return all end tags
+    }
+
+    public List getPossibleEndTags (int offset, String pattern, boolean firstOnly) throws BadLocationException {
         SyntaxElement elem = getElementChain( offset );
         Stack stack = new Stack();
         List result = new ArrayList();
@@ -1484,6 +1488,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                             continue;
 
                         result.add( new CompletionItem.Tag( "/"+image ) );  // NOI18N
+                        
+                        if(firstOnly) break; //return only the first found not-finished start token
                     }
                     // if( ! tag.hasOptionalEnd() ) break;  // If this tag have required EndTag, we can't go higher until completing this tag
                 } else {                        // not empty - we match content of stack
