@@ -17,8 +17,8 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-/** Used to call "Find" popup menu item, "Edit|Find in Files" main menu item,
- * "org.netbeans.modules.search.RepositorySearchAction" or Ctrl+F shortcut.
+/** Used to call "Find" popup menu item, "Edit|Find in Projects" main menu item,
+ * "org.netbeans.modules.search.project.ProjectsSearchAction" or Ctrl+Shift+P shortcut.
  * @see Action
  * @see ActionNoBlock
  */
@@ -27,17 +27,17 @@ import org.netbeans.jemmy.operators.ComponentOperator;
         Bundle.getStringTrimmed("org.netbeans.core.Bundle",
                                 "Menu/Edit") +
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.modules.search.Bundle",
-                                "TEXT_ACTION_REPOSITORY_SEARCH");
+        Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle",
+                                "LBL_SearchProjects");
     private static final String popup =
         Bundle.getStringTrimmed("org.openide.actions.Bundle",
                                 "Find");
     private static final Shortcut shortcut =
-        new Shortcut(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
+        new Shortcut(KeyEvent.VK_P, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK);
     
     /** Creates new instance. */
     public FindInFilesAction() {
-        super(menu, popup, "org.netbeans.modules.search.RepositorySearchAction", shortcut);
+        super(menu, popup, "org.netbeans.modules.search.project.ProjectsSearchAction", shortcut);
     }
     
     /** Throws UnsupportedOperationException because FindInFilesAction
