@@ -25,46 +25,18 @@ import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
+import org.openide.modules.ManifestSection.NodeSection;
+
+import org.netbeans.core.lookup.*;
 
 /** Important places in the system.
 *
 * @author Jaroslav Tulach
 */
 final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
-    /** session settings icon base */
-    private static final String SESSION_SETTINGS_ICON_BASE="/org/netbeans/core/resources/sessionSettings"; // NOI18N
-
     /** default */
     private static NbPlaces places;
-    /** set of roots */
-    private static ArrayList roots = new ArrayList ();
-    /** session node */
-    private static AbstractNode session;
-
-    private static class SessionNode extends AbstractNode {
-        SessionNode () {
-            super (new Children.Array ());
-        }
-        public HelpCtx getHelpCtx () {
-            return new HelpCtx (SessionNode.class);
-        }
-        /** serialization */
-        public Node.Handle getHandle () {
-            return new SessionHandle ();
-        }
-
-        static final class SessionHandle implements Node.Handle {
-            public Node getNode () {
-                return TopManager.getDefault ().getPlaces ().nodes (). session();
-            }
-        }
-    }
-    static {
-        session = new SessionNode ();
-        session.setName (NbBundle.getBundle (NbPlaces.class).getString ("CTL_Session_Settings"));
-        session.setIconBase (SESSION_SETTINGS_ICON_BASE);
-    }
-
+    
     /** No instance outside this class.
     */
     private NbPlaces() {
@@ -76,33 +48,6 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
             places = new NbPlaces ();
         }
         return places;
-    }
-
-    /** Adds new root node.
-    */
-    public static void addRoot (Node n) {
-        roots.add (n);
-        NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
-    }
-
-    /** Removes new root node.
-    */
-    public static void removeRoot (Node n) {
-        if (roots.remove (n)) {
-            NbTopManager.get ().firePropertyChange (NbTopManager.PROP_PLACES, null, null);
-        }
-    }
-
-    /** Adds new session node.
-    */
-    public static void addSession (Node n) {
-        session.getChildren ().add (new Node[] { n });
-    }
-
-    /** Removes new session node.
-    */
-    public static void removeSession (Node n) {
-        session.getChildren ().remove (new Node[] { n });
     }
 
     /** Interesting places for nodes.
@@ -148,13 +93,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     * the IDE.
     */
     public Node environment () {
-        return EnvironmentNode.getDefault ();
+        return EnvironmentNode.find (NodeSection.TYPE_ENVIRONMENT);
     }
 
 
     /** Session node */
     public Node session () {
-        return NbPlaces.session;
+        return EnvironmentNode.find (NodeSection.TYPE_SESSION); 
     }
 
     /** Control panel
@@ -188,7 +133,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     /** Root nodes.
     */
     public Node[] roots () {
-        return (Node[])roots.toArray (new Node[0]);
+        return EnvironmentNode.find (NodeSection.TYPE_ROOTS).getChildren ().getNodes (); 
     }
 
     /** Default folder for templates.
@@ -245,13 +190,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
      public DataFolder workplace () {
          return (DataFolder) TopManager.getDefault().getPlaces().nodes().projectDesktop().getCookie(DataFolder.class);
      }
-
-    /**
+     
+     /**
      * Returns a DataFolder subfolder of the session folder.  In the DataFolder
      * folders go first (sorted by name) followed by the rest of objects sorted
      * by name.
      */
-    static DataFolder findSessionFolder (String name) {
+     static synchronized DataFolder findSessionFolder (String name) {
         try {
             FileSystem fs = NbTopManager.get ().getRepository().getDefaultFileSystem ();
             FileObject fo = fs.findResource(name);
@@ -267,4 +212,74 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
             throw e;
         }
     }
+    
+    
+    final static class Ch extends Children.Keys implements Runnable {
+        /** result */
+        private NbLookup.Result result;
+        /** remebmber the section name */
+        private String sectionName;
+
+        /** Constructor
+         * @param nodeSectionName the name of the section that should be recognized
+         *   by this children
+         */
+        public Ch (String nodeSectionName) {
+            sectionName = nodeSectionName;
+
+            this.result = re (nodeSectionName);
+
+            result.notify (this);
+        }
+        
+        protected void addNotify () {
+            // updates its state
+            setKeys (result.allInstances ());
+        }
+        
+        protected void removeNotify () {
+            setKeys (Collections.EMPTY_SET);
+        }
+
+        /** Static method to compute a Lookup.Result from a template.
+         */
+        private static NbLookup.Result re (String n) {
+            NbLookup.Template t = new NbLookup.Template (
+                org.openide.modules.ManifestSection.NodeSection.class
+            );
+            return org.netbeans.core.NbTopManager.get ().getLookup ().lookup (t);
+        }
+
+        /** Method called when we are about to update the keys for 
+         * this children. Hopefully never called difectly.
+         */
+        public final void run () {
+            setKeys (result.allInstances ());
+            // notify that the set of nodes has changed (probably)
+            NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
+        }
+
+        /** Nodes for given objects.
+         */
+        protected Node[] createNodes (Object key) {
+            NodeSection ns = (NodeSection)key;
+
+            try {
+                String type = ns.getType ();
+                if (type == null || type.equals ("")) {
+                    type = NodeSection.TYPE_ENVIRONMENT;
+                }
+                
+                if (type.equalsIgnoreCase (sectionName)) {
+                    return new Node[] { ns.getNode () };
+                } else {
+                    return new Node[0];
+                }
+            } catch (InstantiationException ex) {
+                ex.printStackTrace();
+                return new Node[0];
+            }
+        }
+    }
+    
 }

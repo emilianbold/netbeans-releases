@@ -88,6 +88,9 @@ public abstract class NbTopManager extends TopManager {
 
     /** stores main shortcut context*/
     private Keymap shortcutContext;
+    
+    /** lookup service for this top mangager */
+    private org.netbeans.core.lookup.InstanceLookup lookup = new org.netbeans.core.lookup.InstanceLookup ();
 
     /** currently used debugger or null if none is in use */
     private Debugger debugger;
@@ -211,6 +214,29 @@ public abstract class NbTopManager extends TopManager {
     */
     public Node[] getDefaultNodes (boolean activated) {
         return activated ? new Node[0] : null;
+    }
+    
+    //
+    // The main method allows access to registration service
+    //
+    
+    
+    /** Register new instance.
+     */
+    public final void register (Object obj) {
+        lookup.add (obj);
+    }
+    
+    /** Unregisters the service.
+     */
+    public final void unregister (Object obj) {
+        lookup.remove (obj);
+    }
+    
+    /** Lookup for given service.
+     */
+    public final org.netbeans.core.lookup.NbLookup getLookup () {
+        return lookup;
     }
 
     //

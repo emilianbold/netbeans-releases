@@ -34,61 +34,42 @@ import org.netbeans.core.actions.*;
 final class EnvironmentNode extends AbstractNode {
     /** generated Serialized Version UID */
     static final long serialVersionUID = 4782447107972624693L;
+    /** name of section to filter */
+    private String filter;
     /** icon base for icons of this node */
-    private static final String EN_ICON_BASE = "/org/netbeans/core/resources/environment"; // NOI18N
-
-    /** base instance of the node */
-    private static EnvironmentNode node;
-
-    /** children to use */
-    private static Children children;
-
+    private static final String EN_ICON_BASE = "/org/netbeans/core/resources/"; // NOI18N
+    /** map between type of node and the parent node for this type (String, Node) */
+    private static java.util.HashMap types = new java.util.HashMap (11);
+    
 
     /** Constructor */
-    private EnvironmentNode () {
-        super (children = new Children.Array());
-        setName(NbBundle.getBundle(EnvironmentNode.class).
-                getString("CTL_Environment_name"));
-        setIconBase(EN_ICON_BASE);
+    private EnvironmentNode (String filter) {
+        super (new NbPlaces.Ch (filter));
+
+        this.filter = filter;
+        
+        String resourceName = "CTL_" + filter + "_name"; // NOI18N
+        String iconBase = EN_ICON_BASE + filter.toLowerCase ();
+        
+        setName(NbBundle.getMessage (EnvironmentNode.class, resourceName));
+        setIconBase(iconBase);
     }
+    
+    /** Finds the node for given name.
+     */
+    public static EnvironmentNode find (String name) {
+         EnvironmentNode n = (EnvironmentNode)types.get (name);
+         if (n == null) {
+             n = new EnvironmentNode (name);
+             types.put (name, n);
+         }
+         return n;
+    }
+    
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (EnvironmentNode.class);
     }
-
-    /** Method to add an node to the environment.
-    */
-    public static void addNode (Node n) {
-        getDefault ();
-        children.add (new Node[] { n });
-    }
-
-    /** Method to add an node to the environment.
-    */
-    public static void removeNode (Node n) {
-        children.remove (new Node[] { n });
-    }
-
-    /** Default instance */
-    public static synchronized Node getDefault() {
-        if (node == null) {
-            node = new EnvironmentNode ();
-        }
-        return node;
-    }
-
-    /** For deserialization */
-    public Node.Handle getHandle () {
-        return new EnvironmentHandle();
-    }
-
-    static final class EnvironmentHandle implements Node.Handle {
-        static final long serialVersionUID =-850350968366553370L;
-        public Node getNode () {
-            return EnvironmentNode.getDefault();
-        }
-    }
-
 
     /** Getter for set of actions that should be present in the
     * popup menu of this node. This set is used in construction of
@@ -102,6 +83,32 @@ final class EnvironmentNode extends AbstractNode {
                    SystemAction.get(ToolsAction.class),
                    SystemAction.get(PropertiesAction.class)
                };
+    }
+
+    /** For deserialization */
+    public Node.Handle getHandle () {
+        return new EnvironmentHandle (filter);
+    }
+
+    static final class EnvironmentHandle implements Node.Handle {
+        static final long serialVersionUID =-850350968366553370L;
+        
+        /** field */
+        private String filter;
+        
+        /** constructor */
+        public EnvironmentHandle (String filter) {
+            this.filter = filter;
+        }
+        public Node getNode () {
+            String f = filter;
+            if (f == null) {
+                // use the original node
+                f = "Environment"; // NOI18N
+            }
+            
+            return find (f);
+        }
     }
 }
 

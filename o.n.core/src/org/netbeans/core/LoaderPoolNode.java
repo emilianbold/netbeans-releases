@@ -62,7 +62,7 @@ public final class LoaderPoolNode extends AbstractNode {
     * This value is returned from the getNbLoaderPool() static method */
     private static LoaderPoolNode.NbLoaderPool loaderPool;
 
-    private static LoaderChildren myChildren = new LoaderChildren ();
+    private static LoaderChildren myChildren;
 
     /** Array of DataLoader objects */
     private static List loaders = new ArrayList ();
@@ -82,7 +82,10 @@ public final class LoaderPoolNode extends AbstractNode {
     * the LoaderPoolNodeChildren as two params to superclass
     */
     private LoaderPoolNode () {
-        super (myChildren);
+        super (new LoaderChildren ());
+        
+        myChildren = (LoaderChildren)getChildren ();
+        
         setName(NbBundle.getBundle(LoaderPoolNode.class).
                 getString("CTL_LoaderPool"));
         setIconBase(LOADER_POOL_ICON_BASE);
@@ -251,7 +254,10 @@ public final class LoaderPoolNode extends AbstractNode {
     */
     static void installationFinished () {
         installationFinished = true;
-        myChildren.update ();
+        
+        if (myChildren != null) {
+            myChildren.update ();
+        }
     }
 
     /** Stores all the objects into stream.
@@ -391,7 +397,9 @@ public final class LoaderPoolNode extends AbstractNode {
 
         if (loaderPool != null && installationFinished) {
             loaderPool.superFireChangeEvent();
-            myChildren.update ();
+            if (myChildren != null) {
+                myChildren.update ();
+            }
         }
     }
 
@@ -525,6 +533,10 @@ public final class LoaderPoolNode extends AbstractNode {
     * children reordering.
     */
     private static final class LoaderChildren extends Children.Keys {
+        public LoaderChildren () {
+            update ();
+        }
+
         /** Update the the nodes */
         public void update () {
             List _loaders = new LinkedList ();
