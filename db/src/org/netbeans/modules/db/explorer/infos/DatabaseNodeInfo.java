@@ -492,6 +492,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
         return (String)get("table"); //NOI18N
     }
 
+    public String getView()
+    {
+        return (String)get("view"); //NOI18N
+    }
+
     public void setTable(String nam)
     {
         put("table", nam); //NOI18N
