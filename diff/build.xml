@@ -12,6 +12,7 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
+<!-- Special targets: diff-apis -->
 
 <project name="diff" default="netbeans" basedir=".">
 
@@ -72,6 +73,43 @@ Microsystems, Inc. All Rights Reserved.
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
+
+  <!-- Diff API documentation -->
+  <target name="diff-apis" description="Create Diff API documentation.">
+    <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.3/docs/api"/>
+    <property name="openide-docs-location" value="http://www.netbeans.org/download/apis/"/>
+    <echo message="Build Diff API documentation..."/>
+    <mkdir dir="DiffAPIs"/>
+    <javadoc destdir="DiffAPIs"
+             packagenames="org.netbeans.api.diff,org.netbeans.spi.diff"
+             doctitle="NetBeans Diff APIs"
+             use="true"
+             splitindex="true"
+             author="false"
+             version="false"
+             maxmemory="64m"
+    >
+      <sourcepath>
+        <pathelement location="api/doc"/>
+        <pathelement location="src"/>
+      </sourcepath>
+      <classpath>
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+          <include name="openide*.jar" />
+        </fileset>
+      </classpath>
+      <link href="${jdk-docs-location}"
+            offline="true"
+            packagelistLoc="${nbroot}/openide/api/doc"
+      />
+      <link href="${openide-docs-location}"
+            offline="true"
+            packagelistLoc="api/doc/openide"
+      />
+    </javadoc>
+    <zip zipfile="DiffAPIs.zip" basedir="DiffAPIs"/>
+  </target>
+
 
   <target name="clean">
     <delete>
