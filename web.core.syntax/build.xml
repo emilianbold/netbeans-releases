@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="netbeans-extra">
         <copy file="../external/syntaxref20.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
         <copy file="../tlddoc/doc/jstl11-doc.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>    
+        <copy file="../tlddoc/doc/jsf10-doc.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>    
     </target>
 
     <!-- this task is not run as a part of the standard build --> 

@@ -663,7 +663,21 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             helpMap.put("http://java.sun.com/jstl/sql_rt", url + "sql_rt/");
             helpMap.put("http://java.sun.com/jsp/jstl/xml", url + "x/");
             helpMap.put("http://java.sun.com/jstl/xml", url + "x/");
-            helpMap.put("http://java.sun.com/jstl/xml_rt", url + "x_rt/")    ;
+            helpMap.put("http://java.sun.com/jstl/xml_rt", url + "x_rt/");
+            f = InstalledFileLocator.getDefault().locate("docs/jsf10-doc.zip", null, false); //NoI18N
+            if (f != null){
+                try {
+                    URL urll = f.toURL();
+                    urll = FileUtil.getArchiveRoot(urll);
+                    url = urll.toString();
+                    helpMap.put("http://java.sun.com/jsf/html", url + "h/");
+                    helpMap.put("http://java.sun.com/jsf/core", url + "f/");
+                }
+                catch (java.net.MalformedURLException e){
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                    // nothing to do
+                }
+            }
         }
         
     }
