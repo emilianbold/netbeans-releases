@@ -133,7 +133,6 @@ final class NbErrorManager extends ErrorManager {
 
     /** Notifies all the exceptions associated with
     * this thread.
-    * @param clear should the current exception be cleared or not?
     */
     public synchronized void notify (int severity, Throwable t) {
         // synchronized to ensure that only one exception is
@@ -155,7 +154,7 @@ final class NbErrorManager extends ErrorManager {
         }
         lastException.remove (Thread.currentThread ());
 
-        Exc ex = new Exc (t, severity, ann);
+        Exc ex = new Exc (t, severity, ann, findAnnotations0(t, true, new HashSet()));
 
         PrintWriter log = getLogWriter ();
         
@@ -306,6 +305,14 @@ final class NbErrorManager extends ErrorManager {
     * @return array of annotations or null
     */
     public synchronized Annotation[] findAnnotations (Throwable t) {
+        return findAnnotations0(t, false, new HashSet());
+    }
+
+    /** If recursively is true it is not adviced to print all annotations
+     * because a lot of warnings will be printed. But while searching for
+     * localized message we should scan all the annotations (even recursively).
+     */
+    private synchronized Annotation[] findAnnotations0(Throwable t, boolean recursively, Set alreadyVisited) {
         List l = (List)map.get (t);
         // MissingResourceException should be printed nicely... --jglick
         if (t instanceof MissingResourceException) {
@@ -361,6 +368,25 @@ final class NbErrorManager extends ErrorManager {
                 l.add(new Ann(UNKNOWN, msg, null, null, null));
             }
         }
+        
+        if (recursively) {
+            if (l != null) {
+                ArrayList al = new ArrayList();
+                for (Iterator i = l.iterator(); i.hasNext(); ) {
+                    Annotation ano = (Annotation)i.next();
+                    Throwable t1 = ano.getStackTrace();
+                    if ((t1 != null) && (! alreadyVisited.contains(t1))) {
+                        alreadyVisited.add(t1);
+                        Annotation[] tmpAnnoArray = findAnnotations0(t1, true, alreadyVisited);
+                        if ((tmpAnnoArray != null) && (tmpAnnoArray.length > 0)) {
+                            al.addAll(Arrays.asList(tmpAnnoArray));
+                        }
+                    }
+                }
+                l.addAll(al);
+            }
+        }
+        
         Annotation[] arr;
         if (l == null) {
             arr = null;
@@ -446,15 +472,17 @@ final class NbErrorManager extends ErrorManager {
         private Throwable t;
         private Date d;
         private Annotation[] arr;
+        private Annotation[] arrAll; // all - recursively
         private int severity;
 
         /** @param severity if -1 then we will compute the
          * severity from annotations
          */
-        Exc (Throwable t, int severity, Annotation[] arr) {
+        Exc (Throwable t, int severity, Annotation[] arr, Annotation[] arrAll) {
             this.t = t;
             this.severity = severity;
             this.arr = arr == null ? new Annotation[0] : arr;
+            this.arrAll = arrAll == null ? new Annotation[0] : arrAll;
         }
 
         /** @return message */
@@ -464,7 +492,17 @@ final class NbErrorManager extends ErrorManager {
 
         /** @return localized message */
         String getLocalizedMessage () {
-            return (String)find (2);
+            if (arrAll == null) {
+                // arrAll not filled --> use the old non recursive variant
+                return (String)find(2);
+            }
+            for (int i = 0; i < arrAll.length; i++) {
+                String s = arrAll[i].getLocalizedMessage ();
+                if (s != null) {
+                    return s;
+                }
+            }
+            return t.getLocalizedMessage();
         }
 	
         boolean isLocalized() {
@@ -612,7 +650,7 @@ final class NbErrorManager extends ErrorManager {
                 Throwable thr = arr[i].getStackTrace();
                 if (thr != null) {
                     Annotation[] ans = findAnnotations (thr);
-                    Exc ex = new Exc (thr, 0, ans);
+                    Exc ex = new Exc (thr, 0, ans, null);
                     pw.println("==>"); // NOI18N
                     ex.printStackTrace(pw, nestingCheck);
                 }
@@ -676,7 +714,6 @@ final class NbErrorManager extends ErrorManager {
 	    
 	    if (!def)
 		return null;
-
             switch (kind) {
             case 1: // message
                 return t.getMessage ();
