@@ -25,6 +25,7 @@ import threaddemo.data.PhadhailLookups;
 import threaddemo.model.*;
 
 // XXX make an IndexImpl be GCable and not hold onto Phadhail's
+// XXX results inaccurate; does not actually find every file
 
 /**
  * Actual implementation of the index.
@@ -196,7 +197,7 @@ final class IndexImpl implements Index, Runnable, PhadhailListener, ChangeListen
     
     private void bubble(Phadhail ph) {
         assert getMutex().canWrite();
-        System.err.println("bubble: " + ph + " data: " + processed);//XXX
+        //System.err.println("bubble: " + ph + " data: " + processed);
         if (ph == root) {
             getMutex().readAccess(new Mutex.Action() {
                 public Object run() {
