@@ -199,6 +199,9 @@ class ViewRequestor {
         updateSnapshot(rs);
         for(int i = 0; i < rs.length; i++) {
             ViewRequest r = rs[i];
+            if (DEBUG) {
+                debugLog("Creating a view event for " + r);
+            }
             viewEvents.add(getViewEvent(r));
         }
         

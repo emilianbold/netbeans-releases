@@ -98,13 +98,15 @@ public class EditorView extends ViewElement {
         return getEditorAreaComponent();
     }
     
-    public void updateAWTHierarchy(Dimension availableSpace) {
+    public boolean updateAWTHierarchy(Dimension availableSpace) {
 //        System.out.println("EditorView:updateAWTHierarchy=" + availableSpace);
+        boolean result = false;
         getEditorAreaComponent().setPreferredSize(availableSpace);
         if (editorArea != null) {
-            editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 1, availableSpace.height - 1));
+            result = editorArea.updateAWTHierarchy(new Dimension(availableSpace.width - 1, availableSpace.height - 1));
         }
-        assureComponentInEditorArea();        
+        assureComponentInEditorArea();      
+        return result;
     }
     
     void assureComponentInEditorArea() {

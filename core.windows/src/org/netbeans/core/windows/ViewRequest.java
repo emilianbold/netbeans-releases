@@ -14,6 +14,7 @@
 
 package org.netbeans.core.windows;
 
+import org.netbeans.core.windows.view.View;
 
 /**
  * Class which describes one type of change (in model) which is sent
@@ -39,6 +40,94 @@ final class ViewRequest {
         this.type     = type;
         this.oldValue = oldValue;
         this.newValue = newValue;
+    }
+    
+    public String toString() {
+        StringBuffer result = new StringBuffer();
+        result.append ("ViewRequest@");
+        result.append (System.identityHashCode(this));
+        result.append (" [TYPE=");
+        String tp;
+        switch (type) {
+            case View.CHANGE_ACTIVE_MODE_CHANGED :
+                tp = "CHANGE_ACTIVE_MODE_CHANGED"; //NOI18N
+                break;
+            case View.CHANGE_EDITOR_AREA_BOUNDS_CHANGED :
+                tp = "CHANGE_EDITOR_AREA_BOUNDS_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_EDITOR_AREA_CONSTRAINTS_CHANGED :
+                tp = "CHANGE_EDITOR_AREA_CONSTRAINTS_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_EDITOR_AREA_STATE_CHANGED :
+                tp = "CHANGE_EDITOR_AREA_STATE_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED :
+                tp = "CHANGE_EDITOR_AREA_FRAME_STATE_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MAIN_WINDOW_BOUNDS_JOINED_CHANGED :
+                tp = "CHANGE_MAIN_WINDOW_BOUNDS_JOINED_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MAIN_WINDOW_BOUNDS_SEPARATED_CHANGED :
+                tp = "CHANGE_MAIN_WINDOW_BOUNDS_SEPARATED_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED :
+                tp = "CHANGE_MAIN_WINDOW_FRAME_STATE_JOINED_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED :
+                tp = "CHANGE_MAIN_WINDOW_FRAME_STATE_SEPARATED_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MAXIMIZED_MODE_CHANGED :
+                tp = "CHANGE_MAXIMIZED_MODE_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MODE_SELECTED_TOPCOMPONENT_CHANGED :
+                tp = "CHANGE_MODE_SELECTED_TOPCOMPONENT_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MODE_BOUNDS_CHANGED :
+                tp = "CHANGE_MODE_BOUNDS_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MODE_CONSTRAINTS_CHANGED :
+                tp = "CHANGE_MODE_CONSTRAINTS_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_MODE_FRAME_STATE_CHANGED :
+                tp = "CHANGE_MODE_FRAME_STATE_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOOLBAR_CONFIGURATION_CHANGED :
+                tp = "CHANGE_TOOLBAR_CONFIGURATION_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOPCOMPONENT_ICON_CHANGED :
+                tp = "CHANGE_TOPCOMPONENT_ICON_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED :
+                tp = "CHANGE_TOPCOMPONENT_DISPLAY_NAME_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED :
+                tp = "CHANGE_TOPCOMPONENT_DISPLAY_NAME_ANNOTATION_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED :
+                tp = "CHANGE_TOPCOMPONENT_TOOLTIP_CHANGED"; //NOI18N
+                break;
+            case  View.CHANGE_TOPCOMPONENT_ACTIVATED :
+                tp = "CHANGE_TOPCOMPONENT_ACTIVATED"; //NOI18N
+                break;
+            case  View.CHANGE_DND_PERFORMED :
+                tp = "CHANGE_DND_PERFORMED"; //NOI18N
+                break;
+            case  View.CHANGE_UI_UPDATE :
+                tp = "CHANGE_UI_UPDATE"; //NOI18N
+                break;
+            case  View.CHANGE_PROJECT_NAME :
+                tp = "CHANGE_PROJECT_NAME"; //NOI18N
+                break;
+            default :
+                tp = "UNKNOWN";
+                break;
+        }
+        result.append (tp);
+        result.append ("] ");
+        result.append (" [oldValue:" + oldValue + "]");
+        result.append (" [newValue:" + newValue + "]");
+        result.append (" [source:" + source + "]");
+        return result.toString();
     }
         
 }

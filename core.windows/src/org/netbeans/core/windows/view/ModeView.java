@@ -179,13 +179,24 @@ public class ModeView extends ViewElement {
             + (selected == null ? null : WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)) + "]"; // NOI18N
     }
 
-    public void updateAWTHierarchy(Dimension availableSpace) {
+    public boolean updateAWTHierarchy(Dimension availableSpace) {
         // nothing needs to be done here?
 //        System.out.println("ModeView:updateAWTHierarchy=" + availableSpace);
         Component comp = container.getComponent();
+        boolean result = false;
         if (comp instanceof JComponent) {
-            ((JComponent)comp).setPreferredSize(availableSpace);
+            //We don't want to force the component to *calculate* its preferred
+            //size, as that is often expensive and we're not interested in the
+            //result anyway
+            Dimension d = (Dimension) ((JComponent) comp).getClientProperty ("lastAvailableSpace"); //NOI18N
+            if (!availableSpace.equals(d)) {
+                //We will only return true if we actually did something
+                ((JComponent)comp).setPreferredSize(availableSpace);
+                ((JComponent)comp).putClientProperty("lastAvailableSpace", availableSpace); //NOI18N
+                result = true;
+            }
         }
+        return result;
     }    
     
     

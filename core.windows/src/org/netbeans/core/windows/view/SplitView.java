@@ -98,7 +98,9 @@ public class SplitView extends ViewElement {
     }
     
     
-    public void updateAWTHierarchy(Dimension availableSpace) {
+    public boolean updateAWTHierarchy(Dimension availableSpace) {
+        boolean result = false;
+        
         Dimension firstDim;
         Dimension secondDim;
         double location = getLocation();
@@ -112,15 +114,25 @@ public class SplitView extends ViewElement {
         }
 //        debugLog("left=" + firstDim.width + " " + first.getClass());
 //        debugLog("right=" + secondDim.width + " " + second.getClass());
-        getSplitPane().setPreferredSize(availableSpace);
-        first.updateAWTHierarchy(firstDim);
-        second.updateAWTHierarchy(secondDim);
+        
+        //First check if we really need to do anything.  Use a client property
+        //so we don't force the component to calculate its preferred size, which
+        //is pointless (we will ignore it) and expensive
+        Dimension d = (Dimension) getSplitPane().getClientProperty ("lastAvailableSpace"); //NOI18N
+        if (!availableSpace.equals(d)) {
+            getSplitPane().setPreferredSize(availableSpace);
+            getSplitPane().putClientProperty("lastAvailableSpace", availableSpace); //NOI18N
+            result = true;
+        }
+        result |= first.updateAWTHierarchy(firstDim);
+        result |= second.updateAWTHierarchy(secondDim);
         assureComponentInSplit(first.getComponent(), true);
         assureComponentInSplit(second.getComponent(), false);
         if (first.getComponent() == null || second.getComponent() == null) {
 //            debugLog("setting divider");
+            result = true;
             splitPane.setDividerLocation(location);
-        } else {
+        } else if (result) { //Check result value - resetToPreferredSizes() will *always* cause a full repaint
 //            debugLog("reset to preffered sizes");
             splitPane.resetToPreferredSizes();
             // need to reset child splitpanes after resetting the parent.
@@ -135,15 +147,16 @@ public class SplitView extends ViewElement {
                 ((JSplitPane)second.getComponent()).resetToPreferredSizes();
             }
         }
+        return result;
     }
     
-    private void assureComponentInSplit(Component comp, boolean left){
+    private boolean assureComponentInSplit(Component comp, boolean left){
         // previously: Component is in use, adjust it if necessary.
         // now don't touch the component when in use.. just in case it's not anywhere, put to default place..
         
         Container parent = comp.getParent();
         if(parent == getSplitPane()) {
-            return;
+            return false;
         }
         if(parent != null) {
             parent.remove(comp);
@@ -155,6 +168,7 @@ public class SplitView extends ViewElement {
         } else {
             splitPane.setRightComponent(comp);
         }
+        return true;
 //        splitPane.setDividerLocation(location);
     }
     

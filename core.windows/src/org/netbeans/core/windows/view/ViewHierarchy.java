@@ -532,24 +532,31 @@ final class ViewHierarchy {
     }
     
     private void setMaximizedViewIntoDesktop(ViewElement elem) {
-        elem.updateAWTHierarchy(desktop.getInnerPaneDimension());
+        boolean revalidate = elem.updateAWTHierarchy(desktop.getInnerPaneDimension());
         
         desktop.setMaximizedView(elem);
-        desktop.getDesktopComponent().invalidate();
-        ((JComponent)desktop.getDesktopComponent()).revalidate();
-        desktop.getDesktopComponent().repaint();
+        
+        if (revalidate) {
+            desktop.getDesktopComponent().invalidate();
+            ((JComponent)desktop.getDesktopComponent()).revalidate();
+            desktop.getDesktopComponent().repaint();
+        }
     }
     
     
     private void setSplitRootIntoDesktop(ViewElement root) {
+        boolean revalidate = false;
         if (root != null) {
-            root.updateAWTHierarchy(desktop.getInnerPaneDimension());
+            revalidate = root.updateAWTHierarchy(desktop.getInnerPaneDimension());
         }
         desktop.setSplitRoot(root);
-        
-        desktop.getDesktopComponent().invalidate();
-        ((JComponent)desktop.getDesktopComponent()).revalidate();
-        desktop.getDesktopComponent().repaint();
+
+        if (revalidate) {
+
+            desktop.getDesktopComponent().invalidate();
+            ((JComponent)desktop.getDesktopComponent()).revalidate();
+            desktop.getDesktopComponent().repaint();
+        }
     }
 
     // PENDING Revise, updating desktop and editor area, bounds... separate this method.
