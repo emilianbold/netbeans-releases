@@ -76,7 +76,13 @@ public class DiffAction extends NodeAction {
     
     public boolean enable(Node[] nodes) {
         //System.out.println("DiffAction.enable() = "+(nodes.length == 2));
-        return nodes.length == 2;
+        if (nodes.length == 2) {
+            DiffVisualizer dv = DiffVisualizer.getDefault();
+            if (dv != null) {
+                return (!dv.needsProvider() || DiffProvider.getDefault() != null);
+            }
+        }
+        return false;
     }
     
     public void performAction(Node[] nodes) {
@@ -91,13 +97,23 @@ public class DiffAction extends NodeAction {
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
         DiffVisualizer dv = DiffVisualizer.getDefault();
-        System.out.println("dv = "+dv);
-        if (dv == null) return ;
+        //System.out.println("dv = "+dv);
+        if (dv == null) {
+            TopManager.getDefault().notify(
+                new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
+                    "MSG_NoDiffVisualizer")));
+            return ;
+        }
         List diffs = null;
         if (dv.needsProvider()) {
             DiffProvider dp = DiffProvider.getDefault();
-            System.out.println("dp = "+dp);
-            if (dp == null) return ;
+            //System.out.println("dp = "+dp);
+            if (dp == null) {
+                TopManager.getDefault().notify(
+                    new NotifyDescriptor.Message(NbBundle.getMessage(DiffAction.class,
+                        "MSG_NoDiffProvider")));
+                return ;
+            }
             try {
                 diffs = dp.createDiff(new InputStreamReader(fo1.getInputStream()),
                                       new InputStreamReader(fo2.getInputStream()));
@@ -128,7 +144,6 @@ public class DiffAction extends NodeAction {
             TopManager.getDefault().notifyException(ioex);
             return ;
         }
-        System.out.println("tp = "+tp);
         if (tp != null) {
             if (tp instanceof TopComponent) {
                 ((TopComponent) tp).open();
