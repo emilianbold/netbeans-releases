@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xml_root" location=".."/>
     <property name="api_root" location="${xml_root}/api"/>
     <property name="core_root" location="${xml_root}/core"/>
-    <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nb_all}/nbbuild/nbantext.jar"/>
 
     <target name="init" depends="default.init">
         <ant dir="${nb_all}/xml/external" target="unscramble"/>
@@ -42,8 +41,6 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refID="cp"/>
         </javac>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="jars" depends="compile">
@@ -58,7 +55,6 @@ Microsystems, Inc. All Rights Reserved.
              manifest="manifest-subst.mf"
              compress="false">
             <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-            <fileset dir="compat/src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
         </jar>    
     </target>
 
@@ -115,8 +111,6 @@ Microsystems, Inc. All Rights Reserved.
         </delete>
         <delete file="manifest-subst.mf"/>
         <delete file="xml-catalog.nbm"/>
-
-        <for-each locations="compat"/>
     </target>
 
     <target name="real-clean" depends="clean">
