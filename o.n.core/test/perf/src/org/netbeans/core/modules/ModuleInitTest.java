@@ -20,8 +20,12 @@ import java.util.*;
 import java.util.zip.*;
 import java.util.jar.*;
 
+import org.w3c.dom.*;
+import org.apache.xml.serialize.*;
+
 import org.netbeans.performance.Benchmark;
 import org.openide.TopManager;
+import org.openide.xml.XMLUtil;
 
 // initial run (04-sep-02) with empty dummy modules under JDK 1.4.1rc:
 // 0    - 0.92Mb, 2.75s
@@ -53,6 +57,12 @@ import org.openide.TopManager;
 // 10   - 0.82Mb, 3.1s
 // 100  - 1.66Mb, around 4s
 // 1000 - 5.74Mb, 10.5s
+// after adding 1000 files to each module:
+// 1000 - 6.82Mb, 13.2s
+// after adding 0 - 250 files to each module:
+// 1000 - 6.64Mb, around 12s
+// after adding 23 files to each module's layer:
+// 1000 - 19.00Mb, around 17s
 
 /**
  * Benchmark measuring initialization of the module system.
@@ -181,9 +191,6 @@ public class ModuleInitTest extends Benchmark {
     }
     
     private void createModules(int size, File mods, File amods, File emods) throws IOException {
-        // XXX be more sophisticated
-        // - create layers - some overlap, some fresh files, some fresh top-level dirs, some empty, some w/ contents
-        // - add random contents to JARs so they are bigger
         File[] moddirs = {mods, amods, emods}; // indexed by types[n]
         for (int i = 0; i < size; i++) {
             int which = i % cyclesize;
@@ -194,8 +201,9 @@ public class ModuleInitTest extends Benchmark {
             Manifest mani = new Manifest();
             Attributes attr = mani.getMainAttributes();
             attr.putValue("Manifest-Version", "1.0");
-            // XXX should create some package prefix to be more representative
-            String name = names[which] + "_" + cycleS;
+            String nameBase = names[which] + "_" + cycleS;
+            String name = "com.testdomain." + nameBase;
+            String nameSlashes = name.replace('.', '/');
             attr.putValue("OpenIDE-Module", name + "/1");
             // Avoid requiring javahelp:
             attr.putValue("OpenIDE-Module-IDE-Dependencies", "IDE/1 > 2.2");
@@ -207,7 +215,7 @@ public class ModuleInitTest extends Benchmark {
                 } else {
                     deps.append(", ");
                 }
-                deps.append(names[intradeps[which][j]]);
+                deps.append("com.testdomain." + names[intradeps[which][j]]);
                 deps.append('_');
                 deps.append(cycleS);
                 deps.append("/1 > 1.0");
@@ -221,7 +229,7 @@ public class ModuleInitTest extends Benchmark {
                     } else {
                         deps.append(", ");
                     }
-                    deps.append(names[interdeps[which][j]]);
+                    deps.append("com.testdomain." + names[interdeps[which][j]]);
                     deps.append('_');
                     deps.append(oldCycleS);
                     deps.append("/1 > 1.0");
@@ -249,7 +257,7 @@ public class ModuleInitTest extends Benchmark {
                     if (tok.endsWith("#")) {
                         tok = tok.substring(0, tok.length() - 1) + "_" + cycleS;
                     }
-                    buf.append(tok);
+                    buf.append("com.testdomain." + tok);
                 }
                 attr.putValue("OpenIDE-Module-Provides", buf.toString());
             }
@@ -263,13 +271,124 @@ public class ModuleInitTest extends Benchmark {
                     if (tok.endsWith("#")) {
                         tok = tok.substring(0, tok.length() - 1) + "_" + cycleS;
                     }
-                    buf.append(tok);
+                    buf.append("com.testdomain." + tok);
                 }
                 attr.putValue("OpenIDE-Module-Requires", buf.toString());
             }
-            OutputStream os = new FileOutputStream(new File(moddirs[types[which]], name + ".jar"));
+            // Files in JAR other than manifest:
+            Map contents = new HashMap(1000); // Map<String,byte[]>
+            String locb = nameSlashes + "/Bundle.properties";
+            contents.put(locb, ("OpenIDE-Module-Name=Module #" + i + "\n").getBytes());
+            attr.putValue("OpenIDE-Module-Localizing-Bundle", locb);
+            contents.put(nameSlashes + "/foo", "stuff here\n".getBytes());
+            contents.put(nameSlashes + "/subdir/foo", "more stuff here\n".getBytes());
+            for (int j = 0; j < i / 4; j++) {
+                contents.put(nameSlashes + "/sub/subdir/file" + j, new byte[j]);
+            }
+            // XML layer:
+            Map layer = new HashMap(i * 4 / 3 + 1); // Map<String,byte[]|null>
+            // XXX try to set some attributes, too...
+            // Construct a binomial tree, module #i contributing the next 23 files (leaves):
+            int start = i * 23;
+            int end = (i + 1) * 23;
+            /* Unreasonable system to make module #i contrib the next i/5 files:
+            int id5 = i / 5;
+            int im5 = i % 5;
+            int start = 5 * id5 * (id5 - 1) / 2 + id5 * im5;
+            int end = start + id5;
+             */
+            for (int j = start; j < end; j++) {
+                String filename = "file" + j + ".txt";
+                int bit = 0;
+                int x = j;
+                while (x > 0) {
+                    if (x % 2 == 1) {
+                        filename = "dir" + bit + "/" + filename;
+                    }
+                    bit++;
+                    x /= 2;
+                }
+                layer.put(filename, (j % 2 == 0) ? ("Contents #" + j + "\n").getBytes() : null);
+            }
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(layer.size() * 100 + 1);
+            Document doc = XMLUtil.createDocument("filesystem", null, "-//NetBeans//DTD Filesystem 1.1//EN", "http://www.netbeans.org/dtds/filesystem-1_1.dtd");
+            doc.getDocumentElement().appendChild(doc.createComment(" Layer filenames for module #" + i + ": " + layer.keySet() + " "));
+            Iterator it = layer.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry e = (Map.Entry)it.next();
+                String filename = (String)e.getKey();
+                byte[] filebytes = (byte[])e.getValue();
+                Element el = doc.getDocumentElement();
+                StringTokenizer tok = new StringTokenizer(filename, "/");
+                while (tok.hasMoreTokens()) {
+                    String piece = tok.nextToken();
+                    if (tok.hasMoreTokens()) {
+                        // A dir. Look for it...
+                        Element child = null;
+                        NodeList kids = el.getChildNodes();
+                        for (int j = 0; j < kids.getLength(); j++) {
+                            Node n = kids.item(j);
+                            if (!(n instanceof Element)) continue;
+                            Element kid = (Element)n;
+                            if (!kid.getNodeName().equals("folder")) continue;
+                            if (kid.getAttribute("name").equals(piece)) {
+                                child = kid;
+                                break;
+                            }
+                        }
+                        if (child == null) {
+                            child = doc.createElement("folder");
+                            child.setAttribute("name", piece);
+                            el.appendChild(child);
+                        }
+                        el = child;
+                    } else {
+                        // This is a file. It is not already in the doc - because
+                        // of the map.
+                        Element child = doc.createElement("file");
+                        child.setAttribute("name", piece);
+                        if (filebytes != null) {
+                            String contentsName = "resources/layerfile" + Integer.toHexString(filename.hashCode());
+                            contents.put(nameSlashes + "/" + contentsName, filebytes);
+                            child.setAttribute("url", contentsName);
+                        }
+                        el.appendChild(child);
+                    }
+                }
+            }
+            XMLSerializer ser = new XMLSerializer(baos, new OutputFormat(doc, "UTF-8", true));
+            ser.serialize(doc);
+            String layerName = nameSlashes + "/layer.xml";
+            contents.put(layerName, baos.toByteArray());
+            attr.putValue("OpenIDE-Module-Layer", layerName);
+            OutputStream os = new FileOutputStream(new File(moddirs[types[which]], nameBase + ".jar"));
             try {
                 JarOutputStream jos = new JarOutputStream(os, mani);
+                Set addedDirs = new HashSet(1000); // Set<String>
+                it = contents.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry e = (Map.Entry)it.next();
+                    String filename = (String)e.getKey();
+                    byte[] filebytes = (byte[])e.getValue();
+                    String dircheck = filename;
+                    while (true) {
+                        int idx = dircheck.lastIndexOf('/');
+                        if (idx == -1) break;
+                        dircheck = dircheck.substring(0, idx);
+                        if (!addedDirs.add(dircheck)) break;
+                        JarEntry je = new JarEntry(dircheck + "/");
+                        je.setMethod(ZipEntry.STORED);
+                        je.setSize(0);
+                        je.setCompressedSize(0);
+                        je.setCrc(0);
+                        jos.putNextEntry(je);
+                    }
+                    JarEntry je = new JarEntry(filename);
+                    je.setMethod(ZipEntry.DEFLATED);
+                    //je.setSize(filebytes.length);
+                    jos.putNextEntry(je);
+                    jos.write(filebytes);
+                }
                 jos.close();
             } finally {
                 os.close();
