@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,6 +18,7 @@ package org.netbeans.modules.image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import javax.swing.Icon;
@@ -46,6 +47,7 @@ import org.openide.util.RequestProcessor.Task;
  * so it can work appropriate in Editor window.
  *
  * @author Peter Zavadsky
+ * @author Marian Petras
  */
 
 public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCookie {
@@ -128,15 +130,12 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
             final ImageDataObject imageObj = (ImageDataObject)entry.getDataObject();
             final CloneableTopComponent.Ref editors = allEditors;
 
-            // Icon to reload.
-            final NBImageIcon icon = new NBImageIcon(imageObj);
-
             Enumeration e = editors.getComponents();
             while(e.hasMoreElements()) {
                 final Object pane = e.nextElement();
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        ((ImageViewer)pane).reloadIcon(icon);
+                        ((ImageViewer)pane).updateView(imageObj);
                     }
                 });
             }

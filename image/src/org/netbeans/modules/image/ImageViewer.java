@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,6 +15,7 @@ package org.netbeans.modules.image;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -106,10 +107,7 @@ public class ImageViewer extends CloneableTopComponent {
     }
     
     /** Reloads icon. */
-    protected void reloadIcon(NBImageIcon icon) {
-        // Reset values.
-        storedImage = icon;
-        
+    protected void reloadIcon() {
         resizePanel();
         panel.repaint();
     }
@@ -119,11 +117,35 @@ public class ImageViewer extends CloneableTopComponent {
         TopComponent.NodeName.connect (this, obj.getNodeDelegate ());
         
         storedObject = obj;
-        storedImage = new NBImageIcon(storedObject);
             
         // force closing panes in all workspaces, default is in current only
         setCloseOperation(TopComponent.CLOSE_EACH);
         
+        /* try to load the image: */
+        String errMsg = loadImage(storedObject);
+        Component view = (storedImage != null) ? createImageView()
+                                               : createMessagePanel(errMsg);
+        setLayout(new BorderLayout());
+        add(view, BorderLayout.CENTER);
+        add(createToolBar(), BorderLayout.NORTH);
+
+        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_ImageViewer"));        
+        
+        nameChangeL = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) ||
+                DataObject.PROP_NAME.equals(evt.getPropertyName())) {
+                    updateName();
+                }
+            }
+        };
+        
+        obj.addPropertyChangeListener(WeakListener.propertyChange(nameChangeL, obj));
+    }
+    
+    /**
+     */
+    private Component createImageView() {
         panel = new JPanel() {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -139,19 +161,19 @@ public class ImageViewer extends CloneableTopComponent {
                     storedImage.getIconHeight(),
                     this
                 );
-                
+
                 if(showGrid) {
                     int x = (int)(getScale () * storedImage.getIconWidth ());
                     int y = (int)(getScale () * storedImage.getIconHeight ());
-                    
+
                     double gridDistance = getScale();
-                    
+
                     if(gridDistance < 2) 
                         // Disable painting of grid if no image pixels would be visible.
                         return;
-                    
+
                     g.setColor(gridColor);
-                    
+
                     double actualDistance = gridDistance;
                     for(int i = (int)actualDistance; i < x ;actualDistance += gridDistance, i = (int)actualDistance) {
                         g.drawLine(i,0,i,(y-1));
@@ -162,30 +184,78 @@ public class ImageViewer extends CloneableTopComponent {
                         g.drawLine(0,j,(x-1),j);
                     }
                 }
-                
-            }
-            
-        };
 
-        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(ImageViewer.class).getString("ACS_ImageViewer"));        
+            }
+
+        };
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
         JScrollPane scroll = new JScrollPane(panel);
         
-        setLayout(new BorderLayout());
-        add(scroll, BorderLayout.CENTER);
-        add(createToolBar(), BorderLayout.NORTH);
+        return scroll;
+    }
+    
+    /**
+     */
+    private Component createMessagePanel(final String msg) {
+        JPanel msgPanel = new JPanel(new java.awt.GridBagLayout());
+        msgPanel.add(new JLabel(msg),
+                     new java.awt.GridBagConstraints(
+                             0,    0,                  //gridx, gridy
+                             1,    1,                  //gridwidth, gridheight
+                             1.0d, 1.0d,               //weightx, weighty
+                             java.awt.GridBagConstraints.CENTER,   //anchor
+                             java.awt.GridBagConstraints.NONE,     //fill
+                             new java.awt.Insets(0, 0, 0, 0),      //insets
+                             10,   10));               //ipadx, ipady
+        return msgPanel;
+    }
+    
+    /**
+     */
+    void updateView(final ImageDataObject imageObj) {
+        boolean wasValid = (storedImage != null);
+        String errMsg = loadImage(imageObj);
+        boolean isValid = (storedImage != null);
         
-        nameChangeL = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) ||
-                DataObject.PROP_NAME.equals(evt.getPropertyName())) {
-                    updateName();
-                }
+        if (wasValid && isValid) {
+            reloadIcon();
+            return;
+        }
+        
+        Component view = (storedImage != null) ? createImageView()
+                                               : createMessagePanel(errMsg);
+        remove(0);
+        add(view, BorderLayout.CENTER, 0);
+    }
+    
+    /**
+     * Loads an image from the given <code>ImageDataObject</code>.
+     * If the image is loaded successfully, it is stored
+     * to field {@link #storedImage}. The field is <code>null</code>ed
+     * in case of any failure.
+     *
+     * @param  imageObj  <code>ImageDataObject</code> to load the image from
+     * @return  <code>null</code> if the image was loaded successfully,
+     *          or a localized error message in case of failure
+     */
+    private String loadImage(final ImageDataObject imageObj) {
+        String errMsg;
+        try {
+            storedImage = NBImageIcon.load(imageObj);
+            if (storedImage != null) {
+                errMsg = null;
+            } else {
+                errMsg = NbBundle.getMessage(ImageViewer.class,
+                                             "MSG_CouldNotLoad");       //NOI18N
             }
-        };
-        
-        obj.addPropertyChangeListener(WeakListener.propertyChange(nameChangeL, obj));
+        } catch (IOException ex) {
+            storedImage = null;
+            errMsg = NbBundle.getMessage(ImageViewer.class,
+                                         "MSG_ErrorWhileLoading");      //NOI18N
+        }
+        assert (storedImage == null) != (errMsg == null);
+        return errMsg;
     }
     
     /** Creates toolbar. */

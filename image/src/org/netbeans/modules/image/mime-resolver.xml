@@ -8,30 +8,26 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
                                                                                                                                          
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 2004-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
 <MIME-resolver>
     <file>
-        <ext name="gif"/>
+        <magic hex="47494638"/>
         <resolver mime="image/gif"/>
     </file>
     <file>
-        <ext name="jpg"/>
+        <magic hex="ffd8ffe0"/>
         <resolver mime="image/jpeg"/>
     </file>
     <file>
-        <ext name="jpeg"/>
-        <resolver mime="image/jpeg"/>
-    </file>
-    <file>
-        <ext name="png"/>
+        <magic hex="89504e47"/>
         <resolver mime="image/png"/>
     </file>
     <file>
-        <ext name="bmp"/>
+        <magic hex="424d"/>
         <resolver mime="image/bmp"/>
     </file>
 </MIME-resolver>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,6 +41,7 @@ import org.openide.util.NbBundle;
 /** 
  * Object that represents one file containing an image.
  * @author Petr Hamernik, Jaroslav Tulach, Ian Formanek, Michael Wever
+ * @author  Marian Petras
  */
 public class ImageDataObject extends MultiDataObject implements CookieSet.Factory {
     
@@ -138,14 +139,10 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     // Michael Wever 26/09/2001
     /** Gets image for the image data 
      * @return the image or <code>null</code> if image could not be created
+     * @return  java.io.IOException  if an error occurs during reading
      */
-    public Image getImage() {
-        try{
-            return javax.imageio.ImageIO.read(getPrimaryFile().getInputStream());
-        }catch(Exception ex){
-            ErrorManager.getDefault().notify(ex);
-        }
-        return null;
+    public Image getImage() throws IOException {
+        return javax.imageio.ImageIO.read(getPrimaryFile().getInputStream());
     }
 
 

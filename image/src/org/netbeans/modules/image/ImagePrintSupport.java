@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,13 +31,16 @@ import org.openide.util.NbBundle;
  * Subclass' override this method to honour image handling.
  *
  * @author  michael wever [hair@netbeans.org]
+ * @author  Marian Petras
  * @version $Revision$
  */
 public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver {
     /* associated dataObject */
     protected ImageDataObject dataObject;
     /* image to print */
-    protected RenderedImage image;
+    protected Image image;
+    /* image to print */
+    protected RenderedImage renderedImage;
     
     /** Creates new ImagePrintSupport */
     public ImagePrintSupport( ImageDataObject ido ) {
@@ -48,14 +51,15 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
      * Returns null if it were unable to prepare the image for the given page. 
      * Throws a IllegalArgumentException if the page were too small for the image.
      **/
-    protected RenderedImage prepareImage( PageFormat pf ) throws IllegalArgumentException {
+    protected static RenderedImage transformImage(RenderedImage image,
+                                                  PageFormat pf)
+            throws IllegalArgumentException {
         try{
             AffineTransform af = new AffineTransform();
             if( pf.getOrientation() == pf.LANDSCAPE ){
             }else{
                 af.translate( (double)pf.getImageableX(), (double)pf.getImageableY() );
             }
-            image = (RenderedImage)dataObject.getImage();
             
             /** notify if too big for page **/
             if( pf.getImageableWidth() - pf.getImageableX() < image.getWidth()
@@ -75,6 +79,24 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
     
     /** Print the content of the object.  */
     public void print() {
+        
+        /* Try to load the image from the ImageDataObject: */
+        String errMsgKey;
+        try {
+            image = dataObject.getImage();
+            errMsgKey = (image == null) ? "MSG_CouldNotLoad" : null;    //NOI18N
+        } catch (IOException ex) {
+            image = null;
+            errMsgKey = "MSG_ErrorWhileLoading";                        //NOI18N
+        }
+        assert (image == null) != (errMsgKey == null);
+        
+        /* If an error occured during loading, display a message and quit: */
+        if (errMsgKey != null) {
+            displayMessage(errMsgKey, NotifyDescriptor.WARNING_MESSAGE);
+            return;
+        }
+        
         PrinterJob job = PrinterJob.getPrinterJob();
         Book book = new Book();
         PageFormat pf = org.openide.text.PrintSettings.getPageFormat(job);
@@ -83,21 +105,40 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
 
         // Print
         try {
-            // Make sure not to print in the paper's margin.
-            image = prepareImage( pf );
+            if (image instanceof RenderedImage) {
+                // Make sure not to print in the paper's margin.
+                renderedImage = transformImage((RenderedImage) image, pf);
+            }
             if (job.printDialog()) {
                 job.print();
             }
         } catch (PrinterAbortException e) { // user exception
-            final String msg = NbBundle.getMessage(org.openide.text.PrintSettings.class, "CTL_Printer_Abort"); // NOI18N
-            java.awt.EventQueue.invokeLater(new Runnable() { // display in the awt thread
-                public void run() {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
-                }
-            });
+            displayMessage("CTL_Printer_Abort",                         //NOI18N
+                           NotifyDescriptor.INFORMATION_MESSAGE);
         } catch (Exception e) {
             ErrorManager.getDefault().notify(e);
-        }        
+        } finally {
+            renderedImage = null;
+            image = null;
+        }
+    }
+    
+    /**
+     * Displays a localized user message.
+     * It is guaranteed that the displaying routine is called from
+     * the AWT event dispatching thread.
+     *
+     * @param  msgKey  bundle key of the message
+     * @param  msgType  message type - see {@link NotifyDescriptor} fields
+     */
+    private void displayMessage(String msgKey, final int msgType) {
+        final String msg = NbBundle.getMessage(ImagePrintSupport.class, msgKey);
+        java.awt.EventQueue.invokeLater(new Runnable() { // display in the awt thread
+            public void run() {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(msg, msgType));
+            }
+        });
     }
     
     /* Implements Printable */
@@ -105,14 +146,14 @@ public class ImagePrintSupport implements PrintCookie, Printable, ImageObserver 
         if( page != 0 ) return Printable.NO_SUCH_PAGE;
         
         Graphics2D g2 = (Graphics2D)graphics;
-        if( image == null ){
-            /** prepareImage() failed,
+        if( renderedImage == null ){
+            /**
              * most probably cause is image does not implement RenderedImage,
              * just draw the image then.
              **/
-            graphics.drawImage(dataObject.getImage(), (int)pageFormat.getImageableX(), (int)pageFormat.getImageableY(), this );
+            graphics.drawImage(image, (int)pageFormat.getImageableX(), (int)pageFormat.getImageableY(), this );
         }else{
-            g2.drawRenderedImage( image, new AffineTransform() );
+            g2.drawRenderedImage( renderedImage, new AffineTransform() );
         }
         return Printable.PAGE_EXISTS;
     }

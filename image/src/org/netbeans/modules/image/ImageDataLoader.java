@@ -7,14 +7,15 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.image;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
+import javax.imageio.ImageIO;
 import org.openide.actions.*;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
@@ -29,57 +30,41 @@ import java.util.Iterator;
 /** 
  * Data loader which recognizes image files.
  * @author Petr Hamernik, Jaroslav Tulach
+ * @author Marian Petras
  */
 public class ImageDataLoader extends UniFileLoader {
 
     /** Generated serial version UID. */
     static final long serialVersionUID =-8188309025795898449L;
     
-    private static Set notSupportedExtensions = new HashSet ();
+    /** holds information about supported and unsupported MIME-types */
+    private static final Map imageTypeSupport = new HashMap(7, .75f);
     
     /** Creates new image loader. */
     public ImageDataLoader() {
         // Set the representation class.
         super("org.netbeans.modules.image.ImageDataObject"); // NOI18N
-        
-        // List of recognized extensions.
-        ExtensionList ext = new ExtensionList();
-        // XXX should use MIME types instead...
-        ext.addExtension("jpg"); // NOI18N
-        ext.addExtension("jpeg"); // NOI18N
-        ext.addExtension("jpe"); // NOI18N
-        ext.addExtension("gif"); // NOI18N
-        // PhotoShop frequently saves image files with capital extensions:
-        ext.addExtension("JPG"); // NOI18N
-        ext.addExtension("JPEG"); // NOI18N
-        ext.addExtension("JPE"); // NOI18N
-        ext.addExtension("GIF"); // NOI18N
-
-        // Note: PNG requires 1.3 or higher.
-        ext.addExtension("png"); // NOI18N
-        ext.addExtension("PNG"); // NOI18N
-        
-        setExtensions(ext);
     }
     
-    // Michael Wever 11/01/2002
     protected FileObject findPrimaryFile(FileObject fo){
-        FileObject retValue = super.findPrimaryFile( fo );
-        if( retValue == null  && !fo.isFolder() ){
-            /* Check through for new extensions */
-            String ext = fo.getExt();
-            
-            if (!notSupportedExtensions.contains (ext)) {
-                Iterator it = javax.imageio.ImageIO.getImageReadersBySuffix(ext);
-                if( it.hasNext() ){
-                    /* Use the first available ImageIO loader */
-                    retValue = fo;
-                    getExtensions().addExtension(ext);
-                } else
-                    notSupportedExtensions.add (ext);
-            }
+        if (fo.isFolder()) {
+            return null;
         }
-        return retValue;
+        
+        final String mimeType = fo.getMIMEType();
+        if (mimeType.startsWith("image/") && mimeType.length() > 6) {   //NOI18N
+            Object supported = imageTypeSupport.get(mimeType);
+            if (supported != null) {
+                return (supported == Boolean.TRUE) ? fo : null;
+            } else {
+                boolean hasReader = ImageIO.getImageReadersByMIMEType(mimeType)
+                                    .hasNext();
+                imageTypeSupport.put(mimeType, Boolean.valueOf(hasReader));
+                return hasReader ? fo : null;
+            }
+        } else {
+            return null;
+        }
     }
     
     /** Gets default display name. Overrides superclass method. */
