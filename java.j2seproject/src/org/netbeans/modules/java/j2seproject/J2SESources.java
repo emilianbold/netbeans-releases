@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
@@ -34,11 +35,14 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 public class J2SESources implements Sources, PropertyChangeListener, ChangeListener  {
+    
+    private static final String BUILD_DIR_PROP = "${" + J2SEProjectProperties.BUILD_DIR + "}";    //NOI18N
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
+    private SourcesHelper sourcesHelper;
     private Sources delegate;
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
 
@@ -49,7 +53,7 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         this.sourceRoots = sourceRoots;
         this.testRoots = testRoots;
         this.sourceRoots.addPropertyChangeListener(this);
-        this.testRoots.addPropertyChangeListener(this);
+        this.testRoots.addPropertyChangeListener(this);        
         initSources(); // have to register external build roots eagerly
     }
 
@@ -68,16 +72,16 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
         });
     }
 
-    private Sources initSources() {
-        final SourcesHelper h = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
+    private Sources initSources() {        
+        this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
         String[] propNames = sourceRoots.getRootProperties();
         String[] rootNames = sourceRoots.getRootNames();
         for (int i = 0; i < propNames.length; i++) {
             String displayName = rootNames[i];
             displayName = sourceRoots.getRootDisplayName(displayName, propNames[i]);
             String prop = "${" + propNames[i] + "}";            
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            this.sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
         }
         propNames = testRoots.getRootProperties();
         rootNames = testRoots.getRootNames();
@@ -85,16 +89,16 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             String displayName = rootNames[i];            
             displayName = testRoots.getRootDisplayName(displayName, propNames[i]);
             String prop = "${" + propNames[i] + "}";
-            h.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
-            h.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
-        }
-        // XXX add build dir too?
+            this.sourcesHelper.addPrincipalSourceRoot(prop, displayName, /*XXX*/null, null);
+            this.sourcesHelper.addTypedSourceRoot(prop, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, /*XXX*/null, null);
+        }        
+        this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
         ProjectManager.mutex().postWriteRequest(new Runnable() {
             public void run() {
-                h.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
             }
         });
-        return h.createSources();
+        return this.sourcesHelper.createSources();
     }
 
     public void addChangeListener(ChangeListener changeListener) {
