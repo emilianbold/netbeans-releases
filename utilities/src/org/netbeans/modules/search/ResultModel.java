@@ -500,7 +500,9 @@ public class ResultModel implements TaskListener {
 
         /** Constructs node. */
         public FoundNode(Object foundObject) {
-            super(ResultModel.this.searchGroup.getNodeForFoundObject(foundObject));
+
+            // cut off children, we do not need to show them and they eat memory
+            super(ResultModel.this.searchGroup.getNodeForFoundObject(foundObject), org.openide.nodes.Children.LEAF);
             
             this.foundObject = foundObject;
             
@@ -574,6 +576,25 @@ public class ResultModel implements TaskListener {
             }
         }
 
+        /** Optimalized JavaNode.getIcon that starts parser! */
+        public Image getIcon(int type) {
+            if (originalDataObject.getPrimaryFile().hasExt("java") ) {
+                // TODO take better icon
+                return AbstractNode.EMPTY.getIcon(type);
+            } else {
+                return super.getIcon(type);
+            }
+        }
+
+        /** Optimalized JavaNode.getIcon that starts parser! */
+        public Image getOpenedIcon(int type) {
+            if (originalDataObject.getPrimaryFile().hasExt("java") ) {
+                // TODO take better icon
+                return AbstractNode.EMPTY.getIcon(type);
+            } else {
+                return super.getOpenedIcon(type);
+            }
+        }
     } // End of FoundNode class.
    
 }
