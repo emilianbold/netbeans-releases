@@ -70,11 +70,14 @@ public class TopComponentOperator extends JComponentOperator {
     static {
         // Checks if you run on correct jemmy version. Writes message to jemmy log if not.
         JellyVersion.checkJemmyVersion();
+        // register NbInternalFrameDriver
+        DriverManager.setWindowDriver(new NbInternalFrameDriver());
+        DriverManager.setFrameDriver(new NbInternalFrameDriver());
         // need to set timeout for the case it was not set previously
         JemmyProperties.getCurrentTimeouts().initDefault("EventDispatcher.RobotAutoDelay", 0);
         DriverManager.setDriver(DriverManager.MOUSE_DRIVER_ID, 
         new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().create("EventDispatcher.RobotAutoDelay"), 
-        new Class[] {TopComponentOperator.class}));
+                             new Class[] {TopComponentOperator.class}));
     }
     
     /** Waits for index-th TopComponent with given name in specified container.

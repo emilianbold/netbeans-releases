@@ -29,9 +29,11 @@ import java.io.PrintStream;
 import javax.swing.JDialog;
 
 import junit.framework.*;
+import org.netbeans.jellytools.NbInternalFrameDriver;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
+import org.netbeans.jemmy.drivers.DriverManager;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.util.PNGEncoder;
@@ -71,9 +73,13 @@ public class JellyTestCase extends NbTestCase {
      * to jemmy.log file in workdir; jemmy timeouts are loaded from 
      * org.netbeans.jellytools.timeouts and if system property jelly.timeouts_resource
      * or jelly.timeouts_file are set, timeouts are loaded from specified
-     * resource/file;
+     * resource/file; {@link NbInternalFrameDriver} is registered to be
+     * used as default;
      */
     protected void initEnvironment() {
+        // register NbInternalFrameDriver
+        DriverManager.setWindowDriver(new NbInternalFrameDriver());
+        DriverManager.setFrameDriver(new NbInternalFrameDriver());
         // redirect log messages from jemmy to jemmy.log file in workdir
         PrintStream jemmyLog = getLog("jemmy.log");
         JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyLog, jemmyLog));
