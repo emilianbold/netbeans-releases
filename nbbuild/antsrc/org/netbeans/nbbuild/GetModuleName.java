@@ -48,7 +48,7 @@ public class GetModuleName extends Task {
             this.getProject().setProperty( name, modulename);
         }
         catch (IOException ex) {
-            throw new BuildException("You must set the root dir", ex, this.getLocation());
+            throw new BuildException("Root dir or module's base dir wasn't recognized", ex, this.getLocation());
         }
     }
     
