@@ -486,8 +486,24 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         
         public void destroy() throws IOException {
             FileObject parent = dataFolder.getPrimaryFile().getParent();
-            // First; delete the package
-            super.destroy();
+            // First; delete all files except packages
+            DataObject ch[] = dataFolder.getChildren();
+            boolean empty = true;
+            for( int i = 0; ch != null && i < ch.length; i++ ) {
+                if ( !ch[i].getPrimaryFile().isFolder() ) {
+                    ch[i].delete();
+                }
+                else {
+                    empty = false;
+                }
+            }
+            
+            // If empty delete itself
+            if ( empty ) {
+                super.destroy();
+            }
+            
+            
             // Second; delete empty super packages
             while( !parent.equals( root ) && parent.getChildren().length == 0  ) {
                 FileObject newParent = parent.getParent();

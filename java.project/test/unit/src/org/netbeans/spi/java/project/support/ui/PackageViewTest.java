@@ -269,6 +269,24 @@ public class PackageViewTest extends NbTestCase {
         assertFileObjects( srcRoot, new String[]{ "a" } );
         assertFileObjects( a, new String[]{ "aa" } );
         
+        
+        // Do not delete subfoders
+        System.out.println("DDS");
+        srcRoot = FileUtil.createFolder( root, "dds" );
+        a = FileUtil.createFolder( srcRoot, "a" );        
+        FileUtil.createData( srcRoot, "a/some.java" );        
+        FileObject aa = FileUtil.createFolder( a, "aa" );
+        FileUtil.createData( srcRoot, "a/aa/some.java" );        
+        toDelete = a;
+        group = new SimpleSourceGroup( srcRoot );
+        rootNode = PackageView.createPackageView( group );
+        
+        n = PackageView.findPath( rootNode, toDelete );
+        n.destroy();        
+        assertFileObjects( srcRoot, new String[]{ "a" } );
+        assertFileObjects( a, new String[]{ "aa" } );
+        
+        
                 
     }
     
@@ -328,6 +346,7 @@ public class PackageViewTest extends NbTestCase {
         dp_java.delete(); // Dp will disapear should return root node
         n = PackageView.findPath( sourceRoot, group.getRootFolder() );
         assertNode( n, group.getName() );
+        
         
     }
     
