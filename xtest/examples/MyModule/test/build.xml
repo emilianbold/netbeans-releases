@@ -29,9 +29,10 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.file.name" value="test.jar"/>
     <property name="xtest.file.location" value="lib"/>
     
-    <!-- Default testtypes and attributes -->
+    <!-- Default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attributes" value="all"/>
+    <property name="xtest.executors" value="code"/>
     
     <!-- Properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
@@ -132,7 +133,9 @@ Microsystems, Inc. All Rights Reserved.
     <target name="config" depends="init">
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attributes} = is subset or equals -->
-        <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
+        <test-configurator testtype="${xtest.testtype}" 
+                           testattributes="${xtest.attributes}"
+                           testexecutors="${xtest.executors}"/>
     </target>
     
     <target name="runtests" depends="config,cleanresults,buildtests">
