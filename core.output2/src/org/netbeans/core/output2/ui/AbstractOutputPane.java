@@ -571,7 +571,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         int currPosition = sbmodel.getValue();
         if (e.getSource() == textView) {
             int newPosition = Math.max (0, Math.min (sbmodel.getMaximum(),
-                currPosition + (e.getUnitsToScroll())));
+                currPosition + (e.getUnitsToScroll() * 3)));
+            // 3 is a magic constant because of #57532
             sbmodel.setValue (newPosition);
             if (newPosition + range >= max) {
                 lockScroll();
