@@ -130,7 +130,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         SourceGroup[] groups1;
         if (project != null) {
             Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener(this);
             groups1 = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         } else {
             groups1 = null;
