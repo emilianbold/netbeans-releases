@@ -277,11 +277,11 @@ public class AbstractVariable implements Variable {
         if (!(value.type () instanceof ClassType)) return getValue ();
         Method toStringMethod = ((ClassType) value.type ()).
             concreteMethodByName ("toString", "()Ljava/lang/String;");
-        return ((StringReference) model.getDebugger ().invokeMethod (
+        return "\"" + ((StringReference) model.getDebugger ().invokeMethod (
             (ObjectReference) value,
             toStringMethod,
             new Value [0]
-        )).value ();
+        )).value () + "\"";
     }
     
     /**
