@@ -15,8 +15,15 @@ package org.netbeans.modules.web.project.ui.customizer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URL;
 import java.text.Collator;
 import java.util.*;
+
+import javax.swing.table.DefaultTableModel;
+
+import org.netbeans.modules.web.project.SourceRoots;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -42,7 +49,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
+import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
 
 import org.w3c.dom.Element;
@@ -89,6 +98,7 @@ public class WebProjectProperties {
     public static final String JAVAC_COMPILER_ARG = "javac.compilerargs";    //NOI18N
     public static final String JAVAC_TARGET = "javac.target"; //NOI18N
     public static final String SRC_DIR = "src.dir"; //NOI18N
+    public static final String TEST_SRC_DIR = "test.src.dir"; //NOI18N
     public static final String CONF_DIR = "conf.dir"; //NOI18N
     public static final String WEB_DOCBASE_DIR = "web.docbase.dir"; //NOI18N
     public static final String RESOURCE_DIR = "resource.dir"; //NOI18N
@@ -100,6 +110,12 @@ public class WebProjectProperties {
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
+
+    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
+    public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
+    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
+    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
+    public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
     
     public static final String JAVADOC_PRIVATE="javadoc.private"; //NOI18N
     public static final String JAVADOC_NO_TREE="javadoc.notree"; //NOI18N
@@ -118,7 +134,10 @@ public class WebProjectProperties {
     
     // Properties stored in the PRIVATE.PROPERTIES
     
-    
+    // SOURCE ROOTS
+    public static final String SOURCE_ROOTS = "__virtual_source_roots__";   //NOI18N
+    public static final String TEST_ROOTS = "__virtual_test_roots__";   //NOI18N
+
     // Shortcuts 
     private static final String PROJECT = AntProjectHelper.PROJECT_PROPERTIES_PATH;
     private static final String PRIVATE = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
@@ -133,9 +152,9 @@ public class WebProjectProperties {
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final PropertyParser PATH_PARSER = new PathParser();
     private static final PropertyParser JAVAC_CLASSPATH_PARSER = new PathParser(TAG_WEB_MODULE_LIBRARIES);
-    private static final PropertyParser WAR_CONTENT_ADDITIONAL_PARSER =
-            new PathParser(TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
+    private static final PropertyParser WAR_CONTENT_ADDITIONAL_PARSER = new PathParser(TAG_WEB_MODULE__ADDITIONAL_LIBRARIES);
     private static final PlatformParser PLATFORM_PARSER = new PlatformParser();
+    private static final SourceRootsParser SOURCE_ROOTS_PARSER = new SourceRootsParser();
 
     // Info about the property destination
     private PropertyDescriptor PROPERTY_DESCRIPTORS[] = {
@@ -167,6 +186,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( JAVAC_COMPILER_ARG, PROJECT, STRING_PARSER),
         new PropertyDescriptor( JAVAC_TARGET, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_EXCLUDES, PROJECT, STRING_PARSER ),
@@ -176,6 +196,12 @@ public class WebProjectProperties {
         new PropertyDescriptor( NO_DEPENDENCIES, PROJECT, INVERSE_BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVA_PLATFORM, PROJECT, PLATFORM_PARSER ),
         
+        new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( BUILD_TEST_CLASSES_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( BUILD_TEST_RESULTS_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( DEBUG_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
+                
         new PropertyDescriptor( JAVADOC_PRIVATE, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVADOC_NO_TREE, PROJECT, INVERSE_BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVADOC_USE, PROJECT, BOOLEAN_PARSER ),
@@ -187,6 +213,9 @@ public class WebProjectProperties {
         new PropertyDescriptor( JAVADOC_WINDOW_TITLE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVADOC_ENCODING, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVADOC_PREVIEW, PROJECT, BOOLEAN_PARSER ),
+
+        new PropertyDescriptor( SOURCE_ROOTS, null, SOURCE_ROOTS_PARSER),
+        new PropertyDescriptor( TEST_ROOTS, null, SOURCE_ROOTS_PARSER),
     };
     
     
@@ -194,16 +223,31 @@ public class WebProjectProperties {
     
     private Project project;
     private HashMap properties;    
-    private AntProjectHelper antProjectHelper;
+//    private AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
+    private UpdateHelper updateHelper;
+    private PropertyEvaluator evaluator;
+
+    public WebProjectProperties( Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
+        this.project = project;
+        this.properties = new HashMap();
+        this.updateHelper = updateHelper;
+        this.evaluator = evaluator;
+//        this.antProjectHelper = antProjectHelper;
+        this.refHelper = refHelper;
+        read();                                
+    }
 
     public WebProjectProperties(Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
         this.project = project;
         this.properties = new HashMap();
-        this.antProjectHelper = antProjectHelper;
+        this.updateHelper = updateHelper;
+        this.evaluator = evaluator;
+//        this.antProjectHelper = antProjectHelper;
         this.refHelper = refHelper;
         read();                                
     }
+
     
     /** XXX to be deleted when introduced in AntPropertyHeleper API
      */    
@@ -223,8 +267,8 @@ public class WebProjectProperties {
     }
     
    public void put( String propertyName, Object value ) {
-       PropertyInfo pi = getPropertyInfo(propertyName);
-       pi.setValue( value );
+        PropertyInfo pi = getPropertyInfo(propertyName);
+        pi.setValue( value );
         if (J2EE_SERVER_INSTANCE.equals (propertyName)) {
             put (J2EE_SERVER_TYPE, Deployment.getDefault ().getServerID ((String) value));
         }
@@ -303,26 +347,30 @@ public class WebProjectProperties {
         
         // Read the properties from the project        
         HashMap eProps = new HashMap( 2 );
-        eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
-        eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );
+        eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
+        eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );
    
         // Initialize the property map with objects
         for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
             PropertyDescriptor pd = PROPERTY_DESCRIPTORS[i];
-            final String propertyName = pd.name;
             if ( pd.dest == null ) {
                 // Specialy handled properties
-                if ( WEB_PROJECT_NAME.equals( propertyName ) ) {
+                if ( WEB_PROJECT_NAME.equals( pd.name ) ) {
                     String projectName = ProjectUtils.getInformation(project).getDisplayName();
-                    properties.put( propertyName, new PropertyInfo( pd, projectName, projectName ) );
+                    properties.put( pd.name, new PropertyInfo( pd, projectName, projectName ) );
+                } else if (SOURCE_ROOTS.equals(pd.name) || TEST_ROOTS.equals(pd.name)) {
+                    properties.put (pd.name, new PropertyInfo(pd, pd.name, null));
                 }
             }
             else {
                 // Standard properties
-                String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( propertyName );
-                String eval = antProjectHelper.getStandardPropertyEvaluator ().getProperty ( propertyName );
-                final PropertyInfo propertyInfo = new PropertyInfo( pd, raw, eval );
-                properties.put(propertyName, propertyInfo);
+                String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );
+                if ( pd.dest == PRIVATE && raw == null ) {
+                    // Can still be found in the project properties
+                    raw = ((EditableProperties)eProps.get( PROJECT )).getProperty( pd.name );
+                }                
+                String eval = evaluator.getProperty(pd.name);
+                properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
             }
         }
     }
@@ -351,31 +399,49 @@ public class WebProjectProperties {
                         PropertyDescriptor pd = pi.getPropertyDescriptor();
                         pi.encode();
                         String newValueEncoded = pi.getNewValueEncoded();
+                        
                         if(pd.saver != null) {
                             pd.saver.save(pi);
                         }
+                        
                         if (pd.dest == null && newValueEncoded != null) {
                             // Specialy handled properties
                             if (WEB_PROJECT_NAME.equals(pd.name)) {
+                                String newName = newValueEncoded;
                                 assert false : "No support yet for changing name of J2SEProject; cf. J2SEProject.setName";  //NOI18N
+                            } else if ( SOURCE_ROOTS.equals( pd.name ) || TEST_ROOTS.equals( pd.name )) {
+                                SourceRoots roots = null;
+                                if (SOURCE_ROOTS.equals(pi.rawValue)) {
+                                    roots = ((WebProject)project).getSourceRoots();
+                                }
+                                else if (TEST_ROOTS.equals(pi.rawValue)) {
+                                    roots = ((WebProject)project).getTestSourceRoots();
+                                }
+                                if (roots != null) {
+                                    Vector data = ((DefaultTableModel)pi.newValue).getDataVector();
+                                    URL[] rootURLs = new URL[data.size()];
+                                    String []rootLabels = new String[data.size()];
+                                    for (int i=0; i<data.size();i++) {
+                                        rootURLs[i] = ((File)((Vector)data.elementAt(i)).elementAt(0)).toURI().toURL();
+                                        rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
+                                    }
+                                    roots.putRoots(rootURLs,rootLabels);
+                                }
                             }
+
                         }
-                        if (JAVA_PLATFORM.equals(pd.name) && newValueEncoded != null) {
-                            defaultPlatform =
-                                    Boolean.valueOf(pi.getNewValueEncoded().equals(JavaPlatformManager.getDefault()
-                                    .getDefaultPlatform()
-                                    .getProperties()
-                                    .get(PLATFORM_ANT_NAME)));
-                            setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
+                        if ( JAVA_PLATFORM.equals( pd.name) && newValueEncoded != null ) {
+                            defaultPlatform = Boolean.valueOf(pi.getNewValueEncoded().equals(
+                                    JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"))); // NOI18N
+                             setPlatform(defaultPlatform.booleanValue(), pi.getNewValueEncoded());
                         }
                     }
                     
                     // Reread the properties. It may have changed when
                     // e.g. when setting references to another projects
                     HashMap eProps = new HashMap(2);
-                    eProps.put(PROJECT, antProjectHelper.getProperties(PROJECT));
-                    eProps.put(PRIVATE, antProjectHelper.getProperties(PRIVATE));
-        
+                    eProps.put( PROJECT, updateHelper.getProperties( PROJECT ) );
+                    eProps.put( PRIVATE, updateHelper.getProperties( PRIVATE ) );        
                      
                     // Set the changed properties
                     for (Iterator it = properties.values().iterator(); it.hasNext();) {
@@ -394,22 +460,33 @@ public class WebProjectProperties {
                                         items[i] += File.pathSeparatorChar;
                                     }
                                     ep.setProperty(pd.name, items);
-                                } else if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
-                                    ep.remove(pd.name);
                                 } else {
-                                    if (JAVA_PLATFORM.equals(pd.name)) { // update javac.source and javac.target
+                                    
+                                    // update javac.source and javac.target
+                                    if (JAVA_PLATFORM.equals(pd.name)) {
                                         assert defaultPlatform != null;
                                         updateSourceLevel(defaultPlatform.booleanValue(), newValueEncoded, ep);
                                     }
-                                    ep.setProperty(pd.name, newValueEncoded);
+                                    
+                                    if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
+                                        ep.remove(pd.name);
+                                        continue;
+                                    }
+                                    
+//                                    if (RUN_WORK_DIR.equals(pd.name) && newValueEncoded.equals("")) { // NOI18N
+//                                        ep.remove(pd.name);
+//                                        continue;
+//                                    }
+                                    
+                                    ep.setProperty( pd.name, newValueEncoded );
                                 }
                             }
                         }
                     }
                     
                     // Store the property changes into the project
-                    antProjectHelper.putProperties(PROJECT, (EditableProperties) eProps.get(PROJECT));
-                    antProjectHelper.putProperties(PRIVATE, (EditableProperties) eProps.get(PRIVATE));
+                    updateHelper.putProperties( PROJECT, (EditableProperties)eProps.get( PROJECT ) );
+                    updateHelper.putProperties( PRIVATE, (EditableProperties)eProps.get( PRIVATE ) );
                     ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
@@ -419,17 +496,23 @@ public class WebProjectProperties {
         }
     }
     
-    private void updateSourceLevel(boolean defaultPlatform, String platformName, EditableProperties ep) {
+    private void updateSourceLevel(boolean defaultPlatform, String platform, EditableProperties ep) {
         if (defaultPlatform) {
             ep.setProperty(JAVAC_SOURCE, "${default.javac.source}"); //NOI18N
             ep.setProperty(JAVAC_TARGET, "${default.javac.target}"); //NOI18N
         } else {
-            JavaPlatform javaPlatform = Utils.findJ2seJavaPlatform(platformName);
-            if(javaPlatform != null) {
-                String ver = javaPlatform.getSpecification().getVersion().toString();
-                ep.setProperty(JAVAC_SOURCE, ver);
-                ep.setProperty(JAVAC_TARGET, ver);
-                return;
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+            for( int i = 0; i < platforms.length; i++ ) {
+                Specification spec = platforms[i].getSpecification();
+                if (!("j2se".equalsIgnoreCase(spec.getName()))) { // NOI18N
+                    continue;
+                }
+                if (platform.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
+                    String ver = platforms[i].getSpecification().getVersion().toString();
+                    ep.setProperty(JAVAC_SOURCE, ver);
+                    ep.setProperty(JAVAC_TARGET, ver);
+                    return;
+                }
             }
             // The platformName does not exist. Perhaps this is project with broken references?
             // Do not update target and source because nothing is known about the platformName.
@@ -439,14 +522,16 @@ public class WebProjectProperties {
     private final SpecificationVersion JDKSpec13 = new SpecificationVersion("1.3"); // NOI18N
     
     private void setPlatform(boolean isDefault, String platformAntID) {
-        Element pcd = antProjectHelper.getPrimaryConfigurationData( true );
-        NodeList sps = pcd.getElementsByTagName( "explicit-platform" ); // NOI18N
+        Element pcd = updateHelper.getPrimaryConfigurationData( true );
+        NodeList sps = pcd.getElementsByTagNameNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
+//        NodeList sps = pcd.getElementsByTagName( "explicit-platform" ); // NOI18N
         if (isDefault && sps.getLength() > 0) {
             pcd.removeChild(sps.item(0));
         } else if (!isDefault) {
             Element el;
             if (sps.getLength() == 0) {
-                el = pcd.getOwnerDocument().createElement("explicit-platform"); // NOI18N
+                el = pcd.getOwnerDocument().createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); // NOI18N
+//                el = pcd.getOwnerDocument().createElement("explicit-platform"); // NOI18N
                 pcd.appendChild(el);
             } else {
                 el = (Element)sps.item(0);
@@ -458,7 +543,7 @@ public class WebProjectProperties {
             }
             el.setAttribute("explicit-source-supported", explicitSource ? "true" : "false"); // NOI18N
         }
-        antProjectHelper.putPrimaryConfigurationData(pcd, true);
+        updateHelper.putPrimaryConfigurationData(pcd, true);
     }
     
     /** Finds out what are new and removed project dependencies and 
@@ -466,8 +551,8 @@ public class WebProjectProperties {
      */
     private void resolveProjectDependencies() {
     
-        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH, WAR_CONTENT_ADDITIONAL};
-        
+        String allPaths[] = { JAVAC_CLASSPATH,  DEBUG_CLASSPATH, WAR_CONTENT_ADDITIONAL, DEBUG_TEST_CLASSPATH, JAVAC_TEST_CLASSPATH};
+
         // Create a set of old and new artifacts.
         Set oldArtifacts = new HashSet();
         Set newArtifacts = new HashSet();
@@ -499,30 +584,34 @@ public class WebProjectProperties {
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
             if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
-                 vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
-                     boolean used = false; // now check if the file reference isn't used anymore
-                     for (int i=0; i < allPaths.length; i++) {
-                        PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
-                        List values = (List)pi.getValue();
-                        if (values == null) break;
-                        for (Iterator v = values.iterator(); v.hasNext(); ) {
-                            VisualClassPathItem valcpi = (VisualClassPathItem)v.next();
-                            String raw = valcpi.getRaw();
-                            if (raw != null && raw.indexOf(vcpi.getRaw()) > -1) {
-                                used = true;
-                                break;
-                            }
-                        }
-                     }
-                     if (!used) {
-                        refHelper.destroyForeignFileReference(vcpi.getRaw());
-                     }
-
+                    vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
+                refHelper.destroyForeignFileReference(vcpi.getRaw());
             }
+//            if ( vcpi.getType() == VisualClassPathItem.TYPE_ARTIFACT ||
+//                 vcpi.getType() == VisualClassPathItem.TYPE_JAR ) {
+//                     boolean used = false; // now check if the file reference isn't used anymore
+//                     for (int i=0; i < allPaths.length; i++) {
+//                        PropertyInfo pi = (PropertyInfo)properties.get( allPaths[i] );
+//                        List values = (List)pi.getValue();
+//                        if (values == null) break;
+//                        for (Iterator v = values.iterator(); v.hasNext(); ) {
+//                            VisualClassPathItem valcpi = (VisualClassPathItem)v.next();
+//                            String raw = valcpi.getRaw();
+//                            if (raw != null && raw.indexOf(vcpi.getRaw()) > -1) {
+//                                used = true;
+//                                break;
+//                            }
+//                        }
+//                     }
+//                     if (!used) {
+//                        refHelper.destroyForeignFileReference(vcpi.getRaw());
+//                     }
+//
+//            }
         }
         
         // 2. now read project.properties and modify rest
-        EditableProperties ep = antProjectHelper.getProperties( PROJECT );
+        EditableProperties ep = updateHelper.getProperties( PROJECT );
         boolean changed = false;
         
         for( Iterator it = removed.iterator(); it.hasNext(); ) {
@@ -535,7 +624,7 @@ public class WebProjectProperties {
                 changed = true;
             }
         }
-        File projDir = FileUtil.toFile(antProjectHelper.getProjectDirectory());
+        File projDir = FileUtil.toFile(updateHelper.getAntProjectHelper().getProjectDirectory());
         for( Iterator it = added.iterator(); it.hasNext(); ) {
             VisualClassPathItem vcpi = (VisualClassPathItem)it.next();
             if (vcpi.getType() == VisualClassPathItem.TYPE_LIBRARY) {
@@ -554,7 +643,7 @@ public class WebProjectProperties {
             }
         }
         if (changed) {
-            antProjectHelper.putProperties(PROJECT, ep);
+            updateHelper.putProperties(PROJECT, ep);
         }
     }
         
@@ -573,7 +662,7 @@ public class WebProjectProperties {
         String[] paths = PropertyUtils.tokenizePath(value);
         StringBuffer sb = new StringBuffer();
         for (int i=0; i<paths.length; i++) {
-            File f = antProjectHelper.resolveFile(paths[i]);
+            File f = updateHelper.getAntProjectHelper().resolveFile(paths[i]);
             if (CollocationQuery.areCollocated(f, projectDir)) {
                 sb.append(PropertyUtils.relativizeFile(projectDir, f));
             } else {
@@ -590,16 +679,19 @@ public class WebProjectProperties {
         }
     }
     
-  class PropertyInfo {
-        
+    class PropertyInfo {        
         private PropertyDescriptor propertyDesciptor;
+        private String rawValue;
+        private String evaluatedValue;
         private Object value;
         private Object newValue;
         private String newValueEncoded;
         
         public PropertyInfo( PropertyDescriptor propertyDesciptor, String rawValue, String evaluatedValue ) {
             this.propertyDesciptor = propertyDesciptor;
-            this.value = propertyDesciptor.parser.decode( rawValue, antProjectHelper, refHelper );
+            this.rawValue = rawValue;
+            this.evaluatedValue = evaluatedValue;
+            this.value = propertyDesciptor.parser.decode( rawValue, project, updateHelper.getAntProjectHelper(), evaluator, refHelper );
             this.newValue = null;
         }
         
@@ -609,13 +701,13 @@ public class WebProjectProperties {
         
         public void encode() {            
             if ( isModified() ) {
-                newValueEncoded = propertyDesciptor.parser.encode( newValue, antProjectHelper, refHelper);                
+                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, updateHelper.getAntProjectHelper(), refHelper);
             }
             else {
                 newValueEncoded = null;
             }
         }
-        
+
         public Object getValue() {
             return isModified() ? newValue : value; 
         }
@@ -664,19 +756,19 @@ public class WebProjectProperties {
     
     private static abstract class PropertyParser {
         
-        public abstract Object decode( String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper );
+        public abstract Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper);
         
-        public abstract String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper );
+        public abstract String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper);
         
     }
     
     private static class StringParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             return raw;
         }        
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             return (String)value;
         }
         
@@ -684,7 +776,7 @@ public class WebProjectProperties {
     
     private static class BooleanParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             
             if ( raw != null ) {
                String lowecaseRaw = raw.toLowerCase();
@@ -698,33 +790,21 @@ public class WebProjectProperties {
             return Boolean.FALSE;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             return ((Boolean)value).booleanValue() ? "true" : "false"; // NOI18N
         }
         
     }
     
     private static class InverseBooleanParser extends BooleanParser {
-        
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {                    
-            return ((Boolean)super.decode( raw, antProjectHelper, refHelper )).booleanValue() ? Boolean.FALSE : Boolean.TRUE;           
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+            return ((Boolean)super.decode(raw, project, antProjectHelper, evaluator, refHelper)).booleanValue() ? Boolean.FALSE : Boolean.TRUE;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
-            return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, antProjectHelper, refHelper );
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+            return super.encode( ((Boolean)value).booleanValue() ? Boolean.FALSE : Boolean.TRUE, project, antProjectHelper, refHelper );
         }
-        
     }
-    
-    // XXX Define in the LibraryManager
-    private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-    private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-        
-    // Contains well known paths in the J2SEProject
-    private static final String[][] WELL_KNOWN_PATHS = new String[][] {
-        { JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) }, //NOI18N
-        { BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) } //NOI18N
-    };
     
     private static class PathParser extends PropertyParser {
         private String webLibraryElementName;
@@ -732,6 +812,19 @@ public class WebProjectProperties {
         private static final String TAG_FILE = "file"; //NOI18N
         private static final String TAG_LIBRARY = "library"; //NOI18N
 
+        // XXX Define in the LibraryManager
+        private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+        private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+    
+        // Contains well known paths in the WebProject
+        private static final String[][] WELL_KNOWN_PATHS = new String[][] {
+            { JAVAC_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_JavacClasspath_DisplayName" ) }, //NOI18N
+            { BUILD_CLASSES_DIR, NbBundle.getMessage( WebProjectProperties.class, "LBL_BuildClassesDir_DisplayName" ) }, //NOI18N
+            { JAVAC_TEST_CLASSPATH, NbBundle.getMessage (WebProjectProperties.class,"LBL_JavacTestClasspath_DisplayName") }, //NOI18N
+            { RUN_TEST_CLASSPATH, NbBundle.getMessage( WebProjectProperties.class, "LBL_RunTestClasspath_DisplayName" ) }, //NOI18N
+            { BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WebProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") } //NOI18N
+        };
+    
         public PathParser() {
             this(null);
         }
@@ -740,7 +833,7 @@ public class WebProjectProperties {
             this.webLibraryElementName = webLibraryElementName;
         }
 
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
             Map warIncludesMap = createWarIncludesMap(antProjectHelper);
             if (raw != null) {
                 String pe[] = PropertyUtils.tokenizePath( raw );
@@ -760,7 +853,7 @@ public class WebProjectProperties {
             return cpItems;
         }
 
-        public String encode( Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             Element data = null;
             Element webModuleLibs = null;
             Document doc = null;
@@ -924,10 +1017,21 @@ public class WebProjectProperties {
         return null;
     }
     
+    private static JavaPlatform findPlatform(String platformAntID) {
+        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();            
+        for(int i = 0; i < platforms.length; i++) {
+            String normalizedName = (String)platforms[i].getProperties().get("platform.ant.name"); // NOI18N
+            if (normalizedName != null && normalizedName.equals(platformAntID)) {
+                return platforms[i];
+            }
+        }
+        return null;
+    }
+    
     private static class PlatformParser extends PropertyParser {
         
-        public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
-            JavaPlatform platform = Utils.findJavaPlatform(raw);
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+            JavaPlatform platform = findPlatform(raw);
             if (platform != null) {
                 return platform.getDisplayName();
             }
@@ -935,7 +1039,7 @@ public class WebProjectProperties {
             return raw;
         }
         
-        public String encode(Object value, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
             JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms ((String)value,
                     new Specification ("j2se",null)); // NOI18N
             if (platforms.length == 0) {
@@ -943,9 +1047,40 @@ public class WebProjectProperties {
                 // correspond to platform ID. so just return it:
                 return (String)value;
             } else {
-                return (String) platforms[0].getProperties().get(PLATFORM_ANT_NAME);
+                return (String) platforms[0].getProperties().get("platform.ant.name");  //NOI18N
             }
         }
-        
     }
+    
+    private static class SourceRootsParser extends PropertyParser {
+
+        public SourceRootsParser () {
+        }
+
+        public Object decode(String raw, Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
+            SourceRoots roots = null;
+            if (SOURCE_ROOTS.equals(raw)) {
+                roots = ((WebProject) project).getSourceRoots();
+            }
+            else if (TEST_ROOTS.equals(raw)) {
+                roots = ((WebProject) project).getTestSourceRoots();
+            }
+            else {
+                return null;
+            }
+            String[] rootLabels = roots.getRootNames();
+            URL[] rootURLs = roots.getRootURLs();
+            Object[][] data = new Object[rootURLs.length] [2];
+            for (int i=0; i< rootURLs.length; i++) {
+                data[i][0] = new File (URI.create (rootURLs[i].toExternalForm()));
+                data[i][1] = rootLabels[i] == null ? "" : rootLabels[i];    //NOI18N
+            }
+            return VisualSourceRootsSupport.createSourceModel(data);
+        }
+
+        public String encode(Object value, Project project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+            return "true";   //NOI18N
+        }
+    }
+
 }

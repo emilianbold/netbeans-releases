@@ -14,9 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
                 xmlns:project="http://www.netbeans.org/ns/project/1"
-                xmlns:web="http://www.netbeans.org/ns/web-project/1"
+                xmlns:webproject="http://www.netbeans.org/ns/web-project/2"
                 xmlns:xalan="http://xml.apache.org/xslt"
-                exclude-result-prefixes="xalan project">
+                exclude-result-prefixes="xalan project webproject">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:template match="/">
     
@@ -31,8 +31,11 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:comment> some examples of how to customize the build. </xsl:comment>
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
         
-        <xsl:variable name="name" select="/project:project/project:configuration/web:data/web:name"/>
-        <project name="{$name}">
+        <xsl:variable name="name" select="/project:project/project:configuration/webproject:data/webproject:name"/>
+        <!-- Synch with build-impl.xsl: -->
+        <!-- XXX really should translate all chars that are *not* safe (cf. PropertyUtils.getUsablePropertyName): -->
+        <xsl:variable name="codename" select="translate($name, ' ', '_')"/>
+        <project name="{$codename}">
             <xsl:attribute name="default">default</xsl:attribute>
             <xsl:attribute name="basedir">.</xsl:attribute>
             <description>Builds, tests, and runs the project <xsl:value-of select="$name"/>.</description>
@@ -50,6 +53,10 @@ Microsystems, Inc. All Rights Reserved.
       -post-compile:             called after javac compilation 
       -pre-compile-single:       called before javac compilation of single file
       -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
       -pre-dist:                 called before jar building 
       -post-dist:                called after jar building 
       -post-clean:               called after cleaning build products 
@@ -70,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
     The target of interest are: 
 
       init-macrodef-javac:    defines macro for javac compilation
+      init-macrodef-junit:   defines macro for junit execution
       init-macrodef-debug:    defines macro for class debugging
       do-dist:                jar archive building
       run:                    execution of project 
