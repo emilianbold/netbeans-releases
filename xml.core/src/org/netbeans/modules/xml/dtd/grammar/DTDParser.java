@@ -143,6 +143,9 @@ public class DTDParser {
             } else if ("EMPTY".equals(model)) {
                 elements.put(name, Collections.EMPTY_SET);
                 return;                
+            } else if ("(#PCDATA)".equals(model)) {
+                elements.put(name, Collections.EMPTY_SET);
+                return;
             }
 
             // parse content model
