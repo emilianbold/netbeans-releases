@@ -67,6 +67,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
   public static final String ATTR_PROPERTY_TYPE = "type";
   public static final String ATTR_PROPERTY_EDITOR = "editor";
   public static final String ATTR_PROPERTY_VALUE = "value";
+  public static final String ATTR_PROPERTY_PRE_CODE = "preCode";
+  public static final String ATTR_PROPERTY_POST_CODE = "postCode";
   public static final String ATTR_EVENT_NAME = "event";
   public static final String ATTR_EVENT_HANDLER = "handler";
   public static final String ATTR_AUX_NAME = "name";
@@ -761,6 +763,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
       }
       buf.append (indent); 
+
       if (encodedValue != null) {
         addLeafElementOpenAttr (
             buf, 
@@ -770,12 +773,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
               ATTR_PROPERTY_TYPE, 
               ATTR_PROPERTY_EDITOR, 
               ATTR_PROPERTY_VALUE, 
+              ATTR_PROPERTY_PRE_CODE, 
+              ATTR_PROPERTY_POST_CODE, 
               },
             new String[] { 
               desc.getName (), 
               desc.getPropertyType ().getName (), 
               prop.getCurrentEditor ().getClass ().getName (), 
               encodedValue,
+              prop.getPreCode (),
+              prop.getPostCode (),
             }
         );
       } else {
@@ -786,11 +793,15 @@ public class GandalfPersistenceManager extends PersistenceManager {
               ATTR_PROPERTY_NAME, 
               ATTR_PROPERTY_TYPE, 
               ATTR_PROPERTY_EDITOR, 
+              ATTR_PROPERTY_PRE_CODE, 
+              ATTR_PROPERTY_POST_CODE, 
               },
             new String[] { 
               desc.getName (), 
               desc.getPropertyType ().getName (), 
               prop.getCurrentEditor ().getClass ().getName (), 
+              prop.getPreCode (),
+              prop.getPostCode (),
             }
         );
         if (valueNode != null) {
@@ -926,17 +937,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
     org.w3c.dom.Node typeNode = attrs.getNamedItem (ATTR_PROPERTY_TYPE);
     org.w3c.dom.Node editorNode = attrs.getNamedItem (ATTR_PROPERTY_EDITOR);
     org.w3c.dom.Node valueNode = attrs.getNamedItem (ATTR_PROPERTY_VALUE);
+    org.w3c.dom.Node preCodeNode = attrs.getNamedItem (ATTR_PROPERTY_PRE_CODE);
+    org.w3c.dom.Node postCodeNode = attrs.getNamedItem (ATTR_PROPERTY_POST_CODE);
 
     if ((nameNode == null) || (typeNode == null)) {
       throw new IOException (); // [PENDING - explanation of problem]
     }
 
     Class propertyType = findPropertyType (typeNode.getNodeValue ());
+    RADComponent.RADProperty prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
 
     PropertyEditor ed = null;
     if (editorNode != null) {
       Class editorClass = TopManager.getDefault ().currentClassLoader ().loadClass (editorNode.getNodeValue ());
-      RADComponent.RADProperty prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
       if (prop != null) {
         ed = FormEditor.createPropertyEditor (editorClass, propertyType, radComponent, prop);
       } else {
@@ -946,6 +959,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
       }
     }
     Object value = null;
+
+    if (preCodeNode != null) {
+      prop.setPreCode (preCodeNode.getNodeValue ());
+    }
+    if (postCodeNode != null) {
+      prop.setPostCode (postCodeNode.getNodeValue ());
+    }
 
     if (valueNode != null) {
       value = decodePrimitiveValue (valueNode.getNodeValue (), propertyType);
@@ -1143,6 +1163,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     buf.append ("<");
     buf.append (elementName);
     for (int i = 0; i < attrNames.length; i++) {
+      if (attrValues[i] == null) continue;
       buf.append (" ");
       buf.append (attrNames[i]);
       buf.append ("=\"");
@@ -1156,6 +1177,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     buf.append ("<");
     buf.append (elementName);
     for (int i = 0; i < attrNames.length; i++) {
+      if (attrValues[i] == null) continue;
       buf.append (" ");
       buf.append (attrNames[i]);
       buf.append ("=\"");
@@ -1294,6 +1316,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  34   Gandalf   1.33        9/14/99  Ian Formanek    RADProperty pre/postCode
+ *       is persistent
  *  33   Gandalf   1.32        9/14/99  Ian Formanek    Fixed bug 3287 - Form 
  *       Editor does not correctly reload forms with multi-line String property 
  *       values.
