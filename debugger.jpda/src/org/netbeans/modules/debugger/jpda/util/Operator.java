@@ -27,6 +27,7 @@ public class Operator {
 
     private boolean           resume = false;
     private boolean           stopRequest = false;
+    private boolean           disconnected = false;
     private Thread            thread;
 
     /**
@@ -51,6 +52,7 @@ public class Operator {
                                                  if ((e instanceof VMDeathEvent) ||
                                                          (e instanceof VMDisconnectEvent)
                                                     ) {
+                                                     disconnected = true;
                                                      if (finalizer != null) finalizer.run ();
                                                      //S ystem.out.println ("EVENT: " + e); // NOI18N
                                                      //S ystem.out.println ("Operator end"); // NOI18N
@@ -81,8 +83,10 @@ public class Operator {
                                              if (resume && !stopRequest)
                                                  virtualMachine.resume ();
                                          }
+                                     } catch (VMDisconnectedException e) {   
                                      } catch (InterruptedException e) {
-                                     } catch (VMDisconnectedException e) {
+                                     } catch (Exception e) {
+                                         e.printStackTrace ();
                                      }
                                      if (finalizer != null) finalizer.run ();
                                      //S ystem.out.println ("Operator end"); // NOI18N
@@ -115,6 +119,10 @@ public class Operator {
         stopRequest = true;
     }
 
+    public boolean isDisconnected () {
+        return disconnected;
+    }
+    
     private void printEvent (Event e, Executor exec) {
         try {
             if (e instanceof ClassPrepareEvent) {
