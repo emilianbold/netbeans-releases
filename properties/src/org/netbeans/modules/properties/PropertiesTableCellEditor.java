@@ -26,9 +26,9 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
   public PropertiesTableCellEditor(JTextField tf, final JTextComponent commentComponent, 
                                    final JTextComponent valueComponent) {
     super(tf);
-    this.clickCountToStart = 1;
+    this.clickCountToStart = 0;
     valueComponent.setDocument(tf.getDocument());
-    this.delegate = new PropertiesEditorDelegate(commentComponent);
+    this.delegate = new PropertiesEditorDelegate(commentComponent, valueComponent);
     ((JTextField)editorComponent).addActionListener(delegate);
   }                             
            
@@ -37,28 +37,40 @@ public class PropertiesTableCellEditor extends DefaultCellEditor {
     return editorComponent;
   }
 
+  public boolean isCellEditable(EventObject anEvent) {
+    boolean editable = super.isCellEditable(anEvent);
+System.out.println("editable : " + editable);
+    return editable;
+  }
+
     protected class PropertiesEditorDelegate extends DefaultCellEditor.EditorDelegate {
     
       JTextComponent commentComponent;           
+      JTextComponent valueComponent;           
       
-      public PropertiesEditorDelegate(JTextComponent commentComponent) {
+      public PropertiesEditorDelegate(JTextComponent commentComponent, JTextComponent valueComponent) {
         this.commentComponent = commentComponent;
+        this.valueComponent = valueComponent;
       }
       
       public void setValue(Object x) {
+System.out.println("set value: " + (x == null ? "null" : x.toString()));
+Thread.currentThread().dumpStack();
         super.setValue(x);
-        if (x != null) {
-          ((JTextField)getEditorComponent()).setText(x.toString());
-          commentComponent.setText(((PropertiesTableModel.StringPair)x).getComment());
-          if (((PropertiesTableModel.StringPair)x).isKeyType())
-            commentComponent.setEnabled(false);
-          else  
-            commentComponent.setEnabled(true);
+        PropertiesTableModel.StringPair sp = (PropertiesTableModel.StringPair)x;
+        
+        // set editable as they deserve
+        commentComponent.setEditable(sp.isCommentEditable());
+        valueComponent.setEditable(true);
+        
+        // set values as they deserve
+        if (sp != null) {               
+          ((JTextField)getEditorComponent()).setText(sp.getValue());
+          commentComponent.setText(sp.getComment());
         }  
         else {
           ((JTextField)getEditorComponent()).setText("");
           commentComponent.setText("");
-          commentComponent.setEnabled(true);
         }  
       }
 

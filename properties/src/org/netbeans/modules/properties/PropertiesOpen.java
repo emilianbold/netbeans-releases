@@ -25,7 +25,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.border.LineBorder;
+import javax.swing.table.TableColumn;
  
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
@@ -109,6 +113,16 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
   }
 
   public class PropertiesCloneableTopComponent extends CloneableTopComponent {                                
+    
+    private static final int DEFAULT_TABLE_WIDTH = 600;
+    private static final int DEFAULT_KEY_WIDTH   = 150;
+    
+    private ListSelectionModel rowSelections;
+    private ListSelectionModel columnSelections;
+
+    private JTextArea textComment;
+    private JTextArea textValue;
+  
     private DataObject dobj;
     private PropertyChangeListener cookieL;
     private PropertiesTableModel ptm;
@@ -140,42 +154,19 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
       initComponents();
     }
 
-/*
-GridBagLayout gridbag = new GridBagLayout();
-         GridBagConstraints c = new GridBagConstraints();
-         setFont(new Font("Helvetica", Font.PLAIN, 14));
-         setLayout(gridbag);         
-         c.fill = GridBagConstraints.BOTH;
-         c.weightx = 1.0;         
-         makebutton("Button1", gridbag, c);
-         makebutton("Button2", gridbag, c);
-         makebutton("Button3", gridbag, c);
-     	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
-         makebutton("Button4", gridbag, c);
-         c.weightx = 0.0;		   //reset to the default
-         makebutton("Button5", gridbag, c); //another row
- 	   c.gridwidth = GridBagConstraints.RELATIVE; //next-to-last in row
-         makebutton("Button6", gridbag, c);
- 	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
-         makebutton("Button7", gridbag, c);
- 	   c.gridwidth = 1;	   	   //reset to the default 	   c.gridheight = 2;
-         c.weighty = 1.0;         makebutton("Button8", gridbag, c);
-         c.weighty = 0.0;		   //reset to the default
- 	   c.gridwidth = GridBagConstraints.REMAINDER; //end row
- 	   c.gridheight = 1;		   //reset to the default
-         makebutton("Button9", gridbag, c);
-         makebutton("Button10", gridbag, c);         setSize(300, 100);     }*/     
-         
     /** Inits the subcomponents. */ 
     private void initComponents() {
       GridBagLayout gridbag = new GridBagLayout();
       GridBagConstraints c = new GridBagConstraints();
       setLayout (gridbag);
       
-      JTextArea textComment = new JTextArea();
-      JTextArea textValue = new JTextArea();
+      textComment = new JTextArea();
+      textValue = new JTextArea();
 
       theTable = new JTable(ptm/*, ptcm*/);
+
+
+      // set the cell editor
       JTextField textField = new JTextField();
       textField.setBorder(new LineBorder(Color.black));
       theTable.setDefaultEditor(PropertiesTableModel.StringPair.class, 
@@ -184,12 +175,46 @@ GridBagLayout gridbag = new GridBagLayout();
 //      PropertiesCellEditor ed = new PropertiesCellEditor(new PropertyDisplayer());
 //      table.setDefaultEditor(PropertiesTableModel.CommentValuePair.class, ed);
 //      table.setDefaultEditor(String.class, DefaultCellEditor.class);
+
+      // include in a scroll pane
       JScrollPane scrollPane = new JScrollPane(theTable);
-      theTable.setPreferredScrollableViewportSize(new Dimension(500, 70));
+      theTable.setPreferredScrollableViewportSize(new Dimension(DEFAULT_TABLE_WIDTH, 300));
       theTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+      theTable.setCellSelectionEnabled(true);
+
+      // set the column widths
+      TableColumn column = null;
+      for (int i = 0; i < theTable.getColumnModel().getColumnCount(); i++) {
+        column = theTable.getColumnModel().getColumn(i);
+        if (i == 0)
+          column.setPreferredWidth(DEFAULT_KEY_WIDTH);
+        else  
+          column.setPreferredWidth(((int)theTable.getPreferredScrollableViewportSize().getWidth() - 
+            DEFAULT_KEY_WIDTH - scrollPane.getInsets().left - scrollPane.getInsets().right) / 
+            (theTable.getColumnModel().getColumnCount() - 1));
+      }
       
+      // selection listeners
+      rowSelections = theTable.getSelectionModel();
+      rowSelections.addListSelectionListener(
+        new ListSelectionListener() {
+          public void valueChanged(ListSelectionEvent e) {
+            rowSelections = (ListSelectionModel)e.getSource();
+            selectionChanged();
+          }
+        });
+      columnSelections = theTable.getColumnModel().getSelectionModel();
+      columnSelections.addListSelectionListener(
+        new ListSelectionListener() {
+          public void valueChanged(ListSelectionEvent e) {
+            columnSelections = (ListSelectionModel)e.getSource();
+            selectionChanged();
+          }
+        });
+
+
       c.fill = GridBagConstraints.BOTH;
-      c.weightx = 1.0;         
+      c.weightx = 1.0;
       c.weighty = 1.0;
       c.gridwidth = GridBagConstraints.REMAINDER; 
       gridbag.setConstraints(scrollPane, c);
@@ -205,7 +230,6 @@ GridBagLayout gridbag = new GridBagLayout();
       add (labelComment);
                                       
       textComment.setRows (2);
-//      textComment.setBorder(new CompoundBorder());
       c.fill = GridBagConstraints.HORIZONTAL;
       c.weightx = 1.0;         
       c.gridwidth = GridBagConstraints.REMAINDER; 
@@ -213,11 +237,6 @@ GridBagLayout gridbag = new GridBagLayout();
       gridbag.setConstraints(scrollPane, c);
       add (scrollPane);
 
-/*          jScrollPane5.add (manifestArea);
-
-        jScrollPane5.setViewportView (manifestArea);*/
-
-      
       JLabel labelValue = new JLabel(PropertiesSettings.getString("LBL_ValueLabel"));
       c.fill = GridBagConstraints.NONE;
       c.weightx = 0.0;
@@ -226,17 +245,18 @@ GridBagLayout gridbag = new GridBagLayout();
       add (labelValue);
                                       
       textValue.setRows (2);
-//      textValue.setBorder(new BasicBorders.FieldBorder());
-//      textValue.setBorder(new CompoundBorder());
       c.fill = GridBagConstraints.HORIZONTAL;
       c.weightx = 1.0;         
-      c.gridwidth = GridBagConstraints.REMAINDER; //end row
+      c.gridwidth = GridBagConstraints.REMAINDER; 
       scrollPane = new JScrollPane(textValue);
       gridbag.setConstraints(scrollPane, c);
       add (scrollPane);
       
+      // add property button
       JButton addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
       c.insets = new Insets(0, 0, 0, 0);
+      c.weightx = 1;
+      c.gridwidth = 2;
       gridbag.setConstraints(addButton, c);
       add (addButton);
       addButton.addActionListener(
@@ -262,9 +282,65 @@ GridBagLayout gridbag = new GridBagLayout();
           }
         }
       );  
+
+      // remove row button
+      JButton removeButton = new JButton(PropertiesSettings.getString("LBL_RemovePropertyButton"));
+      c.insets = new Insets(0, 0, 0, 0);
+      c.weightx = 1;
+      c.gridwidth = GridBagConstraints.REMAINDER; 
+      gridbag.setConstraints(removeButton, c);
+      add (removeButton);
+      removeButton.addActionListener(
+        new ActionListener() {
+          public void actionPerformed(ActionEvent evt) {
+            /*NewPropertyDialog dia = new NewPropertyDialog();
+            Dialog d = dia.getDialog();
+            d.setVisible(true);
+            if (dia.getOKPressed ()) {                            
+              if (((PropertiesFileEntry)((MultiDataObject)dobj).getPrimaryEntry()).
+                    getHandler().getStructure().addItem(
+                    dia.getKeyText(), dia.getValueText(), dia.getCommentText()))
+                ;
+              else {
+                NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
+                  java.text.MessageFormat.format(
+                    NbBundle.getBundle(PropertiesLocaleNode.class).getString("MSG_KeyExists"),
+                    new Object[] {dia.getKeyText()}),
+                  NotifyDescriptor.ERROR_MESSAGE);
+                TopManager.getDefault().notify(msg);
+              }  
+            } */
+          }
+        }
+      );  
+      
+      // enable or disable the fields based on selection
+      selectionChanged();
     }
     
-    
+    private void selectionChanged() {
+System.out.println("Selection - row:  " + rowSelections.getMinSelectionIndex() + " - " + rowSelections.getMaxSelectionIndex());
+System.out.println("Selection - col:  " + columnSelections.getMinSelectionIndex() + " - " + columnSelections.getMaxSelectionIndex());
+      if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
+          rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
+          columnSelections.getMinSelectionIndex() != columnSelections.getMaxSelectionIndex()) {
+        textComment.setText("");
+        textComment.setEnabled(false);
+        textValue.setText("");
+        textValue.setEnabled(false);
+      }
+      else {                         
+        if ((theTable.getColumnModel().getColumnCount() == 1) || (columnSelections.getMinSelectionIndex() > 0)) 
+          textComment.setEnabled(true);
+        else  
+          textComment.setEnabled(false);
+        textValue.setEnabled(true);
+        
+/*        boolean edit = theTable.editCellAt(rowSelections.getMinSelectionIndex(), 
+                                           columnSelections.getMinSelectionIndex());
+        System.out.println("Ed " +edit + " row " + theTable.getEditingRow() + " col " + theTable.getEditingColumn());*/
+      }    
+    }
     
     /** Set the name of this top component. Handles saved/not saved state.
     * Notifies the window manager.

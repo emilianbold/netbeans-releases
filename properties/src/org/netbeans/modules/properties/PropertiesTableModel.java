@@ -131,7 +131,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     BundleStructure bs = obj.getBundleStructure();
     switch (column) {
       case 0:
-        return new StringPair(bs.getNthKey(row));//bs.getNthKey(row);
+        return stringPairForKey(row);//bs.getNthKey(row);
       default:
         Element.ItemElem item = bs.getItem(column - 1, row);
         return stringPairForValue(item);
@@ -143,7 +143,21 @@ public class PropertiesTableModel extends AbstractTableModel {
         */   
     }         
   }                    
-                          
+                                     
+  /* Returns a string pair for a key in an item (may be null). */
+  private StringPair stringPairForKey(int row) {
+    BundleStructure bs = obj.getBundleStructure();
+    Element.ItemElem item = bs.getItem(0, row);
+    StringPair sp;
+    if (item == null)
+      sp = new StringPair("", bs.getNthKey(row), true);    
+    else  
+      sp = new StringPair(item.getComment(), bs.getNthKey(row), true);    
+    if (obj.getBundleStructure().getEntryCount() > 1)
+      sp.setCommentEditable(false);
+    return sp;  
+  }  
+                                     
   /* Returns a string pair for a value in an item (may be null). */
   private StringPair stringPairForValue(Element.ItemElem item) {
     if (item == null)
@@ -158,7 +172,10 @@ public class PropertiesTableModel extends AbstractTableModel {
       case 0:
         return NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
       default:
-        return Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
+        if (obj.getBundleStructure().getEntryCount() == 1)
+          return NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
+        else
+          return Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
     }         
   }
    
@@ -166,7 +183,6 @@ public class PropertiesTableModel extends AbstractTableModel {
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
     // PENDING - set comment for all files
     if (columnIndex == 0) {
-      // check if the comment has changed
       BundleStructure bs = obj.getBundleStructure();
       String oldValue = (String)bs.getNthKey(rowIndex);
       String newValue = ((StringPair)aValue).getValue();
@@ -189,7 +205,12 @@ public class PropertiesTableModel extends AbstractTableModel {
           if (entry != null) {
             PropertiesStructure ps = entry.getHandler().getStructure();
             if (ps != null) {    
-              boolean success = ps.renameItem(oldValue, newValue);
+              ps.renameItem(oldValue, newValue);
+              if (i == 0) {
+                Element.ItemElem item = ps.getItem(newValue);
+                if (item != null)
+                  item.setComment(((StringPair)aValue).getComment());
+              }
             }
           }  
         }  
@@ -234,6 +255,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     private String comment;
     private String value;
     private boolean keyType;
+    private boolean commentEditable;
      
     /** Constructs with empty comment and value. */
     public StringPair() {
@@ -255,6 +277,7 @@ public class PropertiesTableModel extends AbstractTableModel {
       comment = c;
       value   = v;                                  
       keyType = kt;
+      commentEditable = true;
     }             
 
     /** Returns the comment associated with this element. */
@@ -280,6 +303,16 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Returns the type key/value of the pair. */
     public boolean isKeyType () {
       return keyType;
+    }
+                            
+    /** Returns whether the comment should be allowed to be edited. */                        
+    public boolean isCommentEditable() {
+      return commentEditable;
+    }                        
+    
+    /** Sets whether the comment should be allowed to be edited. */                        
+    public void setCommentEditable(boolean newEditable) {
+      commentEditable = newEditable;
     }
   
   } // end of inner class
