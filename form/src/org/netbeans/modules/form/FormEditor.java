@@ -481,7 +481,7 @@ final public class FormEditor extends Object {
       if (nodes.length == 0)
         title = formBundle.getString ("CTL_NoSelection");
       else if (nodes.length == 1) {
-        FormNodeCookie cookie = (FormNodeCookie)nodes[0].getCookie (FormNodeCookie.class);
+        RADComponentCookie cookie = (RADComponentCookie)nodes[0].getCookie (RADComponentCookie.class);
         if (cookie != null) {
           RADComponent radComponent = cookie.getRADComponent ();
           title = formatInspectorTitle.format (
@@ -604,6 +604,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  14   Gandalf   1.13        5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
+ *       
  *  13   Gandalf   1.12        5/16/99  Ian Formanek    Persistence 
  *       failure-proofness improved
  *  12   Gandalf   1.11        5/16/99  Ian Formanek    

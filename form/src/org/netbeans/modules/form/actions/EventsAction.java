@@ -29,7 +29,7 @@ import com.netbeans.ide.nodes.Node;
 //import com.netbeans.developer.modules.loaders.form.FormEditor;
 //import com.netbeans.developer.modules.loaders.form.RADNode;
 //import com.netbeans.developer.modules.loaders.form.EventsList;
-import com.netbeans.developer.modules.loaders.form.FormNodeCookie;
+import com.netbeans.developer.modules.loaders.form.RADComponentCookie;
 
 /** Events action - subclass of NodeAction - enabled on RADNodes.
 *
@@ -50,7 +50,7 @@ public class EventsAction extends CookieAction {
   * @return list of classes the that the cookie tests
   */
   protected Class[] cookieClasses () {
-    return new Class[] { FormNodeCookie.class };
+    return new Class[] { RADComponentCookie.class };
   }
   /** Human presentable name of the action. This should be
   * presented as an item in a menu.
@@ -107,10 +107,10 @@ public class EventsAction extends CookieAction {
           if (nodes.length == 0) return;
           Node n = nodes[0]; // we suppose that one node is activated
 
-          if (! (Cookies.isInstanceOf (nodes[0].getCookie (), FormNodeCookie.class))) 
+          if (! (Cookies.isInstanceOf (nodes[0].getCookie (), RADComponentCookie.class))) 
             return;
             
-          RADNode node = ((FormNodeCookie) Cookies.getInstanceOf (n.getCookie(), FormNodeCookie.class)).getFormNode ();
+          RADNode node = ((RADComponentCookie) Cookies.getInstanceOf (n.getCookie(), RADComponentCookie.class)).getFormNode ();
           EventsList em = node.getEventsList ();
           EventsList.EventSet[] setHandlers = em.getEventSets ();
          
@@ -155,6 +155,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  4    Gandalf   1.3         5/20/99  Ian Formanek    FormNodeCookie->RADComponentCookie
+ *       
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)
  *  2    Gandalf   1.1         3/28/99  Ian Formanek    Introduced changes done 
