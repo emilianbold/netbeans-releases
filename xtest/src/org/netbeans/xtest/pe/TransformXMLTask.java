@@ -133,6 +133,7 @@ public class TransformXMLTask extends Task{
         FileOutputStream outputFileStream = new FileOutputStream(outputXML);
         StreamResult xmlResult = new StreamResult(outputFileStream);
         transform(transformer,xmlSource,xmlResult);
+        outputFileStream.close();
     }
     
     public static void transform(File inputXML, File outputXML, File xsl) throws TransformerException {

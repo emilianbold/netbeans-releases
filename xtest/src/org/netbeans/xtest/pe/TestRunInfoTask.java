@@ -65,6 +65,7 @@ public class TestRunInfoTask extends Task{
         try {
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(tr.toDocument(),outStream);
+            outStream.close();
         } catch (IOException ioe) {
             System.err.println("TestRunInfoTask - cannot save testrun");
             ioe.printStackTrace(System.err);

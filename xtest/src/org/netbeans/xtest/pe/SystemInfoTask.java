@@ -113,6 +113,7 @@ public class SystemInfoTask extends Task {
         try {
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(si.toDocument(),outStream);
+            outStream.close();
         } catch (IOException ioe) {
             System.err.println("SystemInfoTask - cannot save systeminfo");
             ioe.printStackTrace(System.err);

@@ -65,6 +65,7 @@ public class TestBagInfoTask extends Task{
         try {
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(tb.toDocument(),outStream);
+            outStream.close();
         } catch (IOException ioe) {
             System.err.println("TestBagInfoTask - cannot save systeminfo");
             ioe.printStackTrace(System.err);
