@@ -258,9 +258,9 @@ public class SearchResultsOperator extends TopComponentOperator {
     /**
      * Pushes "Modify Search" button.
      */
-    public SearchFilesystemsOperator modifySearch() {
+    public FindInFilesOperator modifySearch() {
         btModifySearch().pushNoBlock();
-        return new SearchFilesystemsOperator();
+        return new FindInFilesOperator();
     }
 
     /**

@@ -61,9 +61,9 @@ public class FindInFilesOperator extends NbDialogOperator {
     /**
      * Invokes dialog by selecting a node and pushing menu.
      */
-    public static SearchFilesystemsOperator invoke(Node node) {
+    public static FindInFilesOperator invoke(Node node) {
         invokeAction.perform(node);
-        return new SearchFilesystemsOperator();
+        return new FindInFilesOperator();
     }
 
     //component access    
