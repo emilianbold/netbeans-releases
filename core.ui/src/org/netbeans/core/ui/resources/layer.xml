@@ -76,7 +76,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
             <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
-            <file name="org-netbeans-core-actions-ExplorerRootsViewAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-FocusPreviousWorkspaceAction.instance"/>            
             <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
