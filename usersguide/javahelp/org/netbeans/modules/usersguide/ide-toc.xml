@@ -398,6 +398,7 @@
       <tocitem text="Using Tag Libraries in JSP Files" target="webmod_usetags"/>
       <tocitem text="Upgrading a Specification" target="spec_version" />
       <tocitem text="Compiling a JSP File" target="jsp_validate" />
+      <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With JSP Pages -->
 
   <tocitem text="Servlets" target="concepts_servlet">
@@ -406,6 +407,7 @@
      <tocitem text="Creating a Servlet" target="servlet_create" />
      <tocitem text="Editing a Servlet" target="servlet_edit"/>
      <tocitem text="Upgrading a Specification" target="spec_version" />
+     <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
   </tocitem> <!-- Working With Servlets -->
 
   <tocitem text="Tags" target="webmod_addtglb">
@@ -474,8 +476,8 @@
     
     <tocitem text="Deploying Web Modules" target="webmod_deploy"> 
         <tocitem text="About Deploying Web Modules" target="webmod_deploy"/>
-	<tocitem text="Deploying Tag Libraries"  target="taglib_packlib"/>
-	<tocitem text="Working With Deployment Descriptors" target="concepts_deploydes"> 
+	<tocitem text="Deploying a Tag Library"  target="taglib_packlib"/>
+	<tocitem text="Deployment Descriptors" target="concepts_deploydes"> 
 	   <tocitem text="About Deployment Descriptors" target="concepts_deploydes" />  
 	   <tocitem text="Editing Deployment Descriptors" target="webmod_editdd" />  
 	   <tocitem text="Registering a Filter" target="filter_addtodd"/>
