@@ -5,6 +5,5 @@
     description_key='HINT_ANNOTATION'
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='false' 
-    highlight='0xFFFFFF' 
     type='line'
 />

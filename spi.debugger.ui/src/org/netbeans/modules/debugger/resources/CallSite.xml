@@ -6,7 +6,6 @@
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='true' 
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/callsiteglyph.gif'
-    highlight='0xFF00FF' 
-    foreground='0xFFFFFF'
+    highlight='0xE7E1EF' 
     type='line'
 />

@@ -6,7 +6,6 @@
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='true' 
     glyph='nbresloc:/org/netbeans/modules/debugger/resources/disabledbreakpointglyph.gif'
-    highlight='0xFF7F7F' 
-    foreground='0xFFFFFF'
+    highlight='0xB2B2A0' 
     type='line'
 />

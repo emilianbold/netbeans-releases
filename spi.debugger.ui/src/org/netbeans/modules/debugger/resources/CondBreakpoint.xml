@@ -5,8 +5,7 @@
     description_key='HINT_CONDITIONAL_BREAKPOINT'
     localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
     visible='true' 
-    glyph='nbresloc:/org/netbeans/modules/debugger/resources/breakpointglyph.gif'
-    highlight='0xFF0000' 
-    foreground='0xFFFFFF'
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/condbreakpointglyph.gif'
+    highlight='0xFC9D9F' 
     type='line'
 /> 
