@@ -277,7 +277,7 @@ public class LayoutSupportRegistry {
 
                 Class itemClass = null;
                 try {
-                    itemClass = ic.instanceClass();
+                    itemClass = loadClass(ic.instanceClass().getName());
                 }
                 catch (Exception ex) {} // ignnore
 
