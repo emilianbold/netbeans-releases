@@ -1015,7 +1015,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <echo message="Building module ant/project..."/>
       <ant dir="../ant/project" target="netbeans"/>
   </target>
-  <target name="all-java/project" depends="all-openide,all-openide/loaders,all-projects/projectapi,all-projects/projectuiapi,all-java/api">
+  <target name="all-java/project" depends="all-openide,all-openide/loaders,all-projects/projectapi,all-projects/projectuiapi,all-java/api,all-java">
     <echo message="Building module java/project..."/>
     <ant dir="../java/project" target="netbeans"/>
   </target>
