@@ -144,8 +144,8 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
             ((NodeListModel)(cView.getModel())).setNode(root);
             //cView.setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
 
-            cView.setPreferredSize(new java.awt.Dimension(150,19));
-            ((NodeListModel)(cView.getModel())).setDepth(3);
+            cView.setPreferredSize(new java.awt.Dimension(250,19));
+            ((NodeListModel)(cView.getModel())).setDepth(5);
             add(cView);
         }
         // ...method as before and getLookup
