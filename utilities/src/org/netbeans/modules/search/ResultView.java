@@ -31,6 +31,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -806,6 +807,12 @@ final class ResultView extends TopComponent
          */
         void changeChildren(final Children children) {
             super.setChildren(children);
+        }
+        
+        /**
+         */
+        public Action[] getActions(boolean context) {
+            return new Action[0];
         }
         
     }
