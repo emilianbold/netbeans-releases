@@ -93,7 +93,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
         FileObject fileObject = getFile();
         
         String basicName = getDataObject().getPrimaryFile().getName();
-        String newName = basicName + pasteSuffix + Util.getLocalePartOfFileName(this);
+        String newName = basicName + pasteSuffix + Util.getLocaleSuffix(this);
         
         return fileObject.copy(folder, newName, fileObject.getExt());
     }
@@ -125,7 +125,7 @@ public class PropertiesFileEntry extends PresentableFileEntry
 
         try {
             String basicName = getDataObject().getPrimaryFile().getName();
-            String newName = basicName + pasteSuffix + Util.getLocalePartOfFileName(this);
+            String newName = basicName + pasteSuffix + Util.getLocaleSuffix(this);
 
             return fileObject.move (lock, folder, newName, fileObject.getExt());
         } finally {

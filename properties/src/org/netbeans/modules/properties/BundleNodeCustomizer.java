@@ -165,7 +165,7 @@ public class BundleNodeCustomizer extends JPanel {
                 Locale locale = (Locale)value;
 
                 if(locale.equals(new Locale("", ""))) // NOI18N
-                label.setText(NbBundle.getBundle(BundleNodeCustomizer.class).getString("LAB_DefaultBundle_Label"));
+                label.setText(NbBundle.getBundle(BundleNodeCustomizer.class).getString("LAB_defaultLanguage"));//NOI18N
                 else {
                     label.setText(locale.toString() +
                         (locale.getLanguage().equals("") ? "" : " - " + locale.getDisplayLanguage()) + // NOI18N

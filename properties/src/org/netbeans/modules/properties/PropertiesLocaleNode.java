@@ -113,7 +113,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
      * @return locale part of name
      */
     public String getName() {
-        String localeName = Util.getLocalePartOfFileName (getFileEntry());
+        String localeName = Util.getLocaleSuffix (getFileEntry());
         if (localeName.length() > 0)
             if (localeName.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
                 localeName = localeName.substring(1);

@@ -161,7 +161,7 @@ public class PropertiesDataNode extends DataNode {
             
             FileObject folder = dataFolder.getPrimaryFile();
             
-            String newName = getDataObject().getPrimaryFile().getName() + Util.getLocalePartOfFileName(entry);
+            String newName = getDataObject().getPrimaryFile().getName() + Util.getLocaleSuffix(entry);
             
             int entryIndex = ((PropertiesDataObject)getDataObject()).getBundleStructure().getEntryIndexByFileName(newName);
             

@@ -47,7 +47,7 @@ public class LangRenameAction extends RenameAction {
         Node.Cookie cake = n.getCookie(PropertiesLocaleNode.class);
         PropertiesLocaleNode pln = (PropertiesLocaleNode)cake;
 
-        String lang = Util.getLocalePartOfFileName (pln.getFileEntry());
+        String lang = Util.getLocaleSuffix(pln.getFileEntry());
         if (lang.length() > 0)
             if (lang.charAt(0) == PropertiesDataLoader.PRB_SEPARATOR_CHAR)
                 lang = lang.substring(1);

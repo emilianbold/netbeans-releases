@@ -63,7 +63,7 @@ public class LocaleNodeCustomizer extends JPanel {
         
         if(new Locale("", "").equals(locale)) { // NOI18N
             changeNameButton.setEnabled(false);
-            nameText.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LAB_DefaultBundle_Label"));
+            nameText.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LAB_defaultLanguage"));//NOI18N
         } else
             nameText.setText(locale.toString());
         
@@ -96,17 +96,18 @@ public class LocaleNodeCustomizer extends JPanel {
     /** Gets locale which represents the entry. Utility method.
      * @param entry entry which <code>Locale</code> to get */
     static Locale getLocale(PropertiesFileEntry entry) {
-        String languageCode = Util.getLanguage(entry);
+        String localeSuffix = Util.getLocaleSuffix(entry);
+        String languageCode = Util.getLanguage(localeSuffix);
         
         if(languageCode == null)
             return new Locale("", ""); // NOI18N
         
-        String countryCode = Util.getCountry(entry);
+        String countryCode = Util.getCountry(localeSuffix);
         
         if(countryCode == null)
             return new Locale(languageCode, ""); // NOI18N
         
-        String variant = Util.getVariant(entry);
+        String variant = Util.getVariant(localeSuffix);
         
         if(variant == null)
             return new Locale(languageCode, countryCode);

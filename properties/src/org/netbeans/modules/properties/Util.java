@@ -25,24 +25,29 @@ import org.openide.util.NbBundle;
 /**
  * Miscellaneous utilities for properties(reosurce bundles) module.
  * @author Petr Jiricka
+ * @author Marian Petras
  */
 public final class Util extends Object {
     
     /** Help ID for properties module in general. */
-    public static final String HELP_ID_PROPERTIES = "propfiles.prop"; // NOI18N
+    public static final String HELP_ID_PROPERTIES = "propfiles.prop";   //NOI18N
     /** Help ID for properties new from template. */
-    public static final String HELP_ID_CREATING = "propfiles.creating"; // NOI18N
+    public static final String HELP_ID_CREATING = "propfiles.creating"; //NOI18N
     /** Help ID for new property dialog. */
-    public static final String HELP_ID_ADDING = "propfiles.adding"; // NOI18N
+    public static final String HELP_ID_ADDING = "propfiles.adding";     //NOI18N
     /** Help ID for table view of properties. */
-    public static final String HELP_ID_MODIFYING = "propfiles.modifying"; // NOI18N
+    public static final String HELP_ID_MODIFYING
+                               = "propfiles.modifying";                 //NOI18N
     /** Help ID for new locale dialog. */
-    public static final String HELP_ID_ADDLOCALE = "propfiles.addlocale"; // NOI18N
+    public static final String HELP_ID_ADDLOCALE
+                               = "propfiles.addlocale";                 //NOI18N
     /** Help ID for source editor of .properties file. */
-    public static final String HELP_ID_EDITLOCALE = "propfiles.editlocale"; // NOI18N
+    public static final String HELP_ID_EDITLOCALE
+                               = "propfiles.editlocale";                //NOI18N
 
     /** Character used to separate parts of bundle properties file name */
-    public static final char PRB_SEPARATOR_CHAR = PropertiesDataLoader.PRB_SEPARATOR_CHAR;
+    public static final char PRB_SEPARATOR_CHAR
+                             = PropertiesDataLoader.PRB_SEPARATOR_CHAR;
     /** Default length for the first part of node label */
     public static final int LABEL_FIRST_PART_LENGTH = 10;
 
@@ -67,159 +72,266 @@ public final class Util extends Object {
         return result.toString();
     }
 
-    /** Gets the file for the primary entry.
-     * @param <code>FileObject</code> of primary entry
+    /**
+     * Returns a primary file for a <code>DataObject</code>'s 
+     * Calling this method with parameter <code>entry</code> is equivalent to
+     * <blockquote>
+     *     <code>entry.getDataObject().getPrimaryFile()</code>
+     * </blockquote>
+     *
+     * @param  <code>FileObject</code> representing the primary file
+     *         of a given entry's <code>DataObject</code>
      */
     private static FileObject getPrimaryFileObject(MultiDataObject.Entry fe) {
         return fe.getDataObject().getPrimaryFile();
     }
 
-    /** Assembles a file name for a properties file from its base name and language.
-     * @return assembled name */
+    /**
+     * Assembles a file name for a properties file from its base name and
+     * language.
+     *
+     * @return assembled name
+     */
     public static String assembleName (String baseName, String lang) {
-        if(lang.length() == 0)
+        if (lang.length() == 0) {
             return baseName;
-        else {
+        } else {
             if (lang.charAt(0) != PRB_SEPARATOR_CHAR) {
-                StringBuffer res = new StringBuffer().append(baseName).append(PRB_SEPARATOR_CHAR).append(lang);
+                StringBuffer res = new StringBuffer().append(baseName)
+                                                     .append(PRB_SEPARATOR_CHAR)
+                                                     .append(lang);
                 return res.toString();
-            } else
+            } else {
                 return baseName + lang;
+            }
         }
     }
     
-    /** Gets a locale part of file name based on the primary file entry for a properties data object,
-     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>_en_US</code>, if Bundle.properties exists. */
-    public static String getLocalePartOfFileName(MultiDataObject.Entry fe) {
+    /**
+     * Returns a locale specification suffix of a given
+     * <code>MultiDataObject</code> entry.
+     * <p>
+     * Examples:<br />
+     * <pre>    </pre>Bundle.properties       -&gt; &quot;&quot;<br />
+     * <pre>    </pre>Bundle_en_CA.properties -&gt; &quot;_en_CA&quot;
+     * 
+     * @param  fe  <code>DataObject</code> entry, representing a single bundle
+     * @return  locale specification suffix of a given entry;
+     *          or an empty string if the given entry has no locale suffix
+     * @see  #getLanguage
+     * @see  #getCountry
+     * @see  #getVariant
+     */
+    public static String getLocaleSuffix(MultiDataObject.Entry fe) {
+        MultiDataObject.Entry pe = fe.getDataObject().getPrimaryEntry();
+        if (fe == pe) {
+            return "";                                                  //NOI18N
+        }
         String myName   = fe.getFile().getName();
-        String baseName = getPrimaryFileObject(fe).getName();
-        
-        if(!myName.startsWith(baseName))
-            throw new IllegalStateException("Resource Bundle: Should never happen -> " // NOI18N
-                + myName + " doesn't start with " + baseName); // NOI18N
-        
+        String baseName = pe.getFile().getName();
+        assert myName.startsWith(baseName);
         return myName.substring(baseName.length());
     }
 
-    /** Gets a language from a file name based on the primary file entry for a properties data object,
-     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>en</code> (if Bundle.properties exists).
-     * @return language for this locale or <code>null</code> if no language is present
+    /**
+     * Returns a language specification abbreviation of a given
+     * <code>MultiDataObject</code> entry.
+     * For example, if the specified entry represents file
+     * <tt>Bundle_en_UK.properties</tt>, this method returns
+     * <code>&quot;en&quot;</code>.
+     *
+     * @return  <ul>
+     *              <li>the language specification part of the locale specification,
+     *                  if present</li>
+     *              <li>an empty string (<code>&quot;&quot;</code>)
+     *                  if the locale specification does not contain
+     *                  language specification</li>
+     *              <li><code>null</code> if the file (entry) has no locale
+     *                  specification</li>
+     *          </ul>
+     * @see  #getCountry
+     * @see  #getVariant
      */
-    public static String getLanguage(MultiDataObject.Entry fe) {
-        String part = getLocalePartOfFileName(fe);
-        return getFirstPart(part);
+    public static String getLanguage(final String localeSuffix) {
+        return getFirstPart(localeSuffix);
     }
 
-    /** Gets a country from a file name based on the primary file entry for a properties data object,
-     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>US</code> (if Bundle.properties exists).
-     * @return language for this locale or <code>null</code> if no country is present
+    /**
+     * Returns a country specification abbreviation of a given
+     * <code>MultiDataObject</code> entry.
+     * For example, if the specified entry represents file
+     * <tt>Bundle_en_UK.properties</tt>, this method returns
+     * <code>&quot;UK&quot;</code>.
+     *
+     * @return  <ul>
+     *              <li>the country specification part of the locale
+     *                  specification, if present</li>
+     *              <li>an empty string (<code>&quot;&quot;</code>)
+     *                  if the locale specification does not contain
+     *                  country specification</li>
+     *              <li><code>null</code> if the file (entry) has no locale
+     *                  specification</li>
+     *          </ul>
+     * @see  #getLanguage
+     * @see  #getVariant
      */
-    public static String getCountry(MultiDataObject.Entry fe) {
-        try {
-            String part = getLocalePartOfFileName(fe);
-            int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);
-            if (start == -1)
-                return null;
-            return getFirstPart(part.substring(start));
-        }
-        catch (ArrayIndexOutOfBoundsException ex) {
+    public static String getCountry(final String localeSuffix) {
+        if (localeSuffix.length() == 0) {
             return null;
         }
+        int start = localeSuffix.indexOf(PRB_SEPARATOR_CHAR, 1);
+        return (start != -1)
+               ? getFirstPart(localeSuffix.substring(start))
+               : "";                                                    //NOI18N
     }
 
-    /** Gets a variant from a file name based on the primary file entry for a properties data object,
-     * e.g. for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists).
-     * @return language for this locale or <code>null</code> if no variant is present */
-    public static String getVariant(MultiDataObject.Entry fe) {
-        try {
-            String part = getLocalePartOfFileName(fe);
-            int start = part.indexOf(PRB_SEPARATOR_CHAR, 1);
-            if (start == -1)
-                return null;
-            start = part.indexOf(PRB_SEPARATOR_CHAR, start + 1);
-            if (start == -1)
-                return null;
-            return getFirstPart(part.substring(start));
-        }
-        catch (ArrayIndexOutOfBoundsException ex) {
+    /**
+     * Returns a variant specification abbreviation of a given
+     * <code>MultiDataObject</code> entry.
+     * For example, if the specified entry represents file
+     * <tt>Bundle_en_US_POSIX.properties</tt>, this method returns
+     * <code>&quot;POSIX&quot;</code>.
+     *
+     * @return  <ul>
+     *              <li>the variant specification part of the locale
+     *                  specification, if present</li>
+     *              <li>an empty string (<code>&quot;&quot;</code>)
+     *                  if the locale specification does not contain
+     *                  variant specification</li>
+     *              <li><code>null</code> if the file (entry) has no locale
+     *                  specification</li>
+     *          </ul>
+     * @see  #getLanguage
+     * @see  #getCountry
+     */
+    public static String getVariant(final String localeSuffix) {
+        if (localeSuffix.length() == 0) {
             return null;
         }
+        int start = localeSuffix.indexOf(PRB_SEPARATOR_CHAR, 1);
+        if (start == -1) {
+            return "";                                                  //NOI18N
+        }
+        start = localeSuffix.indexOf(PRB_SEPARATOR_CHAR, start + 1);
+        return (start != -1) ? localeSuffix.substring(start + 1) : "";  //NOI18N
     }
 
-    /** Gets first substring enclosed between the leading underscore and the next underscore. */
-    private static String getFirstPart(String part) {
-        try {
-            if(part.length() == 0)
-                return null;
-            if(part.charAt(0) != PRB_SEPARATOR_CHAR)
-                throw new IllegalStateException("Resource Bundle: Should never happen -> locale suffix " // NOI18N
-                    + part + " doesn't start with " + PRB_SEPARATOR_CHAR); // NOI18N
-            
-            int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
-            String result;
-            result = (end == -1) ? part.substring(1) : part.substring(1, end);
-
-            return (result.length() == 0) ? "" : result;
-        } catch (ArrayIndexOutOfBoundsException ex) {
+    /**
+     * Returns the first part of a given locale suffix.
+     * The locale suffix must be either empty or start with an underscore.
+     *
+     * @param  localeSuffix  locale suffix, e.g. &quot;_en_US&quot;
+     * @return  first part of the suffix, i.&thinsp;e. the part
+     *          between the initial <code>'_'</code> and the
+     *          (optional) next <code>'_'</code>; or <code>null</code>
+     *          if an empty string was given as an argument
+     */
+    private static String getFirstPart(String localeSuffix) {
+        if (localeSuffix.length() == 0) {
             return null;
         }
+
+        assert localeSuffix.charAt(0) == PRB_SEPARATOR_CHAR;
+
+        int end = localeSuffix.indexOf(PRB_SEPARATOR_CHAR, 1);
+        return (end != -1) ? localeSuffix.substring(1, end)
+                           : localeSuffix.substring(1);
     }
 
     /** Gets a label for properties nodes for individual locales. */
     public static String getLocaleLabel(MultiDataObject.Entry fe) {
-        // locale-specific part of the file name
-        String temp = getLocalePartOfFileName(fe);
         
-        if (temp.length() > 0)
-            if (temp.charAt(0) == PRB_SEPARATOR_CHAR)
-                temp = temp.substring(1);
+        String localeSuffix = getLocaleSuffix(fe);
+        String language;
+        String country;
+        String variant;
 
-        // start constructing the result
-        StringBuffer result = new StringBuffer(temp);
-        if (temp.length() > 0)
-            result.append(" - "); // NOI18N
+        /*
+         * Get the abbreviations for language, country and variant and check
+         * if at least one of them is specified. If none of them is specified,
+         * return the default label:
+         */
+        if (localeSuffix.length() == 0) {
+            language = "";                                              //NOI18N
+            country = "";                                               //NOI18N
+            variant = "";                                               //NOI18N
+        } else {
+            language = getLanguage(localeSuffix);
+            country  = getCountry(localeSuffix);
+            variant  = getVariant(localeSuffix);
 
-        // Append language.
-        String lang = getLanguage(fe);
-        if (lang == null)
-            temp = NbBundle.getBundle(Util.class).getString("LAB_DefaultBundle_Label");
-        else {
-            temp = (new Locale(lang, "")).getDisplayLanguage(); // NOI18N
-            if (temp.length() == 0)
-                temp = lang;
-        }
-        result.append(temp);
-
-        // Append country.
-        String coun = getCountry(fe);
-        if(coun == null)
-            temp = ""; // NOI18N
-        else {
-            temp = (new Locale(lang, coun)).getDisplayCountry();
-            if (temp.length() == 0)
-                temp = coun;
-        }
-        if(temp.length() != 0) {
-            result.append("/"); // NOI18N
-            result.append(temp);
+            // intern empty strings so that we can use '==' instead of equals():
+            language = language.length() != 0 ? language : "";          //NOI18N
+            country  = country.length() != 0  ? country : "";           //NOI18N
+            variant  = variant.length() != 0  ? variant : "";           //NOI18N
         }
 
-        // Append variant.
-        String variant = getVariant(fe);
-        if(variant == null)
-            temp = ""; // NOI18N
-        else {
-            temp = (new Locale(lang, coun, variant)).getDisplayVariant();
-            if (temp.length() == 0)
-                temp = variant;
-        }
-        
-        if (temp.length() != 0) {
-            result.append("/"); // NOI18N
-            result.append(temp);
+        String defaultLangName = null;
+        if (language == "") {                                           //NOI18N
+            defaultLangName = NbBundle.getMessage(
+                    Util.class,
+                    "LAB_defaultLanguage");                             //NOI18N
         }
 
-        return result.toString();
+        /* Simple case #1 - the default locale */
+        if (language == "" && country == "" && variant == "") {         //NOI18N
+            return defaultLangName;
+        }
+
+        String localeSpec = localeSuffix.substring(1);
+        Locale locale = new Locale(language, country, variant);
+
+        /* - language name: */
+        String langName;
+        if (language == "") {                                           //NOI18N
+            langName = defaultLangName;
+        } else {
+            langName = locale.getDisplayLanguage();
+            if (langName.equals(language)) {
+                langName = NbBundle.getMessage(Util.class,
+                                               "LAB_unknownLanguage",   //NOI18N
+                                               language);
+            }
+        }
+
+        /* Simple case #2 - language specification only */
+        if (country == "" && variant == "") {                           //NOI18N
+            return NbBundle.getMessage(Util.class,
+                                       "LAB_localeSpecLang",            //NOI18N
+                                       localeSpec,
+                                       langName);
+        }
+
+        /* - country name: */
+        String countryName = "";                                        //NOI18N
+        if (country != "") {                                            //NOI18N
+            countryName = locale.getDisplayCountry();
+            if (countryName.equals(country)) {
+                countryName = NbBundle.getMessage(Util.class,
+                                                  "LAB_unknownCountry", //NOI18N
+                                                  country);
+            }
+        }
+
+        /* - variant name: */
+        String variantName = variant == "" ? ""                         //NOI18N
+                                           : locale.getDisplayVariant();
+
+        /* Last case - country and/or variant specification */
+        String countryAndVariant;
+        if (variantName == "") {                                        //NOI18N
+            countryAndVariant = countryName;
+        } else if (countryName == "") {                                 //NOI18N
+            countryAndVariant = variantName;
+        } else {
+            countryAndVariant = countryName + ", " + variantName;       //NOI18N
+        }
+        return NbBundle.getMessage(Util.class,
+                                   "LAB_localeSpecLangCountry",         //NOI18N
+                                   localeSpec,
+                                   langName,
+                                   countryAndVariant);
+
     }
 
 }
