@@ -47,6 +47,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="testruninfo" classname="org.netbeans.xtest.pe.TestRunInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
             <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
+            <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
         </nbtaskdef>
         <property name="tasks-defined" value="true"/>
     </target>
@@ -88,28 +89,12 @@ Microsystems, Inc. All Rights Reserved.
         <regenerateXML inputDir="${xtest.results}"/>
 	<transformXML inputDir="${xtest.results}"
                       outputDir="${xtest.results}"/>              
-                      
+        <!-- print summary -->
+        <printSummary resultsDir="${xtest.results}"/>        
+                                    
         <get-system-property systemProperty="xtest.errors"/>
         <antcall target="print-errors"/>
         
-        <!--
-        <xreport tofile="summary.xml" 
-                 resultsdir="${xtest.uploaddir}"
-                 statusfailed="xtest.failed">
-            <reporter testtype="unit" classname="org.netbeans.xtest.UnitTestReporter2"/>
-        </xreport>
-        
-        <xalan srcfile="${xtest.uploaddir}/summary.xml" 
-               trgfile="${xtest.uploaddir}/summary.html" 
-               xslt="${xtest.home}/xslt/summary-html.xsl"/>
-        <xalan srcfile="${xtest.uploaddir}/summary.xml" 
-               trgfile="${xtest.uploaddir}/summary.txt" 
-               xslt="${xtest.home}/xslt/summary-txt.xsl"/>
-        
-        <copy file="${xtest.home}/xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
-        
-        <antcall target="mail"/>
-        -->
                
     </target>
     
