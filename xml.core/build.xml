@@ -51,7 +51,6 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
                 <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <pathelement location="${nbroot}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
-                <pathelement location="${tax_lib_root}/src/"/>
                 <pathelement location="${api_root}/src/"/>
                 <fileset dir="${nbroot}/core/external">
                     <include name="xml-apis*.jar"/>
