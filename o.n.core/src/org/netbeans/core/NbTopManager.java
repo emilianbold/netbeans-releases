@@ -606,6 +606,18 @@ public abstract class NbTopManager {
         static final long serialVersionUID =5000673049583700380L;
 
         private transient PropertyChangeListener idePCL = null;
+        private static Lookup.Result factoryResult = null;
+        
+        static {            
+            factoryResult = Lookup.getDefault().lookup(new Lookup.Template (HtmlBrowser.Factory.class));
+            factoryResult.allItems();
+            factoryResult.addLookupListener(new LookupListener() {
+                public void resultChanged(LookupEvent ev) {
+                    ((NbURLDisplayer)org.openide.awt.HtmlBrowser.URLDisplayer.getDefault()).htmlViewer = null;
+                }
+            });                                    
+        }
+        
         /**
         * For externalization.
         */
@@ -652,7 +664,7 @@ public abstract class NbTopManager {
         private void setListener () {
             if (idePCL != null)
                 return;
-            try {
+            try {                
                 // listen on preffered browser change
                 idePCL = new PropertyChangeListener () {
                     public void propertyChange (PropertyChangeEvent evt) {
