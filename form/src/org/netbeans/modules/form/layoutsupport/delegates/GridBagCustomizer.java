@@ -15,17 +15,16 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 
 import java.beans.*;
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.lang.Math;
 
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
 import org.openide.explorer.propertysheet.PropertySheet;
-import org.openide.util.WeakListener;
-import org.openide.util.HelpCtx;
+import org.openide.util.*;
+import org.netbeans.api.javahelp.Help;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
@@ -87,10 +86,13 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
     static final long serialVersionUID =-632768048562391785L;
 
+    public GridBagCustomizer() {
+        initComponents();
+    }
 
     private void initialize() {
 
-        initComponents();
+//        initComponents();
 
         radContainer = ((LayoutSupportManager)
                             layoutSupport.getLayoutSupportHack())
@@ -103,6 +105,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             gbcProxies[i] = new GBComponentProxy(radComponents[i], containerProxy);
         }
 
+        containerProxy.removeAll();
+        
         FormDesigner designer = formModel.getFormDesigner();
         if (!designer.isInDesignedTree(radContainer)) {
             designer.setTopDesignComponent(radContainer, true);
@@ -120,17 +124,13 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             formModel.addFormModelListener(
                 new FormModelWeakListener(formListener, formModel));
         }
-
-        getAccessibleContext().setAccessibleDescription(GridBagLayoutSupport.getBundleHack().getString("ACSD_GridBagCustomizer"));
-        
-        HelpCtx.setHelpIDString(this, "gui.layouts.gbcustomizer"); // NOI18N
     }
 
     /** inits the components of the customizer */
 
     private void initComponents() {
 
-        setBorder(new javax.swing.border.EmptyBorder(8, 8, 8, 8));
+        setBorder(new javax.swing.border.EmptyBorder(4, 0, 8, 0));
         setLayout(new BorderLayout()); // [PENDING]
 
         splitPanel = new org.openide.awt.SplittedPanel();
@@ -207,10 +207,13 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         splitPanel.add(designScrollPane, org.openide.awt.SplittedPanel.ADD_SECOND);
 
         add(splitPanel, BorderLayout.CENTER);
+
+        getAccessibleContext().setAccessibleDescription(GridBagLayoutSupport.getBundleHack().getString("ACSD_GridBagCustomizer"));
+        HelpCtx.setHelpIDString(this, "gui.layouts.gbcustomizer"); // NOI18N
     }
 
     void setAnchor(int anchor) {
-        List selected = containerProxy.getSelectedProxies();
+        java.util.List selected = containerProxy.getSelectedProxies();
         Iterator it = selected.iterator();
         while (it.hasNext())
 //            setProperty((GBComponentProxy)it.next(), DesignGridBagLayout.PROP_ANCHOR, new Integer(anchor));
@@ -218,7 +221,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     void setFill(int fill) {
-        List selected = containerProxy.getSelectedProxies();
+        java.util.List selected = containerProxy.getSelectedProxies();
         Iterator it = selected.iterator();
         while (it.hasNext())
 //            setProperty((GBComponentProxy)it.next(), DesignGridBagLayout.PROP_FILL, new Integer(fill));
@@ -228,7 +231,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
 
     void modifyIPad(int action, int what) {
-        List selected = containerProxy.getSelectedProxies();
+        java.util.List selected = containerProxy.getSelectedProxies();
         Iterator it = selected.iterator();
         while (it.hasNext()) {
             GBComponentProxy p =(GBComponentProxy)it.next();
@@ -244,7 +247,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
     void modifyInsets(int action, int what) {
-        List selected = containerProxy.getSelectedProxies();
+        java.util.List selected = containerProxy.getSelectedProxies();
         Iterator it = selected.iterator();
         while (it.hasNext()) {
             GBComponentProxy p =(GBComponentProxy)it.next();
@@ -279,7 +282,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
 
     void modifyGridSize(int action, int what) {
-        List selected = containerProxy.getSelectedProxies();
+        java.util.List selected = containerProxy.getSelectedProxies();
         Iterator it = selected.iterator();
 
         while (it.hasNext()) {
@@ -339,18 +342,18 @@ final public class GridBagCustomizer extends JPanel implements Customizer
      * @param listener  An object to be invoked when a PropertyChange
      *		event is fired.
      */
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.addPropertyChangeListener(listener);
-    }
+//    public void addPropertyChangeListener(PropertyChangeListener listener) {
+//        propertySupport.addPropertyChangeListener(listener);
+//    }
 
     /**
      * Remove a listener for the PropertyChange event.
      *
      * @param listener  The PropertyChange listener to be removed.
      */
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        propertySupport.removePropertyChangeListener(listener);
-    }
+//    public void removePropertyChangeListener(PropertyChangeListener listener) {
+//        propertySupport.removePropertyChangeListener(listener);
+//    }
     /*
       public void propertyChange(final java.beans.PropertyChangeEvent p0) {
       System.out.println("PCH :" + p0);
@@ -1169,8 +1172,8 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         }
 
 
-        List getSelectedProxies() {
-            List selected = new ArrayList(gbcProxies.length);
+        java.util.List getSelectedProxies() {
+            java.util.List selected = new ArrayList(gbcProxies.length);
 
             for (int i = 0; i < gbcProxies.length; i++) {
                 if (gbcProxies[i].isSelected)
@@ -1181,7 +1184,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         }
 
         Node[] getSelectedNodes() {
-            List selected = getSelectedProxies();
+            java.util.List selected = getSelectedProxies();
 
             Node[] result =  new Node[ selected.size() ];
 
@@ -1205,7 +1208,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
         void select(GBComponentProxy p, boolean shift) {
 
-            List selected = getSelectedProxies();
+            java.util.List selected = getSelectedProxies();
 
             if (p.isSelected()) {
                 if (selected.size() == 1) {
@@ -1239,5 +1242,67 @@ final public class GridBagCustomizer extends JPanel implements Customizer
     }
 
 
+    public static class Window extends JDialog implements Customizer, ActionListener {
+        private GridBagCustomizer customizerPanel;
+        private boolean packCalled;
+        public Window() {
+            super(org.openide.windows.WindowManager.getDefault().getMainWindow());
+            java.util.ResourceBundle bundle = GridBagLayoutSupport.getBundleHack();
+
+            setTitle(bundle.getString("CTL_CustomizerTitle")); // NOI18N
+
+            getContentPane().setLayout(new BorderLayout(0, 0));
+            customizerPanel = new GridBagCustomizer();
+            getContentPane().add(customizerPanel, BorderLayout.CENTER);
+
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 6, 6));
+
+            JButton closeButton = new JButton();
+            closeButton.setText(bundle.getString("CTL_CloseButton")); // NOI18N
+            closeButton.setActionCommand("close"); // NOI18N
+            closeButton.addActionListener(this);
+            buttonPanel.add(closeButton);
+
+            JButton helpButton = new JButton();
+            helpButton.setText(bundle.getString("CTL_HelpButton")); // NOi18N
+            helpButton.setActionCommand("help"); // NOI18N
+            helpButton.addActionListener(this);
+            buttonPanel.add(helpButton);
+
+            getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+
+            setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        }
+
+        public void pack() {
+            if (packCalled)
+                return;
+            packCalled = true;
+
+            super.pack();
+            Dimension size = getSize();
+            Rectangle screenBounds = Utilities.getUsableScreenBounds();
+            if (size.width > screenBounds.width - 80)
+                size.width = screenBounds.width * 4 / 5;
+            if (size.height > screenBounds.height - 80)
+                size.height = screenBounds.height * 4 / 5;
+            setBounds(Utilities.findCenterBounds(size));
+        }
+
+        public void setObject(Object bean) {
+            customizerPanel.setObject(bean);
+        }
+
+        public void actionPerformed(ActionEvent ev) {
+            if (ev.getActionCommand().equals("close")) // NOI18N
+                dispose();
+            else if (ev.getActionCommand().equals("help")) { // NOI18N
+                Help help = (Help) Lookup.getDefault().lookup(Help.class);
+                if (help != null)
+                    help.showHelp(HelpCtx.findHelp(customizerPanel));
+            }
+        }
+    }
 
 }
