@@ -75,7 +75,25 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
-    <changes>
+
+         <change>
+            <api name="classpath"/>
+            <summary>Added helper method for creating ClassPathImplementation based on the ant property</summary>
+            <version major="1" minor="3"/>
+            <date day="6" month="1" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                Added new helper class org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport
+                with a static method createPropertyBasedClassPathImplementation (File, PropertyEvaluator, String[]).
+                This method creates a live classpath based on the list of Ant properties holding the path. The classpath
+                implementation listens on changes of properties, updates state and fires events to clients.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.classpath.support" name="ProjectClassPathSupport"/>
+            <issue number="42309"/>
+        </change>    
         <change>
             <api name="classpath"/>
             <summary>The ProjectClassPathExtender was moved into public SPI package.</summary>

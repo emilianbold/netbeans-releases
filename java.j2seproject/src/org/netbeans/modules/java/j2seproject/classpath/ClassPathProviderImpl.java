@@ -7,19 +7,21 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
@@ -37,6 +39,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     
     private final AntProjectHelper helper;
+    private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
@@ -47,6 +50,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
         this.helper = helper;
+        this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
+        assert this.projectDirectory != null;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
@@ -140,14 +145,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             return null;
         }
         ClassPath cp = cache[2+type];
-        if ( cp == null) {
+        if ( cp == null) {            
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.classpath"})); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.test.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"javac.test.classpath"})); // NOI18N
             }
             cache[2+type] = cp;
         }
@@ -169,17 +176,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if ( cp == null) {
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "run.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"run.classpath"})); // NOI18N
             }
             else if (type == 1) {
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "run.test.classpath", evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {"run.test.classpath"})); // NOI18N
             }
             else if (type == 2) {
                 //Only to make the CompiledDataNode hapy
                 //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, DIST_JAR, evaluator)); // NOI18N
+                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    projectDirectory, evaluator, new String[] {DIST_JAR})); // NOI18N
             }
             cache[4+type] = cp;
         }
