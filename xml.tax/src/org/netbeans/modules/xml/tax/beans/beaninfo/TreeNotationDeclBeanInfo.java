@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -46,19 +46,19 @@ public class TreeNotationDeclBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_systemId] = new PropertyDescriptor ( "systemId", TreeNotationDecl.class, "getSystemId", null ); // NOI18N
-            properties[PROPERTY_systemId].setDisplayName ( Util.getString ( "PROP_TreeNotationDeclBeanInfo_systemId" ) );
-            properties[PROPERTY_systemId].setShortDescription ( Util.getString ( "HINT_TreeNotationDeclBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setDisplayName ( Util.THIS.getString ( "PROP_TreeNotationDeclBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setShortDescription ( Util.THIS.getString ( "HINT_TreeNotationDeclBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeNotationDecl.class, "getName", null ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeNotationDeclBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeNotationDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeNotationDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeNotationDeclBeanInfo_name" ) );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeNotationDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeNotationDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeNotationDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeNotationDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeNotationDeclBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_publicId] = new PropertyDescriptor ( "publicId", TreeNotationDecl.class, "getPublicId", null ); // NOI18N
-            properties[PROPERTY_publicId].setDisplayName ( Util.getString ( "PROP_TreeNotationDeclBeanInfo_publicId" ) );
-            properties[PROPERTY_publicId].setShortDescription ( Util.getString ( "HINT_TreeNotationDeclBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setDisplayName ( Util.THIS.getString ( "PROP_TreeNotationDeclBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setShortDescription ( Util.THIS.getString ( "HINT_TreeNotationDeclBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setPropertyEditorClass ( NullStringEditor.class );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

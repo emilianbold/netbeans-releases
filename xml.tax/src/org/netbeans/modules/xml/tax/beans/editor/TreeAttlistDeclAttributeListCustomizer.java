@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.editor;
@@ -44,11 +44,11 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
 
     /** */
     private static final String headerTitles[] = {
-	Util.getString ("TEXT_attlistdecl_attributelist_header_Name"),
-	Util.getString ("TEXT_attlistdecl_attributelist_header_Type"),
-	Util.getString ("TEXT_attlistdecl_attributelist_header_Enumerated"),
-	Util.getString ("TEXT_attlistdecl_attributelist_header_Default"),
-	Util.getString ("TEXT_attlistdecl_attributelist_header_Value")
+	Util.THIS.getString ("TEXT_attlistdecl_attributelist_header_Name"),
+	Util.THIS.getString ("TEXT_attlistdecl_attributelist_header_Type"),
+	Util.THIS.getString ("TEXT_attlistdecl_attributelist_header_Enumerated"),
+	Util.THIS.getString ("TEXT_attlistdecl_attributelist_header_Default"),
+	Util.THIS.getString ("TEXT_attlistdecl_attributelist_header_Value")
     };
     
     private static final int COL_NAME          = 0;
@@ -187,7 +187,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
 	/**
 	 */
         public void keyReleased (KeyEvent e) {
-            //Util.debug("Event: " + e); // NOI18N
+            //Util.THIS.debug("Event: " + e); // NOI18N
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 peer.remove (peer.get (table.getSelectedRow()));
                 tableModel.fireTableDataChanged();
@@ -269,7 +269,7 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
                     attr.setName ((String) val);
                 }
             } catch (TreeException exc) {
-                Util.notifyTreeException (exc);
+                Util.THIS.notifyTreeException (exc);
             }
         }
 
@@ -293,9 +293,9 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
      */
     public void initAccessibility(){
         
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeAttlistDeclAttributeListCustomizer"));
-       attrTable.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_attrTable1")); 
-       attrTable.getAccessibleContext().setAccessibleName(Util.getString("ACSN_attrTable1")); 
+       this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_TreeAttlistDeclAttributeListCustomizer"));
+       attrTable.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_attrTable1")); 
+       attrTable.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_attrTable1")); 
     }
 
 }

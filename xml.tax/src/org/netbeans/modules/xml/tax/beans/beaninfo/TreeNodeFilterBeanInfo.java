@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -27,8 +27,8 @@ public class TreeNodeFilterBeanInfo extends SimpleBeanInfo {
     private static BeanDescriptor beanDescriptor = new BeanDescriptor  ( TreeNodeFilter.class , null );
 
     static {
-        beanDescriptor.setDisplayName ( Util.getString ("NAME_TreeNodeFilter") );
-        beanDescriptor.setShortDescription ( Util.getString ("HINT_TreeNodeFilter") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( Util.THIS.getString ("NAME_TreeNodeFilter") );
+        beanDescriptor.setShortDescription ( Util.THIS.getString ("HINT_TreeNodeFilter") );//GEN-HEADEREND:BeanDescriptor
 
         // Here you can add code for customizing the BeanDescriptor.
 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.decl.parser;
@@ -77,7 +77,7 @@ public class ParserReader extends PushbackReader {
         char buf[] = new char[prefix.length ()];
         try {
             read (buf);
-            //                Util.debug("startsWith(" + prefix + " got " + new String(buf)); // NOI18N
+            //                Util.THIS.debug("startsWith(" + prefix + " got " + new String(buf)); // NOI18N
             boolean ret = new String (buf).equals (prefix);
             if (ret) return true;
         } catch (IOException ex) {
@@ -144,7 +144,7 @@ public class ParserReader extends PushbackReader {
         }
         
         String toret = sb.toString ();
-        //            Util.debug("Token: " + toret); // NOI18N
+        //            Util.THIS.debug("Token: " + toret); // NOI18N
         return toret;
     }
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -36,7 +36,7 @@ final class RefreshAction extends NodeAction {
     }
 
     public String getName () {
-        return Util.getString ("LBL_Action");
+        return Util.THIS.getString ("LBL_Action");
     }
 
     protected String iconResource () {

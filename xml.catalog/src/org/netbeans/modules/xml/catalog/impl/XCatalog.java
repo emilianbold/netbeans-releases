@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.impl;
@@ -85,10 +85,6 @@ public final class XCatalog extends AbstractCatalog
 
     static final String HREF_ATT = "HRef"; // NOI18N
 
-
-    /** Set to true and recompile to include debugging code in class. */
-    private static final boolean DEBUG = false;
-    
     
     /**
      * @serial Only catalog location is serialized.
@@ -150,7 +146,8 @@ public final class XCatalog extends AbstractCatalog
     private void handleLoadError(Exception ex) {
         updateShortDescription(ex.getLocalizedMessage());
         updateIcon(getDefaultErrorIcon(0));               //!!!
-        if (DEBUG) trace("Can not read: " + shortDescription); // NOI18N
+
+        Util.THIS.debug("Can not read: " + shortDescription); // NOI18N
     }
 
 
@@ -196,7 +193,8 @@ public final class XCatalog extends AbstractCatalog
      * Reload the catalog from its original location.
      */
     public void refresh() {
-        if (DEBUG) trace("Refreshing catalog...impl..."); // NOI18N
+        Util.THIS.debug("Refreshing catalog...impl..."); // NOI18N
+
         loadCatalog(getSource());
     }
     
@@ -207,7 +205,7 @@ public final class XCatalog extends AbstractCatalog
      * Return display name of this reader (e.g. "XCatalog Reader" or "SOCAT Reader"
      */
     public String getDisplayName() {
-        return Util.getString("PROP_display_name", catalogSrc);
+        return Util.THIS.getString("PROP_display_name", catalogSrc);
     }
         
     public Image getIcon(int type) {
@@ -249,14 +247,15 @@ public final class XCatalog extends AbstractCatalog
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         
-        if (DEBUG) trace("resolveEntity(\""+publicId+"\", \""+systemId+"\")"); // NOI18N
+        Util.THIS.debug("resolveEntity(\""+publicId+"\", \""+systemId+"\")"); // NOI18N
                 
         // public identifier resolution
         if (publicId != null) {
             
             // direct public id mappings
             String value = getPublicMapping(publicId);
-            if (DEBUG) trace("  map: \""+publicId+"\" -> \""+value+"\""); // NOI18N
+
+            Util.THIS.debug("  map: \""+publicId+"\" -> \""+value+"\""); // NOI18N
             
             if (value != null) {
                 InputSource source = resolveEntity(null, value);
@@ -271,7 +270,9 @@ public final class XCatalog extends AbstractCatalog
             Enumeration delegates = getDelegateCatalogKeys();
             while (delegates.hasMoreElements()) {
                 String key = (String)delegates.nextElement();
-                if (DEBUG) trace("  delegate: \""+key+"\""); // NOI18N
+
+                Util.THIS.debug("  delegate: \""+key+"\""); // NOI18N
+
                 if (publicId.startsWith(key)) {
                     AbstractCatalog catalog = getDelegateCatalog(key);
                     InputSource source = catalog.resolveEntity(publicId, systemId);
@@ -285,7 +286,8 @@ public final class XCatalog extends AbstractCatalog
         // system identifier resolution
         String value = getSystemMapping(systemId);
         if (value != null) {
-            if (DEBUG) trace("  remap: \""+systemId+"\" -> \""+value+"\""); // NOI18N
+            Util.THIS.debug("  remap: \""+systemId+"\" -> \""+value+"\""); // NOI18N
+
             InputSource source = new InputSource(value);
             source.setPublicId(publicId);
             return source;
@@ -301,7 +303,8 @@ public final class XCatalog extends AbstractCatalog
         }
 
         // use default behavior
-        if (DEBUG) trace("  returning null!"); // NOI18N
+        Util.THIS.debug("  returning null!"); // NOI18N
+
         return null;
         
     }
@@ -396,7 +399,8 @@ public final class XCatalog extends AbstractCatalog
                     if (publicId == null) publicId = attrList.getValue(PUBLICID_ATT_2);
 
                     String href     = attrList.getValue(HREF_ATT);
-                    if (DEBUG) trace("MAP \""+publicId+"\" \""+href+"\""); // NOI18N
+
+                    Util.THIS.debug("MAP \""+publicId+"\" \""+href+"\""); // NOI18N
                     
                     // create mapping
                     if (Categorizer.isURL(href) == false) {
@@ -411,7 +415,7 @@ public final class XCatalog extends AbstractCatalog
                     if (publicId == null) publicId = attrList.getValue(PUBLICID_ATT_2);
                     String href     = attrList.getValue(HREF_ATT);
                     
-                    if (DEBUG) trace("DELEGATE \""+publicId+"\" \""+href+"\""); // NOI18N
+                    Util.THIS.debug("DELEGATE \""+publicId+"\" \""+href+"\""); // NOI18N
                     
                     // expand system id
                     if (Categorizer.isURL(href) == false) {
@@ -429,7 +433,7 @@ public final class XCatalog extends AbstractCatalog
                     // <Extend HRef="..."/>
                     String href = attrList.getValue(HREF_ATT);
                     
-                    if (DEBUG) trace("EXTEND \""+href+"\""); // NOI18N
+                    Util.THIS.debug("EXTEND \""+href+"\""); // NOI18N
                     
                     // expand system id
                     if (Categorizer.isURL(href) == false) {
@@ -451,7 +455,7 @@ public final class XCatalog extends AbstractCatalog
                     if (href != null) { 
                         base = href;
                     }
-                    if (DEBUG) trace("BASE \""+href+"\" -> \""+base+"\""); // NOI18N
+                    Util.THIS.debug("BASE \""+href+"\" -> \""+base+"\""); // NOI18N
                     
                 } else if (qName.equals(REMAP)) {
                     
@@ -462,7 +466,7 @@ public final class XCatalog extends AbstractCatalog
 
                     String href = attrList.getValue(HREF_ATT);
                     
-                    if (DEBUG) trace("REMAP \""+systemId+"\" \""+href+"\""); // NOI18N
+                    Util.THIS.debug("REMAP \""+systemId+"\" \""+href+"\""); // NOI18N
                                         
                     // create mapping
                     if (Categorizer.isURL(href) == false) {
@@ -501,13 +505,6 @@ public final class XCatalog extends AbstractCatalog
             
         }
         
-    }
-    
-
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    private void trace(String msg) {
-        Util.trace(msg);
     }
     
 }

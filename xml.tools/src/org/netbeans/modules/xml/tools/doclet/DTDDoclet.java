@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.doclet;
@@ -88,17 +88,17 @@ public class DTDDoclet {
         
         s.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"); // NOI18N
         
-        s.appendStartTag(ROOT).append("\n<head>\n<title>" + Util.getString("PAGE_TITLE") + "</title>\n"); // NOI18N
+        s.appendStartTag(ROOT).append("\n<head>\n<title>" + Util.THIS.getString("PAGE_TITLE") + "</title>\n"); // NOI18N
         s.append("<meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=UTF-8\" />\n");
         s.append("</head>\n");
         s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by NetBeans XML module. -->\n"); // NOI18N
         s.appendStartTag(BODY);
         
-        headline1(Util.getString("TEXT_Element_Index"));
+        headline1(Util.THIS.getString("TEXT_Element_Index"));
         
         s.append(elementIndex);
         
-        headline1(Util.getString("TEXT_Element_Details"));
+        headline1(Util.THIS.getString("TEXT_Element_Details"));
                         
         it = dtd.getChildNodes(TreeChild.class, true).iterator();
         
@@ -166,13 +166,13 @@ public class DTDDoclet {
         s.append(comment == null ? "" : "<div>" + comment + "</div>"); // NOI18N
         commentAttributes(node);
         
-        headline2(Util.getString("TEXT_ContentModel"));        
+        headline2(Util.THIS.getString("TEXT_ContentModel"));        
         TreeElementDecl.ContentType type = node.getContentType();
         s.append("<p><tt>"); // NOI18N
         commentContentModel(type);
         s.append("</tt></p>"); // NOI18N
 
-        headline2(Util.getString("TEXT_Referenced_by"));
+        headline2(Util.THIS.getString("TEXT_Referenced_by"));
         s.append("<p><tt>"); // NOI18N
         s.append(getRefList(tag));
         s.append("</tt></p>"); // NOI18N
@@ -190,7 +190,7 @@ public class DTDDoclet {
         if (!!! it.hasNext())
 	    return;
         
-        headline2(Util.getString("TEXT_Declared_Attributes"));
+        headline2(Util.THIS.getString("TEXT_Declared_Attributes"));
         s.appendStartTag(LIST); // NOI18N
         
         while (it.hasNext()) {

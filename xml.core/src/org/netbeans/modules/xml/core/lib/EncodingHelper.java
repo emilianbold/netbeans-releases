@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.core.lib;
@@ -36,7 +36,7 @@ public class EncodingHelper extends Object {
     public static String detectEncoding(InputStream in) throws IOException {
 
         if (! in.markSupported()) {
-            Util.debug("EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
+            Util.THIS.debug("EncodingHelper got unmarkable stream: " + in.getClass()); // NOI18N
             return null;
         }
 

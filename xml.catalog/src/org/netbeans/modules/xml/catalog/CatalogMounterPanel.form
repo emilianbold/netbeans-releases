@@ -23,7 +23,7 @@
     <Component class="javax.swing.JLabel" name="catalogLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/Bundle.properties" key="CatalogMounterPanel.catalogLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/Bundle.properties" key="CatalogMounterPanel.catalogLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="1" red="0" type="palette"/>

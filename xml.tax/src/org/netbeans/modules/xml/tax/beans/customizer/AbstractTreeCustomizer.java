@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -34,7 +34,7 @@ public abstract class AbstractTreeCustomizer extends JPanel implements Customize
     private static final long serialVersionUID =7141277140374364170L;
     
     /** */
-    private static final String TEXT_DEFAULT = Util.getString ("TEXT_DEFAULT"); // NOI18N
+    private static final String TEXT_DEFAULT = Util.THIS.getString ("TEXT_DEFAULT"); // NOI18N
     
     /** */
     public static final String MIME_XML = "text/xml"; // NOI18N
@@ -81,7 +81,7 @@ public abstract class AbstractTreeCustomizer extends JPanel implements Customize
             initializing = true;
             
             if (! (bean instanceof TreeObject))
-                throw new IllegalArgumentException (bean + Util.getString ("PROP__invalid_instance"));   //!!!
+                throw new IllegalArgumentException (bean + Util.THIS.getString ("PROP__invalid_instance"));   //!!!
             
             treeObject = (TreeObject)bean;
             

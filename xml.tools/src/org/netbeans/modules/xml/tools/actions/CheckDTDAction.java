@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.actions;
@@ -54,12 +54,12 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
         XMLCompiler comp = new XMLCompiler(output);
         comp.parseDTD(nodes);
 
-        output.display(Util.getString("MSG_DTD_valid_end"), true);
+        output.display(Util.THIS.getString("MSG_DTD_valid_end"), true);
     }
 
     /** Human presentable name. */
     public String getName() {
-        return Util.getString("NAME_Validate_DTD");
+        return Util.THIS.getString("NAME_Validate_DTD");
     }
 
     /** Do not slow by any icon. */

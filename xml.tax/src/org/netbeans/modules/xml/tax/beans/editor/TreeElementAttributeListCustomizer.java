@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.editor;
@@ -55,8 +55,6 @@ import javax.swing.JTextField;
  * @version 1.0
  */
 public class TreeElementAttributeListCustomizer extends JPanel implements Customizer, PropertyChangeListener {
-    private static final boolean DEBUG = false;
-
     
     /** Serial Version UID */
     private static final long serialVersionUID = 1071471854210683733L;
@@ -75,13 +73,13 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
     
     public TreeElementAttributeListCustomizer() {
         
-        headerToolTip = Util.getString("PROP_headerTooltip");
+        headerToolTip = Util.THIS.getString("PROP_headerTooltip");
         initComponents ();
         //mnemonics
-        upButton.setMnemonic(Util.getChar("MNE_element_attributelist_up")); // NOI18N
-        downButton.setMnemonic(Util.getChar("MNE_element_attributelist_down")); // NOI18N
-        removeButton.setMnemonic(Util.getChar("MNE_element_attributelist_remove")); // NOI18N
-        addButton.setMnemonic(Util.getChar("MNE_element_attributelist_add")); // NOI18N
+        upButton.setMnemonic(Util.THIS.getChar("MNE_element_attributelist_up")); // NOI18N
+        downButton.setMnemonic(Util.THIS.getChar("MNE_element_attributelist_down")); // NOI18N
+        removeButton.setMnemonic(Util.THIS.getChar("MNE_element_attributelist_remove")); // NOI18N
+        addButton.setMnemonic(Util.THIS.getChar("MNE_element_attributelist_add")); // NOI18N
         initAccessibility();
         
         // Add custom header renderer supporting sorting
@@ -99,30 +97,26 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         ListSelectionModel rowsm = attrTable.getSelectionModel();
         rowsm.addListSelectionListener (new ListSelectionListener(){
                 public void valueChanged (ListSelectionEvent e) {
-                    if ( DEBUG ) {
-                        Util.debug ("\n#=- TreeElementAttributeListCustomizer::ListSelectionListener.valueChanged: event = " + e);
-                        Util.debug ("#=-     event.getValueIsAdjusting() = " + e.getValueIsAdjusting());
-                        Util.debug ("#=-     event.getFirstIndex()       = " + e.getFirstIndex());
-                        Util.debug ("#=-     event.getLastIndex()        = " + e.getLastIndex());
-                    }
+                    Util.THIS.debug ("\n#=- TreeElementAttributeListCustomizer::ListSelectionListener.valueChanged: event = " + e);
+                    Util.THIS.debug ("#=-     event.getValueIsAdjusting() = " + e.getValueIsAdjusting());
+                    Util.THIS.debug ("#=-     event.getFirstIndex()       = " + e.getFirstIndex());
+                    Util.THIS.debug ("#=-     event.getLastIndex()        = " + e.getLastIndex());
 
                     if (e.getValueIsAdjusting())
                         return;
                     ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 
-                    if ( DEBUG ) {
-                        Util.debug ("#=-     event.getSource()                 = " + lsm);
-                        Util.debug ("#=-     selectionModel.isSelectionEmpty() = " + lsm.isSelectionEmpty());
-                        Util.debug ("#=-     attrTable.getSelectedRow()        = " + attrTable.getSelectedRow());
-                        Util.debug ("#=-     attrTable.getRowCount()           = " + attrTable.getRowCount());
-                    }
+                    Util.THIS.debug ("#=-     event.getSource()                 = " + lsm);
+                    Util.THIS.debug ("#=-     selectionModel.isSelectionEmpty() = " + lsm.isSelectionEmpty());
+                    Util.THIS.debug ("#=-     attrTable.getSelectedRow()        = " + attrTable.getSelectedRow());
+                    Util.THIS.debug ("#=-     attrTable.getRowCount()           = " + attrTable.getRowCount());
 
                     if ( lsm.isSelectionEmpty() ||
                          ( attrTable.getRowCount() == 0 ) ) {
                         upButton.setEnabled (false);
                         downButton.setEnabled (false);
                         removeButton.setEnabled (false);
-                    }else {
+                    } else {
                         upButton.setEnabled (attrTable.getSelectedRow() > 0);
                         downButton.setEnabled (attrTable.getSelectedRow() < (numRows() - 1));
                         removeButton.setEnabled (true);
@@ -194,7 +188,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(tableScrollPane, gridBagConstraints);
 
-        upButton.setText(Util.getString ("TEXT_element_attributelist_up"));
+        upButton.setText(Util.THIS.getString ("TEXT_element_attributelist_up"));
         upButton.setEnabled(false);
         upButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -211,7 +205,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(upButton, gridBagConstraints);
 
-        downButton.setText(Util.getString ("TEXT_element_attributelist_down"));
+        downButton.setText(Util.THIS.getString ("TEXT_element_attributelist_down"));
         downButton.setEnabled(false);
         downButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -228,7 +222,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(downButton, gridBagConstraints);
 
-        addButton.setText(Util.getString ("TEXT_element_attributelist_add"));
+        addButton.setText(Util.THIS.getString ("TEXT_element_attributelist_add"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -244,7 +238,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 11);
         add(addButton, gridBagConstraints);
 
-        removeButton.setText(Util.getString ("TEXT_element_attributelist_remove"));
+        removeButton.setText(Util.THIS.getString ("TEXT_element_attributelist_remove"));
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -400,7 +394,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         /**
          */
         public void keyReleased (KeyEvent e) {
-            //Util.debug("Event: " + e); // NOI18N
+            //Util.THIS.debug("Event: " + e); // NOI18N
             if (e.getKeyCode() == KeyEvent.VK_DELETE) {
                 tableModel.removeRow (table.getSelectedRow());
 //                  peer.remove (peer.get (table.getSelectedRow()));
@@ -480,7 +474,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                 TreeAttribute oldAttribute = (TreeAttribute) peer.get (attr.getTreeName());
                 if ( oldAttribute != null ) {
                     toSet = Lib.confirmAction
-                        (Util.getString ("MSG_replace_attribute", attr.getQName()));
+                        (Util.THIS.getString ("MSG_replace_attribute", attr.getQName()));
                 }
                 if ( toSet ) {
                     peer.add (attr);
@@ -494,7 +488,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
               SortedColumn = -1;
               fireTableStructureChanged();
               } catch (TreeException exc) {
-              Util.notifyTreeException (exc);
+              Util.THIS.notifyTreeException (exc);
               }
             */
         }
@@ -515,7 +509,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                 SortedColumn = -1;
                 fireTableStructureChanged();
             } catch (TreeException exc) {
-                Util.notifyTreeException (exc);
+                Util.THIS.notifyTreeException (exc);
             }
         };
         
@@ -547,7 +541,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                     if ( attr != oldAttribute ) {
                         if ( oldAttribute != null ) {
                             toSet = Lib.confirmAction
-                                (Util.getString ("MSG_replace_attribute", attrName));
+                                (Util.THIS.getString ("MSG_replace_attribute", attrName));
                         }
                     }
                     if ( toSet ) {
@@ -558,7 +552,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                     attr.setValue ((String) val);
                 }
             } catch (TreeException exc) {
-                Util.notifyTreeException (exc);
+                Util.THIS.notifyTreeException (exc);
             }
         }
         
@@ -567,9 +561,9 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         public String getColumnName (int column) {
             switch (column) {
             case COL_NAME:
-                return Util.getString ("NAME_column_name");
+                return Util.THIS.getString ("NAME_column_name");
             case COL_VALUE:
-                return Util.getString ("NAME_column_value");
+                return Util.THIS.getString ("NAME_column_value");
             default:
                 return ""; // NOI18N
             }
@@ -609,7 +603,7 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
                 peer.reorder (indx);
                 fireTableChanged(new TableModelEvent(this));
             } catch (TreeException exc) {
-                Util.notifyTreeException (exc);
+                Util.THIS.notifyTreeException (exc);
             }
         }
         
@@ -722,15 +716,15 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
      */
     public void initAccessibility(){
         
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeElementAttributeListCustomizer"));
+       this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_TreeElementAttributeListCustomizer"));
 
-       addButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_addButton")); 
-       removeButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_removeButton"));
-       upButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_upButton")); 
-       downButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_downButton"));
+       addButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_addButton")); 
+       removeButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_removeButton"));
+       upButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_upButton")); 
+       downButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_downButton"));
        
-       attrTable.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_attrTable")); 
-       attrTable.getAccessibleContext().setAccessibleName(Util.getString("ACSN_attrTable")); 
+       attrTable.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_attrTable")); 
+       attrTable.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_attrTable")); 
     }     
     
 }

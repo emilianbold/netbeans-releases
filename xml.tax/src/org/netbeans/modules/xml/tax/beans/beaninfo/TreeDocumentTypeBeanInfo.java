@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -46,20 +46,20 @@ public class TreeDocumentTypeBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_publicId] = new PropertyDescriptor ( "publicId", TreeDocumentType.class, "getPublicId", "setPublicId" ); // NOI18N
-            properties[PROPERTY_publicId].setDisplayName ( Util.getString ( "PROP_TreeDocumentTypeBeanInfo_publicId" ) );
-            properties[PROPERTY_publicId].setShortDescription ( Util.getString ( "HINT_TreeDocumentTypeBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDocumentType.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeDocumentTypeBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeDocumentTypeBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_systemId] = new PropertyDescriptor ( "systemId", TreeDocumentType.class, "getSystemId", "setSystemId" ); // NOI18N
-            properties[PROPERTY_systemId].setDisplayName ( Util.getString ( "PROP_TreeDocumentTypeBeanInfo_systemId" ) );
-            properties[PROPERTY_systemId].setShortDescription ( Util.getString ( "HINT_TreeDocumentTypeBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_elementName] = new PropertyDescriptor ( "elementName", TreeDocumentType.class, "getElementName", "setElementName" ); // NOI18N
-            properties[PROPERTY_elementName].setDisplayName ( Util.getString ( "PROP_TreeDocumentTypeBeanInfo_elementName" ) );
-            properties[PROPERTY_elementName].setShortDescription ( Util.getString ( "HINT_TreeDocumentTypeBeanInfo_elementName" ) );
+            properties[PROPERTY_elementName].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentTypeBeanInfo_elementName" ) );
+            properties[PROPERTY_elementName].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentTypeBeanInfo_elementName" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

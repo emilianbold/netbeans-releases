@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -23,12 +23,6 @@ import org.netbeans.tax.event.TreeEventManager;
  * @version 0.1
  */
 public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRoot {
-    /** */
-    private static final boolean DEBUG = false;
-    /** */
-    private static final boolean DEBUG_CACHE = false;
-    /** */
-    private static final boolean DEBUG_MERGE = false;
     
     /** */
     public static final String PROP_VERSION    = "version"; // NOI18N
@@ -141,9 +135,7 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
      * during merging superclass TreeObjectList.
      */
     public void merge (TreeObject treeObject) throws CannotMergeException {
-        if ( DEBUG_MERGE ) {
-            Util.debug ("TreeDocument::merge: " + treeObject, new RuntimeException ()); // NOI18N
-        }
+        Util.THIS.debug ("TreeDocument::merge: " + treeObject);//, new RuntimeException ()); // NOI18N
         
         super.merge (treeObject);
         
@@ -361,7 +353,7 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
     protected final void checkHeader (String version, String encoding, String standalone) throws InvalidArgumentException {
         if ( (version == null) && ( (encoding != null) || (standalone != null) ) ) {
             throw new InvalidArgumentException
-            (Util.getString ("EXC_invalid_document_header"),
+            (Util.THIS.getString ("EXC_invalid_document_header"),
             new NullPointerException ());
         }
     }
@@ -431,10 +423,8 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
      * @throws InvalidArgumentException
      */
     public final void setDocumentElement (TreeElement newElement) throws ReadOnlyException, InvalidArgumentException {
-        if ( DEBUG_CACHE ) {
-            Util.debug ("\nTreeDocument::setDocumentElement: oldDocumentElement = " + this.rootElement); // NOI18N
-            Util.debug ("            ::setDocumentElement: newDocumentElement = " + newElement); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeDocument::setDocumentElement: oldDocumentElement = " + this.rootElement); // NOI18N
+        Util.THIS.debug ("            ::setDocumentElement: newDocumentElement = " + newElement); // NOI18N
         
         if ( newElement == null ) {
             removeChild (this.rootElement);
@@ -487,20 +477,18 @@ public class TreeDocument extends AbstractTreeDocument implements TreeDocumentRo
                     }
                     TreeDocument.this.documentType = (TreeDocumentType)obj;
                 } else if (obj instanceof TreeElement) {
-                    if ( DEBUG_CACHE ) {
-                        Util.debug ("\nTreeDocument::ChildListContentManager::objectInserted: obj = " + obj); // NOI18N
-                        Util.debug ("            ::                       ::objectInserted: old root element = " + TreeDocument.this.rootElement); // NOI18N
-                    }
+                    Util.THIS.debug ("\nTreeDocument::ChildListContentManager::objectInserted: obj = " + obj); // NOI18N
+                    Util.THIS.debug ("            ::                       ::objectInserted: old root element = " + TreeDocument.this.rootElement); // NOI18N
+
                     if (TreeDocument.this.rootElement != null && TreeDocument.this.rootElement != obj) {
                         removeChild (TreeDocument.this.rootElement);
                     }
                     TreeDocument.this.rootElement = (TreeElement)obj;
-                    if ( DEBUG_CACHE ) {
-                        Util.debug ("            ::                       ::objectInserted: NEW root element = " + TreeDocument.this.rootElement, new RuntimeException ()); // NOI18N
-                    }
+                    
+                    Util.THIS.debug ("            ::                       ::objectInserted: NEW root element = " + TreeDocument.this.rootElement);//, new RuntimeException ()); // NOI18N
                 }
             } catch (Exception exc) {
-                Util.debug ("TreeDocument::ChildListContentManager.objectInserted", exc); // NOI18N
+                Util.THIS.debug ("TreeDocument::ChildListContentManager.objectInserted", exc); // NOI18N
             }
         }
         

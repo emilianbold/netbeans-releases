@@ -23,7 +23,7 @@
         <Component class="javax.swing.JLabel" name="acceptRejectLabel">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_acceptReject" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_acceptReject" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
             <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection component="rbPanel" type="bean"/>
@@ -47,7 +47,7 @@
             <Component class="javax.swing.JRadioButton" name="acceptRadioButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_showItRadioButton" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_showItRadioButton" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="acceptPolicyGroup"/>
@@ -67,7 +67,7 @@
             <Component class="javax.swing.JRadioButton" name="rejectRadioButton">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_hideItRadioButton" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_hideItRadioButton" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="acceptPolicyGroup"/>
@@ -126,7 +126,7 @@
         <Component class="javax.swing.JButton" name="addButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_addButton" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_addButton" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
           </Properties>
 
@@ -142,7 +142,7 @@
         <Component class="javax.swing.JButton" name="removeButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_removeButton" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/editor/Bundle.properties" key="LBL_removeButton" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
             <Property name="enabled" type="boolean" value="false"/>
           </Properties>

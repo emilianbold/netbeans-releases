@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -42,7 +42,7 @@ public abstract class TreeEntityResolver {
      * @return Resolver system identifier.
      */
     public String expandSystemId (String systemId, String baseSystemId) {
-        Util.debug ("[PENDING]: TreeEntityResolver.expandSystemId ( " + systemId + " , " + baseSystemId + " ) : " + systemId); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeEntityResolver.expandSystemId ( " + systemId + " , " + baseSystemId + " ) : " + systemId); // NOI18N
         
         return systemId;
     }

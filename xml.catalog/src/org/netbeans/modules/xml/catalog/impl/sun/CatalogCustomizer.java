@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.impl.sun;
@@ -35,16 +35,16 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         initComponents ();
         
         // A11Y
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_CatalogCustomizer"));        
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_CatalogCustomizer"));        
         
-        locationLabel.setDisplayedMnemonic((Util.getString("CatalogCustomizer.locationLabel.mne")).charAt(0));
-        locationTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_locationTextField"));
+        locationLabel.setDisplayedMnemonic((Util.THIS.getString("CatalogCustomizer.locationLabel.mne")).charAt(0));
+        locationTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_locationTextField"));
 
-        preferCheckBox.setMnemonic(Util.getString("MNE_preference").charAt(0));
-        preferCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_preference"));
+        preferCheckBox.setMnemonic(Util.THIS.getString("MNE_preference").charAt(0));
+        preferCheckBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_preference"));
         
-        selectButton.setMnemonic(Util.getString("MNE_file").charAt(0));
-        selectButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_file"));
+        selectButton.setMnemonic(Util.THIS.getString("MNE_file").charAt(0));
+        selectButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_file"));
     }
 
     /** This method is called from within the constructor to
@@ -63,7 +63,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
 
         setLayout(new java.awt.GridBagLayout());
 
-        locationLabel.setText(Util.getString ("CatalogCustomizer.locationLabel.text"));
+        locationLabel.setText(Util.THIS.getString ("CatalogCustomizer.locationLabel.text"));
         locationLabel.setForeground(java.awt.Color.black);
         locationLabel.setLabelFor(locationTextField);
         add(locationLabel, new java.awt.GridBagConstraints());
@@ -100,7 +100,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(selectButton, gridBagConstraints);
 
-        preferCheckBox.setToolTipText(Util.getString("HINT_pp"));
+        preferCheckBox.setToolTipText(Util.THIS.getString("HINT_pp"));
         preferCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/catalog/impl/sun/Bundle").getString("LBL_preference"));
         preferCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -121,7 +121,7 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
         descTextArea.setEditable(false);
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        descTextArea.setText(Util.getString("DESC_catalog_fmts"));
+        descTextArea.setText(Util.THIS.getString("DESC_catalog_fmts"));
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
@@ -155,12 +155,12 @@ public class CatalogCustomizer extends javax.swing.JPanel implements Customizer 
     //!!! find out whether action performed is not enough
     
     private void locationTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_locationTextFieldFocusLost
-        Util.trace("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
+        Util.THIS.debug("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
         model.setLocation(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldFocusLost
 
     private void locationTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationTextFieldActionPerformed
-        Util.trace("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
+        Util.THIS.debug("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
         model.setLocation(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldActionPerformed
 

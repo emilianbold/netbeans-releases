@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -16,10 +16,10 @@ import java.beans.*;
 
 public class CatalogEntryBeanInfo extends SimpleBeanInfo {
 
-    private static final String PUBLICID_N = Util.getString("PROP_public_id");
-    private static final String PUBLICID_D = Util.getString("PROP_public_id_desc");
-    private static final String SYSTEMID_D = Util.getString("PROP_system_id_desc");
-    private static final String SYSTEMID_N = Util.getString("PROP_system_id");
+    private static final String PUBLICID_N = Util.THIS.getString("PROP_public_id");
+    private static final String PUBLICID_D = Util.THIS.getString("PROP_public_id_desc");
+    private static final String SYSTEMID_D = Util.THIS.getString("PROP_system_id_desc");
+    private static final String SYSTEMID_N = Util.THIS.getString("PROP_system_id");
     
     // Property identifiers //GEN-FIRST:Properties
     private static final int PROPERTY_publicID = 0;

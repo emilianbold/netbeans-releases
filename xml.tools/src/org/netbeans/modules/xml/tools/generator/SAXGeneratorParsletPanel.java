@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -48,9 +48,9 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     private static final String NO_METHOD = "[none]"; // NOI18N
     
     private final String[] COLUMN_NAMES = new String[] {
-        Util.getString ("SAXGeneratorParsletPanel.table.column1"),
-        Util.getString ("SAXGeneratorParsletPanel.table.column2"),
-        Util.getString ("SAXGeneratorParsletPanel.table.column3"),
+        Util.THIS.getString ("SAXGeneratorParsletPanel.table.column1"),
+        Util.THIS.getString ("SAXGeneratorParsletPanel.table.column2"),
+        Util.THIS.getString ("SAXGeneratorParsletPanel.table.column3"),
     };
 
     private final ValidatingTextField.Validator TYPE_VALIDATOR = new ValidatingTextField.Validator() {
@@ -61,7 +61,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         }
         
         public String getReason() {
-            return Util.getString("MSG_parslet_err_1");
+            return Util.THIS.getString("MSG_parslet_err_1");
         }
     };
     
@@ -73,7 +73,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         }
         
         public String getReason() {
-            return Util.getString("MSG_parslet_err_2");
+            return Util.THIS.getString("MSG_parslet_err_2");
         }
         
     };
@@ -101,7 +101,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorParsletPanel.Form.name"));
+        setName(Util.THIS.getString ("SAXGeneratorParsletPanel.Form.name"));
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
@@ -303,7 +303,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
                        break;  // can not set a value
                     } else {
                         if (binds.getParsletUsageCount(currentParslet)>1) {
-                            Util.debug("Cannot change"); // NOI18N
+                            Util.THIS.debug("Cannot change"); // NOI18N
                         } else {
                             Type returnType = 
                                 Type.createClass(Identifier.create((String)value));
@@ -337,7 +337,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
                     break;
 
             }
-//            Util.debug(model.toString());
+//            Util.THIS.debug(model.toString());
 
         }
 
@@ -357,8 +357,8 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
      */    
     public void initAccessibility(){
 
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorParsletPanel"));
-        table.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_ParsletsTable"));
-        table.getAccessibleContext().setAccessibleName(Util.getString("ACSN_ParsletsTable"));        
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SAXGeneratorParsletPanel"));
+        table.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_ParsletsTable"));
+        table.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_ParsletsTable"));        
     }
 }

@@ -7,44 +7,25 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.event;
-
-import java.util.*;
-import java.text.MessageFormat;
 
 import org.netbeans.tax.AbstractUtil;
 
 /**
  *
  * @author Libor Kramolis
- * @version 0.1
+ * @version 0.2
  */
 class Util extends AbstractUtil {
-    
-    static ResourceBundle bundle;  // cache
-    
-    static final String getString (String key) {
-        
-        return getBundle ().getString (key);
-    }
-    
-    static final String getString (String key, Object param) {
-        
-        return MessageFormat.format (getBundle ().getString (key), new Object[] {param});
-    }
-    
-    static final char getChar (String key) {
-        
-        return getString (key).charAt (0);
-    }
-    
-    private static synchronized ResourceBundle getBundle () {
-        if (bundle != null) return bundle;
-        bundle = ResourceBundle.getBundle ("org.netbeans.tax.event.Bundle"); //NOI18N
-        return bundle;
-    }
-}
 
+    /** Default and only one instance of this class. */
+    public static final Util THIS = new Util();
+
+    /** Nobody can create instance of it, just me. */
+    private Util () {
+    }
+
+}

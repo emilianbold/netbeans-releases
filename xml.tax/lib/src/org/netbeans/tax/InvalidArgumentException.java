@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -72,7 +72,7 @@ public class InvalidArgumentException extends TreeException {
     public final String getMessage () {
         String detail = ""; // NOI18N
         if (argument != null) {
-            detail = " " + Util.getString ("PROP_violating_argument", argument);
+            detail = " " + Util.THIS.getString ("PROP_violating_argument", argument);
         }
         
         return super.getMessage () + detail;

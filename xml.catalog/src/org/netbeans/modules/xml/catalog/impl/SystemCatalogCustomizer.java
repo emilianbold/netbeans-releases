@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.impl;
@@ -29,7 +29,7 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
     /** Creates new form CatalogCustomizer */
     public SystemCatalogCustomizer() {
         initComponents ();
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SystemCatalogCustomizer"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SystemCatalogCustomizer"));
     }
 
     /** This method is called from within the constructor to
@@ -53,7 +53,7 @@ public class SystemCatalogCustomizer extends javax.swing.JPanel implements Custo
         jTextArea1.setEditable(false);
         jTextArea1.setForeground(new java.awt.Color(102, 102, 153));
         jTextArea1.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        jTextArea1.setText(Util.getString ("SystemCatalogCustomizer.readOnly.text"));
+        jTextArea1.setText(Util.THIS.getString ("SystemCatalogCustomizer.readOnly.text"));
         jTextArea1.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         jTextArea1.setPreferredSize(new java.awt.Dimension(300, 50));
         jTextArea1.setBorder(null);

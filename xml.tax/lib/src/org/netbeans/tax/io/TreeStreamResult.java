@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -274,7 +274,7 @@ public class TreeStreamResult implements TreeOutputResult {
         /**
          */
         public void writeNode (TreeNode node) throws TreeException {
-            //Util.debug("wriritng " + node); // NOI18N
+            //Util.THIS.debug("wriritng " + node); // NOI18N
             if ( node instanceof TreeAttlistDecl ) {
                 writeAttlistDecl ((TreeAttlistDecl)node);
             } else if ( node instanceof TreeAttribute ) {

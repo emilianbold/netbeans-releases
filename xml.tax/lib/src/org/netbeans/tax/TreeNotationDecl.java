@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -250,7 +250,7 @@ public class TreeNotationDecl extends TreeNodeDecl implements DTD.Child, Paramet
      */
     protected final void checkExternalId (String publicId, String systemId) throws InvalidArgumentException {
         if ( (publicId == null) && (systemId == null) ) {
-            throw new InvalidArgumentException (Util.getString ("EXC_invalid_nulls"),
+            throw new InvalidArgumentException (Util.THIS.getString ("EXC_invalid_nulls"),
             new NullPointerException ());
         }
     }

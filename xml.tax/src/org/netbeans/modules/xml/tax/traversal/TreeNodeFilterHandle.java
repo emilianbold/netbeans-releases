@@ -25,9 +25,6 @@ public final class TreeNodeFilterHandle implements Serializable {
     private static final long serialVersionUID = -571598256778542088L;
 
     /** */
-    private static final boolean DEBUG = false;
-
-    /** */
     private String[] nodeTypeNames;
     /** */
     private short acceptPolicy;

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -38,7 +38,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_geRef_name")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_geRef_name")); // NOI18N
         initAccessibility ();
     }
     
@@ -70,7 +70,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
             getGeneralEntityReference ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -107,7 +107,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("PROP_geRef_name"));
+        nameLabel.setText(Util.THIS.getString ("PROP_geRef_name"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -173,7 +173,7 @@ public class TreeGeneralEntityReferenceCustomizer extends AbstractTreeCustomizer
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeGeneralEntityReferenceCustomizer"));
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField6"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeGeneralEntityReferenceCustomizer"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField6"));
     }
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -71,7 +71,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             FileObject primFile = DO.getPrimaryFile();
             
             String rawName = primFile.getName();
-            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + Util.getString("NAME_SUFFIX_Scanner");
+            String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + Util.THIS.getString("NAME_SUFFIX_Scanner");
             
             FileObject folder = primFile.getParent();
             String packageName = folder.getPackageName ('.');
@@ -83,7 +83,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             FileLock lock = null;
             PrintStream printer = null;
             try {
-                GuiUtil.setStatusText(Util.getString("MSG_DOM_1"));
+                GuiUtil.setStatusText(Util.THIS.getString("MSG_DOM_1"));
                 lock = generFile.lock ();
                 printer = new PrintStream (generFile.getOutputStream (lock));
 		printer.println (prepareDOMScanner (name, packageName, primFile));
@@ -102,10 +102,10 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             TopManager.getDefault().notifyException(e);
         } catch (TreeException e) {
             // can not get tree representaion
-            Util.notifyError(Util.getString("MSG_DOM_ERR_1"));
+            Util.THIS.notifyError(Util.THIS.getString("MSG_DOM_ERR_1"));
         } catch (IOException e) {
             // can not get tree representaion or write            
-            Util.notifyError(Util.getString("MSG_DOM_ERR_2"));
+            Util.THIS.notifyError(Util.THIS.getString("MSG_DOM_ERR_2"));
         }
     }
 
@@ -331,7 +331,7 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
         return null;
         //      SelectTagNamePanel panel = new SelectTagNamePanel (dtd);
         //      DialogDescriptor dd = new DialogDescriptor
-        //        (panel, Util.getString ("PROP_rootElementNameTitle"), true, // NOI18N
+        //        (panel, Util.THIS.getString ("PROP_rootElementNameTitle"), true, // NOI18N
         //         new Object[] { DialogDescriptor.OK_OPTION },
         //         DialogDescriptor.OK_OPTION,
         //         DialogDescriptor.BOTTOM_ALIGN, null, null);

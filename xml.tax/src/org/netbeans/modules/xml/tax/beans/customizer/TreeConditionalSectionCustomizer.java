@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -78,7 +78,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
             getConditionalSection ().setInclude (includeRadioButton.isSelected ());
         } catch (TreeException exc) {
             updateIncludeIgnoreComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -91,7 +91,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
             getConditionalSection ().setIgnoredContent (text2null (ignoredContentTextArea.getText ()));
         } catch (TreeException exc) {
             updateIgnoredContentComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -113,10 +113,10 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
     
     
     private void initAccessibility() {
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeConditionalSectionCustomizer"));
-        ignoredContentTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_ignoredContentPane"));
-        includeRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_includeRadioButton"));
-        ignoreRadioButton.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_ignoreRadioButton"));        
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeConditionalSectionCustomizer"));
+        ignoredContentTextArea.getAccessibleContext ().setAccessibleName (Util.THIS.getString ("ACSN_ignoredContentPane"));
+        includeRadioButton.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_includeRadioButton"));
+        ignoreRadioButton.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_ignoreRadioButton"));        
     }
     
     /** This method is called from within the constructor to
@@ -138,7 +138,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
 
         setPreferredSize(new java.awt.Dimension(350, 100));
         includeRadioButton.setSelected(true);
-        includeRadioButton.setText(Util.getString ("PROP_condSection_include"));
+        includeRadioButton.setText(Util.THIS.getString ("PROP_condSection_include"));
         includeButtonGroup.add(includeRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -146,7 +146,7 @@ public class TreeConditionalSectionCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(includeRadioButton, gridBagConstraints);
 
-        ignoreRadioButton.setText(Util.getString ("PROP_condSection_ignore"));
+        ignoreRadioButton.setText(Util.THIS.getString ("PROP_condSection_ignore"));
         includeButtonGroup.add(ignoreRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;

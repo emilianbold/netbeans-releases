@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.traversal;
@@ -81,7 +81,7 @@ public final class TreeNodeWalker {
      */
     public void setCurrentNode (TreeNode curNode) throws NotSupportedException {
         if (curNode == null) {
-            throw new NotSupportedException (Util.getString ("EXC_invalid_current_node_value"));
+            throw new NotSupportedException (Util.THIS.getString ("EXC_invalid_current_node_value"));
         }
         
         currentNode = curNode;
@@ -90,7 +90,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode parentNode () {
-        Util.debug ("[PENDING]: TreeNodeWalker.parentNode ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.parentNode ()"); // NOI18N
         
         return null;
     }
@@ -98,7 +98,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode firstChild () {
-        Util.debug ("[PENDING]: TreeNodeWalker.firstChild ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.firstChild ()"); // NOI18N
         
         return null;
     }
@@ -106,7 +106,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode lastChild () {
-        Util.debug ("[PENDING]: TreeNodeWalker.lastChild ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.lastChild ()"); // NOI18N
         
         return null;
     }
@@ -114,7 +114,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode previousSibling () {
-        Util.debug ("[PENDING]: TreeNodeWalker.previousSibling ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousSibling ()"); // NOI18N
         
         return null;
     }
@@ -122,7 +122,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode nextSibling () {
-        Util.debug ("[PENDING]: TreeNodeWalker.nextSibling ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextSibling ()"); // NOI18N
         
         return null;
     }
@@ -130,7 +130,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode previousNode () {
-        Util.debug ("[PENDING]: TreeNodeWalker.previousNode ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.previousNode ()"); // NOI18N
         
         return null;
     }
@@ -138,7 +138,7 @@ public final class TreeNodeWalker {
     /**
      */
     public TreeNode nextNode () {
-        Util.debug ("[PENDING]: TreeNodeWalker.nextNode ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeWalker.nextNode ()"); // NOI18N
         
         return null;
     }

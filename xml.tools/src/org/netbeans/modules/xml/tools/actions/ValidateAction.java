@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.actions;
@@ -55,12 +55,12 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
         XMLCompiler comp = new XMLCompiler (output);
         comp.parse (nodes, true);
         
-        output.display(Util.getString("MSG_XML_valid_end"), true);        
+        output.display(Util.THIS.getString("MSG_XML_valid_end"), true);        
     }
 
     /** Human presentable name. */
     public String getName() {
-        return Util.getString("NAME_Validate_XML");
+        return Util.THIS.getString("NAME_Validate_XML");
     }
 
     /** Do not slow by any icon. */

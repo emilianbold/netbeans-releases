@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -43,18 +43,18 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("LAB_ElementName_mn")); // NOI18N
-        typeLabel.setDisplayedMnemonic (Util.getChar ("LAB_EntityType_mn")); // NOI18N
-        internalRadio.setMnemonic (Util.getChar ("RAD_Internal_mn")); // NOI18N
-        externalRadio.setMnemonic (Util.getChar ("RAD_External_mn")); // NOI18N
-        unparsedRadio.setMnemonic (Util.getChar ("RAD_Unparsed_mn")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_ElementName_mn")); // NOI18N
+        typeLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_EntityType_mn")); // NOI18N
+        internalRadio.setMnemonic (Util.THIS.getChar ("RAD_Internal_mn")); // NOI18N
+        externalRadio.setMnemonic (Util.THIS.getChar ("RAD_External_mn")); // NOI18N
+        unparsedRadio.setMnemonic (Util.THIS.getChar ("RAD_Unparsed_mn")); // NOI18N
 
-        internValueLabel.setDisplayedMnemonic (Util.getChar ("LAB_internValue_mn")); // NOI18N
-        externPublicLabel.setDisplayedMnemonic (Util.getChar ("LAB_externPublic_mn")); // NOI18N
-        externSystemLabel.setDisplayedMnemonic (Util.getChar ("LAB_externSystem_mn")); // NOI18N
-        unparsedPublicLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedPublic_mn")); // NOI18N
-        unparsedSystemLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedSystem_mn")); // NOI18N
-        unparsedNotationLabel.setDisplayedMnemonic (Util.getChar ("LAB_unparsedNotation_mn")); // NOI18N
+        internValueLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_internValue_mn")); // NOI18N
+        externPublicLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_externPublic_mn")); // NOI18N
+        externSystemLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_externSystem_mn")); // NOI18N
+        unparsedPublicLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_unparsedPublic_mn")); // NOI18N
+        unparsedSystemLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_unparsedSystem_mn")); // NOI18N
+        unparsedNotationLabel.setDisplayedMnemonic (Util.THIS.getChar ("LAB_unparsedNotation_mn")); // NOI18N
         
         initAccessibility ();
     }
@@ -100,7 +100,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setParameter (typeCombo.getSelectedItem () == TYPE_PARAMETER);
         } catch (TreeException exc) {
             updateParameterComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -121,7 +121,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -140,7 +140,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setInternalText (text2null (internValueField.getText ()));
         } catch (TreeException exc) {
             updateInternalTextComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -161,7 +161,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updatePublicIdComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -183,7 +183,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updateSystemIdComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -202,7 +202,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
             getEntityDecl ().setNotationName (text2null (unparsedNotationField.getText ()));
         } catch (TreeException exc) {
             updateNotationComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -295,7 +295,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("LAB_ElementName"));
+        nameLabel.setText(Util.THIS.getString ("LAB_ElementName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -329,7 +329,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        typeLabel.setText(Util.getString ("LAB_EntityType"));
+        typeLabel.setText(Util.THIS.getString ("LAB_EntityType"));
         typeLabel.setLabelFor(typeCombo);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -356,7 +356,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
 
         entityTypePanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(0, 0, 0, 0))));
         internalRadio.setSelected(true);
-        internalRadio.setText(Util.getString ("RAD_Internal"));
+        internalRadio.setText(Util.THIS.getString ("RAD_Internal"));
         buttonGroup.add(internalRadio);
         internalRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -371,7 +371,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         entityTypePanel.add(internalRadio, gridBagConstraints);
 
-        externalRadio.setText(Util.getString ("RAD_External"));
+        externalRadio.setText(Util.THIS.getString ("RAD_External"));
         buttonGroup.add(externalRadio);
         externalRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -386,7 +386,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         entityTypePanel.add(externalRadio, gridBagConstraints);
 
-        unparsedRadio.setText(Util.getString ("RAD_Unparsed"));
+        unparsedRadio.setText(Util.THIS.getString ("RAD_Unparsed"));
         buttonGroup.add(unparsedRadio);
         unparsedRadio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -414,7 +414,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
 
         internalPanel.setLayout(new java.awt.GridBagLayout());
 
-        internValueLabel.setText(Util.getString ("LAB_Internal_Text"));
+        internValueLabel.setText(Util.THIS.getString ("LAB_Internal_Text"));
         internValueLabel.setLabelFor(internValueField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -455,7 +455,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
 
         externalPanel.setLayout(new java.awt.GridBagLayout());
 
-        externPublicLabel.setText(Util.getString ("LAB_External_PublicId"));
+        externPublicLabel.setText(Util.THIS.getString ("LAB_External_PublicId"));
         externPublicLabel.setLabelFor(externPublicField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -485,7 +485,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         externalPanel.add(externPublicField, gridBagConstraints);
 
-        externSystemLabel.setText(Util.getString ("LAB_External_SystemId"));
+        externSystemLabel.setText(Util.THIS.getString ("LAB_External_SystemId"));
         externSystemLabel.setLabelFor(externSystemField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -523,7 +523,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
 
         unparsedPanel.setLayout(new java.awt.GridBagLayout());
 
-        unparsedPublicLabel.setText(Util.getString ("LAB_Unparsed_PublicId"));
+        unparsedPublicLabel.setText(Util.THIS.getString ("LAB_Unparsed_PublicId"));
         unparsedPublicLabel.setLabelFor(unparsedPublicField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -554,7 +554,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         unparsedPanel.add(unparsedPublicField, gridBagConstraints);
 
-        unparsedSystemLabel.setText(Util.getString ("LAB_Unparsed_SystemId"));
+        unparsedSystemLabel.setText(Util.THIS.getString ("LAB_Unparsed_SystemId"));
         unparsedSystemLabel.setLabelFor(unparsedSystemField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -585,7 +585,7 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         unparsedPanel.add(unparsedSystemField, gridBagConstraints);
 
-        unparsedNotationLabel.setText(Util.getString ("LAB_Unparsed_NotationName"));
+        unparsedNotationLabel.setText(Util.THIS.getString ("LAB_Unparsed_NotationName"));
         unparsedNotationLabel.setLabelFor(unparsedNotationField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -774,20 +774,20 @@ public class TreeEntityDeclCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeEntityDeclCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeEntityDeclCustomizer"));
         
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField2"));
-        typeCombo.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_typeCombo"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField2"));
+        typeCombo.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_typeCombo"));
         
-        internValueField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_internValueField"));
+        internValueField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_internValueField"));
         internValueField.selectAll ();
         
-        externPublicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_externPublicField"));
-        externSystemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_externSystemField"));
+        externPublicField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_externPublicField"));
+        externSystemField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_externSystemField"));
         
-        unparsedPublicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedPublicField"));
-        unparsedSystemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedSystemField"));
-        unparsedNotationField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_unparsedNotationField"));
+        unparsedPublicField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_unparsedPublicField"));
+        unparsedSystemField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_unparsedSystemField"));
+        unparsedNotationField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_unparsedNotationField"));
         
     }
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -147,7 +147,7 @@ public class SAXBindingsParser extends org.xml.sax.helpers.DefaultHandler {
         return new ErrorHandler() {
             public void error(SAXParseException ex) throws SAXException  {
                 if (context.isEmpty()) {
-                    Util.debug ("Missing DOCTYPE."); // NOI18N
+                    Util.THIS.debug ("Missing DOCTYPE."); // NOI18N
                 }
                 throw ex;
             }

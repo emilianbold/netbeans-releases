@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -47,9 +47,9 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
     static final int COLUMNS = 3;
     
     private final String[] COLUMN_NAMES = new String[] {
-        Util.getString ("SAXGeneratorMethodPanel.table.column1"),
-        Util.getString ("SAXGeneratorMethodPanel.table.column2"),
-        Util.getString ("SAXGeneratorMethodPanel.table.column3"),
+        Util.THIS.getString ("SAXGeneratorMethodPanel.table.column1"),
+        Util.THIS.getString ("SAXGeneratorMethodPanel.table.column2"),
+        Util.THIS.getString ("SAXGeneratorMethodPanel.table.column3"),
     };
 
     
@@ -62,7 +62,7 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         }        
         
         public String getReason() {
-            return Util.getString("MSG_method_err_1");
+            return Util.THIS.getString("MSG_method_err_1");
         }
     };
     
@@ -88,7 +88,7 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorMethodPanel.Form.name"));
+        setName(Util.THIS.getString ("SAXGeneratorMethodPanel.Form.name"));
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
@@ -257,8 +257,8 @@ public final class SAXGeneratorMethodPanel extends SAXGeneratorAbstractPanel {
      */
     public void initAccessibility(){
 
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorMethodPanel"));
-        table.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_table"));
-        table.getAccessibleContext().setAccessibleName(Util.getString("ACSN_table"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SAXGeneratorMethodPanel"));
+        table.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_table"));
+        table.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_table"));
     }    
 }

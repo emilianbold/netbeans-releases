@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -69,7 +69,7 @@ public class TreeTextCustomizer extends AbstractTreeCustomizer {
             getText ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -169,8 +169,8 @@ public class TreeTextCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeTextCustomizer"));
-        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel3"));
-        dataTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel3"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeTextCustomizer"));
+        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_dataPanel3"));
+        dataTextArea.getAccessibleContext ().setAccessibleName (Util.THIS.getString ("ACSN_dataPanel3"));
     }
 }

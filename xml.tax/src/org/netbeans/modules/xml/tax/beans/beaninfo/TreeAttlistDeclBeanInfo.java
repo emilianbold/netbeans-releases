@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -45,16 +45,16 @@ public class TreeAttlistDeclBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_elementName] = new PropertyDescriptor ( "elementName", TreeAttlistDecl.class, "getElementName", null ); // NOI18N
-            properties[PROPERTY_elementName].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclBeanInfo_elementName" ) );
-            properties[PROPERTY_elementName].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclBeanInfo_elementName" ) );
+            properties[PROPERTY_elementName].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_elementName" ) );
+            properties[PROPERTY_elementName].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_elementName" ) );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttlistDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
 
             properties[PROPERTY_attributeDefs] = new PropertyDescriptor ( "attributeDefs", TreeAttlistDecl.class, "getAttributeDefs", null ); // NOI18N
-            properties[PROPERTY_attributeDefs].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclBeanInfo_attributeDefs" ) );
-            properties[PROPERTY_attributeDefs].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclBeanInfo_attributeDefs" ) );
+            properties[PROPERTY_attributeDefs].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclBeanInfo_attributeDefs" ) );
+            properties[PROPERTY_attributeDefs].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclBeanInfo_attributeDefs" ) );
             properties[PROPERTY_attributeDefs].setPropertyEditorClass ( TreeAttlistDeclAttributeListEditor.class );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

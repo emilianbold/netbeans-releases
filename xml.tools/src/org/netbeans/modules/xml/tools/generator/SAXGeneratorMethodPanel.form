@@ -6,7 +6,7 @@
       <Dimension value="[480, 350]"/>
     </Property>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorMethodPanel.Form.name" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorMethodPanel.Form.name" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
     </Property>
   </Properties>
   <SyntheticProperties>

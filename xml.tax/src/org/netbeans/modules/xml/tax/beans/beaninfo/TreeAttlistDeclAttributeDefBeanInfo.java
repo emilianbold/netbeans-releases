@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -47,25 +47,25 @@ public class TreeAttlistDeclAttributeDefBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeAttlistDeclAttributeDef.class, "getName", null ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_name" ) );
             properties[PROPERTY_defaultValue] = new PropertyDescriptor ( "defaultValue", TreeAttlistDeclAttributeDef.class, "getDefaultValue", null ); // NOI18N
-            properties[PROPERTY_defaultValue].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
-            properties[PROPERTY_defaultValue].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
+            properties[PROPERTY_defaultValue].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
+            properties[PROPERTY_defaultValue].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultValue" ) );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeAttlistDeclAttributeDef.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
 
 //              properties[PROPERTY_type] = new PropertyDescriptor ( "type", TreeAttlistDeclAttributeDef.class, "getType", null ); // NOI18N
-//              properties[PROPERTY_type].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
-//              properties[PROPERTY_type].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
+//              properties[PROPERTY_type].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
+//              properties[PROPERTY_type].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_type" ) );
 //              properties[PROPERTY_defaultType] = new PropertyDescriptor ( "defaultType", TreeAttlistDeclAttributeDef.class, "getDefaultType", null ); // NOI18N
-//              properties[PROPERTY_defaultType].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
-//              properties[PROPERTY_defaultType].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
+//              properties[PROPERTY_defaultType].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
+//              properties[PROPERTY_defaultType].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_defaultType" ) );
 //              properties[PROPERTY_enumeratedType] = new PropertyDescriptor ( "enumeratedType", TreeAttlistDeclAttributeDef.class, "getEnumeratedType", null ); // NOI18N
-//              properties[PROPERTY_enumeratedType].setDisplayName ( Util.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
-//              properties[PROPERTY_enumeratedType].setShortDescription ( Util.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
+//              properties[PROPERTY_enumeratedType].setDisplayName ( Util.THIS.getString ( "PROP_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
+//              properties[PROPERTY_enumeratedType].setShortDescription ( Util.THIS.getString ( "HINT_TreeAttlistDeclAttributeDefBeanInfo_enumeratedType" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

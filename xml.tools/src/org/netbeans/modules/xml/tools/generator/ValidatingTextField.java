@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -97,7 +97,7 @@ public class ValidatingTextField extends JTextField implements ComboBoxEditor {
                     ValidatingTextField.this.setForeground(Color.black);
                 } else {
                     String reason = validator.getReason();
-                    ValidatingTextField.super.setToolTipText(reason == null ? Util.getString("MSG_invalid") : reason);
+                    ValidatingTextField.super.setToolTipText(reason == null ? Util.THIS.getString("MSG_invalid") : reason);
                     ValidatingTextField.this.setForeground(Color.red);
                 }        
             }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -24,8 +24,6 @@ import org.netbeans.tax.event.TreeEvent;
  * @version 0.1
  */
 public abstract class TreeNode extends TreeObject {
-    /** Only for debug purposes. */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_NODE = "this"; // NOI18N

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -36,15 +36,15 @@ public class ElementBindings extends HashMap {
     // some display names
     
     public static final String DELIMITER_HANDLING = 
-        Util.getString ("DELIMITER_HANDLING");
+        Util.THIS.getString ("DELIMITER_HANDLING");
     public static final String DATA_HANDLING = 
-        Util.getString ("DATA_HANDLING");
+        Util.THIS.getString ("DATA_HANDLING");
     public static final String IGNORE_HANDLING = 
-        Util.getString ("IGNORE_HANDLING");
+        Util.THIS.getString ("IGNORE_HANDLING");
     public static final String MIXED_HANDLING = 
-        Util.getString ("MIXED_HANDLING");
+        Util.THIS.getString ("MIXED_HANDLING");
     public static final String EMPTY_HANDLING =
-        Util.getString ("EMPTY_HANDLING");
+        Util.THIS.getString ("EMPTY_HANDLING");
     
     /** Create empty map. */
     public ElementBindings() {            

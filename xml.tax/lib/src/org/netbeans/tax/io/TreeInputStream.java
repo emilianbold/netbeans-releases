@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -38,12 +38,12 @@ public class TreeInputStream extends InputStream {
     }
     
     public void close () throws IOException {
-        if (input == null) throw new IOException (Util.getString ("EXC_null_input"));
+        if (input == null) throw new IOException (Util.THIS.getString ("EXC_null_input"));
         input.close ();
     }
     
     public int read () throws IOException {
-        if (input == null) throw new IOException (Util.getString ("EXC_null_input"));
+        if (input == null) throw new IOException (Util.THIS.getString ("EXC_null_input"));
         int ch = input.read ();
         return ch;
     }

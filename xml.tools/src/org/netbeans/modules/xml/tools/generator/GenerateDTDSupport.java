@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -117,20 +117,20 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
 //          } catch (TreeException e) {
 //          } catch (IOException e) {
         } catch (Exception exc) {
-            Util.notifyException (exc);
+            Util.THIS.notifyException (exc);
         }
     }
 
     private void trySetDocumentType (String fileName) {
 	if ( element.getParentNode() instanceof TreeDocument ) { // try to set only when element is root document element
             TreeDocument document = (TreeDocument)element.getParentNode();
-            if ( GuiUtil.confirmAction (Util.getString ("MSG_use_dtd_as_document_type?")) ) {
+            if ( GuiUtil.confirmAction (Util.THIS.getString ("MSG_use_dtd_as_document_type?")) ) {
 		try {
 		    TreeDocumentType newDoctype = new TreeDocumentType (element.getQName(), null, fileName + "." + DTD_EXT); // NOI18N
                     document.setDocumentType (newDoctype);
 //    		    ((XMLDataNode)DO.getNodeDelegate()).setDocumentType (newDoctype);
 		} catch (TreeException exc) {
-		    Util.notifyTreeException (exc);
+		    Util.THIS.notifyTreeException (exc);
 		}
 	    }
 	}
@@ -164,7 +164,7 @@ public class GenerateDTDSupport implements XMLGenerateCookie {
             sb.append ("\n"); // NOI18N
             elem = (DTDElement)I.next();
             // <!ELEMENT ...
-            sb.append(Util.getString("FMT_DTDDoc") + "\n");
+            sb.append(Util.THIS.getString("FMT_DTDDoc") + "\n");
             sb.append ("<!ELEMENT ").append (elem.name).append (" "); // NOI18N
 
             if ( elem.empty ) {

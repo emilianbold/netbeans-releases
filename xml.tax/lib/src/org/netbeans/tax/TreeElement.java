@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -32,8 +32,6 @@ import org.netbeans.tax.event.TreeEventManager;
  * @version 0.1
  */
 public class TreeElement extends TreeParentNode implements Document.Child, DocumentFragment.Child, Element.Child, GeneralEntityReference.Child {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_TAG_NAME   = "tagName"; // NOI18N
@@ -80,9 +78,7 @@ public class TreeElement extends TreeParentNode implements Document.Child, Docum
         this.namespaceContext = new TreeNamespaceContext (this);
         this.attributes       = new TreeNamedObjectMap (createAttributesContentManager ());
         
-        if ( DEBUG ) {
-            Util.debug ("TreeElement:: : name = " + tagName + " : empty = " + empty); // NOI18N
-        }
+        Util.THIS.debug ("TreeElement:: : name = " + tagName + " : empty = " + empty); // NOI18N
     }
     
     
@@ -338,7 +334,7 @@ public class TreeElement extends TreeParentNode implements Document.Child, Docum
 //         TreeAttribute attr = getAttribute (name);
 //         if ( attr != null ) {
 //             throw new InvalidArgumentException
-//             (attr, Util.getString ("EXC_attribute_exists", name));
+//             (attr, Util.THIS.getString ("EXC_attribute_exists", name));
 //         }
         
         checkReadOnly ();
@@ -360,7 +356,7 @@ public class TreeElement extends TreeParentNode implements Document.Child, Docum
 //         TreeAttribute attr = getAttribute (qName);
 //         if ( attr != null ) {
 //             throw new InvalidArgumentException
-//             (attr, Util.getString ("EXC_attribute_exists", qName));
+//             (attr, Util.THIS.getString ("EXC_attribute_exists", qName));
 //         }
         
         checkReadOnly ();

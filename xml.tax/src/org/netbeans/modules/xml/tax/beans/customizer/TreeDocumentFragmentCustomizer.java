@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -36,8 +36,8 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
     public TreeDocumentFragmentCustomizer () {
         super ();
         initComponents ();
-        versionLabel.setDisplayedMnemonic (Util.getChar ("MNE_docFrag_version")); // NOI18N
-        encodingLabel.setDisplayedMnemonic (Util.getChar ("MNE_docFrag_encoding")); // NOI18N
+        versionLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_docFrag_version")); // NOI18N
+        encodingLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_docFrag_encoding")); // NOI18N
     }
     
     
@@ -75,7 +75,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
             getDocumentFragment ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
             updateVersionComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -96,7 +96,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
             getDocumentFragment ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
             updateEncodingComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -136,7 +136,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        versionLabel.setText(Util.getString ("PROP_docFrag_version"));
+        versionLabel.setText(Util.THIS.getString ("PROP_docFrag_version"));
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -153,7 +153,7 @@ public class TreeDocumentFragmentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cbVersion, gridBagConstraints);
 
-        encodingLabel.setText(Util.getString ("PROP_docFrag_encoding"));
+        encodingLabel.setText(Util.THIS.getString ("PROP_docFrag_encoding"));
         encodingLabel.setLabelFor(cbEncoding);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

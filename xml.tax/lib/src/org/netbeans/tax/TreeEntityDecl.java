@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -260,7 +260,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
             return;
         checkReadOnly ();
         if ( (newParameter == PARAMETER_DECL) && (type == TYPE_UNPARSED) ) {
-            throw new InvalidStateException (Util.getString ("EXC_ted_parameter_unparsed"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_ted_parameter_unparsed"));
         }
         
         //
@@ -398,7 +398,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
             return;
         checkReadOnly ();
         if ( type == TYPE_INTERNAL ) {
-            throw new InvalidStateException (Util.getString ("EXC_ted_internal_public"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_ted_internal_public"));
         }
         checkPublicId (newPublicId);
         
@@ -445,7 +445,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
             return;
         checkReadOnly ();
         if ( type == TYPE_INTERNAL ) {
-            throw new InvalidStateException (Util.getString ("EXC_ted_internal_system"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_ted_internal_system"));
         }
         checkSystemId (newSystemId);
         
@@ -554,10 +554,10 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
             return;
         checkReadOnly ();
         if ( type == TYPE_INTERNAL ) {
-            throw new InvalidStateException (Util.getString ("EXC_internal_notation"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_internal_notation"));
         }
         if ( parameter == PARAMETER_DECL ) {
-            throw new InvalidStateException (Util.getString ("EXC_ted_parameter_unparsed"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_ted_parameter_unparsed"));
         }
         checkNotationName (newNotationName);
         
@@ -614,7 +614,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
         }
         checkReadOnly ();
         if ( parameter == PARAMETER_DECL ) {
-            throw new InvalidStateException (Util.getString ("EXC_ted_parameter_unparsed"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_ted_parameter_unparsed"));
         }
         checkUnparsedDecl (newPublicId, newSystemId, newNotationName);
         
@@ -634,7 +634,7 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
         
         TreeUtilities.checkEntityDeclNotationName (notationName);
         if ( notationName == null ) {
-            throw new InvalidArgumentException (Util.getString ("EXC_ted_unparsed_must_notation"),
+            throw new InvalidArgumentException (Util.THIS.getString ("EXC_ted_unparsed_must_notation"),
             new NullPointerException ());
         }
     }
@@ -645,10 +645,10 @@ public class TreeEntityDecl extends TreeNodeDecl implements DTD.Child, Parameter
     protected final void checkExternalId (String publicId, String systemId) throws InvalidArgumentException {
         if ( systemId == null ) {
             if ( publicId == null ) {
-                throw new InvalidArgumentException (Util.getString ("EXC_ted_system_required"),
+                throw new InvalidArgumentException (Util.THIS.getString ("EXC_ted_system_required"),
                 new NullPointerException ());
             } else {
-                throw new InvalidArgumentException (Util.getString ("EXC_ted_system_required"),
+                throw new InvalidArgumentException (Util.THIS.getString ("EXC_ted_system_required"),
                 new NullPointerException ());
             }
         }

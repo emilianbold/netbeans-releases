@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.traversal;
@@ -27,9 +27,6 @@ import org.netbeans.tax.*;
  * @version 0.1
  */
 public final class TreeNodeFilter {
-    /** */
-    private static final boolean DEBUG = false;
-    
     
     // Constants returned by acceptNode
     /** */
@@ -105,26 +102,20 @@ public final class TreeNodeFilter {
             isNotInstanceReturn = FILTER_ACCEPT;
         }
         
-        if ( DEBUG ) {
-            Util.debug ("\n+----------------->"); // NOI18N
-            Util.debug ("+ TreeNodeFilter::acceptNode: this = " + this); // NOI18N
-            Util.debug ("+               ::acceptNode: node = " + node); // NOI18N
-            Util.debug ("+               ::acceptNode: acceptPolicy = " + acceptPolicy); // NOI18N
-        }
+        Util.THIS.debug ("+ TreeNodeFilter::acceptNode: this = " + this); // NOI18N
+        Util.THIS.debug ("+               ::acceptNode: node = " + node); // NOI18N
+        Util.THIS.debug ("+               ::acceptNode: acceptPolicy = " + acceptPolicy); // NOI18N
         
         for (int i = 0; i < nodeTypes.length; i++) {
             if ( nodeTypes[i].isInstance (node) ) {
-                if ( DEBUG ) {
-                    Util.debug ("+               ::acceptNode: RETURN " + isInstanceReturn); // NOI18N
-                }
+                
+                Util.THIS.debug ("+               ::acceptNode: RETURN " + isInstanceReturn); // NOI18N
                 
                 return isInstanceReturn;
             }
         }
         
-        if ( DEBUG ) {
-            Util.debug ("+               ::acceptNode: RETURN " + isNotInstanceReturn); // NOI18N
-        }
+        Util.THIS.debug ("+               ::acceptNode: RETURN " + isNotInstanceReturn); // NOI18N
         
         return isNotInstanceReturn;
     }
@@ -133,10 +124,7 @@ public final class TreeNodeFilter {
     /**
      */
     public boolean equals (Object object) {
-        if ( DEBUG ) {
-            Util.debug ("\n");
-            Util.debug ("-=#| TreeNodeFilter.equals");
-        }
+        Util.THIS.debug ("-=#| TreeNodeFilter.equals");
         
         if ( (object instanceof TreeNodeFilter) == false ) {
             return false;
@@ -147,12 +135,10 @@ public final class TreeNodeFilter {
         Set thisSet = new HashSet (Arrays.asList (this.nodeTypes));
         Set peerSet = new HashSet (Arrays.asList (peer.nodeTypes));
         
-        if ( DEBUG ) {
-            Util.debug ("-=#|    thisSet = " + thisSet);
-            Util.debug ("-=#|    peerSet = " + peerSet);
-            Util.debug ("-=#|    acceptPolicy? " + (this.acceptPolicy == peer.acceptPolicy));
-            Util.debug ("-=#|    nodeTypes   ? " + (thisSet.equals (peerSet)));
-        }
+        Util.THIS.debug ("-=#|    thisSet = " + thisSet);
+        Util.THIS.debug ("-=#|    peerSet = " + peerSet);
+        Util.THIS.debug ("-=#|    acceptPolicy? " + (this.acceptPolicy == peer.acceptPolicy));
+        Util.THIS.debug ("-=#|    nodeTypes   ? " + (thisSet.equals (peerSet)));
         
         if ( this.acceptPolicy != peer.acceptPolicy ) {
             return false;

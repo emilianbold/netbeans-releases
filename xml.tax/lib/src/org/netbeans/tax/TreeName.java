@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -161,7 +161,7 @@ public final class TreeName {
      */
     private InvalidArgumentException createInvalidNullArgumentException () {
         return new InvalidArgumentException
-        (Util.getString ("EXC_invalid_null_value"),
+        (Util.THIS.getString ("EXC_invalid_null_value"),
         new NullPointerException ());
     }
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.text.indent;
@@ -37,8 +37,6 @@ import org.netbeans.modules.xml.text.syntax.javacc.lib.JJEditorSyntax;
  * @version 0.1
  */
 public class XMLFormatter extends ExtFormatter {
-    /** */
-    private static final boolean DEBUG = false;
 
     //
     // init
@@ -80,10 +78,8 @@ public class XMLFormatter extends ExtFormatter {
     * @return new offset to place cursor to
     */
     public int indentNewLine (Document doc, int offset) {
-        if ( DEBUG ) {
-            Util.debug ("\n+ XMLFormatter::indentNewLine: doc = " + doc); // NOI18N
-            Util.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
-        }
+        Util.THIS.debug ("\n+ XMLFormatter::indentNewLine: doc = " + doc); // NOI18N
+        Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
 
         if (doc instanceof BaseDocument) {
             BaseDocument bdoc = (BaseDocument)doc;
@@ -96,23 +92,17 @@ public class XMLFormatter extends ExtFormatter {
                 int fullLine = Utilities.getFirstNonWhiteBwd (bdoc, offset - 1);
                 int indent = Utilities.getRowIndent (bdoc, fullLine);
                 
-                if ( DEBUG ) {
-                    Util.debug ("+             ::indentNewLine: fullLine = " + fullLine); // NOI18N
-                    Util.debug ("+             ::indentNewLine: indent   = " + indent); // NOI18N
-                }
+                Util.THIS.debug ("+             ::indentNewLine: fullLine = " + fullLine); // NOI18N
+                Util.THIS.debug ("+             ::indentNewLine: indent   = " + indent); // NOI18N
 
-                if ( DEBUG ) {
-                    Util.debug ("+             ::indentNewLine: offset   = " + offset); // NOI18N
-//                    Util.debug ("+             ::indentNewLine: sb       = '" + sb.toString() + "'"); // NOI18N
-                }
+                Util.THIS.debug ("+             ::indentNewLine: offset   = " + offset); // NOI18N
+//                    Util.THIS.debug ("+             ::indentNewLine: sb       = '" + sb.toString() + "'"); // NOI18N
 
                 String indentation = getIndentString(bdoc, indent);
                 bdoc.insertString (offset, indentation, null);
                 offset += indentation.length();
 
-                if ( DEBUG ) {
-                    Util.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
-                }
+                Util.THIS.debug ("+             ::indentNewLine: offset = " + offset); // NOI18N
             } catch (BadLocationException e) {
                 if (Boolean.getBoolean ("netbeans.debug.exceptions")) { // NOI18N
                     e.printStackTrace();
@@ -168,9 +158,7 @@ public class XMLFormatter extends ExtFormatter {
                 
             } else { // remove end-line whitespace
                 while (pos.getToken() != null) {
-                    if ( DEBUG ) {
-                        Util.debug ("XMLFormatSupport::StripEndWhitespaceLayer::format: position = " + pos); // NOI18N
-                    }
+                    Util.THIS.debug ("XMLFormatSupport::StripEndWhitespaceLayer::format: position = " + pos); // NOI18N
 
                     pos = xfs.removeLineEndWhitespace (pos);
                     if (pos.getToken() != null) {

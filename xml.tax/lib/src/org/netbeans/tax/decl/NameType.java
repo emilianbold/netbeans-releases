@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.decl;
@@ -103,7 +103,7 @@ public class NameType extends LeafType {
         if (Util.equals (this.name, name))
             return;
         this.name = name;
-        Util.debug ("[NameType] firePropertyChange(PROP_TYPE_NAME, name);"); // NOI18N
+        Util.THIS.debug ("[NameType] firePropertyChange(PROP_TYPE_NAME, name);"); // NOI18N
     }
     
     /**

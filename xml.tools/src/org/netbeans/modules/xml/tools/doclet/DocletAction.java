@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.doclet;
@@ -96,7 +96,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                 // ask for file object location
 
                 FileObject primFile = dtdo.getPrimaryFile();
-                String name = primFile.getName() + Util.getString("NAME_SUFFIX_Documentation");
+                String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Documentation");
                 FileObject folder = primFile.getParent();
                 String packageName = folder.getPackageName ('.');
 
@@ -122,7 +122,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                      }
                      
                 } catch (IOException ex) {
-                    emgr.annotate(ex, Util.getString("MSG_error_leaving_in_clipboard"));
+                    emgr.annotate(ex, Util.THIS.getString("MSG_error_leaving_in_clipboard"));
                     emgr.notify(ex);
 
                     leaveInClipboard(text.toString());
@@ -151,18 +151,18 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                 
             } catch (InterruptedException ex) {
 
-                emgr.annotate(ex, Util.getString("MSG_generating_interrupted"));
+                emgr.annotate(ex, Util.THIS.getString("MSG_generating_interrupted"));
                 emgr.notify(ex);            
             }
             
         } catch (IOException ioex) {
             
-            emgr.annotate(ioex, Util.getString("MSG_IO_ex_docwriting"));
+            emgr.annotate(ioex, Util.THIS.getString("MSG_IO_ex_docwriting"));
             emgr.notify(ioex);
             
         } catch (TreeException tex) {
             
-            TopManager.getDefault().setStatusText(Util.getString("MSG_doclet_fatal_error"));
+            TopManager.getDefault().setStatusText(Util.THIS.getString("MSG_doclet_fatal_error"));
         
         } finally {
             if (thread != null) thread.interrupt();
@@ -174,7 +174,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
     private void leaveInClipboard(String text) {
         StringSelection ss = new StringSelection(text);
         TopManager.getDefault().getClipboard().setContents(ss, null);
-        TopManager.getDefault().setStatusText(Util.getString("MSG_documentation_in_clipboard"));        
+        TopManager.getDefault().setStatusText(Util.THIS.getString("MSG_documentation_in_clipboard"));        
     }
     
     public HelpCtx getHelpCtx() {
@@ -182,7 +182,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
     }
 
     public String getName() {
-        return Util.getString("NAME_Generate_Documentation");
+        return Util.THIS.getString("NAME_Generate_Documentation");
     }
 
 }

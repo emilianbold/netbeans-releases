@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -155,7 +155,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
         try {
             if (getDTD() == null) {
                 String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_invalid_dtd");
-                Util.notifyWarning(msg);
+                Util.THIS.notifyWarning(msg);
                 return;
             }
 
@@ -204,21 +204,21 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             WizardDescriptor descriptor = new WizardDescriptor(panels, model);
             
-            descriptor.setTitle(Util.getString ("SAXGeneratorSupport.title"));            
+            descriptor.setTitle(Util.THIS.getString ("SAXGeneratorSupport.title"));            
             descriptor.putProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
 //            descriptor.putProperty("WizardPanel_helpDisplayed", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
             descriptor.putProperty("WizardPanel_leftDimension", new Dimension(500,400)); // NOI18N
             descriptor.putProperty("WizardPanel_contentData", new String[] { // NOI18N
-                Util.getString ("SAXGeneratorVersionPanel.step"),
-                Util.getString ("SAXGeneratorMethodPanel.step"),
-                Util.getString ("SAXGeneratorParsletPanel.step"),
-                Util.getString ("SAXGeneratorFilePanel.step")
+                Util.THIS.getString ("SAXGeneratorVersionPanel.step"),
+                Util.THIS.getString ("SAXGeneratorMethodPanel.step"),
+                Util.THIS.getString ("SAXGeneratorParsletPanel.step"),
+                Util.THIS.getString ("SAXGeneratorFilePanel.step")
 
             });
             
-            String fmt = Util.getString ("SAXGeneratorSupport.subtitle");
+            String fmt = Util.THIS.getString ("SAXGeneratorSupport.subtitle");
             descriptor.setTitleFormat(new java.text.MessageFormat(fmt));
             
             // launch the wizard
@@ -233,9 +233,9 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
            
             // wizard finished
             
-            GuiUtil.setStatusText(Util.getString("MSG_sax_progress_1"));
+            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_1"));
             
-            Util.debug(model.toString());
+            Util.THIS.debug(model.toString());
             
             sax = model.getSAXversion();
             
@@ -268,7 +268,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
             // generate code by a model            
             
-            GuiUtil.setStatusText(Util.getString("MSG_sax_progress_1_5"));  
+            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_1_5"));  
                                     
             CodeGenerator stubGenerator = new StubGenerator(model.getStub(), model.getHandler(), model.getParslet());
             generateCode( stubGenerator, stubSrc, packageName);            
@@ -299,7 +299,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             // write generated code into filesystem
             
-            GuiUtil.setStatusText(Util.getString("MSG_sax_progress_2"));
+            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_2"));
 
             trySave(stubDataObject, null);
             trySave(interfaceDataObject, null);
@@ -316,7 +316,7 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             
             // open files to be implemented in editor
 
-            GuiUtil.setStatusText(Util.getString("MSG_sax_progress_3"));
+            GuiUtil.setStatusText(Util.THIS.getString("MSG_sax_progress_3"));
 
             if (model.hasParslets()) {
                 GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getParsletImpl(), JAVA_EXT));
@@ -324,17 +324,17 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             GenerateSupportUtils.performDefaultAction (folder.getFileObject(model.getHandlerImpl(), JAVA_EXT));
 
         } catch (FileStateInvalidException e) {
-            String msg = Util.getString("MSG_wizard_fail", e);
-            Util.notifyWarning(msg);
+            String msg = Util.THIS.getString("MSG_wizard_fail", e);
+            Util.THIS.notifyWarning(msg);
         } catch (SourceException e) {
-            String msg = Util.getString("MSG_wizard_fail", e);
-            Util.notifyWarning(msg);
+            String msg = Util.THIS.getString("MSG_wizard_fail", e);
+            Util.THIS.notifyWarning(msg);
         } catch (TreeException e) {
-            String msg = Util.getString("MSG_wizard_fail", e);
-            Util.notifyWarning(msg);
+            String msg = Util.THIS.getString("MSG_wizard_fail", e);
+            Util.THIS.notifyWarning(msg);
         } catch (IOException e) {
-            String msg = Util.getString("MSG_wizard_fail", e);
-            Util.notifyWarning(msg);
+            String msg = Util.THIS.getString("MSG_wizard_fail", e);
+            Util.THIS.notifyWarning(msg);
         } finally {
             String msg = org.openide.util.NbBundle.getMessage(SAXGeneratorSupport.class, "MSG_sax_progress_done");
             GuiUtil.setStatusText(msg); // NOI18N
@@ -373,10 +373,10 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
 
         } catch (IOException ex) {
             // last settings are not restored
-            Util.debug("Cannot read settings", ex); // NOI18N
+            Util.THIS.debug("Cannot read settings", ex); // NOI18N
         } catch (SAXException ex) {
             // last settings are not restored
-            Util.debug("Cannot read settings", ex); // NOI18N
+            Util.THIS.debug("Cannot read settings", ex); // NOI18N
         } finally {
             try {
                 if (in != null) in.close();

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -35,7 +35,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         this.model = model;
         initComponents();
         initAccessibility();
-        this.catalogLabel.setDisplayedMnemonic(Util.getChar("CatalogMounterPanel.catalogLabel.mne")); // NOI18N
+        this.catalogLabel.setDisplayedMnemonic(Util.THIS.getChar("CatalogMounterPanel.catalogLabel.mne")); // NOI18N
                 
         catalogComboBox.setModel(model.getCatalogComboBoxModel());
         updateCatalogPanel();
@@ -62,7 +62,7 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(4, 4, 4, 4)));
         setPreferredSize(new java.awt.Dimension(380, 100));
         setMinimumSize(new java.awt.Dimension(380, 100));
-        catalogLabel.setText(Util.getString ("CatalogMounterPanel.catalogLabel.text"));
+        catalogLabel.setText(Util.THIS.getString ("CatalogMounterPanel.catalogLabel.text"));
         catalogLabel.setForeground(java.awt.Color.black);
         catalogLabel.setLabelFor(catalogComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -111,9 +111,9 @@ final class CatalogMounterPanel extends javax.swing.JPanel implements ChangeList
     // End of variables declaration//GEN-END:variables
 
     private void initAccessibility(){
-        catalogComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_catalogComboBox"));
-        this.getAccessibleContext().setAccessibleName(Util.getString("ACSN_CatalogMounterPanel"));
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_CatalogMounterPanel"));
+        catalogComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_catalogComboBox"));
+        this.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_CatalogMounterPanel"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_CatalogMounterPanel"));
         
     }
     

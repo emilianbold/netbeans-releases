@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -45,12 +45,7 @@ import java.util.List;
  * @version in progress...
  */
 public final class XNIBuilder implements TreeBuilder {
-    
-    /** */
-    private static final boolean DEBUG = false;
-    // XNI callbacks tracking switch
-    private static final boolean DEBUG_XNI = false;
-    
+        
     private static final boolean ASSERT = false;
     
     //      private static final PrintStream dbg = System.err;
@@ -154,10 +149,8 @@ public final class XNIBuilder implements TreeBuilder {
             
             if ((exception instanceof DTDStopException) == false ) {
                 
-                if (DEBUG_XNI) {
-                    Util.debug ("sex", sex); // NOI18N
-                    Util.debug ("exception", exception); // NOI18N
-                }
+                Util.THIS.debug ("sex", sex); // NOI18N
+                Util.THIS.debug ("exception", exception); // NOI18N
                 
                 if (exception instanceof XNIException) {
                     exception = ((XNIException)exception).getException ();
@@ -173,10 +166,8 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
         } catch (IOException exc) {
-            
-            if (DEBUG_XNI) {
-                Util.debug ("exc", exc); // NOI18N
-            }
+            Util.THIS.debug ("exc", exc); // NOI18N
+
             throw new TreeException (exc);
         }
         
@@ -307,7 +298,7 @@ public final class XNIBuilder implements TreeBuilder {
         public void parse (InputSource in) throws IOException, SAXException {
             Reader reader = in.getCharacterStream ();
             if (reader == null) {
-                assert (false);  //we must manage that Reader is passed so we can do remembeing
+                doAssert (false);  //we must manage that Reader is passed so we can do remembeing
             } else {
                 rememberingReader = new RememberingReader (reader);
                 in.setCharacterStream (rememberingReader);
@@ -328,7 +319,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void startDocument (XMLLocator locator, String encoding, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("startDocument()"); // NOI18N
+            trace ("startDocument()"); // NOI18N
             
             this.locator = locator;
             try {
@@ -353,7 +344,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void xmlDecl (String version, String encoding, String standalone, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("xmlDecl()"); // NOI18N
+            trace ("xmlDecl()"); // NOI18N
             
             try {
                 ((TreeDocument)document).setHeader (version, encoding, standalone);
@@ -365,7 +356,7 @@ public final class XNIBuilder implements TreeBuilder {
         
         public void textDecl (String version, String encoding, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("textDecl()"); // NOI18N
+            trace ("textDecl()"); // NOI18N
             
             // if we are DTD parser scanning base DTD document entity
             if (isXMLDocument == false && inDTD && inEntity () == false) {
@@ -387,7 +378,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void doctypeDecl (String rootElement, String publicId, String systemId, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("doctypeDecl(" + rootElement + "," + publicId + ")"); // NOI18N
+            trace ("doctypeDecl(" + rootElement + "," + publicId + ")"); // NOI18N
             
             try {
                 TreeDocumentType _doctype =
@@ -407,7 +398,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void startElement (QName element, XMLAttributes attributes, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("startElement(" + element + ")"); // NOI18N
+            trace ("startElement(" + element + ")"); // NOI18N
             
             try {
                 tempNode = new TreeElement (element.rawname);
@@ -426,7 +417,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void emptyElement (QName qName, XMLAttributes attributes, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("emptyElement(" + qName + ")"); // NOI18N
+            trace ("emptyElement(" + qName + ")"); // NOI18N
             
             try {
                 tempNode = new TreeElement (qName.rawname, true);
@@ -526,12 +517,13 @@ public final class XNIBuilder implements TreeBuilder {
             int now, last = -1;  // tmps
             char delimiter;
             
-            if (DEBUG) Util.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
+            Util.THIS.debug ("TreeStreamBuilderXercesImpl: going to inspect:\n" + idtd);
             
             final String DOCTYPE = "<!DOCTYPE";
             int pos = idtd.lastIndexOf (DOCTYPE);
             if (pos == -1) {
-                if (DEBUG) Util.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
+                Util.THIS.debug ("TreeStreamBuilderXercesImpl: no DOCTYPE detected.");
+
                 return;
             }
             
@@ -544,7 +536,7 @@ public final class XNIBuilder implements TreeBuilder {
             
             // SYSTEM or PUBLIC or [
             
-            if (DEBUG) Util.debug ("\nTesting DOCTYPE kind-----\n" + idtd.substring (pos));
+            Util.THIS.debug ("\nTesting DOCTYPE kind-----\n" + idtd.substring (pos));
             
             if (idtd.charAt (pos) == '[') {  // just internal dtd
                 start = ++pos;
@@ -575,10 +567,11 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
             if (start == -1) {
-                if (DEBUG) Util.debug ("TreeStreamBuilderXercesImpl: it does not have internal DTD.");
+                Util.THIS.debug ("TreeStreamBuilderXercesImpl: it does not have internal DTD.");
+
                 return;
             } else {
-                if (DEBUG) Util.debug ("\n---Analyzing internal DTD:\n" + idtd.substring (start));
+                Util.THIS.debug ("\n---Analyzing internal DTD:\n" + idtd.substring (start));
             }
             
             // search for internal DTD end
@@ -620,12 +613,14 @@ public final class XNIBuilder implements TreeBuilder {
             }
             
             if (last == pos) {
-                if (DEBUG) Util.debug ("TreeStreamBuilderXercesImpl: end not reached");
+                Util.THIS.debug ("TreeStreamBuilderXercesImpl: end not reached");
+
                 return;
             }
             
             String internalDTDText = idtd.substring (start, pos);
-            if (DEBUG) Util.debug ("Internal DTD:" + internalDTDText + "\n--");
+
+            Util.THIS.debug ("Internal DTD:" + internalDTDText + "\n--");
             
             // use introspectio to set it
             
@@ -639,7 +634,7 @@ public final class XNIBuilder implements TreeBuilder {
                 throw ex;
             } catch (Exception ex) {
                 // ignore introspection exceptions
-                Util.debug ("TreeStreamBuilderXercesImpl.settingInternaDTDText", ex);
+                Util.THIS.debug ("TreeStreamBuilderXercesImpl.settingInternaDTDText", ex);
             }
             
         }
@@ -655,10 +650,7 @@ public final class XNIBuilder implements TreeBuilder {
                 
                 if (inDTD) {
                     if (currentParentNode () instanceof TreeConditionalSection) {
-                        
-                        if ( DEBUG ) {
-                            Util.debug ("\n*** TreeStreamBuilderXercesImpl::characters: XMLString = '" + text + "'"); // NOI18N
-                        }
+                        Util.THIS.debug ("\n*** TreeStreamBuilderXercesImpl::characters: XMLString = '" + text + "'"); // NOI18N
                         
                         ((TreeConditionalSection)currentParentNode ()).setIgnoredContent (
                         text.toString ()
@@ -699,8 +691,7 @@ public final class XNIBuilder implements TreeBuilder {
          * The end of an element.
          */
         public void endElement (QName element, Augmentations a) {
-            
-            if (DEBUG_XNI) trace ("endElement(" + element + ")"); // NOI18N
+            trace ("endElement(" + element + ")"); // NOI18N
             
             try {
                 TreeElement el = (TreeElement) elementStack.pop ();
@@ -741,16 +732,12 @@ public final class XNIBuilder implements TreeBuilder {
          * The end of the document.
          */
         public void endDocument (Augmentations a) {
-            if (DEBUG_XNI) trace ("endDocument()"); // NOI18N
+            trace ("endDocument()"); // NOI18N
             
             if (parentStack.isEmpty () == false) {
-                if (DEBUG_XNI) {
-                    Util.debug ("Inconsistency at parentStack: " + parentStack ); // NOI18N
-                }
+                Util.THIS.debug ("Inconsistency at parentStack: " + parentStack ); // NOI18N
             } else if (elementStack.isEmpty () == false) {
-                if (DEBUG_XNI) {
-                    Util.debug ("Inconsistency at elementStack: " + parentStack ); // NOI18N
-                }
+                Util.THIS.debug ("Inconsistency at elementStack: " + parentStack ); // NOI18N
             } else {
                 isCorrect = true;
             }
@@ -777,7 +764,7 @@ public final class XNIBuilder implements TreeBuilder {
         public void startEntity (String name, String publicId, String systemId,
         String baseSystemId, String encoding, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("startEntity(" + name + ")"); // NOI18N
+            trace ("startEntity(" + name + ")"); // NOI18N
             
             try {
                 
@@ -853,7 +840,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void comment (XMLString text, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("comment()"); // NOI18N
+            trace ("comment()"); // NOI18N
             
             try {
                 tempNode = new TreeComment (text.toString ());
@@ -876,7 +863,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void processingInstruction (String target, XMLString data, Augmentations a) {
             
-            if (DEBUG_XNI) trace ("processingInstruction(" + target + ")"); // NOI18N
+            trace ("processingInstruction(" + target + ")"); // NOI18N
             
             try {
                 tempNode = new TreeProcessingInstruction (target, data.toString ());
@@ -899,7 +886,7 @@ public final class XNIBuilder implements TreeBuilder {
          * just the entity name.
          */
         public void endEntity (String name, Augmentations a) {
-            if (DEBUG_XNI) trace ("endEntity(" + name + ")");  // NOI18N
+            trace ("endEntity(" + name + ")");  // NOI18N
             
             // skip for root entities of XML documents and
             // standalone DTDs parsed by DTD parser
@@ -934,7 +921,7 @@ public final class XNIBuilder implements TreeBuilder {
          * The start of the DTD (external part of it is reported by startEntity).
          */
         public void startDTD ( XMLLocator locator) {
-            if (DEBUG_XNI) trace ("startDTD()");  // NOI18N
+            trace ("startDTD()");  // NOI18N
             
             try {
                 inDTD = true;
@@ -958,9 +945,9 @@ public final class XNIBuilder implements TreeBuilder {
          * An element declaration.
          */
         public void elementDecl (String name, String cM) {
-            
-            if (DEBUG_XNI) trace ("elementDecl(" + name + ")"); // NOI18N
-            if (ASSERT) assert (inDTD);
+            trace ("elementDecl(" + name + ")"); // NOI18N
+            if (ASSERT)
+                doAssert (inDTD);
             
             try {
                 appendChild (new TreeElementDecl (name, this.contentModel));
@@ -976,7 +963,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void startAttlist (String elementName) {
             
-            if (DEBUG_XNI) trace ("startAttlist(" + elementName + ")"); // NOI18N
+            trace ("startAttlist(" + elementName + ")"); // NOI18N
             
             try {
                 tempNode = new TreeAttlistDecl (elementName);
@@ -991,10 +978,10 @@ public final class XNIBuilder implements TreeBuilder {
          * An attribute declaration.
          */
         public void attributeDecl (String elementName, String attributeName,
-        String type, String[] enumeration,
-        String defaultType, XMLString defaultValue) {
+                                   String type, String[] enumeration,
+                                   String defaultType, XMLString defaultValue) {
             
-            if (DEBUG_XNI) trace ("attributeDecl(" + attributeName + ")"); // NOI18N
+            trace ("attributeDecl(" + attributeName + ")"); // NOI18N
             
             try {
                 TreeAttlistDecl list;
@@ -1030,7 +1017,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void endAttlist () {
             
-            if (DEBUG_XNI) trace ("endAttlist()"); // NOI18N
+            trace ("endAttlist()"); // NOI18N
             
             attlistDecl = null;
         } // endAttlist()
@@ -1044,7 +1031,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void internalEntityDecl (String name, XMLString text, XMLString nonNormalizedText)  {
             
-            if (DEBUG_XNI) trace ("internalEntityDecl(" + name + ")"); // NOI18N
+            trace ("internalEntityDecl(" + name + ")"); // NOI18N
             
             try {
                 boolean par = name.startsWith ("%"); // NOI18N
@@ -1067,7 +1054,7 @@ public final class XNIBuilder implements TreeBuilder {
         public void externalEntityDecl (String name, String publicId,
         String systemId, String baseSystemId) {
             
-            if (DEBUG_XNI) trace ("externalEntityDecl(" + name + ")"); // NOI18N
+            trace ("externalEntityDecl(" + name + ")"); // NOI18N
             
             try {
                 boolean par = name.startsWith ("%"); // NOI18N
@@ -1088,7 +1075,7 @@ public final class XNIBuilder implements TreeBuilder {
         String publicId, String systemId,
         String notation) {
             
-            if (DEBUG_XNI) trace ("unparsedEntityDecl(" + name + ")"); // NOI18N
+            trace ("unparsedEntityDecl(" + name + ")"); // NOI18N
             
             try {
                 appendChild (new TreeEntityDecl (name, publicId, systemId, notation));
@@ -1102,7 +1089,7 @@ public final class XNIBuilder implements TreeBuilder {
          */
         public void notationDecl (String name, String publicId, String systemId) {
             
-            if (DEBUG_XNI) trace ("notationDecl(" + name + ")"); // NOI18N
+            trace ("notationDecl(" + name + ")"); // NOI18N
             
             try {
                 appendChild (new TreeNotationDecl (name, publicId, systemId));
@@ -1118,9 +1105,9 @@ public final class XNIBuilder implements TreeBuilder {
          *             either be CONDITIONAL_INCLUDE or CONDITIONAL_IGNORE.
          */
         public void startConditional (short type) {
-            
-            if (DEBUG_XNI) trace ("startConditional(" + type + ")"); // NOI18N
-            if (ASSERT) assert (inDTD);
+            trace ("startConditional(" + type + ")"); // NOI18N
+            if (ASSERT)
+                doAssert (inDTD);
             
             if (type == CONDITIONAL_INCLUDE) {
                 tempNode = new TreeConditionalSection (true);
@@ -1138,7 +1125,7 @@ public final class XNIBuilder implements TreeBuilder {
          * The end of a conditional section.
          */
         public void endConditional () {
-            if (DEBUG_XNI) trace ("endConditional()");  // NOI18N
+            trace ("endConditional()");  // NOI18N
             
             popParentNode ();
         } // endConditional()
@@ -1149,7 +1136,7 @@ public final class XNIBuilder implements TreeBuilder {
          * @throws SAXException Thrown by handler to signal an error.
          */
         public void endDTD () {
-            if (DEBUG_XNI) trace ("endDTD()");  // NOI18N
+            trace ("endDTD()");  // NOI18N
             
             if (isXMLDocument) {
                 
@@ -1180,7 +1167,7 @@ public final class XNIBuilder implements TreeBuilder {
         
         public void startContentModel (String elementName) {
             
-            if (DEBUG_XNI) Util.debug ("startContentModel(" + elementName + ")"); // NOI18N
+            Util.THIS.debug ("startContentModel(" + elementName + ")"); // NOI18N
             
             lastType = null;
             contentModelMembersStack = new Stack ();
@@ -1202,13 +1189,14 @@ public final class XNIBuilder implements TreeBuilder {
         
         // it is not called for mixed type
         public void startGroup () {
-            if (DEBUG_XNI) Util.debug ("startGroup()"); // NOI18N
+            Util.THIS.debug ("startGroup()"); // NOI18N
+
             startMembers ();
         }
         
         public void element (String elementName) {
             
-            if (DEBUG_XNI) Util.debug ("element(" + elementName + ")"); // NOI18N
+            Util.THIS.debug ("element(" + elementName + ")"); // NOI18N
             
             lastType = new NameType (elementName);
             addMember (lastType);
@@ -1216,7 +1204,7 @@ public final class XNIBuilder implements TreeBuilder {
         
         // determine type of content model group
         public void separator (short separator) {
-            if (DEBUG_XNI) Util.debug ("childrenSeparator()"); // NOI18N
+            Util.THIS.debug ("childrenSeparator()"); // NOI18N
             
             switch (separator) {
                 case SEPARATOR_SEQUENCE:
@@ -1226,7 +1214,7 @@ public final class XNIBuilder implements TreeBuilder {
                     setMembersType (new ChoiceType ());
                     break;
                 default:
-                    assert (false);
+                    doAssert (false);
             }
         }
         
@@ -1234,7 +1222,7 @@ public final class XNIBuilder implements TreeBuilder {
         // INPUT lastType field
         //
         public void occurrence (short occurrence) {
-            if (DEBUG_XNI) Util.debug ("childrenOccurrence()"); // NOI18N
+            Util.THIS.debug ("childrenOccurrence()"); // NOI18N
             
             switch (occurrence) {
                 case OCCURS_ZERO_OR_ONE:
@@ -1247,13 +1235,14 @@ public final class XNIBuilder implements TreeBuilder {
                     lastType.setMultiplicity ('+');
                     break;
                 default:
-                    assert (false);
+                    doAssert (false);
             }
             
         }
         
         public void endGroup () {
-            if (DEBUG_XNI) Util.debug ("childrenEndGroup()"); // NOI18N
+            Util.THIS.debug ("childrenEndGroup()"); // NOI18N
+
             ChildrenType group = getMembersType ();
             group.addTypes (endMembers ());
             lastType = group;
@@ -1261,7 +1250,8 @@ public final class XNIBuilder implements TreeBuilder {
         }
         
         public void endContentModel () {
-            if (DEBUG_XNI) Util.debug ("endContentModel()"); // NOI18N
+            Util.THIS.debug ("endContentModel()"); // NOI18N
+
             if (contentModel == null && lastType == null) { // #PCDATA
                 contentModel = new MixedType ();
             } else if (contentModel == null) {  // we are of CHILDREN_TYPE or mixed type
@@ -1329,18 +1319,21 @@ public final class XNIBuilder implements TreeBuilder {
         
         
         public void error (org.xml.sax.SAXParseException e) {
-            if (DEBUG_XNI) trace (e.getMessage ());
+            trace (e.getMessage ());
+
             errorHandler.message (TreeStreamBuilderErrorHandler.ERROR_ERROR, e);
         }
         
         public void warning (org.xml.sax.SAXParseException e) {
-            if (DEBUG_XNI) trace (e.getMessage ());
+            trace (e.getMessage ());
+
             errorHandler.message (TreeStreamBuilderErrorHandler.ERROR_WARNING, e);
         }
         
         public void fatalError (org.xml.sax.SAXParseException e) {
+            trace (e.getMessage ());
+
             errors++;
-            if (DEBUG_XNI) trace (e.getMessage ());
             errorHandler.message (TreeStreamBuilderErrorHandler.ERROR_FATAL_ERROR, e);
         }
         
@@ -1378,9 +1371,7 @@ public final class XNIBuilder implements TreeBuilder {
         private TreeDocumentRoot getDocumentRoot () {
             TreeDocumentRoot doc = (TreeDocumentRoot) (errors > 0 ? null : returnDocument);
             
-            if ( DEBUG ) {
-                Util.debug ("TreeStreamBuilderXercesImpl returns: " + doc); // NOI18N
-            }
+            Util.THIS.debug ("TreeStreamBuilderXercesImpl returns: " + doc); // NOI18N
             
             return doc;
         }
@@ -1469,21 +1460,19 @@ public final class XNIBuilder implements TreeBuilder {
         }
         
         private void trace (String msg) {
-            if ( DEBUG ) {
-                String location = "";
-                if (locator != null) {
-                    String entity = locator.getSystemId ();
-                    int index = entity.lastIndexOf ('/');
-                    entity = entity.substring (index > 0 ? index : 0);
-                    location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
-                }
-                
-                Util.debug ("X2T " + location + " " + msg);  // NOI18N
+            String location = "";
+            if (locator != null) {
+                String entity = locator.getSystemId ();
+                int index = entity.lastIndexOf ('/');
+                entity = entity.substring (index > 0 ? index : 0);
+                location =  entity + "/" + locator.getLineNumber () + ":" + locator.getColumnNumber () ;
             }
+            
+            Util.THIS.debug ("X2T " + location + " " + msg);  // NOI18N
         }
         
-        private void assert (boolean assert) {
-            if (assert == false) {
+        private void doAssert (boolean asrt) {
+            if (asrt == false) {
                 throw new IllegalStateException ("ASSERT"); // NOI18N
             }
         }

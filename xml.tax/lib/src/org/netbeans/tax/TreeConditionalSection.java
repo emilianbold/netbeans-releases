@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -22,8 +22,6 @@ import org.netbeans.tax.spec.ConditionalSection;
  * @version 0.1
  */
 public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child, ParameterEntityReference.Child, ConditionalSection.Child {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_INCLUDE         = "include"; // NOI18N
@@ -116,10 +114,8 @@ public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child
     /**
      */
     private final void setIncludeImpl (boolean newInclude) {
-        if ( DEBUG ) {
-            Util.debug ("\nTreeConditionalSection::setIncludeImpl: oldInclude = " + this.include); // NOI18N
-            Util.debug ("                      ::setIncludeImpl: newInclude = " + newInclude); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeConditionalSection::setIncludeImpl: oldInclude = " + this.include); // NOI18N
+        Util.THIS.debug ("                      ::setIncludeImpl: newInclude = " + newInclude); // NOI18N
         
         boolean oldInclude = this.include;
         
@@ -133,10 +129,8 @@ public class TreeConditionalSection extends AbstractTreeDTD implements DTD.Child
      * @throws InvalidArgumentException
      */
     public final void setInclude (boolean newInclude) throws ReadOnlyException, InvalidArgumentException {
-        if ( DEBUG ) {
-            Util.debug ("\nTreeConditionalSection::setInclude: oldInclude = " + this.include); // NOI18N
-            Util.debug ("                      ::setInclude: newInclude = " + newInclude); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeConditionalSection::setInclude: oldInclude = " + this.include); // NOI18N
+        Util.THIS.debug ("                      ::setInclude: newInclude = " + newInclude); // NOI18N
         
         //
         // check new value

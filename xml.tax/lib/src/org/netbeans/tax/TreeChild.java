@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -19,8 +19,6 @@ package org.netbeans.tax;
  * @version 0.1
  */
 public abstract class TreeChild extends TreeNode {
-    /** Only for debug purposes. */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_PARENT_NODE = "parentNode"; // NOI18N
@@ -97,9 +95,7 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     protected final void setParentNode (TreeParentNode newParentNode) {
-        if ( DEBUG ) {
-            Util.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
-        }
+        Util.THIS.debug ("TreeChild::setParentNode [ " + this + " ] : newParentNode = " + newParentNode); // NOI18N
         
         //
         // check new value
@@ -138,23 +134,17 @@ public abstract class TreeChild extends TreeNode {
     /**
      */
     public final TreeChild getNextSibling () {
-        if ( DEBUG ) {
-            Util.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode ()); // NOI18N
-        }
+        Util.THIS.debug ("TreeChild [ " + this + " ] ::getNextSibling: parentNode = " + getParentNode ()); // NOI18N
         
         int index = index ();
         
-        if ( DEBUG ) {
-            Util.debug ("    index : " + index); // NOI18N
-        }
+        Util.THIS.debug ("    index : " + index); // NOI18N
         
         if ( index == -1 ) { // does not have parent node
             return null;
         }
         
-        if ( DEBUG ) {
-            Util.debug ("    parentNode.childNodes.size : " + getParentNode ().getChildNodes ().size ()); // NOI18N
-        }
+        Util.THIS.debug ("    parentNode.childNodes.size : " + getParentNode ().getChildNodes ().size ()); // NOI18N
         
         if ( (index + 1) == getParentNode ().getChildNodes ().size () ) { // it is last node of parent node
             return null;

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.editor;
@@ -32,11 +32,6 @@ import org.netbeans.tax.traversal.TreeNodeFilter;
  */
 public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustomPropertyEditor {
     /** */
-    private static final boolean DEBUG      = false;
-    /** */
-    private static final boolean DEBUG_TREE = false;
-
-    /** */
     private static final long serialVersionUID = 1767193347881681541L;    
 
     
@@ -49,29 +44,29 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
     //
         
     static {
-        publicNodeTypeNamesMap.put (TreeNode.class, Util.getString ("NAME_Any_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeParentNode.class, Util.getString ("NAME_Any_Parent_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeCharacterData.class, Util.getString ("NAME_Any_Character_Data_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeReference.class, Util.getString ("NAME_Any_Reference_Node_Type"));
-//          publicNodeTypeNamesMap.put (TreeEntityReference.class, Util.getString ("NAME_Any_Entity_Reference_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeNodeDecl.class, Util.getString ("NAME_Any_Declaration_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeNode.class, Util.THIS.getString ("NAME_Any_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeParentNode.class, Util.THIS.getString ("NAME_Any_Parent_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeCharacterData.class, Util.THIS.getString ("NAME_Any_Character_Data_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeReference.class, Util.THIS.getString ("NAME_Any_Reference_Node_Type"));
+//          publicNodeTypeNamesMap.put (TreeEntityReference.class, Util.THIS.getString ("NAME_Any_Entity_Reference_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeNodeDecl.class, Util.THIS.getString ("NAME_Any_Declaration_Node_Type"));
 
-        publicNodeTypeNamesMap.put (TreeComment.class, Util.getString ("NAME_Comment_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeProcessingInstruction.class, Util.getString ("NAME_Processing_Instruction_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeText.class, Util.getString ("NAME_Text_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeCDATASection.class, Util.getString ("NAME_CDATA_Section_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeElement.class, Util.getString ("NAME_Element_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeAttribute.class, Util.getString ("NAME_Attribute_Node_Type"));
-//          publicNodeTypeNamesMap.put (TreeDocument.class, Util.getString ("NAME_Document_Node_Type"));
-//          publicNodeTypeNamesMap.put (TreeDTD.class, Util.getString ("NAME_DTD_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeConditionalSection.class, Util.getString ("NAME_Conditional_Section_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeDocumentType.class, Util.getString ("NAME_Document_Type_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeGeneralEntityReference.class, Util.getString ("NAME_General_Entity_Reference_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeParameterEntityReference.class, Util.getString ("NAME_Parameter_Entity_Reference_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeElementDecl.class, Util.getString ("NAME_Element_Declaration_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeEntityDecl.class, Util.getString ("NAME_Entity_Declaration_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeAttlistDecl.class, Util.getString ("NAME_Attlist_Declaration_Node_Type"));
-        publicNodeTypeNamesMap.put (TreeNotationDecl.class, Util.getString ("NAME_Notation_Declaration_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeComment.class, Util.THIS.getString ("NAME_Comment_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeProcessingInstruction.class, Util.THIS.getString ("NAME_Processing_Instruction_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeText.class, Util.THIS.getString ("NAME_Text_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeCDATASection.class, Util.THIS.getString ("NAME_CDATA_Section_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeElement.class, Util.THIS.getString ("NAME_Element_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeAttribute.class, Util.THIS.getString ("NAME_Attribute_Node_Type"));
+//          publicNodeTypeNamesMap.put (TreeDocument.class, Util.THIS.getString ("NAME_Document_Node_Type"));
+//          publicNodeTypeNamesMap.put (TreeDTD.class, Util.THIS.getString ("NAME_DTD_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeConditionalSection.class, Util.THIS.getString ("NAME_Conditional_Section_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeDocumentType.class, Util.THIS.getString ("NAME_Document_Type_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeGeneralEntityReference.class, Util.THIS.getString ("NAME_General_Entity_Reference_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeParameterEntityReference.class, Util.THIS.getString ("NAME_Parameter_Entity_Reference_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeElementDecl.class, Util.THIS.getString ("NAME_Element_Declaration_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeEntityDecl.class, Util.THIS.getString ("NAME_Entity_Declaration_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeAttlistDecl.class, Util.THIS.getString ("NAME_Attlist_Declaration_Node_Type"));
+        publicNodeTypeNamesMap.put (TreeNotationDecl.class, Util.THIS.getString ("NAME_Notation_Declaration_Node_Type"));
     }
 
 
@@ -177,7 +172,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
 
         acceptPolicyPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptRejectLabel.setText(Util.getString ("LBL_acceptReject"));
+        acceptRejectLabel.setText(Util.THIS.getString ("LBL_acceptReject"));
         acceptRejectLabel.setLabelFor(rbPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -187,7 +182,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
 
         rbPanel.setLayout(new java.awt.GridBagLayout());
 
-        acceptRadioButton.setText(Util.getString ("LBL_showItRadioButton"));
+        acceptRadioButton.setText(Util.THIS.getString ("LBL_showItRadioButton"));
         acceptPolicyGroup.add(acceptRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -197,7 +192,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         rbPanel.add(acceptRadioButton, gridBagConstraints);
 
-        rejectRadioButton.setText(Util.getString ("LBL_hideItRadioButton"));
+        rejectRadioButton.setText(Util.THIS.getString ("LBL_hideItRadioButton"));
         acceptPolicyGroup.add(rejectRadioButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -232,7 +227,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         tablePanel.add(tableScrollPane, gridBagConstraints);
 
-        addButton.setText(Util.getString ("LBL_addButton"));
+        addButton.setText(Util.THIS.getString ("LBL_addButton"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -248,7 +243,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
         tablePanel.add(addButton, gridBagConstraints);
 
-        removeButton.setText(Util.getString ("LBL_removeButton"));
+        removeButton.setText(Util.THIS.getString ("LBL_removeButton"));
         removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -380,11 +375,9 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         public Object getValueAt (int row, int column) {
             Object retVal = new Item (new NamedClass ((Class)nodeTypesList.get (row)));
 
-            if ( DEBUG ) {
-                Util.debug ("<-- getValue: row    = " + row); // NOI18N
-                Util.debug ("<-- getValue: column = " + column); // NOI18N
-                Util.debug ("<-- getValue: " + retVal.getClass().getName() + " -- '" + retVal + "'"); // NOI18N
-            }            
+            Util.THIS.debug ("<-- getValue: row    = " + row); // NOI18N
+            Util.THIS.debug ("<-- getValue: column = " + column); // NOI18N
+            Util.THIS.debug ("<-- getValue: " + retVal.getClass().getName() + " -- '" + retVal + "'"); // NOI18N
 
             return retVal;
         }
@@ -404,11 +397,9 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
 
             Class type = null;
 
-            if ( DEBUG ) {
-                Util.debug ("--> setValue: " + val.getClass().getName() + " -- '" + val + "'"); // NOI18N
-                Util.debug ("--> setValue: row    = " + row); // NOI18N
-                Util.debug ("--> setValue: column = " + column); // NOI18N
-            }
+            Util.THIS.debug ("--> setValue: " + val.getClass().getName() + " -- '" + val + "'"); // NOI18N
+            Util.THIS.debug ("--> setValue: row    = " + row); // NOI18N
+            Util.THIS.debug ("--> setValue: column = " + column); // NOI18N
 
             if ( val instanceof String ) {
                 try {
@@ -424,7 +415,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             
             if ( ( type == null ) ||
                  ( TreeNodeFilter.isValidNodeType (type) == false ) ) {
-                Util.notifyWarning (Util.getString ("MSG_invalidNodeType", val));
+                Util.THIS.notifyWarning (Util.THIS.getString ("MSG_invalidNodeType", val));
                 return;
             }
             nodeTypesList.set (row, type);
@@ -433,7 +424,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
 	/**
 	 */
         public String getColumnName (int column) {
-            return Util.getString ("LBL_nodeType");
+            return Util.THIS.getString ("LBL_nodeType");
         }
 
         /** Returns true for all cells which are editable. For a 
@@ -526,9 +517,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
      */
     private static Vector getPublicNodeTypesInheritanceTree () {
         if ( publicNodeTypesInheritanceTree == null ) {
-            if ( DEBUG_TREE ) {
-                Util.debug ("Init Set"); // NOI18N
-            }
+            Util.THIS.debug ("Init Set"); // NOI18N
             
             Item rootItem = new Item();
             Object[] array = publicNodeTypeNamesMap.keySet().toArray();
@@ -570,9 +559,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             }
             Item newItem = new Item (item, itemPrefix);
             
-            if ( DEBUG_TREE ) {
-                Util.debug (">>" + newItem.toString() + "<<"); // NOI18N
-            }
+            Util.THIS.debug (">>" + newItem.toString() + "<<"); // NOI18N
 
             publicNodeTypesInheritanceTree.add (newItem);
 
@@ -642,10 +629,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
                 return false;
             }
 
-            if ( DEBUG ) {
-                Util.debug ("___ Item::equals: this = " + this); // NOI18N
-                Util.debug ("___     ::equals: obj  = " + obj); // NOI18N
-            }
+            Util.THIS.debug ("___ Item::equals: this = " + this); // NOI18N
+            Util.THIS.debug ("___     ::equals: obj  = " + obj); // NOI18N
 
             Item peer = (Item)obj;
             return clazz.equals (peer.clazz);
@@ -669,10 +654,8 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
         /**
          */
         private static void insertItemIntoLayer (Set layer, Item newItem) {
-            if ( DEBUG_TREE ) {
-                Util.debug ("\n\nInsert newItem : " + newItem); // NOI18N
-                Util.debug ("       Item : set = " + layer); // NOI18N
-            }
+            Util.THIS.debug ("\n\nInsert newItem : " + newItem); // NOI18N
+            Util.THIS.debug ("       Item : set = " + layer); // NOI18N
 
             boolean inserted = false;
 
@@ -680,28 +663,19 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             for (int i = 0; i < array.length; i++) {
                 Item item = (Item) array[i];
             
-                if ( DEBUG_TREE ) {
-                    Util.debug ("       Item : item [" + i + "] = " + item); // NOI18N
-                }
+                Util.THIS.debug ("       Item : item [" + i + "] = " + item); // NOI18N
 
                 if ( item.clazz.clazz == newItem.clazz.clazz ) { // previously inserted
-                    if ( DEBUG_TREE ) {
-                        Util.debug ("       Item : #1 -= [ ITEM.clazz.clazz == NEW_ITEM.clazz.clazz   => IGNORE insert ]=-"); // NOI18N
-                    }
-                
+                    Util.THIS.debug ("       Item : #1 -= [ ITEM.clazz.clazz == NEW_ITEM.clazz.clazz   => IGNORE insert ]=-"); // NOI18N
                     // DO NOTHING
                     inserted = true;
                 } else if ( item.clazz.clazz.isAssignableFrom (newItem.clazz.clazz) ) { // II.
-                    if ( DEBUG_TREE ) {
-                        Util.debug ("       Item : #2 -= [ NEW_ITEM is subclass of actual ITEM   => insert to ITEM.LAYER ]=-"); // NOI18N
-                    }
+                    Util.THIS.debug ("       Item : #2 -= [ NEW_ITEM is subclass of actual ITEM   => insert to ITEM.LAYER ]=-"); // NOI18N
 
                     insertItemIntoLayer (item.layer, newItem);
                     inserted = true;
                 } else if ( newItem.clazz.clazz.isAssignableFrom (item.clazz.clazz) ) { // I.
-                    if ( DEBUG_TREE ) {
-                        Util.debug ("       Item : #3 -= [ actual ITEM '" + item + "' is subclass of NEW_ITEM   => item REMOVED & insert to NEW_ITEM.LAYER ]=-"); // NOI18N
-                    }
+                    Util.THIS.debug ("       Item : #3 -= [ actual ITEM '" + item + "' is subclass of NEW_ITEM   => item REMOVED & insert to NEW_ITEM.LAYER ]=-"); // NOI18N
                 
                     if ( newItem.clazz.clazz.isInterface() == false ) {
                         layer.remove (item);
@@ -711,9 +685,7 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
             }
 
             if ( inserted == false ) { // III.
-                if ( DEBUG_TREE ) {
-                    Util.debug ("       Item : #4 -= [ item '" + newItem + "' INSERTED into " + layer + " ] =-"); // NOI18N
-                }
+                Util.THIS.debug ("       Item : #4 -= [ item '" + newItem + "' INSERTED into " + layer + " ] =-"); // NOI18N
 
                 layer.add (newItem);
             }
@@ -725,22 +697,22 @@ public class TreeNodeFilterCustomEditor extends JPanel implements EnhancedCustom
      */
     public void initAccessibility(){
         
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_TreeNodeFilterCustomEditor"));
+       this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_TreeNodeFilterCustomEditor"));
        
-       acceptRadioButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_acceptRejectLabel"));
-       acceptRadioButton.setMnemonic((Util.getString ("LBL_showItRadioButton_Mnem")).charAt(0));
+       acceptRadioButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_acceptRejectLabel"));
+       acceptRadioButton.setMnemonic((Util.THIS.getString ("LBL_showItRadioButton_Mnem")).charAt(0));
        
-       rejectRadioButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_rejectRadioButton"));
-       rejectRadioButton.setMnemonic((Util.getString ("LBL_hideItRadioButton_Mnem")).charAt(0));       
+       rejectRadioButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_rejectRadioButton"));
+       rejectRadioButton.setMnemonic((Util.THIS.getString ("LBL_hideItRadioButton_Mnem")).charAt(0));       
        
-       addButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_addButton1"));
-       addButton.setMnemonic((Util.getString ("LBL_addButton_Mnem")).charAt(0));       
+       addButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_addButton1"));
+       addButton.setMnemonic((Util.THIS.getString ("LBL_addButton_Mnem")).charAt(0));       
        
-       removeButton.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_removeButton1"));
-       removeButton.setMnemonic((Util.getString ("LBL_removeButton_Mnem")).charAt(0));              
+       removeButton.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_removeButton1"));
+       removeButton.setMnemonic((Util.THIS.getString ("LBL_removeButton_Mnem")).charAt(0));              
        
-       nodeTypesTable.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_nodeTypesTable"));
-       nodeTypesTable.getAccessibleContext().setAccessibleName(Util.getString("ACSN_nodeTypesTable"));
+       nodeTypesTable.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_nodeTypesTable"));
+       nodeTypesTable.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_nodeTypesTable"));
     }    
 
 

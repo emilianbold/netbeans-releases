@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.actions;
@@ -87,7 +87,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             // ask for data object location
             
             FileObject primFile = dtdo.getPrimaryFile();
-            String name = primFile.getName() + Util.getString("NAME_SUFFIX_Stylesheet");
+            String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Stylesheet");
             FileObject folder = primFile.getParent();
             String packageName = folder.getPackageName ('.');
 
@@ -114,12 +114,12 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
                     doc.insertString(0, css, null);
                     ec.saveDocument();
                 } catch (BadLocationException locex) {
-                    emgr.annotate(locex, Util.getString("MSG_Leaving_CSS_in_clipboard"));
+                    emgr.annotate(locex, Util.THIS.getString("MSG_Leaving_CSS_in_clipboard"));
                     emgr.notify(locex);                    
                     
                     StringSelection ss = new StringSelection(css);
                     TopManager.getDefault().getClipboard().setContents(ss, null);
-                    GuiUtil.setStatusText(Util.getString("MSG_CSS_placed_in_clipboard"));
+                    GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_placed_in_clipboard"));
                     
                 }
                 
@@ -134,12 +134,12 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             
         } catch (IOException ex) {
 
-            emgr.annotate(ex, Util.getString("MSG_IO_ex_CSS_writing."));
+            emgr.annotate(ex, Util.THIS.getString("MSG_IO_ex_CSS_writing."));
             emgr.notify(ex);
             
         } catch (TreeException ex) {
             
-            GuiUtil.setStatusText(Util.getString("MSG_CSS_fatal_error"));
+            GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_fatal_error"));
             
         }
 
@@ -155,7 +155,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
     }
 
     public String getName() {
-        return Util.getString("NAME_Generate_CSS");
+        return Util.THIS.getString("NAME_Generate_CSS");
     }
 
 }

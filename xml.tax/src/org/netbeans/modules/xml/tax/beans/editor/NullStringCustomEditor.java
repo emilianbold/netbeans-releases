@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.editor;
@@ -95,7 +95,7 @@ public class NullStringCustomEditor extends JPanel implements EnhancedCustomProp
      */
     public void initAccessibility(){
         
-       this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_NullStringCustomEditor"));
-       textArea.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_textArea")); 
+       this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_NullStringCustomEditor"));
+       textArea.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_textArea")); 
     }
 }

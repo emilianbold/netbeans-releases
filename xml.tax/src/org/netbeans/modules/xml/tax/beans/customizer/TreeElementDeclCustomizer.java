@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -37,8 +37,8 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
-        contentLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdContent")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlName")); // NOI18N
+        contentLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtdContent")); // NOI18N
         
         initAccessibility ();
     }
@@ -73,7 +73,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
             getElementDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -90,7 +90,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
             getElementDecl ().setContentType (contentField.getText ());
         } catch (TreeException exc) {
             updateContentTypeComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -131,7 +131,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("PROP_xmlName"));
+        nameLabel.setText(Util.THIS.getString ("PROP_xmlName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -156,7 +156,7 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        contentLabel.setText(Util.getString ("PROP_dtdContent"));
+        contentLabel.setText(Util.THIS.getString ("PROP_dtdContent"));
         contentLabel.setLabelFor(contentField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -217,11 +217,11 @@ public class TreeElementDeclCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField"));
         nameField.selectAll ();
-        contentField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_contentField"));
+        contentField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_contentField"));
         contentField.selectAll ();
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeElementDeclCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeElementDeclCustomizer"));
     }
 }

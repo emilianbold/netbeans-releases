@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -44,8 +44,6 @@ import org.netbeans.tax.spec.Text;
  * @version 0.1
  */
 public final class TreeUtilities {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     private static Constraints constraints = new Constraints ();
@@ -537,7 +535,7 @@ public final class TreeUtilities {
          */
         private static void checkNullArgument (String argName, Object argValue) throws InvalidArgumentException {
             if ( argValue == null ) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_null_value"));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_null_value"));
             }
         }
         
@@ -545,7 +543,7 @@ public final class TreeUtilities {
          */
         private static void checkEmptyString (String argName, String string, boolean trim) throws InvalidArgumentException {
             if ( (string.length () == 0) || (trim && (string.trim ().equals (""))) ) { // NOI18N
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_empty_value"));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_empty_value"));
             }
         }
         
@@ -564,13 +562,13 @@ public final class TreeUtilities {
             
             char first = name.charAt (0);
             if (!!! isXMLNameStartChar (first)) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_first_char", String.valueOf (first)));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_first_char", String.valueOf (first)));
             }
             
             for (int i = 0, len = name.length (); i < len; i++) {
                 char c = name.charAt (i);
                 if (!!! isXMLNameChar (c)) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", String.valueOf (c)));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", String.valueOf (c)));
                 }
             }
         }
@@ -586,7 +584,7 @@ public final class TreeUtilities {
             for (int i = 0, len = token.length (); i < len; i++) {
                 char c = token.charAt (i);
                 if (!!! isXMLNameChar (c)) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", String.valueOf (c)));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", String.valueOf (c)));
                 }
             }
             
@@ -601,13 +599,13 @@ public final class TreeUtilities {
             
             char first = name.charAt (0);
             if (!!! isXMLNCNameStartChar (first)) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_first_char", String.valueOf (first)));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_first_char", String.valueOf (first)));
             }
             
             for (int i = 0, len = name.length (); i < len; i++) {
                 char c = name.charAt (i);
                 if (!!! isXMLNCNameChar (c)) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", String.valueOf (c)));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", String.valueOf (c)));
                 }
             }
         }
@@ -615,14 +613,14 @@ public final class TreeUtilities {
         /**
          */
         private static void checkNamespacePrefix (String prefix) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_NamespacePrefix");
+            String argName = Util.THIS.getString ("PROP_NamespacePrefix");
             checkXMLNCName (argName, prefix);
         }
         
         /**
          */
         private static void checkNamespaceURI (String uri) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_NamespaceURI");
+            String argName = Util.THIS.getString ("PROP_NamespaceURI");
             checkAttributeValue (argName, uri);
         }
         
@@ -650,11 +648,11 @@ public final class TreeUtilities {
             
             int index = value.indexOf ('<');
             if ( index != -1 ) {
-                throw new InvalidArgumentException (argName, Util.getString ("EXC_invalid_attribute_value", value));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_invalid_attribute_value", value));
             }
             index = value.indexOf ('&');
             if ( index != -1 ) {
-                throw new InvalidArgumentException (argName, Util.getString ("EXC_invalid_attribute_value", value));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_invalid_attribute_value", value));
             }
             
             boolean apostrofFound = false;
@@ -663,12 +661,12 @@ public final class TreeUtilities {
                 char c = value.charAt (i);
                 if (c == '\'')
                     if (quoteFound)
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_invalid_attribute_value", value));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_invalid_attribute_value", value));
                     else
                         apostrofFound = true;
                 if (c == '"')
                     if (apostrofFound)
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_invalid_attribute_value", value));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_invalid_attribute_value", value));
                     else
                         quoteFound = true;
             }
@@ -683,7 +681,7 @@ public final class TreeUtilities {
             for (int i = 0, len = text.length (); i < len; i++) {
                 char c = text.charAt (i);
                 if (!!! isXMLChar (c)) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", "0x" + Integer.toHexString (c))); // NOI18N
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", "0x" + Integer.toHexString (c))); // NOI18N
                 }
             }
         }
@@ -697,12 +695,12 @@ public final class TreeUtilities {
                 char c = systemId.charAt (i);
                 if (c == '\'')
                     if (quoteFound)
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_system_id", systemId));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_system_id", systemId));
                     else
                         apostrofFound = true;
                 if (c == '"')
                     if (apostrofFound)
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_system_id", systemId));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_system_id", systemId));
                     else
                         quoteFound = true;
             }
@@ -717,18 +715,18 @@ public final class TreeUtilities {
                 char c = publicId.charAt (i);
                 if (c == '\'') {
                     if (quoteFound) {
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_public_id",  publicId));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_public_id",  publicId));
                     } else {
                         apostrofFound = true;
                     }
                 } else if (c == '"') {
                     if (apostrofFound) {
-                        throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_public_id",  publicId));
+                        throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_public_id",  publicId));
                     } else {
                         quoteFound = true;
                     }
                 } else if ( isXMLPubidLiteral (c) == false ) {
-                    throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_public_id",  publicId));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_public_id",  publicId));
                 }
             }
         }
@@ -744,27 +742,20 @@ public final class TreeUtilities {
         /**
          */
         private static void checkEncoding (String argName, String encoding) throws InvalidArgumentException {
-            if ( DEBUG ) {
-                Util.debug ("TreeUtilities::checkEncoding: encoding = " + encoding); // NOI18N
-            }
+            Util.THIS.debug ("TreeUtilities::checkEncoding: encoding = " + encoding); // NOI18N
             
             ByteArrayInputStream stream = new ByteArrayInputStream (new byte[0]);
             
-            if ( DEBUG ) {
-                Util.debug ("      ::checkEncoding: stream = " + stream); // NOI18N
-            }
+            Util.THIS.debug ("      ::checkEncoding: stream = " + stream); // NOI18N
             
             try {
                 InputStreamReader reader = new InputStreamReader (stream, iana2java (encoding));
                 
-                if ( DEBUG ) {
-                    Util.debug ("      ::checkEncoding: reader = " + reader); // NOI18N
-                }
+                Util.THIS.debug ("      ::checkEncoding: reader = " + reader); // NOI18N
             } catch (IOException exc) {
-                if ( DEBUG ) {
-                    Util.debug ("      ::checkEncoding: IOException !!!", exc); // NOI18N
-                }
-                throw new InvalidArgumentException (argName, Util.getString ("EXC_Invalid_encoding", encoding));
+                Util.THIS.debug ("      ::checkEncoding: IOException !!!", exc); // NOI18N
+
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("EXC_Invalid_encoding", encoding));
             }
         }
         
@@ -772,7 +763,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkAttributeName (TreeName treeName) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_AttributeName");
+            String argName = Util.THIS.getString ("PROP_AttributeName");
             checkAttributeName (argName, treeName.getQualifiedName ());
         }
         
@@ -791,7 +782,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkElementTagName (TreeName elementTreeName) throws InvalidArgumentException {
-            checkElementName (Util.getString ("PROP_ElementTagName"), elementTreeName.getQualifiedName ());
+            checkElementName (Util.THIS.getString ("PROP_ElementTagName"), elementTreeName.getQualifiedName ());
         }
         
         /**
@@ -812,7 +803,7 @@ public final class TreeUtilities {
             if ( systemId == null ) {
                 return;
             }
-            checkSystemId (Util.getString ("PROP_NotationDeclSystemId"), systemId);
+            checkSystemId (Util.THIS.getString ("PROP_NotationDeclSystemId"), systemId);
         }
         
         /**
@@ -832,7 +823,7 @@ public final class TreeUtilities {
         public void checkDocumentEncoding (String encoding) throws InvalidArgumentException {
             if ( encoding == null )
                 return;
-            checkEncoding (Util.getString ("PROP_DocumentEncoding"), encoding);
+            checkEncoding (Util.THIS.getString ("PROP_DocumentEncoding"), encoding);
         }
         
         /**
@@ -852,7 +843,7 @@ public final class TreeUtilities {
         public void checkDTDEncoding (String encoding) throws InvalidArgumentException {
             if ( encoding == null )
                 return;
-            checkEncoding (Util.getString ("PROP_DTDEncoding"), encoding);
+            checkEncoding (Util.THIS.getString ("PROP_DTDEncoding"), encoding);
         }
         
         /**
@@ -870,7 +861,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkCharacterReferenceName (String name) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_CharacterReferenceName");
+            String argName = Util.THIS.getString ("PROP_CharacterReferenceName");
             
             checkNullArgument (argName, name);
             checkEmptyString (argName, name, true);
@@ -878,12 +869,12 @@ public final class TreeUtilities {
             int i = 0;
             char first = name.charAt (i);
             if ( first != '#' ) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_first_char", String.valueOf (first)));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_first_char", String.valueOf (first)));
             }
             
             i++;
             if ( name.length () <= i ) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_empty_value"));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_empty_value"));
             }
             
             char second = name.charAt (i);
@@ -893,20 +884,20 @@ public final class TreeUtilities {
                 
                 i++;
                 if ( name.length () <= i ) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_empty_value"));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_empty_value"));
                 }
             }
             String number = name.substring (i);
             try {
                 Short.parseShort (number, radix);
             } catch (NumberFormatException exc) {
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", number));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", number));
             }
             
 /*            for (int len = name.length(); i < len; i++) {
                 char c = name.charAt (i);
                 if ( Character.digit (c, radix) == -1 ) {
-                    throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", String.valueOf (c)));
+                    throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", String.valueOf (c)));
                 }
             }*/
         }
@@ -926,24 +917,24 @@ public final class TreeUtilities {
         /**
          */
         public void checkEntityDeclInternalText (String internalText) throws InvalidArgumentException {
-            checkNullArgument (Util.getString ("PROP_EntityDeclInternalText"), internalText);
+            checkNullArgument (Util.THIS.getString ("PROP_EntityDeclInternalText"), internalText);
             boolean apostrofFound = false;
             boolean quoteFound = false;
             for (int i = 0, len = internalText.length (); i < len; i++) {
                 char c = internalText.charAt (i);
                 if (c == '\'')
                     if (quoteFound)
-                        throw new InvalidArgumentException (Util.getString ("PROP_EntityDeclInternalText"), Util.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
+                        throw new InvalidArgumentException (Util.THIS.getString ("PROP_EntityDeclInternalText"), Util.THIS.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
                     else
                         apostrofFound = true;
                 if (c == '"')
                     if (apostrofFound)
-                        throw new InvalidArgumentException (Util.getString ("PROP_EntityDeclInternalText"), Util.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
+                        throw new InvalidArgumentException (Util.THIS.getString ("PROP_EntityDeclInternalText"), Util.THIS.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
                     else
                         quoteFound = true;
                 // todo
                 //    if (c == '%' || c == '&')
-                //    throw new InvalidArgumentException ("EntityDeclInternalText", Util.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
+                //    throw new InvalidArgumentException ("EntityDeclInternalText", Util.THIS.getString ("EXC_Invalid_Entity_Decl_Internal_text", internalText));
             }
         }
         
@@ -963,7 +954,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkAttlistDeclElementName (String elementName) throws InvalidArgumentException {
-            checkElementName (Util.getString ("PROP_AttlistDeclElementName"), elementName);
+            checkElementName (Util.THIS.getString ("PROP_AttlistDeclElementName"), elementName);
         }
         
         /**
@@ -984,8 +975,8 @@ public final class TreeUtilities {
             if (version == null)
                 return;
             if (!!! version.equals ("1.0")) { // NOI18N
-                String arg = Util.getString ("PROP_DTDVersion");
-                String msg = Util.getString ("PROP_invalid_version_number", version);
+                String arg = Util.THIS.getString ("PROP_DTDVersion");
+                String msg = Util.THIS.getString ("PROP_invalid_version_number", version);
                 throw new InvalidArgumentException (arg, msg);
             }
         }
@@ -1008,7 +999,7 @@ public final class TreeUtilities {
             if ( systemId == null ) {
                 return;
             }
-            checkSystemId (Util.getString ("PROP_DocumentTypeSystemId"), systemId);
+            checkSystemId (Util.THIS.getString ("PROP_DocumentTypeSystemId"), systemId);
         }
         
         /**
@@ -1026,7 +1017,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkDocumentTypeElementName (String elementName) throws InvalidArgumentException {
-            checkElementName (Util.getString ("PROP_DocumentTypeElementName"), elementName);
+            checkElementName (Util.THIS.getString ("PROP_DocumentTypeElementName"), elementName);
         }
         
         /**
@@ -1050,7 +1041,7 @@ public final class TreeUtilities {
                 return;
             if (standalone.equals ("no")) // NOI18N
                 return;
-            throw new InvalidArgumentException (standalone, standalone + Util.getString ("PROP_is_not_valid_standalone_value"));
+            throw new InvalidArgumentException (standalone, standalone + Util.THIS.getString ("PROP_is_not_valid_standalone_value"));
         }
         
         /**
@@ -1068,7 +1059,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkEntityDeclName (String name) throws InvalidArgumentException {
-            checkXMLName (Util.getString ("PROP_EntityDeclName"), name);
+            checkXMLName (Util.THIS.getString ("PROP_EntityDeclName"), name);
         }
         
         /**
@@ -1090,7 +1081,7 @@ public final class TreeUtilities {
                 return;
             }
             for (int i = 0, len = enumeratedType.length; i < len; i++)
-                checkNmToken (Util.getString ("PROP_AttlistDeclAttributeEnumeratedType"), enumeratedType[i]);
+                checkNmToken (Util.THIS.getString ("PROP_AttlistDeclAttributeEnumeratedType"), enumeratedType[i]);
         }
         
         /**
@@ -1108,11 +1099,11 @@ public final class TreeUtilities {
         /**
          */
         public void checkProcessingInstructionData (String data) throws InvalidArgumentException {
-            checkCharacterData (Util.getString ("PROP_ProcessingInstructionData"), data);
+            checkCharacterData (Util.THIS.getString ("PROP_ProcessingInstructionData"), data);
             
             int index = data.indexOf ("?>"); // NOI18N
             if (index != -1) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_processing_instruction_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_processing_instruction_data"));
             }
         }
         
@@ -1133,7 +1124,7 @@ public final class TreeUtilities {
             if ( notationName == null ) {
                 return;
             }
-            checkNotationName (Util.getString ("PROP_EntityDeclNotationName"), notationName);
+            checkNotationName (Util.THIS.getString ("PROP_EntityDeclNotationName"), notationName);
         }
         
         /**
@@ -1151,7 +1142,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkElementDeclName (String name) throws InvalidArgumentException {
-            checkElementName (Util.getString ("PROP_ElementDeclName"), name);
+            checkElementName (Util.THIS.getString ("PROP_ElementDeclName"), name);
         }
         
         /**
@@ -1169,7 +1160,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkGeneralEntityReferenceName (String name) throws InvalidArgumentException {
-            checkXMLName (Util.getString ("PROP_GeneralEntityReferenceName"), name);
+            checkXMLName (Util.THIS.getString ("PROP_GeneralEntityReferenceName"), name);
         }
         
         /**
@@ -1190,7 +1181,7 @@ public final class TreeUtilities {
             if ( systemId == null ) {
                 return;
             }
-            checkSystemId (Util.getString ("PROP_EntityDeclSystemId"), systemId);
+            checkSystemId (Util.THIS.getString ("PROP_EntityDeclSystemId"), systemId);
         }
         
         /**
@@ -1208,11 +1199,11 @@ public final class TreeUtilities {
         /**
          */
         public void checkProcessingInstructionTarget (String target) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_ProcessingInstructionTarget");
+            String argName = Util.THIS.getString ("PROP_ProcessingInstructionTarget");
             checkXMLName (argName, target);
             
             if (target.equalsIgnoreCase ("xml")) { // NOI18N
-                throw new InvalidArgumentException (argName, Util.getString ("PROP_invalid_content_char", target));
+                throw new InvalidArgumentException (argName, Util.THIS.getString ("PROP_invalid_content_char", target));
             }
         }
         
@@ -1234,7 +1225,7 @@ public final class TreeUtilities {
             if ( publicId == null ) {
                 return;
             }
-            checkPublicId (Util.getString ("PROP_EntityDeclPublicId"), publicId);
+            checkPublicId (Util.THIS.getString ("PROP_EntityDeclPublicId"), publicId);
         }
         
         
@@ -1262,17 +1253,17 @@ public final class TreeUtilities {
                 char c = defaultValue.charAt (i);
                 if (c == '\'')
                     if (quoteFound)
-                        throw new InvalidArgumentException (Util.getString ("PROP_AttlistDeclAttributeDefaultValue"), Util.getString ("EXC_invalid_attribute_default_value", defaultValue));
+                        throw new InvalidArgumentException (Util.THIS.getString ("PROP_AttlistDeclAttributeDefaultValue"), Util.THIS.getString ("EXC_invalid_attribute_default_value", defaultValue));
                     else
                         apostrofFound = true;
                 if (c == '"')
                     if (apostrofFound)
-                        throw new InvalidArgumentException (Util.getString ("PROP_AttlistDeclAttributeDefaultValue"), Util.getString ("EXC_invalid_attribute_default_value", defaultValue));
+                        throw new InvalidArgumentException (Util.THIS.getString ("PROP_AttlistDeclAttributeDefaultValue"), Util.THIS.getString ("EXC_invalid_attribute_default_value", defaultValue));
                     else
                         quoteFound = true;
                 // todo
                 //    if (c == '%' || c == '&')
-                //    throw new InvalidArgumentException ("AttlistDeclAttributeDefaultValue", Util.getString ("EXC_invalid_attribute_default_value", defaultValue));
+                //    throw new InvalidArgumentException ("AttlistDeclAttributeDefaultValue", Util.THIS.getString ("EXC_invalid_attribute_default_value", defaultValue));
             }
         }
         
@@ -1294,8 +1285,8 @@ public final class TreeUtilities {
             if ( version == null )
                 return;
             if (!!! version.equals ("1.0")) { // NOI18N
-                String arg = Util.getString ("PROP_DocumentFragmentVersion");
-                String msg = Util.getString ("PROP_invalid_version_number", version);
+                String arg = Util.THIS.getString ("PROP_DocumentFragmentVersion");
+                String msg = Util.THIS.getString ("PROP_invalid_version_number", version);
                 throw new InvalidArgumentException (arg, msg);
             }
         }
@@ -1315,7 +1306,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkNotationDeclName (String name) throws InvalidArgumentException {
-            checkXMLName (Util.getString ("PROP_NotationDeclName"), name);
+            checkXMLName (Util.THIS.getString ("PROP_NotationDeclName"), name);
         }
         
         /**
@@ -1333,7 +1324,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkAttributeValue (String value) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_AttributeValue");
+            String argName = Util.THIS.getString ("PROP_AttributeValue");
             checkAttributeValue (argName, value);
         }
         
@@ -1352,7 +1343,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkParameterEntityReferenceName (String name) throws InvalidArgumentException {
-            checkXMLName (Util.getString ("PROP_ParameterEntityReferenceName"), name);
+            checkXMLName (Util.THIS.getString ("PROP_ParameterEntityReferenceName"), name);
         }
         
         /**
@@ -1372,7 +1363,7 @@ public final class TreeUtilities {
         public void checkDocumentFragmentEncoding (String encoding) throws InvalidArgumentException {
             if ( encoding == null )
                 return;
-            checkEncoding (Util.getString ("PROP_DocumentFragmentEncoding"), encoding);
+            checkEncoding (Util.THIS.getString ("PROP_DocumentFragmentEncoding"), encoding);
         }
         
         /**
@@ -1390,21 +1381,21 @@ public final class TreeUtilities {
         /**
          */
         public void checkTextData (String data) throws InvalidArgumentException {
-            String argName = Util.getString ("PROP_TextData");
+            String argName = Util.THIS.getString ("PROP_TextData");
             checkCharacterData (argName, data);
             checkEmptyString (argName, data, false);
             
             int index = data.indexOf ('<');
             if ( index != -1 ) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_text_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_text_data"));
             }
             index = data.indexOf ('&');
             if ( index != -1 ) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_text_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_text_data"));
             }
             index = data.indexOf ("]]>");
             if ( index != -1 ) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_text_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_text_data"));
             }
         }
         
@@ -1426,7 +1417,7 @@ public final class TreeUtilities {
             if ( publicId == null ) {
                 return;
             }
-            checkPublicId (Util.getString ("PROP_DocumentTypePublicId"), publicId);
+            checkPublicId (Util.THIS.getString ("PROP_DocumentTypePublicId"), publicId);
         }
         
         /**
@@ -1444,8 +1435,8 @@ public final class TreeUtilities {
         /**
          */
         public void checkElementDeclContentType (TreeElementDecl.ContentType contentType) throws InvalidArgumentException {
-            checkNullArgument (Util.getString ("PROP_ElementDeclContentType"), contentType);
-            //       Util.debug ("[PENDING]: TreeUtilities::TreeConstraints.checkElementDeclContentType"); // NOI18N
+            checkNullArgument (Util.THIS.getString ("PROP_ElementDeclContentType"), contentType);
+            //       Util.THIS.debug ("[PENDING]: TreeUtilities::TreeConstraints.checkElementDeclContentType"); // NOI18N
         }
         
         /**
@@ -1466,8 +1457,8 @@ public final class TreeUtilities {
             if ( version == null )
                 return;
             if (!!! version.equals ("1.0")) { // NOI18N
-                String arg = Util.getString ("PROP_DocumentVersion");
-                String msg = Util.getString ("PROP_invalid_version_number", version);
+                String arg = Util.THIS.getString ("PROP_DocumentVersion");
+                String msg = Util.THIS.getString ("PROP_invalid_version_number", version);
                 throw new InvalidArgumentException (arg, msg);
             }
         }
@@ -1487,11 +1478,11 @@ public final class TreeUtilities {
         /**
          */
         public void checkCDATASectionData (String data) throws InvalidArgumentException {
-            checkCharacterData (Util.getString ("PROP_CDATASectionData"), data);
+            checkCharacterData (Util.THIS.getString ("PROP_CDATASectionData"), data);
             
             int index = data.indexOf ("]]>"); // NOI18N
             if (index != -1) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_cdata_section_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_cdata_section_data"));
             }
         }
         
@@ -1513,7 +1504,7 @@ public final class TreeUtilities {
             if ( publicId == null ) {
                 return;
             }
-            checkPublicId (Util.getString ("PROP_NotationDeclPublicId"), publicId);
+            checkPublicId (Util.THIS.getString ("PROP_NotationDeclPublicId"), publicId);
         }
         
         /**
@@ -1531,7 +1522,7 @@ public final class TreeUtilities {
         /**
          */
         public void checkAttlistDeclAttributeName (String attributeName) throws InvalidArgumentException {
-            checkAttributeName (Util.getString ("PROP_AttlistDeclAttributeName"), attributeName);
+            checkAttributeName (Util.THIS.getString ("PROP_AttlistDeclAttributeName"), attributeName);
         }
         
         /**
@@ -1549,14 +1540,14 @@ public final class TreeUtilities {
         /**
          */
         public void checkCommentData (String data) throws InvalidArgumentException {
-            checkCharacterData (Util.getString ("PROP_CommentData"), data);
+            checkCharacterData (Util.THIS.getString ("PROP_CommentData"), data);
             
             int index = data.indexOf ("--"); // NOI18N
             if (index != -1) {
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_comment_data"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_comment_data"));
             }
             if (data.endsWith ("-")) { // NOI18N
-                throw new InvalidArgumentException (data, Util.getString ("PROP_invalid_comment_data_end"));
+                throw new InvalidArgumentException (data, Util.THIS.getString ("PROP_invalid_comment_data_end"));
             }
         }
         
@@ -1584,7 +1575,7 @@ public final class TreeUtilities {
             ( type != TreeAttlistDeclAttributeDef.TYPE_NMTOKENS ) &&
             ( type != TreeAttlistDeclAttributeDef.TYPE_ENUMERATED ) &&
             ( type != TreeAttlistDeclAttributeDef.TYPE_NOTATION ) ) {
-                throw new InvalidArgumentException (new Short (type), Util.getString ("PROP_invalid_attribute_list_declaration_type"));
+                throw new InvalidArgumentException (new Short (type), Util.THIS.getString ("PROP_invalid_attribute_list_declaration_type"));
             }
         }
         
@@ -1606,7 +1597,7 @@ public final class TreeUtilities {
             ( defaultType != TreeAttlistDeclAttributeDef.DEFAULT_TYPE_REQUIRED ) &&
             ( defaultType != TreeAttlistDeclAttributeDef.DEFAULT_TYPE_IMPLIED ) &&
             ( defaultType != TreeAttlistDeclAttributeDef.DEFAULT_TYPE_FIXED ) ) {
-                throw new InvalidArgumentException (new Short (defaultType), Util.getString ("PROP_invalid_attribute_list_declaration_default_type"));
+                throw new InvalidArgumentException (new Short (defaultType), Util.THIS.getString ("PROP_invalid_attribute_list_declaration_default_type"));
             }
         }
         
@@ -1662,11 +1653,11 @@ public final class TreeUtilities {
         
         static {
             encodingIANA2JavaMap.put       ("BIG5", "Big5"); // NOI18N
-            encodingIANADescriptionMap.put ("BIG5", Util.getString ("NAME_BIG5")); // NOI18N
+            encodingIANADescriptionMap.put ("BIG5", Util.THIS.getString ("NAME_BIG5")); // NOI18N
             encodingIANAAliasesMap.put     ("BIG5", "BIG5"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM037",       "CP037");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM037",       Util.getString ("NAME_IBM037")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM037",       Util.THIS.getString ("NAME_IBM037")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM037",       "IBM037"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-US", "IBM037"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-CA", "IBM037"); // NOI18N
@@ -1674,86 +1665,86 @@ public final class TreeUtilities {
             encodingIANAAliasesMap.put     ("EBCDIC-CP-WT", "IBM037"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM277",       "CP277");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM277",       Util.getString ("NAME_IBM277")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM277",       Util.THIS.getString ("NAME_IBM277")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM277",       "IBM277"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-DK", "IBM277"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-NO", "IBM277"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM278",       "CP278");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM278",       Util.getString ("NAME_IBM277")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM278",       Util.THIS.getString ("NAME_IBM277")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM278",       "IBM278"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-FI", "IBM278"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-SE", "IBM278"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM280",       "CP280");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM280",       Util.getString ("NAME_IBM280")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM280",       Util.THIS.getString ("NAME_IBM280")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM280",       "IBM280"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-IT", "IBM280"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM284",       "CP284");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM284",       Util.getString ("NAME_IBM284")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM284",       Util.THIS.getString ("NAME_IBM284")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM284",       "IBM284"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-ES", "IBM284"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM285",       "CP285");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM285",       Util.getString ("NAME_IBM285")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM285",       Util.THIS.getString ("NAME_IBM285")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM285",       "IBM285"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-GB", "IBM285"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM297",       "CP297");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM297",       Util.getString ("NAME_IBM297")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM297",       Util.THIS.getString ("NAME_IBM297")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM297",       "IBM297"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-FR", "IBM297"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM424",       "CP424");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM424",       Util.getString ("NAME_IBM424")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM424",       Util.THIS.getString ("NAME_IBM424")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM424",       "IBM424"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-HE", "IBM424"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM500",       "CP500");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM500",       Util.getString ("NAME_IBM500")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM500",       Util.THIS.getString ("NAME_IBM500")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM500",       "IBM500"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-CH", "IBM500"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-BE", "IBM500"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM870",   "CP870");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM870",   Util.getString ("NAME_IBM870")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM870",   Util.THIS.getString ("NAME_IBM870")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM870",   "IBM870"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-ROECE", "IBM870"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-YU",    "IBM870"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM871",       "CP871");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM871",       Util.getString ("NAME_IBM871")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM871",       Util.THIS.getString ("NAME_IBM871")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM871",       "IBM871"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-IS", "IBM871"); // NOI18N
             
             encodingIANA2JavaMap.put       ("IBM918", "CP918");  // NOI18N
-            encodingIANADescriptionMap.put ("IBM918", Util.getString ("NAME_IBM918")); // NOI18N
+            encodingIANADescriptionMap.put ("IBM918", Util.THIS.getString ("NAME_IBM918")); // NOI18N
             encodingIANAAliasesMap.put     ("IBM918", "IBM918"); // NOI18N
             encodingIANAAliasesMap.put     ("EBCDIC-CP-AR2", "IBM918"); // NOI18N
             
             encodingIANA2JavaMap.put       ("EUC-JP", "EUCJIS"); // NOI18N
-            encodingIANADescriptionMap.put ("EUC-JP", Util.getString ("NAME_EUC-JP")); // NOI18N
+            encodingIANADescriptionMap.put ("EUC-JP", Util.THIS.getString ("NAME_EUC-JP")); // NOI18N
             encodingIANAAliasesMap.put     ("EUC-JP", "EUC-JP"); // NOI18N
             
             encodingIANA2JavaMap.put       ("EUC-KR", "KSC5601"); // NOI18N
-            encodingIANADescriptionMap.put ("EUC-KR", Util.getString ("NAME_EUC-KR")); // NOI18N
+            encodingIANADescriptionMap.put ("EUC-KR", Util.THIS.getString ("NAME_EUC-KR")); // NOI18N
             encodingIANAAliasesMap.put     ("EUC-KR", "EUC-KR");  // NOI18N
             
             encodingIANA2JavaMap.put       ("GB2312", "GB2312"); // NOI18N
-            encodingIANADescriptionMap.put ("GB2312", Util.getString ("NAME_GB2312")); // NOI18N
+            encodingIANADescriptionMap.put ("GB2312", Util.THIS.getString ("NAME_GB2312")); // NOI18N
             encodingIANAAliasesMap.put     ("GB2312", "GB2312"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-2022-JP", "JIS");  // NOI18N
-            encodingIANADescriptionMap.put ("ISO-2022-JP", Util.getString ("NAME_ISO-2022-JP")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-2022-JP", Util.THIS.getString ("NAME_ISO-2022-JP")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-2022-JP", "ISO-2022-JP"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-2022-KR", "ISO2022KR");   // NOI18N
-            encodingIANADescriptionMap.put ("ISO-2022-KR", Util.getString ("NAME_ISO-2022-KR")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-2022-KR", Util.THIS.getString ("NAME_ISO-2022-KR")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-2022-KR", "ISO-2022-KR"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-1", "8859_1");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-1", Util.getString ("NAME_ISO-8859-1")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-1", Util.THIS.getString ("NAME_ISO-8859-1")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-1", "ISO-8859-1"); // NOI18N
             encodingIANAAliasesMap.put     ("LATIN1",     "ISO-8859-1"); // NOI18N
             encodingIANAAliasesMap.put     ("L1",  "ISO-8859-1"); // NOI18N
@@ -1761,55 +1752,55 @@ public final class TreeUtilities {
             encodingIANAAliasesMap.put     ("CP819",      "ISO-8859-1"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-2", "8859_2");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-2", Util.getString ("NAME_ISO-8859-2")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-2", Util.THIS.getString ("NAME_ISO-8859-2")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-2", "ISO-8859-2"); // NOI18N
             encodingIANAAliasesMap.put     ("LATIN2",     "ISO-8859-2"); // NOI18N
             encodingIANAAliasesMap.put     ("L2",  "ISO-8859-2"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-3", "8859_3");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-3", Util.getString ("NAME_ISO-8859-3")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-3", Util.THIS.getString ("NAME_ISO-8859-3")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-3", "ISO-8859-3"); // NOI18N
             encodingIANAAliasesMap.put     ("LATIN3",     "ISO-8859-3"); // NOI18N
             encodingIANAAliasesMap.put     ("L3",  "ISO-8859-3"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-4", "8859_4");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-4", Util.getString ("NAME_ISO-8859-4")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-4", Util.THIS.getString ("NAME_ISO-8859-4")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-4", "ISO-8859-4"); // NOI18N
             encodingIANAAliasesMap.put     ("LATIN4",     "ISO-8859-4"); // NOI18N
             encodingIANAAliasesMap.put     ("L4",  "ISO-8859-4"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-5", "8859_5");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-5", Util.getString ("NAME_ISO-8859-5")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-5", Util.THIS.getString ("NAME_ISO-8859-5")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-5", "ISO-8859-5"); // NOI18N
             encodingIANAAliasesMap.put     ("CYRILLIC",   "ISO-8859-5"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-6", "8859_6");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-6", Util.getString ("NAME_ISO-8859-6")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-6", Util.THIS.getString ("NAME_ISO-8859-6")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-6", "ISO-8859-6"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-7", "8859_7");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-7", Util.getString ("NAME_ISO-8859-7")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-7", Util.THIS.getString ("NAME_ISO-8859-7")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-7", "ISO-8859-7"); // NOI18N
             encodingIANAAliasesMap.put     ("GREEK",      "ISO-8859-7"); // NOI18N
             encodingIANAAliasesMap.put     ("GREEK8",     "ISO-8859-7"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-8", "8859_8");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-8", Util.getString ("NAME_ISO-8859-8")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-8", Util.THIS.getString ("NAME_ISO-8859-8")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-8", "ISO-8859-8"); // NOI18N
             encodingIANAAliasesMap.put     ("HEBREW",     "ISO-8859-8"); // NOI18N
             
             encodingIANA2JavaMap.put       ("ISO-8859-9", "8859_9");     // NOI18N
-            encodingIANADescriptionMap.put ("ISO-8859-9", Util.getString ("NAME_ISO-8859-9")); // NOI18N
+            encodingIANADescriptionMap.put ("ISO-8859-9", Util.THIS.getString ("NAME_ISO-8859-9")); // NOI18N
             encodingIANAAliasesMap.put     ("ISO-8859-9", "ISO-8859-9"); // NOI18N
             encodingIANAAliasesMap.put     ("LATIN5",     "ISO-8859-9"); // NOI18N
             encodingIANAAliasesMap.put     ("L5",  "ISO-8859-9"); // NOI18N
             
             encodingIANA2JavaMap.put       ("KOI8-R", "KOI8_R"); // NOI18N
-            encodingIANADescriptionMap.put ("KOI8-R", Util.getString ("NAME_KOI8-R")); // NOI18N
+            encodingIANADescriptionMap.put ("KOI8-R", Util.THIS.getString ("NAME_KOI8-R")); // NOI18N
             encodingIANAAliasesMap.put     ("KOI8-R", "KOI8-R"); // NOI18N
             
             encodingIANA2JavaMap.put       ("US-ASCII",     "8859_1"); // NOI18N
-            encodingIANADescriptionMap.put ("US-ASCII",     Util.getString ("NAME_ASCII")); // NOI18N
+            encodingIANADescriptionMap.put ("US-ASCII",     Util.THIS.getString ("NAME_ASCII")); // NOI18N
             encodingIANAAliasesMap.put     ("ASCII",     "US-ASCII");  // NOI18N
             encodingIANAAliasesMap.put     ("US-ASCII",  "US-ASCII");  // NOI18N
             encodingIANAAliasesMap.put     ("ISO646-US", "US-ASCII");  // NOI18N
@@ -1817,11 +1808,11 @@ public final class TreeUtilities {
             encodingIANAAliasesMap.put     ("CP367",     "US-ASCII");  // NOI18N
             
             encodingIANA2JavaMap.put       ("UTF-8", "UTF8");  // NOI18N
-            encodingIANADescriptionMap.put ("UTF-8", Util.getString ("NAME_UTF-8")); // NOI18N
+            encodingIANADescriptionMap.put ("UTF-8", Util.THIS.getString ("NAME_UTF-8")); // NOI18N
             encodingIANAAliasesMap.put     ("UTF-8", "UTF-8"); // NOI18N
             
             encodingIANA2JavaMap.put       ("UTF-16", "Unicode"); // NOI18N
-            encodingIANADescriptionMap.put ("UTF-16", Util.getString ("NAME_UTF-16")); // NOI18N
+            encodingIANADescriptionMap.put ("UTF-16", Util.THIS.getString ("NAME_UTF-16")); // NOI18N
             encodingIANAAliasesMap.put     ("UTF-16", "UTF-16");  // NOI18N
         }
         

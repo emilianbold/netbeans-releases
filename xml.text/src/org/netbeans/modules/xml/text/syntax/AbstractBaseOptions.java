@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.text.syntax;
@@ -58,7 +58,7 @@ abstract class AbstractBaseOptions extends BaseOptions implements Localizer {
      */
     public String getString (String s) {
         try {
-            return Util.getString (s);
+            return Util.THIS.getString (s);
         } catch (MissingResourceException e) {
             return super.getString (s);
         }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -46,16 +46,16 @@ public class TreeDocumentFragmentBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDocumentFragment.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeDocumentFragmentBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeDocumentFragmentBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_encoding] = new PropertyDescriptor ( "encoding", TreeDocumentFragment.class, "getEncoding", "setEncoding" ); // NOI18N
-            properties[PROPERTY_encoding].setDisplayName ( Util.getString ( "PROP_TreeDocumentFragmentBeanInfo_encoding" ) );
-            properties[PROPERTY_encoding].setShortDescription ( Util.getString ( "HINT_TreeDocumentFragmentBeanInfo_encoding" ) );
+            properties[PROPERTY_encoding].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_encoding" ) );
+            properties[PROPERTY_encoding].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setPropertyEditorClass ( EncodingEditor.class );
             properties[PROPERTY_version] = new PropertyDescriptor ( "version", TreeDocumentFragment.class, "getVersion", "setVersion" ); // NOI18N
-            properties[PROPERTY_version].setDisplayName ( Util.getString ( "PROP_TreeDocumentFragmentBeanInfo_version" ) );
-            properties[PROPERTY_version].setShortDescription ( Util.getString ( "HINT_TreeDocumentFragmentBeanInfo_version" ) );
+            properties[PROPERTY_version].setDisplayName ( Util.THIS.getString ( "PROP_TreeDocumentFragmentBeanInfo_version" ) );
+            properties[PROPERTY_version].setShortDescription ( Util.THIS.getString ( "HINT_TreeDocumentFragmentBeanInfo_version" ) );
             properties[PROPERTY_version].setPropertyEditorClass ( VersionEditor.class );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

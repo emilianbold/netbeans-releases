@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -31,7 +31,7 @@ public class ReadOnlyException extends TreeException {
     /**
      */
     public ReadOnlyException (TreeObject treeObj) {
-        super (treeObj.toString () + Util.getString ("PROP_is_read_only_now"));
+        super (treeObj.toString () + Util.THIS.getString ("PROP_is_read_only_now"));
     }
     
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.settings;
@@ -210,7 +210,7 @@ try_next_provider:
     public synchronized void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         //super.readExternal(in);        
 
-        Util.debug("CatalogSettings.readExternal()"); // NOI18N
+        Util.THIS.debug("CatalogSettings.readExternal()"); // NOI18N
 
         int version = in.readInt();  //IN version
         
@@ -228,15 +228,15 @@ try_next_provider:
                 mountedCatalogs.add(marshaled.get());
             } catch (ClassNotFoundException ex) {
                 //ignore probably missing provider class
-                emgr().annotate(ex, Util.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                
             } catch (IOException ex) {
                 //ignore incompatible classes
-                emgr().annotate(ex, Util.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
             } catch (RuntimeException ex) {
                 //ignore catalog that can not deserialize itself without NPE etc.
-                emgr().annotate(ex, Util.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
             }
         }
@@ -248,7 +248,7 @@ try_next_provider:
     public synchronized void writeExternal(ObjectOutput out) throws IOException  {
         //super.writeExternal(out);
 
-        Util.debug("CatalogSettings.writeExternal()"); // NOI18N
+        Util.THIS.debug("CatalogSettings.writeExternal()"); // NOI18N
 
         out.writeInt(VERSION_1);  //OUT version
         
@@ -276,11 +276,11 @@ try_next_provider:
                     out.writeObject(marshaled);  //OUT marshalled object
                 } catch (IOException ex) {
                     // catalog can not be serialized
-                    emgr().annotate(ex, Util.getString("EXC_serialization_failed", next.getClass()));
+                    emgr().annotate(ex, Util.THIS.getString("EXC_serialization_failed", next.getClass()));
                     emgr().notify(ErrorManager.INFORMATIONAL, ex);
                 } catch (RuntimeException ex) {
                     //skip this odd catalog
-                    emgr().annotate(ex, Util.getString("EXC_serialization_failed", next.getClass()));
+                    emgr().annotate(ex, Util.THIS.getString("EXC_serialization_failed", next.getClass()));
                     emgr().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }

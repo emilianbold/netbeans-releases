@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -51,7 +51,7 @@ public final class TreeNamespace {
      * @param uri string representation of URI
      */
     protected TreeNamespace (String prefix, String uri) {
-        if (uri == null) throw new IllegalArgumentException (Util.getString ("EXC_uri_cannot_be_null"));
+        if (uri == null) throw new IllegalArgumentException (Util.THIS.getString ("EXC_uri_cannot_be_null"));
         this.prefix = prefix;
         this.uri = uri;
     }

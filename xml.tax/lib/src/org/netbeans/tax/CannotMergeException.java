@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -35,7 +35,7 @@ public class CannotMergeException extends TreeException {
      * @param obj the object that cannot be merged.
      */
     public CannotMergeException (TreeObject treeObj) {
-        super (treeObj == null ? Util.getString ("EXC_can_not_merge_null") : treeObj.getClass ().toString () + Util.getString ("EXC_can_not_be_merged"));
+        super (treeObj == null ? Util.THIS.getString ("EXC_can_not_merge_null") : treeObj.getClass ().toString () + Util.THIS.getString ("EXC_can_not_be_merged"));
     }
     
     /**
@@ -43,7 +43,7 @@ public class CannotMergeException extends TreeException {
      * @param obj the object that cannot be merged.
      */
     public CannotMergeException (TreeObject treeObj, Exception exc) {
-        super (treeObj == null ? Util.getString ("EXC_can_not_merge_null") : treeObj.getClass ().toString () + Util.getString ("EXC_can_not_be_merged"), exc);
+        super (treeObj == null ? Util.THIS.getString ("EXC_can_not_merge_null") : treeObj.getClass ().toString () + Util.THIS.getString ("EXC_can_not_be_merged"), exc);
     }
     
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -76,7 +76,7 @@ public final class Catalog
         in.defaultReadObject();
         
         // lazy init transient fields, see getPCHS() and getPeer() methods
-        setShortDescription(Util.getString("MSG_prepared", location));
+        setShortDescription(Util.THIS.getString("MSG_prepared", location));
     }
     
     /**
@@ -130,7 +130,7 @@ public final class Catalog
      * @return I18N display name
      */
     public String getDisplayName() {
-        return Util.getString("TITLE_catalog", location);
+        return Util.THIS.getString("TITLE_catalog", location);
     }
 
     public String getName() {
@@ -244,26 +244,26 @@ public final class Catalog
             // try to handle as a XML format, if fail try a text format
             try {
                 cat.parseCatalog("application/xml", new URL(location));
-                setShortDescription(Util.getString("DESC_loaded"));
+                setShortDescription(Util.THIS.getString("DESC_loaded"));
                 return res;
                 
             } catch (CatalogException cex) {
                 try {
                     cat.parseCatalog("text/plain", new URL(location));
-                    setShortDescription(Util.getString("DESC_loaded"));
+                    setShortDescription(Util.THIS.getString("DESC_loaded"));
                     return res;                
                 } catch (RuntimeException ex) {
-                    setShortDescription(Util.getString("DESC_error_loading", ex.getLocalizedMessage()));
-                    Util.debug("Internal resolvers library error!", ex);
+                    setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
+                    Util.THIS.debug("Internal resolvers library error!", ex);
                 }
             }
             
         } catch (IOException ex) {
-            setShortDescription(Util.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            Util.debug("I/O error loading catalog " + location, ex);
+            setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
+            Util.THIS.debug("I/O error loading catalog " + location, ex);
         } catch (CatalogException ex) {
-            setShortDescription(Util.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            Util.debug("Error loading catalog " + location, ex);
+            setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
+            Util.THIS.debug("Error loading catalog " + location, ex);
         }
         
         // return dumb peer

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -44,15 +44,15 @@ public class TreeCharacterReferenceBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeCharacterReference.class, "getName", "setName" ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeCharacterReferenceBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeCharacterReferenceBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_name" ) );
             properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeCharacterReference.class, "getData", null ); // NOI18N
-            properties[PROPERTY_data].setDisplayName ( Util.getString ( "PROP_TreeCharacterReferenceBeanInfo_data" ) );
-            properties[PROPERTY_data].setShortDescription ( Util.getString ( "HINT_TreeCharacterReferenceBeanInfo_data" ) );
+            properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_data" ) );
+            properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_data" ) );
             properties[PROPERTY_data].setExpert ( true );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeCharacterReference.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeCharacterReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeCharacterReferenceBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeCharacterReferenceBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeCharacterReferenceBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -45,16 +45,16 @@ public class TreeConditionalSectionBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_ignoredContent] = new PropertyDescriptor ( "ignoredContent", TreeConditionalSection.class, "getIgnoredContent", null ); // NOI18N
-            properties[PROPERTY_ignoredContent].setDisplayName ( Util.getString ( "PROP_TreeConditionalSectionBeanInfo_ignoredContent" ) );
-            properties[PROPERTY_ignoredContent].setShortDescription ( Util.getString ( "HINT_TreeConditionalSectionBeanInfo_ignoredContent" ) );
+            properties[PROPERTY_ignoredContent].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_ignoredContent" ) );
+            properties[PROPERTY_ignoredContent].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_ignoredContent" ) );
             properties[PROPERTY_ignoredContent].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeConditionalSection.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeConditionalSectionBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeConditionalSectionBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_include] = new PropertyDescriptor ( "include", TreeConditionalSection.class, "isInclude", null ); // NOI18N
-            properties[PROPERTY_include].setDisplayName ( Util.getString ( "PROP_TreeConditionalSectionBeanInfo_include" ) );
-            properties[PROPERTY_include].setShortDescription ( Util.getString ( "HINT_TreeConditionalSectionBeanInfo_include" ) );
+            properties[PROPERTY_include].setDisplayName ( Util.THIS.getString ( "PROP_TreeConditionalSectionBeanInfo_include" ) );
+            properties[PROPERTY_include].setShortDescription ( Util.THIS.getString ( "HINT_TreeConditionalSectionBeanInfo_include" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

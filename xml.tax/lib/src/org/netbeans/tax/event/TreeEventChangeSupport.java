@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.event;
@@ -31,14 +31,6 @@ import java.util.Set;
  * @version 0.1
  */
 public final class TreeEventChangeSupport {
-    /** Only for debug purposes. */
-    private static final boolean DEBUG        = false;
-    /** */
-    private static final boolean DEBUG_ADD    = false;
-    /** */
-    private static final boolean DEBUG_REMOVE = false;
-    /** */
-    private static final boolean DEBUG_FIRE   = false;
     
     /** Utility field used by bound properties. */
     private PropertyChangeSupport propertyChangeSupport;
@@ -92,15 +84,12 @@ public final class TreeEventChangeSupport {
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
         getPropertyChangeSupport ().addPropertyChangeListener (listener);
         
-        if ( DEBUG_ADD ) {
-            Util.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: listener = " + listener); // NOI18N
-            Util.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
-            Util.debug ("", new RuntimeException ("Request origin."));
+        Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: listener = " + listener); // NOI18N
+        Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
             
-            if ( listener == null ) {
-                Util.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
-                Util.debug ("-\n", new RuntimeException ("TreeEventChangeSupport.addPropertyChangeListener")); // NOI18N
-            }
+        if ( listener == null ) {
+            Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
+
         }
     }
     
@@ -109,15 +98,13 @@ public final class TreeEventChangeSupport {
     public final void addPropertyChangeListener (String propertyName, PropertyChangeListener listener) {
         getPropertyChangeSupport ().addPropertyChangeListener (propertyName, listener);
         
-        if ( DEBUG_ADD ) {
-            Util.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: propertyName = " + propertyName); // NOI18N
-            Util.debug ("-                       ::addPropertyChangeListener: listener = " + listener); // NOI18N
-            Util.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
-            
-            if ( listener == null ) {
-                Util.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
-                Util.debug ("-\n", new RuntimeException ("TreeEventChangeSupport.addPropertyChangeListener")); // NOI18N
-            }
+        Util.THIS.debug ("-\n- TreeEventChangeSupport::addPropertyChangeListener: propertyName = " + propertyName); // NOI18N
+        Util.THIS.debug ("-                       ::addPropertyChangeListener: listener = " + listener); // NOI18N
+        Util.THIS.debug ("-                       ::addPropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
+        
+        if ( listener == null ) {
+            Util.THIS.debug ("-                       ::addPropertyChangeListener: eventSource = " + eventSource); // NOI18N
+            Util.THIS.debug ("-\n", new RuntimeException ("TreeEventChangeSupport.addPropertyChangeListener")); // NOI18N
         }
     }
     
@@ -128,10 +115,8 @@ public final class TreeEventChangeSupport {
     public final void removePropertyChangeListener (PropertyChangeListener listener) {
         getPropertyChangeSupport ().removePropertyChangeListener (listener);
         
-        if ( DEBUG_REMOVE ) {
-            Util.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: listener = " + listener); // NOI18N
-            Util.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
-        }
+        Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: listener = " + listener); // NOI18N
+        Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
     }
     
     /**
@@ -139,11 +124,9 @@ public final class TreeEventChangeSupport {
     public final void removePropertyChangeListener (String propertyName, PropertyChangeListener listener) {
         getPropertyChangeSupport ().removePropertyChangeListener (propertyName, listener);
         
-        if ( DEBUG_REMOVE ) {
-            Util.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: propertyName = " + propertyName); // NOI18N
-            Util.debug ("-                       ::removePropertyChangeListener: listener = " + listener); // NOI18N
-            Util.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
-        }
+        Util.THIS.debug ("\n- TreeEventChangeSupport::removePropertyChangeListener: propertyName = " + propertyName); // NOI18N
+        Util.THIS.debug ("-                       ::removePropertyChangeListener: listener = " + listener); // NOI18N
+        Util.THIS.debug ("-                       ::removePropertyChangeListener: propertyChangeSupport = " + listListeners ()); // NOI18N
     }
     
     /**
@@ -163,11 +146,9 @@ public final class TreeEventChangeSupport {
      * @param evt  The PropertyChangeEvent object.
      */
     public final void firePropertyChange (TreeEvent evt) {
-        if ( DEBUG_FIRE ) {
-            Util.debug ("- TreeEventChangeSupport::firePropertyChange ( " + evt + " )"); // NOI18N
-            Util.debug ("-     eventSource  = " + eventSource); // NOI18N
-            Util.debug ("-     EventManager = " + eventSource.getEventManager ()); // NOI18N
-        }
+        Util.THIS.debug ("- TreeEventChangeSupport::firePropertyChange ( " + evt + " )"); // NOI18N
+        Util.THIS.debug ("-     eventSource  = " + eventSource); // NOI18N
+        Util.THIS.debug ("-     EventManager = " + eventSource.getEventManager ()); // NOI18N
         
         if ( eventSource.getEventManager () == null )
             return;

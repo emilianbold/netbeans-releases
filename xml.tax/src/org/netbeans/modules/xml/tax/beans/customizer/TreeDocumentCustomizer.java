@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -26,8 +26,6 @@ import org.netbeans.modules.xml.tax.beans.editor.StandaloneEditor;
  * @version 0.1
  */
 public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** Serial Version UID */
     private static final long serialVersionUID = 8592875472261625357L;
@@ -43,13 +41,11 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         
         initComponents ();
         
-        if ( DEBUG ) {
-            Util.debug ("TreeDocumentCustomizer::init"); // NOI18N
-        }
+        Util.THIS.debug ("TreeDocumentCustomizer::init"); // NOI18N
         
-        versionLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_version")); // NOI18N
-        encodingLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_encoding")); // NOI18N
-        standaloneLabel.setDisplayedMnemonic (Util.getChar ("MNE_document_standalone")); // NOI18N
+        versionLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_document_version")); // NOI18N
+        encodingLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_document_encoding")); // NOI18N
+        standaloneLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_document_standalone")); // NOI18N
         
         initAccessibility ();
     }
@@ -91,7 +87,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
             updateVersionComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
         
     }
@@ -113,7 +109,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
             updateEncodingComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
         
     }
@@ -135,7 +131,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
             getDocument ().setStandalone (text2null ((String) cbStandalone.getSelectedItem ()));
         } catch (TreeException exc) {
             updateStandaloneComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -181,7 +177,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        versionLabel.setText(Util.getString ("PROP_document_version"));
+        versionLabel.setText(Util.THIS.getString ("PROP_document_version"));
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -212,7 +208,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.weightx = 1.0;
         add(cbVersion, gridBagConstraints);
 
-        encodingLabel.setText(Util.getString ("PROP_document_encoding"));
+        encodingLabel.setText(Util.THIS.getString ("PROP_document_encoding"));
         encodingLabel.setLabelFor(cbEncoding);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -244,7 +240,7 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(cbEncoding, gridBagConstraints);
 
-        standaloneLabel.setText(Util.getString ("PROP_document_standalone"));
+        standaloneLabel.setText(Util.THIS.getString ("PROP_document_standalone"));
         standaloneLabel.setLabelFor(cbStandalone);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -329,10 +325,10 @@ public class TreeDocumentCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeDocumentCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeDocumentCustomizer"));
         
-        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbVersion"));
-        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbEncoding1"));
-        cbStandalone.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbStandalone"));
+        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_cbVersion"));
+        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_cbEncoding1"));
+        cbStandalone.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_cbStandalone"));
     }
 }

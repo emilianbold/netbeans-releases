@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -52,7 +52,7 @@ public class TreeUnsupportedOperationException extends UnsupportedOperationExcep
     public void printStackTrace () {
         super.printStackTrace ();
         if (treeException != null) {
-            System.err.println (Util.getString ("PROP_Wrapped_exception") + treeException.getMessage ());
+            System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + treeException.getMessage ());
             treeException.printStackTrace ();
         }
     }

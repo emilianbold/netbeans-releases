@@ -10,7 +10,7 @@
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationName" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationName" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="nameField" type="bean"/>
@@ -41,7 +41,7 @@
     <Component class="javax.swing.JLabel" name="publicLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationPublicId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationPublicId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="publicField" type="bean"/>
@@ -72,7 +72,7 @@
     <Component class="javax.swing.JLabel" name="systemLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationSystemId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="PROP_dtdNotationSystemId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="systemField" type="bean"/>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -39,8 +39,8 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        versionLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtd_version")); // NOI18N
-        encodingLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtd_encoding")); // NOI18N
+        versionLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtd_version")); // NOI18N
+        encodingLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtd_encoding")); // NOI18N
         
         initAccessibility ();
     }
@@ -79,7 +79,7 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
             getDTD ().setVersion (text2null ((String) cbVersion.getSelectedItem ()));
         } catch (TreeException exc) {
             updateVersionComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -100,7 +100,7 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
             getDTD ().setEncoding (text2null ((String) cbEncoding.getSelectedItem ()));
         } catch (TreeException exc) {
             updateEncodingComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -142,7 +142,7 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        versionLabel.setText(Util.getString ("PROP_dtd_version"));
+        versionLabel.setText(Util.THIS.getString ("PROP_dtd_version"));
         versionLabel.setLabelFor(cbVersion);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -172,7 +172,7 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(cbVersion, gridBagConstraints);
 
-        encodingLabel.setText(Util.getString ("PROP_dtd_encoding"));
+        encodingLabel.setText(Util.THIS.getString ("PROP_dtd_encoding"));
         encodingLabel.setLabelFor(cbEncoding);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -250,9 +250,9 @@ public class TreeDTDCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbVersion"));
-        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_cbEncoding"));
+        cbVersion.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_cbVersion"));
+        cbEncoding.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_cbEncoding"));
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeDTDCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeDTDCustomizer"));
     }
 }

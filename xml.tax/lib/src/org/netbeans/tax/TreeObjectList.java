@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -31,9 +31,6 @@ import org.netbeans.tax.event.TreeNodeContentEventModel;
 public class TreeObjectList extends TreeObject implements TreeNodeContentEventModel, List {
     // toDo:
     // + set inserted object readOnly value as object list has
-    
-    /** */
-    private static final boolean DEBUG = false;
     
     /** Name of property for insert node to node content. */
     public static final String PROP_CONTENT_INSERT = "contentInsert"; // NOI18N
@@ -363,12 +360,12 @@ public class TreeObjectList extends TreeObject implements TreeNodeContentEventMo
     protected final void checkReorder (int[] perm) throws InvalidArgumentException {
         if (perm == null) {
             throw new InvalidArgumentException
-            (Util.getString ("EXC_invalid_reorder_permutation"),
+            (Util.THIS.getString ("EXC_invalid_reorder_permutation"),
             new NullPointerException ());
         }
         if (perm.length != size ()) {
             throw new InvalidArgumentException
-            (perm.length + " != " + size (), Util.getString ("EXC_invalid_reorder_permutation")); // NOI18N
+            (perm.length + " != " + size (), Util.THIS.getString ("EXC_invalid_reorder_permutation")); // NOI18N
         }
     }
     
@@ -804,7 +801,7 @@ public class TreeObjectList extends TreeObject implements TreeNodeContentEventMo
          */
         public void checkAssignableObject (Object obj) throws ClassCastException {
             if (!!! (obj instanceof TreeObject)) {
-                String msg = Util.getString ("EXC_invalid_instance_of_TreeObject"); //,obj.getClass().getName());
+                String msg = Util.THIS.getString ("EXC_invalid_instance_of_TreeObject"); //,obj.getClass().getName());
                 throw new ClassCastException (msg);
             }
         }
@@ -813,7 +810,7 @@ public class TreeObjectList extends TreeObject implements TreeNodeContentEventMo
          */
         protected final void checkAssignableClass (Class cls, Object obj) throws ClassCastException {
             if (!!! cls.isInstance (obj)) {
-                String msg = Util.getString ("EXC_is_not_assignable_to", cls.getName ()); //,obj.getClass().getName(), cls.getName());
+                String msg = Util.THIS.getString ("EXC_is_not_assignable_to", cls.getName ()); //,obj.getClass().getName(), cls.getName());
                 throw new ClassCastException (msg);
             }
         }

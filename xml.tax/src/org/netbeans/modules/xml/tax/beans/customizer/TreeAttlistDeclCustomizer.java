@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -28,8 +28,6 @@ import org.netbeans.modules.xml.tax.beans.Lib;
  * @version 0.1
  */
 public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** Serial Version UID */
     private static final long serialVersionUID = 5365016831221845705L;
@@ -44,8 +42,8 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        elemNameLabel.setDisplayedMnemonic (Util.getChar ("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
-        tableLabel.setDisplayedMnemonic (Util.getChar ("MNE_attlistdecl_attributelist_label")); // NOI18N
+        elemNameLabel.setDisplayedMnemonic (Util.THIS.getChar ("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
+        tableLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_attlistdecl_attributelist_label")); // NOI18N
         initAccessibility ();
     }
     
@@ -84,7 +82,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
             getAttlistDecl ().setElementName (elemNameField.getText ());
         } catch (TreeException exc) {
             updateElementNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -99,13 +97,13 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
      */
     protected void ownInitComponents () {
         TreeNamedObjectMap attributes = getAttlistDecl ().getAttributeDefs ();
-        if ( DEBUG ) {
-            Util.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
-        }
+        
+        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
+
         Component attrsCustom = Lib.getCustomizer (TreeAttlistDecl.class, attributes, "attributeDefs"); // "attributeDefs" - name of TreeAttlistDecl property // NOI18N
-        if ( DEBUG ) {
-            Util.debug ("TreeElementCustomizer::ownInitComponents: attrsCustom = " + attrsCustom); // NOI18N
-        }
+        
+        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attrsCustom = " + attrsCustom); // NOI18N
+
         if (attrsCustom != null) {
             attributeDefsPanel.add (attrsCustom, BorderLayout.CENTER);
         }
@@ -135,7 +133,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        elemNameLabel.setText(Util.getString ("TreeAttributeDeclCustomizer.elemNameLabel.text"));
+        elemNameLabel.setText(Util.THIS.getString ("TreeAttributeDeclCustomizer.elemNameLabel.text"));
         elemNameLabel.setLabelFor(elemNameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -164,7 +162,7 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        tableLabel.setText(Util.getString ("TEXT_attlistdecl_attributelist_label"));
+        tableLabel.setText(Util.THIS.getString ("TEXT_attlistdecl_attributelist_label"));
         tableLabel.setLabelFor(attributeDefsPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -220,8 +218,8 @@ public class TreeAttlistDeclCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeAttlistDeclCustomizer"));
-        elemNameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_elemNameField"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeAttlistDeclCustomizer"));
+        elemNameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_elemNameField"));
         elemNameField.selectAll ();
     }
 }

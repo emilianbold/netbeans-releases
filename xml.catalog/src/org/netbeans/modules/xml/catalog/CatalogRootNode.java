@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -52,15 +52,13 @@ import java.awt.event.ActionEvent;
  */
 public final class CatalogRootNode extends AbstractNode {
 
-    private static final boolean DEBUG = false;
-    
     /** Creates new CatalogNode */
     public CatalogRootNode() {
         super(new RootChildren());
         setName("XML-CATALOG"); // NOI18N
-        setDisplayName (Util.getString("TEXT_catalog_root")); // NOI18N
+        setDisplayName (Util.THIS.getString("TEXT_catalog_root")); // NOI18N
         setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root");  // NOI18N
-        setShortDescription(Util.getString("PROP_catalog_root_desc"));
+        setShortDescription(Util.THIS.getString("PROP_catalog_root_desc"));
     }
     
     protected SystemAction[] createActions() {
@@ -91,7 +89,7 @@ public final class CatalogRootNode extends AbstractNode {
             model = new CatalogMounterModel(it);
             Object rpanel = new CatalogMounterPanel(model);
             DialogDescriptor dd = new DialogDescriptor(rpanel,
-                                  Util.getString ("PROP_Mount_Catalog"), true, this);
+                                  Util.THIS.getString ("PROP_Mount_Catalog"), true, this);
             dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
             myDialog = TopManager.getDefault().createDialog(dd);
 
@@ -124,7 +122,7 @@ public final class CatalogRootNode extends AbstractNode {
         }
         
         public String getName() {
-            return Util.getString ("PROP_Mount_Catalog"); // NOI18N
+            return Util.THIS.getString ("PROP_Mount_Catalog"); // NOI18N
         }
     }
     
@@ -132,12 +130,14 @@ public final class CatalogRootNode extends AbstractNode {
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if (DEBUG) Util.trace("Reading CatalogRoot node " + this); // NOI18N
+        Util.THIS.debug("Reading CatalogRoot node " + this); // NOI18N
+
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        if (DEBUG) Util.trace("Writing " + this); // NOI18N
+        Util.THIS.debug("Writing " + this); // NOI18N
+
         out.defaultWriteObject();        
     }
     
@@ -266,7 +266,7 @@ public final class CatalogRootNode extends AbstractNode {
         }
         
         public String getName() {
-            return Util.getString("LBL_mount");
+            return Util.THIS.getString("LBL_mount");
         }
         
         public HelpCtx getHelpCtx() {

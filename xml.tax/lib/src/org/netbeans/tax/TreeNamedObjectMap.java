@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -28,10 +28,6 @@ import java.util.Iterator;
  * @version 0.1
  */
 public class TreeNamedObjectMap extends TreeObjectList {
-    /** */
-    private static final boolean DEBUG      = false;
-    /** */
-    private static final boolean DEBUG_TEST = false;
     
     /** */
     private Map map;  // index to underlaying list -- lazy initialized by getMap()
@@ -214,8 +210,6 @@ public class TreeNamedObjectMap extends TreeObjectList {
             mapRemove ((NamedObject)obj);
         }
         
-        testConsistency (); //DEBUG
-        
         return removed;
     }
     
@@ -227,8 +221,6 @@ public class TreeNamedObjectMap extends TreeObjectList {
         mapRemove ((NamedObject)oldObj);
         mapPut ((NamedObject)obj);
         
-        testConsistency (); //DEBUG
-        
         return oldObj;
     }
     
@@ -237,15 +229,11 @@ public class TreeNamedObjectMap extends TreeObjectList {
     protected Object removeImpl (int index) {
         Object oldObj = super.removeImpl (index);
         
-        if ( DEBUG ) {
-            Util.debug ("\nTreeNamedObjectMap::removeImpl [ " + index + " ] = " + oldObj); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeNamedObjectMap::removeImpl [ " + index + " ] = " + oldObj); // NOI18N
         
         if (oldObj != null) {
             mapRemove ((NamedObject)oldObj);
         }
-        
-        testConsistency (); //DEBUG
         
         return (oldObj);
     }
@@ -262,8 +250,6 @@ public class TreeNamedObjectMap extends TreeObjectList {
         super.addImpl (index, obj);
         
         mapPut ((NamedObject)obj);
-        
-        testConsistency (); //DEBUG
     }
     
     /**
@@ -280,8 +266,6 @@ public class TreeNamedObjectMap extends TreeObjectList {
         if ( added ) {
             mapPut ((NamedObject)obj);
         }
-        
-        testConsistency (); //DEBUG
         
         return added;
     }
@@ -319,40 +303,6 @@ public class TreeNamedObjectMap extends TreeObjectList {
         getMap ().put (newKey, oldValue);
     }
     
-    
-    //
-    // debug
-    //
-    
-    /**
-     */
-    private void testConsistency () {
-        if ( DEBUG_TEST ) {
-            Util.debug ("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"); // NOI18N
-            Util.debug ("!!! TreeNamedObjectMap::testConsistency: list.size = " + this.size ()); // NOI18N
-            Util.debug ("!!!                   ::testConsistency: map.size  = " + getMap ().size ()); // NOI18N
-            if ( this.size () != getMap ().size () ) {
-                Util.debug ("!!!                   ::testConsistency: list = " + super.toString ()); // NOI18N
-                Util.debug ("!!!                   ::testConsistency: map  = " + getMap ().keySet ().toString ()); // NOI18N
-                Util.debug ("!!!                   ::testConsistency: ======"); // NOI18N
-                Util.debug ("!!!                   ::testConsistency: ", new RuntimeException ()); // NOI18N
-            }
-        }
-    }
-    
-    /**
-     */
-    private String listContentListeners () {
-        StringBuffer sb = new StringBuffer ();
-        
-        int i = 0;
-        Iterator it = iterator ();
-        while (it.hasNext ()) {
-            sb.append ("\n").append (i++).append (". ").append (((TreeObject)it.next ()).listListeners ()); // NOI18N
-        }
-        
-        return sb.toString ();
-    }
     
     
     //
@@ -403,7 +353,7 @@ public class TreeNamedObjectMap extends TreeObjectList {
         public void checkAssignableObject (Object obj) throws ClassCastException {
             super.checkAssignableObject (obj);
             if (!!! (obj instanceof NamedObject)) {
-                String msg = Util.getString ("EXC_instance_of_NamedObject"); //,obj.getClass().getName());
+                String msg = Util.THIS.getString ("EXC_instance_of_NamedObject"); //,obj.getClass().getName());
                 throw new ClassCastException (msg);
             }
         }

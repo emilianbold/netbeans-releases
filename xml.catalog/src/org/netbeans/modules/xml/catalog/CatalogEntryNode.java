@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -114,19 +114,19 @@ final class CatalogEntryNode extends BeanNode {
         }
         
         protected String messageSave() {
-            return Util.getString ("MSG_ENTITY_SAVE", getPublicID());  // NOI18N
+            return Util.THIS.getString ("MSG_ENTITY_SAVE", getPublicID());  // NOI18N
         }
         
         protected java.lang.String messageToolTip() {
-            return Util.getString ("MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            return Util.THIS.getString ("MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
         }
 
         protected java.lang.String messageOpening() {
-            return Util.getString ("MSG_ENTITY_OPENING", getPublicID()); // NOI18N
+            return Util.THIS.getString ("MSG_ENTITY_OPENING", getPublicID()); // NOI18N
         }
         
         protected java.lang.String messageOpened() {
-            return Util.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
+            return Util.THIS.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
         
         /** 

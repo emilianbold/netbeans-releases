@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -40,12 +40,12 @@ public class TreeReader extends Reader {
     }
     
     public void close () throws IOException {
-        if (reader == null) throw new IOException (Util.getString ("EXC_null_reader"));
+        if (reader == null) throw new IOException (Util.THIS.getString ("EXC_null_reader"));
         reader.close ();
     }
     
     public int read (char[] cbuf, int off, int len) throws IOException {
-        if (reader == null) throw new IOException (Util.getString ("EXC_null_reader"));
+        if (reader == null) throw new IOException (Util.THIS.getString ("EXC_null_reader"));
         return reader.read (cbuf, off, len);
     }
 }

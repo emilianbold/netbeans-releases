@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -34,9 +34,6 @@ import org.netbeans.modules.xml.core.tree.ModuleEntityResolver;
  * @version 1.0
  */
 public class CatalogEntityResolver implements ModuleEntityResolver {
-    /** */
-    private static final boolean DEBUG = false;
-
 
     /** Creates new CatalogEntityResolver */
     public CatalogEntityResolver() {
@@ -78,9 +75,7 @@ public class CatalogEntityResolver implements ModuleEntityResolver {
         
         // return result (null is allowed)
 
-        if ( DEBUG ) {
-            Util.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
-        }
+        Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
         
         return result;
         

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.decl;
@@ -75,7 +75,7 @@ public class MixedType extends ChoiceType {
     /**
      */
     public String getName () {
-        return (!!! hasChildren ()) ? Util.getString ("NAME_PCDATA") : Util.getString ("NAME_MIX") + getMultiplicity ();
+        return (!!! hasChildren ()) ? Util.THIS.getString ("NAME_PCDATA") : Util.THIS.getString ("NAME_MIX") + getMultiplicity ();
     }
     
 }

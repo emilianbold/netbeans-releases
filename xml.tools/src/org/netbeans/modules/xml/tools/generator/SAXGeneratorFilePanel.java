@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -55,7 +55,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         }
         
         public String getReason() {
-            return Util.getString("MSG_file_err_1");
+            return Util.THIS.getString("MSG_file_err_1");
         }
     };
     
@@ -86,7 +86,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorFilePanel.Form.name"));
+        setName(Util.THIS.getString ("SAXGeneratorFilePanel.Form.name"));
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentHidden(java.awt.event.ComponentEvent evt) {
                 formComponentHidden(evt);
@@ -114,7 +114,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(descTextArea, gridBagConstraints);
 
-        interfaceLabel.setText(Util.getString ("SAXGeneratorCustomizer.interfaceLabel.text"));
+        interfaceLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.interfaceLabel.text"));
         interfaceLabel.setForeground(java.awt.Color.black);
         interfaceLabel.setLabelFor(interfaceTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -130,7 +130,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(interfaceTextField, gridBagConstraints);
 
-        handlerImplLabel.setText(Util.getString ("SAXGeneratorFilePanel.handlerImplLabel.text"));
+        handlerImplLabel.setText(Util.THIS.getString ("SAXGeneratorFilePanel.handlerImplLabel.text"));
         handlerImplLabel.setForeground(java.awt.Color.black);
         handlerImplLabel.setLabelFor(handlerImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -146,7 +146,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(handlerImplTextField, gridBagConstraints);
 
-        stubLabel.setText(Util.getString ("SAXGeneratorCustomizer.stubLabel.text"));
+        stubLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.stubLabel.text"));
         stubLabel.setForeground(java.awt.Color.black);
         stubLabel.setLabelFor(stubTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -162,7 +162,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(stubTextField, gridBagConstraints);
 
-        parsletLabel.setText(Util.getString ("SAXGeneratorCustomizer.parsletLabel.text"));
+        parsletLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.parsletLabel.text"));
         parsletLabel.setForeground(java.awt.Color.black);
         parsletLabel.setLabelFor(parsletTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -178,7 +178,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(parsletTextField, gridBagConstraints);
 
-        parsletImplLabel.setText(Util.getString ("SAXGeneratorFilePanel.parsletImplLabel.text"));
+        parsletImplLabel.setText(Util.THIS.getString ("SAXGeneratorFilePanel.parsletImplLabel.text"));
         parsletImplLabel.setForeground(java.awt.Color.black);
         parsletImplLabel.setLabelFor(parsletImplTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -194,7 +194,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(parsletImplTextField, gridBagConstraints);
 
-        saveCheckBox.setText(Util.getString("PROP_save_it"));
+        saveCheckBox.setText(Util.THIS.getString("PROP_save_it"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -202,7 +202,7 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(saveCheckBox, gridBagConstraints);
 
-        saveLabel.setText(Util.getString("PROP_bindings_label"));
+        saveLabel.setText(Util.THIS.getString("PROP_bindings_label"));
         saveLabel.setForeground(java.awt.Color.black);
         saveLabel.setLabelFor(saveTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -250,12 +250,12 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
         initComponents();
       
         //**** set mnemonics
-        interfaceLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.interfaceLabel.mne")); // NOI18N
-        stubLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.stubLabel.mne")); // NOI18N
-        handlerImplLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorFilePanel.handlerImplLabel.mne")); // NOI18N
-        parsletLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.parsletLabel.mne")); // NOI18N
-        parsletImplLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorFilePanel.parsletImplLabel.mne")); // NOI18N
-        saveLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.saveLabel.mne")); // NOI18N
+        interfaceLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorCustomizer.interfaceLabel.mne")); // NOI18N
+        stubLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorCustomizer.stubLabel.mne")); // NOI18N
+        handlerImplLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorFilePanel.handlerImplLabel.mne")); // NOI18N
+        parsletLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorCustomizer.parsletLabel.mne")); // NOI18N
+        parsletImplLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorFilePanel.parsletImplLabel.mne")); // NOI18N
+        saveLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorCustomizer.saveLabel.mne")); // NOI18N
         //****
               
         interfaceTextField.setText(model.getHandler());
@@ -332,19 +332,19 @@ public final class SAXGeneratorFilePanel extends SAXGeneratorAbstractPanel imple
      */
     public void initAccessibility(){
 
-        interfaceTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_interfaceTextField"));        
-        handlerImplTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_handlerImplTextField"));
-        stubTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_stubTextField"));
-        parsletTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_parsletTextField"));
-        parsletImplTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_parsletImplTextField"));
+        interfaceTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_interfaceTextField"));        
+        handlerImplTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_handlerImplTextField"));
+        stubTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_stubTextField"));
+        parsletTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_parsletTextField"));
+        parsletImplTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_parsletImplTextField"));
         
-        saveTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_saveTextField"));
+        saveTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_saveTextField"));
         saveTextField.addFocusListener(A11YUtil.getA11YJTextFieldSupport());
         
-        saveCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_saveCheckBox"));
-        saveCheckBox.getAccessibleContext().setAccessibleName(Util.getString("ACSN_saveCheckBox"));
-        saveCheckBox.setMnemonic((Util.getString("PROP_save_it_mnem")).charAt(0));        
+        saveCheckBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_saveCheckBox"));
+        saveCheckBox.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_saveCheckBox"));
+        saveCheckBox.setMnemonic((Util.THIS.getString("PROP_save_it_mnem")).charAt(0));        
         
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorFilePanel"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SAXGeneratorFilePanel"));
     }    
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -50,35 +50,35 @@ public class TreeEntityDeclBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeEntityDecl.class, "getName", null ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_name" ) );
             properties[PROPERTY_parameter] = new PropertyDescriptor ( "parameter", TreeEntityDecl.class, "isParameter", null ); // NOI18N
-            properties[PROPERTY_parameter].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_parameter" ) );
-            properties[PROPERTY_parameter].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_parameter" ) );
+            properties[PROPERTY_parameter].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_parameter" ) );
+            properties[PROPERTY_parameter].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_parameter" ) );
             properties[PROPERTY_notationName] = new PropertyDescriptor ( "notationName", TreeEntityDecl.class, "getNotationName", null ); // NOI18N
-            properties[PROPERTY_notationName].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_notationName" ) );
-            properties[PROPERTY_notationName].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_notationName" ) );
+            properties[PROPERTY_notationName].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_notationName" ) );
+            properties[PROPERTY_notationName].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_notationName" ) );
             properties[PROPERTY_notationName].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_systemId] = new PropertyDescriptor ( "systemId", TreeEntityDecl.class, "getSystemId", null ); // NOI18N
-            properties[PROPERTY_systemId].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_systemId" ) );
-            properties[PROPERTY_systemId].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_systemId" ) );
+            properties[PROPERTY_systemId].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_systemId" ) );
             properties[PROPERTY_systemId].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeEntityDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_internalText] = new PropertyDescriptor ( "internalText", TreeEntityDecl.class, "getInternalText", null ); // NOI18N
-            properties[PROPERTY_internalText].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_internalText" ) );
-            properties[PROPERTY_internalText].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_internalText" ) );
+            properties[PROPERTY_internalText].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_internalText" ) );
+            properties[PROPERTY_internalText].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_internalText" ) );
             properties[PROPERTY_internalText].setPropertyEditorClass ( NullStringEditor.class );
             properties[PROPERTY_publicId] = new PropertyDescriptor ( "publicId", TreeEntityDecl.class, "getPublicId", null ); // NOI18N
-            properties[PROPERTY_publicId].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_publicId" ) );
-            properties[PROPERTY_publicId].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_publicId" ) );
+            properties[PROPERTY_publicId].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_publicId" ) );
             properties[PROPERTY_publicId].setPropertyEditorClass ( NullStringEditor.class );
 
 //              properties[PROPERTY_type] = new PropertyDescriptor ( "type", TreeEntityDecl.class, "getType", null ); // NOI18N
-//              properties[PROPERTY_type].setDisplayName ( Util.getString ( "PROP_TreeEntityDeclBeanInfo_type" ) );
-//              properties[PROPERTY_type].setShortDescription ( Util.getString ( "HINT_TreeEntityDeclBeanInfo_type" ) );
+//              properties[PROPERTY_type].setDisplayName ( Util.THIS.getString ( "PROP_TreeEntityDeclBeanInfo_type" ) );
+//              properties[PROPERTY_type].setShortDescription ( Util.THIS.getString ( "HINT_TreeEntityDeclBeanInfo_type" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -44,16 +44,16 @@ public class TreeElementDeclBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeElementDecl.class, "getName", null ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeElementDeclBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeElementDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_name" ) );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeElementDecl.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeElementDeclBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeElementDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
 
 //              properties[PROPERTY_contentType] = new PropertyDescriptor ( "contentType", TreeElementDecl.class, null, "setContentType" ); // NOI18N
-//              properties[PROPERTY_contentType].setDisplayName ( Util.getString ( "PROP_TreeElementDeclBeanInfo_contentType" ) );
-//              properties[PROPERTY_contentType].setShortDescription ( Util.getString ( "HINT_TreeElementDeclBeanInfo_contentType" ) );
+//              properties[PROPERTY_contentType].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementDeclBeanInfo_contentType" ) );
+//              properties[PROPERTY_contentType].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementDeclBeanInfo_contentType" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

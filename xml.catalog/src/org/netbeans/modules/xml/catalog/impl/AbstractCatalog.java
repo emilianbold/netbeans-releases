@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.impl;
@@ -36,9 +36,6 @@ import org.netbeans.modules.xml.catalog.lib.*;
  * @author  Petr Kuzel
  */
 public abstract class AbstractCatalog {
-
-
-    private static final boolean DEBUG = false;
 
     /** Public identifier mappings. */
     private Map publicMap = new HashMap();
@@ -175,7 +172,8 @@ public abstract class AbstractCatalog {
      * Clean content of all internal structures
      */
     protected void clearAll() {
-        if (DEBUG) Util.trace("AbstractCatalog: clearing maps"); // NOI18N
+        Util.THIS.debug ("AbstractCatalog: clearing maps"); // NOI18N
+
         publicMap.clear();
         systemMap.clear();
         delegate.clear();
@@ -413,10 +411,6 @@ public abstract class AbstractCatalog {
         if (getDefaultIcon(type) == null) return null;
         
         return null;
-    }
-                
-    private void trace(String msg) {
-        Util.trace(msg);
     }
     
 }

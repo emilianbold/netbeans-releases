@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,8 +29,8 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
     }
 
     static {
-        beanDescriptor.setDisplayName ( Util.getString("NAME_x_catalog") );
-        beanDescriptor.setShortDescription ( Util.getString("TEXT_x_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( Util.THIS.getString("NAME_x_catalog") );
+        beanDescriptor.setShortDescription ( Util.THIS.getString("TEXT_x_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
 
     // Here you can add code for customizing the BeanDescriptor.
 
@@ -54,14 +54,14 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
         try {
             properties[PROPERTY_source] = new PropertyDescriptor ( "source", XCatalog.class, "getSource", "setSource" );
             properties[PROPERTY_source].setExpert ( true );
-            properties[PROPERTY_source].setDisplayName ( Util.getString("PROP_xcatalog_location") );
-            properties[PROPERTY_source].setShortDescription ( Util.getString("PROP_xcatalog_location_desc") );
+            properties[PROPERTY_source].setDisplayName ( Util.THIS.getString("PROP_xcatalog_location") );
+            properties[PROPERTY_source].setShortDescription ( Util.THIS.getString("PROP_xcatalog_location_desc") );
             properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null );
-            properties[PROPERTY_displayName].setDisplayName ( Util.getString("PROP_xcatalog_name") );
-            properties[PROPERTY_displayName].setShortDescription ( Util.getString("PROP_xcatalog_name_desc") );
+            properties[PROPERTY_displayName].setDisplayName ( Util.THIS.getString("PROP_xcatalog_name") );
+            properties[PROPERTY_displayName].setShortDescription ( Util.THIS.getString("PROP_xcatalog_name_desc") );
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
-            properties[PROPERTY_shortDescription].setDisplayName ( Util.getString("PROP_xcatalog_info") );
-            properties[PROPERTY_shortDescription].setShortDescription ( Util.getString("PROP_xcatalog_info_desc") );
+            properties[PROPERTY_shortDescription].setDisplayName ( Util.THIS.getString("PROP_xcatalog_info") );
+            properties[PROPERTY_shortDescription].setShortDescription ( Util.THIS.getString("PROP_xcatalog_info_desc") );
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", XCatalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }

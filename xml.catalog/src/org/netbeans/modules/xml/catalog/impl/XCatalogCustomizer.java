@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog.impl;
@@ -31,9 +31,9 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     public XCatalogCustomizer() {
         initComponents ();
 
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_XCatalogCustomizer"));
-        locationLabel.setDisplayedMnemonic((Util.getString("XCatalogCustomizer.locationLabel.mne")).charAt(0));
-        locationTextField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_locationTextField"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_XCatalogCustomizer"));
+        locationLabel.setDisplayedMnemonic((Util.THIS.getString("XCatalogCustomizer.locationLabel.mne")).charAt(0));
+        locationTextField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_locationTextField"));
     }
 
     /** This method is called from within the constructor to
@@ -50,7 +50,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
 
         setLayout(new java.awt.GridBagLayout());
 
-        locationLabel.setText(Util.getString ("XCatalogCustomizer.locationLabel.text"));
+        locationLabel.setText(Util.THIS.getString ("XCatalogCustomizer.locationLabel.text"));
         locationLabel.setForeground(java.awt.Color.black);
         locationLabel.setLabelFor(locationTextField);
         add(locationLabel, new java.awt.GridBagConstraints());
@@ -81,7 +81,7 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
         descTextArea.setEditable(false);
         descTextArea.setForeground(new java.awt.Color(102, 102, 153));
         descTextArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        descTextArea.setText(Util.getString("DESC_xcatalog_fmts"));
+        descTextArea.setText(Util.THIS.getString("DESC_xcatalog_fmts"));
         descTextArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
         descTextArea.setEnabled(false);
         descTextArea.setOpaque(false);
@@ -100,12 +100,12 @@ public class XCatalogCustomizer extends javax.swing.JPanel implements Customizer
     //!!! find out whether action performed is not enought
     
     private void locationTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_locationTextFieldFocusLost
-        Util.trace("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
+        Util.THIS.debug("FocusLost-setting location: " + locationTextField.getText()); // NOI18N
         model.setSource(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldFocusLost
 
     private void locationTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationTextFieldActionPerformed
-        Util.trace("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
+        Util.THIS.debug("ActionPerformed-setting location: " + locationTextField.getText()); // NOI18N
         model.setSource(locationTextField.getText());
     }//GEN-LAST:event_locationTextFieldActionPerformed
 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.traversal;
@@ -70,10 +70,10 @@ public final class TreeNodeIterator {
      */
     public TreeNode nextNode () throws InvalidStateException {
         if (!!! valid) {
-            throw new InvalidStateException (Util.getString ("EXC_TreeNodeIterator.nextNode"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_TreeNodeIterator.nextNode"));
         }
         
-        Util.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
         return null;
     }
     
@@ -81,10 +81,10 @@ public final class TreeNodeIterator {
      */
     public TreeNode previousNode () throws InvalidStateException {
         if (!!! valid) {
-            throw new InvalidStateException (Util.getString ("EXC_TreeNodeIterator.previousNode"));
+            throw new InvalidStateException (Util.THIS.getString ("EXC_TreeNodeIterator.previousNode"));
         }
         
-        Util.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeNodeIterator.nextNode ()"); // NOI18N
         return null;
     }
     

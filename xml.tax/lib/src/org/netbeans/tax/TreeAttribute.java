@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -25,8 +25,6 @@ import org.netbeans.tax.spec.Attribute;
  * @version 0.1
  */
 public class TreeAttribute extends TreeNode implements Element.Attribute, TreeNamedObjectMap.NamedObject {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_NAME          = "name"; // NOI18N
@@ -76,9 +74,7 @@ public class TreeAttribute extends TreeNode implements Element.Attribute, TreeNa
         this.valueList = new TreeObjectList (createValueListContentManager ());
         setValueImpl (value);
         
-        if ( DEBUG ) {
-            Util.debug ("TreeAttribute::INIT : name = " + qName + " : specified = " + specified); // NOI18N
-        }
+        Util.THIS.debug ("TreeAttribute::INIT : name = " + qName + " : specified = " + specified); // NOI18N
     }
     
     /**

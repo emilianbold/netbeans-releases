@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -46,16 +46,16 @@ public class TreeDTDBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_encoding] = new PropertyDescriptor ( "encoding", TreeDTD.class, "getEncoding", null ); // NOI18N
-            properties[PROPERTY_encoding].setDisplayName ( Util.getString ( "PROP_TreeDTDBeanInfo_encoding" ) );
-            properties[PROPERTY_encoding].setShortDescription ( Util.getString ( "HINT_TreeDTDBeanInfo_encoding" ) );
+            properties[PROPERTY_encoding].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_encoding" ) );
+            properties[PROPERTY_encoding].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_encoding" ) );
             properties[PROPERTY_encoding].setPropertyEditorClass ( EncodingEditor.class );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeDTD.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeDTDBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeDTDBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_version] = new PropertyDescriptor ( "version", TreeDTD.class, "getVersion", null ); // NOI18N
-            properties[PROPERTY_version].setDisplayName ( Util.getString ( "PROP_TreeDTDBeanInfo_version" ) );
-            properties[PROPERTY_version].setShortDescription ( Util.getString ( "HINT_TreeDTDBeanInfo_version" ) );
+            properties[PROPERTY_version].setDisplayName ( Util.THIS.getString ( "PROP_TreeDTDBeanInfo_version" ) );
+            properties[PROPERTY_version].setShortDescription ( Util.THIS.getString ( "HINT_TreeDTDBeanInfo_version" ) );
             properties[PROPERTY_version].setPropertyEditorClass ( VersionEditor.class );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

@@ -7,49 +7,30 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import org.openide.util.NbBundle;
-
-import org.netbeans.modules.xml.core.AbstractUtil;
+import org.netbeans.modules.xml.tools.AbstractUtil;
 
 /**
  *
  * @author Libor Kramolis
- * @version 0.1
+ * @version 0.2
  */
 class Util extends AbstractUtil {
 
     public static final NameCheck JAVA_CHECK = new JavaIdentifierNameCheck();
-    
-    /** Get localized string.
-     * @param key key of localized value.
-     * @return localized value.
-     */
-    static final String getString (String key) {
-	return NbBundle.getMessage (Util.class, key);
+
+
+    /** Default and only one instance of this class. */
+    public static final Util THIS = new Util();
+
+    /** Nobody can create instance of it, just me. */
+    private Util () {
     }
-    
-    /** Get localized string by passing parameter.
-     * @param key key of localized value.
-     * @param param argument to use when formating the message
-     * @return localized value.
-     */
-    static final String getString (String key, Object param) {
-	return NbBundle.getMessage (Util.class, key, param);
-    }
-    
-    /** Get localized character. Usually used on mnemonic.
-     * @param key key of localized value.
-     * @return localized value.
-     */
-    static final char getChar (String key) {
-	return NbBundle.getMessage (Util.class, key).charAt (0);
-    }
-    
+
     
     /** A name checker interface. */
     public static interface NameCheck {
@@ -62,7 +43,5 @@ class Util extends AbstractUtil {
             return name.length() > 0 && org.openide.util.Utilities.isJavaIdentifier(name);
         }
     }
-
-    
 
 }

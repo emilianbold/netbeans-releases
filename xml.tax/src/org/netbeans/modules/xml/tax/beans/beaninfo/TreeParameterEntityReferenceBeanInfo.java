@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -43,11 +43,11 @@ public class TreeParameterEntityReferenceBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_name] = new PropertyDescriptor ( "name", TreeParameterEntityReference.class, "getName", null ); // NOI18N
-            properties[PROPERTY_name].setDisplayName ( Util.getString ( "PROP_TreeParameterEntityReferenceBeanInfo_name" ) );
-            properties[PROPERTY_name].setShortDescription ( Util.getString ( "HINT_TreeParameterEntityReferenceBeanInfo_name" ) );
+            properties[PROPERTY_name].setDisplayName ( Util.THIS.getString ( "PROP_TreeParameterEntityReferenceBeanInfo_name" ) );
+            properties[PROPERTY_name].setShortDescription ( Util.THIS.getString ( "HINT_TreeParameterEntityReferenceBeanInfo_name" ) );
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeParameterEntityReference.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeParameterEntityReferenceBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeParameterEntityReferenceBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeParameterEntityReferenceBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeParameterEntityReferenceBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

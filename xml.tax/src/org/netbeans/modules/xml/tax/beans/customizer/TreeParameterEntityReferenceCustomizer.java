@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -38,7 +38,7 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_peRef_name")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_peRef_name")); // NOI18N
     }
     
     
@@ -69,7 +69,7 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
             getParameterEntityReference ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -106,7 +106,7 @@ public class TreeParameterEntityReferenceCustomizer extends AbstractTreeCustomiz
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("PROP_peRef_name"));
+        nameLabel.setText(Util.THIS.getString ("PROP_peRef_name"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;

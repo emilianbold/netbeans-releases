@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -55,7 +55,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(480, 350));
-        setName(Util.getString ("SAXGeneratorVersionPanel.Form.name"));
+        setName(Util.THIS.getString ("SAXGeneratorVersionPanel.Form.name"));
         descTextArea.setWrapStyleWord(true);
         descTextArea.setLineWrap(true);
         descTextArea.setEditable(false);
@@ -71,7 +71,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         add(descTextArea, gridBagConstraints);
 
-        jaxpLabel.setText(Util.getString ("SAXGeneratorVersionPanel.jaxpLabel.text"));
+        jaxpLabel.setText(Util.THIS.getString ("SAXGeneratorVersionPanel.jaxpLabel.text"));
         jaxpLabel.setForeground(java.awt.Color.black);
         jaxpLabel.setLabelFor(jaxpVersionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -87,7 +87,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(jaxpVersionComboBox, gridBagConstraints);
 
-        versionLabel.setText(Util.getString ("SAXGeneratorCustomizer.versionLabel.text"));
+        versionLabel.setText(Util.THIS.getString ("SAXGeneratorCustomizer.versionLabel.text"));
         versionLabel.setForeground(java.awt.Color.black);
         versionLabel.setLabelFor(versionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -103,7 +103,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(versionComboBox, gridBagConstraints);
 
-        propagateSAXCheckBox.setText(Util.getString ("SAXGeneratorVersionPanel.propagateSAXCheckBox.text"));
+        propagateSAXCheckBox.setText(Util.THIS.getString ("SAXGeneratorVersionPanel.propagateSAXCheckBox.text"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -126,9 +126,9 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         initComponents();
 	        
         //**** set mnemonics
-        jaxpLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorVersionPanel.jaxpLabel.mne")); // NOI18N
-        versionLabel.setDisplayedMnemonic(Util.getChar("SAXGeneratorCustomizer.versionLabel.mne")); // NOI18N
-        propagateSAXCheckBox.setMnemonic(Util.getChar("SAXGeneratorVersionPanel.propagateSAXCheckBox.mne")); // NOI18N
+        jaxpLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorVersionPanel.jaxpLabel.mne")); // NOI18N
+        versionLabel.setDisplayedMnemonic(Util.THIS.getChar("SAXGeneratorCustomizer.versionLabel.mne")); // NOI18N
+        propagateSAXCheckBox.setMnemonic(Util.THIS.getChar("SAXGeneratorVersionPanel.propagateSAXCheckBox.mne")); // NOI18N
         //****
         
         String items[] = new String[] {"SAX 1.0", "SAX 2.0"};  // NOI18N
@@ -164,14 +164,14 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
      */
     public void initAccessibility(){
 
-        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_propagateSAXCheckBox"));
-        propagateSAXCheckBox.getAccessibleContext().setAccessibleName(Util.getString("ACSN_propagateSAXCheckBox"));
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_propagateSAXCheckBox"));
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleName(Util.THIS.getString("ACSN_propagateSAXCheckBox"));
         
-        jaxpVersionComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_jaxpVersionComboBox"));
-        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_propagateSAXCheckBox"));
+        jaxpVersionComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_jaxpVersionComboBox"));
+        propagateSAXCheckBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_propagateSAXCheckBox"));
         
-        versionComboBox.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_versionComboBox"));
+        versionComboBox.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_versionComboBox"));
         
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SAXGeneratorVersionPanel"));
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SAXGeneratorVersionPanel"));
     }    
 }

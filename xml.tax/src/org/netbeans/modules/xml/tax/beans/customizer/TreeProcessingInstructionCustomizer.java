@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -37,7 +37,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         super ();
         
         initComponents ();
-        targetLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlTarget")); // NOI18N
+        targetLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlTarget")); // NOI18N
         
         initAccessibility ();
     }
@@ -72,7 +72,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
             getProcessingInstruction ().setTarget (targetField.getText ());
         } catch (TreeException exc) {
             updateTargetComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -89,7 +89,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
             getProcessingInstruction ().setData (dataTextArea.getText ());
         } catch (TreeException exc) {
             updateDataComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -131,7 +131,7 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 230));
-        targetLabel.setText(Util.getString ("PROP_xmlTarget"));
+        targetLabel.setText(Util.THIS.getString ("PROP_xmlTarget"));
         targetLabel.setLabelFor(targetField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -249,9 +249,9 @@ public class TreeProcessingInstructionCustomizer extends AbstractTreeCustomizer 
     /** Initialize accesibility
      */
     public void initAccessibility (){        
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeProcessingInstructionCustomizer"));
-        targetField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_targetField"));
-        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_dataPanel1"));
-        dataTextArea.getAccessibleContext ().setAccessibleName (Util.getString ("ACSN_dataPanel1"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeProcessingInstructionCustomizer"));
+        targetField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_targetField"));
+        dataTextArea.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_dataPanel1"));
+        dataTextArea.getAccessibleContext ().setAccessibleName (Util.THIS.getString ("ACSN_dataPanel1"));
     }
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -37,9 +37,9 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationName")); // NOI18N
-        publicLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationPublicId")); // NOI18N
-        systemLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdNotationSystemId")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtdNotationName")); // NOI18N
+        publicLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtdNotationPublicId")); // NOI18N
+        systemLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtdNotationSystemId")); // NOI18N
         
         initAccessibility ();
     }
@@ -76,7 +76,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -93,7 +93,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setPublicId (text2null (publicField.getText ()));
         } catch (TreeException exc) {
             updatePublicIdComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -110,7 +110,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
             getNotationDecl ().setSystemId (text2null (systemField.getText ()));
         } catch (TreeException exc) {
             updateSystemIdComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -156,7 +156,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("PROP_dtdNotationName"));
+        nameLabel.setText(Util.THIS.getString ("PROP_dtdNotationName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -189,7 +189,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        publicLabel.setText(Util.getString ("PROP_dtdNotationPublicId"));
+        publicLabel.setText(Util.THIS.getString ("PROP_dtdNotationPublicId"));
         publicLabel.setLabelFor(publicField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -220,7 +220,7 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(publicField, gridBagConstraints);
 
-        systemLabel.setText(Util.getString ("PROP_dtdNotationSystemId"));
+        systemLabel.setText(Util.THIS.getString ("PROP_dtdNotationSystemId"));
         systemLabel.setLabelFor(systemField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -325,15 +325,15 @@ public class TreeNotationDeclCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeNotationDeclCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeNotationDeclCustomizer"));
         
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField3"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField3"));
         nameField.selectAll ();
         
-        publicField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_publicField2"));
+        publicField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_publicField2"));
         publicField.selectAll ();
         
-        systemField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_systemField1"));
+        systemField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_systemField1"));
         systemField.selectAll ();
     }
 }

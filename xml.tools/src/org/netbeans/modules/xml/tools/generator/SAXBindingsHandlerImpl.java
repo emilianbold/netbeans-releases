@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -15,8 +15,6 @@ package org.netbeans.modules.xml.tools.generator;
 import org.xml.sax.*;
 
 public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
-    
-    public static final boolean DEBUG = false;
     
     private ParsletBindings parslets = new ParsletBindings();
     private ElementBindings elements = new ElementBindings();
@@ -39,7 +37,7 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void handle_parslet(final Attributes meta) throws SAXException {
-        if (DEBUG) Util.debug ("handle_parslet: " + meta); // NOI18N
+        Util.THIS.debug ("handle_parslet: " + meta); // NOI18N
         
         String parslet = meta.getValue(ATT_PARSLET);
         String back = meta.getValue(ATT_RETURN);
@@ -48,16 +46,16 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void start_SAX_bindings(final Attributes meta) throws SAXException {
-        if (DEBUG) Util.debug ("start_SAX_bindings: " + meta); // NOI18N
+        Util.THIS.debug ("start_SAX_bindings: " + meta); // NOI18N
                 
     }
     
     public void end_SAX_bindings() throws SAXException {
-        if (DEBUG) Util.debug ("end_SAX_bindings()"); // NOI18N
+        Util.THIS.debug ("end_SAX_bindings()"); // NOI18N
     }
     
     public void start_bind(final Attributes meta) throws SAXException {
-        if (DEBUG) Util.debug ("start_bind: " + meta); // NOI18N
+        Util.THIS.debug ("start_bind: " + meta); // NOI18N
         
         String element = meta.getValue(ATT_ELEMENT);
         String method = meta.getValue(ATT_METHOD);
@@ -68,7 +66,7 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void end_bind() throws SAXException {
-        if (DEBUG) Util.debug ("end_bind()"); // NOI18N
+        Util.THIS.debug ("end_bind()"); // NOI18N
     }
     
     /**

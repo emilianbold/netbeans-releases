@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.io;
@@ -30,7 +30,7 @@ public final class TreeEntityManager extends TreeEntityResolver {
      * @return Resolved entity or <CODE>null</CODE>.
      */
     public TreeInputSource resolveEntity (String publicId, String systemId, String baseSystemId) {
-        Util.debug ("[PENDING]: TreeEntityManager.resolveEntity ( " + publicId + " , " + systemId + " , " + baseSystemId + " ) : null"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeEntityManager.resolveEntity ( " + publicId + " , " + systemId + " , " + baseSystemId + " ) : null"); // NOI18N
         return null;
     }
     
@@ -38,14 +38,14 @@ public final class TreeEntityManager extends TreeEntityResolver {
      * @param entityResolver entity resolver to add
      */
     public void addEntityResolver (TreeEntityResolver entityResolver) {
-        Util.debug ("[PENDING]: TreeEntityManager.addEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeEntityManager.addEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
     }
     
     /** Remove entity resolver from list of used.
      * @param entityResolver entity resolver to remove
      */
     public void removeEntityResolver (TreeEntityResolver entityResolver) {
-        Util.debug ("[PENDING]: TreeEntityManager.removeEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
+        Util.THIS.debug ("[PENDING]: TreeEntityManager.removeEntityResolver ( " + entityResolver.getClass ().getName () + " )"); // NOI18N
     }
     
     /** Resolve entity.

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -47,23 +47,23 @@ public class TreeElementBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeElement.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_attributes] = new PropertyDescriptor ( "attributes", TreeElement.class, "getAttributes", null ); // NOI18N
-            properties[PROPERTY_attributes].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_attributes" ) );
-            properties[PROPERTY_attributes].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_attributes" ) );
+            properties[PROPERTY_attributes].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementBeanInfo_attributes" ) );
+            properties[PROPERTY_attributes].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementBeanInfo_attributes" ) );
             properties[PROPERTY_attributes].setPropertyEditorClass ( TreeElementAttributeListEditor.class );
             properties[PROPERTY_QName] = new PropertyDescriptor ( "tagName", TreeElement.class, "getQName", "setQName" ); // NOI18N
-            properties[PROPERTY_QName].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_QName" ) );
-            properties[PROPERTY_QName].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_QName" ) );
+            properties[PROPERTY_QName].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementBeanInfo_QName" ) );
+            properties[PROPERTY_QName].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementBeanInfo_QName" ) );
 
 //              properties[PROPERTY_localName] = new PropertyDescriptor ( "localName", TreeElement.class, "getLocalName", null ); // NOI18N
-//              properties[PROPERTY_localName].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_localName" ) );
-//              properties[PROPERTY_localName].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_localName" ) );
+//              properties[PROPERTY_localName].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementBeanInfo_localName" ) );
+//              properties[PROPERTY_localName].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementBeanInfo_localName" ) );
 //              properties[PROPERTY_namespacePrefix] = new PropertyDescriptor ( "namespacePrefix", TreeElement.class, "getNamespacePrefix", null ); // NOI18N
-//              properties[PROPERTY_namespacePrefix].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_namespacePrefix" ) );
-//              properties[PROPERTY_namespacePrefix].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_namespacePrefix" ) );
+//              properties[PROPERTY_namespacePrefix].setDisplayName ( Util.THIS.getString ( "PROP_TreeElementBeanInfo_namespacePrefix" ) );
+//              properties[PROPERTY_namespacePrefix].setShortDescription ( Util.THIS.getString ( "HINT_TreeElementBeanInfo_namespacePrefix" ) );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 

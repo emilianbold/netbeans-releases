@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.catalog;
@@ -37,9 +37,6 @@ import java.awt.event.ActionEvent;
  * @version 1.0
  */
 final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener {
-
-    //class debug switch
-    private static final boolean DEBUG = false;
     
     /** Creates new CatalogNode */
     public CatalogNode(CatalogReader catalog) throws IntrospectionException {        
@@ -117,17 +114,20 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      * The node listens on some changes
      */
     public void propertyChange(PropertyChangeEvent e) {
-        if (DEBUG) Util.trace(e.toString());
+        Util.THIS.debug(e.toString());
         
         if (CatalogDescriptor.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
-            if (DEBUG) Util.trace(" Setting name: " + (String) e.getNewValue()); // NOI18N
+            Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
+
             setName((String) e.getNewValue());
             setDisplayName((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_DESC.equals(e.getPropertyName())) {
-            if (DEBUG) Util.trace(" Setting desc: " + (String) e.getNewValue()); // NOI18N
+            Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
+
             setShortDescription((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_ICON.equals(e.getPropertyName())) { 
-            if (DEBUG) Util.trace(" Updating icon"); // NOI18N
+            Util.THIS.debug(" Updating icon"); // NOI18N
+
             fireIconChange();
         }
     }
@@ -136,12 +136,14 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if (DEBUG) Util.trace("Reading Catalog node " + this); // NOI18N
+        Util.THIS.debug("Reading Catalog node " + this); // NOI18N
+
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        if (DEBUG) Util.trace("Writing " + this); // NOI18N
+        Util.THIS.debug("Writing " + this); // NOI18N
+
         out.defaultWriteObject();        
     }
 
@@ -198,7 +200,8 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
           * Reloads catalog content
           */
         public void reload() {
-            if (DEBUG) Util.trace(" Reloading kids of " + peer + "..."); // NOI18N
+            Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
+
             keys.clear();
             Iterator it = peer.getPublicIDs();
             if (it != null) {
@@ -246,7 +249,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         }
         
         public String getName() {
-            return Util.getString("LBL_unmount");
+            return Util.THIS.getString("LBL_unmount");
         }
         
         public HelpCtx getHelpCtx() {

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -23,8 +23,6 @@ import java.util.LinkedList;
  * @version 0.1
  */
 public abstract class TreeParentNode extends TreeChild {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_CHILD_LIST = "childList"; // NOI18N
@@ -169,17 +167,13 @@ public abstract class TreeParentNode extends TreeChild {
      * @throws ReadOnlyException
      */
     public final void replaceChild (TreeChild oldChild, TreeChild newChild) throws ReadOnlyException {
-        if ( DEBUG ) {
-            Util.debug ("\nTreeParentNode::replaceChild: oldChild = " + oldChild); // NOI18N
-            Util.debug ("              ::replaceChild: newChild = " + newChild); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeParentNode::replaceChild: oldChild = " + oldChild); // NOI18N
+        Util.THIS.debug ("              ::replaceChild: newChild = " + newChild); // NOI18N
         
         childList.checkReadOnly ();
         int index = childList.indexOf (oldChild);
         
-        if ( DEBUG ) {
-            Util.debug ("              ::replaceChild: childList [oldChild]  = " + index); // NOI18N
-        }
+        Util.THIS.debug ("              ::replaceChild: childList [oldChild]  = " + index); // NOI18N
         
         if (index < 0) {
             return;

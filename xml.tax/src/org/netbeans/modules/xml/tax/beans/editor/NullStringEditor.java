@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.editor;
@@ -26,11 +26,9 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * @version 0.1
  */
 public class NullStringEditor extends PropertyEditorSupport implements ExPropertyEditor {
-    /** */
-    private static final boolean DEBUG = false;
 
     /** */
-    protected static final String DEFAULT_NULL = Util.getString ("TEXT_DEFAULT");
+    protected static final String DEFAULT_NULL = Util.THIS.getString ("TEXT_DEFAULT");
 
     /** */
     private boolean editable;
@@ -54,9 +52,7 @@ public class NullStringEditor extends PropertyEditorSupport implements ExPropert
     /**
      */
     public void setAsText (String text) throws IllegalArgumentException {
-	if ( DEBUG ) {
-	    Util.debug ("NullStringEditor::setAsText: text = " + text); // NOI18N
-        }
+        Util.THIS.debug ("NullStringEditor::setAsText: text = " + text); // NOI18N
 
 	if ( DEFAULT_NULL.equals (text) ) {
 	    setValue (null);
@@ -72,9 +68,7 @@ public class NullStringEditor extends PropertyEditorSupport implements ExPropert
     public String getAsText () {
 	Object value = super.getValue();
 
-	if ( DEBUG ) {
-	    Util.debug ("NullStringEditor::getAsText: value = " + value); // NOI18N
-        }
+        Util.THIS.debug ("NullStringEditor::getAsText: value = " + value); // NOI18N
 
 	if ( value == null ) {
 	    return DEFAULT_NULL;

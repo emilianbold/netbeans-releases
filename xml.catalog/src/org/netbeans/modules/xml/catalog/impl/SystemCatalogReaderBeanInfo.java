@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -26,8 +26,8 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     }
 
     static {
-        beanDescriptor.setDisplayName ( Util.getString("NAME_system_catalog") );
-        beanDescriptor.setShortDescription ( Util.getString("TEXT_system_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( Util.THIS.getString("NAME_system_catalog") );
+        beanDescriptor.setShortDescription ( Util.THIS.getString("TEXT_system_catalog_desc") );//GEN-HEADEREND:BeanDescriptor
 
     // Here you can add code for customizing the BeanDescriptor.
 

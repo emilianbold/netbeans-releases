@@ -6,7 +6,7 @@
       <Dimension value="[480, 350]"/>
     </Property>
     <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.Form.name" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.Form.name" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
     </Property>
   </Properties>
   <SyntheticProperties>
@@ -49,7 +49,7 @@
     <Component class="javax.swing.JLabel" name="interfaceLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.interfaceLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.interfaceLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
@@ -74,7 +74,7 @@
     <Component class="javax.swing.JLabel" name="handlerImplLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.handlerImplLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.handlerImplLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
@@ -99,7 +99,7 @@
     <Component class="javax.swing.JLabel" name="stubLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.stubLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.stubLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
@@ -124,7 +124,7 @@
     <Component class="javax.swing.JLabel" name="parsletLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.parsletLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorCustomizer.parsletLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="0" red="0" type="palette"/>
@@ -149,7 +149,7 @@
     <Component class="javax.swing.JLabel" name="parsletImplLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.parsletImplLabel.text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="SAXGeneratorFilePanel.parsletImplLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="1" red="0" type="palette"/>
@@ -174,7 +174,7 @@
     <Component class="javax.swing.JCheckBox" name="saveCheckBox">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="PROP_save_it" replaceFormat="Util.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="PROP_save_it" replaceFormat="Util.THIS.getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -186,7 +186,7 @@
     <Component class="javax.swing.JLabel" name="saveLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="PROP_bindings_label" replaceFormat="Util.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tools/generator/Bundle.properties" key="PROP_bindings_label" replaceFormat="Util.THIS.getString(&quot;{key}&quot;)"/>
         </Property>
         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="0" green="0" id="black" palette="1" red="0" type="palette"/>

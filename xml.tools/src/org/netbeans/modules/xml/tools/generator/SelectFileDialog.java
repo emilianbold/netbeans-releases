@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -47,12 +47,12 @@ public class SelectFileDialog extends JPanel {
         this.ext = ext;
         this.check = check;
         this.selectDD = new DialogDescriptor
-                        (this, Util.getString ("PROP_fileNameTitle") + " *." + ext, true, // NOI18N
+                        (this, Util.THIS.getString ("PROP_fileNameTitle") + " *." + ext, true, // NOI18N
                          DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                          DialogDescriptor.BOTTOM_ALIGN, null, null);
 
         initComponents ();
-        fileLabel.setDisplayedMnemonic(Util.getChar("PROP_fileName_mne")); // NOI18N
+        fileLabel.setDisplayedMnemonic(Util.THIS.getChar("PROP_fileName_mne")); // NOI18N
         ownInitComponents ();
         
         initAccessibility();
@@ -154,9 +154,9 @@ public class SelectFileDialog extends JPanel {
         Object[] options = selectDD.getOptions();
 
         for (int i = 0; i<options.length; i++) {
-            Util.debug("   " + options[i]);
+            Util.THIS.debug("   " + options[i]);
             if (options[i].equals(DialogDescriptor.OK_OPTION)) {
-                Util.debug("++++");                        
+                Util.THIS.debug("++++");                        
             }
         }
 */        
@@ -191,7 +191,7 @@ public class SelectFileDialog extends JPanel {
             newFO = folder.getFileObject (newName, ext);
 
         } else if (newFO != null) {
-            if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.getString ("PROP_replaceMsg"),
+            if (!!! GuiUtil.confirmAction (MessageFormat.format (Util.THIS.getString ("PROP_replaceMsg"),
                                                                 new String [] { newName, ext })) ) {
                 throw new UserCancelException();
             }
@@ -215,8 +215,8 @@ public class SelectFileDialog extends JPanel {
     /** Initialize accesibility
      */
     public void initAccessibility(){
-        this.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_SelectFileDialog"));        
-        fileField.getAccessibleContext().setAccessibleDescription(Util.getString("ACSD_fileField"));        
+        this.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_SelectFileDialog"));        
+        fileField.getAccessibleContext().setAccessibleDescription(Util.THIS.getString("ACSD_fileField"));        
     }
     
 }

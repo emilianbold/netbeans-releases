@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.beaninfo;
@@ -44,15 +44,15 @@ public class TreeTextBeanInfo extends SimpleBeanInfo {
     static {
         try {
             properties[PROPERTY_readOnly] = new PropertyDescriptor ( "readOnly", TreeText.class, "isReadOnly", null ); // NOI18N
-            properties[PROPERTY_readOnly].setDisplayName ( Util.getString ( "PROP_TreeTextBeanInfo_readOnly" ) );
-            properties[PROPERTY_readOnly].setShortDescription ( Util.getString ( "HINT_TreeTextBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setDisplayName ( Util.THIS.getString ( "PROP_TreeTextBeanInfo_readOnly" ) );
+            properties[PROPERTY_readOnly].setShortDescription ( Util.THIS.getString ( "HINT_TreeTextBeanInfo_readOnly" ) );
             properties[PROPERTY_readOnly].setExpert ( true );
             properties[PROPERTY_data] = new PropertyDescriptor ( "data", TreeText.class, "getData", "setData" ); // NOI18N
-            properties[PROPERTY_data].setDisplayName ( Util.getString ( "PROP_TreeTextBeanInfo_data" ) );
-            properties[PROPERTY_data].setShortDescription ( Util.getString ( "HINT_TreeTextBeanInfo_data" ) );
+            properties[PROPERTY_data].setDisplayName ( Util.THIS.getString ( "PROP_TreeTextBeanInfo_data" ) );
+            properties[PROPERTY_data].setShortDescription ( Util.THIS.getString ( "HINT_TreeTextBeanInfo_data" ) );
             properties[PROPERTY_length] = new PropertyDescriptor ( "length", TreeText.class, "getLength", null ); // NOI18N
-            properties[PROPERTY_length].setDisplayName ( Util.getString ( "PROP_TreeTextBeanInfo_length" ) );
-            properties[PROPERTY_length].setShortDescription ( Util.getString ( "HINT_TreeTextBeanInfo_length" ) );
+            properties[PROPERTY_length].setDisplayName ( Util.THIS.getString ( "PROP_TreeTextBeanInfo_length" ) );
+            properties[PROPERTY_length].setShortDescription ( Util.THIS.getString ( "HINT_TreeTextBeanInfo_length" ) );
             properties[PROPERTY_length].setExpert ( true );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties

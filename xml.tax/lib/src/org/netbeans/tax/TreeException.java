@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -80,7 +80,7 @@ public class TreeException extends Exception {
     public void printStackTrace () {
         super.printStackTrace ();
         if (exception != null) {
-            System.err.println (Util.getString ("PROP_Wrapped_exception") + exception.getMessage ());
+            System.err.println (Util.THIS.getString ("PROP_Wrapped_exception") + exception.getMessage ());
             exception.printStackTrace ();
         }
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -62,8 +62,8 @@ public abstract class XMLGenerateAction extends CookieAction {
               }
           }
       } catch (RuntimeException ex) {
-          String msg = Util.getString("MSG_action_failed");  //NOI18N
-          Util.notifyException(msg, ex);
+          String msg = Util.THIS.getString("MSG_action_failed");  //NOI18N
+          Util.THIS.notifyException(msg, ex);
       }
     }
 
@@ -79,7 +79,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.getString ("PROP_GenerateDTD");
+            return Util.THIS.getString ("PROP_GenerateDTD");
         }
 
         /* Help context where to find more about the action.
@@ -105,7 +105,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.getString ("PROP_GenerateSAXHandler");
+            return Util.THIS.getString ("PROP_GenerateSAXHandler");
         }
 
         /* Help context where to find more about the action.
@@ -131,7 +131,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.getString ("PROP_GenerateDOMScanner");
+            return Util.THIS.getString ("PROP_GenerateDOMScanner");
         }
 
         /* Help context where to find more about the action.

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -28,8 +28,6 @@ import org.netbeans.modules.xml.tax.beans.Lib;
  * @version 0.1
  */
 public class TreeElementCustomizer extends AbstractTreeCustomizer {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** Serial Version UID */
     private static final long serialVersionUID = -2086561604130767387L;
@@ -44,8 +42,8 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
-        tableLabel.setDisplayedMnemonic (Util.getChar ("MNE_element_attributelist_label")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlName")); // NOI18N
+        tableLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_element_attributelist_label")); // NOI18N
         initAccessibility ();
     }
     
@@ -77,7 +75,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
             getElement ().setQName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -97,13 +95,13 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
      */
     protected void ownInitComponents () {
         TreeNamedObjectMap attributes = getElement ().getAttributes ();
-        if ( DEBUG ) {
-            Util.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
-        }
+        
+        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributes = " + attributes); // NOI18N
+
         attributesCustomizer = Lib.getCustomizer (TreeElement.class, attributes, "attributes"); // "attributes" - name of TreeElement property // NOI18N
-        if ( DEBUG ) {
-            Util.debug ("TreeElementCustomizer::ownInitComponents: attributesCustomizer = " + attributesCustomizer); // NOI18N
-        }
+        
+        Util.THIS.debug ("TreeElementCustomizer::ownInitComponents: attributesCustomizer = " + attributesCustomizer); // NOI18N
+
         if (attributesCustomizer != null) {
             attributeListPanel.add (attributesCustomizer, BorderLayout.CENTER);
         }
@@ -136,7 +134,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
         setLayout(new java.awt.GridBagLayout());
 
         setPreferredSize(new java.awt.Dimension(350, 230));
-        nameLabel.setText(Util.getString ("PROP_xmlName"));
+        nameLabel.setText(Util.THIS.getString ("PROP_xmlName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 0;
@@ -172,7 +170,7 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        tableLabel.setText(Util.getString ("TEXT_element_attributelist_label"));
+        tableLabel.setText(Util.THIS.getString ("TEXT_element_attributelist_label"));
         tableLabel.setLabelFor(attributeListPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -246,8 +244,8 @@ public class TreeElementCustomizer extends AbstractTreeCustomizer {
      */
     public void initAccessibility (){
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeElementCustomizer"));
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField7"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeElementCustomizer"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField7"));
     }
     
 }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax.decl;
@@ -46,7 +46,7 @@ public class EMPTYType extends LeafType {
     /**
      */
     public String getName () {
-        return Util.getString ("NAME_EMPTY");
+        return Util.THIS.getString ("NAME_EMPTY");
     }
     
     /**

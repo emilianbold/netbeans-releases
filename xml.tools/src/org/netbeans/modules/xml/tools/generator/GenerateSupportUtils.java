@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tools.generator;
@@ -48,7 +48,7 @@ public class GenerateSupportUtils {
      */
     public static void performDefaultAction (FileObject fo) {
         if (fo == null) {
-            Util.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
+            Util.THIS.debug ("FileObject can not be null.", new IllegalArgumentException());  // NOI18N
             return;            
         }
 

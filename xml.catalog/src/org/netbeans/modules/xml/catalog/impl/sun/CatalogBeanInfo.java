@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -25,8 +25,8 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
     /*lazy BeanDescriptor*/;
     private static BeanDescriptor getBdescriptor(){
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( Catalog.class , CatalogCustomizer.class );
-        beanDescriptor.setDisplayName ( Util.getString("PROP_Catalog") );
-        beanDescriptor.setShortDescription ( Util.getString("PROP_Catalog_desc") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( Util.THIS.getString("PROP_Catalog") );
+        beanDescriptor.setShortDescription ( Util.THIS.getString("PROP_Catalog_desc") );//GEN-HEADEREND:BeanDescriptor
 
     // Here you can add code for customizing the BeanDescriptor.
 
@@ -45,11 +45,11 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
     
         try {
             properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", Catalog.class, "getDisplayName", null );
-            properties[PROPERTY_displayName].setDisplayName ( Util.getString("PROP_catalog_name") );
-            properties[PROPERTY_displayName].setShortDescription ( Util.getString("PROP_catalog_name_desc") );
+            properties[PROPERTY_displayName].setDisplayName ( Util.THIS.getString("PROP_catalog_name") );
+            properties[PROPERTY_displayName].setShortDescription ( Util.THIS.getString("PROP_catalog_name_desc") );
             properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
-            properties[PROPERTY_shortDescription].setDisplayName ( Util.getString("PROP_catalog_info") );
-            properties[PROPERTY_shortDescription].setShortDescription ( Util.getString("PROP_catalog_info_desc") );
+            properties[PROPERTY_shortDescription].setDisplayName ( Util.THIS.getString("PROP_catalog_info") );
+            properties[PROPERTY_shortDescription].setShortDescription ( Util.THIS.getString("PROP_catalog_info_desc") );
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
             properties[PROPERTY_icon].setHidden ( true );
         }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -22,8 +22,6 @@ import org.netbeans.tax.spec.DTD;
  * @version 0.1
  */
 public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDTDRoot {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** */
     public static final String PROP_VERSION  = "version"; // NOI18N
@@ -58,9 +56,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         this.version      = version;
         this.encoding     = encoding;
         
-        if ( DEBUG ) {
-            Util.debug ("TreeDTD::init: encoding = " + this.encoding); // NOI18N
-        }
+        Util.THIS.debug ("TreeDTD::init: encoding = " + this.encoding); // NOI18N
         
         this.eventManager = new TreeEventManager ();
     }
@@ -79,9 +75,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         this.version      = dtd.version;
         this.encoding     = dtd.encoding;
         
-        if ( DEBUG ) {
-            Util.debug ("TreeDTD::init [copy]: encoding = " + this.encoding); // NOI18N
-        }
+        Util.THIS.debug ("TreeDTD::init [copy]: encoding = " + this.encoding); // NOI18N
         
         this.eventManager = new TreeEventManager (dtd.eventManager);
     }
@@ -188,9 +182,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
         
         this.encoding = newEncoding;
         
-        if ( DEBUG ) {
-            Util.debug ("TreeDTD::setEncodingImpl: encoding = " + this.encoding); // NOI18N
-        }
+        Util.THIS.debug ("TreeDTD::setEncodingImpl: encoding = " + this.encoding); // NOI18N
         
         firePropertyChange (PROP_ENCODING, oldEncoding, newEncoding);
     }
@@ -260,7 +252,7 @@ public class TreeDTD extends AbstractTreeDTD implements TreeDocumentRoot, TreeDT
     protected final void checkHeader (String version, String encoding) throws InvalidArgumentException {
         if ((version != null) && (encoding == null)) {
             throw new InvalidArgumentException
-            (Util.getString ("EXC_invalid_dtd_header"),
+            (Util.THIS.getString ("EXC_invalid_dtd_header"),
             new NullPointerException ());
         }
     }

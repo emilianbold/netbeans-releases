@@ -670,7 +670,7 @@ class XMLCompletionQuery implements CompletionQuery {
             loader.cancel();
             loader = EMPTY_LOADER;
             if (state == LOADING || state == VALID) {
-                notifyProgress(loader, Util.getString("MSG_loading_cancel"));
+                notifyProgress(loader, Util.THIS.getString("MSG_loading_cancel"));
             }
             
             // optimalize reload policy
@@ -691,8 +691,8 @@ class XMLCompletionQuery implements CompletionQuery {
                 // eliminate zombie loader
                 if (this.loader != loader) return;
 
-                String status = (grammar != null) ? Util.getString("MSG_loading_done") 
-                    : Util.getString("MSG_loading_failed");
+                String status = (grammar != null) ? Util.THIS.getString("MSG_loading_done") 
+                    : Util.THIS.getString("MSG_loading_failed");
 
                 this.grammar = grammar == null ? EmptyQuery.INSTANCE : grammar;
                 state = VALID;
@@ -726,7 +726,7 @@ class XMLCompletionQuery implements CompletionQuery {
                     GrammarQuery loaded = null;                    
                     try {
                     
-                        String status = Util.getString("MSG_loading");
+                        String status = Util.THIS.getString("MSG_loading");
                         notifyProgress(self, status);
 
                         //!!! hardcoded DTD grammar, replace with lookup

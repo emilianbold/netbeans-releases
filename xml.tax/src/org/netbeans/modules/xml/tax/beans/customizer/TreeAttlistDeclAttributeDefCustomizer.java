@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -38,12 +38,12 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         
         initComponents ();
         
-        elementNameLabel.setDisplayedMnemonic (Util.getChar ("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
-        typeLabel.setDisplayedMnemonic (Util.getChar ("MNE_dtdAttDefType")); // NOI18N
-        enumeratedLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.enumeratedLabel.mne")); // NOI18N
-        defaultTypeLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.defaultTypeLabel.mne")); // NOI18N
-        defaultValueLabel.setDisplayedMnemonic (Util.getChar ("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N
+        elementNameLabel.setDisplayedMnemonic (Util.THIS.getChar ("TreeAttributeDeclCustomizer.elemNameLabel.mne")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlName")); // NOI18N
+        typeLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_dtdAttDefType")); // NOI18N
+        enumeratedLabel.setDisplayedMnemonic (Util.THIS.getChar ("DTDAttDefNode.enumeratedLabel.mne")); // NOI18N
+        defaultTypeLabel.setDisplayedMnemonic (Util.THIS.getChar ("DTDAttDefNode.defaultTypeLabel.mne")); // NOI18N
+        defaultValueLabel.setDisplayedMnemonic (Util.THIS.getChar ("DTDAttDefNode.defaultValueLabel.mne")); // NOI18N
         
         initAccessibility ();
     }
@@ -96,7 +96,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
             getAttributeDef ().setName (nameField.getText ());
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -115,7 +115,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  getAttributeDef ().getEnumeratedType ());
         } catch (TreeException exc) {
             updateTypeComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -134,7 +134,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  TreeAttlistDeclAttributeDef.createEnumeratedType (text2null (enumeratedField.getText ())));
         } catch (TreeException exc) {
             updateEnumeratedTypeComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -153,7 +153,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
                  getAttributeDef ().getDefaultValue ());
         } catch (TreeException exc) {
             updateDefaultTypeComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -178,7 +178,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
             getAttributeDef ().setDefaultType (defaultType, defaultValue);
         } catch (TreeException exc) {
             updateDefaultValueComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -230,7 +230,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
 
         setLayout(new java.awt.GridBagLayout());
 
-        elementNameLabel.setText(Util.getString ("TreeAttributeDeclCustomizer.elemNameLabel.text"));
+        elementNameLabel.setText(Util.THIS.getString ("TreeAttributeDeclCustomizer.elemNameLabel.text"));
         elementNameLabel.setLabelFor(elementNameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -257,7 +257,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(elementNameField, gridBagConstraints);
 
-        nameLabel.setText(Util.getString ("PROP_xmlName"));
+        nameLabel.setText(Util.THIS.getString ("PROP_xmlName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -292,7 +292,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        typeLabel.setText(Util.getString ("PROP_dtdAttDefType"));
+        typeLabel.setText(Util.THIS.getString ("PROP_dtdAttDefType"));
         typeLabel.setLabelFor(typeField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -327,7 +327,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(typeField, gridBagConstraints);
 
-        enumeratedLabel.setText(Util.getString ("DTDAttDefNode.enumeratedLabel.text"));
+        enumeratedLabel.setText(Util.THIS.getString ("DTDAttDefNode.enumeratedLabel.text"));
         enumeratedLabel.setLabelFor(enumeratedField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -361,7 +361,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(enumeratedField, gridBagConstraints);
 
-        defaultTypeLabel.setText(Util.getString ("DTDAttDefNode.defaultTypeLabel.text"));
+        defaultTypeLabel.setText(Util.THIS.getString ("DTDAttDefNode.defaultTypeLabel.text"));
         defaultTypeLabel.setLabelFor(defaultTypeField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -396,7 +396,7 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(defaultTypeField, gridBagConstraints);
 
-        defaultValueLabel.setText(Util.getString ("DTDAttDefNode.defaultValueLabel.text"));
+        defaultValueLabel.setText(Util.THIS.getString ("DTDAttDefNode.defaultValueLabel.text"));
         defaultValueLabel.setLabelFor(defaultValueField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -544,24 +544,24 @@ public class TreeAttlistDeclAttributeDefCustomizer extends AbstractTreeCustomize
      */
     public void initAccessibility (){
         
-        elementNameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_elementNameField"));
+        elementNameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_elementNameField"));
         elementNameField.selectAll ();
         
-        nameField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_nameField1"));
+        nameField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_nameField1"));
         nameField.selectAll ();
         
-        typeField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_typeField"));
+        typeField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_typeField"));
         typeField.selectAll ();
         
-        enumeratedField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_enumeratedField"));
+        enumeratedField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_enumeratedField"));
         enumeratedField.selectAll ();
         
-        defaultTypeField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_defaultTypeField"));
+        defaultTypeField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_defaultTypeField"));
         defaultTypeField.selectAll ();
         
-        defaultValueField.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_defaultValueField"));
+        defaultValueField.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_defaultValueField"));
         defaultValueField.selectAll ();
         
-        this.getAccessibleContext ().setAccessibleDescription (Util.getString ("ACSD_TreeAttlistDeclAttributeDefCustomizer"));
+        this.getAccessibleContext ().setAccessibleDescription (Util.THIS.getString ("ACSD_TreeAttlistDeclAttributeDefCustomizer"));
     }
 }

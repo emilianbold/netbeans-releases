@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.tax;
@@ -20,10 +20,6 @@ import java.util.StringTokenizer;
  * @version 0.1
  */
 public abstract class TreeData extends TreeChild {
-    /** */
-    private static final boolean DEBUG = false;
-    /** */
-    private static final boolean DEBUG_WS = false;
     
     /** */
     public static final String PROP_DATA = "data"; // NOI18N
@@ -105,9 +101,7 @@ public abstract class TreeData extends TreeChild {
         
         this.data = newData;
         
-        if ( DEBUG ) {
-            Util.debug ("TreeData::setDataImpl: firing data change " + oldData + " => " +newData); // NOI18N
-        }
+        Util.THIS.debug ("TreeData::setDataImpl: firing data change " + oldData + " => " +newData); // NOI18N
         
         firePropertyChange (PROP_DATA, oldData, newData);
     }
@@ -234,15 +228,11 @@ public abstract class TreeData extends TreeChild {
     /**
      */
     public final boolean onlyWhiteSpaces () {
-        if ( DEBUG_WS ) {
-            Util.debug ("TreeData::onlyWhiteSpaces: data = '" + data + "'"); // NOI18N
-        }
+        Util.THIS.debug ("TreeData::onlyWhiteSpaces: data = '" + data + "'"); // NOI18N
         
         String trimed = data.trim ();
         
-        if ( DEBUG_WS ) {
-            Util.debug ("        ::onlyWhiteSpaces: trimed = '" + trimed + "'"); // NOI18N
-        }
+        Util.THIS.debug ("        ::onlyWhiteSpaces: trimed = '" + trimed + "'"); // NOI18N
         
         return (trimed.length () == 0);
     }

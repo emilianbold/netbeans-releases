@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.xml.tax.beans.customizer;
@@ -27,8 +27,6 @@ import org.netbeans.modules.xml.tax.beans.Lib;
  * @version 0.1
  */
 public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
-    /** */
-    private static final boolean DEBUG = false;
     
     /** Serial Version UID */
     private static final long serialVersionUID = 7976099790445909386L;
@@ -46,8 +44,8 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
         super ();
         
         initComponents ();
-        nameLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlName")); // NOI18N
-        valueLabel.setDisplayedMnemonic (Util.getChar ("MNE_xmlValue")); // NOI18N
+        nameLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlName")); // NOI18N
+        valueLabel.setDisplayedMnemonic (Util.THIS.getChar ("MNE_xmlValue")); // NOI18N
     }
     
     
@@ -90,7 +88,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
                 if ( getAttribute () != oldAttribute ) {
                     if ( oldAttribute != null ) {
                         askingDialog = true;
-                        toSet = Lib.confirmAction (Util.getString ("MSG_replace_attribute", attrName));
+                        toSet = Lib.confirmAction (Util.THIS.getString ("MSG_replace_attribute", attrName));
                         askingDialog = false;
                     }
                 }
@@ -103,7 +101,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
             }
         } catch (TreeException exc) {
             updateNameComponent ();
-            Util.notifyTreeException (exc);
+            Util.THIS.notifyTreeException (exc);
         }
     }
     
@@ -117,28 +115,22 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     protected final void updateAttributeValue () {
         try {
-            if ( DEBUG ) {
-                Util.debug ("\nTreeAttributeCustomizer::updateAttributeValue: valueField.getText() = " + valueField.getText ());//, new RuntimeException()); // NOI18N
-            }
+            Util.THIS.debug ("\nTreeAttributeCustomizer::updateAttributeValue: valueField.getText() = " + valueField.getText ());//, new RuntimeException()); // NOI18N
             
             getAttribute ().setValue (valueField.getText ());
             //            TAXUtil.setAttributeValue (getAttribute(), valueField.getText());
         } catch (TreeException ex) {
-            if ( DEBUG ) {
-                Util.debug ("                       ::updateAttributeValue: ex = " + ex + "\n"); // NOI18N
-            }
+            Util.THIS.debug ("                       ::updateAttributeValue: ex = " + ex + "\n"); // NOI18N
             
             updateValueComponent ();
-            Util.notifyTreeException (ex);
+            Util.THIS.notifyTreeException (ex);
         }
     }
     
     /**
      */
     protected final void updateValueComponent () {
-        if ( DEBUG ) {
-            Util.debug ("\nTreeAttributeCustomizer::updateValueComponent: getAttribute().getValue() = " + getAttribute ().getValue ());//, new RuntimeException()); // NOI18N
-        }
+        Util.THIS.debug ("\nTreeAttributeCustomizer::updateValueComponent: getAttribute().getValue() = " + getAttribute ().getValue ());//, new RuntimeException()); // NOI18N
         
         valueField.setText (getAttribute ().getValue ());
     }
@@ -173,7 +165,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(Util.getString ("PROP_xmlName"));
+        nameLabel.setText(Util.THIS.getString ("PROP_xmlName"));
         nameLabel.setLabelFor(nameField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -208,7 +200,7 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameField, gridBagConstraints);
 
-        valueLabel.setText(Util.getString ("PROP_xmlValue"));
+        valueLabel.setText(Util.THIS.getString ("PROP_xmlValue"));
         valueLabel.setLabelFor(valueField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -265,12 +257,9 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     private void valueFieldFocusLost (java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueFieldFocusLost
         // Add your handling code here:
-        if ( DEBUG ) {
-            Util.debug ("TreeAttributeCustomizer::valueFieldFocusLost"); // NOI18N
-        }
+        Util.THIS.debug ("TreeAttributeCustomizer::valueFieldFocusLost"); // NOI18N
         
-        updateAttributeValue ();
-        
+        updateAttributeValue ();        
     }//GEN-LAST:event_valueFieldFocusLost
     
     /**
@@ -284,12 +273,9 @@ public class TreeAttributeCustomizer extends AbstractTreeCustomizer {
      */
     private void valueFieldActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueFieldActionPerformed
         // Add your handling code here:
-        if ( DEBUG ) {
-            Util.debug ("TreeAttributeCustomizer::valueFieldActionPerformed"); // NOI18N
-        }
+        Util.THIS.debug ("TreeAttributeCustomizer::valueFieldActionPerformed"); // NOI18N
         
         updateAttributeValue ();
-        
     }//GEN-LAST:event_valueFieldActionPerformed
     
     /**

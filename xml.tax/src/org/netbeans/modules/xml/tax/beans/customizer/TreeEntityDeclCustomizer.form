@@ -14,7 +14,7 @@
     <Component class="javax.swing.JLabel" name="nameLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_ElementName" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_ElementName" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="nameField" type="bean"/>
@@ -45,7 +45,7 @@
     <Component class="javax.swing.JLabel" name="typeLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_EntityType" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_EntityType" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
         </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="typeCombo" type="bean"/>
@@ -96,7 +96,7 @@
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_Internal" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_Internal" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="buttonGroup"/>
@@ -115,7 +115,7 @@
         <Component class="javax.swing.JRadioButton" name="externalRadio">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_External" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_External" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="buttonGroup"/>
@@ -134,7 +134,7 @@
         <Component class="javax.swing.JRadioButton" name="unparsedRadio">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_Unparsed" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="RAD_Unparsed" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="buttonGroup"/>
@@ -173,7 +173,7 @@
             <Component class="javax.swing.JLabel" name="internValueLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Internal_Text" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Internal_Text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="internValueField" type="bean"/>
@@ -212,7 +212,7 @@
             <Component class="javax.swing.JLabel" name="externPublicLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_External_PublicId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_External_PublicId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="externPublicField" type="bean"/>
@@ -239,7 +239,7 @@
             <Component class="javax.swing.JLabel" name="externSystemLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_External_SystemId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_External_SystemId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="externSystemField" type="bean"/>
@@ -277,7 +277,7 @@
             <Component class="javax.swing.JLabel" name="unparsedPublicLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_PublicId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_PublicId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="unparsedPublicField" type="bean"/>
@@ -304,7 +304,7 @@
             <Component class="javax.swing.JLabel" name="unparsedSystemLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_SystemId" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_SystemId" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="unparsedSystemField" type="bean"/>
@@ -331,7 +331,7 @@
             <Component class="javax.swing.JLabel" name="unparsedNotationLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_NotationName" replaceFormat="Util.getString (&quot;{key}&quot;)"/>
+                  <ResourceString bundle="org/netbeans/modules/xml/tax/beans/customizer/Bundle.properties" key="LAB_Unparsed_NotationName" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
                 </Property>
                 <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection component="unparsedNotationField" type="bean"/>
