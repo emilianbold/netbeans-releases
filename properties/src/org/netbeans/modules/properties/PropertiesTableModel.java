@@ -217,7 +217,12 @@ public class PropertiesTableModel extends AbstractTableModel {
     /** Overrides superclass method. Overrides superclass method.
      * @return true for all cells */
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return true;
+        if (columnIndex == 0) {
+            return !structure.isReadOnly();
+        } else {
+            PropertiesFileEntry entry = structure.getNthEntry(columnIndex-1);
+            return entry.getFile().canWrite();
+        }
     }
 
     /** Fires a TableModelEvent - change of one column */

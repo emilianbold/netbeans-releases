@@ -411,6 +411,15 @@ public class BundleStructure {
         Collections.sort(keyList, comparator);
         this.keyList = keyList;
     }
+    
+    boolean isReadOnly() {
+        boolean canWrite = false;
+        for (int i=0; i < getEntryCount(); i++) {
+            PropertiesFileEntry entry = getNthEntry(i);
+            canWrite |= entry.getFile().canWrite();
+        }
+        return !canWrite;
+    }
 
     /**
      * Registers a given listener so that it will receive notifications

@@ -50,6 +50,9 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     /** PropertiesDataObject this panel presents. */
     private PropertiesDataObject obj;
     
+    /** Document listener for value and comment textareas. */
+    private DocumentListener listener;
+    
     /** Class representing settings used in table view. */
     private static TableViewSettings settings;
     
@@ -80,17 +83,22 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         textField.setBorder(new LineBorder(Color.black));
         textField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BundleEditPanel.class).getString("ACSN_CellEditor"));
         textField.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BundleEditPanel.class).getString("ACSD_CellEditor"));
+        listener = new ModifiedListener();
         table.setDefaultEditor(PropertiesTableModel.StringPair.class,
-        new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel, new ModifiedListener()));
+            new PropertiesTableCellEditor(textField, textComment, textValue, valueLabel, listener));
         
         // Sets renderer.
         table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
+        
+        updateAddButton();
         
         // property change listener - listens to editing state of the table
         table.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals("tableCellEditor")) { // NOI18N
                     updateEnabled();
+                } else if (evt.getPropertyName().equals("model")) { // NOI18N
+                    updateAddButton();
                 }
             }
         });
@@ -116,7 +124,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             public void valueChanged(ListSelectionEvent evt) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        removeButton.setEnabled(table.getSelectedRow() >= 0);
+                        updateSelection();
                     }
                 });
             }
@@ -147,6 +155,37 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
             textComment.setEditable(false);
             textComment.setEnabled(false);
         }
+    }
+    
+    private void updateSelection() {
+        int row = table.getSelectedRow();
+        int column = table.getSelectedColumn();
+        BundleStructure structure = obj.getBundleStructure();
+        removeButton.setEnabled((row >= 0) && (!structure.isReadOnly()));
+        String value;
+        String comment;
+        if (column == -1) {
+            value = ""; // NOI18N
+            comment = ""; // NOI18N
+        } else if (column == 0) {
+            Element.ItemElem elem = structure.getItem(0, row);
+            value = structure.keyAt(row);
+            comment = elem.getComment();
+        } else {
+            Element.ItemElem elem = structure.getItem(column-1, row);
+            value = elem.getValue();
+            comment = elem.getComment();
+        }
+        textValue.getDocument().removeDocumentListener(listener);
+        textComment.getDocument().removeDocumentListener(listener);
+        textValue.setText(value);
+        textComment.setText(comment);
+        textValue.getDocument().addDocumentListener(listener);
+        textComment.getDocument().addDocumentListener(listener);
+    }
+    
+    private void updateAddButton() {
+        addButton.setEnabled(!obj.getBundleStructure().isReadOnly());
     }
     
     /** Returns the main table with all values */
