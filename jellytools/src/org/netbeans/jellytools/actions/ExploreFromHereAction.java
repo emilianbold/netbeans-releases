@@ -14,7 +14,12 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** ExploreFromHereAction class 
+/** Used to call "Explore From Here" popup menu item, "View|Explore From Here" main menu item,
+ * "org.openide.actions.OpenLocalExplorer".
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.FolderNode
+ * @see org.netbeans.jellytools.nodes.GroupNode
+ * @see org.netbeans.jellytools.nodes.FilesystemNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ExploreFromHereAction extends Action {
     private static final String explorerPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "OpenLocalExplorer");

@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** PasteAction class 
+/** Used to call "Paste" popup menu item, "Edit|Paste" main menu item,
+ * "org.openide.actions.PasteAction" or Ctrl+V shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class PasteAction extends Action {
 

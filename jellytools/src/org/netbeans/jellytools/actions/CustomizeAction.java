@@ -14,7 +14,10 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** CustomizeAction class 
+/** Used to call "Customize" popup menu item or
+ * "org.openide.actions.CustomizeAction".
+ * @see Action
+ * @see ActionNoBlock
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class CustomizeAction extends ActionNoBlock {
     private static final String customizePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Customize");

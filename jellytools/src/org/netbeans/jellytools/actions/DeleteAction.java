@@ -15,7 +15,10 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** DeleteAction class 
+/** Used to call "Delete" popup menu item, "Edit|Delete" main menu item,
+ * "org.openide.actions.DeleteAction" or Delete shortcut.
+ * @see Action
+ * @see ActionNoBlock
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class DeleteAction extends ActionNoBlock {
 

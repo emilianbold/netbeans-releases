@@ -15,6 +15,10 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
+/** Used to call "View|Output Window" main menu item, 
+ * "org.netbeans.core.actions.OutputWindowAction" or Ctrl+4 shortcut.
+ * @see Action 
+ */
 public class OutputWindowViewAction extends Action {
     private static final String menu = 
         Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
@@ -25,7 +29,7 @@ public class OutputWindowViewAction extends Action {
     private static final Shortcut shortcut = 
         new Shortcut(KeyEvent.VK_4, KeyEvent.CTRL_MASK);
 
-    /** creates new instance */    
+    /** Creates new instance. */    
     public OutputWindowViewAction() {
         super(menu, null, "org.netbeans.core.actions.OutputWindowAction", shortcut);
     }

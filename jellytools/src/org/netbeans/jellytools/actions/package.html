@@ -1,0 +1,62 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+ <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+ 
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+  <title></title>
+</head>
+  <body bgcolor="white">
+ Provides a set of classes to perform popup, main menu, IDE API and shortcut
+ actions.   
+<p>The recommended way how to invoke popup or main menu is through an <tt>{@link 
+org.netbeans.jellytools.actions.Action}</tt> or <tt>{@link org.netbeans.jellytools.actions.ActionNoBlock}</tt>
+instance. Predefined actions in this package are descendants either of <tt>Action</tt>
+for non blocking operations or of <tt>ActionNoBlock</tt> for operations which
+may block further execution by a modal dialog showing.  <br>
+ An action can be performed in "main menu", "popup", "shortcut" or "API"
+modes. By default it is performed in the first available mode because not
+every action is defined for all four modes. An example of usage can be: </p>
+ 
+<p><tt>&nbsp; <i>// performs in default mode</i></tt> <br>
+ <tt>&nbsp; new CopyAction().perform();</tt> <br>
+ <i><tt>&nbsp; // performs in "menu" mode</tt></i>  <br>
+ <tt>&nbsp; new CopyAction().performMenu();</tt> </p>
+ 
+<p>It also possible to specify a node or component on which an action will
+ be performed: </p>
+ 
+<p><i><tt>&nbsp; // selects node first and then performs on it</tt></i> <br>
+ <tt>&nbsp; new FindAction().perform(myNode);</tt> <br>
+ <i><tt>&nbsp; // focuses component first and then performs action in "popup" 
+mode</tt></i> <br>
+ <tt>&nbsp; new FindAction().performPopup(myComponentOperator);</tt> </p>
+ 
+<p>If an action is not predefined, you can create and use your own action.
+  </p>
+ 
+<p><i><tt>&nbsp; // invokes main menu item "Edit|Copy"</tt></i> <br>
+ <tt>&nbsp; new Action("Edit|Copy", null).perform();</tt> <br>
+ <i><tt>&nbsp; // invokes popup menu item "Copy" on given node</tt></i> <br>
+ <tt>&nbsp; new Action(null, "Copy").perform(myNode);</tt> </p>
+ 
+<p><i><tt>&nbsp; // invokes main menu item "Edit|Find" (first selects given
+ node)</tt></i> <br>
+ <tt>&nbsp; new ActionNoBlock("Edit|Find", null).perform(myFolderNode);</tt>
+  <br>
+ <i><tt>&nbsp; // invoke popup menu item "Find" on given component</tt></i>
+ <br>
+ <tt>&nbsp; new ActionNoBlock(null, "Find").perform(myEditorOperator);</tt><br>
+</p>
+ 
+</body>
+</html>

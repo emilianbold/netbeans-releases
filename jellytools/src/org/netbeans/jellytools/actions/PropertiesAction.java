@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** PropertiesAction class 
+/** Used to call "Properties" popup menu item, "View|Properties" main menu item,
+ * "org.openide.actions.PropertiesAction" or Ctrl+1 shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class PropertiesAction extends Action {
 

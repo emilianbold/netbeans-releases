@@ -21,9 +21,9 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
-/**
- * Close view action (org.openide.actions.CloseViewAction).
- *
+/** Used to call "Close View" popup menu item,
+ * "org.openide.actions.CloseViewAction" or Ctrl+F4 shortcut.
+ * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class CloseViewAction extends Action {

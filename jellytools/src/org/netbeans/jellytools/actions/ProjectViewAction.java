@@ -15,7 +15,8 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** ProjectViewAction class 
+/** Used to call "View|Project" main menu item.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ProjectViewAction extends Action {
     private static final String projectMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")

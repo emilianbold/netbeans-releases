@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** CompileAction class 
+/** Used to call "Compile" popup menu item, "Build|Compile" main menu item,
+ * "org.openide.actions.CompileAction" or F9 shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class CompileAction extends Action {
     

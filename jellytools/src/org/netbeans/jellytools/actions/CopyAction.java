@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** CopyAction class 
+/** Used to call "Copy" popup menu item, "Edit|Copy" main menu item,
+ * "org.openide.actions.CopyAction" or Ctrl+C shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class CopyAction extends Action {
 

@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** RuntimeViewAction class 
+/** Used to call "View|Runtime" main menu item or
+ * "org.netbeans.core.actions.ViewRuntimeTabAction".
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class RuntimeViewAction extends Action {
     private static final String runtimeMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/View")

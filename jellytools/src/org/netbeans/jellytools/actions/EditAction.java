@@ -14,7 +14,12 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** EditAction class 
+/** Used to call "Edit" popup menu item or
+ * "org.openide.actions.EditAction".
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.PropertiesNode
+ * @see org.netbeans.jellytools.nodes.URLNode
+ * @see org.netbeans.jellytools.nodes.FormNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class EditAction extends Action {
     

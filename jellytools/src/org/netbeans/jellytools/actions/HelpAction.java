@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** HelpAction class 
+/** Used to call "Help|Contents" or "Help|Help Sets|{help_set} main menu item,
+ * "org.openide.actions.HelpAction" or F1 shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class HelpAction extends Action {
 
@@ -28,12 +30,14 @@ public class HelpAction extends Action {
                                              + "|"; 
     private static final Shortcut helpShortcut = new Shortcut(KeyEvent.VK_F1);
 
-    /** creates new HelpAction instance */    
+    /** Creates new HelpAction instance for specific help set.
+     * @param helpSet menu item of help set to be showed (e.g. "Core IDE Help")
+     */
     public HelpAction(String helpSet) {
         super(helpSetsMenu+helpSet, null);
     }
 
-    /** creates new HelpAction instance */    
+    /** Creates new HelpAction instance for master help set (Help|Contents). */
     public HelpAction() {
         super(helpMenu, null, "org.openide.actions.HelpAction", helpShortcut);
     }

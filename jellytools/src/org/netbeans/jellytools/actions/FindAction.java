@@ -15,7 +15,10 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** FindAction class 
+/** Used to call "Find" popup menu item, "Edit|Find" main menu item,
+ * "org.openide.actions.FindAction" or Ctrl+F shortcut.
+ * @see Action
+ * @see ActionNoBlock
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class FindAction extends ActionNoBlock {
     private static final String findPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Find");

@@ -21,9 +21,10 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
-/**
- * Clone view action (org.openide.actions.CloneViewAction).
- *
+/** Used to call "Clone View" popup menu item, "Window|Clone View" main menu item or
+ * "org.openide.actions.CloneViewAction".
+ * @see Action
+ * @see org.netbeans.jellytools.TopComponentOperator
  * @author Jiri.Skrivanek@sun.com
  */
 public class CloneViewAction extends Action {

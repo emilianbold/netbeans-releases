@@ -14,14 +14,17 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** ViewAction class 
+/** Used to call "View" popup menu item or
+ * "org.openide.actions.ViewAction".
+ * @see Action
+ * @see org.netbeans.jellytools.nodes.HTMLNode
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class ViewAction extends Action {
     
-    private static final String openPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "View");
+    private static final String viewPopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "View");
 
     /** creates new ViewAction instance */    
     public ViewAction() {
-        super(null, openPopup, "org.openide.actions.ViewAction");
+        super(null, viewPopup, "org.openide.actions.ViewAction");
     }
 }

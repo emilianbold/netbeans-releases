@@ -14,7 +14,9 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** OpenAction class 
+/** Used to call "Open" popup menu item or
+ * "org.openide.actions.OpenAction".
+ * @see Action 
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class OpenAction extends Action {
     

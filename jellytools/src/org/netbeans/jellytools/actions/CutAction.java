@@ -15,7 +15,9 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
-/** CutAction class 
+/** Used to call "Cut" popup menu item, "Edit|Cut" main menu item,
+ * "org.openide.actions.CutAction" or Ctrl+X shortcut.
+ * @see Action
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class CutAction extends Action {
 

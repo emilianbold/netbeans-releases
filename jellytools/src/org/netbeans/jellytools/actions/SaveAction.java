@@ -16,8 +16,9 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.nodes.Node;
 
-/**
- * Save action.
+/** Used to call "Save" popup menu item, "File|Save" main menu item,
+ * "org.openide.actions.SaveAction" or Ctrl+S shortcut.
+ * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class SaveAction extends Action {

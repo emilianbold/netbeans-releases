@@ -18,8 +18,12 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.openide.util.actions.SystemAction;
 
-/**
- * Save All action. It has only main menu representation.
+/** Used to call "File|Save All" main menu item or
+ * "org.openide.actions.SaveAllAction".
+ * <br>
+ * After action is performed it waits until action is disabled which should
+ * means the action is finished.
+ * @see Action
  * @author Jiri.Skrivanek@sun.com
  */
 public class SaveAllAction extends Action {

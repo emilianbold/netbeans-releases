@@ -14,7 +14,10 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** RenameAction class 
+/** Used to call "Rename" popup menu item or
+ * "org.openide.actions.RenameAction".
+ * @see Action
+ * @see ActionNoBlock
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class RenameAction extends ActionNoBlock {
 

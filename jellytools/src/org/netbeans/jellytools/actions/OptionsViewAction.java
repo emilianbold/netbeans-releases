@@ -15,6 +15,10 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
 
+/** Used to call "Tools|Options" main menu item or
+ * "org.netbeans.core.actions.OptionsAction".
+ * @see Action 
+ */
 public class OptionsViewAction extends Action {
     private static final String menu = 
         Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
@@ -23,7 +27,7 @@ public class OptionsViewAction extends Action {
         Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", 
                                 "Options");
 
-    /** creates new instance */    
+    /** Creates new instance. */    
     public OptionsViewAction() {
         super(menu, null, "org.netbeans.core.actions.OptionsAction");
     }

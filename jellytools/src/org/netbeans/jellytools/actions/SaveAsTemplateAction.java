@@ -14,8 +14,10 @@ package org.netbeans.jellytools.actions;
 
 import org.netbeans.jellytools.Bundle;
 
-/** 
- * Save As Template action. It has only popup representation.
+/** Used to call "Save As Template" popup menu item or
+ * "org.openide.actions.SaveAsTemplateAction".
+ * @see Action
+ * @see ActionNoBlock
  */
 public class SaveAsTemplateAction extends ActionNoBlock {
 

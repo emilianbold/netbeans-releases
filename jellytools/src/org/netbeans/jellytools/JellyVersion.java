@@ -17,7 +17,8 @@ import java.util.jar.Manifest;
 
 /**
  * Class to obtain version of jellytools and to check whether user run tests
- * on correct Jemmy version.<BR>
+ * on correct Jemmy version.
+ * <BR>
  * Information about versions is stored in org/netbeans/jellytools/version_info
  * file. To check jemmy version in runtime we use JemmyProperties.getVersion().
  *
