@@ -16,6 +16,7 @@ package org.netbeans.modules.dbschema.nodes;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import org.openide.ErrorManager;
 
@@ -158,6 +159,10 @@ public class SchemaRootChildren extends Children.Keys {
                 propL = new DBElementListener();
                 wPropL = WeakListeners.propertyChange(propL, this.element);
             }
+            else {
+                // #55249 - need to recreate the listener with the right element
+                wPropL = WeakListeners.propertyChange(propL, this.element);
+            }
             
             this.element.addPropertyChangeListener(wPropL);
         }
@@ -219,6 +224,11 @@ public class SchemaRootChildren extends Children.Keys {
         // set new keys
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                // #55249 - first reset to empty set, so the old keys are eliminated. 
+                // Due to the way equals() is implemented on schema elements, this needs 
+                // to be done: two elements are considered equal if their names are equal,
+                // even if the sets of subelements are not equal
+                setKeys2(Collections.EMPTY_SET);
                 setKeys2(keys);
             }
         });

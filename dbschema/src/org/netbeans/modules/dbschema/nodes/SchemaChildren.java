@@ -131,6 +131,10 @@ public class SchemaChildren extends Children.Keys {
             propL = new DBElementListener();
             wPropL = WeakListeners.propertyChange (propL, element);
         }  
+        else {
+            // #55249 - need to recreate the listener with the right element
+            wPropL = WeakListeners.propertyChange (propL, element);
+        }
         
         element.addPropertyChangeListener (wPropL);
         nodesInited = true;

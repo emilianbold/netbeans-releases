@@ -201,6 +201,8 @@ public class RecaptureSchema {
                             });
                             
                             // refresh the node
+                            SchemaElement.addToCache(se);
+                            dobj.setSchemaElementImpl(sei);
                             dobj.setSchema(se);
                             
                             pf.setMessage(bundle.getString("SchemaSaved")); //NOI18N
