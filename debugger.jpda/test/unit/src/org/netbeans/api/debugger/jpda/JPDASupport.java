@@ -29,8 +29,8 @@ import java.text.SimpleDateFormat;
 import com.sun.jdi.connect.*;
 import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.Bootstrap;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+//import org.netbeans.api.java.classpath.ClassPath;
+//import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  * Contains support functionality for unit tests.
@@ -209,23 +209,23 @@ public class JPDASupport implements DebuggerManagerListener {
     // other methods ...........................................................
     
     private static Object[] createServices () {
-        try {
+//        try {
             Map map = new HashMap ();
-            ClassLoader cl = JPDASupport.class.getClassLoader ();
-            String file = "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class";
-            URL url = cl.getResource (file);
-            String surl = url.toString ();
-            url = new URL (surl.substring (0, surl.length () - file.length ()));
-            ClassPath cp = ClassPathSupport.createClassPath (new URL[] {
-                url
-            });
-            map.put ("sourcepath", cp);
+//            ClassLoader cl = JPDASupport.class.getClassLoader ();
+//            String file = "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class";
+//            URL url = cl.getResource (file);
+//            String surl = url.toString ();
+//            url = new URL (surl.substring (0, surl.length () - file.length ()));
+//            ClassPath cp = ClassPathSupport.createClassPath (new URL[] {
+//                url
+//            });
+//            map.put ("sourcepath", cp);
             return new Object[] {
                 map
             };
-        } catch (MalformedURLException ex) {
-            return new Object[] {};
-        }
+//        } catch (MalformedURLException ex) {
+//            return new Object[] {};
+//        }
     }
 
     private static String readLine (InputStream in) throws IOException {

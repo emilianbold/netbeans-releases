@@ -14,13 +14,14 @@
 package org.netbeans.api.debugger.jpda;
 
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
 
 /**
  * Tests evaluation of various expressions.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class EvaluationTest  extends DebuggerJPDAApiTestBase {
+public class EvaluationTest extends NbTestCase {
 
     private JPDASupport     support;
 

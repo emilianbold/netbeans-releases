@@ -23,7 +23,7 @@ import org.netbeans.junit.NbTestCase;
 /**
  * Tests line breakpoints at various places.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
 public class LineBreakpointTest extends NbTestCase {
 

@@ -13,20 +13,21 @@
 
 package org.netbeans.api.debugger.jpda;
 
-import java.net.URL;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
+
 
 /**
  * Tests JPDA stepping actions: step in, step out and step over.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class StepTest extends DebuggerJPDAApiTestBase {
+public class StepTest extends NbTestCase {
 
     private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
     private String          sourceRoot = System.getProperty ("test.dir.src");
-    private JPDASupport support;
+    private JPDASupport     support;
 
     public StepTest (String s) {
         super (s);

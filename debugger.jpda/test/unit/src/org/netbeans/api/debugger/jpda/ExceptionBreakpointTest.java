@@ -13,46 +13,55 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
+
 /**
  * Tests exception breakpoints.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
+public class ExceptionBreakpointTest extends NbTestCase {
 
     private JPDASupport     support;
-    private JPDADebugger    debugger;
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
+    
+    private static final String CLASS_NAME = 
+        "org.netbeans.api.debugger.jpda.testapps.ExceptionBreakpointApp";
 
-    private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ExceptionBreakpointApp";
-
-    public ExceptionBreakpointTest(String s) {
-        super(s);
+    
+    public ExceptionBreakpointTest (String s) {
+        super (s);
     }
 
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    public void testMethodBreakpoints() throws Exception {
+    public void testMethodBreakpoints () throws Exception {
         try {
-            ExceptionBreakpoint eb1 = ExceptionBreakpoint.create("org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED);
-            TestBreakpointListener tbl = new TestBreakpointListener("org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", eb1, 1);
-            eb1.addJPDABreakpointListener(tbl);
-            dm.addBreakpoint(eb1);
+            ExceptionBreakpoint eb1 = ExceptionBreakpoint.create (
+                "org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", 
+                ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED
+            );
+            TestBreakpointListener tbl = new TestBreakpointListener (
+                "org.netbeans.api.debugger.jpda.testapps.ExceptionTestException", 
+                eb1, 
+                1
+            );
+            eb1.addJPDABreakpointListener (tbl);
+            dm.addBreakpoint (eb1);
 
             support = JPDASupport.attach (CLASS_NAME);
-            debugger = support.getDebugger();
 
             for (;;) {
                 support.waitState (JPDADebugger.STATE_STOPPED);
-                if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) break;
-                support.doContinue();
+                if (support.getDebugger ().getState () == 
+                      JPDADebugger.STATE_DISCONNECTED
+                ) break;
+                support.doContinue ();
             }
-            tbl.assertFailure();
+            tbl.assertFailure ();
 
-            dm.removeBreakpoint(eb1);
+            dm.removeBreakpoint (eb1);
         } finally {
-            support.doFinish();
+            support.doFinish ();
         }
     }
 
@@ -64,34 +73,61 @@ public class ExceptionBreakpointTest extends DebuggerJPDAApiTestBase {
         private ExceptionBreakpoint bpt;
         private int                 expectedHitCount;
 
-        public TestBreakpointListener(String exceptionClass, ExceptionBreakpoint bpt, int expectedHitCount) {
+        public TestBreakpointListener (
+            String exceptionClass, 
+            ExceptionBreakpoint bpt, 
+            int expectedHitCount
+        ) {
             this.exceptionClass = exceptionClass;
             this.bpt = bpt;
             this.expectedHitCount = expectedHitCount;
         }
 
-        public void breakpointReached(JPDABreakpointEvent event) {
+        public void breakpointReached (JPDABreakpointEvent event) {
             try {
-                checkEvent(event);
+                checkEvent (event);
             } catch (AssertionError e) {
                 failure = e;
             } catch (Throwable e) {
-                failure = new AssertionError(e);
+                failure = new AssertionError (e);
             }
         }
 
-        private void checkEvent(JPDABreakpointEvent event) {
-            assertEquals("Breakpoint event: Bad exception location", CLASS_NAME, event.getReferenceType().name());
-            assertEquals("Breakpoint event: Bad exception thrown", exceptionClass, event.getVariable ().getType ());
-            assertSame("Breakpoint event: Bad event source", bpt, event.getSource());
-            assertEquals("Breakpoint event: Condition evaluation failed", JPDABreakpointEvent.CONDITION_NONE, event.getConditionResult());
-            assertNotNull("Breakpoint event: Context thread is null", event.getThread());
+        private void checkEvent (JPDABreakpointEvent event) {
+            assertEquals (
+                "Breakpoint event: Bad exception location", 
+                CLASS_NAME, 
+                event.getReferenceType ().name ()
+            );
+            assertEquals (
+                "Breakpoint event: Bad exception thrown", 
+                exceptionClass, 
+                event.getVariable ().getType ()
+            );
+            assertSame (
+                "Breakpoint event: Bad event source", 
+                bpt, 
+                event.getSource ()
+            );
+            assertEquals (
+                "Breakpoint event: Condition evaluation failed", 
+                JPDABreakpointEvent.CONDITION_NONE, 
+                event.getConditionResult ()
+            );
+            assertNotNull (
+                "Breakpoint event: Context thread is null", 
+                event.getThread ()
+            );
             hitCount++;
         }
 
-        public void assertFailure() {
+        public void assertFailure () {
             if (failure != null) throw failure;
-            assertEquals("Breakpoint hit count mismatch", expectedHitCount, hitCount);
+            assertEquals (
+                "Breakpoint hit count mismatch", 
+                expectedHitCount, 
+                hitCount
+            );
         }
     }
 }

@@ -16,46 +16,38 @@ package org.netbeans.api.debugger.jpda;
 import org.netbeans.api.debugger.DebuggerManager;
 
 import java.net.URL;
+import org.netbeans.junit.NbTestCase;
+
 
 /**
  * Tests the JPDABreakpointEvent.resume() functionality.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class BreakpointResumeTest  extends DebuggerJPDAApiTestBase {
+public class BreakpointResumeTest  extends NbTestCase {
 
-    private JPDASupport     support;
-    private JPDADebugger    debugger;
-    private DebuggerManager dm;
-    private String          urlString;
+    private String          sourceRoot = System.getProperty ("test.dir.src");
 
     public BreakpointResumeTest (String s) {
         super (s);
     }
 
-    protected void setUp () throws Exception {
-        super.setUp ();
-        dm = DebuggerManager.getDebuggerManager ();
-        ClassLoader cl = this.getClass ().getClassLoader ();
-        URL url = cl.getResource (
-            "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.class"
-        );
-        urlString = url.toString ();
-    }
-
     public void testBreakpointResume () throws Exception {
+        JPDASupport support = null;
+        JPDASupport.removeAllBreakpoints ();
         try {
-            LineBreakpoint lb = LineBreakpoint.create (urlString, 30);
+            LineBreakpoint lb = LineBreakpoint.create (
+                sourceRoot + "org/netbeans/api/debugger/jpda/testapps/LineBreakpointApp.java", 
+                30
+            );
             lb.addJPDABreakpointListener (new TestBreakpointListener ());
-            dm.addBreakpoint (lb);
+            DebuggerManager.getDebuggerManager ().addBreakpoint (lb);
 
             support = JPDASupport.attach (
                 "org.netbeans.api.debugger.jpda.testapps.LineBreakpointApp"
             );
-            debugger = support.getDebugger ();
-
             support.waitState (JPDADebugger.STATE_DISCONNECTED);
-            dm.removeBreakpoint (lb);
+            DebuggerManager.getDebuggerManager ().removeBreakpoint (lb);
         } finally {
             support.doFinish ();
         }

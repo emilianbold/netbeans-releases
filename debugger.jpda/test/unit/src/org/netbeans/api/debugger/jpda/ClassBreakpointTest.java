@@ -13,24 +13,26 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
+
+
 /**
  * Tests class breakpoints.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class ClassBreakpointTest extends DebuggerJPDAApiTestBase {
+public class ClassBreakpointTest extends NbTestCase {
 
     private JPDASupport     support;
     private JPDADebugger    debugger;
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
 
     private static final String CLASS_NAME = "org.netbeans.api.debugger.jpda.testapps.ClassBreakpointApp";
 
-    public ClassBreakpointTest(String s) {
-        super(s);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
+    
+    public ClassBreakpointTest (String s) {
+        super (s);
     }
 
     public void testMethodBreakpoints() throws Exception {

@@ -13,17 +13,19 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.viewmodel.NoInformationException;
 
 /**
  * Tests field breakpoints.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
+public class FieldBreakpointTest extends NbTestCase {
 
     private JPDASupport     support;
-    private JPDADebugger    debugger;
+    private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
 
     private static final String CLASS_NAME = 
             "org.netbeans.api.debugger.jpda.testapps.FieldBreakpointApp";
@@ -100,11 +102,10 @@ public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
             dm.addBreakpoint (fb5);
 
             support = JPDASupport.attach (CLASS_NAME);
-            debugger = support.getDebugger();
 
             for (;;) {
                 support.waitState (JPDADebugger.STATE_STOPPED);
-                if ( debugger.getState () == 
+                if ( support.getDebugger ().getState () == 
                      JPDADebugger.STATE_DISCONNECTED
                 ) 
                     break;
@@ -162,7 +163,8 @@ public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
             if (hitCount >= hitLines.length) 
                 throw new AssertionError (
                     "Breakpoint hit too many times for " + variableName + 
-                    ": " + hitCount + " at " + getLine (event)
+                    ": " + hitCount + " at " + 
+                    event.getThread ().getCallStack () [0].getLineNumber (null)
                 );
             int hitLine = hitLines [hitCount++];
             assertEquals (
@@ -177,7 +179,7 @@ public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
             assertEquals (
                 "Breakpoint event: Hit at wrong place", 
                 hitLine, 
-                getLine (event)
+                event.getThread ().getCallStack () [0].getLineNumber (null)
             );
             Variable var = event.getVariable ();
             assertNotNull (
@@ -195,7 +197,8 @@ public class FieldBreakpointTest extends DebuggerJPDAApiTestBase {
                 currentFieldValue ++;
                 assertEquals (
                     "Breakpoint event: Wrong field value of " + 
-                    fb.getFieldName () + " at " + getLine (event), 
+                    fb.getFieldName () + " at " + 
+                    event.getThread ().getCallStack () [0].getLineNumber (null), 
                     Integer.toString (currentFieldValue), 
                     var.getValue ()
                 );

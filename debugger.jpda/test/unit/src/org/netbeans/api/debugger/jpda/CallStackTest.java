@@ -16,6 +16,7 @@ package org.netbeans.api.debugger.jpda;
 import java.util.*;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
@@ -25,11 +26,11 @@ import org.netbeans.spi.debugger.jpda.SourcePathProvider;
  *
  * @author Maros Sandor
  */
-public class CallStackTest extends DebuggerJPDAApiTestBase {
+public class CallStackTest extends NbTestCase {
 
     
     public CallStackTest (String s) {
-        super(s);
+        super (s);
     }
 
     public void testInstanceCallStackInfo () throws Exception {

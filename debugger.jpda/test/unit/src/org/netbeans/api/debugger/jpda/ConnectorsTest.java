@@ -13,29 +13,33 @@
 
 package org.netbeans.api.debugger.jpda;
 
+import org.netbeans.junit.NbTestCase;
+
 /**
  * Tests attaching cookie and connector. Launches a VM in server mode and tries to attach to it.
  * After successfuly attaching to the VM and stopping in main, this test finished debugging sessiona and terminates.
  *
- * @author Maros Sandor
+ * @author Maros Sandor, Jan Jancura
  */
-public class ConnectorsTest extends DebuggerJPDAApiTestBase {
+public class ConnectorsTest extends NbTestCase {
 
-    public ConnectorsTest(String s) {
-        super(s);
+    public ConnectorsTest (String s) {
+        super (s);
     }
 
-    public void testAttach() throws Exception {
-
-        JPDASupport support = JPDASupport.attach("org.netbeans.api.debugger.jpda.testapps.EmptyApp");
-        support.doFinish();
-    }
-
-    public void testListen() throws Exception {
+    public void testAttach () throws Exception {
 
         JPDASupport support = JPDASupport.attach (
             "org.netbeans.api.debugger.jpda.testapps.EmptyApp"
         );
-        support.doFinish();
+        support.doFinish ();
+    }
+
+    public void testListen () throws Exception {
+
+        JPDASupport support = JPDASupport.attach (
+            "org.netbeans.api.debugger.jpda.testapps.EmptyApp"
+        );
+        support.doFinish ();
     }
 }
