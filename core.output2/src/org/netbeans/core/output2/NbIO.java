@@ -107,7 +107,11 @@ class NbIO implements CallbackInputOutput {
     OutWriter out() {
         return out == null ? null : out.out();
     }
-    
+
+    void setClosed (boolean val) {
+        closed = val ? Boolean.TRUE : Boolean.FALSE;
+    }
+
     public boolean isClosed() {
         return Boolean.TRUE.equals(closed);
     }

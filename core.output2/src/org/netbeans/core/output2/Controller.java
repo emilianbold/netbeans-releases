@@ -76,31 +76,32 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_FINDPREVIOUS = 11;
     private static final int ACTION_CLEAR = 12;
 
-    private Action copyAction = new ControllerAction (ACTION_COPY,
+    //Package private for unit tests
+    Action copyAction = new ControllerAction (ACTION_COPY,
             "ACTION_COPY", CopyAction.class); //NOI18N
-    private Action wrapAction = new ControllerAction (ACTION_WRAP,
+    Action wrapAction = new ControllerAction (ACTION_WRAP,
             "ACTION_WRAP"); //NOI18N
-    private Action saveAsAction = new ControllerAction (ACTION_SAVEAS,
+    Action saveAsAction = new ControllerAction (ACTION_SAVEAS,
             "ACTION_SAVEAS"); //NOI18N
-    private Action closeAction = new ControllerAction (ACTION_CLOSE,
+    Action closeAction = new ControllerAction (ACTION_CLOSE,
             "ACTION_CLOSE"); //NOI18N
-    private Action nextErrorAction = new ControllerAction (ACTION_NEXTERROR,
+    Action nextErrorAction = new ControllerAction (ACTION_NEXTERROR,
             "ACTION_NEXT_ERROR", NextOutJumpAction.class); //NOI18N
-    private Action prevErrorAction = new ControllerAction (ACTION_PREVERROR,
+    Action prevErrorAction = new ControllerAction (ACTION_PREVERROR,
             "ACTION_PREV_ERROR", PreviousOutJumpAction.class); //NOI18N
-    private Action selectAllAction = new ControllerAction (ACTION_SELECTALL,
+    Action selectAllAction = new ControllerAction (ACTION_SELECTALL,
             "ACTION_SELECT_ALL"); //NOI18N
-    private Action findAction = new ControllerAction (ACTION_FIND,
+    Action findAction = new ControllerAction (ACTION_FIND,
             "ACTION_FIND", FindAction.class); //NOI18N
-    private Action findNextAction = new ControllerAction (ACTION_FINDNEXT,
+    Action findNextAction = new ControllerAction (ACTION_FINDNEXT,
             "ACTION_FIND_NEXT"); //NOI18N
-    private Action findPreviousAction = new ControllerAction (ACTION_FINDPREVIOUS,
+    Action findPreviousAction = new ControllerAction (ACTION_FINDPREVIOUS,
             "ACTION_FIND_PREVIOUS"); //NOI18N
-    private Action navToLineAction = new ControllerAction (ACTION_NAVTOLINE, "navToLine", //NOI18N
+    Action navToLineAction = new ControllerAction (ACTION_NAVTOLINE, "navToLine", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
-    private Action postMenuAction = new ControllerAction (ACTION_POSTMENU, "postMenu", //NOI18N
+    Action postMenuAction = new ControllerAction (ACTION_POSTMENU, "postMenu", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
-    private Action clearAction = new ControllerAction (ACTION_CLEAR, "ACTION_CLEAR");
+    Action clearAction = new ControllerAction (ACTION_CLEAR, "ACTION_CLEAR");
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
@@ -329,17 +330,23 @@ public class Controller { //XXX public only for debug access to logging code
                 postPopupMenu(win, tab, new Point(0,0), tab);
                 break;
             case ACTION_CLEAR :
+                if (log) log ("Action CLEAR receieved");
                 NbIO io = tab.getIO();
 
                 if (io != null) {
                     NbWriter writer = io.writer();
                     if (writer != null) {
                         try {
+                            if (log) log ("Reseting the writer for Clear");
                             writer.reset();
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ioe);
                         }
+                    } else if (log) {
+                        log ("IO's NbWriter is null");
                     }
+                } else if (log) {
+                    log ("Clear on a tab with no IO");
                 }
                 break;
             default :
@@ -720,6 +727,9 @@ public class Controller { //XXX public only for debug access to logging code
         assert SwingUtilities.isEventDispatchThread();
         if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
         NbIO io = tab.getIO();
+        if (io != null) {
+            io.setClosed(true);
+        }
         NbWriter w = io.writer();
         if (w != null && w.isClosed()) {
             //Will dispose the document

@@ -50,13 +50,18 @@ class NbWriter extends OutputWriter {
     public void reset() throws IOException {
         if (!((OutWriter) out).hasStorage() && !((OutWriter) out).isDisposed() || ((OutWriter) out).isEmpty()) {
             //Someone calling reset multiple times or on initialization
-            if (!((OutWriter)out).isDisposed()) {
+            if (!out().isDisposed()) {
                 if (Controller.log) Controller.log ("Extra call to Reset on " + this + " for " + out);
                 return;
             }
         }
         synchronized (this) {
-            out = new OutWriter();
+            if (out != null) {
+                if (Controller.log) Controller.log ("Disposing old OutWriter");
+                out().dispose();
+            }
+            if (Controller.log) Controller.log ("NbWriter.reset() replacing old OutWriter");
+            out = new OutWriter(owner);
             lock = out;
             if (err != null) {
                 err.setWrapped((OutWriter) out);
@@ -83,9 +88,11 @@ class NbWriter extends OutputWriter {
 
     public void close() {
         boolean wasClosed = isClosed();
-        if (!wasClosed) {
+        if (Controller.log) Controller.log ("NbWriter.close wasClosed=" + wasClosed + " out is " + out + " out is closed " + ((OutWriter) out).isClosed());
+        if (!wasClosed || !((OutWriter) out).isClosed()) {
             synchronized (lock) {
                 try {
+                    if (Controller.log) Controller.log ( "Now closing OutWriter");
                     out.close();
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify (ioe);
@@ -94,6 +101,7 @@ class NbWriter extends OutputWriter {
         }
         boolean isClosed = isClosed();
         if (wasClosed != isClosed) {
+            if (Controller.log) Controller.log ("Setting streamClosed on InputOutput to " + isClosed);
             owner.setStreamClosed(isClosed);
         }
     }
@@ -111,6 +119,7 @@ class NbWriter extends OutputWriter {
 
     public void notifyErrClosed() {
         if (isClosed()) {
+            if (Controller.log) Controller.log ("NbWriter.notifyErrClosed - error stream has been closed");
             owner.setStreamClosed(isClosed());
         }
     }

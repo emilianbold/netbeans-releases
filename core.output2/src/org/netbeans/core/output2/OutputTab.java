@@ -34,6 +34,16 @@ final class OutputTab extends AbstractOutputTab {
         setDocument (doc);
     }
 
+    public void addNotify() {
+        super.addNotify();
+        if (io != null) io.setClosed(false);
+    }
+
+    public void removeNotify() {
+        if (io != null) io.setClosed(true);
+        super.removeNotify();
+    }
+
     public void setDocument (Document doc) {
         if (Controller.log) Controller.log ("Set document on " + this + " with " + io);
         assert SwingUtilities.isEventDispatchThread();
@@ -50,7 +60,9 @@ final class OutputTab extends AbstractOutputTab {
         if (Controller.log) Controller.log ("Replacing io on " + this + " with " + io + " out is " + (io != null ? io.getOut() : null));
         if (io != null) {
             setDocument (new OutputDocument(((NbWriter) io.getOut()).out()));
+            io.setClosed(false);
         } else {
+            if (this.io != null) this.io.setClosed(true);
             this.io = null;
             setDocument(null);
         }
