@@ -95,18 +95,28 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public Properties getProperties () {
         Properties p = (Properties) getProperty (PROP_PROPERTIES);
         if (p.containsKey (DEF_CLASS_PATH)) {
-            p.setProperty (DEF_CLASS_PATH, NbClassPath.createClassPath ().getClassPath ());
+            p.setProperty (DEF_CLASS_PATH, getClassPath(NbClassPath.createClassPath ()));
         }
         if (p.containsKey (DEF_BOOTCLASS_PATH)) {
-            p.setProperty (DEF_BOOTCLASS_PATH, NbClassPath.createBootClassPath ().getClassPath ());
+            p.setProperty (DEF_BOOTCLASS_PATH, getClassPath(NbClassPath.createBootClassPath ()));
         }
         if (p.containsKey (DEF_LIBRARY_PATH)) {
-            p.setProperty (DEF_LIBRARY_PATH, NbClassPath.createLibraryPath ().getClassPath ());
+            p.setProperty (DEF_LIBRARY_PATH, getClassPath(NbClassPath.createLibraryPath ()));
         }
         if (p.containsKey (DEF_FILESYSTEMS_PATH)) {
-            p.setProperty (DEF_FILESYSTEMS_PATH, NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE).getClassPath ());
+            p.setProperty (DEF_FILESYSTEMS_PATH, getClassPath(NbClassPath.createRepositoryPath (FileSystemCapability.EXECUTE)));
         }
         return p;
+    }
+    
+    // See #17148: NbClassPath sticks extra quotes on classpaths for some reason.
+    private static String getClassPath(NbClassPath p) {
+        String s = p.getClassPath();
+        if (s.startsWith("\"") && s.endsWith("\"")) { // NOI18N
+            return s.substring(1, s.length() - 1);
+        } else {
+            return s;
+        }
     }
 
     public void setProperties (Properties p) {
