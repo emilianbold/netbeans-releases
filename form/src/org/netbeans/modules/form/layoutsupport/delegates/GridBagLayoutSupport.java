@@ -80,7 +80,10 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                                    Component[] components)
     {
         if (previousConstraints == null || currentConstraints == null
-                || components == null)
+            || components == null
+            || previousConstraints.length == 0
+            || !(previousConstraints[0]
+                 instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints))
             return;
 
         int MAX_VALUE = 99999;
