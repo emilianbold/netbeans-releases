@@ -140,6 +140,8 @@ public class RootContextTest extends NbTestCase {
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
+        //#47021
+        panel.setName("prefferedID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -157,6 +159,8 @@ public class RootContextTest extends NbTestCase {
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
+        //#47021
+        panel.setName("prefferedID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -174,6 +178,8 @@ public class RootContextTest extends NbTestCase {
         view.setSelectionMode (TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
+        //#47021
+        panel.setName("prefferedID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -191,6 +197,8 @@ public class RootContextTest extends NbTestCase {
         view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
+        //#47021
+        panel.setName("prefferedID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
@@ -208,6 +216,8 @@ public class RootContextTest extends NbTestCase {
         view.setSelectionMode (ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         ExplorerPanel panel = new ExplorerPanel ();
+        //#47021
+        panel.setName("prefferedID");
         ExplorerManager mgr = panel.getExplorerManager ();
         
         panel.add (view);
