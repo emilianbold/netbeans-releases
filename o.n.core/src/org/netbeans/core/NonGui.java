@@ -475,8 +475,7 @@ public class NonGui extends NbTopManager implements Runnable {
                 
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        wizardDuringStartup(true);
-                        boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard();
+                        boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard(getSplash());
                         System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
                     }
                 });
@@ -487,7 +486,7 @@ public class NonGui extends NbTopManager implements Runnable {
             TopManager.getDefault().getErrorManager().notify(e);
         }
         finally {
-            wizardDuringStartup(false);
+            showSplashAgain();
         }
         StartLog.logProgress ("Upgrade wizzard consulted"); // NOI18N
         
@@ -557,8 +556,7 @@ public class NonGui extends NbTopManager implements Runnable {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        wizardDuringStartup(true);
-                        org.netbeans.core.ui.SetupWizard.showSetupWizard(false);
+                        org.netbeans.core.ui.SetupWizard.showSetupWizard(false, getSplash());
                     }
                 });
             }
@@ -566,7 +564,7 @@ public class NonGui extends NbTopManager implements Runnable {
             TopManager.getDefault().getErrorManager().notify(e);
         }
         finally {
-            wizardDuringStartup(false);
+            showSplashAgain();
         }
         StartLog.logProgress ("SetupWizard done"); // NOI18N
 
@@ -676,13 +674,18 @@ public class NonGui extends NbTopManager implements Runnable {
         return moduleSystem;
     }
 
-    /** This is a notification about showing and hiding wizards 
+    /** This is a notification about hiding wizards 
      * during startup (Import, Setup). It is used in subclass 
-     * for hiding the splash screen when wizard is visible.
+     * for showing the splash screen again, when wizard disappears.
      *
-     * @param visible <CODE>true</CODE> means shown, <CODE>false</CODE> means hidden
+     * It does nothing in NonGui implementation.
      */
-    protected void wizardDuringStartup(boolean visible) {
+    protected void showSplashAgain() {
     }
-    
+
+    /** Return splash screen if available.
+     */
+    protected Splash.SplashOutput getSplash() {
+        return null;
+    }
 }
