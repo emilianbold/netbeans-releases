@@ -75,6 +75,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         initEnterpriseApplications();
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
         setName(NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
+        putClientProperty ("NewProjectWizard_Title", NbBundle.getMessage(ImportLocationVisual.class, "TXT_ImportEJBModule")); //NOI18N
         this.listener = panel;
         this.projectName.setText("");
         documentListener = new DocumentListener() {           
@@ -93,7 +94,6 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         this.projectLocation.getDocument().addDocumentListener(documentListener);
         this.projectName.getDocument().addDocumentListener(documentListener);
         this.projectFolder.getDocument().addDocumentListener(documentListener);
-        
     }
     
     /** This method is called from within the constructor to

@@ -59,8 +59,8 @@ public class ImportEjbJarProjectWizardIterator implements WizardDescriptor.Insta
     
     private String[] createSteps() {
         return new String[] {
-            "Configure Project",//NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step1"), //NOI18N
-            "Configure Source Roots"//"NbBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_Step2") //NOI18N
+            NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class, "LBL_IW_ImportTitle"), //NOI18N
+            NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"LAB_ConfigureSourceRoots") //NOI18N
         };
     }
     

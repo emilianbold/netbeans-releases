@@ -14,32 +14,16 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui.wizards;
 
 import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+
 
 final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel, ChangeListener {
     
@@ -90,6 +74,11 @@ final class ImportLocation implements WizardDescriptor.Panel, WizardDescriptor.V
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read (wizardDescriptor);
+        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+        // this name is used in NewProjectWizard to modify the title
+        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null)
+            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
     }
     
     public void storeSettings(Object settings) {
