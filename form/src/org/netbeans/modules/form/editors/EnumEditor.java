@@ -137,6 +137,12 @@ public class EnumEditor extends PropertyEditorSupport
         "JScrollPane.VERTICAL_SCROLLBAR_ALWAYS", "ALWAYS", // NOI18N
         "JScrollPane.VERTICAL_SCROLLBAR_NEVER", "NEVER", // NOI18N
         "JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED", "AS_NEEDED", // NOI18N
+        "ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED", "AS_NEEDED", // NOI18N
+        "ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS", "ALWAYS", // NOI18N
+        "ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER", "NEVER", // NOI18N
+        "ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS", "ALWAYS", // NOI18N
+        "ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER", "NEVER", // NOI18N
+        "ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED", "AS_NEEDED", // NOI18N
         "JTable.AUTO_RESIZE_NEXT_COLUMN", "NEXT_COLUMN", // NOI18N
         "JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS", "SUBSEQUENT_COLUMNS", // NOI18N
         "JTable.AUTO_RESIZE_OFF", "OFF", // NOI18N
@@ -153,6 +159,7 @@ public class EnumEditor extends PropertyEditorSupport
         "ListSelectionModel.", // NOI18N
         "JScrollBar.", // NOI18N
         "JScrollPane.", // NOI18N
+        "ScrollPaneConstants.", // NOI18N
         "JSlider.", // NOI18N
         "JSplitPane.", // NOI18N
         "JTabbedPane.", // NOI18N
