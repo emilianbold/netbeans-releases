@@ -108,6 +108,12 @@
             urn         : null
             info        : null
             uri         : null
+              tag name     : linklist
+                  class    : org.apache.jsp.tag.web.linklist_tag
+                  attribs  : [separator]
+              tag name     : othertag
+                  class    : org.apache.jsp.tag.web.othertag_tag
+                  attribs  : [separator]
               tagfile path : /WEB-INF/tags/linklist.tag
               tag name     : linklist
                   class    : org.apache.jsp.tag.web.linklist_tag

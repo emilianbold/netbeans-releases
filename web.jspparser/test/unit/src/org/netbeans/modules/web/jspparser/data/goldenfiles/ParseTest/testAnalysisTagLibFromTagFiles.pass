@@ -63,6 +63,15 @@
             urn         : null
             info        : null
             uri         : null
+              tag name     : testx
+                  class    : org.apache.jsp.tag.web.myTags.testx_tagx
+                  attribs  : [a]
+              tag name     : first
+                  class    : org.apache.jsp.tag.web.myTags.first_tag
+                  attribs  : [title, author, price_info]
+              tag name     : test
+                  class    : org.apache.jsp.tag.web.myTags.test_tag
+                  attribs  : [a]
               tagfile path : /WEB-INF/tags/myTags/testx.tagx
               tag name     : testx
                   class    : org.apache.jsp.tag.web.myTags.testx_tagx
@@ -82,13 +91,15 @@
             urn         : null
             info        : null
             uri         : null
-              tagfile path : /WEB-INF/tags/linklist.tag
               tag name     : linklist
                   class    : org.apache.jsp.tag.web.linklist_tag
                   attribs  : [separator]
-              tagfile path : /WEB-INF/tags/othertag.tag
               tag name     : othertag
                   class    : org.apache.jsp.tag.web.othertag_tag
+                  attribs  : [separator]
+              tagfile path : /WEB-INF/tags/linklist.tag
+              tag name     : linklist
+                  class    : org.apache.jsp.tag.web.linklist_tag
                   attribs  : [separator]
       prefixMapper:
         myTags -> urn:jsptagdir:/WEB-INF/tags/myTags/
