@@ -108,10 +108,10 @@ public class OpenFileAction extends CallableSystemAction {
         /* initialize file filters */
         FileFilter currentFilter = chooser.getFileFilter();
         chooser.addChoosableFileFilter(new Filter(
-            new String[] {OpenFileImpl.JAVA_EXT},
+            new String[] {DefaultOpenFileImpl.JAVA_EXT},
             NbBundle.getBundle(getClass()).getString("TXT_JavaFilter")));
         chooser.addChoosableFileFilter(new Filter(
-            new String[] {OpenFileImpl.TXT_EXT}, 
+            new String[] {DefaultOpenFileImpl.TXT_EXT}, 
             NbBundle.getBundle(getClass()).getString("TXT_TxtFilter")));
         chooser.setFileFilter(currentFilter);
         
@@ -166,7 +166,7 @@ public class OpenFileAction extends CallableSystemAction {
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            OpenFile.open(files[i].getPath());
+            OpenFile.getDefault().open(files[i].getPath());
         }
         currDir = chooser.getCurrentDirectory();
     }

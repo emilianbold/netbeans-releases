@@ -14,12 +14,17 @@
 package org.netbeans.modules.openfile;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
+import org.openide.DialogDisplayer;
 
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListener;
 
@@ -30,60 +35,45 @@ import org.openide.util.WeakListener;
  * @author Jaroslav Tulach, Jesse Glick
  * @author Marian Petras
  */
-public class OpenFile extends Object {
+public final class OpenFile {
 
     /** holds an instance of this class */
     private static final OpenFile instance = new OpenFile();
     
-    /**
-     * Returns an instance of this class.
-     *
-     * @return  instance of this class; subsequent invocations may return
-     *          different objects
-     * @see  #instanceRef
-     */
-    private static OpenFile getInstance() {
-        return instance;
-    }
+    /** holds (the only) instance of the implementation manager */
+    private final ImplManager implManager;
     
-    /**
-     * Opens the file either by calling {@link OpenCookie} ({@link ViewCookie}),
-     * or by showing it in the Explorer.
-     * Uses {@link #find} to figure out what the right file object is.
-     *
-     * @param fileName file name to open
-     */
-    public static void open(final String fileName) {
-        ErrorManager em = ErrorManager.getDefault().getInstance(
-                                  "org.netbeans.modules.openfile");     //NOI18N
-        em.log("OpenFile.open: " + fileName);                           //NOI18N
-        
-        getInstance().openFile(fileName);
-    }
-
     /**
      * Opens the specified file.
      *
-     * @param  file  file to open (must exist)
-     * @param  wait  whether to wait until requested to return a status
-     * @param  address address to send reply to, valid only if wait set
-     * @param  port  port to send reply to, valid only if wait set
-     * @param  line  line number to try to open to (starting at zero),
-     *               or <code>-1</code> to ignore
+     * @param  fileName  name of file to open
+     * @usecase  API
      */
-    public static void open(File file,
-                            boolean wait,
-                            InetAddress address,
-                            int port,
-                            int line) {
-        ErrorManager em = ErrorManager.getDefault().getInstance(
-                                  "org.netbeans.modules.openfile");     //NOI18N
-        em.log("OpenFile.open: " + file);                               //NOI18N
-        getInstance().openFile(file, wait, address, port, line);
+    public static void open(final String fileName) {
+        RequestProcessor.getDefault().post(
+                new Runnable() {
+                    public void run() {
+                        getDefault().openFile(fileName);
+                    }
+                },
+                10000); //XXX  Waiting for IDE initialization - see issue #23341
     }
     
-    /** holds (the only) instance of the implementation manager */
-    private final ImplManager implManager;
+    /**
+     * @usecase  API
+     */
+    public static void open(FileObject fileObject) {
+        getDefault().openFile(fileObject);
+    }
+    
+    /**
+     * Returns an instance of this class.
+     *
+     * @return  instance of this class
+     */
+    static OpenFile getDefault() {
+        return instance;
+    }
     
     /**
      * Creates a new instance and initializes the
@@ -94,21 +84,51 @@ public class OpenFile extends Object {
     }
     
     /**
-     * Opens a file.
+     * Opens the specified file.
      *
-     * @param  fileName  full path of a file to open
+     * @param  fileName  name of file to open
+     * @usecase  API
      */
-    private void openFile(final String fileName) {
-        final File f = new File(fileName);
-        RequestProcessor.getDefault().post(
-                new Runnable() {
-                    public void run() {
-                        implManager.getImpl().open(f, false, null, -1, -1);
-                    }
-                },
-                10000); //!!! Waiting for IDE initialization
+    public void openFile(String fileName) {
+        openFile(fileName, -1);
     }
-
+    
+    /**
+     * Opens the specified file at the specified line
+     *
+     * @param  fileName  name of file to open
+     * @param  line  line number to move a cursor to within the file
+     * @usecase  API
+     */
+    public void openFile(final String fileName, final int line) {
+        openFile(new File(fileName),
+                 false,                 //wait?
+                 (InetAddress) null,    //host
+                 -1,                    //port
+                 -1);                   //line
+    }
+    
+    /**
+     *
+     * @usecase  API
+     */
+    public void openFile(FileObject fileObject) {
+        openFile(fileObject, -1);
+    }
+    
+    /**
+     *
+     * @usecase  API
+     */
+    public void openFile(FileObject fileObject, int line) {
+        implManager.getImpl().open(fileObject,
+                                   (String) null,
+                                   false,
+                                   (InetAddress) null,
+                                   -1,
+                                   line);
+    }
+    
     /**
      * Opens a file.
      *
@@ -118,19 +138,69 @@ public class OpenFile extends Object {
      * @param  port  port to send reply to, valid only if wait set
      * @param  line  line number to try to open to (starting at zero),
      *               or <code>-1</code> to ignore
+     * @usecase  API
+     * @usecase  OpenFileServer
      */
-    private void openFile(File file,
-                          boolean wait,
-                          InetAddress address,
-                          int port,
-                          int line) {
-        implManager.getImpl().open(file, wait, address, port, line);
+    void openFile(File file,
+                  boolean wait,
+                  InetAddress address,
+                  int port,
+                  int line) {
+        try {
+            file = file.getCanonicalFile();
+        } catch (IOException ex) {
+            /* failed - never mind, continue... */
+        }
+        
+        if (!checkFileExists(file)) {
+            return;
+        }
+                              
+        FileObject fileObject;
+        OpenFileImpl impl = implManager.getImpl();
+        if ((fileObject = impl.findFileObject(file)) != null) {
+            impl.open(fileObject,
+                      (String) null,
+                      wait,
+                      address,
+                      port,
+                      line);
+        }
     }
-
+    
+    /**
+     * Checks whether the specified file exists.
+     * If the file doesn't exists, displays a message.
+     * <p>
+     * The code for displaying the message is running in a separate thread
+     * so that it does not block the current thread.
+     *
+     * @param  file  file to check for existence
+     * @return  <code>true</code> if the file exists and is a plain file,
+     *          <code>false</code> otherwise
+     */
+    private boolean checkFileExists(File file) {
+        if (file.exists() && file.isFile()) {
+            return true;
+        }
+        
+        final String fileName = file.toString();
+        final String msg = NbBundle.getMessage(OpenFileImpl.class,
+                                               "MSG_fileNotFound",      //NOI18N
+                                               fileName);
+        new Thread(new Runnable() {
+                public void run() {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(msg));
+                }
+            }).start();
+        return false;
+    }
+    
     /**
      * Manages changes of Open file implementations.
      * It listens for changes of Open file implementations (listens on a lookup
-     * result) and ensures that its method {@link getImpl()} always returns
+     * result) and ensures that its method {@link #getImpl()} always returns
      * the current implementation.
      */
     static final class ImplManager implements LookupListener {
