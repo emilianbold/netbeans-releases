@@ -19,6 +19,7 @@ import org.netbeans.spi.project.Sources;
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.web.project.ui.WebCustomizerProvider;
 /** WebSources.java
  *
  * @author  mk115033
@@ -37,7 +38,8 @@ public class WebSources implements org.netbeans.spi.project.Sources {
     public org.netbeans.spi.project.SourceGroup[] getSourceGroups(String str) {
         if (SourcesGroupTypes.TYPE_DOC_ROOT.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.WEB_DOCBASE_DIR));
-            return new SourceGroup[] {new WebSources.WebSourceGroup(fo,fo.getName())};
+            return new SourceGroup[] {new WebSources.WebSourceGroup(fo,
+                org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_DocBase"))};
         }
         else if (SourcesGroupTypes.TYPE_WEB_INF.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.WEB_DOCBASE_DIR));
@@ -49,7 +51,8 @@ public class WebSources implements org.netbeans.spi.project.Sources {
         }
         else if (Sources.TYPE_JAVA.equals(str)) {
             FileObject fo = helper.resolveFileObject(helper.evaluate(WebProjectProperties.SRC_DIR));
-            return new SourceGroup[] {new WebSources.WebSourceGroup(fo,fo.getName())};
+            return new SourceGroup[] {new WebSources.WebSourceGroup(fo,
+                org.openide.util.NbBundle.getMessage(WebCustomizerProvider.class, "LBL_Node_Sources"))};
         }
         else return null;
     }
