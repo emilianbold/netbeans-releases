@@ -513,5 +513,31 @@ public class NonGui extends NbTopManager implements Runnable {
         org.openide.actions.ExecuteAction.execute(obj, true);
     }
 
-
+    static void initEnvMap() {
+        java.util.HashMap env = new java.util.HashMap();
+        String envfile = System.getProperty("netbeans.osenv"); // NOI18N
+        if (envfile != null) {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(envfile)));
+                
+                while (true) {
+                    String line = in.readLine();
+                    if (line == null)
+                        break;
+                    
+                    int i = line.indexOf("=");
+                    String key = line.substring(0, i);
+                    if (org.openide.util.Utilities.isWindows())
+                        key = key.toUpperCase();
+                    String value = line.substring(i + 1);
+                    if (i >= 0) {
+                        env.put(key, value);
+                    }
+                }
+            }
+            catch (IOException ignore) {}
+        }
+        org.openide.util.Utilities.setEnvMap(env);
+    }
 }
