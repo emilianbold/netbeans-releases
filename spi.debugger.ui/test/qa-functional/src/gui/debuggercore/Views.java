@@ -85,40 +85,42 @@ public class Views extends JellyTestCase {
     }
     
     public void testViewsCallStack() {
-        EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        editorOperator.setCaretPosition(96, 1);
-        Utilities.sleep(2000);
+        Utilities.setCaret(96, 1);
         //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
         new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
         MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:96.");
         Utilities.showCallStackView();
         Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
-        if (!("MemoryView.updateStatus:96".equals(jTableOperator.getValueAt(0,0).toString())))
+        String value = Utilities.removeTags(jTableOperator.getValueAt(0,0).toString());
+        if (!("MemoryView.updateStatus:96".equals(value)))
             assertTrue("Second level call stack is not MemoryView.updateStatus:96", false);
-        if (!("MemoryView.updateConsumption:74".equals(jTableOperator.getValueAt(1,0).toString())))
+        value = Utilities.removeTags(jTableOperator.getValueAt(1,0).toString());
+        if (!("MemoryView.updateConsumption:74".equals(value)))
             assertTrue("Second level call stack is not MemoryView.updateConsumption:74", false);
-        if (!("MemoryView.main:110".equals(jTableOperator.getValueAt(2,0).toString())))
+        value = Utilities.removeTags(jTableOperator.getValueAt(2,0).toString());
+        if (!("MemoryView.main:110".equals(value)))
             assertTrue("Third level call stack is not MemoryView.main:110", false);
     }
 
     public void testViewsThreads() {
         Utilities.showThreadsView();
+        Utilities.sleep(1000);
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.threadsViewTitle));        
         TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "system").expand();
         new org.netbeans.jellytools.nodes.Node(treeTableOperator.tree(), "system|main").expand();
-        if (!("system".equals(jTableOperator.getValueAt(0,0).toString())))
+        if (!("system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()))))
             assertTrue("Thread group system is not shown in threads view", false);
-        if (!("main".equals(jTableOperator.getValueAt(1,0).toString())))
+        if (!("main".equals(Utilities.removeTags(jTableOperator.getValueAt(1,0).toString()))))
             assertTrue("Thread group main is not shown in threads view", false);
-        if (!("main".equals(jTableOperator.getValueAt(2,0).toString())))
+        if (!("main".equals(Utilities.removeTags(jTableOperator.getValueAt(2,0).toString()))))
             assertTrue("Thread main is not shown in threads view", false);
-        if (!("Reference Handler".equals(jTableOperator.getValueAt(3,0).toString())))
+        if (!("Reference Handler".equals(Utilities.removeTags(jTableOperator.getValueAt(3,0).toString()))))
             assertTrue("Thread Reference Handler is not shown in threads view", false);
-        if (!("Finalizer".equals(jTableOperator.getValueAt(4,0).toString())))
+        if (!("Finalizer".equals(Utilities.removeTags(jTableOperator.getValueAt(4,0).toString()))))
             assertTrue("Thread Finalizer is not shown in threads view", false);
-        if (!("Signal Dispatcher".equals(jTableOperator.getValueAt(5,0).toString())))
+        if (!("Signal Dispatcher".equals(Utilities.removeTags(jTableOperator.getValueAt(5,0).toString()))))
             assertTrue("Thread Signal Dispatcher is not shown in threads view", false);
     }
 }

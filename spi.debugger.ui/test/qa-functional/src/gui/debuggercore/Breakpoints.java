@@ -388,12 +388,12 @@ public class Breakpoints extends JellyTestCase {
     }
     
     public void testVariableBreakpointFunctionalityModification() {
-        NbDialogOperator dialog = Utilities.newBreakpoint(33, 24);
+        NbDialogOperator dialog = Utilities.newBreakpoint(35, 19);
         new JComboBoxOperator(dialog, 0).selectItem("Variable");
         Utilities.sleep(1000);
         new JComboBoxOperator(dialog, 1).selectItem("Variable Modification");
         dialog.ok();
-        Utilities.startDebugger("Field breakpoint hit at line 33 in class examples.advanced.MemoryView by thread main.");
+        Utilities.startDebugger("Field breakpoint hit at line 40 in class examples.advanced.MemoryView by thread main.");
     }
     
     public void testThreadBreakpointCreation() {
