@@ -49,7 +49,6 @@ public class ClassNode extends Node {
        super(treeOperator, path);
     }
 
-    static final CustomizeBeanAction customizeBeanAction = new CustomizeBeanAction();
     static final ExecuteAction executeAction = new ExecuteAction();
     static final CutAction cutAction = new CutAction();
     static final CopyAction copyAction = new CopyAction();
@@ -62,7 +61,6 @@ public class ClassNode extends Node {
     /** tests popup menu items for presence */    
     public void verifyPopup() {
         verifyPopup(new Action[]{
-            customizeBeanAction,
             cutAction,
             copyAction,
             pasteAction,
@@ -84,11 +82,6 @@ public class ClassNode extends Node {
     Action[] getActions() {
         return javaActions;
     }*/
-
-    /** performs CustomizeBeanAction with this node */    
-    public void customizeBean() {
-        customizeBeanAction.perform(this);
-    }
 
     /** performs ExecuteAction with this node */    
     public void execute() {
