@@ -15,6 +15,7 @@ package org.apache.tools.ant.module.bridge.impl;
 
 import java.io.*;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.input.InputHandler;
@@ -223,6 +224,7 @@ public class BridgeImpl implements BridgeInterface {
     /**
      * Remove any outstanding ProcessDestroyer shutdown hooks.
      * They should not be left in the JRE static area.
+     * Workaround for bug in Ant 1.5.x, fixed already in Ant 1.6.
      */
     private static void hack36393() {
         if (!doHack36393) {
@@ -259,6 +261,8 @@ public class BridgeImpl implements BridgeInterface {
                     throw new IllegalStateException("Hook was not really registered!"); // NOI18N
                 }
                 AntModule.err.log("#36393: removing an unwanted ProcessDestroyer shutdown hook");
+                // #36395: memory leak in ThreadGroup if the thread is not started.
+                hook.start();
             }
         } catch (Exception e) {
             // Oh well.
@@ -267,6 +271,7 @@ public class BridgeImpl implements BridgeInterface {
         }
     }
     
+    private static boolean doGutProject = true;
     /**
      * Try to break up as many references in a project as possible.
      * Helpful to mitigate the effects of unsolved memory leaks: at
@@ -274,32 +279,40 @@ public class BridgeImpl implements BridgeInterface {
      * taskdef will not hold onto its siblings, etc.
      */
     private static void gutProject(Project p) {
+        if (!doGutProject) {
+            return;
+        }
         try {
-            Collection[] stuff1 = {
-                p.getBuildListeners(),
-            };
-            for (int i = 0; i < stuff1.length; i++) {
-                if (stuff1[i] != null) {
-                    stuff1[i].clear();
+            String s = p.getName();
+            Field[] fs = Project.class.getDeclaredFields();
+            for (int i = 0; i < fs.length; i++) {
+                if (Modifier.isStatic(fs[i].getModifiers())) {
+                    continue;
                 }
-            }
-            Map[] stuff2 = {
-                p.getDataTypeDefinitions(),
-                p.getFilters(),
-                p.getProperties(),
-                p.getReferences(),
-                p.getTargets(),
-                p.getTaskDefinitions(),
-                p.getUserProperties(),
-            };
-            for (int i = 0; i < stuff2.length; i++) {
-                if (stuff2[i] != null) {
-                    stuff2[i].clear();
+                if (Modifier.isFinal(fs[i].getModifiers())) {
+                    Object o = fs[i].get(p);
+                    try {
+                        if (o instanceof Collection) {
+                            ((Collection)o).clear();
+                        } else if (o instanceof Map) {
+                            ((Map)o).clear();
+                        }
+                    } catch (UnsupportedOperationException e) {
+                        // ignore
+                    }
+                    continue;
                 }
+                if (fs[i].getType().isPrimitive()) {
+                    continue;
+                }
+                fs[i].setAccessible(true);
+                fs[i].set(p, null);
             }
+            AntModule.err.log("Gutting extra references in project \"" + s + "\"");
         } catch (Exception e) {
             // Oh well.
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
+            doGutProject = false;
         }
     }
     

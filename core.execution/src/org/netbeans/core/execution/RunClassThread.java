@@ -145,7 +145,9 @@ final class RunClassThread extends Thread implements IOThreadIfc {
             task.finished();
             engine.getTaskIOs().free(mygroup, io); // closes output
 
+            /* Disable for now unless really needed. Cf. #36395, #36393.
             cleanUpHack(mygroup);
+            */
             mygroup = null;
             io = null;
             synchronized (this) {
@@ -184,7 +186,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
      * Workaround for a JRE bug that unstarted threads are not GC'd.
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=36395
      * @see http://developer.java.sun.com/developer/bugParade/bugs/4533087.html
-     */
+     * /
     private static void cleanUpHack(ThreadGroup tg) {
         try {
             Field f = ThreadGroup.class.getDeclaredField("threads"); // NOI18N
@@ -225,6 +227,7 @@ final class RunClassThread extends Thread implements IOThreadIfc {
             e.printStackTrace();
         }
     }
+    */
     
 }
 
