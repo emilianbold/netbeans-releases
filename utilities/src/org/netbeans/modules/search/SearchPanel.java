@@ -76,12 +76,23 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
     private List orderedSearchTypePanels;
 
     /** Whether some criterion is customized. */
-    private boolean customized = false;
+    private boolean customized;
     
     
-    /** Creates new form SearchPanel */
+    /** Creates new <code>SearchPanel</code>.
+     * @param searchTypeList list of <code>SearchType</code> to use */
     public SearchPanel(List searchTypeList) {
-        orderedSearchTypePanels = new ArrayList(searchTypeList.size());
+        this(searchTypeList, false);
+    }
+    
+    /** Creates new <code>SearchPanel</code>. 
+     * @param searchTypeList list of <code>SearchType</code> to use 
+     * @param isCustomized sets customized flag indicating there is
+     * at least one from <code>SearchType</code>s already set and
+     * seach - okButton should be enabled */
+    public SearchPanel(List searchTypeList, boolean isCustomized) {
+        this.orderedSearchTypePanels = new ArrayList(searchTypeList.size());
+        this.customized = isCustomized;
 
         // Default values of criterions.
         Iterator it = searchTypeList.iterator();
