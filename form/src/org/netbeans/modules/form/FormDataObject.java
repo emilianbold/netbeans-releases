@@ -24,7 +24,7 @@ import org.openide.filesystems.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.CookieSet;
-import org.openide.cookies.EditCookie;
+import org.openide.cookies.*;
 import org.netbeans.modules.java.JavaDataObject;
 import org.netbeans.modules.java.JavaEditor;
 import org.netbeans.modules.form.*;
@@ -49,6 +49,8 @@ public class FormDataObject extends JavaDataObject {
 
     transient private FormEditorSupport formEditor;
 
+    transient private OpenEdit openEdit;
+
     /** The entry for the .form file */
     FileEntry formEntry;
 
@@ -69,16 +71,33 @@ public class FormDataObject extends JavaDataObject {
         modifiedInit = false;
         componentRefRegistered = false;
 
-        getCookieSet().add(new Class[] { EditCookie.class }, this);
+        getCookieSet().add(OpenCookie.class, this);
+        getCookieSet().add(EditCookie.class, this);
     }
 
     //--------------------------------------------------------------------
     // Other methods
 
+    // CookieSet.Factory implementation
     public Node.Cookie createCookie(Class klass) {
-        if (EditCookie.class.isAssignableFrom(klass))
-            return getJavaEditor();
+        if (OpenCookie.class.equals(klass)
+            || EditCookie.class.equals(klass))
+        {
+            if (openEdit == null)
+                openEdit = new OpenEdit();
+            return openEdit;
+        }
+
         return super.createCookie(klass);
+    }
+
+    private class OpenEdit implements OpenCookie, EditCookie {
+        public void open() {
+            getFormEditor().openForm(); // open form and java source
+        }
+        public void edit() {
+            getFormEditor().open(); // open java source only
+        }
     }
 
     public FileObject getFormFile() {
@@ -95,15 +114,15 @@ public class FormDataObject extends JavaDataObject {
         return formEntry.getFile().isReadOnly();
     }
 
+    // from JavaDataObject
     protected JavaEditor createJavaEditor() {
-        if (formEditor == null) {
+        if (formEditor == null)
             formEditor = new FormEditorSupport(getPrimaryEntry(), this);
-        }
         return formEditor;
     }
 
     public FormEditorSupport getFormEditor() {
-        return(FormEditorSupport)createJavaEditor();
+        return (FormEditorSupport) createJavaEditor();
     }
 
     FileEntry getFormEntry() {

@@ -35,7 +35,7 @@ import org.netbeans.modules.form.actions.FormEditorAction;
  * @author Ian Formanek, Tomas Pavek
  */
 
-public class FormEditorSupport extends JavaEditor implements EditCookie
+public class FormEditorSupport extends JavaEditor
 {
     static final String NO_WORKSPACE = "None"; // NOI18N
 
@@ -95,10 +95,10 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
     // ----------
     // opening & saving interface methods
 
-    /** OpenCookie implementation - opens the form (loads it first if needed).
+    /** Opens the form (loads it first if needed) - and also the java source.
      * @see OpenCookie#open
      */
-    public void open() {
+    public void openForm() {
         // set status text "Opening Form..."
         TopManager.getDefault().setStatusText(
             java.text.MessageFormat.format(
@@ -171,14 +171,6 @@ public class FormEditorSupport extends JavaEditor implements EditCookie
         }
 
         return formLoaded;
-    }
-
-    /** EditCookie implementation - opens only java source file.
-     * Form is ignored (not loaded).
-     * @see EditCookie#edit
-     */
-    public void edit() {
-        super.open();
     }
 
     /** @return true if the form is opened, false otherwise */
