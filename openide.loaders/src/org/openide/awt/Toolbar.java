@@ -206,26 +206,30 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     }
     
     public Dimension getPreferredSize() {
-        String lf = UIManager.getLookAndFeel().getName();
         String lfid = UIManager.getLookAndFeel().getID();
         int minheight;
+        
         if (ToolbarPool.getDefault().getPreferredIconSize() == 24) {
             if ("Aqua".equals(lfid)) {
                 minheight = 29 + 8;
-            } else if ("Metal".equals(lf)) {
+            } else if ("Metal".equals(lfid)) {
                 minheight = 36 + 8;
-            } else if ("Windows".equals(lf)) {
+            } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? (23 + 8) : (27 + 8);
+            } else if ("GTK".equals(lfid)) {
+                minheight = 36 + 8;
             } else {
                 minheight = 28 + 8;
             }
         } else {
             if ("Aqua".equals(lfid)) {
                 minheight = 29;
-            } else if ("Metal".equals(lf)) {
+            } else if ("Metal".equals(lfid)) {
                 minheight = 36;
-            } else if ("Windows".equals(lf)) {
+            } else if ("Windows".equals(lfid)) {
                 minheight = isXPTheme() ? 23 : 27;
+            } else if ("GTK".equals(lfid)) {
+                minheight = 36;
             } else {
                 minheight = 28;
             }
