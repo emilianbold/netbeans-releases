@@ -42,8 +42,9 @@ public class RemoveInstanceAction extends CookieAction {
     protected void performAction(org.openide.nodes.Node[] nodes) {
         for (int i=0; i<nodes.length; i++) {
             ServerInstance instance = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
-            if (instance == null)
+            if (instance == null || instance.isRemoveForbidden()) {
                 continue;
+            }
             String title = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_RemoveInstanceTitle", instance.getDisplayName());
             String msg = NbBundle.getMessage(RemoveInstanceAction.class, "MSG_ReallyRemoveInstance", instance.getDisplayName());
             NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION);
@@ -58,5 +59,15 @@ public class RemoveInstanceAction extends CookieAction {
     }
     
     protected boolean asynchronous() { return false; }
+    
+    protected boolean enable (Node[] nodes) {
+        for (int i = 0; i < nodes.length; i++) {
+            ServerInstance instance = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
+            if (instance == null || instance.isRemoveForbidden()) {
+                return false;
+            }
+        }
+        return true;
+    }
     
 }

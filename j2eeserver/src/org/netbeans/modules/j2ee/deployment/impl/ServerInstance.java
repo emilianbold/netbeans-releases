@@ -166,6 +166,17 @@ public class ServerInstance implements Node.Cookie {
         ServerRegistry.getInstance().removeServerInstance(getUrl());
     }
     
+    /**
+     * Is it forbidden to remove this server instance from the server registry?
+     *
+     * @return <code>true</code> if this server instance is not allowed to be removed
+     *         from the server registry, <code>false</code> otherwise.
+     */
+    public boolean isRemoveForbidden() {
+        String removeForbid = instanceProperties.getProperty(InstanceProperties.REMOVE_FORBIDDEN);
+        return Boolean.valueOf(removeForbid).booleanValue();
+    }
+    
     public ServerTarget[] getTargets() {
         getTargetMap();
         return (ServerTarget[]) targets.values().toArray(new ServerTarget[targets.size()]);

@@ -69,6 +69,12 @@ public abstract class InstanceProperties {
     public static final String DISPLAY_NAME_ATTR = "displayName"; //NOI18N
     
     /**
+     * Remove forbidden property, if its value is set to <code>true</code>, it 
+     * won't be allowed to remove the server instance from the server registry.
+     */
+    public static final String REMOVE_FORBIDDEN = "removeForbidden"; //NOI18N
+    
+    /**
      * List of listeners which listen to instance properties changes
      */
     private List/*<PropertyChangeListener>*/ changeListeners = Collections.synchronizedList(new LinkedList());
