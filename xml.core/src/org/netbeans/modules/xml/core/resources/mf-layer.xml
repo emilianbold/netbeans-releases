@@ -18,6 +18,11 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- register templates -->  
     <folder name="Templates">
+        <!-- !?! order ?!? -->
+        <attr name="Other/XML" boolvalue="true"/>
+        <attr name="RMI/XML" boolvalue="true"/>
+        <attr name="Scripting/XML" boolvalue="true"/>
+
         <folder name="XML">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XML.html" />
@@ -58,6 +63,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xhtml.html" />
             </file>
             -->
+
+            <!-- !?! order ?!? -->
+            <attr name="emptyDTD.dtd/StyleSheet.xml" boolvalue="true"/>
+            <attr name="StyleSheet.xml/XMLwithROOT.xml" boolvalue="true"/>
+<!--            <attr name="StyleSheet.xml/xhtml.xml" boolvalue="true"/>
+            <attr name="xhtml.xml/XMLwithROOT.xml" boolvalue="true"/>-->
+            <attr name="XMLwithROOT.xml/XMLwithDTD.xml" boolvalue="true"/>
 
         </folder>
     </folder>
