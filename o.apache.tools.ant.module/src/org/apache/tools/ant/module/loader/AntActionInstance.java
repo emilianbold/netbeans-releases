@@ -93,6 +93,7 @@ public class AntActionInstance implements
     
     public void actionPerformed (ActionEvent ignore) {
         TargetExecutor exec = new TargetExecutor (proj, null);
+        exec.setSwitchWorkspace(true);
         try {
             exec.execute ();
         } catch (IOException ioe) {

@@ -21,12 +21,13 @@ import java.util.*;
 import java.util.Map; // override org.apache.tools.ant.Map
 
 import org.openide.*;
+import org.openide.actions.ExecuteAction;
 import org.openide.awt.Actions;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.*;
 import org.openide.windows.InputOutput;
+import org.openide.windows.Workspace;
 
 import org.w3c.dom.Element;
 
@@ -49,6 +50,7 @@ public class TargetExecutor implements Runnable {
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
     private Properties properties = (Properties) AntSettings.getDefault ().getProperties ().clone ();
     private List targetNames;
+    private boolean switchWorkspace = false;
 
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
@@ -70,6 +72,16 @@ public class TargetExecutor implements Runnable {
         properties = new Properties ();
         properties.putAll (old);
         properties.putAll (p);
+    }
+    
+    /** If true, switch to the execution workspace when running the target(s).
+     * The exact workspace (if any) is that given in the IDE's general settings.
+     * By default, false.
+     * @since 2.7
+     * @see #17039
+     */
+    public void setSwitchWorkspace(boolean sw) {
+        switchWorkspace = sw;
     }
   
     /** Start it going. */
@@ -120,6 +132,19 @@ public class TargetExecutor implements Runnable {
             io.getOut ().reset ();
             // #16720:
             io.select();
+            
+            if (switchWorkspace) {
+                Mutex.EVENT.readAccess(new Mutex.Action() {
+                    public Object run() {
+                        Workspace w = TopManager.getDefault().getWindowManager().
+                            findWorkspace(ExecuteAction.getWorkspace());
+                        if (w != null) {
+                            w.activate();
+                        } // else it was e.g. "None", i.e. no real workspace
+                        return null;
+                    }
+                });
+            }
                 
             // [PENDING] note that calls to System.exit() from tasks
             // are apparently not trapped! (#9953)

@@ -61,7 +61,9 @@ public class AntTargetNode extends ElementNode {
             getCookieSet ().add (new ExecCookie () {
                     public void start () {
                         try {
-                            new TargetExecutor (project, new String[] { targetElem.getAttribute ("name") }).execute (); // NOI18N
+                            TargetExecutor te = new TargetExecutor(project, new String[] {targetElem.getAttribute("name")}); // NOI18N
+                            te.setSwitchWorkspace(true);
+                            te.execute();
                         } catch (IOException ioe) {
                             TopManager.getDefault ().notifyException (ioe);
                         }
