@@ -42,6 +42,31 @@ public class EventSetPattern extends Pattern {
 
   private static final ResourceBundle bundle = NbBundle.getBundle( EventSetPattern.class );
 
+  static final String[] WELL_KNOWN_LISTENERS =  new String[] {
+    "java.awt.event.ActionListener",
+    "java.awt.event.ContainerListener",
+    "java.awt.event.FocusListener",
+    "java.awt.event.ItemListener",
+    "java.awt.event.KeyListener",
+    "java.awt.event.MouseListener",
+    "java.awt.event.MouseMotionListener",
+    "java.awt.event.WindowListener",
+    "java.beans.PropertyChangeListener",
+    "java.beans.VetoableChangeListener",
+    "javax.swing.event.CaretListener",
+    "javax.swing.event.ChangeListener",
+    "javax.swing.event.DocumentListener",
+    "javax.swing.event.HyperlinkListener",
+    "javax.swing.event.MenuListener",
+    "javax.swing.event.MouseInputListener",
+    "javax.swing.event.PopupMenuListener",
+    "javax.swing.event.TableColumnModelListener",
+    "javax.swing.event.TableModelListener",
+    "javax.swing.event.TreeModelListener",
+    "javax.swing.event.UndoableEditListener"
+  };
+  
+  
   protected MethodElement addListenerMethod = null;
   protected MethodElement removeListenerMethod = null;
  
@@ -531,6 +556,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         8/17/99  Petr Hrebejk    Combo box with well 
+ *       known Listener interfaces
  *  8    Gandalf   1.7         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
  *       EventSets types with src. code fixed
  *  7    Gandalf   1.6         7/29/99  Petr Hrebejk    Fix - change 
