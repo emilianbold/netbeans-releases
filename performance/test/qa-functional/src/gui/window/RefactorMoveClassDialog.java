@@ -36,14 +36,14 @@ public class RefactorMoveClassDialog extends testUtilities.PerformanceTestCase {
     public RefactorMoveClassDialog(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=30000;
+        WAIT_AFTER_OPEN=60000;
     }
     
     /** Creates a new instance of RefactorRenameDialog */
     public RefactorMoveClassDialog(String testName, String performanceDataName) {
         super(testName,performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=30000;
+        WAIT_AFTER_OPEN=60000;
     }
     
     public void initialize() {
