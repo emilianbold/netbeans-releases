@@ -17,6 +17,8 @@ import java.awt.EventQueue;
 import java.io.*;
 import java.lang.ref.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import threaddemo.locking.Lock;
 import threaddemo.locking.LockAction;
@@ -37,6 +39,8 @@ import threaddemo.locking.Locks;
  * @author Jesse Glick
  */
 final class SwungPhadhail implements Phadhail, PhadhailListener {
+    
+    private static final Logger logger = Logger.getLogger(SwungPhadhail.class.getName());
     
     private static final Map instances = new WeakHashMap(); // Map<Phadhail,Reference<Phadhail>>
     
@@ -73,7 +77,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
             Iterator it = listeners.iterator();
             while (it.hasNext()) {
                 PhadhailListener l = (PhadhailListener)it.next();
-                //System.err.println("fireNameChanged for " + this + " to " + l);
+                logger.log(Level.FINER, "fireNameChanged for {0} to {1}", new Object[] {this, l});
                 l.nameChanged(ev);
             }
         }
@@ -82,12 +86,12 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     private String getNameOrPath(boolean p) {
         assert EventQueue.isDispatchThread();
         if ((p ? path : name) != null) {
-            //System.err.println("cached name for " + this);
+            logger.log(Level.FINER, "cached name for {0}", this);
             return (p ? path : name);
         } else {
             if (!computingName) {
                 computingName = true;
-                //System.err.println("calculating name for " + this);
+                logger.log(Level.FINER, "calculating name for {0}", this);
                 Worker.start(new Runnable() {
                     public void run() {
                         final String n = ph.getName();
@@ -97,14 +101,14 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
                                 name = n;
                                 path = p;
                                 computingName = false;
-                                //System.err.println("fireNameChanged for " + SwungPhadhail.this);
+                                logger.log(Level.FINER, "fireNameChanged for {0}", SwungPhadhail.this);
                                 fireNameChanged();
                             }
                         });
                     }
                 });
             }
-            //System.err.println("dummy name for " + this);
+            logger.log(Level.FINER, "dummy name for {0}", this);
             return (p ? "Please wait..." : "computingName");
         }
     }
@@ -182,7 +186,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
         assert EventQueue.isDispatchThread();
         // XXX synch on listeners to get them, then release
         if (listeners != null) {
-            //System.err.println("fireChildrenChanged");
+            logger.finer("fireChildrenChanged");
             PhadhailEvent ev = PhadhailEvent.create(this);
             Iterator it = listeners.iterator();
             while (it.hasNext()) {
@@ -267,16 +271,16 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     
     public boolean hasChildren() {
         assert EventQueue.isDispatchThread();
-        //System.err.println("hasChildren on " + this);
+        logger.log(Level.FINER, "hasChildren on {0}", this);
         if (leaf == null) {
-            //System.err.println("not cached");
+            logger.finer("not cached");
             leaf = (Boolean)Worker.block(new LockAction() {
                 public Object run() {
-                    //System.err.println("hasChildren: working...");
+                    logger.finer("hasChildren: working...");
                     return ph.hasChildren() ? Boolean.FALSE : Boolean.TRUE;
                 }
             });
-            //System.err.println("leaf=" + leaf);
+            logger.log(Level.FINER, "leaf={0}", leaf);
         }
         return !leaf.booleanValue();
     }
@@ -284,11 +288,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public synchronized void addPhadhailListener(PhadhailListener l) {
         if (listeners == null) {
             listeners = new ArrayList();
-            Worker.start(new Runnable() {
-                public void run() {
-                    ph.addPhadhailListener(SwungPhadhail.this);
-                }
-            });
+            ph.addPhadhailListener(SwungPhadhail.this);
         }
         listeners.add(l);
     }
@@ -296,11 +296,7 @@ final class SwungPhadhail implements Phadhail, PhadhailListener {
     public synchronized void removePhadhailListener(PhadhailListener l) {
         if (listeners != null && listeners.remove(l) && listeners.isEmpty()) {
             listeners = null;
-            Worker.start(new Runnable() {
-                public void run() {
-                    ph.removePhadhailListener(SwungPhadhail.this);
-                }
-            });
+            ph.removePhadhailListener(SwungPhadhail.this);
         }
     }
     
