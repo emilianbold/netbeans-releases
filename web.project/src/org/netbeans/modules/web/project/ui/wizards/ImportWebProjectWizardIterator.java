@@ -400,13 +400,13 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             
             guessFO = guessDocBase(fo);
             if (guessFO != null)
-                webPages = guessFO.getPath();
+                webPages = FileUtil.toFile(guessFO).getPath();
             guessFO = guessJavaRoot(fo);
             if (guessFO != null)
-                javaSources = guessFO.getPath();
+                javaSources = FileUtil.toFile(guessFO).getPath();
             guessFO = guessLibrariesFolder(fo);
             if (guessFO != null)
-                libraries = guessFO.getPath();
+                libraries = FileUtil.toFile(guessFO).getPath();
             
             ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
         }
