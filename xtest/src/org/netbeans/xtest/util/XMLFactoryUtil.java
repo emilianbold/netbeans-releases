@@ -54,18 +54,21 @@ public class XMLFactoryUtil {
          "org.apache.xalan.processor.TransformerFactoryImpl"};
     
     private static String[] setNewProperties() {
+        
         String oldValues[]=new String[names.length];
-        for (int i=0; i<names.length; i++) 
+        /*for (int i=0; i<names.length; i++) 
             oldValues[i]=System.setProperty(names[i], values[i]);
+         */
         return oldValues;
     }
     
     private static void setOriginalProperties(String[] oldValues) {
-        for (int i=0; i<names.length; i++)
+        /*for (int i=0; i<names.length; i++)
             if (oldValues[i]==null)
                 System.getProperties().remove(names[i]);
             else
                 System.setProperty(names[i], oldValues[i]);
+         */
     }
 
     public static DocumentBuilder newDocumentBuilder() throws ParserConfigurationException {

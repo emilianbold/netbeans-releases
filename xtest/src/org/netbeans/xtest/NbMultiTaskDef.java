@@ -86,15 +86,15 @@ public class NbMultiTaskDef extends Task {
             // need to load parsers defintion from current loader instead of 
             // system loader (packages java, javax are by default loaded using
             // system classloader)
-            al.addLoaderPackageRoot("javax.xml");
-            al.addLoaderPackageRoot("org.w3c.dom");
-            al.addLoaderPackageRoot("org.xml.sax");
-            al.addLoaderPackageRoot("org.apache.xerces");
-            al.addLoaderPackageRoot("org.apache.html");
-            al.addLoaderPackageRoot("org.apache.wml");
-            al.addLoaderPackageRoot("org.apache.xml");
-            al.addLoaderPackageRoot("org.apache.xalan");
-            al.addLoaderPackageRoot("org.apache.xpath"); 
+            //al.addLoaderPackageRoot("javax.xml");
+            //al.addLoaderPackageRoot("org.w3c.dom");
+            //al.addLoaderPackageRoot("org.xml.sax");
+            ///al.addLoaderPackageRoot("org.apache.xerces");
+            //al.addLoaderPackageRoot("org.apache.html");
+            //al.addLoaderPackageRoot("org.apache.wml");
+            //al.addLoaderPackageRoot("org.apache.xml");
+            //al.addLoaderPackageRoot("org.apache.xalan");
+            //al.addLoaderPackageRoot("org.apache.xpath"); 
             loader = al;
         }
 
