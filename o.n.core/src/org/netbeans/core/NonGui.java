@@ -117,8 +117,7 @@ public class NonGui extends NbTopManager implements Runnable {
             File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
-            makedir (new File (new File (userDir, DIR_MODULES), "autoload")); // NOI18N
-            makedir (new File (new File (userDir, DIR_MODULES), "eager")); // NOI18N
+            makedir(new File(userDir, DIR_MODULES)); // NOI18N
         }
         return userDir;
     }
