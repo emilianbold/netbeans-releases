@@ -164,7 +164,8 @@ class FormToolBar extends JToolBar {
     // --------
     
     private void initButton(AbstractButton button) {
-        if (!"Windows".equals(UIManager.getLookAndFeel().getID())) { // NOI18N
+        if (!("Windows".equals(UIManager.getLookAndFeel().getID()) // NOI18N
+            && (button instanceof JToggleButton))) {
             button.setBorderPainted(false);
         }
         button.setOpaque(false);
