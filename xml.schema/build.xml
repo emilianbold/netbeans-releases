@@ -132,7 +132,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="real-clean" depends="clean">
         <delete dir="javadoc"/>
 
-        <ant dir="test" target="realclean"/>
+<!--        <ant dir="test" target="realclean"/>-->
     </target>
 
     <target name="all" depends="clean,nbm"/>
