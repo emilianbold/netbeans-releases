@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,11 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -29,6 +33,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
@@ -469,21 +474,11 @@ class J2SEActionProvider implements ActionProvider {
             return -1;
         }
         
-        // bugfix #51255, ClassPath.EXECUTE doesn't contain classes which 
-        // will be created later during invoke 'run' target
-        // first check sources
-        if (J2SEProjectUtil.isMainClass (mainClass, sourcesRoots)) {
+        ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
+        if (J2SEProjectUtil.isMainClass (mainClass, classPath)) {
             return 0;
         }
-
-        // check also EXECUTE classpath
-        
-        // find mainclass FileObject
-        ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
-        mainClass = mainClass.replace ('.','/') + ".class"; // XXX // NOI18N
-        FileObject mainFO = classPath.findResource (mainClass); // NOI18N
-
-        return canBeRun (mainFO) ? 0 : -2;
+        return -2;
     }
     
     /** Checks if given file object contains the main method.

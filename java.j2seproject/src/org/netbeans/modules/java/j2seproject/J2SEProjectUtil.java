@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.jmi.javamodel.JavaModelPackage;
@@ -148,17 +149,21 @@ public class J2SEProjectUtil {
      * @return true if the class name exists and it's a main class
      */
     public static boolean isMainClass(String className, FileObject[] roots) {
+        return isMainClass (className, ClassPathSupport.createClassPath(roots));        
+    }
+    
+    
+    public static boolean isMainClass (String className, ClassPath cp) {
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
         JavaModel.getJavaRepository ().beginTrans (false);
-        boolean isMain = false;
-        
+        boolean isMain = false;        
         try {
             Type clazz;
             
-            JavaModel.setClassPath(ClassPathSupport.createClassPath(roots));
+            JavaModel.setClassPath (cp);
             clazz=JavaModel.getDefaultExtent().getType().resolve(className);
             if (clazz != null) {
                 isMain = hasMainMethod (clazz.getResource ());
