@@ -169,11 +169,9 @@ then
     xauth generate $display .
     export DISPLAY=$display
     sleep 4 # give X time to start
-    twmrc=/tmp/.twmrc-$display
-    echo 'RandomPlacement' > $twmrc
-    twm -f $twmrc &
-    twmpid=$!
-    trap "rm $xauthority; kill $xpid; rm $twmrc; kill $twmpid" EXIT
+    mwm &
+    mwmpid=$!
+    trap "kill $mwmpid; kill $xpid; rm -f $xauthority" EXIT
     sleep 2 # give WM time to work
     if [ $spawndisplaytype = Xnest ]
     then
