@@ -50,7 +50,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.api.project.Project;
-import org.openide.text.NbDocument.CustomEditor;
 
 
 /**
