@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.table.*;
+import javax.swing.event.TableModelEvent;
 
 import com.netbeans.ide.filesystems.FileStateInvalidException;
 import com.netbeans.ide.filesystems.FileObject;
@@ -79,19 +80,38 @@ public class PropertiesTableModel extends AbstractTableModel {
     obj.getBundleStructure().addPropertyChangeListener(new WeakListener.PropertyChange(pcl));
     
     // listener for the BundleStructure
-    pbl = new PropertyBundleListener () {                
+    pbl = new TablePropertyBundleListener();
     
-      public void bundleChanged(PropertyBundleEvent evt) {
-        // PENDING - should be finer
-        System.out.println("BundleChange in PropertiesTableModel");
-        fireTableStructureChanged();                                        
-      }
-      
-    };
     obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(pbl));
 
     //PENDING move the column corresponding to curNode to the beginning
   }
+
+  class TablePropertyBundleListener implements PropertyBundleListener {
+  
+    public void bundleChanged(PropertyBundleEvent evt) {
+      // PENDING - should be maybe even finer
+      System.out.println("BundleChange in PropertiesTableModel");
+      switch (evt.getChangeType()) {
+        case PropertyBundleEvent.CHANGE_STRUCT:
+          fireTableStructureChanged();                                        
+          break;
+        case PropertyBundleEvent.CHANGE_ALL:
+          fireTableDataChanged();                                        
+          break;
+        case PropertyBundleEvent.CHANGE_FILE: 
+          int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+          if (index != -1)
+            fireTableColumnChanged(index + 1);
+          break;
+        case PropertyBundleEvent.CHANGE_ITEM:
+          index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+          int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
+          fireTableCellUpdated(keyIndex, index + 1);
+          break;
+      }
+    }
+  }  // endof inner class TablePropertyBundleListener
                                                              
                                                              
   /** Returns the number of rows in the model */ 
@@ -128,7 +148,44 @@ public class PropertiesTableModel extends AbstractTableModel {
         return Util.getPropertiesLabel (obj.getBundleStructure().getNthEntry(column - 1));
     }         
   }
+   
+  /** Sets the value at rowIndex and columnIndex */                                                                                
+  public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+    if (columnIndex == 0) {
+      // property key
+      // PENDING
+    }           
+    else { 
+      // property value
+      PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(columnIndex - 1);
+      String key = obj.getBundleStructure().getNthKey(rowIndex);
+      if (entry != null && key != null) {
+        PropertiesStructure ps = entry.getHandler().getStructure();
+        if (ps != null) {                   
+          Element.ItemElem item = ps.getItem(key);
+          if (item != null) {
+            item.setValue((String)aValue);
+          }
+          else {
+            // PENDING add
+          }
+        }
+      }
+    }
+  }
+                                                  
+  /** Returns true for all cells */
+  public boolean isCellEditable(int rowIndex, int columnIndex) {
+    // PENDING - all should be editable
+    if (columnIndex == 0)
+      return true;
+    return true;
+  }
 
+  /** Fires a TableModelEvent - change of one column */ 
+  public void fireTableColumnChanged(int column) {
+    fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, column));
+  }
 }
 
 /*

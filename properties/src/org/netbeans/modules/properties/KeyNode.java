@@ -111,19 +111,24 @@ public class KeyNode extends AbstractNode {
     return true;
   }
 
+  /* Returns true if this node can be renamed.
+  * @returns true.
+  */
+  public final boolean canRename () {
+    return true;
+  }
+
   /* Rename the data object.
   * @param name new name for the object
   * @exception IllegalArgumentException if the rename failed
   */
   public void setName (String name) {
-    try {         
-      //PENDING
-      //item.renameEntry (name);
-      super.setName (name);
-      /* */if (false) throw new IOException();
-    } catch (IOException ex) {
-      throw new IllegalArgumentException (ex.getMessage ());
-    }
+    System.out.println("Setting name = " + name);
+    item.getParent().renameItem(item.getKey(), name);
+    // regenerate all children
+    Node par = getParentNode();
+    PropertiesFileEntry.PropKeysChildren ch = (PropertiesFileEntry.PropKeysChildren)par.getChildren();
+    ch.mySetKeys();
   }
 
   /** Set all actions for this node.
@@ -155,6 +160,7 @@ public class KeyNode extends AbstractNode {
 
       public void setValue (Object val) throws IllegalAccessException,
       IllegalArgumentException, InvocationTargetException {
+System.out.println("Set property key to " + val);      
         if (!(val instanceof String))
           throw new IllegalArgumentException();
 
@@ -198,11 +204,12 @@ public class KeyNode extends AbstractNode {
       return;
     }
   }
-
+  
 }
 
 /*
  * <<Log>>
+ *  2    Gandalf   1.1         5/14/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $
  * Beta Change History:

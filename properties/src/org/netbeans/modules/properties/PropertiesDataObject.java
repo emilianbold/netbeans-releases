@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.TreeSet;
 import java.util.Comparator;
+import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.io.ObjectInputStream;
@@ -147,8 +148,6 @@ public final class PropertiesDataObject extends MultiDataObject {
 
     /** Listens to changes on the dataobject */
     private PropertyChangeListener pcl = null;  
-    /** Listens to changes on the dataobject - weak */
-    private PropertyChangeListener wpcl = null;  
                           
     PropertiesChildren() {
       super();
@@ -195,9 +194,8 @@ public final class PropertiesDataObject extends MultiDataObject {
         }
         
       }; // end of inner class
-      wpcl = new WeakListener.PropertyChange(pcl);
       
-      PropertiesDataObject.this.addPropertyChangeListener (wpcl);
+      PropertiesDataObject.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
     }
 
     /** Called to notify that the children has lost all of its references to
@@ -205,8 +203,7 @@ public final class PropertiesDataObject extends MultiDataObject {
     * affecting any nodes (because nobody listens to that nodes).
     */
     protected void removeNotify () {
-      if (wpcl != null)
-        PropertiesDataObject.this.removePropertyChangeListener (wpcl);
+      setKeys(new ArrayList());
     }
 
     protected Node[] createNodes (Object key) {
@@ -219,6 +216,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         5/14/99  Petr Jiricka    
  *  8    Gandalf   1.7         5/13/99  Petr Jiricka    
  *  7    Gandalf   1.6         5/12/99  Petr Jiricka    
  *  6    Gandalf   1.5         5/11/99  Ian Formanek    Undone last change to 

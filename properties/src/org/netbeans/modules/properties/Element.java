@@ -270,7 +270,7 @@ implements Serializable {
     }
 
     /** Returns parent if not null */
-    private PropertiesStructure getParent() {
+    public PropertiesStructure getParent() {
       if (parent == null)
         throw new InternalError();
       return parent;  
@@ -326,6 +326,7 @@ implements Serializable {
       if (!oldKey.equals(newKey)) {
         key.setValue(newKey);
         getParent().itemKeyChanged(oldKey, this);
+        this.firePropertyChange(PROP_ITEM_KEY, oldKey, newKey);
       }  
     }
     
@@ -338,9 +339,11 @@ implements Serializable {
     *  @param key the new key
     */                        
     public void setValue(String newValue) {
-      if (!value.getValue().equals(newValue)) {
+      String oldValue = value.getValue();
+      if (!oldValue.equals(newValue)) {
         value.setValue(newValue);
         getParent().itemChanged(this);
+        this.firePropertyChange(PROP_ITEM_VALUE, oldValue, newValue);
       }  
     }
 
@@ -353,9 +356,11 @@ implements Serializable {
     *  @param key the new key
     */                        
     public void setComment(String newComment) {
-      if (!comment.getValue().equals(newComment)) {
+      String oldComment = comment.getValue();
+      if (!oldComment.equals(newComment)) {
         comment.setValue(newComment);
         getParent().itemChanged(this);
+        this.firePropertyChange(PROP_ITEM_COMMENT, oldComment, newComment);
       }  
     }
     
@@ -376,6 +381,7 @@ implements Serializable {
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
  * $

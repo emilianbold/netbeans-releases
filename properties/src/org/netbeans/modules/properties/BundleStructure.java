@@ -101,19 +101,27 @@ public class BundleStructure extends PropertyChangeSupport {
       return (PropertiesFileEntry)entries[i];
     else throw new InternalError(getClass().getName() +" - Entries not initialized");
   }
+  
+  /** Retrieves the index of a file entry (primary or secondary) by the name of its file 
+  *  @return index for entry with the given filename or -1 if not found
+  */
+  public int getEntryIndexByFileName(String fileName) {
+    if (entries != null) {
+      for (int i = 0; i < getEntryCount(); i++) {
+        if (((PropertiesFileEntry)entries[i]).getFile().getName().equals(fileName))
+          return i;
+      }
+      return -1;    
+    }  
+    else throw new InternalError(getClass().getName() +" - Entries not initialized");
+  }
    
   /** Retrieves a file entry (primary or secondary) by the name of its file 
   *  @return entry with the given filename or null if not found
   */
-  public PropertiesFileEntry getEntryByFileName(String fileName) {                                
-    if (entries != null) {
-      for (int i = 0; i < getEntryCount(); i++) {
-        if (((PropertiesFileEntry)entries[i]).getFile().getName().equals(fileName))
-          return (PropertiesFileEntry)entries[i];
-      }
-      return null;    
-    }  
-    else throw new InternalError(getClass().getName() +" - Entries not initialized");
+  public PropertiesFileEntry getEntryByFileName(String fileName) {
+    int index = getEntryIndexByFileName(fileName);
+    return ((index == -1) ? null : (PropertiesFileEntry)entries[index]);
   }
                                            
   /** Retrieves number of all entries */                      
@@ -129,6 +137,11 @@ public class BundleStructure extends PropertyChangeSupport {
     if (keyList == null)
       throw new InternalError(getClass().getName() +" - KeyList not initialized");
     return (String)keyList.get(keyIndex);
+  }
+    
+  /** Retrieves index for a key from the list, by name */
+  public int getKeyIndexByName(String keyName) {
+    return keyList.setContains(keyName);
   }
                                            
   /** Retrieves keyIndex-th key in the entryIndex-th entry from the list, indexed from 0 
@@ -173,11 +186,8 @@ public class BundleStructure extends PropertyChangeSupport {
   }                                         
    
   /** Constructs a set of keys from the entries (from scratch) */ 
-  protected void buildKeySet() {
-    if (keyList == null)
-      keyList = new SortedArrayList(String.CASE_INSENSITIVE_ORDER);
-    else 
-      keyList.clear();
+  protected synchronized void buildKeySet() {
+    keyList = new SortedArrayList(String.CASE_INSENSITIVE_ORDER);
       
     // for all entries add all keys  
     for (int index = 0; index < getEntryCount(); index++) {
@@ -211,19 +221,46 @@ public class BundleStructure extends PropertyChangeSupport {
 
 
   // notification methods from lower layers of the structure
-  void itemChanged(Element.ItemElem elem) {
-System.out.println("firing element change");
-    // PENDING - events should be finer
-    support.fireBundleChanged();
+  /** One item in a properties file has changed. 
+  * Fires a change event for this item.
+  */
+  void itemChanged(Element.ItemElem item) {
+System.out.println("firing item change");
+    support.fireItemChanged(item.getParent()/*PropertiesStructure*/
+                                .getParent()/*StructHandler*/
+                                .getEntry()/*PropertiesFileEntry*/
+                                .getFile().getName(),
+                            item.getKey());
   }
 
+  /** One file in the bundle has changed - no further information. 
+  * Fires changes for a bundle or a file according to the changes in the keys.
+  */
   void oneFileChanged(StructHandler handler) {
 System.out.println("firing file change");
     // PENDING - events should be finer
-    // find out whether global key table has changed
-    support.fireBundleChanged();
+    // find out whether global key table has changed and fire a change according to that
+    SortedArrayList oldKeyList = keyList;
+    buildKeySet();                       
+    if (keyList.equals(oldKeyList))
+      support.fireBundleDataChanged();
+    else   
+      support.fireFileChanged(handler.getEntry().getFile().getName());
   }
   
+  /** One file in the bundle has changed, carries information about what particular items have changed. 
+  * Fires changes for a bundle or a file according to the changes in the keys.
+  */
+  void oneFileChanged(StructHandler handler, ArrayMapList itemsChanged, 
+                      ArrayMapList itemsAdded, ArrayMapList itemsDeleted) {
+System.out.println("firing file change");
+    // PENDING - events should be finer
+    // find out whether global key table has changed
+    // should use a faster algorithm of building the keyset
+    buildKeySet();  
+    support.fireBundleDataChanged();
+  }
+
 }
 
 /*

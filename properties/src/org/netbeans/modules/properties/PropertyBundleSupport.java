@@ -63,10 +63,24 @@ public class PropertyBundleSupport implements Serializable {
 	listenerList.remove(PropertyBundleListener.class, l);
     }
                                      
-
+    /** Fires a global change event - structure may have changed. */
+    public void fireBundleStructureChanged() {
+      fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_STRUCT));
+    }
+                                     
     /** Fires a global change event - any property bundle data may have changed. */
-    public void fireBundleChanged() {
-      fireBundleChanged(new PropertyBundleEvent(source));
+    public void fireBundleDataChanged() {
+      fireBundleChanged(new PropertyBundleEvent(source, PropertyBundleEvent.CHANGE_ALL));
+    }
+                                     
+    /** Fires a file change event - one entry has changed. */
+    public void fireFileChanged(String entryName) {
+      fireBundleChanged(new PropertyBundleEvent(source, entryName));
+    }
+                                     
+    /** Fires an item change event - one item has changed. */
+    public void fireItemChanged(String entryName, String itemName) {
+      fireBundleChanged(new PropertyBundleEvent(source, entryName, itemName));
     }
                                      
     /**

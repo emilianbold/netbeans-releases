@@ -37,6 +37,7 @@ import java.util.ResourceBundle;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Comparator;
+import java.util.ArrayList;
 
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
@@ -188,8 +189,9 @@ public class PropertiesFileEntry extends PresentableFileEntry {
 
     /** Listens to changes on the properties file entry */
     private PropertyChangeListener pcl = null;  
-    /** Listens to changes on the properties file entry - weak */
-    private PropertyChangeListener wpcl = null;  
+
+    /** Listens to changes on the property bundle structure */
+    private PropertyBundleListener pbl = null;  
                           
     PropKeysChildren() {
       super();
@@ -233,10 +235,35 @@ public class PropertiesFileEntry extends PresentableFileEntry {
         }
         
       }; // end of inner class
-      wpcl = new WeakListener.PropertyChange(pcl);
       
-      PropertiesFileEntry.this.addPropertyChangeListener (wpcl);
-      PropertiesFileEntry.this.getHandler().addPropertyChangeListener (wpcl);
+      PropertiesFileEntry.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+      PropertiesFileEntry.this.getHandler().addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
+      
+      pbl = new PropertyBundleListener () {
+        public void bundleChanged(PropertyBundleEvent evt) {
+          switch (evt.getChangeType()) {
+            case PropertyBundleEvent.CHANGE_STRUCT:
+            case PropertyBundleEvent.CHANGE_ALL:
+              mySetKeys();
+              break;
+            case PropertyBundleEvent.CHANGE_FILE:
+              if (evt.getEntryName().equals(getFile().getName()))
+                // if it's me
+                mySetKeys();
+              break;
+            case PropertyBundleEvent.CHANGE_ITEM:
+              if (evt.getEntryName().equals(getFile().getName())) {
+                // if it's me
+                // in theory do nothing
+                //PropKeysChildren.this.refreshKey(evt.getItemName());
+              }  
+              break;
+          }
+        }
+      }; // end of inner class
+      
+      ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().
+          addPropertyBundleListener (new WeakListenerPropertyBundle(pbl));
     }
 
     /** Called to notify that the children has lost all of its references to
@@ -244,10 +271,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     * affecting any nodes (because nobody listens to that nodes).
     */
     protected void removeNotify () {
-      if (wpcl != null) {
-        PropertiesFileEntry.this.removePropertyChangeListener (wpcl);
-        PropertiesFileEntry.this.getHandler().removePropertyChangeListener (wpcl);
-      }  
+      setKeys(new ArrayList());
     }
 
     protected Node[] createNodes (Object key) {        
