@@ -200,9 +200,10 @@ public class ConnectionNode extends DatabaseNode {
                         firePropertyChange("rememberpwd",null,rememberprop); //NOI18N
                     }
                     
-                    if (!connecting)
+                    if (!connecting) {
                         children.remove(children.getNodes());
-                    else {
+                        getInfo().getChildren().clear();
+                    } else {
                         DatabaseMetaData dmd = info.getSpecification().getMetaData();
 
                         try {
