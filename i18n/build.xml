@@ -51,6 +51,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../core/external">
           <include name="xml-apis*.jar" />
         </fileset>
+        <pathelement location="src" /> <!-- makes AspectJ compiler (ajc) happy -->
       </classpath>
     </javac>
 
