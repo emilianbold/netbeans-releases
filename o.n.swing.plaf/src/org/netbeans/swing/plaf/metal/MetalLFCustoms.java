@@ -57,6 +57,10 @@ public final class MetalLFCustoms extends LFCustoms {
     public Object[] createApplicationSpecificKeysAndValues () {
         Border outerBorder = BorderFactory.createLineBorder(UIManager.getColor("controlShadow")); //NOI18N
         Object propertySheetColorings = new MetalPropertySheetColorings();
+        Color unfocusedSelBg = UIManager.getColor("controlShadow");
+        if (!Color.WHITE.equals(unfocusedSelBg.brighter())) { // #57145
+            unfocusedSelBg = unfocusedSelBg.brighter();
+        }
 
         Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),
@@ -81,7 +85,7 @@ public final class MetalLFCustoms extends LFCustoms {
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlShadow")),
             
             //#48951 invisible unfocused selection background in Metal L&F
-            "nb.explorer.unfocusedSelBg", UIManager.getColor("controlShadow").brighter(),
+            "nb.explorer.unfocusedSelBg", unfocusedSelBg,
 
         }; //NOI18N
         return result;
