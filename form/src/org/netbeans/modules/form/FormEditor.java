@@ -486,7 +486,10 @@ final public class FormEditor extends Object
             this.formManager = formManager;
             designModeAction.setFormManager(formManager);
             testModeAction.setFormManager(formManager);
-            if (formManager == null) {
+            if (formManager == null ||
+                // XXX this should not happen, but sometimes it does. WHY?
+                null == formManager.getFormEditorSupport().getFormRootNode()
+                ) {
                 getExplorerManager().setRootContext(emptyInspectorNode);
             } else {
                 getExplorerManager().setRootContext(formManager.getFormEditorSupport().getFormRootNode());
