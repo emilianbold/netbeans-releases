@@ -53,40 +53,36 @@ import org.openide.windows.Workspace;
  */
 
 public class ImageViewer extends CloneableTopComponent {
+
+    /** Serialized version UID. */
+    static final long serialVersionUID =6960127954234034486L;
+    
+    /** Icon of top component. */
+    private static Image icon = null;
     
     /** <code>ImageDataObject</code> which image is viewed. */
     private ImageDataObject storedObject;
     
-    /** Viewed image is serializable. */
+    /** Viewed image. */
     private NBImageIcon storedImage;
     
     /** Component showing image. */
     private JPanel panel;
     
-    /** Height to width image factor. */
-    private double factor;
+    /** Scale of image. */
+    private double scale = 1.0D;
     
-    /** Numerator for scale. */
-    private int scale_x = 1;
+    /** On/off grid. */
+    private boolean showGrid = false;
     
-    /** Denominator for scale. */
-    private int scale_y = 1;
+    /** Increase/decrease factor. */
+    private final double changeFactor = Math.sqrt(2.0D);
+    
+    /** Grid color. */
+    private final Color gridColor = Color.black;
     
     /** Listens for name changes. */
     private PropertyChangeListener nameChangeL;
-    
-    /** Icon. */
-    private static Image icon = null;
-    
-    /** On/off grid */
-    private boolean grid = false;
-    
-    /** Distance between two lines in grid.*/
-    /** Grid color. */
-    private Color grid_color = Color.black;
-    
-    /** Serialized version UID. */
-    static final long serialVersionUID =6960127954234034486L;
     
     
     /** Default constructor. Must be here, used during de-externalization */
@@ -101,45 +97,42 @@ public class ImageViewer extends CloneableTopComponent {
         super(obj);
         initialize(obj);
     }
+
     
     /** Reloads icon. */
     protected void reloadIcon(NBImageIcon icon) {
         // Reset values.
         storedImage = icon;
         
-        factor = ((double)storedImage.getIconHeight()) / storedImage.getIconWidth(); // y/x
-        
         resizePanel();
         panel.repaint();
     }
     
     /** Initializes member variables and set listener for name changes on DataObject. */
-    private void initialize (ImageDataObject obj) {
+    private void initialize(ImageDataObject obj) {
         storedObject = obj;
         storedImage = new NBImageIcon(storedObject);
-        
-        factor = ((double)storedImage.getIconHeight()) / storedImage.getIconWidth(); // y/x
         
         panel = new JPanel() {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 
                 g.drawImage(
-                storedImage.getImage(),
-                0,
-                0,
-                (int)(storedImage.getIconWidth() * getScale()) ,
-                (int)((storedImage.getIconWidth() * getScale()) * factor) ,
-                0,
-                0,
-                storedImage.getIconWidth(),
-                storedImage.getIconHeight(),
-                this
+                    storedImage.getImage(),
+                    0,
+                    0,
+                    (int)(storedImage.getIconWidth() * getScale()),
+                    (int)(storedImage.getIconHeight() * getScale()),
+                    0,
+                    0,
+                    storedImage.getIconWidth(),
+                    storedImage.getIconHeight(),
+                    this
                 );
                 
-                if (grid) {
+                if(showGrid) {
                     int x = (int)(storedImage.getIconWidth() * getScale());
-                    int y = (int)((storedImage.getIconWidth() * getScale()) * factor);
+                    int y = (int)(storedImage.getIconHeight() * getScale());
                     
                     double gridDistance = getScale();
                     
@@ -147,7 +140,7 @@ public class ImageViewer extends CloneableTopComponent {
                         // Disable painting of grid if no image pixels would be visible.
                         return;
                     
-                    g.setColor(grid_color);
+                    g.setColor(gridColor);
                     
                     double actualDistance = gridDistance;
                     for(int i = (int)actualDistance; i < x ;actualDistance += gridDistance, i = (int)actualDistance) {
@@ -162,14 +155,8 @@ public class ImageViewer extends CloneableTopComponent {
                 
             }
             
-            /** Calculates factor of image when fully loaded. Overrides superclass method. */
-            public boolean imageUpdate(Image img, int infoflags, int x, int y, int w, int h) {
-                if ((infoflags & (FRAMEBITS|ALLBITS)) != 0) {
-                    factor = ((double)h)/w;
-                }
-                return (infoflags & (ALLBITS|ABORT)) == 0;
-            }
         };
+
         
         storedImage.setImageObserver(panel);
         panel.setPreferredSize(new Dimension(storedImage.getIconWidth(), storedImage.getIconHeight() ));
@@ -319,15 +306,13 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Draws zoom out scaled image. */
     public void zoomOut() {
-        int oldScaleX = scale_x;
-        int oldScaleY = scale_y;
+        double oldScale = scale;
         
         scaleOut();
         
          // You can't still make picture smaller, but bigger why not?
         if(!isNewSizeOK()) {
-            scale_x = oldScaleX;
-            scale_y = oldScaleY;
+            scale = oldScale;
             
             return;
         }
@@ -339,8 +324,8 @@ public class ImageViewer extends CloneableTopComponent {
     /** Resizes panel. */
     private void resizePanel() {
         panel.setPreferredSize(new Dimension(
-        (int)(storedImage.getIconWidth() * getScale()),
-        (int)((storedImage.getIconWidth() * getScale())*factor))
+            (int)(storedImage.getIconWidth() * getScale()),
+            (int)(storedImage.getIconWidth() * getScale()))
         );
         panel.revalidate();
     }
@@ -350,7 +335,7 @@ public class ImageViewer extends CloneableTopComponent {
      */
     private boolean isNewSizeOK() {
         if ((storedImage.getIconWidth() * getScale()) > 1
-        && ((storedImage.getIconWidth() * getScale()) * factor) > 1) {
+        && (storedImage.getIconWidth() * getScale()) > 1) {
             return true;
         }
         
@@ -362,15 +347,12 @@ public class ImageViewer extends CloneableTopComponent {
      * @param fy denominator for scaled
      */
     public void customZoom(int fx, int fy) {
-        int oldScaleX = scale_x;
-        int oldScaleY = scale_y;
-
-        scale_x = fx;
-        scale_y = fy;
+        double oldScale = scale;
+        
+        scale = fx / fy;
         
         if(!isNewSizeOK()) {
-            scale_x = oldScaleX;
-            scale_y = oldScaleY;
+            scale = oldScale;
             
             return;
         }
@@ -381,23 +363,28 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Return zooming factor.*/
     private double getScale() {
-        return scale_x/(double)scale_y;
+        if(scale > 1.0D)
+            scale = Math.floor(scale);
+        
+        return scale;
     }
     
     /** Change proportion "out"*/
     private void scaleOut() {
-        if(scale_x > 1)
-            scale_x--;
-        
-        scale_y++;
+        scale = scale / changeFactor;
     }
     
     /** Change proportion "in"*/
     private void scaleIn() {
-        if(scale_y > 1)
-            scale_y--;
+        double oldComputedScale = getScale();
         
-        scale_x++;
+        scale = changeFactor * scale;
+        
+        double newComputedScale = getScale();
+        
+        if(newComputedScale == oldComputedScale)
+            // Has to increase.
+            scale = newComputedScale + 1.0D;
     }
     
     /** Gets zoom button. */
@@ -421,7 +408,7 @@ public class ImageViewer extends CloneableTopComponent {
 
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                grid = !grid;
+                showGrid = !showGrid;
                 panel.repaint(0, 0, panel.getWidth(), panel.getHeight());
             }
         });
