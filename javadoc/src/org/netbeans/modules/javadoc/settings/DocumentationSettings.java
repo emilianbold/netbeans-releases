@@ -14,9 +14,12 @@
 package com.netbeans.developer.modules.javadoc.settings;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 
 import org.openide.options.ContextSystemOption;
 import org.openide.util.NbBundle;
+
+import com.netbeans.developer.modules.javadoc.comments.AutoCommenter;
 
 /** Options for applets - which applet viewer use ...
 *
@@ -27,6 +30,16 @@ public class DocumentationSettings extends ContextSystemOption //implements View
   {
   /** generated Serialized Version UID */
   //static final long serialVersionUID = -60561536266234354L;
+
+
+  /** autocoment window settings */
+  private static int autocommentModifierMask = 
+    Modifier.PROTECTED | Modifier.PUBLIC;
+  private static boolean autocommentPackage = false;
+  private static int autocommentErrorMask = 
+    AutoCommenter.JDC_OK | AutoCommenter.JDC_ERROR | AutoCommenter.JDC_MISSING;
+
+  /** idexsearch windows settings */
 
   /** generation */
   private static boolean externalJavadoc = false;
@@ -77,23 +90,61 @@ public class DocumentationSettings extends ContextSystemOption //implements View
   }
   
   /** Getter for documentation search path
-  */
-  
+  */  
   public String[] getSearchPath() {
     return searchPath;
   }
   
   /** Setter for documentation search path
-  */
-  
+  */  
   public void setSearchPath(String[] s) {
     searchPath = s;
+  }
+
+  /** Getter for autocommentModifierMask
+  */  
+  public int getAutocommentModifierMask() {
+    return autocommentModifierMask;
+  }
+  
+  /** Setter for autocommentModifierMask
+  */  
+  public void setAutocommentModifierMask(int mask) {
+    autocommentModifierMask = mask;
+  }
+  
+  /** Getter for autocommentPackage
+  */  
+  public boolean  getAutocommentPackage() {
+    return autocommentPackage;
+  }
+  
+  /** Setter for autocommentPackage
+  */  
+  public void setAutocommentPackage(boolean pckg) {
+    autocommentPackage = pckg;
+  }
+  
+  
+  /** Getter for autocommentErrorMask
+  */  
+  public int getAutocommentErrorMask() {
+    return autocommentErrorMask;
+  }
+  
+  /** Setter for documentation autocommentErrorMask
+  */  
+  public void setAutocommentErrorMask(int mask) {
+    autocommentErrorMask = mask;
   }
   
 }
 
+
 /*
  * Log
+ *  5    Gandalf   1.4         8/13/99  Petr Hrebejk    Serialization of 
+ *       autocomment window added  
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         5/17/99  Petr Hrebejk    
