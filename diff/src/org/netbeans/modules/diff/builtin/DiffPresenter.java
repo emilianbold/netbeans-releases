@@ -21,6 +21,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditorManager;
+import java.io.FileNotFoundException;
 import java.io.Reader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -372,9 +373,9 @@ public class DiffPresenter extends javax.swing.JPanel {
             return null;
         }
 
-        public abstract Reader createFirstReader();
+        public abstract Reader createFirstReader() throws FileNotFoundException;
         
-        public abstract Reader createSecondReader();
+        public abstract Reader createSecondReader() throws FileNotFoundException;
         
         public void setPresentingComponent(TopComponent tp) {
             this.tp = tp;
