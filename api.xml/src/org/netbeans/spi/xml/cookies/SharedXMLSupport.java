@@ -201,10 +201,7 @@ class SharedXMLSupport {
 
         } catch (RuntimeException ex) {
 
-            // probably an internal parser error
-            String msg = Util.THIS.getString("EX_parser_ierr", ex.getMessage());
-            handler.fatalError(new SAXParseException (msg, locator, ex));
-
+            handler.runtimeError(ex);
         }
         
     }
@@ -347,6 +344,17 @@ class SharedXMLSupport {
             }
         }
 
+        /**
+         * Log runtime exception cause
+         */
+        private void runtimeError (RuntimeException ex) {
+            Util.THIS.debug("Parser runtime exception", ex );
+
+            // probably an internal parser error
+            String msg = Util.THIS.getString("EX_parser_ierr", ex.getMessage());
+            fatalError(new SAXParseException (msg, SharedXMLSupport.this.locator, ex));
+        }
+        
         public void fatalError (SAXParseException ex) {        
             if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Just diagnostic exception", ex); // NOI18N
             fatalErrors++;
