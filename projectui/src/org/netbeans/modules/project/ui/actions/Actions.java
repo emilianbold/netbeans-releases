@@ -14,6 +14,8 @@
 package org.netbeans.modules.project.ui.actions;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -210,9 +212,11 @@ public class Actions implements ActionsFactory {
     /** New file action which implements the node action - good for the 
      * Hack class
      */
-    public static class SystemNewFile extends CallableSystemAction implements ContextAwareAction {
+    public static class SystemNewFile extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
         
-        public SystemNewFile() {}
+        public SystemNewFile() {
+            org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().addPropertyChangeListener( this );
+        }
             
         public String getName() {
             return NbBundle.getMessage( Actions.class, "LBL_NewFileAction_Name"); // NOI18N
@@ -247,33 +251,10 @@ public class Actions implements ActionsFactory {
             return ((ContextAwareAction)org.netbeans.spi.project.ui.support.LogicalViews.newFileAction()).createContextAwareInstance( actionContext );
         }
         
-        /*
-        protected boolean enable( Node[] activatedNodes ) {
-            if ( activatedNodes.length != 1 ) {
-                return false;
-            }
-            
-            Action subst = getSubstitute( activatedNodes[0].getLookup() );
-            return subst.isEnabled();
+        public void propertyChange( PropertyChangeEvent evt ) {
+            firePropertyChange( evt.getPropertyName(), evt.getOldValue(), evt.getNewValue() );
         }
-         */
-         /*
-        protected void performAction( Node[] activatedNodes) {
-            if ( activatedNodes.length != 1 ) {
-                return;
-            }
-            
-            Action subst = getSubstitute( activatedNodes[0].getLookup() );
-            subst.actionPerformed( new java.awt.event.ActionEvent( activatedNodes[0].getLookup(), 0, null ) );            
-        }
-          */
         
-        /*
-        private Action getSubstitute( Lookup actionContext ) {
-             return ((ContextAwareAction)org.netbeans.spi.project.ui.support.LogicalViews.newFileAction()).createContextAwareInstance( actionContext );
-        }
-         */
-
     }
     
     
