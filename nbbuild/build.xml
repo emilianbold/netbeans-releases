@@ -561,7 +561,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/bugs..."/>
     <ant dir="../tasklist/bugs" target="netbeans"/>
   </target>
-  <target name="all-tasklist/pmd" depends="all-openide,all-tasklist/api,all-tasklist/core">
+  <target name="all-tasklist/pmd" depends="all-openide,all-tasklist/api,all-tasklist/core,all-contrib/pmd-nb-wrapper,all-java/srcmodel">
     <echo message="Building module tasklist/pmd..."/>
     <ant dir="../tasklist/pmd" target="netbeans"/>
   </target>
@@ -838,6 +838,26 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-contrib/archiver" depends="all-openide,all-openide/loaders,all-openide/io,all-java/api">
     <echo message="Building module contrib/archiver..."/>
     <ant dir="../contrib/archiver" target="netbeans"/>
+  </target>
+
+  <target name="all-contrib/docbook" depends="all-openide,all-openide/loaders,all-openide/io,all-xml/catalog">
+    <echo message="Building module contrib/docbook..."/>
+    <ant dir="../contrib/docbook" target="netbeans"/>
+  </target>
+
+  <target name="all-contrib/pmd-nb-wrapper" depends="init">
+    <echo message="Building module contrib/pmd-nb-wrapper..."/>
+    <ant dir="../contrib/pmd-nb-wrapper" target="netbeans"/>
+  </target>
+
+  <target name="all-contrib/pmd-nb-ext" depends="all-openide,all-contrib/pmd-nb-wrapper">
+    <echo message="Building module contrib/pmd-nb-ext..."/>
+    <ant dir="../contrib/pmd-nb-ext" target="netbeans"/>
+  </target>
+
+  <target name="all-contrib/insertunicode" depends="all-openide">
+    <echo message="Building module contrib/insertunicode..."/>
+    <ant dir="../contrib/insertunicode" target="netbeans"/>
   </target>
 
   <target name="all-jasm" depends="all-openide,all-openide/loaders,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/execution,all-openide/compiler,all-clazz">
