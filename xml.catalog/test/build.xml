@@ -13,6 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project basedir="." default="all" name="XML Catalog module tests build script">
+    <!-- Local user properties can override default prop. values -->
+    <property file="xtest.properties"/>
+    <property file="${user.home}/xtest.properties"/>
 
     <!-- Ant property. Value 'ignore' means that system classpath is ignored
          and only classpath specified in build file is used. -->

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
     
         <!-- List of directories where jars will be searched. -->
         <property name="jemmy.home" location="${nb.repository}/jemmy/builds"/>
-        <property name="jelly.home" location="${nb.repository}/jellytools/builds"/>
+        <property name="jelly.home" location="${nb.repository}/jellytools"/>
         <property name="xtest.extra.jars.path" location="${jemmy.home};${jelly.home};${nb.repository}/xml/test/qa-lib/"/>
     
         <!-- This jars is used for compilation, execution codetests and also for
@@ -41,7 +41,7 @@ Microsystems, Inc. All Rights Reserved.
              this file will be searched in directories specified by property xtest.extra.jars.path 
                  example: <property name="xtest.extra.jars" value="jemmy.jar;jelly.jar"/>
           -->
-        <property name="xtest.extra.jars"  value="jemmy.jar;jelly-nb.jar;xml-test-lib.jar;jelly2-nb.jar"/>
+        <property name="xtest.extra.jars"  value="jemmy.jar;xml-test-lib.jar;jelly2-nb.jar"/>
    
         <!-- These jars will be copied to directory ${netebans.home}/lib/ext.
 	     Again you can write only name of jar or zip file, not in which directory it is and 
