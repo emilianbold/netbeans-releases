@@ -6,3 +6,8 @@ OpenIDE-Module-Layer: org/netbeans/modules/websvc/core/client/resources/mf-layer
 
 Name: org/netbeans/modules/websvc/wsdl/WsdlDataLoader.class
 OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+
+Name: org/netbeans/modules/websvc/wsdl/ConfigDataLoader.class
+OpenIDE-Module-Class: Loader
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject

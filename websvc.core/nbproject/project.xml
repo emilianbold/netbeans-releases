@@ -12,20 +12,20 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
-    <type>org.netbeans.modules.apisupport.project</type>
-    <configuration>
-        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.modules.websvc.core</code-name-base>
-            <path>websvc/core</path>
-            <module-dependencies>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                    </run-dependency>
-                </dependency>
+	<type>org.netbeans.modules.apisupport.project</type>
+	<configuration>
+		<data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+			<code-name-base>org.netbeans.modules.websvc.core</code-name-base>
+			<path>websvc/core</path>
+			<module-dependencies>
+				<dependency>
+					<code-name-base>org.netbeans.modules.projectapi</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>0</release-version>
+					</run-dependency>
+				</dependency>
 				<dependency>
 					<code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
 					<build-prerequisite/>
@@ -34,15 +34,15 @@ Microsystems, Inc. All Rights Reserved.
 						<release-version>0</release-version>
 					</run-dependency>
 				</dependency>
-                <dependency>
-                    <code-name-base>org.openide</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>4.13</specification-version>
-                    </run-dependency>
-                </dependency>
+				<dependency>
+					<code-name-base>org.openide</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>1</release-version>
+						<specification-version>4.13</specification-version>
+					</run-dependency>
+				</dependency>
 				<dependency>
 					<code-name-base>org.openide.loaders</code-name-base>
 					<build-prerequisite/>
@@ -63,72 +63,98 @@ Microsystems, Inc. All Rights Reserved.
 						<release-version>3</release-version>
 					</run-dependency>
 				</dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.api.web.webmodule</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-               <dependency>
-		        <code-name-base>org.netbeans.api.web.dd</code-name-base>
-			  <build-prerequisite/>
-			  <compile-dependency/>
-			  <run-dependency>
-				<release-version>1</release-version>
-				<specification-version>1.2</specification-version>
-			  </run-dependency>
-		    </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.websvc.registry</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-           <dependency>
-		       <code-name-base>org.openide.src</code-name-base>
-               <build-prerequisite/>
-                 <compile-dependency/>
-                 <run-dependency/>
-		   </dependency>
-           <dependency>
-                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>0</release-version>
-                    </run-dependency>
-                </dependency>
-            <dependency>
-                    <code-name-base>org.netbeans.api.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                    </run-dependency>
-                </dependency>
-            </module-dependencies>
-            <public-packages>
-                <package>org.netbeans.modules.websvc.core</package>
-                <package>org.netbeans.modules.websvc.core.webservices.ui</package>
-            </public-packages>
-        </data>
-    </configuration>
+				<dependency>
+					<code-name-base>org.netbeans.modules.xml.tools</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>2</release-version>
+						<!-- XXX how to specify impl dep? -->
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.modules.xml.core</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>2</release-version>
+						<!-- XXX how to specify impl dep? -->
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.api.xml</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>1</release-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.api.web.webmodule</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<specification-version>1.0</specification-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<specification-version>1.0</specification-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<specification-version>1.0</specification-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.api.web.dd</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>1</release-version>
+						<specification-version>1.2</specification-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.modules.websvc.registry</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency/>
+				</dependency>
+				<dependency>
+					<code-name-base>org.openide.src</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency/>
+				</dependency>
+				   <dependency>
+					<code-name-base>org.netbeans.modules.project.ant</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>0</release-version>
+					</run-dependency>
+				</dependency>
+				<dependency>
+					<code-name-base>org.netbeans.api.java</code-name-base>
+					<build-prerequisite/>
+					<compile-dependency/>
+					<run-dependency>
+						<release-version>1</release-version>
+					</run-dependency>
+				</dependency>
+			</module-dependencies>
+			<public-packages>
+				<package>org.netbeans.modules.websvc.core</package>
+				<package>org.netbeans.modules.websvc.core.webservices.ui</package>
+			</public-packages>
+		</data>
+	</configuration>
 </project>

@@ -12,5 +12,22 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project basedir="." default="netbeans" name="websvc/core">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+	<import file="../../nbbuild/templates/projectized.xml"/>
+
+	<target name="build-init" depends="projectized.build-init"/>
+
+	<target name="jar-with-module-deps" if="module.dependencies">
+		<property file="../../xml/spec-vers.properties"/>
+		<jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="false" manifest="${manifest.mf}">
+			<manifest>
+				<!--attribute name="OpenIDE-Module-Specification-Version" value="1.6.${xml.common.impl.version}"/-->
+				<attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+				<attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+				<attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+				<attribute name="OpenIDE-Module-Module-Dependencies" value="org.openide.io, org.openide.loaders, org.openide.src, org.netbeans.api.java/1, org.netbeans.modules.projectapi/0, org.netbeans.modules.projectuiapi/0, org.netbeans.modules.project.ant/0, org.netbeans.modules.j2eeserver/3, org.netbeans.api.xml/1, org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.tools/2 = ${xml.common.impl.version}, org.netbeans.api.web.dd/1 > 1.2, org.netbeans.api.web.webmodule > 1.0, org.netbeans.modules.j2ee.dd.webservice > 1.0, org.netbeans.modules.websvc.websvcapi > 1.0, org.netbeans.modules.websvc.registry"/>
+			</manifest>
+			<fileset dir="${build.classes.dir}"/>
+		</jar>
+	</target>
+
 </project>
