@@ -170,7 +170,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         if (s.startsWith ("Templates/JSP_Servlet")) return true;
         if (s.startsWith ("EnvironmentProviders/ProfileTypes/Execution/nb-j2ee-deployment.instance")) return true;
         if (s.startsWith ("Shortcuts/D-BACK_QUOTE.shadow")) return true;
-        if (s.startsWith("org/netbeans/modules/vcs/profiles/")) return true; // #50979
         
         return false;
     }
