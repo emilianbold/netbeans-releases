@@ -414,6 +414,8 @@ public class PropertyUtils {
     private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
     
     /* public? */ static File resolveFile(File basedir, String filename) {
+        assert basedir != null;
+        assert filename != null;
         if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
             // Shortcut - simple relative path. Potentially faster.
             return new File(basedir, filename.replace('/', File.separatorChar));

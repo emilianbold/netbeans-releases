@@ -957,6 +957,9 @@ public final class AntProjectHelper {
      * @return an absolute file corresponding to it
      */
     public File resolveFile(String filename) {
+        if (filename == null) {
+            throw new NullPointerException("Attempted to pass a null filename to resolveFile"); // NOI18N
+        }
         return PropertyUtils.resolveFile(FileUtil.toFile(dir), filename);
     }
     
