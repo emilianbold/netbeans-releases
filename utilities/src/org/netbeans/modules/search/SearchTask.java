@@ -31,6 +31,7 @@ import org.openidex.search.SearchType;
  * Task performing search.
  *
  * @author  Peter Zavadsky
+ * @author  Marian Petras
  */
 final class SearchTask implements Runnable {
 
