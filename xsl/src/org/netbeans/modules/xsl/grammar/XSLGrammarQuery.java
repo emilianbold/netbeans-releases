@@ -1,7 +1,14 @@
 /*
- * XSLGrammarQuery.java
- *
- * Created on 16. júlí 2002, 15:53
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.xsl.grammar;
@@ -21,7 +28,7 @@ import org.w3c.dom.NodeList;
 
 /**
  *
- * @author  asgeir
+ * @author  asgeir@dimonsoftware.com
  */
 public class XSLGrammarQuery {
 
@@ -32,6 +39,13 @@ public class XSLGrammarQuery {
     private final static Set resultElementAttr;
     
     private final static Object resultElements = new Object();
+    
+    private final static Set emptySet = new HashSet();
+    
+    private static Set template;
+    
+    private final static String spaceAtt = "xml:space";
+
 
     private static final String[] aCharInstructions = {"apply-templates", // NOI18N
         "call-template","apply-imports","for-each","value-of", // NOI18N
@@ -46,7 +60,7 @@ public class XSLGrammarQuery {
         "variable","param","template","namespace-alias"}; // NOI18N
     
     private static final String[] aTopLevelAttr = {"extension-element-prefixes",
-        "exclude-result-prefixes","id","version","xml:space"};
+        "exclude-result-prefixes","id","version",spaceAtt};
         
     // Those attributes are in the xsl namespace
     private static final String[] aResultElementsAttr = {"extension-element-prefixes",
@@ -62,14 +76,14 @@ public class XSLGrammarQuery {
         
         Set charTemplate = charInstructions; // We don't care about PCDATA
         
-        Set template = new HashSet(instructions);
+        template = new HashSet(instructions);
         template.add(resultElements);
         
         Set topLevel = new HashSet(Arrays.asList(aTopLevel));
         
         Set topLevelAttr = new HashSet(Arrays.asList(aTopLevelAttr));
         resultElementAttr = new HashSet(Arrays.asList(aResultElementsAttr));
-        
+                
         // xsl:stylesheet
         elementDecls.put("stylesheet", topLevel);
         attrDecls.put("stylesheet", topLevelAttr);
@@ -79,39 +93,39 @@ public class XSLGrammarQuery {
         attrDecls.put("transform", topLevelAttr);
         
         // xsl:import
-        elementDecls.put("import", new HashSet());
+        elementDecls.put("import", emptySet);
         attrDecls.put("import", new HashSet(Arrays.asList(new String[]{"href"})));
 
         // xxsl:include
-        elementDecls.put("include", new HashSet());
+        elementDecls.put("include", emptySet);
         attrDecls.put("include", new HashSet(Arrays.asList(new String[]{"href"})));
 
         // xsl:strip-space
-        elementDecls.put("strip-space", new HashSet());
+        elementDecls.put("strip-space", emptySet);
         attrDecls.put("strip-space", new HashSet(Arrays.asList(new String[]{"elements"})));
 
         // xsl:preserve-space
-        elementDecls.put("preserve-space", new HashSet());
+        elementDecls.put("preserve-space", emptySet);
         attrDecls.put("preserve-space", new HashSet(Arrays.asList(new String[]{"elements"})));
 
         // xsl:output
-        elementDecls.put("output", new HashSet());
+        elementDecls.put("output", emptySet);
         attrDecls.put("output", new HashSet(Arrays.asList(new String[]{"method",
             "version","encoding","omit-xml-declaration","standalone","doctype-public",
             "doctype-system","cdata-section-elements","indent","media-type"})));
 
-        // xsl:key
-        elementDecls.put("key", new HashSet());
+        // xsl:key  
+        elementDecls.put("key", emptySet);
         attrDecls.put("key", new HashSet(Arrays.asList(new String[]{"name","match","use"})));
 
         // xsl:decimal-format
-        elementDecls.put("decimal-format", new HashSet());
+        elementDecls.put("decimal-format", emptySet);
         attrDecls.put("decimal-format", new HashSet(Arrays.asList(new String[]{"name",
             "decimal-separator","grouping-separator","infinity","minus-sign","NaN",
             "percent","per-mille","zero-digit","digit","pattern-separator"})));
 
         // xsl:namespace-alias
-        elementDecls.put("namespace-alias", new HashSet());
+        elementDecls.put("namespace-alias", emptySet);
         attrDecls.put("namespace-alias", new HashSet(Arrays.asList(new String[]{
             "stylesheet-prefix","result-prefix"})));
 
@@ -121,19 +135,19 @@ public class XSLGrammarQuery {
         tmpSet.add("param");
         elementDecls.put("template", tmpSet);
         attrDecls.put("template", new HashSet(Arrays.asList(new String[]{
-            "match","name","priority","mode","xml:space"})));
+            "match","name","priority","mode",spaceAtt})));
 
         // xsl:value-of
-        elementDecls.put("value-of", new HashSet());
+        elementDecls.put("value-of", emptySet);
         attrDecls.put("value-of", new HashSet(Arrays.asList(new String[]{
             "select","disable-output-escaping"})));
 
         // xsl:copy-of
-        elementDecls.put("copy-of", new HashSet());
+        elementDecls.put("copy-of", emptySet);
         attrDecls.put("copy-of", new HashSet(Arrays.asList(new String[]{"select"})));
 
         // xsl:number
-        elementDecls.put("number", new HashSet());
+        elementDecls.put("number", emptySet);
         attrDecls.put("number", new HashSet(Arrays.asList(new String[]{
             "level","count","from","value","format","lang","letter-value",
             "grouping-separator","grouping-size"})));
@@ -145,8 +159,8 @@ public class XSLGrammarQuery {
             "select","mode"})));
 
         // xsl:apply-imports
-        elementDecls.put("apply-imports", new HashSet());
-        attrDecls.put("apply-imports", new HashSet());
+        elementDecls.put("apply-imports", emptySet);
+        attrDecls.put("apply-imports", emptySet);
 
         // xsl:for-each
         tmpSet = new HashSet(instructions);
@@ -154,13 +168,93 @@ public class XSLGrammarQuery {
         tmpSet.add("sort");
         elementDecls.put("for-each", tmpSet);
         attrDecls.put("for-each", new HashSet(Arrays.asList(new String[]{
-            "select","xml:space"})));
+            "select",spaceAtt})));
             
         // xsl:sort
-        elementDecls.put("sort", new HashSet());
+        elementDecls.put("sort", emptySet);
         attrDecls.put("sort", new HashSet(Arrays.asList(new String[]{
             "select","lang","data-type","order","case-order"})));
             
+        // xsl:if
+        elementDecls.put("if", template);
+        attrDecls.put("if", new HashSet(Arrays.asList(new String[]{"test",spaceAtt})));
+            
+        // xsl:choose
+        elementDecls.put("choose", new HashSet(Arrays.asList(new String[]{
+            "when","otherwise"})));
+        attrDecls.put("choose", new HashSet(Arrays.asList(new String[]{spaceAtt})));
+                        
+        // xsl:when
+        elementDecls.put("when", template);
+        attrDecls.put("when", new HashSet(Arrays.asList(new String[]{
+            "test",spaceAtt})));
+                        
+        // xsl:otherwise
+        elementDecls.put("otherwise", template);
+        attrDecls.put("otherwise", new HashSet(Arrays.asList(new String[]{spaceAtt})));
+                        
+        // xsl:attribute-set
+        elementDecls.put("sort", new HashSet(Arrays.asList(new String[]{"attribute"})));
+        attrDecls.put("attribute-set", new HashSet(Arrays.asList(new String[]{
+            "name","use-attribute-sets"})));
+                        
+        // xsl:call-template
+        elementDecls.put("call-template", new HashSet(Arrays.asList(new String[]{"with-param"})));
+        attrDecls.put("call-template", new HashSet(Arrays.asList(new String[]{"name"})));
+                        
+        // xsl:with-param
+        elementDecls.put("with-param", template);
+        attrDecls.put("with-param", new HashSet(Arrays.asList(new String[]{
+            "name","select"})));
+                        
+        // xsl:variable
+        elementDecls.put("variable", template);
+        attrDecls.put("variable", new HashSet(Arrays.asList(new String[]{
+            "name","select"})));
+                        
+        // xsl:param
+        elementDecls.put("param", template);
+        attrDecls.put("param", new HashSet(Arrays.asList(new String[]{
+            "name","select"})));
+                        
+        // xsl:text
+        elementDecls.put("text", emptySet);
+        attrDecls.put("text", new HashSet(Arrays.asList(new String[]{
+            "disable-output-escaping"})));
+                        
+        // xsl:processing-instruction
+        elementDecls.put("processing-instruction", charTemplate);
+        attrDecls.put("processing-instruction", new HashSet(Arrays.asList(new String[]{
+            "name",spaceAtt})));
+                        
+        // xsl:element
+        elementDecls.put("element", template);
+        attrDecls.put("element", new HashSet(Arrays.asList(new String[]{
+            "name","namespace","use-attribute-sets",spaceAtt})));
+                        
+        // xsl:attribute
+        elementDecls.put("attribute", charTemplate);
+        attrDecls.put("attribute", new HashSet(Arrays.asList(new String[]{
+            "name","namespace",spaceAtt})));
+                        
+        // xsl:comment
+        elementDecls.put("comment", charTemplate);
+        attrDecls.put("comment", new HashSet(Arrays.asList(new String[]{spaceAtt})));
+                        
+        // xsl:copy
+        elementDecls.put("copy", template);
+        attrDecls.put("copy", new HashSet(Arrays.asList(new String[]{
+            spaceAtt,"use-attribute-sets"})));
+                        
+        // xsl:message
+        elementDecls.put("message", template);
+        attrDecls.put("message", new HashSet(Arrays.asList(new String[]{
+            spaceAtt,"terminate"})));
+                        
+        // xsl:fallback
+        elementDecls.put("fallback", template);
+        attrDecls.put("fallback", new HashSet(Arrays.asList(new String[]{spaceAtt})));
+                        
     }
        
     /** Creates a new instance of XSLGrammarQuery */
@@ -226,8 +320,5 @@ public class XSLGrammarQuery {
     public Enumeration queryNotations(String prefix) {
         QueueEnumeration list = new QueueEnumeration();
         return list;
-    }
-    
-    private static class ResultElements {
     }
 }
