@@ -40,36 +40,33 @@ public class RuntimeViewPopupMenu extends ValidatePopupMenuOnNodes{
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenu", "Server Registry node popup in Projects View"));
-        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenu", "Tomcat node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenu", "http localhost node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
         return suite;
     }
     
+
+    public void testServerRegistryPopupMenuRuntime(){
+        testMenu("Server Registry");
+    }
+    
+    public void testTomcatPopupMenuRuntime(){
+        testMenu("Server Registry|Tomcat 5 Servers");
+    }
+    
+    public void testHttpTomcatPopupMenuRuntime(){
+        testMenu("Server Registry|Tomcat 5 Servers|http://localhost:8084/");
+    }
+    
+    private void testMenu(String path){
+        runtimeTab = RuntimeTabOperator.invoke();
+        dataObjectNode = new Node(runtimeTab.getRootNode(), path);
+        doMeasurement();
+    }
 
     public void shutdown(){
         runtimeTab.close();
     } 
 
-    public void testServerRegistryPopupMenu(){
-        testMenu("Server Registry");
-    }
-    
-    public void testTomcatPopupMenu(){
-        testMenu("Server Registry|Tomcat 5 Servers");
-    }
-    
-    public void testHttpTomcatPopupMenu(){
-        testMenu("Server Registry|Tomcat 5 Servers|http://localhost:8084/");
-    }
-    
-    private void testMenu(String path){
-        if(runtimeTab == null)
-            runtimeTab = RuntimeTabOperator.invoke();
-        
-        dataObjectNode = new Node(runtimeTab.getRootNode(), path);
-        
-        doMeasurement();
-    }
-    
 }

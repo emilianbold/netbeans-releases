@@ -49,7 +49,7 @@ public class NewProjectDialog extends testUtilities.PerformanceTestCase {
     public ComponentOperator open() {
         // invoke File / Open File from the main menu
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("File|New Project...","|");
-        return new DialogOperator("New Wizard");
+        return new DialogOperator("New Project");
     }
     
 }

@@ -44,7 +44,7 @@ public class About_2 extends About {
     }
     
     public ComponentOperator open(){
-        new JTabbedPaneOperator(about,1).selectPage(2);
+        new JTabbedPaneOperator(about).selectPage("Detail");
         return new NbDialogOperator("About");
     }
     

@@ -63,7 +63,8 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
         suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        suite.addTest(new MainSubMenus("testVcsCommnadsMenu", "Versioning | Global Commands main menu"));
+        suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
+        suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
         suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debugging main menu"));
@@ -105,8 +106,12 @@ public class MainSubMenus extends testUtilities.PerformanceTestCase {
         testSubMenu("Run", "Run Other");
     }
     
-    public void testVcsCommnadsMenu(){
-        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "Global Commands");
+    public void testVersioningCVSMenu(){
+        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "CVS");
+    }
+    
+    public void testVersioningPVCSMenu(){
+        testSubMenu("org.netbeans.modules.vcscore.actions.Bundle","Versioning", "PVCS");
     }
     
     public void testToolsI18nMenu(){

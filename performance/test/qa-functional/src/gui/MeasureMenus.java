@@ -42,45 +42,46 @@ public class MeasureMenus  {
         suite.addTest(new MainSubMenus("testViewCodeFoldsMenu", "View | Code Folds main menu"));
         suite.addTest(new MainSubMenus("testRunRunOtherMenu", "Run | Run Other main menu"));
         suite.addTest(new MainSubMenus("testRunStackMenu", "Run | Stack main menu"));
-        suite.addTest(new MainSubMenus("testVcsCommnadsMenu", "Versioning | Global Commands main menu"));
+        suite.addTest(new MainSubMenus("testVersioningCVSMenu", "Versioning | CVS main menu"));
+        suite.addTest(new MainSubMenus("testVersioningPVCSMenu", "Versioning | PVCS main menu"));
         suite.addTest(new MainSubMenus("testToolsI18nMenu", "Tools | Internationalization main menu"));
         suite.addTest(new MainSubMenus("testWinGuiMenu", "Window | GUI Editing main menu"));
         suite.addTest(new MainSubMenus("testWinDebuggingMenu", "Window | Debug main menu"));
         suite.addTest(new MainSubMenus("testWinVersioningMenu", "Window | Versioning main menu"));
         suite.addTest(new MainSubMenus("testWinSelectDocumentNodeInMenu", "Window | Select Document Node in main menu"));
         
-        suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenu", "Project node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenu", "Source Packages node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testTestPackagesPopupMenu", "Test Packages node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testPackagePopupMenu", "Package node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testJavaFilePopupMenu", "Java file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testTxtFilePopupMenu", "Txt file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testPropertiesFilePopupMenu", "Properties file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testXmlFilePopupMenu", "Xml file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testJspFilePopupMenu", "Jsp file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "Project node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testTestPackagesPopupMenuProjects", "Test Packages node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testPackagePopupMenuProjects", "Package node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testJavaFilePopupMenuProjects", "Java file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testTxtFilePopupMenuProjects", "Txt file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testPropertiesFilePopupMenuProjects", "Properties file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testXmlFilePopupMenuProjects", "Xml file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testJspFilePopupMenuProjects", "Jsp file node popup in Projects View"));
         
-        suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenu", "Project node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testPackagePopupMenu", "Package node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenu", "build.xml file node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenuFiles", "Project node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testPackagePopupMenuFiles", "Package node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenuFiles", "build.xml file node popup in Files View"));
         
         suite.addTest(new ToolsMenu("testJavaToolsMenu", "Tools main menu for Java node"));
         suite.addTest(new ToolsMenu("testXmlToolsMenu", "Tools main menu for XML node"));
         suite.addTest(new ToolsMenu("testTxtToolsMenu", "Tools main menu for text node"));
 
-        suite.addTest(new EditorDownButtonPopupMenu("measureTime", "Editor Down Button popup"));
+        suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
         
         suite.addTest(new SourceEditorPopupMenu("testPopupInTxt", "Plain text Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupInXml", "XML Editor popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnMethod", "Java Editor Method popup"));
         suite.addTest(new SourceEditorPopupMenu("testPopupOnClassName", "Java Editor Class Name popup"));
         
-        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenu", "Server Registry node popup in Projects View"));
-        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenu", "Tomcat node popup in Runtime View"));
-        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenu", "http localhost node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testServerRegistryPopupMenuRuntime", "Server Registry node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testTomcatPopupMenuRuntime", "Tomcat node popup in Runtime View"));
+        suite.addTest(new RuntimeViewPopupMenu("testHttpTomcatPopupMenuRuntime", "http localhost node popup in Runtime View"));
         
-//TODO        suite.addTest(new FormInspectorNodePopupMenu("measureTime", "Form Inspector node popup"));
+        suite.addTest(new FormInspectorNodePopupMenu("testFormNodePopupMenuInspector", "Form Inspector node popup"));
         
-        suite.addTest(new ToolsOptionsNodePopupMenu("measureTime", "Tools-Options node popup"));
+        suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
 
         
 //TODO        suite.addTest(new WebNodePopupMenu("measureTime", "Web Filesystem node popup"));  

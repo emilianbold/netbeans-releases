@@ -49,7 +49,7 @@ public class NewFileDialog extends testUtilities.PerformanceTestCase {
     public ComponentOperator open() {
         // invoke File / Open File from the main menu
         new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock("File|New File...","|");
-        return new DialogOperator("New File - Choose File Type");
+        return new DialogOperator("New File");
     }
     
 }

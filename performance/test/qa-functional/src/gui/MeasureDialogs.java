@@ -28,6 +28,8 @@ public class MeasureDialogs  {
         NbTestSuite suite = new NbTestSuite();
 
         // dialogs and windows which don't require any preparation
+        suite.addTest(new About("measureTime", "About dialog open"));
+        suite.addTest(new About_2("measureTime", "About details open"));
         suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
         suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
         suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
@@ -39,6 +41,7 @@ public class MeasureDialogs  {
         suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
+        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
@@ -46,16 +49,16 @@ public class MeasureDialogs  {
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
         suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
         suite.addTest(new HelpContentsWindow("measureTime", "Help Contents window open"));
-        suite.addTest(new About("measureTime", "About dialog open"));
-        suite.addTest(new About_2("measureTime", "About details open"));
         suite.addTest(new PropertyEditorColor("measureTime", "Color Property Editor open"));
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
-        suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
+ 
         
-//        suite.addTest(new JavadocManagerDialog("measureTime", "Javadoc Manager dialog open"));
-//        suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
-//        suite.addTest(new ProjectManagerDialog("measureTime", "Project Manager dialog open"));
-//        suite.addTest(new ProjectSetMainClassDialog("measureTime", "Set Project Main Class dialog open"));
+        
+        
+//TODO        suite.addTest(new JavadocManagerDialog("measureTime", "Javadoc Manager dialog open"));
+//TODO        suite.addTest(new AttachDialog("measureTime", "Attach dialog open"));
+//TODO        suite.addTest(new ProjectManagerDialog("measureTime", "Project Manager dialog open"));
+//TODO        suite.addTest(new ProjectSetMainClassDialog("measureTime", "Set Project Main Class dialog open"));
         //It doesn't work if printer isn't installed suite.addTest(new PageSetupDialog("measureTime", "Page Setup dialog open"));
         
         

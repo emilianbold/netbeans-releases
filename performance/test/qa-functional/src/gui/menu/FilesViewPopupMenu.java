@@ -39,21 +39,21 @@ public class FilesViewPopupMenu extends ValidatePopupMenuOnNodes {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenu", "Project node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testPackagePopupMenu", "Package node popup in Files View"));
-        suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenu", "build.xml file node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testProjectNodePopupMenuFiles", "Project node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testPackagePopupMenuFiles", "Package node popup in Files View"));
+        suite.addTest(new FilesViewPopupMenu("testbuildXmlFilePopupMenuFiles", "build.xml file node popup in Files View"));
         return suite;
     }
     
-    public void testProjectNodePopupMenu() {
+    public void testProjectNodePopupMenuFiles() {
         testNode(getProjectNode());
     }
     
-    public void testPackagePopupMenu(){
+    public void testPackagePopupMenuFiles(){
         testNode(new Node(getProjectNode(), "src|org|netbeans|test|performance"));
     }
     
-    public void testbuildXmlFilePopupMenu(){
+    public void testbuildXmlFilePopupMenuFiles(){
         testNode(new Node(getProjectNode(), "build.xml"));
     }
     

@@ -42,6 +42,11 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
         expectedTime = UI_RESPONSE;
     }
     
+    
+    public void testEditorDownButtonPopupMenu(){
+        doMeasurement();
+    }
+    
     protected void initialize(){
         openFiles();
         editor = new EditorWindowOperator();

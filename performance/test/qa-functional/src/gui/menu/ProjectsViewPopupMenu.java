@@ -40,51 +40,51 @@ public class ProjectsViewPopupMenu extends ValidatePopupMenuOnNodes {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenu", "Project node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenu", "Source Packages node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testTestPackagesPopupMenu", "Test Packages node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testPackagePopupMenu", "Package node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testJavaFilePopupMenu", "Java file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testTxtFilePopupMenu", "Txt file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testPropertiesFilePopupMenu", "Properties file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testXmlFilePopupMenu", "Xml file node popup in Projects View"));
-        suite.addTest(new ProjectsViewPopupMenu("testJspFilePopupMenu", "Jsp file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testProjectNodePopupMenuProjects", "Project node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testSourcePackagesPopupMenuProjects", "Source Packages node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testTestPackagesPopupMenuProjects", "Test Packages node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testPackagePopupMenuProjects", "Package node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testJavaFilePopupMenuProjects", "Java file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testTxtFilePopupMenuProjects", "Txt file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testPropertiesFilePopupMenuProjects", "Properties file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testXmlFilePopupMenuProjects", "Xml file node popup in Projects View"));
+        suite.addTest(new ProjectsViewPopupMenu("testJspFilePopupMenuProjects", "Jsp file node popup in Projects View"));
         return suite;
     }
     
-    public void testProjectNodePopupMenu() {
+    public void testProjectNodePopupMenuProjects() {
         testNode(getProjectNode());
     }
     
-    public void testSourcePackagesPopupMenu(){
+    public void testSourcePackagesPopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages"));
     }
     
-    public void testTestPackagesPopupMenu(){
+    public void testTestPackagesPopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Test Packages"));
     }
     
-    public void testPackagePopupMenu(){
+    public void testPackagePopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance"));
     }
     
-    public void testJavaFilePopupMenu(){
+    public void testJavaFilePopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "Main.java"));
     }
     
-    public void testTxtFilePopupMenu(){
+    public void testTxtFilePopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "textfile.txt"));
     }
     
-    public void testPropertiesFilePopupMenu(){
+    public void testPropertiesFilePopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "Bundle.properties"));
     }
     
-    public void testXmlFilePopupMenu(){
+    public void testXmlFilePopupMenuProjects(){
         testNode(new Node(getProjectNode(), "Source Packages" + '|' + "org.netbeans.test.performance" + '|' + "xmlfile.xml"));
     }
     
-    public void testJspFilePopupMenu(){
+    public void testJspFilePopupMenuProjects(){
         testNode(new Node(getWebProjectNode(), "Web Pages" + '|' + "Test.jsp"));
     }
     
