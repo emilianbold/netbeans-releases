@@ -61,7 +61,7 @@ public final class BiNode extends AbstractNode {
     private static String PROP_BI_ICON_M32 = "iconMono32x32"; // NOI18N
     private static String PROP_BI_DEFAULT_PROPERTY = "defaultPropertyIndex"; // NOI18N
     private static String PROP_BI_DEFAULT_EVENT = "defaultEventIndex"; // NOI18N
-    private static String PROP_USE_SUPERCLASS   = "useSuperclass";
+    private static String PROP_USE_SUPERCLASS   = "useSuperclass"; // NOI18N
     
     static javax.swing.GrayFilter grayFilter = null;
     
@@ -207,7 +207,7 @@ public final class BiNode extends AbstractNode {
                                     PROP_LAZY_DESCRIPTOR, 
                                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_DESCRIPTOR ),
                                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_DESCRIPTOR ),
-                                    "isLazyDescriptor", "setLazyDescriptor" )}
+                                    "isLazyDescriptor", "setLazyDescriptor" )} // NOI18N
                                ),
                                
                     new SubNode( biAnalyser,
@@ -220,7 +220,7 @@ public final class BiNode extends AbstractNode {
                                     PROP_LAZY_DESCRIPTOR, 
                                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_PROPERTIES ),
                                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_PROPERTIES ),
-                                    "isLazyProperties", "setLazyProperties" )} 
+                                    "isLazyProperties", "setLazyProperties" )} // NOI18N
                                ),
 
                     new SubNode( biAnalyser,
@@ -233,12 +233,12 @@ public final class BiNode extends AbstractNode {
                                     PROP_LAZY_EVENTS, 
                                     GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_EVENTS ),
                                     GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_EVENTS ),
-                                    "isLazyEventSets", "setLazyEventSets" )}
+                                    "isLazyEventSets", "setLazyEventSets" )} // NOI18N
                                ),
 
                     new SubNode( biAnalyser, 
                            new Class[] { BiFeature.Method.class },
-                           "CTL_NODE_Methods",
+                           "CTL_NODE_Methods", // NOI18N
                            ICON_BASE_PATTERNS,
                            methodSubnodeProperties, 
                            new Node.Property[] {
@@ -246,7 +246,7 @@ public final class BiNode extends AbstractNode {
                                 PROP_LAZY_METHODS, 
                                 GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_LAZY_METHODS ),
                                 GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_LAZY_METHODS ),
-                                "isLazyMethods", "setLazyMethods" )} 
+                                "isLazyMethods", "setLazyMethods" )} // NOI18N
                            )
             });
         
@@ -264,7 +264,7 @@ public final class BiNode extends AbstractNode {
                         if( biAnalyser.getIconC16() != null ) 
                             ie.setAsText(biAnalyser.getIconC16());
                         else
-                            ie.setAsText("null"); //NO I18N    
+                            ie.setAsText("null"); //NOI18N    
                             
                         return biAnalyser.getIconC16();                        
                     }
@@ -299,7 +299,7 @@ public final class BiNode extends AbstractNode {
                         if( biAnalyser.getIconM16() != null ) 
                             ie.setAsText(biAnalyser.getIconM16());
                         else
-                            ie.setAsText("null"); //NO I18N    
+                            ie.setAsText("null"); //NOI18N    
                         return biAnalyser.getIconM16();                        
                     }
                     
@@ -333,7 +333,7 @@ public final class BiNode extends AbstractNode {
                         if( biAnalyser.getIconC32() != null ) 
                             ie.setAsText(biAnalyser.getIconC32());
                         else
-                            ie.setAsText("null"); //NO I18N    
+                            ie.setAsText("null"); //NOI18N    
                         
                         return biAnalyser.getIconC32();
                     }
@@ -368,7 +368,7 @@ public final class BiNode extends AbstractNode {
                         if( biAnalyser.getIconM32() != null ) 
                             ie.setAsText(biAnalyser.getIconM32());
                         else
-                            ie.setAsText("null"); //NO I18N    
+                            ie.setAsText("null"); //NOI18N    
                         
                         return biAnalyser.getIconM32();
                     }
@@ -396,13 +396,13 @@ public final class BiNode extends AbstractNode {
                                 PROP_BI_DEFAULT_PROPERTY, 
                                 GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
                                 GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_PROPERTY ),
-                                "getDefaultPropertyIndex", "setDefaultPropertyIndex" ) );
+                                "getDefaultPropertyIndex", "setDefaultPropertyIndex" ) ); // NOI18N
         
         ps.put( createProperty (biAnalyser, Integer.TYPE,
                                 PROP_BI_DEFAULT_EVENT, 
                                 GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BI_DEFAULT_EVENT ),
                                 GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BI_DEFAULT_EVENT ),
-                                "getDefaultEventIndex", "setDefaultEventIndex" ) );
+                                "getDefaultEventIndex", "setDefaultEventIndex" ) ); // NOI18N
 
         //only if it is super class version (since 3.3)      
         if(biAnalyser.isSuperclassVersion()){      
@@ -410,7 +410,7 @@ public final class BiNode extends AbstractNode {
                                 PROP_USE_SUPERCLASS, 
                                 GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_USE_SUPERCLASS ),
                                 GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_USE_SUPERCLASS ),
-                                "isUseSuperClass", "setUseSuperClass" ) );
+                                "isUseSuperClass", "setUseSuperClass" ) ); // NOI18N
         }              
         setSheet(sheet);
 
@@ -607,7 +607,7 @@ public final class BiNode extends AbstractNode {
         try {
             prop = new PropertySupport.Reflection (inst, type, getter, setter);
         } catch (NoSuchMethodException e) {            
-            throw new IllegalStateException (e.getMessage() + " " + getter);
+            throw new IllegalStateException (e.getMessage() + " " + getter); // NOI18N
         }
         
         prop.setName (name);

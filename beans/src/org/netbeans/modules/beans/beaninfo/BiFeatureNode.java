@@ -194,17 +194,17 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         PROP_EXPERT, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_EXPERT ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_EXPERT ),
-                                        "isExpert", "setExpert" ));
+                                        "isExpert", "setExpert" )); // NOI18N
         ps.put( BiNode.createProperty ( biFeature, Boolean.TYPE,
                                         PROP_HIDDEN, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_HIDDEN ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_HIDDEN ),
-                                        "isHidden", "setHidden" ));
+                                        "isHidden", "setHidden" )); // NOI18N
         ps.put( BiNode.createProperty ( biFeature, Boolean.TYPE,
                                         PROP_PREFERRED, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_PREFERRED ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_PREFERRED ),
-                                        "isPreferred", "setPreferred" ));
+                                        "isPreferred", "setPreferred" )); // NOI18N
 
         ps.put(new CodePropertySupportRW(
                    PROP_DISPLAY_NAME,
@@ -213,12 +213,12 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_DISPLAY_NAME )
                ) {
                    public Object getValue () {
-                       return biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null";
+                       return biFeature.getDisplayName() != null ? biFeature.getDisplayName() : "null"; // NOI18N
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) )
+                           if( "null".equals((String)val) ) // NOI18N
                                 val = null;
                            biFeature.setDisplayName ( (String)val );
                        } catch (ClassCastException e) {
@@ -234,13 +234,13 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_SHORT_DESCRIPTION )
                ) {
                    public Object getValue () {
-                       String toRet = biFeature.getShortDescription () != null ? biFeature.getShortDescription () : "null";
+                       String toRet = biFeature.getShortDescription () != null ? biFeature.getShortDescription () : "null"; // NOI18N
                        return toRet;
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) )
+                           if( "null".equals((String)val) ) // NOI18N
                                 val = null;
                            biFeature.setShortDescription ( (String)val );
                        } catch (ClassCastException e) {
@@ -296,13 +296,13 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                    GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CUSTOMIZER )
                ) {
                    public Object getValue () {
-                       String toRet = ((BiFeature.Descriptor)biFeature).getCustomizer() != null ? ((BiFeature.Descriptor)biFeature).getCustomizer() : "null";
+                       String toRet = ((BiFeature.Descriptor)biFeature).getCustomizer() != null ? ((BiFeature.Descriptor)biFeature).getCustomizer() : "null"; // NOI18N
                        return toRet;
                    }
                    public void setValue (Object val) throws
                        IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                        try {
-                           if( "null".equals((String)val) )
+                           if( "null".equals((String)val) ) // NOI18N
                                 val = null;
                            ((BiFeature.Descriptor)biFeature).setCustomizer( (String)val );
                        } catch (ClassCastException e) {
@@ -320,12 +320,12 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         PROP_BOUND, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_BOUND ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_BOUND ),
-                                        "isBound", "setBound" ));
+                                        "isBound", "setBound" )); // NOI18N
         ps.put( BiNode.createProperty ( (BiFeature.Property)biFeature, Boolean.TYPE,
                                         PROP_CONSTRAINED, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_CONSTRAINED ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_CONSTRAINED ),
-                                        "isConstrained", "setConstrained" ));
+                                        "isConstrained", "setConstrained" )); // NOI18N
         ps.put(new PropertySupport (
                    PROP_MODE,
                    Integer.TYPE,    //int.class !!!!????,
@@ -413,13 +413,13 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
                                         PROP_UNICAST, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_UNICAST ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_UNICAST ),
-                                        "isUnicast", null ));
+                                        "isUnicast", null )); // NOI18N
 
         ps.put( BiNode.createProperty ( (BiFeature.EventSet)biFeature, Boolean.TYPE,
                                         PROP_IN_DEFAULT_EVENTSET, 
                                         GenerateBeanInfoAction.getString ("PROP_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
                                         GenerateBeanInfoAction.getString ("HINT_Bi_" + PROP_IN_DEFAULT_EVENTSET ),
-                                        "isInDefaultEventSet", "setInDefaultEventSet" ));
+                                        "isInDefaultEventSet", "setInDefaultEventSet" )); // NOI18N
 
         sheet.put( ps );
 

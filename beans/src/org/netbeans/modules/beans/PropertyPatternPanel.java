@@ -107,7 +107,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
         supportCheckBox.setMnemonic(PatternNode.getString("CTL_PropertyPanel_supportCheckBox_Mnemonic").charAt(0));
         supportCheckBox.setToolTipText(PatternNode.getString("ACS_PropertyPanel_supportCheckBoxA11yDesc"));
 
-        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NO I18N
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NOI18N
     }
 
     private void initAccessibility()

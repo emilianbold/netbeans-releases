@@ -106,7 +106,7 @@ class EventSetInheritanceAnalyser extends Object {
     }
     
     static String getInheritanceEventSupportName( MemberElement me , String supportTypeName){
-        ElementFormat format = new ElementFormat("{n}({p})");
+        ElementFormat format = new ElementFormat("{n}({p})"); // NOI18N
         String supportName = null;
         if( me != null ){
             if( me instanceof MethodElement )

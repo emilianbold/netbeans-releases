@@ -193,18 +193,18 @@ public class IdxPropertyPattern extends PropertyPattern {
             
             if( !useSupport ){
                 if( boundSupport )
-                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null ) // NOI18N
                         boundSupport = false;
                 if( constrainedSupport )
-                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null ) // NOI18N
                         constrainedSupport = false;
             }
             else {
                 if( boundSupport )
-                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  ipp.getDeclaringClass()), "PropertyChangeSupport")) != null ) // NOI18N
                         boundSupport = false;
                 if( constrainedSupport )
-                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  ipp.getDeclaringClass()), "VetoableChangeSupport")) != null ) // NOI18N
                         constrainedSupport = false;
             }
             
@@ -444,7 +444,7 @@ public class IdxPropertyPattern extends PropertyPattern {
         String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         
         //will search for line containing property support or field
-        String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name;
+        String oldVarLine = oldType.toString() + " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
         if( (first = methodBody.indexOf( oldVarLine )) == -1 )
             return null;
 

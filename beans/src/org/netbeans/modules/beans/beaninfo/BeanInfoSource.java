@@ -160,7 +160,7 @@ public class BeanInfoSource extends Object {
 
     /** Creates beanInfo data object */
     void createFromTemplate( boolean iconBlock ) {        
-        FileObject foTemplates = Repository.getDefault().getDefaultFileSystem().findResource("Templates"); // NOi18N ;
+        FileObject foTemplates = Repository.getDefault().getDefaultFileSystem().findResource("Templates"); //NOI18N ;
         if ( foTemplates == null ) {
             return;
         }

@@ -42,7 +42,7 @@ import org.openide.util.HelpCtx;
 * @author   Petr Hrebejk
 */
 public class BiPanel extends ExplorerPanel  {
-    public static final String BEANINFO_HELP = "beans.beaninfo.nodes";
+    public static final String BEANINFO_HELP = "beans.beaninfo.nodes"; // NOI18N
 
     private SplittedPanel sp;
     private static ExplorerManager em;

@@ -23,11 +23,11 @@ import org.openide.util.NbBundle;
  */
 public class PropertyActionSettings extends SystemOption {
 
-    public static final String GENERATE_UNDERSCORED= "_";
-    public static final String GENERATE_WITH_THIS  = "this.";
+    public static final String GENERATE_UNDERSCORED= "_"; // NOI18N
+    public static final String GENERATE_WITH_THIS  = "this."; // NOI18N
     /** define value for property style of generated property variable */
-    public static final String PROP_STYLE   = "prop_style";
-    static final String PROP_NAME_STYLE = "propStyle";
+    public static final String PROP_STYLE   = "prop_style"; // NOI18N
+    static final String PROP_NAME_STYLE = "propStyle"; // NOI18N
 
     private static final long serialVersionUID =45122597471838193L;
 

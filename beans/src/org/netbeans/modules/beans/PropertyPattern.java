@@ -50,9 +50,9 @@ public class PropertyPattern extends Pattern {
     public static final int WRITE_ONLY = 4;
     
     /** Constant for PropertyChange */
-    static final String PROPERTY_CHANGE = "firePropertyChange";
+    static final String PROPERTY_CHANGE = "firePropertyChange"; // NOI18N
     /** Constant for VetoableChange */
-    static final String VETOABLE_CHANGE = "fireVetoableChange";
+    static final String VETOABLE_CHANGE = "fireVetoableChange"; // NOI18N
     
     /** Getter method of this property */
     protected MethodElement getterMethod = null;
@@ -188,18 +188,18 @@ public class PropertyPattern extends Pattern {
             
             if( !useSupport ){
                 if( boundSupport )
-                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    if( ( supportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null ) // NOI18N
                         boundSupport = false;
                 if( constrainedSupport )
-                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.showInheritanceEventDialog(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null ) // NOI18N
                         constrainedSupport = false;
             }
             else{
                 if( boundSupport )
-                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null )
+                    if( ( supportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectPropertyChangeSupport(  pp.getDeclaringClass()), "PropertyChangeSupport")) != null ) // NOI18N
                         boundSupport = false;
                 if( constrainedSupport )
-                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null )
+                    if( ( vetoSupportName = EventSetInheritanceAnalyser.getInheritanceEventSupportName(EventSetInheritanceAnalyser.detectVetoableChangeSupport(  pp.getDeclaringClass()), "VetoableChangeSupport")) != null ) // NOI18N
                         constrainedSupport = false;                
             }
 
@@ -496,10 +496,10 @@ public class PropertyPattern extends Pattern {
                 return null; 
         }
         else{
-            String oldVarLine = " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name;
-            if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + ";") )) == -1 ) {   //non indexed
-                if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + "[index];") )) == -1 ) {  //indexed
-                    if( (first = methodBody.indexOf( (oldType.toString() + "[]" + oldVarLine  + ";") )) == -1 ) {  //indexed
+            String oldVarLine = " old" + Pattern.capitalizeFirstLetter( name ) + " = " + propertyStyle + name; // NOI18N
+            if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + ";") )) == -1 ) {   //non indexed // NOI18N
+                if( (first = methodBody.indexOf( (oldType.toString() + oldVarLine  + "[index];") )) == -1 ) {  //indexed // NOI18N
+                    if( (first = methodBody.indexOf( (oldType.toString() + "[]" + oldVarLine  + ";") )) == -1 ) {  //indexed // NOI18N
                         return null;
                     }
                     else 
@@ -542,7 +542,7 @@ public class PropertyPattern extends Pattern {
             newBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
             newBody.append( " = " ).append( propertyStyle ).append( name ); // NOI18N            
             if( post_index ){
-                newBody.append( "[index]" );
+                newBody.append( "[index]" ); // NOI18N
             }
         }
 

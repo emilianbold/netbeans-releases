@@ -48,7 +48,7 @@ import org.openide.filesystems.Repository;
  */
 class BiIconEditor extends PropertyEditorSupport {
     
-    private static final String BEAN_ICONEDITOR_HELP = "beans.icon";    
+    private static final String BEAN_ICONEDITOR_HELP = "beans.icon"; // NOI18N
     
     private FileObject sourceFileObject;
     
@@ -124,7 +124,7 @@ class BiIconEditor extends PropertyEditorSupport {
     private BiImageIcon iconFromText(String string) throws IllegalArgumentException {
         BiImageIcon ii;
         try {
-            if (string.length() == 0 || string.equals("null")) {
+            if (string.length() == 0 || string.equals("null")) { // NOI18N
                 ii = null;
             }
             else {
@@ -266,7 +266,7 @@ class BiIconEditor extends PropertyEditorSupport {
             JLabel nameLabel = new JLabel(bundle.getString("CTL_ImageSourceName"));
             nameLabel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_ImageSourceNameA11yDesc"));
             nameLabel.setDisplayedMnemonic(bundle.getString("CTL_ImageSourceName_Mnemonic").charAt(0));
-            p1.add(nameLabel, "West");
+            p1.add(nameLabel, "West"); // NOI18N
             p1.add(tfName = new JTextField(), "Center"); // NOI18N
             nameLabel.setLabelFor(tfName);
             tfName.getAccessibleContext().setAccessibleName(bundle.getString("ACS_ImageSourceNameTextFieldA11yName"));

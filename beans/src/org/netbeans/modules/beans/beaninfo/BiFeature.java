@@ -54,7 +54,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     private String shortDescription = null;
     private boolean included = true;
 
-    private String brackets = "]";
+    private String brackets = "]"; // NOI18N
     /**
     * Creates empty BiFeature.
     */
@@ -63,7 +63,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
     }
 
     public BiFeature( MethodElement me ) {
-        displayName = "\"\"";
+        displayName = "\"\""; // NOI18N
         name = me.getName().getName();
     }
 
@@ -343,7 +343,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
         }
 
         String getBracketedName() {
-            return "[PROPERTY_" + getName() + "]";
+            return "[PROPERTY_" + getName() + "]"; // NOI18N
         }
 
         public void setBound(boolean bound) {
@@ -616,7 +616,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
          * @return
          */
         String getBracketedName() {
-            return "[EVENT_" + getName() + "]";
+            return "[EVENT_" + getName() + "]"; // NOI18N
         }
 
         public int compare(Object o1, Object o2) {
@@ -656,7 +656,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             sb.append( "new String[] {" ); // NOI18N
             for (int i = 0; i < listenerMethods.length; i++) {
                 if (i > 0) {
-                    sb.append(", ");
+                    sb.append(", "); // NOI18N
                 }
                 sb.append( "\"" + listenerMethods[i].getName() + "\"" ); // NOI18N
             }
@@ -735,28 +735,28 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
       }
 
         String getBracketedName() {
-            return "[METHOD_" + getName() + "]";
+            return "[METHOD_" + getName() + "]"; // NOI18N
         }
         
         private static String getTypeClass(org.openide.src.Type type, PatternAnalyser pa) {
           if (type.isPrimitive()) {
-              if (type.equals(type.INT)) return "Integer.TYPE";
-              else if (type.equals(type.BOOLEAN)) return "Boolean.TYPE";
-              else if (type.equals(type.CHAR)) return "Character.TYPE";
-              else if (type.equals(type.LONG)) return "Long.TYPE";
-              else if (type.equals(type.SHORT)) return "Short.TYPE";
-              else if (type.equals(type.BYTE)) return "Byte.TYPE";
-              else if (type.equals(type.FLOAT)) return "Float.TYPE";
-              else /*(type.equals(type.DOUBLE))*/ return "Double.TYPE";
+              if (type.equals(type.INT)) return "Integer.TYPE"; // NOI18N
+              else if (type.equals(type.BOOLEAN)) return "Boolean.TYPE"; // NOI18N
+              else if (type.equals(type.CHAR)) return "Character.TYPE"; // NOI18N
+              else if (type.equals(type.LONG)) return "Long.TYPE"; // NOI18N
+              else if (type.equals(type.SHORT)) return "Short.TYPE"; // NOI18N
+              else if (type.equals(type.BYTE)) return "Byte.TYPE"; // NOI18N
+              else if (type.equals(type.FLOAT)) return "Float.TYPE"; // NOI18N
+              else /*(type.equals(type.DOUBLE))*/ return "Double.TYPE"; // NOI18N
           } else if (type.isClass()) {
               try {
-                  return type.getClassName().getFullName() + ".class";
+                  return type.getClassName().getFullName() + ".class"; // NOI18N
               } catch (Exception e) {
                   ErrorManager.getDefault().notify(e);
-                  return type.toString() + ".class";
+                  return type.toString() + ".class"; // NOI18N
               }
           } else /*(type.isArray())*/ {
-                 return "Class.forName(\"" + type.getVMClassName(pa.findFileObject()) + "\")";
+                 return "Class.forName(\"" + type.getVMClassName(pa.findFileObject()) + "\")"; // NOI18N
           }
       }
       
@@ -826,7 +826,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 while( it.hasNext() ) {
                     String statement = (String) it.next();
                     if ((index = statement.indexOf(creation)) > -1) {
-                        this.varName = statement.substring(statement.indexOf("methods[METHOD_") + 15, index - 2);
+                        this.varName = statement.substring(statement.indexOf("methods[METHOD_") + 15, index - 2); // NOI18N
                         break;
                     }
                 }

@@ -120,7 +120,7 @@ public class IdxPropertyPatternPanel extends javax.swing.JPanel
         niSetCheckBox.setText( PatternNode.getString( "CTL_IdxPropertyPanel_niSetCheckBox" ) );
         niSetCheckBox.setMnemonic(PatternNode.getString("CTL_IdxPropertyPanel_niSetCheckBox_Mnemonic").charAt(0));
         niSetCheckBox.setToolTipText(PatternNode.getString("ACS_IdxPropertyPanel_niSetCheckBoxA11yDesc"));
-        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NO I18N
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_PROPERTIES_HELP); //NOI18N
 
     }
 

@@ -687,7 +687,7 @@ class BeanPatternGenerator extends Object {
                 body.append( fireParameterstoString( newMethodParams ) );
                 body.append(");\n"); // NOI18N
             }
-            body.append( TAB + "synchronized (this) {\n" );
+            body.append( TAB + "synchronized (this) {\n" ); // NOI18N
             body.append( TABx2 + "if (" + fieldName + " == null) return;\n" ); // NOI18N
             body.append( TABx2 + "list = (java.util.ArrayList)" ); // NOI18N
             body.append( fieldName ).append( ".clone ();\n" + TAB +"}\n" ); // NOI18N
@@ -708,7 +708,7 @@ class BeanPatternGenerator extends Object {
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( TAB + eventType.toString() ).append( " e = null;\n "); // NOI18N
             }
-            body.append( TAB + "if (" + listenerList + " == null) return;\n");
+            body.append( TAB + "if (" + listenerList + " == null) return;\n"); // NOI18N
             body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" ); // NOI18N
             body.append( TAB + "for (int i = listeners.length-2; i>=0; i-=2) {\n"); // NOI18N
             body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" ); // NOI18N
@@ -785,7 +785,7 @@ class BeanPatternGenerator extends Object {
                 fieldName = new String( "listener" + fieldName  ); // NOI18N
             }
             
-            body.append(TAB + "if (" + fieldName + " == null) return;\n");
+            body.append(TAB + "if (" + fieldName + " == null) return;\n"); // NOI18N
 
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( TAB + eventType.toString() ).append( " e = new "); // NOI18N

@@ -32,7 +32,7 @@ import org.openide.util.WeakListeners;
 */
 public class PatternChildren extends ClassChildren {
 
-    static final RequestProcessor ANALYZER = new RequestProcessor("Bean patterns analyser", 1);
+    static final RequestProcessor ANALYZER = new RequestProcessor("Bean patterns analyser", 1); // NOI18N
 
     private boolean wri = true;
 

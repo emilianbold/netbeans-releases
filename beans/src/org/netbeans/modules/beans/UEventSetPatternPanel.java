@@ -81,7 +81,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
         passEventCheckBox.setMnemonic(PatternNode.getString("CTL_UEventSetPanel_passEventCheckBox_Mnemonic").charAt(0));
         passEventCheckBox.setToolTipText(PatternNode.getString("ACS_UEventSetPanel_passEventCheckBoxA11yDesc"));
         
-        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_EVENTSETS_HELP); //NO I18N
+        HelpCtx.setHelpIDString(this, HelpCtxKeys.BEAN_EVENTSETS_HELP); //NOI18N
     }
 
     private void initAccessibility()

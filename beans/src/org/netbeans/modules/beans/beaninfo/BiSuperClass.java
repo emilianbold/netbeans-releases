@@ -46,7 +46,7 @@ class BiSuperClass extends Object {
         int methodsAdded = 0;           // Workaround for getMethd
 
 
-        while ( ce != null && !ce.getName().getFullName().equals("java.lang.Object")) {
+        while ( ce != null && !ce.getName().getFullName().equals("java.lang.Object")) { // NOI18N
             MethodElement[] methods = ce.getMethods();
 
             for( int i = 0; i < methods.length; i++ )  {
