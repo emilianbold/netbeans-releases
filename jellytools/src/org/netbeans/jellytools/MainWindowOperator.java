@@ -19,7 +19,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import org.openide.awt.Toolbar;
-import org.netbeans.core.NbTopManager;
 import org.netbeans.core.awt.TabControl;
 import org.netbeans.core.windows.UIModeManager;
 import org.netbeans.core.windows.WindowManagerImpl;
@@ -35,7 +34,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JFrameOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.openide.TopManager;
 import org.openide.windows.WindowManager;
 
 /**
@@ -108,20 +106,20 @@ public class MainWindowOperator extends JFrameOperator {
      * @return  true if IDE is in MDI mode; false otherwise (SDI mode)
      */
     public static boolean isMDI() {
-        return ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
+        return ((WindowManagerImpl)WindowManager.getDefault()).
                     uiModeManager().getUIMode() == UIModeManager.MDI_MODE;
     }
     
     /** Makes IDE to switch to MDI (full screen) mode. */
     public static void setMDI() {
-        ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
+        ((WindowManagerImpl)WindowManager.getDefault()).
                     uiModeManager().setUIMode(UIModeManager.MDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
     
     /** Makes IDE to switch to SDI (multiple smaller windows) mode. */
     public static void setSDI() {
-        ((WindowManagerImpl)TopManager.getDefault().getWindowManager()).
+        ((WindowManagerImpl)WindowManager.getDefault()).
                     uiModeManager().setUIMode(UIModeManager.SDI_MODE);
         new EventTool().waitNoEvent(1000);
     }
@@ -130,7 +128,7 @@ public class MainWindowOperator extends JFrameOperator {
      * @return  currently displayed text
      */
     public String getStatusText() {
-        return NbTopManager.get().getStatusText();
+        return org.openide.awt.StatusDisplayer.getDefault().getStatusText();
     }
     
     /** Waits until given text appears in the main window status bar.
