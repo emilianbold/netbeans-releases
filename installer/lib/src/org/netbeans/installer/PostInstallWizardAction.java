@@ -28,8 +28,8 @@ public class PostInstallWizardAction extends WizardAction {
     public void execute(WizardBeanEvent evt) {
         try {
             ProductService pservice = (ProductService)getService(ProductService.NAME);
-            nbInstallDir = resolveString((String)pservice.getProductBeanProperty
-            (ProductService.DEFAULT_PRODUCT_SOURCE,null,"absoluteInstallLocation"));
+            nbInstallDir = (String) pservice.getProductBeanProperty
+            (ProductService.DEFAULT_PRODUCT_SOURCE,null,"absoluteInstallLocation");
         } catch (Exception e) {
             logEvent(this, Log.ERROR, e);
             nbInstallDir = Util.getNbInstallDir();
