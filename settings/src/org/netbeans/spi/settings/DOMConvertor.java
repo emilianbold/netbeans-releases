@@ -14,6 +14,11 @@
 package org.netbeans.spi.settings;
 
 import java.io.IOException;
+import org.openide.ErrorManager;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /** DOMConvertor extends the Convertor to allow to compose output of several
  *  convertors into one xml document. For more info see
@@ -23,10 +28,8 @@ import java.io.IOException;
  * @since 1.1
  */
 public abstract class DOMConvertor extends Convertor {
-    /** an attribute containing public ID of DTD describing nested elements
-     * @since 1.1
-     */
-    protected final static String ATTR_PUBLIC_ID = "dtd_public_id"; // NOI18N
+    /** an attribute containing public ID of DTD describing nested elements */
+    private final static String ATTR_PUBLIC_ID = "dtd_public_id"; // NOI18N
     
     private final static String ATTR_ID = "id"; // NOI18N
     private final static String ATTR_IDREF = "idref"; // NOI18N
@@ -47,6 +50,68 @@ public abstract class DOMConvertor extends Convertor {
     
     private final static java.util.Map refsCache = new java.util.WeakHashMap();
     
+    private String publicID;
+    private String systemID;
+    private String rootElement;
+    
+    /** Creat a DOMConvertor
+     * @param publicID public ID of DOCTYPE
+     * @param systemID system ID of DOCTYPE
+     * @param rootElement qualified name of root element
+     */
+    protected DOMConvertor(String publicID, String systemID, String rootElement) {
+        this.publicID = publicID;
+        this.systemID = systemID;
+        this.rootElement = rootElement;
+        if (publicID == null) throw new NullPointerException("publicID"); // NOI18N
+        if (systemID == null) throw new NullPointerException("systemID"); // NOI18N
+        if (rootElement == null) throw new NullPointerException("rootElement"); // NOI18N
+    }
+    
+    /** Read content from <code>r</code> and delegate to {@link #readElement}
+     * passing parsed content as a root element of DOM document
+     * @param r stream containing stored object
+     * @return the read setting object
+     * @exception IOException if the object cannot be read
+     * @exception ClassNotFoundException if the object class cannot be resolved
+     * @since 1.1
+     */
+    public final Object read(java.io.Reader r) throws java.io.IOException, ClassNotFoundException {
+        try {
+            org.xml.sax.XMLReader xr = XMLUtil.createXMLReader(false, false);
+            InputSource is = new InputSource(r);
+            Document doc = XMLUtil.parse(is, false, false, null, org.openide.xml.EntityCatalog.getDefault());
+            return readElement(doc.getDocumentElement());
+        } catch (SAXException ex) {
+            IOException ioe = new IOException(ex.getLocalizedMessage());
+            ErrorManager emgr = ErrorManager.getDefault();
+            emgr.annotate(ioe, ex);
+            if (ex.getException () != null) {
+                emgr.annotate (ioe, ex.getException());
+            }
+            throw ioe;
+        }
+    }
+    
+    /** Write object described by DOM document filled by {@link #writeElement}
+     * @param w stream into which inst is written
+     * @param inst the setting object to be written
+     * @exception IOException if the object cannot be written
+     * @since 1.1
+     */
+    public final void write(java.io.Writer w, Object inst) throws java.io.IOException {
+        try {
+            Document doc = XMLUtil.createDocument(rootElement, null, publicID, systemID);
+            writeElement(doc, doc.getDocumentElement(), inst);
+            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(1024);
+            XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
+            w.write(baos.toString("UTF-8")); // NOI18N
+        } catch (org.w3c.dom.DOMException ex) {
+            throw (IOException) ErrorManager.getDefault().annotate(
+                new IOException(ex.getLocalizedMessage()), ex);
+        }
+    }
+    
     /** Provide an object constructed from the element.
      * @param element represents a read object in a DOM document
      * @return an setting object
@@ -56,21 +121,26 @@ public abstract class DOMConvertor extends Convertor {
      */
     protected abstract Object readElement(org.w3c.dom.Element element) throws java.io.IOException, ClassNotFoundException;
     
-    /** Provide a DOM element describing obj.
+    /** Fill a DOM element describing <code>obj</code> with attributes or subelements.
      * @param doc a DOM document allowing to create elements describing passed object
+     * @param element represents a written object in a DOM document
      * @param obj an object to convert
      * @return a DOM element representation
      * @exception IOException if the object cannot be written
      * @exception org.w3c.dom.DOMException if an element construction failed
      * @since 1.1
      */
-    protected abstract org.w3c.dom.Element writeElement(org.w3c.dom.Document doc, Object obj) throws java.io.IOException, org.w3c.dom.DOMException;
+    protected abstract void writeElement(
+        org.w3c.dom.Document doc,
+        org.w3c.dom.Element element,
+        Object obj) throws java.io.IOException, org.w3c.dom.DOMException;
 
-    /** delegate the read operation to a convertor referenced by {@link #ATTR_PUBLIC_ID}
+    /** delegate the read operation to a convertor referenced by <code>dtd_public_id</code>
      * @param element DOM element that should be read
      * @return an setting object
      * @exception IOException if the object cannot be read
      * @exception ClassNotFoundException if the object class cannot be resolved
+     * @see #readElement
      * @since 1.1
      */
     protected final static Object delegateRead(org.w3c.dom.Element element) throws java.io.IOException, ClassNotFoundException {
@@ -125,6 +195,7 @@ public abstract class DOMConvertor extends Convertor {
      * @return a DOM element representation
      * @exception IOException if the object cannot be written
      * @exception org.w3c.dom.DOMException if an element construction failed
+     * @see #writeElement
      * @since 1.1
      */
     protected final static org.w3c.dom.Element delegateWrite(org.w3c.dom.Document doc, Object obj) throws java.io.IOException, org.w3c.dom.DOMException {
@@ -145,7 +216,8 @@ public abstract class DOMConvertor extends Convertor {
         org.w3c.dom.Element el;
         if (c instanceof DOMConvertor) {
             DOMConvertor dc = (DOMConvertor) c;
-            el = dc.writeElement(doc, obj);
+            el = doc.createElement(dc.rootElement);
+            dc.writeElement(doc, el, obj);
             if (el.getAttribute(ATTR_PUBLIC_ID).length() == 0) {
                 el.setAttribute(ATTR_PUBLIC_ID, res.getPublicID(clazz));
             }

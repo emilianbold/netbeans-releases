@@ -87,21 +87,8 @@ public class DOMConvertorTest extends NbTestCase {
         private final static String SYSTEM_ID = "nbres:/org/netbeans/modules/settings/convertors/data/composedsetting-1_0.dtd"; // NOI18N
         private final static String ELM_COMPOSED_SETTING = "composedsetting"; // NOI18N
         
-        public Object read(java.io.Reader r) throws java.io.IOException, ClassNotFoundException {
-            try {
-                XMLReader xr = XMLUtil.createXMLReader(false, false);
-                InputSource is = new InputSource(r);
-                Document doc = XMLUtil.parse(is, false, false, null, EntityCatalog.getDefault());
-                return readElement(doc.getDocumentElement());
-            } catch (SAXException ex) {
-                IOException ioe = new IOException(ex.getLocalizedMessage());
-                ErrorManager emgr = ErrorManager.getDefault();
-                emgr.annotate(ioe, ex);
-                if (ex.getException () != null) {
-                    emgr.annotate (ioe, ex.getException());
-                }
-                throw ioe;
-            }
+        public ComposedSettingConvertor() {
+            super(PUBLIC_ID, SYSTEM_ID, ELM_COMPOSED_SETTING);
         }
         
         protected Object readElement(org.w3c.dom.Element element) throws java.io.IOException, ClassNotFoundException {
@@ -134,26 +121,7 @@ public class DOMConvertorTest extends NbTestCase {
         public void unregisterSaver(Object inst, Saver s) {
         }
         
-        public void write(java.io.Writer w, Object inst) throws java.io.IOException {
-            try {
-                Document doc = XMLUtil.createDocument(ELM_COMPOSED_SETTING, null, PUBLIC_ID, SYSTEM_ID);
-                writeElement(doc, doc.getDocumentElement(), inst);
-                java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream(1024);
-                XMLUtil.write(doc, baos, "UTF-8"); // NOI18N
-                w.write(baos.toString("UTF-8")); // NOI18N
-            } catch (DOMException ex) {
-                throw (IOException) ErrorManager.getDefault().annotate(new IOException(ex.getLocalizedMessage()), ex);
-            }
-        }
-        
-        protected org.w3c.dom.Element writeElement(org.w3c.dom.Document doc, Object obj) throws java.io.IOException, org.w3c.dom.DOMException {
-            Element el = doc.createElement(ELM_COMPOSED_SETTING);
-            writeElement(doc, el, obj);
-            el.setAttribute(ATTR_PUBLIC_ID, PUBLIC_ID);
-            return el;
-        }
-        
-        private void writeElement(org.w3c.dom.Document doc, org.w3c.dom.Element el, Object inst) throws java.io.IOException, org.w3c.dom.DOMException {
+        protected void writeElement(org.w3c.dom.Document doc, org.w3c.dom.Element el, Object inst) throws java.io.IOException, org.w3c.dom.DOMException {
             if (!(inst instanceof ComposedSetting)) {
                 throw new IllegalArgumentException("required: " + ComposedSetting.class.getName() + " but was: " + inst.getClass());
             }
