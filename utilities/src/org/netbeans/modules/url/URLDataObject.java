@@ -209,7 +209,31 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         if(url == null)
             return;
 
-        HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent();
+        // hack for finding default browser set in global IDE settings
+        HtmlBrowser.Factory fact = null;
+        try {
+            FileObject fo = TopManager.getDefault ().getRepository ()
+                .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
+            DataFolder folder = DataFolder.findFolder (fo);
+            DataObject [] dobjs = folder.getChildren ();
+            for (int i = 0; i<dobjs.length; i++) {
+                Boolean flag = (Boolean)dobjs[i].getPrimaryFile ().getAttribute ("DEFAULT_BROWSER");    // NOI18N
+                if ((flag != null) && flag.booleanValue ()) {
+                    Object o = ((InstanceCookie)dobjs[i].getCookie (InstanceCookie.class)).instanceCreate ();
+                    if (o instanceof HtmlBrowser.Factory)
+                        fact = (HtmlBrowser.Factory)o;
+                    break;
+                }
+            }
+        }
+        catch (Exception ex) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) {
+                // not a big problem: HtmlBrowser will create some browser
+                ex.printStackTrace ();
+            }
+        }
+
+        HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent(fact, true, true);
         htmlViewer.setURL(url);
         htmlViewer.open();
         htmlViewer.requestFocus ();
