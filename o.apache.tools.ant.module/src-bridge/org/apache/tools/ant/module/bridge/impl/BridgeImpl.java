@@ -13,6 +13,7 @@
 
 package org.apache.tools.ant.module.bridge.impl;
 
+import java.beans.Introspector;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -453,6 +454,8 @@ public class BridgeImpl implements BridgeInterface {
             Object helpersO = helpersF.get(null);
             Map helpersM = (Map) helpersO;
             helpersM.clear();
+            // #46532: java.beans.Introspector caches not cleared well in all cases.
+            Introspector.flushCaches();
         } catch (Exception e) {
             // Oh well.
             AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
