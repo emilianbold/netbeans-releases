@@ -18,16 +18,14 @@ import java.awt.*;
 import java.awt.event.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.swing.JButton;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import javax.swing.UIManager;
+import java.util.Collections;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicBorders;
 
@@ -71,9 +69,8 @@ public class OptionsAction extends CallableSystemAction {
     
 
     public void performAction () {
-        final OptionsPanel singleton = OptionsPanel.singleton();
-        singleton.prepareNodes();
-        final OptionsPanel optionPanel = singleton;
+        final OptionsPanel optionPanel = OptionsPanel.singleton ();
+        
         Mutex.EVENT.readAccess(new Runnable() {
             public void run() {
                 Dialog dialog = (Dialog)dialogWRef.get();
@@ -83,7 +80,7 @@ public class OptionsAction extends CallableSystemAction {
                     closeButton.setMnemonic(NbBundle.getMessage(OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
                     closeButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OptionsAction.class, "ACSD_close_button"));
                     DialogDescriptor dd = new DialogDescriptor(
-                        optionPanel,
+                        InitPanel.getDefault(optionPanel),
                         optionPanel.getName(),
                         false,
                         new Object[] {closeButton},
@@ -141,6 +138,8 @@ public class OptionsAction extends CallableSystemAction {
         
         // XXX #37673
         private transient Reference descriptorRef = new WeakReference(null);
+        
+        private TTW ttwviev = null;
 
         private OptionsPanel () {
             validateRootContext ();
@@ -216,13 +215,13 @@ public class OptionsAction extends CallableSystemAction {
 
         private transient JSplitPane split=null;
         protected TreeView initGui () {
-            TTW view = new TTW ();
+            TTW retVal = new TTW () ;
             
             
             split = new JSplitPane (JSplitPane.HORIZONTAL_SPLIT);
             PropertySheetView propertyView = new PropertySheetView();
             
-            split.setLeftComponent(view);
+            split.setLeftComponent(retVal);
             split.setRightComponent(propertyView);
             // install proper border for split pane
             split.setBorder((Border)UIManager.get("Nb.ScrollPane.border")); // NOI18N
@@ -236,53 +235,7 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints.gridwidth = 2;
             add (split, gridBagConstraints);
 
-//            javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
-//            close.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_close_button_mnemonic").charAt(0));
-//            close.setDefaultCapable (true);
-//            gridBagConstraints = new GridBagConstraints ();
-//            gridBagConstraints.gridx = 0;
-//            gridBagConstraints.gridy = 1;
-//            gridBagConstraints.weightx = 1.0;
-//            gridBagConstraints.weighty = 0;
-//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-//            gridBagConstraints.insets.bottom = 11;
-//            gridBagConstraints.insets.top = 11;
-//            gridBagConstraints.insets.right = 0;
-//            close.addActionListener (new ActionListener () {
-//                public void actionPerformed (ActionEvent e) {
-//                    singleton ().close ();
-//                }
-//            });
-//            add (close, gridBagConstraints);
-//
-//            javax.swing.JButton help = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_help_button"));
-//            help.setMnemonic(NbBundle.getMessage (OptionsAction.class, "CTL_help_button_mnemonic").charAt(0));
-//            help.setMinimumSize (close.getMinimumSize ());
-//            help.setMaximumSize (close.getMaximumSize ());
-//            help.setPreferredSize (close.getPreferredSize ());
-//            help.setSize (close.getSize ());
-//            gridBagConstraints = new GridBagConstraints ();
-//            gridBagConstraints.gridx = 1;
-//            gridBagConstraints.gridy = 1;
-//            gridBagConstraints.weightx = 0;
-//            gridBagConstraints.weighty = 0;
-//            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-//            gridBagConstraints.insets.bottom = 11;
-//            gridBagConstraints.insets.top = 11;
-//            gridBagConstraints.insets.right = 11;
-//            gridBagConstraints.insets.left = 5;
-//            help.addActionListener (new ActionListener () {
-//                public void actionPerformed (ActionEvent e) {
-//                    org.netbeans.core.NbTopManager.get().showHelp (
-//                            OptionsPanel.this.getHelpCtx ());
-//                }
-//            });
-//            add (help, gridBagConstraints);
-//            
-//            close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_close_button"));
-//            help.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (OptionsAction.class, "ACSD_help_button"));
-            
-            return view;
+            return retVal;
         }
 
         /** Overridden to provide a larger preferred size if the default font
@@ -308,63 +261,29 @@ public class OptionsAction extends CallableSystemAction {
                 result.width += 20;
                 result.height +=20;
             }
+            
             return result;
         }
-        
-        /**
-         * Begins expanding nodes. Does not finish synch, but has posted
-         * all events to EQ that it needs before finishing.
-         */
-        public void prepareNodes() {
-            /*
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(OptionsAction.class, "MSG_Preparing_options"));
-             */
-            
-            if (toExpand != null) {
-                return;
-            }
-            ArrayList arr = new ArrayList (101);
-            toExpand = arr;
-            
-            Node root = getExplorerManager ().getRootContext ();
-            expandNodes(root, 3, arr);
-            
-            /*
-            invokeLaterLowPriority(new Runnable() {
-                public void run() {
-                    StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-                }
-            });
-             */
+
+        boolean isPrepared () {
+            return toExpand != null;
         }
-            
         
+        public void prepareNodes() {
+            if (toExpand == null) {                        
+                ArrayList arr = new ArrayList (101);
+                expandNodes(getRootContext (), 2, arr);               
+                toExpand = arr;
+            }
+        }
+
+
         protected void componentShowing () {
             super.componentShowing ();
-            
-            if (expanded) {
-                return;
+            if (!expanded) {
+                ((TTW)view).expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());                
+                expanded = true;
             }
-            
-            // bugfix #19939, get selected node for set back after expanding view
-            final Node[] selectedNodes = getExplorerManager ().getSelectedNodes ();
-            prepareNodes();
-            invokeLaterLowPriority(new Runnable() {
-                public void run() {
-            
-            TTW ttw = (TTW)view;
-            ttw.expandTheseNodes (toExpand, getExplorerManager ().getRootContext ());
-            
-            try {
-                getExplorerManager ().setSelectedNodes (selectedNodes);
-            } catch (java.beans.PropertyVetoException pve) {
-                // notify non-success during set selected nodes back
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, pve);
-            }
-            
-            expanded = true;
-                }
-            }); // EQ.iL
         }
         
 
@@ -395,7 +314,7 @@ public class OptionsAction extends CallableSystemAction {
         /** Expands the node in explorer.
          */
         private static void expandNodes (Node n, final int depth, final Collection list) {
-            assert EventQueue.isDispatchThread();
+            //assert EventQueue.isDispatchThread();
             if (depth == 0) {
                 return;
             }
@@ -429,13 +348,21 @@ public class OptionsAction extends CallableSystemAction {
             Node[] arr = n.getChildren().getNodes(true);
             for (int i = 0; i < arr.length; i++) {
                 final Node p = arr[i];
-                invokeLaterLowPriority(new Runnable() {
+                /*invokeLaterLowPriority(new Runnable() {
                     public void run() {
                         expandNodes(p, depth - 1, list);
                     }
-                });
+                });*/
+                expandNodes(p, depth - 1, list);
             }
         }
+
+        private Collection getToExpand() {
+            return toExpand;
+        }
+        
+        
+        
         
         //
         // Model to implement the special handling of SettingChildren.* properties
@@ -473,6 +400,10 @@ public class OptionsAction extends CallableSystemAction {
             private Node.Property active_set [] = null;
             PropertyChangeListener weakL = null;
 
+            JTree getTree () {
+                return tree;
+            }
+            
             public TTW () {
                 super (new NTM ());
                 
