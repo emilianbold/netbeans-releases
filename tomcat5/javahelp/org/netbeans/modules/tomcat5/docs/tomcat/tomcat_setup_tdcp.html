@@ -57,7 +57,12 @@ can create a JDBC resource manually in your <tt>server.xml</tt> or you can use T
 Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
 Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
 </p><blockquote>
-<pre>    	  &lt;resource-ref&gt;<br>              &lt;description&gt;Tomcat DBCP&lt;/description&gt;<br>              &lt;res-ref-name&gt;jdbc/poolDB&lt;/res-ref-name&gt;<br>              &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;<br>              &lt;res-auth&gt;Container&lt;/res-auth&gt;<br>    	  &lt;/resource-ref&gt;</pre>
+<pre>    	  &lt;resource-ref&gt;
+	      &lt;description&gt;Tomcat DBCP&lt;/description&gt;
+	      &lt;res-ref-name&gt;jdbc/poolDB&lt;/res-ref-name&gt;
+	      &lt;res-type&gt;javax.sql.DataSource&lt;/res-type&gt;
+	      &lt;res-auth&gt;Container&lt;/res-auth&gt;
+	  &lt;/resource-ref&gt;</pre>
 
 </blockquote>
 </li>
@@ -76,7 +81,12 @@ if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web ap
 	       <tt>META-INF/context.xml</tt> file should now look similar to the following:</p>
 
 		<blockquote>
-	<pre>    	  &lt;Context path="/Employees"&gt;<br>              &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" <br>               global="jdbc/poolDB"/&gt;<br>              &lt;Logger className="org.apache.catalina.logger.FileLogger" <br>               prefix="Employees" suffix=".log" timestamp="true"/&gt;<br>    	  &lt;/Context&gt;</pre>
+	<pre>    	  &lt;Context path="/Employees"&gt;
+	      &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" 
+	       global="jdbc/poolDB"/&gt;
+	      &lt;Logger className="org.apache.catalina.logger.FileLogger" 
+	       prefix="Employees" suffix=".log" timestamp="true"/&gt;
+	  &lt;/Context&gt;</pre>
 
 		</blockquote></li>
 <li>Finally, <a href="tomcat_use_tdcp.html">use the JDBC resource</a> in your web application.</li></ol>
