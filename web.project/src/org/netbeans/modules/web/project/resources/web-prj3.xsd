@@ -82,6 +82,8 @@ Microsystems, Inc. All Rights Reserved.
         <xsd:sequence>
             <xsd:element name="library" type="webModuleAdditionalLibraryType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <xsd:attribute name="files" use="optional" type="xsd:integer"/>
+        <xsd:attribute name="dirs" use="optional" type="xsd:integer"/>
     </xsd:complexType>
     
     <xsd:complexType name="webModuleLibraryType">
