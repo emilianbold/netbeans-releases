@@ -31,6 +31,14 @@ public class RADFormContainer extends RADContainer implements FormContainer {
     this.formInfo = formInfo;
   }
   
+  /** Getter for the Name property of the component - overriden to provide non-null value, 
+  * as the top-level component does not have a variable
+  * @return current value of the Name property
+  */
+  public String getName () {
+    return FormEditor.getFormBundle ().getString ("CTL_FormTopContainerName");
+  }
+
   /** Setter for the Name property of the component - usually maps to variable declaration for holding the 
   * instance of the component
   * @param value new value of the Name property
@@ -61,6 +69,10 @@ public class RADFormContainer extends RADContainer implements FormContainer {
 
 /*
  * Log
+ *  4    Gandalf   1.3         7/30/99  Ian Formanek    Fixed bugs 2915 - 
+ *       Changing "viewport" property of the JScrollPane does not work - 
+ *       "Property" and 2916 - Changing "viewport" property of the JScrollPane 
+ *       does not work - "Method Call"
  *  3    Gandalf   1.2         7/25/99  Ian Formanek    Variables management 
  *       moved to RADComponent
  *  2    Gandalf   1.1         6/6/99   Ian Formanek    New FormInfo design 
