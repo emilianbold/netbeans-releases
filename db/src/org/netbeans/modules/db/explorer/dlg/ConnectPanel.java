@@ -29,9 +29,6 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
 
     private DatabaseConnection connection;
 
-    /** The support for firing property changes */
-    private PropertyChangeSupport propertySupport;
-
     /** Creates new form ConnectPanel
      * @deprecated use ConnectPanel(DatabaseConnection connection)
      */
@@ -42,7 +39,6 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
      * @param connection instance of DatabaseConnection object
      */
     public ConnectPanel(DatabaseConnection connection) {
-        propertySupport = new PropertyChangeSupport(this);
         this.connection = connection;
         initComponents();
         connectProgressBar.setBorderPainted(false);
@@ -234,26 +230,9 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
     }
 
     private void fireChange() {
-        propertySupport.firePropertyChange("argumentChanged", null, null);
+        firePropertyChange("argumentChanged", null, null);
         connectProgressBar.setBorderPainted(false);
         connectProgressBar.setValue(connectProgressBar.getMinimum());
         connectProgressBar.setString(""); //NOI18N
     }
-
-    /** Add property change listener
-    * Registers a listener for the PropertyChange event. The connection object
-    * should fire a PropertyChange event whenever somebody changes driver, database,
-    * login name or password.
-    */
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        propertySupport.addPropertyChangeListener (l);
-    }
-
-    /** Remove property change listener
-    * Remove a listener for the PropertyChange event.
-    */
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        propertySupport.removePropertyChangeListener (l);
-    }
-
 }
