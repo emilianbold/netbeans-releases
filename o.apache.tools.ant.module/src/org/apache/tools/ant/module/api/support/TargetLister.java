@@ -268,7 +268,12 @@ public class TargetLister {
                 basedir = _basedir;
             } else {
                 File prjFile = apc.getFile();
-                basedir = new File(prjFile.getParentFile(), basedirS);
+                if (prjFile != null) {
+                    basedir = new File(prjFile.getParentFile(), basedirS);
+                } else {
+                    // Script not on disk.
+                    basedir = null;
+                }
             }
             // Go through top-level elements and look for <target> and <import>.
             targets = new HashMap();
@@ -296,6 +301,9 @@ public class TargetLister {
                     if (_file.isAbsolute()) {
                         file = _file;
                     } else {
+                        if (basedir == null) {
+                            throw new IOException("Cannot import relative path " + fileS + " from a diskless script"); // NOI18N
+                        }
                         file = new File(basedir, fileS);
                     }
                     if (file.canRead()) {
