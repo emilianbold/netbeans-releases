@@ -10,7 +10,7 @@ Document type declaration for AnnotationType.
 <!ATTLIST type localizing_bundle CDATA #REQUIRED>
 <!ATTLIST type visible (true | false) "true">
 <!ATTLIST type glyph CDATA ''>
-<!ATTLIST type highlight CDATA #REQUIRED>
+<!ATTLIST type highlight CDATA ''>
 <!ATTLIST type foreground CDATA ''>
 <!ATTLIST type type (line|linepart) "line">
 
