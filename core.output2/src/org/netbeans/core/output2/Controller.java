@@ -298,7 +298,7 @@ public class Controller { //XXX public only for debug access to logging code
                 tab.getOutputPane().selectAll();
                 break;
             case ACTION_FIND:
-                FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction));
+                FindDialogPanel.showFindDialog(new FindActionListener (win, tab, findNextAction, findPreviousAction, copyAction));
                 break;
             case ACTION_FINDNEXT:
                 findNext (tab);
@@ -347,11 +347,13 @@ public class Controller { //XXX public only for debug access to logging code
         OutputTab tab;
         Action findNextAction;
         Action findPreviousAction;
-        public FindActionListener (OutputWindow win, OutputTab tab, Action findNextAction, Action findPreviousAction) {
+        Action copyAction;
+        public FindActionListener (OutputWindow win, OutputTab tab, Action findNextAction, Action findPreviousAction, Action copyAction) {
             this.win = win;
             this.tab = tab;
             this.findNextAction = findNextAction;
             this.findPreviousAction = findPreviousAction;
+            this.copyAction = copyAction;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -387,6 +389,7 @@ public class Controller { //XXX public only for debug access to logging code
                     tab.getOutputPane().setSelection(start, end);
                     findNextAction.setEnabled(true);
                     findPreviousAction.setEnabled(true);
+                    copyAction.setEnabled(true);
                     panel.getTopLevelAncestor().setVisible(false);
                     tab.requestFocus();
                 }
@@ -411,6 +414,7 @@ public class Controller { //XXX public only for debug access to logging code
 
             if (matcher != null && matcher.find (pos)) {
                 tab.getOutputPane().setSelection(matcher.start(), matcher.end());
+                copyAction.setEnabled(true);
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -439,6 +443,7 @@ public class Controller { //XXX public only for debug access to logging code
                 int start = length - matcher.end();
                 int end = length - matcher.start();
                 tab.getOutputPane().setSelection(start, end);
+                copyAction.setEnabled(true);
             } else {
                 Toolkit.getDefaultToolkit().beep();
             }
@@ -574,6 +579,7 @@ public class Controller { //XXX public only for debug access to logging code
                 }
             }
             jfc.setName(dlgTtl);
+            jfc.setDialogTitle(dlgTtl);
 
             if (jfc.showSaveDialog(owner.getTopLevelAncestor()) == JFileChooser.APPROVE_OPTION) {
                 f = jfc.getSelectedFile();
