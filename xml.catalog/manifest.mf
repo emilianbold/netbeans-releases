@@ -2,10 +2,11 @@ OpenIDE-Module: org.netbeans.modules.xml.catalog/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/catalog/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/catalog/CatalogModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/catalog/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
 OpenIDE-Module-Specification-Version: @CATALOG_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Public-Packages: org.netbeans.modules.xml.catalog.spi.**
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
- org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@
+ org.netbeans.modules.xml.core/1 = @BUILD_NUMBER_SUBST@
 Class-Path: ext/resolver-1_1_nb.jar

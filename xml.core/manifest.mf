@@ -2,12 +2,13 @@ OpenIDE-Module: org.netbeans.modules.xml.core/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/core/resources/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/xml/core/CoreModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/core/resources/mf-layer.xml
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.6
 OpenIDE-Module-Specification-Version: @CORE_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-Public-Packages: org.netbeans.modules.xml.spi.**
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.19
 OpenIDE-Module-Module-Dependencies: 
  org.netbeans.api.xml/1 > @API_SPEC_VERS_SUBST@,
- org.netbeans.modules.xml.tax/1 > @TAX_SPEC_VERS_SUBST@,
+ org.netbeans.modules.xml.tax/1 = @BUILD_NUMBER_SUBST@,
  org.openidex.util/2 > 2.1.1
 Class-Path: docs/xml-core.jar
 
