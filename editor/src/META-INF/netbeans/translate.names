@@ -1,0 +1,4 @@
+# org.oldpackage.MyClass=org.newpackage.MyClass
+org.netbeans.modules.editor.options.PlainPrintOptions=org.netbeans.modules.editor.plain.options.PlainPrintOptions
+org.netbeans.modules.editor.options.JavaPrintOptions=org.netbeans.modules.java.editor.options.JavaPrintOptions
+org.netbeans.modules.editor.options.HTMLPrintOptions=org.netbeans.modules.html.editor.options.HTMLPrintOptions
