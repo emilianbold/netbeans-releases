@@ -40,7 +40,8 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
 //    public abstract Context getContext ();
     public abstract ModuleChangeReporter getModuleChangeReporter ();
     
-    /** A folder that contains the module sources
+    /** A folder that contains the module sources.
+     * Module needs to provide ModuleFolderCookie on this folder.
      */
     public abstract FileObject getModuleFolder ();
     
@@ -81,5 +82,8 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
     public static interface ConfigSupport {
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
+    }
+    public static interface ModuleFolderCookie extends Node.Cookie {
+        public J2eeModule getJ2eeModule();
     }
 }

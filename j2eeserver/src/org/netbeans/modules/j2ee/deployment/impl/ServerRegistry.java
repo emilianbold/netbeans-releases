@@ -28,7 +28,7 @@ import java.io.*;
 public final class ServerRegistry implements java.io.Serializable {
 
     public static final String DIR_INSTALLED_SERVERS = "/J2EE/InstalledServers"; //NOI18N
-    public static final String DIR_JSR88_PLUGINS = "/J2EE/Jsr88Plugins"; //NOI18N
+    public static final String DIR_JSR88_PLUGINS = "/J2EE/DeploymentPlugins"; //NOI18N
     public static final String URL_ATTR = "url"; //NOI18N
     public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;

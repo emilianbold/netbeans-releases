@@ -25,7 +25,7 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ManagedObject;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 
 // PENDING use environment providers, not Cookies
 // PENDING issue  --   Target <==> J2EEDomain relationship 1 to many, many to 1, 1 to 1, or many to many

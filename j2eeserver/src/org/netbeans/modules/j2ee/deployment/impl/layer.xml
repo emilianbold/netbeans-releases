@@ -28,7 +28,7 @@
   <folder name="J2EE">
     <folder name="ApplicationProviders">
     </folder>
-    <folder name="Jsr88Plugins">
+    <folder name="DeploymentPlugins">
     </folder>
     <folder name="InstalledServers">
     </folder>

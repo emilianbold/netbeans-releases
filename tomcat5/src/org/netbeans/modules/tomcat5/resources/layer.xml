@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
 
     <folder name="J2EE">
-        <folder name="Jsr88Plugins">
+        <folder name="DeploymentPlugins">
             <folder name="Tomcat5">
                 <file name="Descriptor" url="deployment.xml"/>
                 <file name="Factory.instance">
@@ -25,16 +25,31 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.tomcat5.TomcatFactory,javax.enterprise.deploy.spi.factories.DeploymentFactory"/>
                 </file>
-                <file name="TomcatDeploymentManagementWrapper.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.ide.StartTomcat.create"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.StartTomcat"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManagerWrapper,org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer,org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment,org.netbeans.modules.j2ee.deployment.plugins.spi.FileDeploymentLayout,org.netbeans.modules.j2ee.deployment.plugins.spi.ModuleUrlResolver"/>
-                </file>
                 <file name="TomcatRegistryNodeFactory.instance">                                
                     <!--<attr name="instanceCreate" methodvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory.create"/>-->
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.nodes.TomcatRegistryNodeFactory"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory"/>
-                </file>    
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory"/>
+                </file>
+                <file name="OptionalFactory.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.OptionalFactory"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.OptionalDeploymentManagerFactory"/>
+                </file>
+                <file name="TomcatPlanSplitter.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
+                </file>
+                <file name="TargetMapper.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.TargetMapper"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TargetMapper"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ManagementMapper"/>
+                </file>
+                <folder name="DeploymentFileNames">
+                    <folder name="WAR">
+                        <file name="WEB-INF\context.xml"/>
+                    </folder>
+                </folder>
             </folder>
         </folder>
     </folder>

@@ -129,7 +129,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="privatedtds">
       <antcall target="ddgen">
-          <param name="dtdfile" value="src/org/netbeans/modules/j2ee/deployment/plugins/spi/netbeans-deployment.dtd"/>
+          <param name="dtdfile" value="src/org/netbeans/modules/j2ee/deployment/plugins/api/netbeans-deployment.dtd"/>
           <param name="dtdpackage" value="org.netbeans.modules.j2ee.deployment.impl.gen.nbd"/>
           <param name="dtddir" value="org/netbeans/modules/j2ee/deployment/impl/gen/nbd"/>
       </antcall>
@@ -230,7 +230,7 @@ symbols and copy jar file(s)" depends="debug">
       <property name="javadoc.base" location="."/>
       <property name="javadoc.name" value="J2EEServerAPI"/>
       <property name="javadoc.title" value="NetBeans j2eeserver module APIs"/>
-      <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.spi.*,org.netbeans.modules.j2ee.deployment.plugins.api.*"/>
+      <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.api.*"/>
       <property name="javadoc.classpath" value="${_cp}"/>
       <property name="javadoc.overview" location="api/doc/overview.html"/>
       <property name="javadoc.docfiles" location="api/doc"/>

@@ -25,7 +25,7 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.*;
 import org.openide.util.actions.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.RemoveInstanceAction;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
 
 /**
  * @author George FinKlang

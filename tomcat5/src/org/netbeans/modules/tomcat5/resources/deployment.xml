@@ -23,37 +23,8 @@ Microsystems, Inc. All Rights Reserved.
     -->
     <disconnected-string>tomcat:jakarta-tomcat-5.0.16</disconnected-string>
     
-    <!--
-    The  name-mapper must be a class-name that implements TargetNameResolver.
-    This class provides mapping between names in jsr88 and jsr77
-    -->
-    <name-mapper>org.netbeans.modules.tomcat5.TargetMapper</name-mapper>
-    
     <container-limitation><war-deploy/></container-limitation>
     
-    <!-- config-bean* 
-    <config-bean></config-bean>
-    -->
-    
-    <!--
-    The find-jsp-servlet element specifies a class that provides the location
-    of servlets generated from JSPs. This class must implement
-    FindJSPServlet.
-    -->
-    <find-jsp-servlet>org.netbeans.modules.tomcat5.jsps.FindJSPServletImpl</find-jsp-servlet>
-
-    <start-server>org.netbeans.modules.tomcat5.ide.StartTomcat</start-server>
-    
-    <incremental-deploy>org.netbeans.modules.tomcat5.ide.StartTomcat</incremental-deploy>
-    
-    <file-deployment-layout>org.netbeans.modules.tomcat5.ide.StartTomcat</file-deployment-layout>
-    
-    <module-url-resolver>org.netbeans.modules.tomcat5.ide.StartTomcat</module-url-resolver>
-    
-    <deployment-plan-splitter>org.netbeans.modules.tomcat5.ide.StartTomcat</deployment-plan-splitter>
-    <!--
-    incremental-deploy?, inplace-deploy?, start-server?)>
-    -->
     <web-context-root>
         <xpath>/</xpath>
         <prop-name>contextRoot</prop-name>

@@ -20,8 +20,7 @@ import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.shared.*;
 import javax.enterprise.deploy.spi.status.*;
 
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
 import org.openide.filesystems.*;
@@ -44,7 +43,9 @@ public class ServerInstance implements Node.Cookie {
     private final Server server;
     private DeploymentManager manager;
     private Management management;
-    private HashMap managerWrappers;  // keyed by classnames valued by instances
+    private IncrementalDeployment incrementalDeployment;
+    private StartServer startServer;
+    private FindJSPServlet findJSPServlet;
     private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
@@ -105,7 +106,6 @@ public class ServerInstance implements Node.Cookie {
             manager = null;
         }
         management = null;
-        managerWrappers = null;
         targets = null;
         initCoTarget();
         fireInstanceRefreshed();
@@ -164,11 +164,17 @@ public class ServerInstance implements Node.Cookie {
     }
     
     public StartServer getStartServer() {
-        return (StartServer) getManagerWrapper(StartServer.class);
+        if (startServer == null) {
+            startServer = server.getOptionalFactory ().getStartServer (getDeploymentManager ());
+        }
+        return startServer;
     }
     
     public IncrementalDeployment getIncrementalDeployment() {
-        return (IncrementalDeployment) getManagerWrapper(IncrementalDeployment.class);
+        if (incrementalDeployment == null) {
+            incrementalDeployment = server.getOptionalFactory ().getIncrementalDeployment (getDeploymentManager ());
+        }
+        return incrementalDeployment;
     }
     
     private ManagementMapper mgmtMapper = null;
@@ -178,48 +184,13 @@ public class ServerInstance implements Node.Cookie {
         return mgmtMapper;
     }
     
-    public FileDeploymentLayout getFileDeploymentLayout() {
-        return (FileDeploymentLayout) getManagerWrapper(FileDeploymentLayout.class);
-    }
-    
-    public ModuleUrlResolver getModuleUrlResolver() {
-        return (ModuleUrlResolver) getManagerWrapper(ModuleUrlResolver.class);
-    }
-    
     public FindJSPServlet getFindJSPServlet() {
-        return (FindJSPServlet) getManagerWrapper(FindJSPServlet.class);
+        if (findJSPServlet == null) {
+            findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDeploymentManager ());
+        }
+        return findJSPServlet;
     }
 
-    private DeploymentManagerWrapper getManagerWrapper(Class wrapperClass) {
-        return (DeploymentManagerWrapper) getManagerWrappers().get(wrapperClass.getName());
-    }
-    
-    static Class[] wrapperClasses = new Class[] {
-        StartServer.class, 
-        IncrementalDeployment.class, 
-        FileDeploymentLayout.class, 
-        ModuleUrlResolver.class,
-        FindJSPServlet.class
-    };
-    private Map getManagerWrappers() {
-        if (getDeploymentManager() == null)
-            throw new IllegalStateException("DeployementManager is not ready"); //NOI18N
-        
-        if (managerWrappers != null)
-            return managerWrappers;
-        
-        //initialize cache
-        managerWrappers = new HashMap(5);
-        for (int i=0; i<wrapperClasses.length; i++) {
-            DeploymentManagerWrapper wrapper = server.getDeploymentManagerWrapper(wrapperClasses[i]);
-            if (wrapper != null) {
-                wrapper.setDeploymentManager(getDeploymentManager());
-                managerWrappers.put(wrapperClasses[i].getName(), wrapper);
-            }
-        }
-        return managerWrappers;
-    }
-    
     //---------- State API's:  running, debuggable, startedByIDE -----------
     long lastCheck = 0;
     boolean isRunning = false;

@@ -19,7 +19,7 @@ import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -164,11 +164,11 @@ public class Server implements Node.Cookie {
         FindServer oo = (FindServer) lkp.lookup (FindServer.class);
         if (oo != null) {
             return oo;
+        } else {
+            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, DeploymentPlanSplitter.class);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            return null;
         }
-        Object o = getClassFromPlugin(dep.getFinderUi());
-        if (o instanceof FindServer)
-            return (FindServer) o;
-        return null;
     }
         
     public ConfigBeanDescriptor getConfigBeanDescriptor(String className) {
@@ -201,69 +201,15 @@ public class Server implements Node.Cookie {
         return null;
     }
     
-    public DeploymentManagerWrapper getDeploymentManagerWrapper(Class wrapperClass) {
-        if (StartServer.class.isAssignableFrom(wrapperClass))
-            return getStartServer();
-        else if (IncrementalDeployment.class.isAssignableFrom(wrapperClass))
-            return getIncrementalDeployment();
-        else if (FileDeploymentLayout.class.isAssignableFrom(wrapperClass))
-            return getFileDeploymentLayout();
-        else if (ModuleUrlResolver.class.isAssignableFrom(wrapperClass))
-            return getModuleUrlResolver();
-        else if (FindJSPServlet.class.isAssignableFrom(wrapperClass))
-            return getFindJSPServlet();
-        else 
-            throw new IllegalArgumentException("Unknown DeploymentManagerWrapper class " + wrapperClass.getName()); //NOI18N
-    }
-    
-    public IncrementalDeployment getIncrementalDeployment() {
-        IncrementalDeployment o = (IncrementalDeployment) lkp.lookup (IncrementalDeployment.class);
-        if (o != null) {
-            return o;
-        }
-        String className = dep.getIncrementalDeploy();
-        return (IncrementalDeployment) getClassFromPlugin(className);
-    }
-    
-    public FileDeploymentLayout getFileDeploymentLayout() {
-        FileDeploymentLayout o = (FileDeploymentLayout) lkp.lookup (FileDeploymentLayout.class);
-        if (o != null) {
-            return o;
-        }
-        String className = dep.getFileDeploymentLayout();
-        return (FileDeploymentLayout) getClassFromPlugin(className);
-    }
-    
-    public StartServer getStartServer() {
-        StartServer o = (StartServer) lkp.lookup (StartServer.class);
-        if (o != null) {
-            return o;
-        }
-        String className = dep.getStartServer();
-        return (StartServer) getClassFromPlugin(className);
-    }
-
-    public ModuleUrlResolver getModuleUrlResolver() {
-        ModuleUrlResolver o = (ModuleUrlResolver) lkp.lookup (ModuleUrlResolver.class);
-        if (o != null) {
-            return o;
-        }
-        String className = dep.getModuleUrlResolver();
-        return (ModuleUrlResolver) getClassFromPlugin(className);
-    }
-    
-    public FindJSPServlet getFindJSPServlet() {
-        String className = dep.getFindJspServlet();
-        return (FindJSPServlet) getClassFromPlugin(className);
-    }
-    
     public DeploymentPlanSplitter getDeploymentPlanSplitter() {
         DeploymentPlanSplitter o = (DeploymentPlanSplitter) lkp.lookup (DeploymentPlanSplitter.class);
         if (o != null) {
             return o;
+        } else {
+            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, DeploymentPlanSplitter.class);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
+            return null;
         }
-        String className = dep.getDeploymentPlanSplitter();
-        return (DeploymentPlanSplitter) getClassFromPlugin(className);
     }
     
     public RegistryNodeProvider getNodeProvider() {
@@ -283,16 +229,17 @@ public class Server implements Node.Cookie {
         ManagementMapper o = (ManagementMapper) lkp.lookup (ManagementMapper.class);
         if (o != null) {
             return o;
-        }
-        String className = dep.getNameMapper();
-        Object mapper = getClassFromPlugin(className);
-        if (mapper instanceof ManagementMapper)
-            return (ManagementMapper) mapper;
-        else {
-            ErrorManager.getDefault().log(
-            ErrorManager.WARNING, NbBundle.getMessage(Server.class, "MSG_InvalidNameMapper", className));
+        } else {
+            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, ManagementMapper.class);
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
             return null;
         }
+    }
+
+    /** returns OptionalDeploymentManagerFactory or null it is not provided by the plugin */
+    public OptionalDeploymentManagerFactory getOptionalFactory () {
+        OptionalDeploymentManagerFactory o = (OptionalDeploymentManagerFactory) lkp.lookup (OptionalDeploymentManagerFactory.class);
+        return o;
     }
     
     public ServerInstance[] getInstances() {

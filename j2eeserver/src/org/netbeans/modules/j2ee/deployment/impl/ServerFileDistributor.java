@@ -16,7 +16,7 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import org.openide.filesystems.*;
 import java.io.*;
 import java.util.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.common.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
@@ -38,8 +38,7 @@ import java.net.URL;
 public class ServerFileDistributor extends ServerProgress {
     ServerInstance instance;
     DeploymentTarget dtarget;
-    ModuleUrlResolver urlResolver;
-    FileDeploymentLayout fileLayout;
+    IncrementalDeployment incremental;
     DeploymentPlanSplitter splitter;
     
     // valued by RootedEntry's
@@ -54,8 +53,7 @@ public class ServerFileDistributor extends ServerProgress {
         super(instance);
         this.instance = instance;
         this.dtarget = dtarget;
-        fileLayout = instance.getFileDeploymentLayout();
-        urlResolver = instance.getModuleUrlResolver();
+        incremental = instance.getIncrementalDeployment ();
         splitter =  instance.getServer().getDeploymentPlanSplitter();
         
         //init contents
@@ -90,7 +88,7 @@ public class ServerFileDistributor extends ServerProgress {
     }
     
     private AppChanges createModuleChangeDescriptor(TargetModuleID target) {
-        String moduleUrl = urlResolver.getModuleUrl(target);
+        String moduleUrl = incremental.getModuleUrl(target);
         J2eeModule module;
         if (target.getParentTargetModuleID() == null)
             module = dtarget.getModule();
@@ -99,7 +97,7 @@ public class ServerFileDistributor extends ServerProgress {
         List descriptorRelativePaths = getDescriptorPath(module);
         
         ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (module.getModuleType ());
-        List serverDescriptorRelativePaths = Arrays.asList(fileLayout.getDeploymentPlanFilenames(moduleType));
+        List serverDescriptorRelativePaths = Arrays.asList(splitter.getDeploymentPlanFileNames(moduleType));
         return new AppChanges(descriptorRelativePaths, serverDescriptorRelativePaths);
     }
     
@@ -109,7 +107,7 @@ public class ServerFileDistributor extends ServerProgress {
         AppChanges changes = new AppChanges();
         //PENDING: whether module need to be stop first
         for (int i=0; childModules != null && i<childModules.length; i++) {
-            String url = urlResolver.getModuleUrl(targetModule.delegate());
+            String url = incremental.getModuleUrl(targetModule.delegate());
             Iterator source = (Iterator) childModuleFiles.get(url);
             changes.record(_distribute(source, childModules[i], url, lastDeployTime));
         }
@@ -137,7 +135,7 @@ public class ServerFileDistributor extends ServerProgress {
         FileLock lock = null;
         try {
             //get relative-path-key map from FDL
-            File dir = fileLayout.getDirectoryForModule(target);
+            File dir = incremental.getDirectoryForModule(target);
             //System.out.println("Distributing files for "+target+" to "+dir);
             dir.mkdirs();
             File parent = dir.getParentFile();
@@ -193,7 +191,7 @@ public class ServerFileDistributor extends ServerProgress {
             }
             
             ModuleType moduleType = (ModuleType) J2eeDeploymentLookup.translateModule.get (dtarget.getModule ().getModuleType ());
-            String[] rPaths = fileLayout.getDeploymentPlanFilenames(moduleType);
+            String[] rPaths = splitter.getDeploymentPlanFileNames(moduleType);
             /*for (int n=0; n < rPaths.length; n++) {
                 FileObject removedFO = (FileObject)destMap.remove(rPaths[n]);
                 System.out.println("Sparing plan file: "+rPaths[n]+" removedFO="+removedFO);

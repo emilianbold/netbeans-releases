@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 
-import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.api.RegistryNodeFactory;
 import org.openide.nodes.*;
 import org.openide.util.Lookup;
 import org.openide.util.actions.*;

@@ -14,7 +14,7 @@
 package org.netbeans.modules.j2ee.deployment.impl.projects;
 
 import org.netbeans.modules.j2ee.deployment.execution.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -139,7 +139,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     private String getChildWebUrl(TargetModule module, J2eeModule childWeb) {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(module.getInstanceUrl());
-        ModuleUrlResolver mur = instance.getModuleUrlResolver();
+        IncrementalDeployment mur = instance.getIncrementalDeployment ();
         TargetModuleID tmid = null;
         String clientModuleUri = childWeb.getUrl();
             TargetModuleID[] children = module.getChildTargetModuleID();
@@ -159,7 +159,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             return null;
         }
         return urlString;
-            }
+    }
     private void startWebClient(String urlString) {
         String defaultURL = settings.getDefaultUrl();
         if (defaultURL != null && ! defaultURL.trim().equals("") ){

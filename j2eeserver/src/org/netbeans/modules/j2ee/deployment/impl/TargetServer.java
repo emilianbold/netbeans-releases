@@ -21,7 +21,7 @@ import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.enterprise.deploy.spi.exceptions.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.openide.ErrorManager;
@@ -88,7 +88,7 @@ public class TargetServer {
             return false;
         }
         
-        if (!instance.getFileDeploymentLayout().canFileDeploy(targetz[0], deployable))
+        if (!instance.getIncrementalDeployment ().canFileDeploy(targetz[0], deployable))
             return false;
 
         return true;
@@ -101,7 +101,7 @@ public class TargetServer {
             return false;
         }
         
-        if (!instance.getFileDeploymentLayout().canFileDeploy(targetModules[0].getTarget(), deployable))
+        if (!instance.getIncrementalDeployment ().canFileDeploy(targetModules[0].getTarget(), deployable))
             return false;
 
         return true;
@@ -125,10 +125,6 @@ public class TargetServer {
         String missing = null;
         if (instance.getServer().getDeploymentPlanSplitter() == null) 
             missing = DeploymentPlanSplitter.class.getName();
-        if (instance.getModuleUrlResolver() == null)
-            missing = ModuleUrlResolver.class.getName();
-        if (instance.getFileDeploymentLayout() == null)
-            missing = FileDeploymentLayout.class.getName();
             
         if (missing != null) {
             String msg = NbBundle.getMessage(ServerFileDistributor.class, "MSG_MissingServiceImplementations", missing);
@@ -206,16 +202,11 @@ public class TargetServer {
                 }
             }
         } else { // make sure getDirectoryForModule return non-null directory for incremental
-            FileDeploymentLayout fileLayout = instance.getFileDeploymentLayout();
-            if (fileLayout == null)
-                incremental = null;
-            else {
-                for (Iterator k=toRedeploy.iterator(); k.hasNext();) {
-                    TargetModule tm = (TargetModule) k.next();
-                    if (fileLayout.getDirectoryForModule(tm.delegate()) == null) {
-                        incremental = null;
-                        break;
-                    }
+            for (Iterator k=toRedeploy.iterator(); k.hasNext();) {
+                TargetModule tm = (TargetModule) k.next();
+                if (incremental.getDirectoryForModule(tm.delegate()) == null) {
+                    incremental = null;
+                    break;
                 }
             }
         }

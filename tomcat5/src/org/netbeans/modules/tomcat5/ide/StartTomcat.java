@@ -13,41 +13,21 @@
 
 package org.netbeans.modules.tomcat5.ide;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import javax.enterprise.deploy.shared.ActionType;
-import javax.enterprise.deploy.shared.CommandType;
-import javax.enterprise.deploy.shared.StateType;
-import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.DeploymentConfiguration;
+import java.io.*;
+
 import javax.enterprise.deploy.model.DeployableObject;
+import javax.enterprise.deploy.shared.*;
+import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
-import javax.enterprise.deploy.spi.status.ClientConfiguration;
-import javax.enterprise.deploy.spi.status.DeploymentStatus;
-import javax.enterprise.deploy.spi.status.ProgressListener;
-import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FileDeploymentLayout;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.ModuleUrlResolver;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentPlanSplitter;
-import org.netbeans.modules.tomcat5.TomcatFactory;
-import org.netbeans.modules.tomcat5.TomcatManager;
-import org.netbeans.modules.tomcat5.TomcatManagerImpl;
-import org.netbeans.modules.tomcat5.TomcatModule;
-import org.netbeans.modules.tomcat5.WebappConfiguration;
-import org.netbeans.modules.tomcat5.URLWait;
+import javax.enterprise.deploy.spi.status.*;
+
+import org.netbeans.modules.j2ee.deployment.plugins.api.StartServer;
+import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter;
+
+import org.netbeans.modules.tomcat5.*;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
+
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.execution.ProcessExecutor;
@@ -57,28 +37,15 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.debugger.DebuggerInfo;
 import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+
 import org.xml.sax.SAXException;
 
-
-/** Extension to JSR88 that enables starting of Tomcat.
+/** Extension to Deployment API that enables starting of Tomcat.
  *
- * <p>
- * TODO: create lib and classes dirs in base dir and modify catalina.policy to load from them
- * TODO: progress when starting
- *
- * @author Radim Kubacki
+ * @author Radim Kubacki, Pavel Buzek
  */
-public final class StartTomcat implements StartServer, Runnable, ProgressObject, IncrementalDeployment, FileDeploymentLayout, ModuleUrlResolver, DeploymentPlanSplitter
+public final class StartTomcat extends StartServer implements Runnable, ProgressObject
 {
-    private static StartTomcat instance;
-    
-    public static synchronized StartTomcat create() {
-        if (instance == null) {
-            instance = new StartTomcat ();
-        }
-        return instance;
-    }
-    
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
     
@@ -126,17 +93,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     private boolean isDebugMode = false;
     private boolean startDebugMode = false;
     
-    private static final String DEPLOYMENT_PLAN_FNAME = "WEB-INF" + System.getProperty("file.separator")+ "context.xml"; //NOI18N
-    
-    /** Default constructor. */
-    public StartTomcat () {
+    public StartTomcat (DeploymentManager manager) {
         pes = new ProgressEventSupport (this);
-    }
-    
-    /** Associates with @see javax.enterprise.deploy.spi.DeploymentManager */
-    public void setDeploymentManager (javax.enterprise.deploy.spi.DeploymentManager manager) {
         tm = (TomcatManager)manager;
-        tm.setStartTomcat(this);
     }
     
     public boolean supportsStartDeploymentManager () {
@@ -357,8 +316,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     },
                     true,
                     new File (homeDir, "bin")
-                );
-
+                );        
                 if (command == CommandType.START) {
                     ProcessSupport.connectProcessToOutputWindow(p, tm.getUri());
                 }
@@ -429,8 +387,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
      * Target is already started when Tomcat starts.
      */
     public ProgressObject startServer (Target target) {
-        
-        return null; // PENDING
+        return null;
     }
     
     public boolean supportsDebugging (Target target) {
@@ -659,84 +616,6 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
         pes.removeProgressListener (pl);
     }
     
-    public ProgressObject incrementalDeploy (final TargetModuleID module, org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor changes) {
-        if (changes.descriptorChanged () || changes.classesChanged ()) {
-            TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-            tmi.reload ((TomcatModule)module);
-            return tmi;
-        } else {
-            final P p = new P (module);
-            p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
-            Task t = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    try {
-                        p.supp.fireHandleProgressEvent (module, new Status (ActionType.EXECUTE, CommandType.DISTRIBUTE, "", StateType.COMPLETED));
-                        
-                    } catch (Throwable e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            return p;
-        }
-    }
-    
-    public String[] getDeploymentPlanFilenames (ModuleType type) {
-        if (type.equals (ModuleType.WAR)) {
-            return new String [] {DEPLOYMENT_PLAN_FNAME};
-        } else {
-            return new String [] {};
-        }
-    }
-    
-    public File getDirectoryForModule (TargetModuleID module) {
-        TomcatModule tModule = (TomcatModule) module;
-        String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath () 
-            + System.getProperty("file.separator") + "webapps"   //NOI18N
-            + System.getProperty("file.separator") + tModule.getPath ().substring (1); //NOI18N
-        File f = new File (moduleFolder);
-        return f;
-    }
-    
-    public String getModuleUrl (TargetModuleID module) {
-        if (module instanceof TomcatModule) {
-            return ((TomcatModule) module).getWebURL ();
-        } else {
-            throw new IllegalArgumentException ();
-        }
-    }
-    
-    public void writeDeploymentPlanFiles (javax.enterprise.deploy.spi.DeploymentConfiguration configuration, javax.enterprise.deploy.model.DeployableObject module, File[] files) {
-    }
-    
-    public ProgressObject initialDeploy (Target target, javax.enterprise.deploy.model.DeployableObject app, DeploymentConfiguration configuration, File dir) {
-        TomcatManagerImpl tmi = new TomcatManagerImpl (tm);
-        tmi.initialDeploy (target, ((WebappConfiguration)configuration).getPath (), dir);
-        return tmi;
-    }
-    
-    public boolean canFileDeploy (Target target, javax.enterprise.deploy.model.DeployableObject deployable) {
-        return deployable.getType ().equals (javax.enterprise.deploy.shared.ModuleType.WAR);
-        
-    }
-    
-    public File getDirectoryForNewApplication (Target target, DeployableObject module, DeploymentConfiguration configuration) {
-        if (module.getType ().equals (ModuleType.WAR)) {
-            if (configuration instanceof WebappConfiguration) {
-                String moduleFolder = tm.getCatalinaBaseDir ().getAbsolutePath () 
-                    + System.getProperty("file.separator") + "webapps"   //NOI18N
-                    + System.getProperty("file.separator") + ((WebappConfiguration)configuration).getPath ().substring (1);  //NOI18N
-                File f = new File (moduleFolder);
-                return f;
-            } 
-        }
-        throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration); //NOI18N
-    }
-
-    public File getDirectoryForNewModule(File appDir, String uri, DeployableObject module, DeploymentConfiguration configuration) {
-        throw new UnsupportedOperationException ();
-    }
-
     /** Format that provides value usefull for Tomcat execution. 
      * Currently this is only the name of startup wrapper.
     */
@@ -762,52 +641,5 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     
     public String toString () {
         return "StartTomcat [" + tm + "]";
-    }
-    
-    private static class P implements ProgressObject {
-        
-        ProgressEventSupport supp = new ProgressEventSupport (this);
-        TargetModuleID tmid;
-        
-        P (TargetModuleID tmid) {
-            this.tmid = tmid;
-        }
-        
-        public void addProgressListener (javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
-            supp.addProgressListener (progressListener);
-        }
-        
-        public void removeProgressListener (javax.enterprise.deploy.spi.status.ProgressListener progressListener) {
-            supp.removeProgressListener (progressListener);
-        }
-        
-        public javax.enterprise.deploy.spi.status.ClientConfiguration getClientConfiguration (javax.enterprise.deploy.spi.TargetModuleID targetModuleID) {
-            return null;
-        }
-        
-        public javax.enterprise.deploy.spi.status.DeploymentStatus getDeploymentStatus () {
-            return supp.getDeploymentStatus ();
-        }
-        
-        public javax.enterprise.deploy.spi.TargetModuleID[] getResultTargetModuleIDs () {
-            return new TargetModuleID [] {tmid};
-        }
-        
-        public boolean isCancelSupported () {
-            return false;
-        }
-        
-        public boolean isStopSupported () {
-            return false;
-        }
-        
-        public void cancel () throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
-            throw new OperationUnsupportedException ("");
-        }
-        
-        public void stop () throws javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException {
-            throw new OperationUnsupportedException ("");
-        }
-        
     }
 }

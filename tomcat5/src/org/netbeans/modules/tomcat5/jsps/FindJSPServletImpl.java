@@ -16,7 +16,7 @@ package org.netbeans.modules.tomcat5.jsps;
 import java.io.File;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.TargetModuleID;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
+import org.netbeans.modules.j2ee.deployment.plugins.api.FindJSPServlet;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.modules.InstalledFileLocator;
 
@@ -29,8 +29,10 @@ public class FindJSPServletImpl implements FindJSPServlet {
     private TomcatManager tm;
     
     /** Creates a new instance of FindJSPServletImpl */
-    public FindJSPServletImpl() {
+    public FindJSPServletImpl(DeploymentManager manager) {
+        tm = (TomcatManager)manager;
     }
+    
     
     public File getServletTempDirectory(String moduleContextPath) {
         File baseDir = findBaseDir();
@@ -111,10 +113,6 @@ public class FindJSPServletImpl implements FindJSPServlet {
     
     public String getServletEncoding(String moduleContextPath, String jspResourcePath) {
         return "UTF8"; // NOI18N
-    }
-    
-    public void setDeploymentManager(DeploymentManager manager) {
-        tm = (TomcatManager)manager;
     }
     
 }

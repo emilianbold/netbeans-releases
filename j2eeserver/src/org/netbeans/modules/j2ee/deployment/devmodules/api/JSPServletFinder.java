@@ -16,7 +16,7 @@ package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OldJSPDebug;
+import org.netbeans.modules.j2ee.deployment.plugins.api.OldJSPDebug;
 import org.openide.nodes.Node;
 
 /**
