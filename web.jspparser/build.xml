@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/web/jspparser/"/>
       <include name="org/netbeans/modules/web/jsps/"/>
+      <include name="org/netbeans/modules/web/jspparser_ext/"/>
       <include name="org/apache/jasper/"/>
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
@@ -58,7 +59,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/autoload"/>
+    <mkdir dir="netbeans/modules/autoload/ext"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/autoload/jsp-parser.jar"
             manifest="manifest-subst.mf"
@@ -67,6 +68,13 @@ Microsystems, Inc. All Rights Reserved.
 	    compress="false">
       <include name="org/netbeans/modules/web/jspparser/"/>
       <include name="org/netbeans/modules/web/jsps/"/>
+      <locale name="ja"/>
+    </locjar>
+    <locjar jarfile="netbeans/modules/autoload/ext/jsp-parser-ext.jar"
+            basedir="src"
+	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <include name="org/netbeans/modules/web/jspparser_ext/"/>
       <include name="org/apache/jasper/"/>
       <locale name="ja"/>
     </locjar>

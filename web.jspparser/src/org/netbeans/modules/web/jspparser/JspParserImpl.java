@@ -22,16 +22,16 @@ import java.util.HashMap;
 import java.util.WeakHashMap;
 import java.util.Iterator;
 import java.lang.reflect.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLClassLoader;
 import javax.servlet.ServletContext;
 
-import org.apache.jasper.JspCompilationContext;
-import org.apache.jasper.compiler.ExtractPageData; // my private class
-import org.apache.jasper.compiler.JspRuntimeContext;
-
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 
 /**
@@ -47,6 +47,8 @@ public class JspParserImpl implements JspParserAPI {
     
     private HashMap parseSupports;
     
+    private static Constructor webAppParserImplConstructor;
+    
     /** Constructs a new Parser API implementation.
      */
     public JspParserImpl() {
@@ -55,6 +57,39 @@ public class JspParserImpl implements JspParserAPI {
         // Project-s and FileObject-s (wmRoots)
         parseSupports = new HashMap();
     }
+    
+    private static void initReflection() {
+        if (webAppParserImplConstructor == null) {
+// ext/jasper-runtime-5.0.18.jar ext/jasper-compiler-5.0.18.jar ext/commons-logging-api.jar ext/commons-el.jar            
+            File files[] = new File[6];
+            files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
+            files[1] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.18.jar", null, false);
+            files[2] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.18.jar", null, false);
+            files[3] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false);
+            files[4] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false);
+            files[5] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-parser-ext.jar", null, false);
+
+            try {
+                URL urls[] = new URL[files.length];
+                for (int i = 0; i < files.length; i++) {
+                    urls[i] = files[i].toURI().toURL();
+                }
+                URLClassLoader urlCL = new URLClassLoader(urls, JspParserImpl.class.getClassLoader());
+                Class cl = urlCL.loadClass("org.netbeans.modules.web.jspparser_ext.WebAppParseSupport");
+                webAppParserImplConstructor = cl.getDeclaredConstructor(new Class[] {JspParserAPI.WebModule.class});
+            }
+            catch (NoSuchMethodException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            catch (MalformedURLException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            catch (ClassNotFoundException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+    }
+    
     
     private static boolean loggerInitialized = false;
     
@@ -74,8 +109,8 @@ public class JspParserImpl implements JspParserAPI {
             // PENDING - we could do a better job here in making up a fallback
             return new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
         }
-        WebAppParseSupport ps = getParseSupport(wm);
-        return ps.getJspOpenInfo(jspFile, useEditor);
+        WebAppParseProxy pp = getParseProxy(wm);
+        return pp.getJspOpenInfo(jspFile, useEditor);
     }
 
     public JspParserAPI.ParseResult analyzePage(FileObject jspFile, WebModule wm, int errorReportingMode) {
@@ -83,8 +118,8 @@ public class JspParserImpl implements JspParserAPI {
         if (wmRoot == null) {
             return getNoWebModuleResult(jspFile, wm);
         }
-        WebAppParseSupport ps = getParseSupport(wm);
-        return ps.analyzePage(jspFile, errorReportingMode);
+        WebAppParseProxy pp = getParseProxy(wm);
+        return pp.analyzePage(jspFile, errorReportingMode);
     }
     
     /**
@@ -102,23 +137,45 @@ public class JspParserImpl implements JspParserAPI {
         if (wmRoot == null) {
             throw new IOException();
         }
-        WebAppParseSupport ps = getParseSupport(wm);
-        return ps.getTaglibMap(true);
+        WebAppParseProxy pp = getParseProxy(wm);
+        return pp.getTaglibMap(true);
     }
     
-    private synchronized WebAppParseSupport getParseSupport(WebModule wm) {
+    private synchronized WebAppParseProxy getParseProxy(WebModule wm) {
         JspParserImpl.WAParseSupportKey key = new JspParserImpl.WAParseSupportKey(wm);
-        WebAppParseSupport ps = (WebAppParseSupport)parseSupports.get(key);
-        if (ps == null) {
-            ps = new WebAppParseSupport(wm);
-            parseSupports.put(key, ps);
+        WebAppParseProxy pp = (WebAppParseProxy)parseSupports.get(key);
+        if (pp == null) {
+            pp = createParseProxy(wm);
+            parseSupports.put(key, pp);
         }
-        return ps;
+        return pp;
+    }
+    
+    private WebAppParseProxy createParseProxy(WebModule wm) {
+        // PENDING - do caching for individual JSPs
+        try {
+            initReflection();
+            return (WebAppParseProxy)webAppParserImplConstructor.newInstance(new Object[] {wm});
+        }
+        catch (IllegalAccessException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            e.printStackTrace();
+        }
+        catch (InstantiationException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            e.printStackTrace();
+        }
+        catch (InvocationTargetException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            e.printStackTrace();
+        }
+        return null;
+        //return new WebAppParseSupport(wm);
     }
     
     public URLClassLoader getModuleClassLoader(WebModule wm) {
-        WebAppParseSupport ps = getParseSupport(wm);
-        return ps.getWAClassLoader();
+        WebAppParseProxy pp = getParseProxy(wm);
+        return pp.getWAClassLoader();
     }
     
     private JspParserAPI.ParseResult getNoWebModuleResult(FileObject jspFile, WebModule wm) {
