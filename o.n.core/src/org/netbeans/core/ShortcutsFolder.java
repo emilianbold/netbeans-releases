@@ -90,7 +90,7 @@ final class ShortcutsFolder extends FolderInstance {
             if (stroke == null) {
                 ErrorManager.getDefault ().
                     getInstance ("org.netbeans.core.ShortcutsFolder"). // NOI18N
-                    log ("Warning: unparsable keystroke: " + keyname); // NOI18N
+                    log (ErrorManager.WARNING, "Warning: unparsable keystroke: " + keyname); // NOI18N
                 continue;
             }
             Action action = (Action)cookies[i].instanceCreate();
