@@ -45,16 +45,7 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
     public SystemAction getDefaultAction () {
         if (getDataObject ().isTemplate ())
             return null;
-            
-        try {
-            if (getDataObject ().getPrimaryFile ().getFileSystem ().getCapability ().capableOf (FileSystemCapability.DOC))
-                return SystemAction.get (ViewAction.class);
-            else
-                return SystemAction.get (OpenAction.class);
-        }
-        catch (FileStateInvalidException exc) {
-            return SystemAction.get (OpenAction.class);
-        }
+        return SystemAction.get (OpenAction.class);
     }
     
     public Node.PropertySet[] getPropertySets() {

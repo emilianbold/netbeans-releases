@@ -643,11 +643,11 @@ public class PropertiesOpen extends CloneableOpenSupport
                     return f.getAbsolutePath();
                 } else {
                     return NbBundle.getMessage(PropertiesOpen.class, "LAB_EditorToolTip",
-                                               fo.getPackageNameExt('/', '.'),
+                                               fo.getPath(),
                                                fo.getFileSystem().getDisplayName());
                 }            
             } catch(FileStateInvalidException fsie) {
-                return fo.getPackageNameExt('/', '.');
+                return fo.getPath();
             }
         }
 

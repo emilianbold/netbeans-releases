@@ -171,7 +171,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
         
         // Set additional proerties to document.
         // Set document name property. Used in CloneableEditorSupport.
-        document.putProperty(Document.TitleProperty, myEntry.getFile().getPackageNameExt('/', '.'));
+        document.putProperty(Document.TitleProperty, myEntry.getFile().toString());
         
         // Set dataobject to stream desc property.
         document.putProperty(Document.StreamDescriptionProperty, myEntry.getDataObject());
@@ -349,11 +349,11 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 return f.getAbsolutePath();
             } else {
                 return NbBundle.getMessage(PropertiesEditorSupport.class, "LAB_EditorToolTip",
-                                           fo.getPackageNameExt('/', '.'),
+                                           fo.getPath(),
                                            fo.getFileSystem().getDisplayName());
             }            
         } catch (FileStateInvalidException fsie) {
-            return fo.getPackageNameExt('/', '.');
+            return fo.getPath();
         }
     }
     

@@ -116,9 +116,11 @@ public class DiffAction extends NodeAction {
         }
         Component tp;
         try {
-            tp = diff.createDiff(fo1.getNameExt(), fo1.getPackageNameExt('/', '.'),
+            // XXX consider something nicer; FO.tS() is a resource path in NB 3.x
+            // and a file: URL after build system merge:
+            tp = diff.createDiff(fo1.getNameExt(), fo1.toString(),
                                  new InputStreamReader(fo1.getInputStream()),
-                                 fo2.getNameExt(), fo2.getPackageNameExt('/', '.'),
+                                 fo2.getNameExt(), fo2.toString(),
                                  new InputStreamReader(fo2.getInputStream()), fo1.getMIMEType());
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);

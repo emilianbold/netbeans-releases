@@ -237,14 +237,9 @@ public class ImageViewer extends CloneableTopComponent {
         setName(name);
         // update tooltip
         FileObject fo = storedObject.getPrimaryFile();
-        StringBuffer fullName = new StringBuffer(fo.getPackageName('.'));
-        String extension = fo.getExt();
-        if (extension.length() > 0) {
-            fullName.append(" ["); // NOI18N
-            fullName.append(extension);
-            fullName.append(']');
-        }
-        setToolTipText(fullName.toString());
+        // XXX the following is a resource path in NB 3.x and a URL after build system
+        // merge; better to produce something nicer (e.g. FileUtil.toFile):
+        setToolTipText(fo.toString());
     }
 
     /** Docks the table into the workspace if top component is valid.

@@ -91,7 +91,7 @@ public class PatchAction extends NodeAction {
                 try {
                     FileSystem fs = fo.getFileSystem();
                     if (fs.isDefault()) {
-                        String packageName = fo.getPackageName('/');
+                        String packageName = fo.getPath();
                         return (packageName.startsWith("Templates") ||
                                 packageName.startsWith("vcs/config") ||
                                 packageName.startsWith("org/"));
@@ -190,8 +190,9 @@ public class PatchAction extends NodeAction {
             if (fo.isData()) file = fo;
             else file = findChild(fo, fileDiffs[i].getFileName());//fo.getFileObject(fileDiffs[i].getFileName());
             if (file == null) {
-                notFoundFileNames.add(fo.getPackageNameExt(File.separatorChar, '.') +
-                                      File.separator + fileDiffs[i].getFileName());
+                // XXX consider using e.g. FileUtil.toFile here;
+                // FO.tS() is a resource path in NB 3.x and a URL in build system:
+                notFoundFileNames.add(fo.toString() + '/' + fileDiffs[i].getFileName());
             } else {
                 FileObject backup = createFileBackup(file);
                 if (applyDiffsTo(fileDiffs[i].getDifferences(), file)) {

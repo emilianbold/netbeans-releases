@@ -7,19 +7,18 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties;
-
 
 import java.awt.Component;
 import java.awt.datatransfer.Transferable;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -27,6 +26,9 @@ import javax.swing.JPanel;
 
 import org.openide.actions.*;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
@@ -140,10 +142,19 @@ public final class PropertiesLocaleNode extends FileEntryNode
 
     /** Gets tooltip message for this node. Helper method. */
     private String messageToolTip () {
-        return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_LocaleNodeToolTip", new Object[] {
-            getFileEntry().getFile().getPackageName('.'),
-            getFileEntry().getFile().getExt()
-        });
+        FileObject fo = getFileEntry().getFile();
+        try {
+            File f = FileUtil.toFile(fo);
+            if (f != null) {
+                return f.getAbsolutePath();
+            } else {
+                return NbBundle.getMessage(PropertiesEditorSupport.class, "LBL_LocaleNodeToolTip2",
+                                           fo.getPath(),
+                                           fo.getFileSystem().getDisplayName());
+            }
+        } catch (FileStateInvalidException fsie) {
+            return fo.getPath();
+        }
     }
     
     /** This node can be renamed. Overrides superclass method. */
