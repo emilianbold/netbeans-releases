@@ -45,8 +45,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 // XXX various methods need to acquire read or write mutex!
 
@@ -184,8 +186,13 @@ public final class AntProjectHelper {
                 String element = shared ? "project" : "private"; // NOI18N
                 String ns = shared ? PROJECT_NS : PRIVATE_NS;
                 xml = XMLUtil.createDocument(element, ns, null, null);
-                // XXX if shared, need to also create <{PROJECT_NS}:configuration/>
-                // to prevent assertion error in getConfigurationDataRoot (#46048)
+                if (shared) {
+                    // #46048: need to generate minimal compliant XML skeleton.
+                    Element typeEl = xml.createElementNS(PROJECT_NS, "type"); // NOI18N
+                    typeEl.appendChild(xml.createTextNode(getType().getType()));
+                    xml.getDocumentElement().appendChild(typeEl);
+                    xml.getDocumentElement().appendChild(xml.createElementNS(PROJECT_NS, "configuration")); // NOI18N
+                }
             }
             if (shared) {
                 projectXml = xml;
@@ -196,6 +203,12 @@ public final class AntProjectHelper {
         assert xml != null;
         return xml;
     }
+    
+    /**
+     * If true, do not report XML load errors.
+     * For use only by unit tests.
+     */
+    static boolean QUIETLY_SWALLOW_XML_LOAD_ERRORS = false;
     
     /**
      * Try to load a config XML file from a named path.
@@ -209,11 +222,15 @@ public final class AntProjectHelper {
         File f = FileUtil.toFile(xml);
         assert f != null;
         try {
-            return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, /*XXX*/null, null);
+            return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         } catch (SAXException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            if (!QUIETLY_SWALLOW_XML_LOAD_ERRORS) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
         }
         return null;
     }
@@ -510,7 +527,7 @@ public final class AntProjectHelper {
         String namespace = type.getPrimaryConfigurationDataElementNamespace(shared);
         assert namespace != null && namespace.length() > 0;
         if (!name.equals(data.getLocalName()) || !namespace.equals(data.getNamespaceURI())) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Wrong name/namespace: expected {" + namespace + "}" + name + " but was {" + data.getNamespaceURI() + "}" + data.getLocalName()); // NOI18N
         }
         putConfigurationFragment(data, shared);
     }

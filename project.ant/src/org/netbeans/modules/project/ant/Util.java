@@ -15,12 +15,14 @@ package org.netbeans.modules.project.ant;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import org.openide.filesystems.FileObject;
+import org.openide.ErrorManager;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  * Utilities relating to Ant projects.
@@ -104,6 +106,41 @@ public class Util {
             }
         }
         return elements;
+    }
+    
+    /**
+     * Create an XML error handler that rethrows errors and fatal errors and logs warnings.
+     * @return a standard error handler
+     */
+    public static ErrorHandler defaultErrorHandler() {
+        return new ErrHandler();
+    }
+    
+    private static final class ErrHandler implements ErrorHandler {
+        
+        public ErrHandler() {}
+        
+        private void annotate(SAXParseException exception) throws SAXException {
+            ErrorManager.getDefault().annotate(exception, ErrorManager.UNKNOWN,
+                "Occurred at: " + exception.getSystemId() + ":" + exception.getLineNumber(), // NOI18N
+                null, null, null);
+        }
+        
+        public void fatalError(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            throw exception;
+        }
+        
+        public void error(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            throw exception;
+        }
+        
+        public void warning(SAXParseException exception) throws SAXException {
+            annotate(exception);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
+        }
+        
     }
     
 }

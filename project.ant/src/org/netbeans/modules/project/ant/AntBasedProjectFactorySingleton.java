@@ -106,7 +106,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         assert projectDiskFile != null;
         Document projectXml;
         try {
-            projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, /*XXX need error handler*/null, null);
+            projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
         } catch (SAXException e) {
             throw (IOException)new IOException(e.toString()).initCause(e);
         }

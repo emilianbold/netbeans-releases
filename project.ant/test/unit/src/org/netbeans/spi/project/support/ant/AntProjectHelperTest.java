@@ -149,6 +149,41 @@ public class AntProjectHelperTest extends NbTestCase {
     }
     
     /**
+     * Test error recovery from malformed project.xml
+     * @see "#46048"
+     */
+    public void testBrokenPrimaryConfigurationData() throws Exception {
+        // Make an empty, thus invalid, project.xml:
+        TestUtil.createFileFromContent(null, projdir, AntProjectHelper.PROJECT_XML_PATH);
+        AntProjectHelper.QUIETLY_SWALLOW_XML_LOAD_ERRORS = true;
+        Element data;
+        try {
+            data = h.getPrimaryConfigurationData(true);
+        } finally {
+            AntProjectHelper.QUIETLY_SWALLOW_XML_LOAD_ERRORS = false;
+        }
+        assertEquals("correct element name", "data", data.getLocalName());
+        assertEquals("correct element namespace", "urn:test:shared", data.getNamespaceURI());
+        Element stuff = Util.findElement(data, "shared-stuff", "urn:test:shared");
+        assertNull("had no stuff in it", stuff);
+        // Make sure a subsequent save proceeds normally too:
+        data = XMLUtil.createDocument("whatever", "urn:test:shared", null, null).createElementNS("urn:test:shared", "data");
+        data.appendChild(data.getOwnerDocument().createElementNS("urn:test:shared", "details"));
+        h.putPrimaryConfigurationData(data, true);
+        pm.saveProject(p);
+        Document doc = AntBasedTestUtil.slurpXml(h, AntProjectHelper.PROJECT_XML_PATH);
+        Element root = doc.getDocumentElement();
+        Element type = Util.findElement(root, "type", AntProjectHelper.PROJECT_NS);
+        assertEquals("correct restored type", "test", Util.findText(type));
+        Element config = Util.findElement(root, "configuration", AntProjectHelper.PROJECT_NS);
+        assertNotNull("have <configuration>", config);
+        data = Util.findElement(config, "data", "urn:test:shared");
+        assertNotNull("have <data>", data);
+        Element details = Util.findElement(data, "details", "urn:test:shared");
+        assertNotNull("have <details>", details);
+    }
+    
+    /**
      * Test that after retrieving XML config data, you can't mess up other internal stuff.
      * @throws Exception if anything unexpected happens
      */

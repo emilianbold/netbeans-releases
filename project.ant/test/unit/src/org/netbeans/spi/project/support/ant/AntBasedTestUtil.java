@@ -246,7 +246,7 @@ public class AntBasedTestUtil {
         if (!f.isFile()) {
             return null;
         }
-        return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, null, null);
+        return XMLUtil.parse(new InputSource(f.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
     }
     
     /**
