@@ -166,9 +166,7 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
     * default.value		Condition of column 
     * Throws DDLException if object name is not specified.
     */
-    public Map getColumnProperties(AbstractCommand cmd)
-    throws DDLException
-    {
+    public Map getColumnProperties(AbstractCommand cmd) throws DDLException {
         DatabaseSpecification spec = cmd.getSpecification();
         Map args = super.getColumnProperties(cmd);
         String stype = spec.getType(type);
@@ -188,7 +186,7 @@ public class TableColumn extends AbstractTableColumn implements Serializable, Ta
 
         String qdefval = defval;
         
-        if (charactertypes.contains(spec.getType(type)) && !defval.startsWith(strdelim) && !defval.endsWith(strdelim))
+        if (qdefval != null && charactertypes.contains(spec.getType(type)) && !qdefval.startsWith(strdelim) && !qdefval.endsWith(strdelim))
             qdefval = strdelim + defval + strdelim;
         
         args.put("column.type", spec.getType(type)); // NOI18N
