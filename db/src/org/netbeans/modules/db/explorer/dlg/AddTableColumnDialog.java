@@ -316,7 +316,7 @@ public class AddTableColumnDialog {
             con.insets = new java.awt.Insets (12, 0, 0, 0);
             con.weightx = 0.0;
             con.weighty = 0.0;
-            ixcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnConstraintIXTitle")); //NOI18N
+            ixcheckbox = new JCheckBox(" "+bundle.getString("AddTableColumnIndexName")); //NOI18N
             ixcheckbox.setName(ColumnItem.INDEX);
             ixcheckbox.addActionListener(cbxlistener);
             pane.add(ixcheckbox, con);
