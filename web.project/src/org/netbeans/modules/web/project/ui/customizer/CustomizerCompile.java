@@ -23,7 +23,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
     /** Creates new form CustomizerCompile */
     public CustomizerCompile() {
-        initComponents();        
+        initComponents();
     }
 
     public void initValues( WebProjectProperties webProperties ) {
@@ -44,7 +44,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         vps.register(jCheckBoxDeprecation, WebProjectProperties.JAVAC_DEPRECATION);
         
         VisualClasspathSupport vcs = new VisualClasspathSupport(
-            jListClasspath,
+            jTableClasspath,
             jButtonAddJar,
             jButtonAddLibrary,
             jButtonAddProject,
@@ -54,8 +54,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
             jButtonMoveDown );
         vps.register( vcs, WebProjectProperties.JAVAC_CLASSPATH );
 
-//        jButtonEdit.setVisible( false );
-
+        jButtonEdit.setVisible( false );
     }
 
     /** This method is called from within the constructor to
@@ -73,7 +72,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         jPanel2 = new javax.swing.JPanel();
         jLabelClasspath = new javax.swing.JLabel();
         jScrollClasspath = new javax.swing.JScrollPane();
-        jListClasspath = new javax.swing.JList();
+        jTableClasspath = new javax.swing.JTable();
         jButtonAddJar = new javax.swing.JButton();
         jButtonAddLibrary = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
@@ -118,7 +117,7 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabelClasspath.setLabelFor(jListClasspath);
+        jLabelClasspath.setLabelFor(jTableClasspath);
         jLabelClasspath.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Classpath_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -126,7 +125,15 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         jPanel2.add(jLabelClasspath, gridBagConstraints);
 
-        jScrollClasspath.setViewportView(jListClasspath);
+        jTableClasspath.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollClasspath.setViewportView(jTableClasspath);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -220,9 +227,9 @@ public class CustomizerCompile extends javax.swing.JPanel implements WebCustomiz
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
     private javax.swing.JLabel jLabelClasspath;
-    private javax.swing.JList jListClasspath;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollClasspath;
+    private javax.swing.JTable jTableClasspath;
     private javax.swing.JComboBox jvmComboBox;
     private javax.swing.JLabel jvmLabel;
     // End of variables declaration//GEN-END:variables

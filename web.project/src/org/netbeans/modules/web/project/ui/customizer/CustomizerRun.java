@@ -57,16 +57,16 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel {
         
         vps.register( jTextFieldMainClass, WebProjectProperties.MAIN_CLASS  );
         vps.register( jTextFieldArgs, WebProjectProperties.APPLICATION_ARGS );
-        VisualClasspathSupport vcs = new VisualClasspathSupport(
-            jListClasspath,
-            jButtonAddJar,
-            jButtonAddLibrary,
-            jButtonAddArtifact,
-            jButtonEdit,
-            jButtonRemove,
-            jButtonMoveUp,
-            jButtonMoveDown );
-        vps.register( vcs, WebProjectProperties.RUN_CLASSPATH );
+//        VisualClasspathSupport vcs = new VisualClasspathSupport(
+//            jListClasspath,
+//            jButtonAddJar,
+//            jButtonAddLibrary,
+//            jButtonAddArtifact,
+//            jButtonEdit,
+//            jButtonRemove,
+//            jButtonMoveUp,
+//            jButtonMoveDown );
+//        vps.register( vcs, WebProjectProperties.RUN_CLASSPATH );
    
         // XXX Probably remove the button
         jButtonMainClass.setVisible( false );
