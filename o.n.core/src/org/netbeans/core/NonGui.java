@@ -451,6 +451,20 @@ public class NonGui extends NbTopManager implements Runnable {
         java.net.Authenticator.setDefault (new NbAuthenticator ());
 
         // -----------------------------------------------------------------------------------------------------
+        // Upgrade
+        try {
+            if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        org.netbeans.core.upgrade.UpgradeWizard.showWizard();
+                    }
+                });
+            }
+        } catch (Exception e) {
+            TopManager.getDefault().getErrorManager().notify(e);
+        }
+
+        // -----------------------------------------------------------------------------------------------------
         // 9. Modules
 
         {
@@ -467,7 +481,6 @@ public class NonGui extends NbTopManager implements Runnable {
                 userModuleDirectory
             );
         }
-
 
         // -----------------------------------------------------------------------------------------------------
         // 10. Initialization of project (because it can change loader pool and it influences main window menu)
