@@ -52,15 +52,15 @@ import org.apache.tools.ant.module.xml.ElementSupport;
  */
 public class AntTargetNode extends ElementNode {
 
-    public AntTargetNode (AntProjectCookie project, Element targetElem) {
+    public AntTargetNode (final AntProjectCookie project, final Element targetElem) {
         super (targetElem, new AntTargetChildren (targetElem));
-        final AntTargetCookie targetCookie = new AntTargetSupport (project, targetElem);
+        AntTargetCookie targetCookie = new AntTargetSupport (project, targetElem);
         getCookieSet().add(targetCookie);
         if (project.getFile () != null) {
             getCookieSet ().add (new ExecCookie () {
                     public void start () {
                         try {
-                            new TargetExecutor (targetCookie).execute ();
+                            new TargetExecutor (project, new String[] { targetElem.getAttribute ("name") }).execute (); // NOI18N
                         } catch (IOException ioe) {
                             TopManager.getDefault ().notifyException (ioe);
                         }

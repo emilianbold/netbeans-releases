@@ -30,6 +30,7 @@ import org.w3c.dom.Element;
 import org.apache.tools.ant.*;
 import org.apache.tools.ant.taskdefs.Taskdef;
 
+import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.AntSettings;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.AntTargetCookie;
@@ -40,14 +41,24 @@ import org.apache.tools.ant.module.api.IntrospectedInfo;
  */
 public class TargetExecutor implements Runnable {
 
+    private AntProjectCookie pcookie;
     private AntTargetCookie cookie;
     private InputOutput io;
     private boolean ok = false;
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
     private Properties properties = AntSettings.getDefault ().getProperties ();
     private List targetNames;
+
+    /** targets may be null to indicate default target */
+    public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
+        this.pcookie = pcookie;
+        cookie = null;
+        targetNames = ((targets == null) ? null : Arrays.asList (targets));
+    }
   
+    /** @deprecated use other constructor instead */
     public TargetExecutor (AntTargetCookie cookie) throws IOException {
+        pcookie = cookie.getProjectCookie ();
         this.cookie = cookie;
         Element el = cookie.getTargetElement ();
         if (el == null) throw new IOException ("No <target> found"); // NOI18N
@@ -75,30 +86,38 @@ public class TargetExecutor implements Runnable {
     /** Start it going. */
     public ExecutorTask execute () throws IOException {
         //System.err.println("execute #1: " + this);
-        AntProjectCookie projcookie = cookie.getProjectCookie ();
-        Throwable misparse = projcookie.getParseException ();
-        if (misparse != null) {
-            IOException ioe = new IOException ();
-            TopManager.getDefault ().getErrorManager ().annotate (ioe, misparse);
-            throw ioe;
-        }
-        String projectName = projcookie.getProjectElement ().getAttribute ("name"); // NOI18N
-        String fileName;
-        if (projcookie.getFileObject () != null) {
-            fileName = DataObject.find (projcookie.getFileObject ()).getNodeDelegate ().getDisplayName ();
+        Element projel = pcookie.getProjectElement ();
+        String projectName;
+        if (projel != null) {
+            projectName = projel.getAttribute ("name"); // NOI18N
         } else {
-            fileName = projcookie.getFile ().getName ();
+            projectName = NbBundle.getMessage (TargetExecutor.class, "LBL_unparseable_proj_name");
         }
-        /*
+        String fileName;
+        if (pcookie.getFileObject () != null) {
+            fileName = DataObject.find (pcookie.getFileObject ()).getNodeDelegate ().getDisplayName ();
+        } else {
+            fileName = pcookie.getFile ().getName ();
+        }
         String name;
-        if (target != null) {
-            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target", projectName, fileName, target);
+        if (targetNames != null) {
+            StringBuffer targetList = new StringBuffer ();
+            Iterator it = targetNames.iterator ();
+            if (it.hasNext ()) {
+                targetList.append ((String) it.next ());
+            }
+            while (it.hasNext ()) {
+                targetList.append (NbBundle.getMessage (TargetExecutor.class, "SEP_output_target"));
+                targetList.append ((String) it.next ());
+            }
+            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
         } else {
             name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
-         */
+        /*
         String name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target",
                                            projectName, fileName, cookie.getTargetElement ().getAttribute ("name")); // NOI18N
+        */
         final ExecutorTask task;
         synchronized (this) {
             // Note that this redirects stdout/stderr from
@@ -155,7 +174,7 @@ public class TargetExecutor implements Runnable {
         }
         
         //System.out.println("run #2: " + this); // NOI18N
-        final Project project = new Project ();
+        Project project = null;
 
         //PrintStream out = new PrintStream (new OutputWriterOutputStream (io.getOut ()));
         PrintStream err = new PrintStream (new OutputWriterOutputStream (io.getErr ()));
@@ -166,9 +185,32 @@ public class TargetExecutor implements Runnable {
         BuildLogger logger;
         try {
             //writer.println("#1"); // NOI18N
-            File buildFile = cookie.getProjectCookie ().getFile ();
-            if (buildFile == null) throw new IllegalArgumentException ();
-            project.init();
+            File buildFile = pcookie.getFile ();
+            if (buildFile == null) {
+                throw new BuildException (NbBundle.getMessage (TargetExecutor.class, "EXC_non_local_proj_file"));
+            }
+            // --> HACK
+            // Workaround for parts of the system (e.g. focus callback) that set system
+            // properties to non-String values. Throws ClassCastException from Project.init()
+            // in Ant 1.3 (not in dev versions after 1.3). So remove them temporarily and then
+            // put them right back.
+            Map weirdoProps = new HashMap (); // Map<String,Object>
+            removeWeirdoProps (weirdoProps);
+            try {
+                project = new Project ();
+                try {
+                    project.init ();
+                } catch (ClassCastException cce) {
+                    // Race condition. Retry (once only tho, avoid inf loops).
+                    AntModule.err.log ("ClassCastException from Project.init: " + cce.getMessage ());
+                    removeWeirdoProps (weirdoProps);
+                    project = new Project ();
+                    project.init ();
+                }
+            } finally {
+                System.getProperties ().putAll (weirdoProps);
+                weirdoProps = null; // make sure GC'able quickly
+            }
             Iterator defs = DefinitionRegistry.getDefs (true).entrySet ().iterator ();
             while (defs.hasNext ()) {
                 Map.Entry entry = (Map.Entry) defs.next ();
@@ -211,7 +253,14 @@ public class TargetExecutor implements Runnable {
         try {
             // Execute the configured project
             //writer.println("#4"); // NOI18N
-            project.executeTargets (new Vector (targetNames));
+            Vector targs;
+            if (targetNames != null) {
+                targs = new Vector (targetNames);
+            } else {
+                targs = new Vector (1);
+                targs.add (project.getDefaultTarget ());
+            }
+            project.executeTargets (targs);
             //writer.println("#5"); // NOI18N
             logger.buildFinished (new BuildEvent (project));
             ok = true;
@@ -224,12 +273,32 @@ public class TargetExecutor implements Runnable {
         }
 
         // Now check to see if the Project defined any cool new custom tasks.
+        final Project p2 = project;
         RequestProcessor.postRequest (new Runnable () {
                 public void run () {
                     IntrospectedInfo custom = AntSettings.getDefault ().getCustomDefs ();
-                    custom.scanProject (project);
+                    custom.scanProject (p2);
                 }
             }, 1000); // a bit later; the target can finish first!
+    }
+
+    // HACK; see above
+    private void removeWeirdoProps (Map weirdoProps) {
+        Iterator propit = System.getProperties ().entrySet ().iterator ();
+        while (propit.hasNext ()) {
+            Map.Entry entry = (Map.Entry) propit.next ();
+            if (! (entry.getValue () instanceof String)) {
+                weirdoProps.put (entry.getKey (), entry.getValue ());
+                propit.remove ();
+            }
+        }
+        if (! weirdoProps.isEmpty ()) {
+            AntModule.err.log ("Removed weirdo props from System.properties: " + weirdoProps);
+            String sampleKey = (String) weirdoProps.keySet ().iterator ().next ();
+            if (System.getProperties ().get (sampleKey) != null) {
+                AntModule.err.log ("...but it did not work on " + sampleKey);
+            }
+        }
     }
 
 }
