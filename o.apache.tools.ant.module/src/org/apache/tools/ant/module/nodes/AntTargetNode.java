@@ -165,6 +165,13 @@ public class AntTargetNode extends ElementNode {
         public PropertyEditor getPropertyEditor () {
             return new DependsEditor ();
         }
+        /** Note: treats list of dependencies as an _unordered set_.
+         * Ant does not currently officially specify that the order
+         * of items in a depends clause means anything, so this GUI
+         * faithfully provides no interface to reorder them.
+         * Cf. Peter Donald's message "RE: Order of Depends" to
+         * ant-dev on Feb 21 2001.
+         */
         private class DependsEditor extends PropertyEditorSupport {
             public String getAsText () {
                 return (String) this.getValue ();
