@@ -14,20 +14,6 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
-    <folder name="Welcome">
-        <file name="netbeans-ide-home.url">
-            <![CDATA[http://www.netbeans.org/]]>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/url/webLink.gif"/>
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/url/info-netbeans-ide-home.html"/>
-        </file>
-        <attr name="netbeans-ide-home.url/org-openide-actions-NewTemplateAction.instance" boolvalue="true" />
-        <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-        <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
-            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/modules/openfile/info-OpenFileAction.html" />
-        </file>
-        <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
-    </folder>
     <folder name="Templates">
         <attr name="JSP_Servlet/Other" boolvalue="true"/>
         <folder name="Other">

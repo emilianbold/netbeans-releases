@@ -95,14 +95,6 @@ Microsystems, Inc. All Rights Reserved.
         
     </folder>
     
-    <folder name="Welcome">
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-        <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance">
-            <!-- attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" / -->
-            <attr name="welcomeDescription" urlvalue="nbresbootloc:/org/netbeans/core/resources/welcome/info-NewTemplateAction.html"/>
-        </file>
-    </folder>    
-    
     <folder name="Menu">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
         <folder name="File">
