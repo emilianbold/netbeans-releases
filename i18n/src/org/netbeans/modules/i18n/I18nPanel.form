@@ -33,7 +33,7 @@
         <Component class="javax.swing.JButton" name="replaceButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_ReplaceButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_ReplaceButton"/>
             </Property>
           </Properties>
           <Constraints>
@@ -46,7 +46,7 @@
         <Component class="javax.swing.JButton" name="replaceAllButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_ReplaceAllButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_ReplaceAllButton"/>
             </Property>
           </Properties>
           <Constraints>
@@ -59,7 +59,7 @@
         <Component class="javax.swing.JButton" name="skipButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_SkipButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_SkipButton"/>
             </Property>
           </Properties>
           <Constraints>
@@ -72,7 +72,7 @@
         <Component class="javax.swing.JButton" name="infoButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_InfoButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_InfoButton"/>
             </Property>
           </Properties>
 
@@ -89,7 +89,7 @@
         <Component class="javax.swing.JButton" name="helpButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_HelpButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_HelpButton"/>
             </Property>
           </Properties>
 
@@ -105,7 +105,7 @@
         <Component class="javax.swing.JButton" name="cancelButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_CancelButton"/>
+              <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_CancelButton"/>
             </Property>
           </Properties>
           <Constraints>

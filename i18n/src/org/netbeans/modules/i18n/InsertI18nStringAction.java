@@ -27,6 +27,8 @@ import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 
+import org.netbeans.modules.properties.PropertiesModule;
+
 import org.openide.DialogDescriptor;
 import org.openide.cookies.SourceCookie;
 import org.openide.nodes.Node;
@@ -238,15 +240,16 @@ public class InsertI18nStringAction extends CookieAction {
                     public void actionPerformed(ActionEvent evt) {
                         // OK button.
                         try {
-                            ResourceBundleString newRbString = (ResourceBundleString)rbPanel.getPropertyValue();
-                            ResourceBundleStringEditor rbStringEditor = new ResourceBundleStringEditor(); // TEMP
-                            rbStringEditor.setValue(newRbString);
+                            ResourceBundleString newRbString = rbPanel.getResourceBundleString();
 
-                            // Set targetDataObject so the field  could be created properly.
-                            rbStringEditor.setTargetDataObject(dataObject);
-
-                            document.insertString(position, rbStringEditor.getJavaInitializationString(), null);
-
+                            // Try to add key to bundle.
+                            I18nUtil.addKeyToBundle(newRbString);
+                            
+                            // Create field in necessary.
+                            I18nUtil.createField(newRbString, dataObject);
+                            // Replace string.
+                            document.insertString(position, I18nUtil.getReplaceJavaCode(newRbString), null);
+                            
                             InsertI18nComponent.this.close();
                         } catch (IllegalStateException e) {
                             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
@@ -283,10 +286,10 @@ public class InsertI18nStringAction extends CookieAction {
             // Dock into I18N mode.
             Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
             for(int i = currentWs.length; --i >= 0; ) {
-                Mode i18nMode = currentWs[i].findMode(I18nSupport.I18N_MODE);
+                Mode i18nMode = currentWs[i].findMode(I18nManager.I18N_MODE);
                 if(i18nMode == null) {
                     i18nMode = currentWs[i].createMode(
-                        I18nSupport.I18N_MODE,
+                        I18nManager.I18N_MODE,
                         NbBundle.getBundle(I18nModule.class).getString("CTL_I18nDialogTitle"),
                         InsertI18nStringAction.class.getResource("/org/netbeans/modules/i18n/I18nAction.gif") // NOI18N
                     );
@@ -300,9 +303,14 @@ public class InsertI18nStringAction extends CookieAction {
             this.dataObject = dataObject;
             this.document = document;
             this.position = position;
+            
             setName(dataObject.getName());
+            
             rbPanel.setTargetDataObject(dataObject);
-            rbPanel.setResourceBundleString(new ResourceBundleString());
+            
+            ResourceBundleString rbString = new ResourceBundleString();
+            rbString.setResourceBundle(PropertiesModule.getLastBundleUsed());
+            rbPanel.setResourceBundleString(rbString);
         }
   
     } // End of inner class I18nTopComponent.

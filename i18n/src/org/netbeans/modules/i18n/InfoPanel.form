@@ -10,7 +10,7 @@
     <Component class="javax.swing.JLabel" name="stringLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_StringLabel"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_StringLabel"/>
         </Property>
       </Properties>
       <Constraints>
@@ -32,7 +32,7 @@
     <Component class="javax.swing.JLabel" name="foundInLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_FoundInLabel"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_FoundInLabel"/>
         </Property>
       </Properties>
       <Constraints>
@@ -54,7 +54,7 @@
     <Component class="javax.swing.JLabel" name="componentLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_ComponentLabel"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_ComponentLabel"/>
         </Property>
       </Properties>
       <Constraints>
@@ -76,7 +76,7 @@
     <Component class="javax.swing.JLabel" name="propertyLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_PropertyLabel"/>
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" identifier="bundle" key="CTL_PropertyLabel"/>
         </Property>
       </Properties>
       <Constraints>

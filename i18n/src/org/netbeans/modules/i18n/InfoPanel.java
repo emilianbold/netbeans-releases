@@ -40,7 +40,7 @@ public class InfoPanel extends JPanel {
     }
     
     /** Fills values. */
-    public void setI18nInfo(I18nSupport.I18nInfo i18nInfo) {
+    public void setI18nInfo(I18nManager.I18nInfo i18nInfo) {
         stringText.setText(i18nInfo.getHardString());
         foundInText.setText(i18nInfo.getHardLine());
         componentText.setText(i18nInfo.getComponentName());

@@ -38,17 +38,18 @@ import org.openide.util.actions.CookieAction;
 */
 public class I18nAction extends CookieAction {
 
+    /** Generated sreial version UID. */
     static final long serialVersionUID =3322896507302889271L;
     
     /** 
     * Actually performs the action.
     * @param activatedNodes Currently activated nodes.
     */
-    public void performAction (final Node[] activatedNodes) {
+    public void performAction(final Node[] activatedNodes) {
 
         final SourceCookie.Editor sec = (SourceCookie.Editor) activatedNodes[0].getCookie(SourceCookie.Editor.class);
         if (sec == null) 
-            return;  // PENDING
+            return;
 
         sec.open(); 
         
@@ -57,7 +58,7 @@ public class I18nAction extends CookieAction {
             public void run() {
                 DataObject obj = (DataObject)sec.getSource().getCookie(DataObject.class);
                 StyledDocument doc = sec.getDocument();
-                I18nSupport.getI18nSupport(doc, obj).internationalize();
+                I18nManager.getI18nManager(doc, obj).internationalize();
             }
         });
     }
@@ -65,7 +66,7 @@ public class I18nAction extends CookieAction {
     /**
     * Returns MODE_EXACTLY_ONE.
     */
-    protected int mode () {
+    protected int mode() {
         return MODE_EXACTLY_ONE;
     }
 
@@ -73,14 +74,14 @@ public class I18nAction extends CookieAction {
     * Returns ThreadCookie
     */
     protected Class[] cookieClasses () {
-        return new Class [] {
+        return new Class[] {
             SourceCookie.Editor.class // show action for java source node only
         };
     }
 
     /** @return the action's icon */
     public String getName() {
-        return NbBundle.getBundle (I18nModule.class).getString ("CTL_I18nAction");
+        return NbBundle.getBundle(I18nModule.class).getString("CTL_I18nAction");
     }
 
     /** @return the action's help context */

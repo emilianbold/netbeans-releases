@@ -32,7 +32,7 @@ import org.openide.util.NbBundle;
 public class I18nPanel extends JPanel {
 
     /** Instance of <code>I18nSupport.I18nInfo</code>. */
-    private transient I18nSupport.I18nInfo info;
+    private transient I18nManager.I18nInfo info;
     
     /** Bundle used for i18n-zing strings in this source.  */
     private static final ResourceBundle bundle = NbBundle.getBundle(I18nModule.class);
@@ -54,7 +54,7 @@ public class I18nPanel extends JPanel {
     }
 
     /** Sets info about found hard coded string. */
-    public void setI18nInfo(I18nSupport.I18nInfo i18nInfo) {
+    public void setI18nInfo(I18nManager.I18nInfo i18nInfo) {
         info = i18nInfo;
     }
 
@@ -72,8 +72,7 @@ public class I18nPanel extends JPanel {
     /** Enables/disables buttons. */
     private void buttonsEnableDisable() {
         boolean isBundle = ((ResourceBundlePanel)resourceBundlePanel).getResourceBundleString().getResourceBundle() != null;
-        boolean isInvalid = ((ResourceBundlePanel)resourceBundlePanel).getResourceBundleString() instanceof ResourceBundleString.InvalidResourceBundleString;
-        replaceButton.setEnabled(isBundle && !isInvalid);
+        replaceButton.setEnabled(isBundle);
         replaceAllButton.setEnabled(isBundle);
     }
     
