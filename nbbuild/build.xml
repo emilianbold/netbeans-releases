@@ -625,7 +625,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat40autocompile..."/>
     <ant dir="../tomcatint/tomcat40autocompile" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver">
+  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans,all-java/srcmodel,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver,all-web/ddapi">
     <echo message="Building module tomcatint/tomcat5..."/>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>

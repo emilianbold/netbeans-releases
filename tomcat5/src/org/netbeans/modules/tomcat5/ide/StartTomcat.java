@@ -18,6 +18,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import javax.enterprise.deploy.shared.ActionType;
@@ -55,6 +56,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.debugger.DebuggerInfo;
 import org.netbeans.modules.debugger.jpda.RemoteDebuggerInfo;
+import org.xml.sax.SAXException;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -230,6 +232,20 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     }
     
     public synchronized void run () {
+        /*
+        try {
+            MonitorSupport.synchronizeMonitorWithFlag(tm, true, true);
+        }
+        catch (IOException e) {
+            // fault, but not a critical one
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        catch (SAXException e) {
+            // fault, but not a critical one
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+         */
+        
         // PENDING check whether is runs or not
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
@@ -644,7 +660,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                     + System.getProperty("file.separator") + ((WebappConfiguration)configuration).getPath ().substring (1);  //NOI18N
                 File f = new File (moduleFolder);
                 return f;
-            }
+            } 
         }
         throw new IllegalArgumentException ("ModuleType:" + module == null ? null : module.getType () + " Configuration:"+configuration); //NOI18N
     }
