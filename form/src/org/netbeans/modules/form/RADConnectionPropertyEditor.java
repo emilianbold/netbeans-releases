@@ -131,20 +131,20 @@ public class RADConnectionPropertyEditor
                         if (designValue.radComponent instanceof FormContainer) {
                             return pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         } else {
-                            return designValue.radComponentName + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
+                            return designValue.radComponent.getName() + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         }
                     }
                 case RADConnectionDesignValue.TYPE_METHOD:
                     if (designValue.radComponent instanceof FormContainer) {
                         return designValue.methodName + "()"; // NOI18N
                     } else {
-                        return designValue.radComponentName + "." + designValue.methodName + "()"; // NOI18N
+                        return designValue.radComponent.getName() + "." + designValue.methodName + "()"; // NOI18N
                     }
                 case RADConnectionDesignValue.TYPE_BEAN:
                     if (designValue.radComponent instanceof FormContainer) {
                         return "this"; // NOI18N
                     } else {
-                        return designValue.radComponentName;
+                        return designValue.radComponent.getName();
                     }
             }
         }
@@ -279,11 +279,11 @@ public class RADConnectionPropertyEditor
 
         String getName() {
             switch (type) {
-                case TYPE_PROPERTY: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponentName, propertyName });
-                case TYPE_METHOD: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponentName, methodName });
+                case TYPE_PROPERTY: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
+                case TYPE_METHOD: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
                 case TYPE_VALUE: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
                 case TYPE_CODE: return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
-                case TYPE_BEAN: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponentName });
+                case TYPE_BEAN: return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
             }
             throw new IllegalStateException();
         }
@@ -526,15 +526,15 @@ public class RADConnectionPropertyEditor
                 el.setAttribute(ATTR_REQUIRED_TYPE, designValue.requiredTypeName);
                 break;
             case RADConnectionDesignValue.TYPE_PROPERTY:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
                 el.setAttribute(ATTR_NAME, designValue.propertyName);
                 break;
             case RADConnectionDesignValue.TYPE_METHOD:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
                 el.setAttribute(ATTR_NAME, designValue.methodName);
                 break;
             case RADConnectionDesignValue.TYPE_BEAN:
-                el.setAttribute(ATTR_COMPONENT, designValue.radComponentName);
+                el.setAttribute(ATTR_COMPONENT, designValue.radComponent.getName());
                 break;
             case RADConnectionDesignValue.TYPE_CODE:
                 el.setAttribute(ATTR_CODE, designValue.userCode);
