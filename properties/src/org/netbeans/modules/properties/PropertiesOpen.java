@@ -555,7 +555,8 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
         /** Constructor.
         * @param propDataObject data object we belong to */
         public PropertiesCloneableTopComponent (PropertiesDataObject propDataObject) {
-            super(propDataObject);
+            NodeName.connect (this, propDataObject.getNodeDelegate ());
+            
             this.propDataObject  = propDataObject;
 
             // instruct winsys to save state of this top component only if opened

@@ -156,6 +156,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
              	</fileset>
                 <!-- XXX -->
+                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
                 <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
                 <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
@@ -179,6 +180,7 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar"/>
                 </fileset>
                 <!-- XXX -->
+                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
                 <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
                 <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
@@ -227,6 +229,7 @@ Microsystems, Inc. All Rights Reserved.
         	</fileset>
         	<pathelement location="../../openide/netbeans/lib/openide.jar"/>
                 <!-- XXX -->
+                <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
                 <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
                 <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
                 <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
@@ -246,6 +249,7 @@ Microsystems, Inc. All Rights Reserved.
         	</fileset>
            <pathelement location="../../openide/netbeans/lib/openide.jar"/>
             <!-- XXX -->
+            <pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
             <pathelement location="../../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
             <pathelement location="../../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
             <pathelement location="../../openide/io/netbeans/modules/autoload/openide-io.jar"/>
@@ -261,7 +265,8 @@ Microsystems, Inc. All Rights Reserved.
             		<include name="core.jar"/>
             		<include name="ext/*.jar"/>
         	</fileset>
-        	<pathelement location="${netbeans.home}/lib/openide.jar"/>        
+        	<pathelement location="${netbeans.home}/lib/openide.jar"/>
+                <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>        
                 <!-- XXX -->
                 <fileset dir="${netbeans.home}/modules/autoload">
                     <include name="openide-*.jar"/>

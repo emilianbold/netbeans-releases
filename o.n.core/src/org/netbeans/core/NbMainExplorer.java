@@ -854,7 +854,7 @@ public final class NbMainExplorer extends CloneableTopComponent
         public RepositoryTab () {
             DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
             pool.addOperationListener (
-                WeakListener.operation (this, pool)
+                (OperationListener)WeakListener.create (OperationListener.class, this, pool)
             );
         }
         

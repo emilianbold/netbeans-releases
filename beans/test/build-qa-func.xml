@@ -178,7 +178,8 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="Using IDE classpath for compilation."/>
     	<!-- this classpath will be used for compiling tests against installed IDE -->
     	<path id="compiletest.classpath">   
-            <pathelement location="${netbeans.home}/lib/openide.jar"/>        
+            <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>        
     	    <!-- If you need e.g. openide.jar, write this:
 	           <pathelement location="${netbeans.home}/lib/openide.jar"/>
 	         If you need e.g. your tested module, write this:

@@ -168,6 +168,7 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
             <pathelement location="${netbeans.home}/modules/i18n.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
    	</path>
     </target>
     

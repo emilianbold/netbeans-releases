@@ -28,6 +28,7 @@ Microsystems, Inc. All Rights Reserved.
     <path id="httpserver-cp">
       <pathelement location="../openide/openide-13javac-workaround.jar"/>
       <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
       <fileset dir="external">
         <include name="webserver*.jar"/>
         <include name="servlet-2.2.jar"/>

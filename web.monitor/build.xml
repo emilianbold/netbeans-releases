@@ -151,6 +151,7 @@ Microsystems, Inc. All Rights Reserved.
          <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
          <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
          <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
          <fileset dir="${nb_root}/core/external">
            <include name="xml-apis*.jar"/>
          </fileset>

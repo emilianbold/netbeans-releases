@@ -42,6 +42,7 @@ Microsystems, Inc. All Rights Reserved.
           <include name="*.jar"/>
         </fileset>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
+        <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/> <!-- used only indirectly -->

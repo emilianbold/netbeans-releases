@@ -105,6 +105,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/debuggerjpda.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/api/netbeans/modules/autoload/debuggerjpda-api.jar"/>
         <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
 <!--         <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> 
         XXX -->

@@ -94,7 +94,6 @@ public class ImageViewer extends CloneableTopComponent {
      * @param obj the data object holding the image
      */
     public ImageViewer(ImageDataObject obj) {
-        super(obj);        
         initialize(obj);
     }
 
@@ -110,6 +109,8 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Initializes member variables and set listener for name changes on DataObject. */
     private void initialize(ImageDataObject obj) {
+        TopComponent.NodeName.connect (this, obj.getNodeDelegate ());
+        
         storedObject = obj;
         storedImage = new NBImageIcon(storedObject);
             

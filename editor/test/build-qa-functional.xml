@@ -179,6 +179,7 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/editor.jar"/>
 	    <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
             <pathelement location="${netbeans.home}/lib/core.jar"/>
 	    <!--Temporary hack-around for openide split. It only makes it possible to compile the
 	        tests it is not a solution and the tests still needs to be fixed.-->

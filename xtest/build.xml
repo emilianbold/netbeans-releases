@@ -53,6 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
+        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
 	<pathelement location="../core/netbeans/lib/core.jar"/>
 	<pathelement location="../core/netbeans/lib/ext/boot.jar"/>
         <!-- execution, because of NbClassLoader .... -->

@@ -52,6 +52,7 @@ Microsystems, Inc. All Rights Reserved.
             <classpath>        
                 <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
                 <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+                <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
                 <pathelement location="${lib_root}/src"/>
                 <pathelement location="${api_root}/src/"/>
                 <pathelement location="../core/src/"/>

@@ -104,26 +104,10 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- make following member public -->
                 <member name="getCookieSet" />
             </patch>
-	    <patch class="org/openide/loaders/MultiDataObject" > 
-                <!-- make following members public -->
-                <member name="getCookieSet" />
-                <member name="setCookieSet" />
-            </patch>
 	    <patch class="org/openide/explorer/view/BeanTreeView" > 
                 <member name="selectionChanged" />
             </patch>
 
-            <!-- superclass changed in order to implement MouseInputListener -->
-            <patch class="org/openide/awt/Toolbar" super="org/openide/awt/$$Toolbar$$Patch$$">
-                <member name="BASIC_HEIGHT" /> <!-- made non-final -->
-            </patch>
-            <patch class="org/openide/awt/Toolbar$$DnDEvent" >
-                <!-- make fields public -->
-                <member name="name" />
-                <member name="dx" />
-                <member name="dy" />
-                <member name="type" />
-            </patch>
 
             <!-- superclass needs to provide refershRoot method with different signature than the one in AbstractFileSystem -->                        
 	    <patch class="org/openide/filesystems/AbstractFileSystem" > 
@@ -176,10 +160,6 @@ Microsystems, Inc. All Rights Reserved.
             
             <!-- no super change, just be public -->
 	    <patch class="org/openide/explorer/propertysheet/SetDefaultValueAction"  /> 
-	    <patch class="org/openide/loaders/DataLoaderPool$$FolderLoader"  /> 
-	    <patch class="org/openide/loaders/DataLoaderPool$$InstanceLoader"  /> 
-	    <patch class="org/openide/loaders/DataLoaderPool$$DefaultLoader"  /> 
-	    <patch class="org/openide/loaders/DataLoaderPool$$ShadowLoader"  /> 
 
     </enhanceclass>
   </target>
@@ -240,7 +220,7 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
-  <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper" description="Create JAR files.">
+  <target name="jars" depends="compile,13javac-workaround,vers-prep,patchsuper,loaders_32143-compat" description="Create JAR files.">
     <mkdir dir="netbeans/lib"/>
     <filter token="OpenIDE-Module" value="OpenIDE-Module"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
@@ -260,6 +240,14 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
+  <target name="loaders_32143-compat" depends="compile" unless="loaders_32143-compat.skip" >
+    <!-- temporary compatibility for API classes that had to be changed due to
+         work in loaders_32143 branch. Shall provide enough time to module
+         writers using the old code to update to new replacements.
+     -->
+     <ant antfile="build.xml" target="openide-compat" dir="loaders" />
+  </target>
+  
   <target name="jars-with-lib" depends="libs,compile,13javac-workaround,vers-prep" description="Create JAR files.">
     <mkdir dir="standalone"/>
     <filter token="Class-Path" value="Class-Path"/>
@@ -376,6 +364,7 @@ Microsystems, Inc. All Rights Reserved.
              	  <include name="org/openide/util/datatransfer/*"/>
                   <include name="org/openide/util/actions/*"/>
                   <include name="org/openide/xml/"/>
+                  <include name="org/openide/ErrorManager*class" />
 
                   <!-- XXX review distribution of JPopupMenuPlus, JPopupMenuUtils, etc. -->
                   <include name="org/openide/awt/JPopupMenu*class" />

@@ -49,7 +49,7 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
         //initialize fields:
         if (e!=null) {
             Line line = Utils.getCurrentLine();
-            if ((line != null) && (line.getDataObject() instanceof JspDataObject)) {
+            if ((line != null) && (org.openide.text.DataEditorSupport.findDataObject (line) instanceof JspDataObject)) {
                 e.setLine(line);
             }
         }
@@ -218,7 +218,7 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
         Line l = event.getLine();
         if (l == null) return false;
 
-        DataObject dobj = l.getDataObject();
+        DataObject dobj = org.openide.text.DataEditorSupport.findDataObject (l);
         if (dobj == null) return false;
         
         if ((dobj instanceof JspDataObject) || (dobj instanceof HtmlDataObject)) return true;
