@@ -32,7 +32,10 @@ public class AntSettings extends SystemOption {
     
     protected void initialize () {
         setVerbosity (Project.MSG_INFO);
-        setProperties (new Properties ());
+        Properties p = new Properties ();
+        // Enable hyperlinking for Jikes:
+        p.setProperty ("build.compiler.emacs", "true"); // NOI18N
+        setProperties (p);
     }
 
     public String displayName () {
