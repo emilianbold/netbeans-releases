@@ -28,6 +28,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * @author  David Konecny
@@ -45,6 +46,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     public Component getComponent() {
         if (component == null) {
             component = new TargetMappingPanel(projectType);
+            ((JComponent)component).getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(TargetMappingWizardPanel.class, "ACSD_TargetMappingWizardPanel")); // NOI18N
         }
         return component;
     }
