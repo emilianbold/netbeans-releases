@@ -485,6 +485,10 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
             if (shouldReact(e) && !selectionChanged) {
                 setClosePressed(inCloseIconRect(e.getPoint()));
             }
+            if ((i != -1) && e.isPopupTrigger()) {
+                //Post a popup menu show request
+                shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
+            }
         }
 
         public void mouseClicked (MouseEvent e) {
@@ -515,6 +519,12 @@ public abstract class AbstractViewTabDisplayerUI extends TabDisplayerUI {
                     // reset rollover effect after action is complete
                     setMouseInCloseButton(point);
                 }
+            }
+            Point p = e.getPoint();
+            int i = getLayoutModel().indexOfPoint(p.x, p.y);
+            if ((i != -1) && e.isPopupTrigger()) {
+                //Post a popup menu show request
+                shouldPerformAction(TabDisplayer.COMMAND_POPUP_REQUEST, i, e);
             }
         }
 
