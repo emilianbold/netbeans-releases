@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.Connection;
 import java.text.MessageFormat;
 
 import org.openide.*;
@@ -26,22 +25,23 @@ public class DisconnectAction extends DatabaseAction {
     static final long serialVersionUID =-5994051723289754485L;
 
     protected boolean enable(Node[] activatedNodes) {
-        
         if (activatedNodes == null || activatedNodes.length == 0) 
             return false;
         
         for (int i = 0; i < activatedNodes.length; i++) {
             Node node = activatedNodes[i];
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
-            if (nfo != null && nfo.getConnection() == null)
+            DatabaseNodeInfo info = (DatabaseNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+            if (info != null) {
+                DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
+                if (nfo != null && nfo.getConnection() == null)
+                    return false;
+            } else
                 return false;
         }
         return true;
     }
     
-    protected int mode()
-    {
+    protected int mode() {
         return MODE_ALL;
     }
 

@@ -47,8 +47,12 @@ public class ConnectAction extends DatabaseAction {
         else return false;
 
         DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-        DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
-        if (nfo != null) return (nfo.getConnection() == null);
+        if (info != null) {
+            DatabaseNodeInfo nfo = info.getParent(DatabaseNode.CONNECTION);
+            if (nfo != null)
+                return (nfo.getConnection() == null);
+        }
+        
         return false;
     }
     
@@ -66,8 +70,6 @@ public class ConnectAction extends DatabaseAction {
         Connection connection = nfo.getConnection();
         if (connection != null) return;
 
-        String drvurl = (String)nfo.get(DatabaseNodeInfo.DRIVER);
-        String dburl = (String)nfo.get(DatabaseNodeInfo.DATABASE);
         String user = (String)nfo.getUser();
         String pwd = (String)nfo.getPassword();
         Boolean rpwd = (Boolean)nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
