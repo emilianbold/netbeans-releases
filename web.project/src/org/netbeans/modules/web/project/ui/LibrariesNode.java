@@ -408,6 +408,10 @@ final class LibrariesNode extends AbstractNode {
                     displayName = file.getName();
                 }
                 else {
+                    String sURL = url.toExternalForm();
+                    if (!sURL.endsWith("/")) {  //NOI18N
+                        url = new URL (sURL+"/");   //NOI18N
+                    }
                     icon = getFolderIcon (false);
                     openedIcon = getFolderIcon (true);
                     displayName = file.getAbsolutePath();
