@@ -72,8 +72,6 @@ public class JellyTestCase extends NbTestCase {
         new EventTool().waitNoEvent(1000);
         try {
             super.runBare();
-            // closes all modal dialogs in dependency on systems property
-            if (closeAllModal) closeAllModal();
         } catch (ThreadDeath td) {
             // ThreadDead must be re-throwed immediately
             throw td;
@@ -90,6 +88,10 @@ public class JellyTestCase extends NbTestCase {
                     Dumper.dumpAll(getWorkDir().getAbsolutePath()+File.separator+"screen.xml");
                 } catch (Exception e2) {}
             }
+            // closes all modal dialogs in dependency on systems property
+            if (closeAllModal) try {
+                closeAllModal();
+            } catch (Exception e) {}
             if (th instanceof JemmyException) {
                 // all instancies of JemmyException are re-throwed as AssertionError (test failed)
                 throw new AssertionFailedErrorException(th.getMessage(), th);
