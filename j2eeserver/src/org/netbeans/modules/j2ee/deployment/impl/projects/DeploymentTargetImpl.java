@@ -143,6 +143,9 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         ServerInstance instance = ServerRegistry.getInstance().getServerInstance(module.getInstanceUrl());
         IncrementalDeployment mur = instance.getIncrementalDeployment ();
         String clientModuleUri = client == null ? "" : client.getUrl();
+        if (clientModuleUri.startsWith("/")) { //NOI18N
+                clientModuleUri = clientModuleUri.substring(1);
+        }
         TargetModuleID[] children = module.getChildTargetModuleID();
         String urlString = null;
         TargetModuleID tmid = null;
@@ -151,9 +154,18 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             if (urlString == null || urlString.trim().equals("")) {
                 urlString = children[i].getWebURL();
             }
-
-            // matched child module url with plugin's help
-            if (mur != null && clientModuleUri.equals(mur.getModuleUrl(children[i]))) {
+            
+            String uri = children[i].getModuleID(); //NOI18N
+            if (mur != null) {
+                uri = mur.getModuleUrl(children[i]);
+            } else {
+                int j = uri.indexOf('#');
+                if (j > -1) {
+                    uri = uri.substring(j+1);
+                }
+            }
+            
+            if (mur != null && clientModuleUri.equalsIgnoreCase(uri)) {
                 tmid = children[i];
                 break;
             }
