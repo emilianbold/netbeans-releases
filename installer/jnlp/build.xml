@@ -40,11 +40,11 @@ All Rights Reserved.
             <fileset dir="release" includes="**/*.nbm"/>
         </path>
         <!-- config.txt contains the list of all nbm files -->
-        <pathconvert dirsep="/" pathsep="" property="nbm-files-list" refid="nbmfiles"/>
+        <pathconvert dirsep="${file.separator}" pathsep="" property="nbm-files-list" refid="nbmfiles"/>
         <echo file="release/config.txt" message="${nbm-files-list}"/>
-        <property location="${nb_all}/installer/jnlp/release" name="dirname"/>
+        <property location="${nb_all}/installer/jnlp/release/" name="dirname"/>
         <echo message="Replacing ${dirname}/"/>
-        <replace file="release/config.txt" token="${dirname}/">
+        <replace file="release/config.txt" token="${dirname}${file.separator}">
             <replacevalue><![CDATA[@@@
 ###]]></replacevalue><!-- this tag has specified a value of new line -->
         </replace>
@@ -59,11 +59,11 @@ All Rights Reserved.
             </fileset>
         </path>
         <!-- save directory name for replacing back -->
-        <replace file="release/nb-launch.jnlp" token="${dirname}/" value="D#I#R#_#N#A#M#E/"/>
-        <pathconvert dirsep="/" pathsep="" property="jar-files-list" refid="jarfiles"/>
+        <replace file="release/nb-launch.jnlp" token="${dirname}" value="D#I#R#_#N#A#M#E"/>
+        <pathconvert dirsep="${file.separator}" pathsep="" property="jar-files-list" refid="jarfiles"/>
         <echo append="true" file="release/nb-launch.jnlp" message="@@@${jar-files-list}%%%"/>
-        <echo message="Replacing ${dirname}/"/>
-        <replace file="release/nb-launch.jnlp" token="${dirname}/" value="@@@###"/>
+        <echo message="Replacing ${dirname}"/>
+        <replace file="release/nb-launch.jnlp" token="${dirname}${file.separator}" value="@@@###"/>
         <replace file="release/nb-launch.jnlp" token="@@@@@@" value=""/>
         <replace file="release/nb-launch.jnlp" token="@@@">
             <replacevalue><![CDATA["/>
@@ -85,7 +85,7 @@ All Rights Reserved.
 </jnlp>
 ]]></echo>
         <!-- replace back accidentally replaced name of the directory -->
-        <replace file="release/nb-launch.jnlp" token="D#I#R#_#N#A#M#E/" value="${dirname}/"/>
+        <replace file="release/nb-launch.jnlp" token="D#I#R#_#N#A#M#E" value="${dirname}/"/>
     </target>
     
     <target depends="jars" name="copy-to-release">
