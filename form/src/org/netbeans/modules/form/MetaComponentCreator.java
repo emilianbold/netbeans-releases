@@ -23,7 +23,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 
 import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 import org.netbeans.modules.form.compat2.border.BorderInfo;
 
 /**
@@ -153,8 +152,7 @@ public class MetaComponentCreator {
         RADComponent newComp;
 
         if (LayoutSupportDelegate.class.isAssignableFrom(beanClass)
-              || LayoutManager.class.isAssignableFrom(beanClass)
-              || DesignLayout.class.isAssignableFrom(beanClass))
+              || LayoutManager.class.isAssignableFrom(beanClass))
             newComp = setContainerLayout(source, targetComp);
 
         else if (BorderInfo.class.isAssignableFrom(beanClass)

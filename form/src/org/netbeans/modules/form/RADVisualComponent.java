@@ -17,9 +17,8 @@ import java.util.*;
 import java.beans.*;
 
 import org.openide.nodes.*;
-import org.netbeans.modules.form.layoutsupport.*;
-import org.netbeans.modules.form.compat2.layouts.DesignLayout;
 
+import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
@@ -97,42 +96,6 @@ public class RADVisualComponent extends RADComponent {
     public LayoutConstraints getLayoutConstraints(Class layoutDelegateClass) {
         return (LayoutConstraints)
                constraints.get(layoutDelegateClass.getName());
-    }
-
-/*    public LayoutConstraints getCurrentConstraintsDesc() {
-        RADVisualContainer parent = (RADVisualContainer) getParentComponent();
-        if (parent != null) {
-            LayoutSupport laySup = parent.getLayoutSupport();
-            if (laySup != null)
-                return laySup.getConstraints(this);
-        }
-        return null;
-    } */
-
-/*    public LayoutConstraints getLayoutConstraints() {
-        RADVisualContainer container = (RADVisualContainer) getParentComponent();
-        if (container == null)
-            return null;
-
-        return getLayoutConstraints(
-            container.getLayoutSupport().getLayoutDelegate().getClass());
-    } */
-
-    /** Setter for attaching old version of constraints description
-     * (DesignLayout.ConstraintsDescription) to this component.
-     */ 
-    // [to be removed]
-    public void setConstraints(Class layoutClass,
-                               DesignLayout.ConstraintsDescription constr) {
-        constraints.put(layoutClass.getName(), constr);
-    }
-
-    /** Getter for obtaining old version of constraints description
-     * (DesignLayout.ConstraintsDescription) attached to this component.
-     */
-    // [to be removed]
-    public DesignLayout.ConstraintsDescription getConstraints(Class layoutClass) {
-        return(DesignLayout.ConstraintsDescription)constraints.get(layoutClass.getName());
     }
 
     HashMap getConstraintsMap() {

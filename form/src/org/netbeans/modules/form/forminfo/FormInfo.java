@@ -11,7 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.form.forminfo;
 
 import java.awt.Container;
@@ -23,7 +22,10 @@ import org.openide.nodes.Node;
  * generation string is "getContentPane().".
  *
  * @author Ian Formanek
+ *
+ * @deprecated
  */
+
 public abstract class FormInfo
 {
     /** Constant for empty list of properties */
@@ -50,7 +52,6 @@ public abstract class FormInfo
      */
     public abstract Container getTopContainer();
 
-
     /** Used to provide the container which is used during design-time as the
      * top-level container for adding components.  The container provided by this
      * class should not be a Window, as it is added as a component to the
@@ -73,7 +74,7 @@ public abstract class FormInfo
      * @return the String to be used for adding to the top-level container
      * @see #getTopContainer
      */
-//    public String getContainerGenName() {
-//        return ""; // NOI18N
-//    }
+    public String getContainerGenName() {
+        return ""; // NOI18N
+    }
 }

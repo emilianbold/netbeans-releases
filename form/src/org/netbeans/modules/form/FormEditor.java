@@ -32,11 +32,8 @@ import org.openide.explorer.propertysheet.editors.NodePropertyEditor;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.*;
 import org.openide.util.*;
-import org.netbeans.modules.form.util2.*;
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
-import org.netbeans.modules.form.compat2.layouts.*;
-import org.netbeans.modules.form.compat2.layouts.support.*;
 import org.netbeans.beaninfo.editors.TableModelEditor;
 
 import org.netbeans.modules.form.layoutsupport.*;
@@ -50,9 +47,6 @@ final public class FormEditor extends Object
 {
     // -----------------------------------------------------------------------------
     // Static variables
-
-    /** The global version number of the FormEditor serialized format */
-    public static final NbVersion FORM_EDITOR_VERSION = new NbVersion(1, 0);
 
     public static final String GUI_EDITING_WORKSPACE_NAME = "Visual"; // NOI18N
     
@@ -143,25 +137,6 @@ final public class FormEditor extends Object
             }
         }
         return false;
-    }
-
-    /** A method that returns the supporting layout for some containers, which
-     * have a special design-time support in the FormEditor.
-     * @param itemClass The class of the component the layout is requested for
-     * @return the DesignLayout that should be used in the container.
-     */
-    public static DesignSupportLayout getSupportLayout(Class itemClass) {
-        if (JTabbedPane.class.isAssignableFrom(itemClass))
-            return new JTabbedPaneSupportLayout();
-        else if (JScrollPane.class.isAssignableFrom(itemClass))
-            return new JScrollPaneSupportLayout();
-        else if (ScrollPane.class.isAssignableFrom(itemClass))
-            return new ScrollPaneSupportLayout();
-        else if (JSplitPane.class.isAssignableFrom(itemClass))
-            return new JSplitPaneSupportLayout();
-        else if (JLayeredPane.class.isAssignableFrom(itemClass))
-            return new JLayeredPaneSupportLayout();
-        return null;
     }
 
     static RADProperty[] sortProperties(

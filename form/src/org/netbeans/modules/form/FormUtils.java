@@ -680,30 +680,6 @@ public class FormUtils
     // Visual utility methods
 
     /**
-     * This method is intended to be started from container's paint method to do all the
-     * things concerning its grid. It is not necessary to use it, but it can hide some
-     * low-level details to programmers who write their own containers and do not want to
-     * go deep into implementation details. Moreover, by using this method it is sure that
-     * the grid is done in a standard way.
-     * @param xvc  The container which wants to have a grid painted
-     * @param g    The Graphics givenas param. to paint method
-     * @param gi    Xvc's gridInfo
-     * @param offsX  x-offset to paint grid from
-     * @param offsY  y-offset to paint grid from
-     * @param imW  width of grid
-     * @param imH  height of grid
-     */
-    public static void paintGrid(Component comp, Graphics g, GridInfo gi, int offsX, int offsY, int imW, int imH) {
-        if (imW <= 0 || imH <=0) return;
-        if (gi.getGridX() == 1 && gi.getGridY() == 1) return; // no grid
-        if (gi.gridImage == null || gi.imWidth != imW || gi.imHeight != imH)
-            new GridThread(comp, gi, imW, imH).run();
-
-        if (gi.gridImage != null)
-            g.drawImage(gi.gridImage, offsX, offsY, null);
-    }
-
-    /**
      * This method converts array of Rectangles(with compoment bounds) to
      * GridBagConstraints.
      *
