@@ -47,6 +47,8 @@ public abstract class CLIHandler extends Object {
     private static final int REPLY_EXIT = 2;
     /** fail reply */
     private static final int REPLY_FAIL = 0;
+    /** the server is active, but cannot compute the value now */
+    private static final int REPLY_DELAY = 3;
     
     /** request to read from input stream */
     private static final int REPLY_READ = 10;
@@ -85,7 +87,7 @@ public abstract class CLIHandler extends Object {
     
     private static void showHelp(PrintWriter w, List handlers) {
         w.println("-?");
-        w.println("-help");
+        w.println("--help");
         w.println("  Show this help information.");
         Iterator it = handlers.iterator();
         while (it.hasNext()) {
@@ -130,7 +132,7 @@ public abstract class CLIHandler extends Object {
                 String[] argv = args.getArguments();
                 for (int i = 0; i < argv.length; i++) {
                     assert argv[i] != null;
-                    if (argv[i].equals("-?") || argv[i].equals("-help")) { // NOI18N
+                    if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
                         PrintWriter w = new PrintWriter(args.getOutputStream());
                         showHelp(w, handlers);
                         w.flush();
@@ -179,7 +181,7 @@ public abstract class CLIHandler extends Object {
         
         private final File lockFile;
         private final int port;
-        private final int exitCode;
+        private int exitCode;
         /**
          * General failure.
          */
@@ -205,6 +207,7 @@ public abstract class CLIHandler extends Object {
             port = p;
             exitCode = c;
         }
+        
         /**
          * Get the lock file, if available.
          * @return the lock file, or null if there is none
@@ -233,32 +236,101 @@ public abstract class CLIHandler extends Object {
      *
      * @param args the command line arguments to recognize
      * @param classloader to find command CLIHandlers in
-     * @param doAllInit if true, run all WHEN_INIT handlers now; else wait for {@link #finishInitialization}
      * @param failOnUnknownOptions if true, fail (status 2) if some options are not recognized (also checks for -? and -help)
      * @param cleanLockFile removes lock file if it appears to be dead
      * @return the file to be used as lock file or null parsing of args failed
      */
-    static Status initialize(String[] args, ClassLoader loader, boolean doAllInit, boolean failOnUnknownOptions, boolean cleanLockFile) {
-        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), doAllInit, failOnUnknownOptions, cleanLockFile);
+    static Status initialize(String[] args, ClassLoader loader, boolean failOnUnknownOptions, boolean cleanLockFile) {
+        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), failOnUnknownOptions, cleanLockFile);
     }
     
     /**
      * What to do later when {@link #finishInitialization} is called.
-     * May remain null.
+     * May remain null, otherwise contains list of Execute
      */
-    private static Runnable doLater = null;
+    private static List doLater = new ArrayList ();
+    static interface Execute {
+        /** @return returns exit code */
+        public int exec ();
+    }
+    
+    /** Execute this runnable when finishInitialization method is called.
+     */
+    private static int registerFinishInstallation (Execute run) {
+        boolean runNow;
+    
+        synchronized (CLIHandler.class) {
+            if (doLater != null) {
+                doLater.add (run);
+                runNow = false;
+            } else {
+                runNow = true;
+            }
+        }
+        
+        if (runNow) {
+            return run.exec ();
+        }
+        
+        return 0;
+    }
+
+    /**
+     * Run any {@link #WHEN_INIT} handlers that were passed to the original command line.
+     * Should be called when the system is up and ready.
+     * Cancels any existing actions, in case it is called twice.
+     * @return the result of executing the handlers
+     */
+    static int finishInitialization (boolean recreate) {
+        List toRun;
+        synchronized (CLIHandler.class) {
+            toRun = doLater;
+            doLater = recreate ? new ArrayList () : null;
+            if (!recreate) {
+                CLIHandler.class.notifyAll ();
+            }
+        }
+        
+        if (toRun != null) {
+            Iterator it = toRun.iterator ();
+            while (it.hasNext ()) {
+                Execute r = (Execute)it.next ();
+                int result = r.exec ();
+                if (result != 0) {
+                    return result;
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /** Blocks for a while and waits if the finishInitialization method
+     * was called.
+     * @param timeout ms to wait
+     * @return true if finishInitialization is over
+     */
+    private static synchronized boolean waitFinishInstallationIsOver (int timeout) {
+        if (doLater != null) {
+            try {
+                CLIHandler.class.wait (timeout);
+            } catch (InterruptedException ex) {
+                // go on, never mind
+            }
+        }
+        return doLater == null;
+    }
+    
     
     /** Initializes the system by creating lock file.
      *
      * @param args the command line arguments to recognize
      * @param block the state we want to block in
      * @param handlers all handlers to use
-     * @param doAllInit if true, run all WHEN_INIT handlers now; else wait for {@link #finishInitialization}
      * @param failOnUnknownOptions if true, fail (status 2) if some options are not recognized (also checks for -? and -help)
      * @param cleanLockFile removes lock file if it appears to be dead
      * @return a status summary
      */
-    static Status initialize(final Args args, Integer block, final List handlers, boolean doAllInit, final boolean failOnUnknownOptions, boolean cleanLockFile) {
+    static Status initialize(final Args args, Integer block, final List handlers, final boolean failOnUnknownOptions, boolean cleanLockFile) {
         // initial parsing of args
         {
             int r = notifyHandlers(args, handlers, WHEN_BOOT, false, failOnUnknownOptions);
@@ -334,26 +406,14 @@ public abstract class CLIHandler extends Object {
                 os.write(arr);
                 os.close();
                 
-                int exitCode;
-                if (doAllInit) {
-                    exitCode = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
-                } else {
-                    doLater = new Runnable() {
-                        public void run() {
-                            int r = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
-                            if (r != 0) {
-                                // Not much to do about it.
-                                System.err.println("Post-initialization command-line options could not be run."); // NOI18N
-                                //System.err.println("r=" + r + " args=" + java.util.Arrays.asList(args.getArguments()));
-                            }
-                        }
-                    };
-                    exitCode = 0;
-                }
+                int execCode = registerFinishInstallation (new Execute () {
+                    public int exec () {
+                        return notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
+                    }
+                });
                 
                 enterState(0, block);
-                return new Status(lockFile, server.getLocalPort(), exitCode);
-                
+                return new Status(lockFile, server.getLocalPort(), execCode);
             } catch (IOException ex) {
                 if (!"EXISTS".equals(ex.getMessage())) { // NOI18N
                     ex.printStackTrace();
@@ -440,6 +500,9 @@ public abstract class CLIHandler extends Object {
                                     os.writeInt(args.getInputStream().available());
                                     os.flush();
                                     break;
+                                case REPLY_DELAY:
+                                    // ok, try once more
+                                    break;
                                 case -1:
                                     // EOF. Why does this happen?
                                     break;
@@ -480,18 +543,6 @@ public abstract class CLIHandler extends Object {
         return new Status();
     }
 
-    /**
-     * Run any {@link #WHEN_INIT} handlers that were passed to the original command line.
-     * Should be called when the system is up and ready.
-     * Cancels any existing actions, in case it is called twice.
-     */
-    static void finishInitialization() {
-        if (doLater != null) {
-            doLater.run();
-            doLater = null;
-        }
-    }
-    
     /** For a given classloader finds all registered CLIHandlers.
      */
     private static List allCLIs(ClassLoader loader) {
@@ -691,9 +742,14 @@ public abstract class CLIHandler extends Object {
             
             enterState(90, block);
             
-            DataOutputStream os = new DataOutputStream(s.getOutputStream());
+            final DataOutputStream os = new DataOutputStream(s.getOutputStream());
             
             if (Arrays.equals(check, key)) {
+                while (!waitFinishInstallationIsOver (2000)) {
+                    os.write (REPLY_DELAY);
+                    os.flush ();
+                }
+                
                 enterState(93, block);
                 os.write(REPLY_OK);
                 os.flush();
@@ -704,19 +760,55 @@ public abstract class CLIHandler extends Object {
                 for (int i = 0; i < args.length; i++) {
                     args[i] = is.readUTF();
                 }
-                String currentDir = is.readUTF ();
+                final String currentDir = is.readUTF ();
                 
-                Args arguments = new Args(args, new IS(is, os), new OS(is, os), currentDir);
-                int res = notifyHandlers(arguments, handlers, WHEN_INIT, failOnUnknownOptions, false);
-                
-                if (res == 0) {
-                    enterState(98, block);
-                } else {
-                    enterState(99, block);
+                final Args arguments = new Args(args, new IS(is, os), new OS(is, os), currentDir);
+
+                class ComputingAndNotifying extends Thread {
+                    public int res;
+                    public boolean finished;
+                    
+                    public ComputingAndNotifying () {
+                        super ("Computes values in handlers");
+                    }
+                    
+                    public void run () {
+                        try {
+                            res = notifyHandlers (arguments, handlers, WHEN_INIT, failOnUnknownOptions, false);
+
+                            if (res == 0) {
+                                enterState (98, block);
+                            } else {
+                                enterState (99, block);
+                            }
+                        } finally {
+                            synchronized (this) {
+                                finished = true;
+                                notifyAll ();
+                            }
+                        }
+                    }
+                    
+                    public synchronized void waitForResultAndNotifyOthers () {
+                        // execute the handlers in another thread
+                        start ();
+                        while (!finished) {
+                            try {
+                                wait (1000);
+                                os.write (REPLY_DELAY);
+                                os.flush ();
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }
                 }
-                
+                ComputingAndNotifying r = new ComputingAndNotifying ();
+                r.waitForResultAndNotifyOthers ();
                 os.write(REPLY_EXIT);
-                os.writeInt(res);
+                os.writeInt(r.res);
             } else {
                 enterState(103, block);
                 os.write(REPLY_FAIL);

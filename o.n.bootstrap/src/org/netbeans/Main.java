@@ -98,7 +98,7 @@ public class Main extends Object {
         //
         
         CLIHandler.Status result;
-        result = CLIHandler.initialize(args, loader, false, true, false);
+        result = CLIHandler.initialize(args, loader, true, false);
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null, 
@@ -108,7 +108,7 @@ public class Main extends Object {
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
             if (value == javax.swing.JOptionPane.OK_OPTION) {
-                result = CLIHandler.initialize(args, loader, false, true, true);
+                result = CLIHandler.initialize(args, loader, true, true);
             }
             
         }
@@ -129,7 +129,12 @@ public class Main extends Object {
      * delayed command-line options like -open FILE.
      */
     public static void finishInitialization() {
-        CLIHandler.finishInitialization();
+        int r = CLIHandler.finishInitialization (false);
+        if (r != 0) {
+            // Not much to do about it.
+            System.err.println ("Post-initialization command-line options could not be run."); // NOI18N
+            //System.err.println("r=" + r + " args=" + java.util.Arrays.asList(args.getArguments()));
+        }
     }
     
     private static final class BootClassLoader extends JarClassLoader {
