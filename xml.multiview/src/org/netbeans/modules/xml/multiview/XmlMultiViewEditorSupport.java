@@ -90,7 +90,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
 
     /** Opens the specific View
      */
-    public void openView(final int index) {
+    void openView(final int index) {
         dObj.documentUpdated();
         Utils.runInAwtDispatchThread(new Runnable() {
             public void run() {

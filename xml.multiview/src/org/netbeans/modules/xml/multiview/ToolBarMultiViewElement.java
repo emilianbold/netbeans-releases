@@ -20,6 +20,7 @@ import org.openide.util.NbBundle;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
+import org.netbeans.modules.xml.multiview.ui.SectionView;
 
 import javax.swing.*;
 import java.beans.PropertyChangeListener;
@@ -121,6 +122,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     public void setMultiViewCallback(MultiViewElementCallback callback) {
         observer=callback;
         if (dObj!=null) {
+            dObj.setActiveMultiViewElement(this);
             TopComponent tc = callback.getTopComponent();
             if (tc.getDisplayName()==null) {
                 tc.setDisplayName(dObj.getEditorSupport().messageName());
@@ -135,6 +137,10 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
 
     public javax.swing.JComponent getVisualRepresentation() {
         return editor;
+    }
+    
+    public SectionView getSectionView() {
+        return null;
     }
 
 }

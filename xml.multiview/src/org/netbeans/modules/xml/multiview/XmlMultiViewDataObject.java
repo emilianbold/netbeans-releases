@@ -60,6 +60,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private long handleUnparseableTimeout = 0;
     private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
     protected boolean parseable;
+    private ToolBarMultiViewElement activeMVElement;
 
     final SaveCookie saveCookie = new SaveCookie() {
         /** Implements <code>SaveCookie</code> interface. */
@@ -98,7 +99,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return editor;
     }
     
-    public XmlMultiViewEditorSupport getEditorSupport() {
+    protected XmlMultiViewEditorSupport getEditorSupport() {
         return (XmlMultiViewEditorSupport)getCookie(XmlMultiViewEditorSupport.class);
     }
 
@@ -424,4 +425,20 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public void showElement(Object element) {
         getEditorSupport().edit();
     }
+    
+    /** Enable to get active MultiViewElement object
+     */
+    protected ToolBarMultiViewElement getActiveMultiViewElement() {
+        return activeMVElement;
+    }
+    void setActiveMultiViewElement(ToolBarMultiViewElement element) {
+        activeMVElement = element;
+    }
+    /** Opens the specific view
+     * @param multi-view index
+     */
+    public void openView(int index) {
+        getEditorSupport().openView(index);
+    }
+    
 }
