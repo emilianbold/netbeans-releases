@@ -41,7 +41,7 @@
       <tocitem text="Declaring the Classpath in Freeform Projects" target="proj_free_classpath" />
       <tocitem text="Setting the Target JDK" target="tbd" />
       <tocitem text="Mapping an Ant Target to an IDE Command" target="proj_free_targets" />
-      <tocitem text="Writing A Debug Target for a Freeform Project" target="proj_free_debug" />
+      <tocitem text="Writing A Debug Target for a J2SE Freeform Project" target="proj_free_debug" />
       <tocitem text="Storing IDE Targets in a Separate Ant Script" target="proj_free_nbtargs" />
     </tocitem>
   </tocitem>
@@ -336,7 +336,7 @@
 </tocitem> <!-- About Web Modules -->
 
 <tocitem text="Creating Web Projects">
-    <tocitem text="Creating a Web Project" target="tbd"/>
+    <tocitem text="Creating a Web Project" target="proj_creating"/>
     <tocitem text="Java Project Templates" target="proj_templates" />
     <tocitem text="Setting the Main Project" target="proj_main" />
     <tocitem text="Standard Projects">
@@ -346,7 +346,7 @@
       <tocitem text="Managing the Classpath" target="comp_classpath" />
       <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
       <tocitem text="Setting the Target JDK" target="proj_jdk" />
-      <tocitem text="Customizing the IDE-Generated Ant Script" target="tbd" />
+      <tocitem text="Customizing the IDE-Generated Ant Script" target="proj_stand_customize" />
     </tocitem>
     <tocitem text="Freeform Projects">
       <tocitem text="About Freeform Projects" target="proj_free_about" />
@@ -355,7 +355,7 @@
       <tocitem text="Declaring the Classpath in Freeform Projects" target="proj_free_classpath" />
       <tocitem text="Setting the JDK for an Ant Script" target="ant_target-jdk" />
       <tocitem text="Linking Ant Targets to IDE Commands" target="proj_free_targets" />
-      <tocitem text="Writing Ant Targets for IDE Commands" target="tbd" />
+      <tocitem text="Writing Ant Targets for IDE Commands" target="proj_webfree_debug" />
     </tocitem>
 </tocitem>
 
@@ -432,10 +432,10 @@
       </tocitem>
   </tocitem> <!-- Developing Tag Libraries and Tag Files -->
 
-  <tocitem text="Web Module Listeners">
-     <tocitem text="About Web Module Listeners" target="concepts_listener"  />       					
-     <tocitem text="Creating a Web Module Listener" target="listen_create"/>
-     <tocitem text="Registering a Web Module Listener" target="listen_addtodd"/>
+  <tocitem text="Web Application Listeners">
+     <tocitem text="About Web Application Listeners" target="concepts_listener"  />       					
+     <tocitem text="Creating a Web Application Listener" target="listen_create"/>
+     <tocitem text="Registering a Web Application Listener" target="listen_addtodd"/>
   </tocitem> <!-- Working With Listeners --> 
   
     </tocitem> <!-- Developing Web Modules -->
@@ -453,7 +453,8 @@
     <tocitem text="Debugging Web Modules"> 
         <tocitem text="About Debugging Web Modules" target="jsp_debug"/>
 <!--    <tocitem text="Validating JSP Syntax" target="jsp_validate" />  -->
-        <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />		
+        <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
+        <tocitem text="Writing A Debug Target for a Web Freeform Project" target="proj_webfree_debug" />
     </tocitem> <!-- Debugging Web Modules-->
     
     <tocitem text="Packaging Web Modules"> 

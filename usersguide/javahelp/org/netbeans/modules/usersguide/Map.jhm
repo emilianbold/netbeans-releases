@@ -34,6 +34,7 @@
 <mapID target="proj_free_targets" url="project/proj_free_targets.html" />
 <mapID target="proj_free_nbtargs" url="project/proj_free_nbtargs.html" />
 <mapID target="proj_free_debug" url="project/proj_free_debug.html" />
+<mapID target="proj_webfree_debug" url="project/proj_webfree_debug.html" />
 <mapID target="proj_stand_customize" url="project/proj_stand_customize.html" />
 
 <mapID target="files.diff" url="files/files_diff.html" />
