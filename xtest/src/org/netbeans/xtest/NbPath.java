@@ -39,6 +39,10 @@ public class NbPath extends Task {
     public void setXTHome(String home) {
         this.xthome = checkPath(home);
     }
+    
+    public void setXTexHome(String exhome) {
+        this.xtexhome = checkPath(exhome);
+    }
 
     public void setAntHome(String home) {
         this.anthome = checkPath(home);
@@ -106,7 +110,7 @@ public class NbPath extends Task {
         String junit_jar = getProject().getProperty(JUNIT_JAR);
         if (null == junit_jar) {
             String junit_jars [] = new String [] { "junit.jar" };
-            File f = new File(xthome, "lib/junit.jar");
+            File f = new File(xtexhome, "lib/junit.jar");
             if (f.exists())
                 junit_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
             if (null == junit_jar)
@@ -122,7 +126,7 @@ public class NbPath extends Task {
         String xalan_jar = getProject().getProperty(XALAN_JAR);
         if (null == xalan_jar) {
             String xalan_jars [] = new String [] { "xalan.jar" };
-            File f = new File(xthome, "lib/xalan.jar");
+            File f = new File(xtexhome, "lib/xalan.jar");
             if (f.exists())
                 xalan_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
             if (null == xalan_jar)
@@ -138,7 +142,7 @@ public class NbPath extends Task {
         String xerces_jar = getProject().getProperty(XERCES_JAR);
         if (null == xerces_jar) {
             String xerces_jars [] = new String [] { "xerces.jar" };
-            File f = new File(xthome, "lib/xerces.jar");
+            File f = new File(xtexhome, "lib/xerces.jar");
             if (f.exists())
                 xerces_jar = f.getAbsolutePath().replace(File.separatorChar, '/');
             if (null == xerces_jar)
@@ -183,7 +187,7 @@ public class NbPath extends Task {
         if (null == getProject().getProperty(XTEST_PATH)) {
             list.setLength(0);
             addPath(list, appendSlash(xthome) + "lib/xtest.jar");
-            addPath(list, appendSlash(xthome) + "lib/xtest-ext.jar");
+            addPath(list, appendSlash(xtexhome) + "lib/xtest-ext.jar");
             getProject().setProperty(XTEST_PATH, list.toString());
         }
 
@@ -328,6 +332,7 @@ public class NbPath extends Task {
     
     private String nbhome = null;
     private String xthome = null;
+    private String xtexhome = null;
     private String anthome = null;
     
     private static String NB_LIBRARY_PATH     = "netbeans.test.library.path";
