@@ -93,6 +93,9 @@ public final class NbMainExplorer extends CloneableTopComponent
     public static final int MIN_HEIGHT = 150;
     /** Default width of main explorer */
     public static final int DEFAULT_WIDTH = 350;
+    
+    /** Mapping module tabs to their root node classes */
+    private static Map moduleTabs;
 
     /** Default constructor */
     public NbMainExplorer () {
@@ -106,7 +109,29 @@ public final class NbMainExplorer extends CloneableTopComponent
         return ExplorerPanel.getHelpCtx (getActivatedNodes (),
                                          new HelpCtx (NbMainExplorer.class));
     }
-
+    
+    /** Finds module tab in mapping of module tabs to their root node classes.
+     * If it is not found it is added when parameter tc is not null. When parameter
+     * tc is null new ModuleTab is created using default constructor. */
+    static synchronized ModuleTab findModuleTab (Class nodeClass, ModuleTab tc) {
+        if (moduleTabs == null) {
+            moduleTabs = new HashMap(5);
+        }
+        ModuleTab tab = (ModuleTab) moduleTabs.get(nodeClass.getName());
+        if (tab != null) {
+            return tab;
+        } else {
+            if (tc != null) {
+                moduleTabs.put(nodeClass.getName(), tc);
+                return tc;
+            } else {
+                ModuleTab newTC = new ModuleTab();
+                moduleTabs.put(nodeClass.getName(), newTC);
+                return newTC;
+            }
+        }
+    }
+    
     /** Overriden to open all top components of main explorer and
     * close this top component, as this top component exists only because of 
     * backward serialization compatibility.
@@ -251,8 +276,7 @@ public final class NbMainExplorer extends CloneableTopComponent
                         tc.open((Workspace)iter2.next());
                     }
                 }
-            } 
-
+            }
             
             if (r.equals(NbProjectOperation.getProjectDesktop())) {
                 // put a request for later validation
@@ -357,8 +381,9 @@ public final class NbMainExplorer extends CloneableTopComponent
             panel = new MainTab();
         } else {
             // tabs added by modules
-            panel = new ModuleTab();
+            panel = NbMainExplorer.findModuleTab(rc.getClass(), null);
         }
+        
         panel.setRootContext(rc);
         rootsToTCs().put(rc, panel);
         return panel;
@@ -851,7 +876,6 @@ public final class NbMainExplorer extends CloneableTopComponent
         public static synchronized ProjectsTab getDefault() {
             if (DEFAULT == null) {
                 DEFAULT = new ProjectsTab();
-                
                 // put a request for later validation
                 // we must do this here, because of ExplorerManager's deserialization.
                 // Root context of ExplorerManager is validated AFTER all other
@@ -888,7 +912,10 @@ public final class NbMainExplorer extends CloneableTopComponent
     /** Special class for tabs added by modules to the main explorer */
     public static class ModuleTab extends MainTab {
         static final long serialVersionUID =8089827754534653731L;
-
+        
+        public ModuleTab() {
+        }
+                
         /** Throws deserialized root context and sets proper node found
         * in roots set as new root context for this top component.
         * The reason for such construction is to keep the uniquennes of
@@ -904,6 +931,14 @@ public final class NbMainExplorer extends CloneableTopComponent
                     break;
                 }
             }
+        }
+        
+        /** Deserialization of ModuleTab */
+        public Object readResolve() throws java.io.ObjectStreamException {
+            Class nodeClass = getExplorerManager().getRootContext().getClass();
+            ModuleTab tc = NbMainExplorer.findModuleTab(nodeClass, this);
+            tc.scheduleValidation();
+            return tc;
         }
 
     } // end of ModuleTab inner class
