@@ -518,6 +518,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      *  Method is called before switching to the design view from XML view when the document isn't parseable.
      */
     public boolean isDocumentParseable() {
+        waitForSync();
         return parseable;
     }
 

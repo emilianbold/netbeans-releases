@@ -347,8 +347,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
         }
         synchronizeModelTask.schedule(PARSING_INIT_DELAY);
-        synchronizeModelTask.waitFinished();
+        waitForSync();
         return !isModified();
+    }
+
+    protected void waitForSync() {
+        synchronizeModelTask.waitFinished();
     }
     
     public org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
