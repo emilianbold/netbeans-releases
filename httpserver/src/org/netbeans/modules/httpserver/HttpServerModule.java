@@ -104,6 +104,7 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/28/99  Petr Jiricka    
  *  6    Gandalf   1.5         5/25/99  Petr Jiricka    
  *  5    Gandalf   1.4         5/17/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/17/99  Petr Jiricka    

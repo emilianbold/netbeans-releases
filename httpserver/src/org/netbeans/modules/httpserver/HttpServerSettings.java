@@ -37,13 +37,12 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** generated Serialized Version UID */
   //static final long serialVersionUID = -2930037136839837001L;
                  
-  /** Object to synchronize on */               
-  static Object lock = new Object();
-  
   /** Has this been initialized ? 
   *  Becomes true if a "running" getter or setter is called
   */
   static boolean inited = false;
+  
+  public static final int SERVER_STARTUP_TIMEOUT = 3000;
 
   /** constant for local host */
   public  static final String LOCALHOST = "local";
@@ -70,7 +69,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   private static boolean running = false;
 
   /** http settings */
-  final static HttpServerSettings OPTIONS = new HttpServerSettings();
+  public final static HttpServerSettings OPTIONS = new HttpServerSettings();
 
 
   public HttpServerSettings() {
@@ -83,8 +82,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
                                       
   /** getter for running status */
   public boolean isRunning() {
-    if (inited)
+    if (inited) {
       return running;
+    }  
     else {
       // default value, which is true -> start it
       setRunning(true);
@@ -94,7 +94,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   /** Intended to be called by the thread which succeeded to start the server */
   void runSuccess() {
-    running = true;
+    synchronized (HttpServerSettings.OPTIONS) {
+      running = true;
+      HttpServerSettings.OPTIONS.notifyAll();
+    }  
   }
 
   /** Intended to be called by the thread which failed to start the server */
@@ -104,7 +107,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
   /** Restarts the server if it is running */
   private void restartIfNecessary() {
-    if (isRunning()) {
+    if (running) {
       HttpServerModule.stopHTTPServer();
       HttpServerModule.initHTTPServer();
     }
@@ -132,17 +135,24 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     if (this.running == running)
       return;
     
-    synchronized (this) {
-      if (running)  
+    synchronized (HttpServerSettings.OPTIONS) {
+      if (running) {
         // running status is set by another thread
         HttpServerModule.initHTTPServer();
+        // wait for the other thread to start the server
+        try {
+          HttpServerSettings.OPTIONS.wait(SERVER_STARTUP_TIMEOUT);
+        }
+        catch (Exception e) {
+          e.printStackTrace();
+        }
+      }  
       else {
-        running = false;
+        this.running = false;
         HttpServerModule.stopHTTPServer();
       }  
     }  
-    // PENDING  
-    //firePropertyChange(
+    firePropertyChange("running", new Boolean(!running), new Boolean(running));
   }
 
   /** getter for repository base */
@@ -160,7 +170,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       return;
     
     // implement the change  
-    synchronized (lock) {
+    synchronized (HttpServerSettings.OPTIONS) {
       this.repositoryBaseURL = newURL;
       restartIfNecessary();
     }
@@ -183,7 +193,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       return;
     
     // implement the change  
-    synchronized (lock) {
+    synchronized (HttpServerSettings.OPTIONS) {
       this.classpathBaseURL = newURL;
       restartIfNecessary();
     }
@@ -193,7 +203,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
   /** setter for port */
   public void setPort(int p) {
-    synchronized (lock) {
+    synchronized (HttpServerSettings.OPTIONS) {
       port = p;
       restartIfNecessary();
     }  
@@ -256,11 +266,23 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + resourcePath);
   }
     
+  /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
+  * consisting of the returned URL and fully qualified resource name.
+  * @param resourcePath path of the resource in the classloader format
+  * @see ClassLoader#getResource(java.lang.String)
+  * @see TopManager#systemClassLoader()
+  */
+  public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
+    setRunning(true);                                                           
+    return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL());
+  }
+    
                                        
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/28/99  Petr Jiricka    
  *  4    Gandalf   1.3         5/11/99  Petr Jiricka    
  *  3    Gandalf   1.2         5/11/99  Petr Jiricka    
  *  2    Gandalf   1.1         5/10/99  Petr Jiricka    
