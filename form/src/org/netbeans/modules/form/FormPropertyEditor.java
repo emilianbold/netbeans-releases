@@ -45,7 +45,6 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     this.radProperty = radProperty;
     this.propertyType = propertyType;
     modifiedEditor = radProperty.getCurrentEditor ();
-//    System.out.println ("Modified editor: "+modifiedEditor);
     if (modifiedEditor instanceof FormAwareEditor) {
       ((FormAwareEditor)modifiedEditor).setRADComponent (radComponent);
     }
@@ -55,11 +54,11 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   Class getPropertyType () {
     return propertyType;
   }
-  
-  PropertyEditor getCurrentEditor () {
-    return radProperty.getCurrentEditor ();
-  }
 
+  PropertyEditor getModifiedEditor () {
+    return modifiedEditor;
+  }
+  
   void commitModifiedEditor () {
     radProperty.setCurrentEditor (modifiedEditor);
   }
@@ -124,7 +123,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return  True if the class will honor the paintValue method.
   */
   public boolean isPaintable() {
-    return getCurrentEditor ().isPaintable ();
+    return modifiedEditor.isPaintable ();
   }
 
   /**
@@ -139,7 +138,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @param box  Rectangle within graphics object into which we should paint.
   */
   public void paintValue(java.awt.Graphics gfx, java.awt.Rectangle box) {
-    getCurrentEditor ().paintValue (gfx, box);
+    modifiedEditor.paintValue (gfx, box);
   }
 
   // -----------------------------------------------------------------------------
@@ -156,7 +155,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *   	current value.
   */
   public String getJavaInitializationString() {
-    return getCurrentEditor ().getJavaInitializationString ();
+    return modifiedEditor.getJavaInitializationString ();
   }
 
   // -----------------------------------------------------------------------------
@@ -172,7 +171,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *	     be prepared to parse that string back in setAsText().
   */
   public String getAsText() {
-    return getCurrentEditor ().getAsText ();
+    return modifiedEditor.getAsText ();
   }
 
   /**
@@ -201,7 +200,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *	
   */
   public String[] getTags() {
-    return getCurrentEditor ().getTags ();
+    return modifiedEditor.getTags ();
   }
 
   // -----------------------------------------------------------------------------
@@ -248,8 +247,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   *         sheet
   */
   public java.awt.Component getInPlaceCustomEditor () {
-    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
-      return ((EnhancedPropertyEditor)getCurrentEditor ()).getInPlaceCustomEditor ();
+    if (modifiedEditor instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)modifiedEditor).getInPlaceCustomEditor ();
     } else {
       return null;
     }
@@ -259,8 +258,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean hasInPlaceCustomEditor () {
-    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
-      return ((EnhancedPropertyEditor)getCurrentEditor ()).hasInPlaceCustomEditor ();
+    if (modifiedEditor instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)modifiedEditor).hasInPlaceCustomEditor ();
     } else {
       return false;
     }
@@ -271,8 +270,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
   * @return <code>true</code> if supported
   */
   public boolean supportsEditingTaggedValues () {
-    if (getCurrentEditor () instanceof EnhancedPropertyEditor) {
-      return ((EnhancedPropertyEditor)getCurrentEditor ()).supportsEditingTaggedValues ();
+    if (modifiedEditor instanceof EnhancedPropertyEditor) {
+      return ((EnhancedPropertyEditor)modifiedEditor).supportsEditingTaggedValues ();
     } else {
       return false;
     }
@@ -306,6 +305,8 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  11   Gandalf   1.10        8/1/99   Ian Formanek    cleaned usage of 
+ *       modified editor
  *  10   Gandalf   1.9         7/23/99  Ian Formanek    Caching editor classes
  *  9    Gandalf   1.8         6/30/99  Ian Formanek    reflecting change in 
  *       enhanced property editors interfaces
