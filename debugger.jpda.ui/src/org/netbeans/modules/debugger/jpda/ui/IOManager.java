@@ -13,62 +13,38 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.Session;
-
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
-import org.openide.windows.TopComponent;
-import org.openide.awt.StatusDisplayer;
-
 
 public class IOManager {
 
-    /** DebuggerManager output constant. */
-    public static final int                 DEBUGGER_OUT = 1;
-    /** Process output constant. */
-    public static final int                 PROCESS_OUT = 2;
-    /** Status line output constant. */
-    public static final int                 STATUS_OUT = 4;
-    /** All outputs constant. */
-    public static final int                 ALL_OUT = DEBUGGER_OUT + 
-                                                PROCESS_OUT + STATUS_OUT;
-    /** Standart process output constant. */
-    public static final int                 STD_OUT = 1;
-    /** Error process output constant. */
-    public static final int                 ERR_OUT = 2;
-    
-    private static Hashtable                debuggerToProcesIO = new Hashtable ();
-    private static Hashtable                debuggerToDebuggerIO = new Hashtable ();
-    private static DebuggerEngine           currentEngine;
-    private static DListener                dListener;
+//    /** DebuggerManager output constant. */
+//    public static final int                 DEBUGGER_OUT = 1;
+//    /** Process output constant. */
+//    public static final int                 PROCESS_OUT = 2;
+//    /** Status line output constant. */
+//    public static final int                 STATUS_OUT = 4;
+//    /** All outputs constant. */
+//    public static final int                 ALL_OUT = DEBUGGER_OUT + 
+//                                                PROCESS_OUT + STATUS_OUT;
+//    /** Standart process output constant. */
+//    public static final int                 STD_OUT = 1;
+//    /** Error process output constant. */
+//    public static final int                 ERR_OUT = 2;
 
     
     // variables ...............................................................
     
     protected InputOutput                   debuggerIO = null;
-    private DebuggerEngine                  engine;
-    
     private OutputWriter                    debuggerOut;
     private String                          name;
     
@@ -80,9 +56,7 @@ public class IOManager {
     // init ....................................................................
     
     public IOManager (
-        DebuggerEngine engine
     ) {
-        this.engine = engine;
         InputOutput debuggerIO = IOProvider.getDefault ().getIO ( 
             NbBundle.getBundle (IOManager.class).getString 
                 ("CTL_DebuggerConsole_Title"), 
@@ -90,45 +64,6 @@ public class IOManager {
         );
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
-        ((TopComponent) debuggerIO).setVisible(false);
-        
-        debuggerToDebuggerIO.put (engine, debuggerIO);
-        final DebuggerManager manager = DebuggerManager.getDebuggerManager ();
-        if (dListener == null) {
-            dListener = new DListener ();
-                manager.addDebuggerListener (dListener);
-        }
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                // close old tab from previous debugging session on engine start
-                // hide current tab and set this engine current
-                if (currentEngine == null) {
-                    currentEngine = IOManager.this.engine;
-                    return;
-                }
-
-                InputOutput io = (InputOutput) debuggerToProcesIO.get 
-                    (currentEngine);
-                if (io != null) {
-                    if (manager.getSessions ().length < 2) {
-                        io.closeInputOutput ();
-                        debuggerToProcesIO.remove (currentEngine);
-                    } else {
-                        io.setOutputVisible (false);
-                    }
-                }
-                io = (InputOutput) debuggerToDebuggerIO.get (currentEngine);
-                if (io != null) {
-                    if (manager.getSessions ().length < 2) {
-                        io.closeInputOutput ();
-                        debuggerToDebuggerIO.remove (currentEngine);
-                    } else {
-                        io.setOutputVisible (false);
-                    } 
-                }
-                currentEngine = IOManager.this.engine;
-            }
-        });
     }
     
     
@@ -140,11 +75,15 @@ public class IOManager {
     /**
     * Prints given text to the output.
     */
-    public void println (final String text, final int where, final Line line) {
+    public void println (
+        final String text, 
+    //    final int where, 
+        final Line line
+    ) {
         if (text == null)
             throw new NullPointerException ();
         synchronized (buffer) {
-            buffer.addLast (new Text (text, where, line));
+            buffer.addLast (new Text (text, line));
         }
         if (task == null)
             task = RequestProcessor.getDefault ().post (new Runnable () {
@@ -154,14 +93,14 @@ public class IOManager {
                         for (i = 0; i < k; i++) {
                             Text t = (Text) buffer.removeFirst ();
                             try {
-                                if ((t.where & DEBUGGER_OUT) != 0) {
+                                //if ((t.where & DEBUGGER_OUT) != 0) {
                                     if (t.line != null) {
                                         debuggerOut.println (t.text, listener);
                                         lines.put (t.text, t.line);
                                     } else
                                         debuggerOut.println (t.text);
-                                }
-                                if ((t.where & STATUS_OUT) != 0) 
+                                //}
+                               // if ((t.where & STATUS_OUT) != 0) 
                                     StatusDisplayer.getDefault ().setStatusText (t.text);
                             } catch (IOException ex) {
                                 ex.printStackTrace ();
@@ -178,58 +117,6 @@ public class IOManager {
      * Stops communication between InputOutput and process.
      */
     public void stop () {
-        DebuggerManager manager = DebuggerManager.getDebuggerManager ();
-        if (manager.getSessions ().length > 1) {
-            SwingUtilities.invokeLater (new Runnable () {
-                public void run () {
-                    //S ystem.out.println("IOManager.stop Tab Closed " + engine);
-                    InputOutput io = (InputOutput) debuggerToProcesIO.get 
-                        (engine);
-                    if (io != null)
-                       io.closeInputOutput ();
-                    io = (InputOutput) debuggerToDebuggerIO.get (engine);
-                    if (io != null)
-                        io.closeInputOutput ();
-                    debuggerToProcesIO.remove (engine);
-                    debuggerToDebuggerIO.remove (engine);
-                }
-            });
-        }
-        manager.removeDebuggerListener (dListener);
-        engine = null;
-    }
-    
-    
-    // helper methods ..........................................................
-    
-    private static void switchOutput () {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                DebuggerEngine d = DebuggerManager.getDebuggerManager ().getCurrentEngine ();
-                if ( (currentEngine != null) &&
-                     (currentEngine != d) && (d != null)
-                ) {
-                    // hides current engine
-                    InputOutput io = (InputOutput) debuggerToProcesIO.get 
-                        (currentEngine);
-                    if (io != null)
-                        io.setOutputVisible (false);
-                    io = (InputOutput) debuggerToDebuggerIO.get (currentEngine);
-                    if (io != null)
-                        io.setOutputVisible (false);
-                    currentEngine = null;
-                }
-                if (d != null) {
-                    InputOutput io = (InputOutput) debuggerToDebuggerIO.get (d);
-                    if (io != null)
-                        io.setOutputVisible (true);
-                    io = (InputOutput) debuggerToProcesIO.get (d);
-                    if (io != null)
-                        io.setOutputVisible (true);
-                    currentEngine = d;
-                }
-            }
-        });
     }
     
     
@@ -249,23 +136,14 @@ public class IOManager {
         }
     }
     
-    private static class DListener extends DebuggerManagerAdapter {
-        public void propertyChange (PropertyChangeEvent e) {
-            if ( (e.getPropertyName () == null) ||
-                 (e.getPropertyName () != DebuggerManager.PROP_CURRENT_ENGINE)
-            ) return;
-            switchOutput ();
-        }
-    }
-    
     private static class Text {
         private String text;
         private Line line;
-        private int where;
+     //   private int where;
         
-        private Text (String text, int where, Line line) {
+        private Text (String text, Line line) {
             this.text = text;
-            this.where = where;
+            //this.where = where;
             this.line = line;
         }
     }

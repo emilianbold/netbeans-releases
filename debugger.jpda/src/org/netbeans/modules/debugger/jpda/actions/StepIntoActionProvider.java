@@ -18,21 +18,26 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
 import com.sun.jdi.request.StepRequest;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
+
+import org.netbeans.modules.debugger.jpda.EngineContext;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+
 
 /**
  * Implements non visual part of stepping through code in JPDA debugger.
@@ -61,9 +66,9 @@ implements Executor, PropertyChangeListener {
         );
         this.lookupProvider = lookupProvider;
         getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
-        EngineContextProvider ecp = (EngineContextProvider) lookupProvider.
-            lookupFirst (EngineContextProvider.class);
-        ecp.addPropertyChangeListener (this);
+        EngineContext ec = (EngineContext) lookupProvider.
+            lookupFirst (EngineContext.class);
+        ec.addPropertyChangeListener (this);
     }
 
 

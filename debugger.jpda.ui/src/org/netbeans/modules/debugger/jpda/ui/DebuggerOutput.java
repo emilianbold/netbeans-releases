@@ -44,7 +44,7 @@ import org.openide.util.NbBundle;
 public class DebuggerOutput extends LazyActionsManagerListener implements
 PropertyChangeListener {
 
-    private static final int    where = IOManager.STATUS_OUT + IOManager.STD_OUT;
+    //private static final int    where = IOManager.STATUS_OUT + IOManager.STD_OUT;
 
     private JPDADebugger        debugger;
     private DebuggerEngine      engine;
@@ -58,7 +58,7 @@ PropertyChangeListener {
         this.engine = engine;
         engineContext = (EngineContext) engine.lookupFirst (EngineContext.class);
         
-        ioManager = new IOManager (engine);
+        ioManager = new IOManager ();
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -68,7 +68,7 @@ PropertyChangeListener {
     protected void destroy () {
         print (
             "CTL_Debugger_finished",
-            IOManager.STATUS_OUT + IOManager.STATUS_OUT,
+            //IOManager.STATUS_OUT + IOManager.STATUS_OUT,
             null, null
         );
         debugger.removePropertyChangeListener (
@@ -96,7 +96,7 @@ PropertyChangeListener {
                 if (c.getHostName () != null)
                     print (
                         "CTL_Attaching_socket",
-                        where,
+//                        where,
                         new String[] {
                             c.getHostName (),
                             "" + c.getPortNumber ()
@@ -106,7 +106,7 @@ PropertyChangeListener {
                 else
                     print (
                         "CTL_Attaching_shmem",
-                        where,
+//                        where,
                         new String[] {
                             c.getSharedMemoryName ()
                         },
@@ -118,7 +118,7 @@ PropertyChangeListener {
                 if (c.getSharedMemoryName () != null)
                     print (
                         "CTL_Listening_shmem",
-                        where,
+//                        where,
                         new String[] {
                             c.getSharedMemoryName ()
                         },
@@ -127,7 +127,7 @@ PropertyChangeListener {
                 else
                     print (
                         "CTL_Listening_socket",
-                        where,
+//                        where,
                         new String[] {
                             "" + c.getPortNumber ()
                         },
@@ -138,7 +138,7 @@ PropertyChangeListener {
                 LaunchingDICookie c = (LaunchingDICookie) cookie;
                     print (
                         "CTL_Launching",
-                        where,
+//                        where,
                         new String[] {
                             c.getCommandLine ()
                         },
@@ -149,7 +149,7 @@ PropertyChangeListener {
         if (debugger.getState () == JPDADebugger.STATE_RUNNING) {
             print (
                 "CTL_Debugger_running",
-                where,
+//                where,
                 new String[] {
                 },
                 null
@@ -163,11 +163,11 @@ PropertyChangeListener {
                 e = ex.getTargetException ();
             }
             if (e == null)
-                print ("CTL_Debugger_finished", where, null, null);
+                print ("CTL_Debugger_finished", null, null);
             else {
                 ioManager.println (
                     e.getMessage (),
-                    where,
+//                    where,
                     null
                 );
                 e.printStackTrace ();
@@ -177,7 +177,7 @@ PropertyChangeListener {
             //DebuggerEngine engine = debugger.getEngine ();
             //S ystem.out.println("State Stopped " + debugger.getLastAction ());
             if (t == null) {
-                print ("CTL_Debugger_stopped", where, null, null);
+                print ("CTL_Debugger_stopped", null, null);
                 return;
             }
             String language = DebuggerManager.getDebuggerManager ().
@@ -205,7 +205,7 @@ PropertyChangeListener {
                 if (lineNumber > 0)
                     print (
                         "CTL_Thread_stopped",
-                        IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
+                      //  IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
                             sourceName,
@@ -217,7 +217,7 @@ PropertyChangeListener {
                 else
                     print (
                         "CTL_Thread_stopped_no_line",
-                        IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
+                    //    IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
                             sourceName,
@@ -229,7 +229,7 @@ PropertyChangeListener {
                 if (lineNumber > 0)
                     print (
                         "CTL_Thread_stopped_no_source",
-                        IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
+                     //   IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
                             className,
@@ -241,7 +241,7 @@ PropertyChangeListener {
                 else
                     print (
                         "CTL_Thread_stopped_no_source_no_line",
-                        IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
+                        //IOManager.DEBUGGER_OUT + IOManager.STATUS_OUT,
                         new String[] {
                             threadName,
                             className,
@@ -257,16 +257,16 @@ PropertyChangeListener {
         if (!success) return;
         //print ("CTL_Debugger_running", where, null, null);
         if (action == DebuggerManager.ACTION_CONTINUE)
-            print ("CTL_Continue", where, null, null);
+            print ("CTL_Continue", null, null);
         else
         if (action == DebuggerManager.ACTION_STEP_INTO)
-            print ("CTL_Step_Into", where, null, null);
+            print ("CTL_Step_Into", null, null);
         else
         if (action == DebuggerManager.ACTION_STEP_OUT)
-            print ("CTL_Step_Out", where, null, null);
+            print ("CTL_Step_Out", null, null);
         else
         if (action == DebuggerManager.ACTION_STEP_OVER)
-            print ("CTL_Step_Over", where, null, null);
+            print ("CTL_Step_Over", null, null);
     }
 
     IOManager getIOManager() {
@@ -277,7 +277,7 @@ PropertyChangeListener {
 
     private void print (
         String message,
-        int where,
+//        int where,
         String[] args,
         IOManager.Line line
     ) {
@@ -293,7 +293,7 @@ PropertyChangeListener {
 
         ioManager.println (
             text,
-            where,
+//            where,
             line
         );
     }

@@ -31,7 +31,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+import org.netbeans.modules.debugger.jpda.ui.EngineContext;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.ComputingException;
 import org.netbeans.spi.viewmodel.Models;
@@ -51,7 +51,7 @@ public class SourcesModel extends ColumnModel implements TreeModel, TableModel,
 NodeActionsProvider {
     
     private Listener listener;
-    private EngineContextProvider context;
+    private EngineContext context;
     private JPDADebugger debugger;
     private Vector listeners = new Vector ();
     private Set filters = new HashSet ();
@@ -60,8 +60,8 @@ NodeActionsProvider {
     
     
     public SourcesModel (LookupProvider lookupProvider) {
-         context = (EngineContextProvider) lookupProvider.
-            lookupFirst (EngineContextProvider.class);
+         context = (EngineContext) lookupProvider.
+            lookupFirst (EngineContext.class);
          debugger = (JPDADebugger) lookupProvider.
             lookupFirst (JPDADebugger.class);
     }

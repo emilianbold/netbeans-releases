@@ -21,16 +21,18 @@ import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.BreakpointEvent;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
+import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+
+import org.netbeans.modules.debugger.jpda.EngineContext;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
-import org.netbeans.spi.debugger.jpda.EngineContextProvider;
 
 
 /**
@@ -42,21 +44,21 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
 
     
     private LineBreakpoint breakpoint;
-    private EngineContextProvider engineContextProvider;
+    private EngineContext engineContext;
     
     public LineBreakpointImpl (
         LineBreakpoint breakpoint, 
         JPDADebuggerImpl debugger,
-        EngineContextProvider engineContextProvider
+        EngineContext engineContext
     ) {
         super (breakpoint, debugger);
         this.breakpoint = breakpoint;
-        this.engineContextProvider = engineContextProvider;
+        this.engineContext = engineContext;
         set ();
     }
     
     protected void setRequests () {
-        String className = engineContextProvider.getRelativePath (
+        String className = engineContext.getRelativePath (
             breakpoint.getURL (),
             '.', false
         );

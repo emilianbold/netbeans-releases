@@ -24,6 +24,7 @@ import org.netbeans.api.debugger.LazyActionsManagerListener;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -32,8 +33,10 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.spi.debugger.jpda.EngineContextProvider;
+
+import org.netbeans.modules.debugger.jpda.EngineContext;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 
 
 /**
@@ -49,15 +52,15 @@ implements PropertyChangeListener, DebuggerManagerListener {
         System.getProperty ("netbeans.debugger.breakpoints") != null;
 
     private JPDADebuggerImpl        debugger;
-    private EngineContextProvider   engineContextProvider;
+    private EngineContext           engineContext;
     private boolean                 started = false;
     
     
     public BreakpointsEngineListener (LookupProvider lookupProvider) {
         debugger = (JPDADebuggerImpl) lookupProvider.lookupFirst 
             (JPDADebugger.class);
-        engineContextProvider = (EngineContextProvider) lookupProvider.
-            lookupFirst (EngineContextProvider.class);
+        engineContext = (EngineContext) lookupProvider.
+            lookupFirst (EngineContext.class);
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -146,7 +149,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                 new LineBreakpointImpl (
                     (LineBreakpoint) b,
                     debugger,
-                    engineContextProvider
+                    engineContext
                 )
             );
         } else
