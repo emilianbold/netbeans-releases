@@ -134,7 +134,9 @@ class EditPanelRequest extends DataDisplay {
 	requestTable.setValueAt(rd.getAttributeValue(EditPanel.METHOD),1,1);
 	requestTable.setValueAt(rd.getAttributeValue("protocol"), 2,1);  // NOI18N
 
-	requestTable.setChoices(1, 1, methodChoices, false);
+	javax.swing.JComboBox box = requestTable.setChoices(1, 1, methodChoices, false);
+        box.getAccessibleContext().setAccessibleName(requestCategories[1]);
+        box.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditPanelRequest.class,"ACS_MON_RequestMethod"));
         requestTable.getAccessibleContext().setAccessibleName(NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_RequestTable_19A11yName"));
         requestTable.setToolTipText(NbBundle.getBundle(EditPanelRequest.class).getString("ACS_MON_RequestTable_19A11yDesc"));
 

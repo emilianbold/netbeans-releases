@@ -211,17 +211,15 @@ public class DisplayTable extends JTable {
      */
     public JComboBox setChoices(int row, int col, String[] choices,
 				boolean editable) { 
-	JComboBox box = new JComboBox(choices);
-	box.setEditable(editable);
-	TableCellEditor ed = new DefaultCellEditor(box);
+        TableCellEditor ed = new ComboBoxTableCellEditor(choices);                          
 	cellEditors[row][col] = ed;
 
 	// if the table is editable, we should turn off the [...] editor
 	// when there's a choice on the row.
-	data[row][2]=NbBundle.getBundle(DisplayTable.class).getString("MON_Editing");
+	data[row][2]=NbBundle.getBundle(DisplayTable.class).getString("MON_Editing");  
 	cellEditors[row][2] = null;
-	
-	return box;
+        
+        return ((ComboBoxTableCellEditor)ed).getComboBox();
     }
 
     /**
