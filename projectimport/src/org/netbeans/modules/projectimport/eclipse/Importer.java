@@ -28,6 +28,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
+import org.netbeans.modules.java.j2seplatform.wizard.NewJ2SEPlatform;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
@@ -36,9 +38,13 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
@@ -189,8 +195,10 @@ final class Importer {
                 EclipseProject eclSubProject = (EclipseProject) it.next();
                 J2SEProject nbSubProject = importProject(eclSubProject);
                 AntArtifact[] artifact =
-                        AntArtifactQuery.findArtifactsByType(nbSubProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                nbProjectClassPath.addAntArtifact(artifact[0], null);   //XXX: David, fix this
+                        AntArtifactQuery.findArtifactsByType(nbSubProject,
+                        JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                nbProjectClassPath.addAntArtifact(
+                        artifact[0], artifact[0].getArtifactLocations()[0]);
             }
             
             // set platform used by an Eclipse project
@@ -207,7 +215,8 @@ final class Importer {
     }
     
     /** Sets <code>JavaPlatform</code> for the given project */
-    private void setJavaPlatform(EclipseProject eclProject, final AntProjectHelper helper) {
+    private void setJavaPlatform(EclipseProject eclProject,
+            final AntProjectHelper helper) throws IOException {
         //        progressInfo = "Setting JDK for \"" + eclProject.getName() + "\"";
         String eclPlfDir = eclProject.getJDKDirectory();
         // eclPlfDir can be null in a case when a JDK was set for an eclipse
@@ -217,25 +226,15 @@ final class Importer {
             // use default platform
             return;
         }
-        Element pcd = helper.getPrimaryConfigurationData(true);
-        Element el = pcd.getOwnerDocument().createElementNS(
-                J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                "explicit-platform"); // NOI18N
-        pcd.appendChild(el);
-        helper.putPrimaryConfigurationData(pcd, true);
-        EditableProperties prop =
-                helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String ver = null;
-        String normalizedName = null;
+        JavaPlatform nbPlf = null;
         for (int i = 0; i < nbPlfs.length; i++) {
-            JavaPlatform nbPlf = nbPlfs[i];
+            JavaPlatform current = nbPlfs[i];
             String nbPlfDir = FileUtil.toFile(
-                    (FileObject) nbPlf.getInstallFolders().toArray()[0]).getAbsolutePath();
+                    (FileObject) current.getInstallFolders().toArray()[0]).getAbsolutePath();
             
             if (nbPlfDir.equals(eclPlfDir)) {
-                ver = nbPlf.getSpecification().getVersion().toString();
-                normalizedName = (String)nbPlf.getProperties().get(
-                        "platform.ant.name"); // NOI18N
+                nbPlf = nbPlfs[i];
+                // found
                 break;
             }
         }
@@ -243,21 +242,109 @@ final class Importer {
         // platform" which can be easily added by user with "Resolve Reference
         // Problems" feature. Such behaviour is much better then using a default
         // platform when user imports more projects.
-        // TODO parse version from Eclipse project or parse it out from a
-        // platform directory
-        if (normalizedName == null) {
-            normalizedName = new File(eclPlfDir).getName();
+        if (nbPlf == null) {
+            File f = FileUtil.normalizeFile(new File(eclPlfDir));
+            FileObject fo = FileUtil.toFileObject(f);
+            if (fo != null) {
+                NewJ2SEPlatform plat = NewJ2SEPlatform.create(fo);
+                plat.run();
+                if (plat.isValid()) {
+                    String displayName = createPlatformDisplayName(plat);
+                    String antName = createPlatformAntName(displayName);
+                    plat.setDisplayName(displayName);
+                    plat.setAntName(antName);
+                    FileObject platformsFolder = Repository.getDefault().
+                            getDefaultFileSystem().findResource(
+                            "Services/Platforms/org-netbeans-api-java-Platform"); //NOI18N
+                    assert platformsFolder != null;
+                    DataObject dobj = PlatformConvertor.create(plat,
+                            DataFolder.findFolder(platformsFolder), antName);
+                    nbPlf = (JavaPlatform) dobj.getNodeDelegate().getLookup().
+                            lookup(JavaPlatform.class);
+                } else {
+                    // tzezula: TODO: User should be notified in the UI and
+                    // probably default platform is used (not sure if it is
+                    // according to UI spec)
+                    ErrorManager.getDefault().log(ErrorManager.ERROR,
+                            "Can not create new J2SE platform, the default " + // NOI18N
+                            "platform will be used."); // NOI18N
+                }
+            } else {
+                logWarning("Cannot create platform in NetBeans. \"" + // NOI18N
+                        f.getAbsolutePath() + "\" doesn't exists."); // NOI18N
+            }
         }
-        if (ver != null) {
+        // tzezula: The platform is changed to explicit one only in case when
+        // the platform already existed or it was successfully created
+        if (nbPlf != null) {
+            Element pcd = helper.getPrimaryConfigurationData(true);
+            Element el = pcd.getOwnerDocument().createElementNS(
+                    J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                    "explicit-platform"); // NOI18N
+            pcd.appendChild(el);
+            helper.putPrimaryConfigurationData(pcd, true);
+            EditableProperties prop =
+                    helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            String ver = nbPlf.getSpecification().getVersion().toString();
+            String normalizedName = (String)nbPlf.getProperties().get(
+                    "platform.ant.name"); // NOI18N
             prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
             prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
+            prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
+            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
+        } else {
+            logWarning("Setting of platform for " + eclProject.getName() + "failed.");
         }
-        prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
     
     /** Delegates to ErrorManager */
     private void logWarning(String message) {
         ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+    }
+    
+    
+    private static String createPlatformDisplayName(JavaPlatform plat) {
+        Map m = plat.getSystemProperties();
+        String vmName = (String)m.get("java.vm.name");              //NOI18N
+        String vmVersion = (String)m.get("java.vm.version");        //NOI18N
+        StringBuffer displayName = new StringBuffer();
+        if (vmName != null)
+            displayName.append(vmName);
+        if (vmVersion != null) {
+            if (displayName.length()>0) {
+                displayName.append(" ");
+            }
+            displayName.append(vmVersion);
+        }
+        return displayName.toString();
+    }
+    
+    private String createPlatformAntName(String displayName) {
+        assert displayName != null && displayName.length() > 0;
+        String antName = PropertyUtils.getUsablePropertyName(displayName);
+        if (platformExists(antName)) {
+            String baseName = antName;
+            int index = 1;
+            antName = baseName + Integer.toString(index);
+            while (platformExists(antName)) {
+                index ++;
+                antName = baseName + Integer.toString(index);
+            }
+        }
+        return antName;
+    }
+    
+    /**
+     * Checks if the platform of given antName is already installed
+     */
+    private boolean platformExists(String antName) {
+        assert antName != null && antName.length() > 0;
+        for (int i=0; i< nbPlfs.length; i++) {
+            String otherName = (String) nbPlfs[i].getProperties().get("platform.ant.name");  //NOI18N
+            if (antName.equals(otherName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
