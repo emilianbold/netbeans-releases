@@ -12,31 +12,32 @@
  */
 
 package org.netbeans.spi.project.support.ant;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
-import java.io.File;
-import java.util.Properties;
 import org.netbeans.modules.project.ant.FileChangeSupport;
-import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
-import org.openide.filesystems.FileSystem;
-import java.io.OutputStream;
+import org.netbeans.modules.project.ant.FileChangeSupportListener;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 
 /**
  * Manages the loaded property files for {@link AntProjectHelper}.
@@ -278,6 +279,14 @@ final class ProjectProperties {
             Map/*<String,String>*/ m = new HashMap();
             Properties p = System.getProperties();
             synchronized (p) {
+                Iterator it = p.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry entry = (Map.Entry) it.next();
+                    if (!(entry.getValue() instanceof String) || !(entry.getKey() instanceof String)) {
+                        ErrorManager.getDefault().log(ErrorManager.WARNING, "WARNING: removing non-String-valued system property " + entry.getKey() + "=" + entry.getValue() + " (cf. #45788)");
+                        it.remove();
+                    }
+                }
                 m.putAll(p);
             }
             m.put("basedir", FileUtil.toFile(helper.getProjectDirectory()).getAbsolutePath()); // NOI18N
