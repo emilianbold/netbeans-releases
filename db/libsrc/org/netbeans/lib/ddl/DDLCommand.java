@@ -46,6 +46,10 @@ public interface DDLCommand
     */
     public String getCommand()
     throws DDLException;
+    
+    /** information about appearance some exception in the last execute a bunch of commands */
+    public boolean wasException();
+
 }
 
 /*

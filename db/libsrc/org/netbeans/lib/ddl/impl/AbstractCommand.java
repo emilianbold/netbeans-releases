@@ -35,6 +35,9 @@ public class AbstractCommand
     /** Command owner */
     private DatabaseSpecification spec;
 
+    /** Execution command with some exception */
+    boolean executionWithException;
+
     /** Command format */
     private String format;
 
@@ -149,12 +152,14 @@ public class AbstractCommand
         String fcmd;
         Connection fcon = null;
         boolean opened = false;
+        executionWithException = false;
 
         try {
             fcmd = getCommand();
         } catch (Exception e) {
             //			e.printStackTrace();
             //throw new DDLException(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage()); // NOI18N
+            executionWithException = true;
             TopManager.getDefault().notify(
                 new NotifyDescriptor.Message(bundle.getString("EXC_UnableToFormat")+"\n" + format + "\n" + e.getMessage(),
                 NotifyDescriptor.ERROR_MESSAGE));
@@ -189,6 +194,7 @@ public class AbstractCommand
             stat.close();
         } catch (Exception e) {
             //			e.printStackTrace();
+            executionWithException = true;
             if (opened && fcon != null)
                 spec.closeJDBCConnection();
             //throw new DDLException(bundle.getString("EXC_UnableToExecute")+"\n" + fcmd + "\n" + e.getMessage()); // NOI18N
@@ -217,6 +223,11 @@ public class AbstractCommand
             //			e.printStackTrace();
             throw new DDLException(e.getMessage());
         }
+    }
+
+    /** information about appearance some exception in the last execute a bunch of commands */
+    public boolean wasException() {
+        return executionWithException;
     }
 
     /** Reads object from stream */

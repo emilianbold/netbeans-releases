@@ -834,7 +834,7 @@
 
     DropIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.DropIndex;
-      Format = "drop index {object.owner}.{object.name}";
+      Format = "drop index [{object.owner}].{table.name}.{object.name}";
     };
 
   };
@@ -994,7 +994,7 @@
 
     DropIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.DropIndex;
-      Format = "drop index {table.name}.{object.name}";
+      Format = "drop index [{object.owner}.]{table.name}.{object.name}";
     };
 
   };

@@ -136,9 +136,10 @@ public class CommandBuffer
                 }
                 if (debugmode) System.out.println(e_cmd);
                 e_cmd.execute();
+                executionWithException = e_cmd.wasException();
             } catch (Exception e) {
                 //				e.printStackTrace();
-		executionWithException = true;
+                executionWithException = true;
                 boolean exres = false;
                 if (handler != null)
                     exres = handler.shouldContinueAfterException(e);
