@@ -74,6 +74,6 @@ public class GetDependsClusters extends org.apache.tools.ant.Task {
 	    log("No cluster list with this module: " + thisModuleName + " was found. Assume that this module " + thisModuleName + " depends on all clusters: " + propertiesList, Project.MSG_WARN);
 	log( "Property: " + name + " will be set to " + propertiesList, Project.MSG_VERBOSE);
 	this.getProject().setProperty( name, propertiesList );
-	throw new BuildException("No cluster list with this module: " + thisModuleName + " was found.",this.getLocation());
+	//	throw new BuildException("No cluster list with this module: " + thisModuleName + " was found.",this.getLocation());
     }
 }
