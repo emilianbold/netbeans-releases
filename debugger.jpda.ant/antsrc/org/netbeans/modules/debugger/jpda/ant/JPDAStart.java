@@ -37,6 +37,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -181,12 +182,16 @@ public class JPDAStart extends Task implements Runnable {
             try {
 
                 ListeningConnector lc = null;
-                for (Iterator i = Bootstrap.virtualMachineManager ().listeningConnectors ().iterator (); i.hasNext(); ) {
-                    lc = (ListeningConnector) i.next();
+                Iterator i = Bootstrap.virtualMachineManager ().
+                    listeningConnectors ().iterator ();
+                for (; i.hasNext ();) {
+                    lc = (ListeningConnector) i.next ();
                     Transport t = lc.transport ();
                     if (t != null && t.name ().equals (transport)) break;
                 }
-                if (lc == null) throw new BuildException("No trasports named " + transport + " found!");
+                if (lc == null) 
+                    throw new BuildException
+                        ("No trasports named " + transport + " found!");
 
                 // TODO: revisit later when http://developer.java.sun.com/developer/bugParade/bugs/4932074.html gets integrated into JDK
                 // This code parses the address string "HOST:PORT" to extract PORT and then point debugee to localhost:PORT
@@ -214,7 +219,10 @@ public class JPDAStart extends Task implements Runnable {
                 
                 if (stopClassName != null && stopClassName.length() > 0) {
                     if (startVerbose)
-                        System.out.println("\nS create method breakpoint, class name = " + stopClassName);
+                        System.out.println (
+                            "\nS create method breakpoint, class name = " + 
+                            stopClassName
+                        );
                     MethodBreakpoint b = createBreakpoint (stopClassName);
                     DebuggerManager.getDebuggerManager ().addDebuggerListener (
                         DebuggerManager.PROP_DEBUGGER_ENGINES,
@@ -227,9 +235,14 @@ public class JPDAStart extends Task implements Runnable {
                     System.out.println("\nS start listening on port " + port);
                 
                 Properties props = new Properties();
-                // uncomment to implement smart stepping with step-outs rather than step-ins (for J2ME)
+                // uncomment to implement smart stepping with step-outs 
+                // rather than step-ins (for J2ME)
                 // props.put("SS_ACTION_STEPOUT", Boolean.TRUE);
-                JPDADebugger.startListening (lc, args, new Object[] {sourcePath, getName (), props});
+                JPDADebugger.startListening (
+                    lc, 
+                    args, 
+                    new Object[] {sourcePath, getName (), props}
+                );
             } catch (Throwable e) {
                 lock [1] = e;
             } finally {
@@ -254,7 +267,10 @@ public class JPDAStart extends Task implements Runnable {
 
     private void debug (String msg) {
         if (!verbose) return;
-        System.out.println (new Date() + " [" + Thread.currentThread().getName() + "] - " + msg);
+        System.out.println (
+            new Date() + " [" + Thread.currentThread().getName() + 
+            "] - " + msg
+        );
     }
 
     static ClassPath createSourcePath (
@@ -285,95 +301,60 @@ public class JPDAStart extends Task implements Runnable {
         return sourcePath;
     }
     
-    static ClassPath convertToClassPath (Project project, Path path) {
+    private static ClassPath convertToClassPath (Project project, Path path) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
-            URL u = null;
-            try {
-                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
-                if (!isValid (f, project)) {
-                    continue;
-                }
-                String pathString = paths [i].toLowerCase ();
-                if (pathString.endsWith (".jar")) {
-                    u = new URL ("jar:" + f.toURI () + "!/");
-                } else if (pathString.endsWith (".zip")) {
-                    u = new URL ("jar:" + f.toURI () + "!/");
-                } else {
-                    u = f.toURI ().toURL ();
-                }
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-                continue;
-            }
-            l.add (u);
+            File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
+            if (!isValid (f, project)) continue;
+            URL url = fileToURL (f);
+            if (f == null) continue;
+            l.add (url);
         }
         URL[] urls = (URL[]) l.toArray (new URL [l.size ()]);
         return ClassPathSupport.createClassPath (urls);
     }
-
+    
     /**
      * This method uses SourceForBinaryQuery to find sources for each
      * path item and returns them as ClassPath instance. All path items for which
      * the sources were not found are omitted.
      *
      */
-    static ClassPath convertToSourcePath (Project project, Path path) {
+    private static ClassPath convertToSourcePath (Project project, Path path) {
         String[] paths = path == null ? new String [0] : path.list ();
         List l = new ArrayList ();
         Set exist = new HashSet ();
         int i, k = paths.length;
         for (i = 0; i < k; i++) {
-            URL u = null;
-            try {
-                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
-                if (!isValid (f, project)) {
-                    continue;
-                }
-                if (paths [i].toLowerCase ().endsWith (".jar") ||
-                    paths [i].toLowerCase ().endsWith (".zip")
-                )
-                    u = new URL ("jar:" + f.toURI () + "!/");
-                else
-                    u = f.toURI ().toURL ();
-            } catch (MalformedURLException e) {
-                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-                continue;
-            }
+            File file = FileUtil.normalizeFile 
+                (project.resolveFile (paths [i]));
+            if (!isValid (file, project)) continue;
+            URL url = fileToURL (file);
+            if (url == null) continue;
             if (startVerbose)
-                System.out.println("class: " + u);
+                System.out.println ("class: " + url);
             try {
-                FileObject fos[] = SourceForBinaryQuery.findSourceRoots (u).getRoots();
+                FileObject fos[] = SourceForBinaryQuery.findSourceRoots 
+                    (url).getRoots();
                 int j, jj = fos.length;
                 for (j = 0; j < jj; j++) {
-                    if (fos.length > 0) {
-                        if (startVerbose)
-                            System.out.println("source : " + fos [j]);
-                        try {
-                            File file = FileUtil.toFile (fos [j]);
-                            if (file == null)
-                                file = FileUtil.toFile (FileUtil.getArchiveFile (fos [j]));
-                            if (file == null) {
-                                if (startVerbose)
-                                    System.out.println("not recognized!");
-                                continue;
-                            }
-                            if (file.getName ().toLowerCase ().endsWith (".zip") ||
-                                file.getName ().toLowerCase ().endsWith (".jar")
-                            )
-                                u = new URL ("jar:" + file.toURI () + "!/");
-                            else
-                                u = file.toURI ().toURL ();
-                        } catch (MalformedURLException e) {
-                            ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-                            continue;
-                        }
-                        if (!exist.contains (u)) {
-                            l.add (ClassPathSupport.createResource (u));
-                            exist.add (u);
-                        }
+                    if (startVerbose)
+                        System.out.println("source : " + fos [j]);
+                    if (FileUtil.isArchiveFile (fos [j]))
+                        fos [j] = FileUtil.getArchiveRoot (fos [j]);
+                    try {
+                        url = fos [j].getURL ();
+                    } catch (FileStateInvalidException ex) {
+                        ErrorManager.getDefault ().notify 
+                            (ErrorManager.EXCEPTION, ex);
+                        continue;
+                    }
+                    if (url == null) continue;
+                    if (!exist.contains (url)) {
+                        l.add (ClassPathSupport.createResource (url));
+                        exist.add (url);
                     }
                 } // for
             } catch (IllegalArgumentException ex) {
@@ -384,44 +365,33 @@ public class JPDAStart extends Task implements Runnable {
         return ClassPathSupport.createClassPath (l);
     }
 
-    /**
-     * Appends to classpath all items from the given path.
-     *
-     * @param cp classpath; can be null
-     */
-//    public static ClassPath appendPath (Project project, ClassPath cp, Path path) {
-//        String[] paths = path.list ();
-//        List l = new ArrayList ();
-//        for (int i = 0; i < paths.length; i++) {
-//            URL u = null;
-//            try {
-//                File f = FileUtil.normalizeFile (project.resolveFile (paths [i]));
-//                if (!isValid (f, project)) {
-//                    continue;
-//                }
-//                u = f.toURI ().toURL ();
-//            } catch (MalformedURLException e) {
-//                ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
-//                continue;
-//            }
-//            l.add (ClassPathSupport.createResource (u));
-//        }
-//        if (cp != null) {
-//            return ClassPathSupport.createProxyClassPath (
-//                new ClassPath [] {cp, ClassPathSupport.createClassPath (l)}
-//            );
-//        } else {
-//            return ClassPathSupport.createClassPath (l);
-//        }
-//    }
+
+    private static URL fileToURL (File file) {
+        try {
+            FileObject fileObject = FileUtil.toFileObject (file);
+            if (fileObject == null) return null;
+            if (FileUtil.isArchiveFile (fileObject))
+                fileObject = FileUtil.getArchiveRoot (fileObject);
+            return fileObject.getURL ();
+        } catch (FileStateInvalidException e) {
+            ErrorManager.getDefault ().notify (ErrorManager.EXCEPTION, e);
+            return null;
+        }
+    }
 
     private static boolean isValid (File f, Project project) {
         if (f.getPath ().indexOf ("${") != -1 && !f.exists ()) { // NOI18N
-            project.log ("Classpath item " + f + " will be ignored.", Project.MSG_VERBOSE); // NOI18N
+            project.log (
+                "Classpath item " + f + " will be ignored.",  // NOI18N
+                Project.MSG_VERBOSE
+            );
             return false;
         }
         return true;
     }
+
+    
+    // innerclasses ............................................................
     
     private static class Listener extends DebuggerManagerAdapter {
         
@@ -442,7 +412,8 @@ public class JPDAStart extends Task implements Runnable {
                     RequestProcessor.getDefault ().post (new Runnable () {
                         public void run () {
                             if (breakpoint != null) {
-                                DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
+                                DebuggerManager.getDebuggerManager ().
+                                    removeBreakpoint (breakpoint);
                                 breakpoint = null;
                             }
                         }
