@@ -13,41 +13,29 @@
 
 package org.netbeans.modules.editor;
 
-import java.awt.Component;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JEditorPane;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
-import org.netbeans.editor.DelegateAction;
 import org.netbeans.editor.Registry;
 import org.netbeans.editor.Settings;
-import org.netbeans.editor.SettingsChangeListener;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.awt.Mnemonics;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Main menu action, like Edit/Go to Source, Edit/Go to Line..., 
@@ -57,18 +45,23 @@ import org.openide.util.actions.SystemAction;
  *
  * @author  Martin Roskanin
  */
-public abstract class MainMenuAction extends DelegateAction implements Presenter.Menu, ChangeListener{
+public abstract class MainMenuAction extends GlobalContextAction implements Presenter.Menu, ChangeListener {
 
     public static final Icon BLANK_ICON = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/editor/resources/empty.gif"));
     
     
     /** Creates a new instance of ShowLineNumbersAction */
     public MainMenuAction() {
+        // needs to listen on Registry - resultChanged event is fired before 
+        // TopComponent is really focused - this causes problems in getComponent method 
         Registry.addChangeListener(this);
     }
-   
-    /** State of Registry was changed */
-    public void stateChanged(ChangeEvent evt) {
+    
+    public void resultChanged(org.openide.util.LookupEvent ev){
+        setMenu();
+    }
+    
+    public void stateChanged(ChangeEvent e)    {
         setMenu();
     }
     
@@ -78,17 +71,6 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
 
     public String getName() {
         return "";
-    }
-
-    /** Is document open? */
-    private static boolean isOpen(Document doc){
-        if (doc==null) return false;
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        if (dobj==null) return false;
-        EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-        if (ec==null) return false;
-        JEditorPane jep[] = ec.getOpenedPanes();
-        return (jep!=null && jep.length>0);
     }
 
     /** Returns focused editor component */
@@ -109,8 +91,13 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
     /** Adds accelerators to given JMenuItem taken from the action */
     protected static void addAccelerators(Action a, JMenuItem item, JTextComponent target){
         if (target == null || a==null || item==null) return;
-        // Try to get the accelerator
+        
+        // get accelerators from kitAction
+        Action kitAction = getActionByName((String)a.getValue(Action.NAME));
+        if (kitAction!=null) a = kitAction;
+        // Try to get the accelerator, TopComponent action could be obsoleted
         Keymap km = target.getKeymap();
+
         if (km != null) {
             KeyStroke[] keys = km.getKeyStrokesForAction(a);
             if (keys != null && keys.length > 0) {
@@ -124,27 +111,14 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         JTextComponent component = getComponent();
         return (component == null) ? null : Utilities.getKit(component);
     }
-
-    /** Returns true if focused component is open in editor */
-    protected static boolean isMainMenuActionEnabled(){
-        JTextComponent component = Utilities.getFocusedComponent();
-        if (component!=null){
-            Document doc = component.getDocument();
-            return isOpen(doc);
-        }
-
-        return false;
-    }
     
     public boolean isEnabled() {
-        return isMainMenuActionEnabled();
+        return false;
     }
     
     private static Object getSettingValue(BaseKit kit, String settingName) {
         return Settings.getValue(kit.getClass(), settingName);
     }
-    
-    
 
     /** Get the value of the boolean setting from the <code>Settings</code>
      * @param settingName name of the setting to get.
@@ -154,29 +128,43 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         return (val != null) ? val.booleanValue() : false;
     }
 
-    /** Sets delegateAction and the state of MenuItem*/
-    protected abstract void setMenu();
+    /** Sets the state of JMenuItem*/
+    protected void setMenu(){
+        ActionMap am = getContextActionMap();
+        Action action = null;
+        JMenuItem presenter = getMenuPresenter();
+
+        if (am!=null){
+            action = am.get(getActionName());
+            presenter.setAction(action);
+        }
+
+        Mnemonics.setLocalizedText(presenter, getMenuItemText());
+        presenter.setIcon(BLANK_ICON);
+        presenter.setEnabled(action != null);
+        addAccelerators(action, presenter, Utilities.getFocusedComponent());
+    }
+    
+    /** Get the text of the menu item */
+    protected abstract String getMenuItemText();
+    
+    /** Get the action name */
+    protected abstract String getActionName();
     
     
     public static class ShowToolBarAction extends MainMenuAction{
 
-        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU;// = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
+        private static JCheckBoxMenuItem SHOW_TOOLBAR_MENU;
             
         public ShowToolBarAction(){
             super();
             SHOW_TOOLBAR_MENU = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
-            Mnemonics.setLocalizedText(SHOW_TOOLBAR_MENU, getMenuItemText());
             setMenu();
         }
         
         protected void setMenu(){
-            setDelegate(getActionByName(ExtKit.toggleToolbarAction));
-            SHOW_TOOLBAR_MENU.setAction(this);
+            super.setMenu();
             SHOW_TOOLBAR_MENU.setState(isToolbarVisible());
-            Mnemonics.setLocalizedText(SHOW_TOOLBAR_MENU, getMenuItemText());
-            SHOW_TOOLBAR_MENU.setIcon(BLANK_ICON);
-            SHOW_TOOLBAR_MENU.setEnabled(ShowToolBarAction.isMainMenuActionEnabled());
-            addAccelerators(getDelegate(), SHOW_TOOLBAR_MENU, Utilities.getFocusedComponent());
         }
         
         public JMenuItem getMenuPresenter() {
@@ -189,10 +177,14 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             return getSettingBoolean(kit, BaseOptions.TOOLBAR_VISIBLE_PROP);
         }
         
-        protected static String getMenuItemText(){
+        protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "show_editor_toolbar_main_menu_view_item"); //NOI18N
         }
+        
+        protected String getActionName() {
+            return ExtKit.toggleToolbarAction;
+        }        
         
     }
     
@@ -204,23 +196,15 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         public ShowLineNumbersAction(){
             super();
             SHOW_LINE_MENU  = new JCheckBoxMenuItem(getMenuItemText(), BLANK_ICON);
-            Mnemonics.setLocalizedText(SHOW_LINE_MENU, getMenuItemText() );
             setMenu();
         }
         
         protected void setMenu(){
-            setDelegate(getActionByName(BaseKit.toggleLineNumbersAction));
-            SHOW_LINE_MENU.setAction(this);
-            
+            super.setMenu();
             SHOW_LINE_MENU.setState(isLineNumbersVisible());
-            Mnemonics.setLocalizedText(SHOW_LINE_MENU, getMenuItemText());
-            SHOW_LINE_MENU.setIcon(BLANK_ICON);
-            SHOW_LINE_MENU.setEnabled(ShowLineNumbersAction.isMainMenuActionEnabled());
-            
-            addAccelerators(getDelegate(), SHOW_LINE_MENU, Utilities.getFocusedComponent());
         }
         
-        protected static String getMenuItemText(){
+        protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "show_line_numbers_main_menu_view_item"); //NOI18N
         }
@@ -239,21 +223,24 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             return getSettingBoolean(kit, SettingsNames.LINE_NUMBER_VISIBLE);
         }
         
+        protected String getActionName() {
+            return ExtKit.toggleLineNumbersAction;
+        }
+        
     }
     
     
     public static class GoToSourceAction extends MainMenuAction{
         
-        private JMenuItem GOTO_SOURCE_MENU;// = new MyMenuItem(getMenuItemText(), BLANK_ICON);        
+        private JMenuItem GOTO_SOURCE_MENU;
 
         public GoToSourceAction(){
             super();
             GOTO_SOURCE_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
-            Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, getMenuItemText());
             setMenu();
         }
         
-        private static String getMenuItemText(){
+        protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "goto_source_main_menu_edit_item"); //NOI18N
         }
@@ -262,29 +249,8 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             return GOTO_SOURCE_MENU;
         }
 
-        protected void setMenu() {
-            setDelegate(getActionByName(ExtKit.gotoSourceAction));
-            BaseKit kit = getKit();
-            String txt = getMenuItemText();
-            GOTO_SOURCE_MENU.setAction(this);            
-            if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
-                GOTO_SOURCE_MENU.setEnabled(false);                    
-                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
-                GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
-            }
-
-            Action action = getDelegate();
-            if (action instanceof BaseAction && kit instanceof JavaKit){
-                GOTO_SOURCE_MENU.setEnabled(true);
-                GOTO_SOURCE_MENU.setAction(this);
-                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
-                GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
-                addAccelerators(getDelegate(), GOTO_SOURCE_MENU, Utilities.getFocusedComponent());
-            }else{
-                GOTO_SOURCE_MENU.setEnabled(false);
-                Mnemonics.setLocalizedText(GOTO_SOURCE_MENU, txt);
-                GOTO_SOURCE_MENU.setIcon(BLANK_ICON);
-            }            
+        protected String getActionName() {
+            return ExtKit.gotoSourceAction;
         }
         
     }
@@ -297,11 +263,10 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
         public GoToSuperAction(){
             super();
             GOTO_SUPER_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);  
-            Mnemonics.setLocalizedText(GOTO_SUPER_MENU, getMenuItemText());
             setMenu();
         }
         
-        private String getMenuItemText(){
+        protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "goto_super_implementation_main_menu_edit_item"); //NOI18N
         }
@@ -310,43 +275,22 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             return GOTO_SUPER_MENU;
         }
 
-        protected void setMenu() {
-            setDelegate(getActionByName(JavaKit.gotoSuperImplementationAction));
-            BaseKit kit = getKit();
-            String txt = getMenuItemText();
-            GOTO_SUPER_MENU.setAction(this);            
-            if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
-                GOTO_SUPER_MENU.setEnabled(false);                    
-                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
-                GOTO_SUPER_MENU.setIcon(BLANK_ICON);
-            }
-
-            Action action = getDelegate();
-            if (action instanceof BaseAction && kit instanceof JavaKit){
-                GOTO_SUPER_MENU.setEnabled(true);
-                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
-                GOTO_SUPER_MENU.setIcon(BLANK_ICON);
-                addAccelerators(getDelegate(), GOTO_SUPER_MENU, Utilities.getFocusedComponent());                    
-            }else{
-                GOTO_SUPER_MENU.setEnabled(false);
-                Mnemonics.setLocalizedText(GOTO_SUPER_MENU, txt);
-                GOTO_SUPER_MENU.setIcon(BLANK_ICON);
-            }            
+        protected String getActionName() {
+            return JavaKit.gotoSuperImplementationAction;
         }
     }
 
     public static class GoToDeclarationAction extends MainMenuAction{
         
-        private  JMenuItem GOTO_DECL_MENU;// = new JMenuItem(getMenuItemText(), BLANK_ICON);        
+        private  JMenuItem GOTO_DECL_MENU;
 
         public GoToDeclarationAction(){
             super();
             GOTO_DECL_MENU = new JMenuItem(getMenuItemText(), BLANK_ICON);        
-            Mnemonics.setLocalizedText(GOTO_DECL_MENU, getMenuItemText());
             setMenu();
         }
         
-        private String getMenuItemText(){
+        protected String getMenuItemText(){
             return NbBundle.getBundle(MainMenuAction.class).getString(
                 "goto_declaration_main_menu_edit_item"); //NOI18N
         }
@@ -355,28 +299,8 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
             return GOTO_DECL_MENU;
         }
 
-        protected void setMenu() {
-            setDelegate(getActionByName(ExtKit.gotoDeclarationAction));
-            BaseKit kit = getKit();
-            String txt = getMenuItemText();
-            GOTO_DECL_MENU.setAction(this);
-            if (MainMenuAction.isMainMenuActionEnabled() || kit == null){
-                GOTO_DECL_MENU.setEnabled(false);                    
-                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
-                GOTO_DECL_MENU.setIcon(BLANK_ICON);
-            }
-
-            Action action = getDelegate();
-            if (action instanceof BaseAction && kit instanceof JavaKit){
-                GOTO_DECL_MENU.setEnabled(true);
-                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
-                GOTO_DECL_MENU.setIcon(BLANK_ICON);
-                addAccelerators(getDelegate(), GOTO_DECL_MENU, Utilities.getFocusedComponent());                    
-            }else{
-                GOTO_DECL_MENU.setEnabled(false);
-                Mnemonics.setLocalizedText(GOTO_DECL_MENU, txt);
-                GOTO_DECL_MENU.setIcon(BLANK_ICON);
-            }            
+        protected String getActionName() {
+            return ExtKit.gotoDeclarationAction;
         }
         
     }

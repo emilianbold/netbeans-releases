@@ -71,32 +71,34 @@ class LayerProvider extends FoldManagerFactoryProvider {
                     FileSystem defaultFS;
                     if (repository != null && (defaultFS = repository.getDefaultFileSystem()) != null) {
                         FileObject dir = defaultFS.findResource("Editors/" + mimeType + "/" + FOLDER_NAME);
-                        try {
-                            DataObject dob = DataObject.find(dir);
-                            DataFolder folder = (DataFolder)dob.getCookie(DataFolder.class);
-                            DataObject[] children;
-                            if (folder != null && (children = folder.getChildren()) != null) {
-                                factoryList = new ArrayList();
-                                for (int i = 0; i < children.length; i++) {
-                                    InstanceCookie ic = (InstanceCookie)children[i].getCookie(InstanceCookie.class);
-                                    if (ic != null) {
-                                        try {
-                                            Object inst = ic.instanceCreate();
-                                            if (inst instanceof FoldManagerFactory) {
-                                                factoryList.add(inst);
-                                            } else {
-                                                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                                                    inst.toString() + " not instanceof FoldManagerFactory"); // NOI18N
+                        if (dir!=null){
+                            try {
+                                DataObject dob = DataObject.find(dir);
+                                DataFolder folder = (DataFolder)dob.getCookie(DataFolder.class);
+                                DataObject[] children;
+                                if (folder != null && (children = folder.getChildren()) != null) {
+                                    factoryList = new ArrayList();
+                                    for (int i = 0; i < children.length; i++) {
+                                        InstanceCookie ic = (InstanceCookie)children[i].getCookie(InstanceCookie.class);
+                                        if (ic != null) {
+                                            try {
+                                                Object inst = ic.instanceCreate();
+                                                if (inst instanceof FoldManagerFactory) {
+                                                    factoryList.add(inst);
+                                                } else {
+                                                    ErrorManager.getDefault().log(ErrorManager.WARNING,
+                                                        inst.toString() + " not instanceof FoldManagerFactory"); // NOI18N
+                                                }
+                                            } catch (Exception e) {
+                                                // skip this factory
                                             }
-                                        } catch (Exception e) {
-                                            // skip this factory
                                         }
                                     }
+                                    kit2factoryList.put(kit, factoryList);
                                 }
-                                kit2factoryList.put(kit, factoryList);
+                            } catch (DataObjectNotFoundException e) {
+                                // factoryList stays null
                             }
-                        } catch (DataObjectNotFoundException e) {
-                            // factoryList stays null
                         }
                     }
                 }
