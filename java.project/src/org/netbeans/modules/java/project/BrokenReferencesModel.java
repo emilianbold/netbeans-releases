@@ -14,18 +14,23 @@
 package org.netbeans.modules.java.project;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.AbstractListModel;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
@@ -180,10 +185,11 @@ public class BrokenReferencesModel extends AbstractListModel {
     // XXX: perhaps could be moved to ReferenceResolver. 
     // But nobody should need it so it is here for now.
     void updateReference(int index, File file) {
-        String reference = brokenReferences[index];
-        File myProjDir = FileUtil.toFile(helper.getProjectDirectory());
-        String propertiesFile;
-        String path;
+        final String reference = brokenReferences[index];
+        FileObject myProjDirFO = helper.getProjectDirectory();
+        File myProjDir = FileUtil.toFile(myProjDirFO);
+        final String propertiesFile;
+        final String path;
         if (CollocationQuery.areCollocated(myProjDir, file)) {
             propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
             path = PropertyUtils.relativizeFile(myProjDir, file);
@@ -192,11 +198,30 @@ public class BrokenReferencesModel extends AbstractListModel {
             propertiesFile = AntProjectHelper.PRIVATE_PROPERTIES_PATH;
             path = file.getAbsolutePath();
         }
-        EditableProperties props = helper.getProperties(propertiesFile);
-        if (!path.equals(props.getProperty(reference))) {
-            props.setProperty(reference, path);
-            helper.putProperties(propertiesFile, props);
+        Project p;
+        try {
+            p = ProjectManager.getDefault().findProject(myProjDirFO);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            p = null;
         }
+        final Project proj = p;
+        ProjectManager.mutex().postWriteRequest(new Runnable() {
+                public void run() {
+                    EditableProperties props = helper.getProperties(propertiesFile);
+                    if (!path.equals(props.getProperty(reference))) {
+                        props.setProperty(reference, path);
+                        helper.putProperties(propertiesFile, props);
+                    }
+                    if (proj != null) {
+                        try {
+                            ProjectManager.getDefault().saveProject(proj);
+                        } catch (IOException ex) {
+                            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
+                        }
+                    }
+                }
+            });
     }
     
 }
