@@ -285,8 +285,10 @@ public class FormUtils
      * copied (property values cloned recursively).
      */
     public static Object cloneBeanInstance(Object bean, BeanInfo bInfo)
-    throws CloneNotSupportedException {
-        if (bean == null) return null;
+        throws CloneNotSupportedException
+    {
+        if (bean == null)
+            return null;
 
         if (bean instanceof Serializable) {
             try {
@@ -296,10 +298,14 @@ public class FormUtils
                 oos.close();
 
                 ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                ObjectInputStream ois = new ObjectInputStream(bais);
-                return ois.readObject();
+//                ObjectInputStream ois = new ObjectInputStream(bais);
+                return new OIS(bais).readObject();
             }
-            catch (Exception e) {
+            catch (Exception ex) {
+                if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
+                    System.err.println("[WARNING] Cannot clone "+bean.getClass().getName()); // NOI18N
+                    ex.printStackTrace();
+                }
                 throw new CloneNotSupportedException();
             }
         }
@@ -912,6 +918,21 @@ public class FormUtils
             } else {
                 // [PENDING - notify problem?]
             }
+        }
+    }
+
+    // ---------
+
+    private static class OIS extends ObjectInputStream {
+        public OIS(InputStream is) throws IOException {
+            super(is);
+        }
+
+        protected Class resolveClass(ObjectStreamClass streamCls)
+            throws IOException, ClassNotFoundException
+        {
+            return TopManager.getDefault().currentClassLoader().loadClass(
+                                                       streamCls.getName());
         }
     }
 }
