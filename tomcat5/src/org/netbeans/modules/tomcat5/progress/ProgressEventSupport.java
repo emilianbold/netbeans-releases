@@ -56,11 +56,11 @@ public class ProgressEventSupport {
         boolean notify = false;
         if (listeners == null) {
             listeners = new java.util.Vector();
-            if (status != null && !status.isRunning ()) {
-                notify = true;
-            }
         }
         listeners.addElement(lsnr);
+        if (status != null && !status.isRunning ()) {
+            notify = true;
+        }
         if (notify) {
             // not to miss completion event
             RequestProcessor.getDefault ().post (new Runnable () {
