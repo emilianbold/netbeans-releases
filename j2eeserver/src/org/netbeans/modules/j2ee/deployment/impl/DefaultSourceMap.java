@@ -27,6 +27,7 @@ import org.openide.filesystems.FileUtil;
  * @author nn136682
  */
 public class DefaultSourceMap extends SourceFileMap {
+    
     /**
      * Straight file mapping service.
      * Map a distribution path to a file using distribution path as relative path to a mapping root.
@@ -39,7 +40,9 @@ public class DefaultSourceMap extends SourceFileMap {
         this.provider = provider;
         FileObject[] roots = provider.getSourceRoots();
         for (int i=0; i<roots.length; i++) {
-            rootFiles.add(FileUtil.toFile(roots[i]));
+            if (roots[i] != null) {
+                rootFiles.add(FileUtil.toFile(roots[i]));
+            }
         }
     }
     
@@ -98,8 +101,9 @@ public class DefaultSourceMap extends SourceFileMap {
                 relative = new File(relative, absolute.getName());
             }
             absolute = absolute.getParentFile();
-            if (rootFiles.contains(absolute))
+            if (rootFiles.contains(absolute)) {
                 return relative;
+            }
         }
         return null;
     }
