@@ -327,10 +327,11 @@
 				class = org.netbeans.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
-//			{
-//				name = "ViewData";
-//				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
-//			},
+			{
+				name = "CaptureDatabaseSchema";
+				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
+			},
+			delimiter,
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
