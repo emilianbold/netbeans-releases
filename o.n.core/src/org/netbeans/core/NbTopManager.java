@@ -400,7 +400,12 @@ public abstract class NbTopManager extends TopManager {
     * @exception UserCancelException if the selection is interrupted by the user
     */
     public void openProject (ProjectCookie project) throws IOException, UserCancelException {
-        NbProjectOperation.setProject (project);
+        if (showExitDialog (null)) {
+            NbProjectOperation.setProject (project);
+        }
+        else {
+            throw new UserCancelException ();
+        }
     }
 
     /** Get the exception manager for the IDE. It can be used to rafine
