@@ -28,8 +28,6 @@ import org.netbeans.jellytools.nodes.ProjectRootNode;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import org.netbeans.modules.java.settings.JavaSettings;
-
 /**
  * Test of Delete nodes/folders in the Explorer.
  *
@@ -45,9 +43,6 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     
     /** Fodlers node represantation*/
     private static Node foldersNode;
-    
-    /** Turn On/Off prescan sources */
-    private boolean prescanSources;
     
     /** Node represantation of the folder which test creates and delete */
     private static Node nodeToBeDeleted;
@@ -99,7 +94,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         
         addClassNameToLookFor("explorer.view");
         setPrintClassNames(true);
-        turnOff();
+        turnBadgesOff();
     }
         
     
@@ -167,22 +162,21 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
     public void shutdown() {
         new RestoreWindowAction().performAPI(projectTab);
         setPrintClassNames(false);
-        turnBack();
+        turnBadgesOn();
     }
     
     /**
-     * turn off prescanning of sources
+     * turn badges off
      */
-    protected void turnOff() {
-        prescanSources = JavaSettings.getDefault().getPrescanSources();
-        JavaSettings.getDefault().setPrescanSources(false);
+    protected void turnBadgesOff() {
+        System.setProperty("perf.dont.resolve.java.badges", "true");
     }
 
     /**
-     * turn back on prescanning of sources
+     * turn badges on
      */
-    protected void turnBack() {
-        JavaSettings.getDefault().setPrescanSources(prescanSources);
+    protected void turnBadgesOn() {
+        System.setProperty("perf.dont.resolve.java.badges", "false");
     }
     
 }

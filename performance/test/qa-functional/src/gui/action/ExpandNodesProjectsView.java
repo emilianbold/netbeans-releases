@@ -22,8 +22,6 @@ import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
-import org.netbeans.modules.java.settings.JavaSettings;
-
 
 /**
  * Test of expanding nodes/folders in the Explorer.
@@ -43,9 +41,6 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     
     /** Projects tab */
     private static ProjectsTabOperator projectTab;
-    
-    /** Turn On/Off prescan sources */
-    private boolean prescanSources;
     
     /** Project with data for these tests */
     private static String testDataProject = "PerformanceTestFoldersData";
@@ -126,7 +121,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         projectTab.getProjectRootNode("jEdit").collapse();
         //projectTab.getProjectRootNode(testDataProject).collapse();
         
-        turnOff();
+        turnBadgesOff();
         addClassNameToLookFor("explorer.view");
         setPrintClassNames(true);
     }
@@ -152,20 +147,23 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     }
     
     public void shutdown() {
-        turnBack();
+        turnBadgesOn();
         projectTab.getProjectRootNode(testDataProject).collapse();
         new RestoreWindowAction().performAPI(projectTab);
     }
 
-    protected void turnOff() {
-        // turn off prescanning of sources
-        prescanSources = JavaSettings.getDefault().getPrescanSources();
-        JavaSettings.getDefault().setPrescanSources(false);
+    /**
+     * turn badges off
+     */
+    protected void turnBadgesOff() {
+        System.setProperty("perf.dont.resolve.java.badges", "true");
     }
-    
-    protected void turnBack() {
-        // turn back on prescanning of sources
-        JavaSettings.getDefault().setPrescanSources(prescanSources);
+
+    /**
+     * turn badges on
+     */
+    protected void turnBadgesOn() {
+        System.setProperty("perf.dont.resolve.java.badges", "false");
     }
     
 }
