@@ -268,6 +268,7 @@ is divided into following sections:
             </target>
             
             <target name="init-taskdefs">
+                <taskdef name="copyfiles" classname="org.netbeans.modules.web.project.ant.CopyFiles" classpath="${{copyfiles.classpath}}"/>
             </target>
             
             <target name="init">
@@ -317,7 +318,7 @@ is divided into following sections:
                 <xsl:for-each select="/p:project/p:configuration/ear:data/ear:web-module-additional-libraries/ear:library[ear:path-in-war]">
                     <xsl:variable name="copyto" select=" ear:path-in-war"/>
                     <xsl:variable name="libfile" select="ear:file"/>
-                    <copy todir="${{build.dir}}/{$copyto}" file="{$libfile}"/>
+                    <copyfiles todir="${{build.dir}}/{$copyto}" files="{$libfile}"/>
                 </xsl:for-each>
             </target>
 
