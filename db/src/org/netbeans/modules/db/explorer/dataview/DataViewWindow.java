@@ -92,7 +92,13 @@ public class DataViewWindow extends TopComponent {
             Node tempNode = node;
             while(!(tempNode instanceof ConnectionNode))
                 tempNode = tempNode.getParentNode();
-            setName(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
+            
+            String title = tempNode.getDisplayName();
+            int idx = title.indexOf(" ["); //NOI18N
+            title = title.substring(0, idx);
+            setName(title);
+            setToolTipText(bundle.getString("CommandEditorTitle") + " " + tempNode.getDisplayName()); //NOI18N
+
             GridBagLayout layout = new GridBagLayout();
             GridBagConstraints con = new GridBagConstraints ();
             setLayout (layout);
