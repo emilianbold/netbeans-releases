@@ -599,7 +599,7 @@ final class XMLSettingsSupport {
                     method = clazz.getMethod(targetMethod, new Class[]{FileObject.class});
                     method.setAccessible(true);
                     return method.invoke(null, new FileObject[] {source});
-                } catch (Exception ex) {
+                } catch (NoSuchMethodException ex) {
                     method = clazz.getMethod(targetMethod, null);
                     method.setAccessible(true);
                     return method.invoke(null, new Object[0]);
