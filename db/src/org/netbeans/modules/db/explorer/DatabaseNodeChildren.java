@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -32,6 +32,8 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
+import org.netbeans.modules.db.explorer.infos.ViewNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 //import org.openide.util.Mutex;
@@ -73,7 +75,7 @@ public class DatabaseNodeChildren extends Children.Array {
             public void run () {
                 DatabaseNodeInfo nodeinfo = ((DatabaseNode)getNode()).getInfo();
                 java.util.Map nodeord = (java.util.Map)nodeinfo.get(DatabaseNodeInfo.CHILDREN_ORDERING);
-                boolean sort = nodeinfo.getName().equals("Drivers") ? false : true; //NOI18N
+                boolean sort = (nodeinfo.getName().equals("Drivers") || (nodeinfo instanceof TableNodeInfo) || (nodeinfo instanceof ViewNodeInfo)) ? false : true; //NOI18N
                 TreeSet children = new TreeSet(new NodeComparator(nodeord, sort));
 
                 try {
