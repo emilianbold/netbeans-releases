@@ -329,7 +329,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
      */
     public void setTextFontWeight(String weight) {
 	boolean isBold=false;
-	if (weight.compareTo("bold") == 0) {
+	if ("bold".equals(weight)) {
 	    isBold = true;
 	} else {
 	    isBold = false;
@@ -360,7 +360,7 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
      */
     public void setTextFontStyle(String style) {
 	boolean isItalic=false;
-	if (style.compareTo("italic") == 0) {
+	if ("italic".equals(style)) {
 	    isItalic = true;
 	} else {
 	    isItalic = false;
@@ -402,31 +402,31 @@ public class BrowserDisplayer extends JButton implements ActionListener, ViewAwa
      */
     public void setTextColor(String name) {
 	Color color=null;
-	if (name.compareTo("black") == 0) {
+	if ("black".equals(name)) {
 	    color = Color.black;
-	} else if (name.compareTo("blue") == 0) {
+	} else if ("blue".equals(name)) {
 	    color = Color.blue;
-	} else if (name.compareTo("cyan") == 0) {
+	} else if ("cyan".equals(name)) {
 	    color = Color.cyan;
-	} else if (name.compareTo("darkGray") == 0) {
+	} else if ("darkGray".equals(name)) {
 	    color = Color.darkGray;
-	} else if (name.compareTo("gray") == 0) {
+	} else if ("gray".equals(name)) {
 	    color = Color.gray;
-	} else if (name.compareTo("green") == 0) {
+	} else if ("green".equals(name)) {
 	    color = Color.green;
-	} else if (name.compareTo("lightGray") == 0) {
+	} else if ("lightGray".equals(name)) {
 	    color = Color.lightGray;
-	} else if (name.compareTo("magenta") == 0) {
+	} else if ("magenta".equals(name)) {
 	    color = Color.magenta;
-	} else if (name.compareTo("orange") == 0) {
+	} else if ("orange".equals(name)) {
 	    color = Color.orange;
-	} else if (name.compareTo("pink") == 0) {
+	} else if ("pink".equals(name)) {
 	    color = Color.pink;
-	} else if (name.compareTo("red") == 0) {
+	} else if ("red".equals(name)) {
 	    color = Color.red;
-	} else if (name.compareTo("white") == 0) {
+	} else if ("white".equals(name)) {
 	    color = Color.white;
-	} else if (name.compareTo("yellow") == 0) {
+	} else if ("yellow".equals(name)) {
 	    color = Color.yellow;
 	}
 
