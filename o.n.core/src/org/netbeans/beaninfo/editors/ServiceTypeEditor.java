@@ -142,8 +142,17 @@ public class ServiceTypeEditor extends java.beans.PropertyEditorSupport implemen
         }
         if (none != null && none.getName ().equals (text))
             setValue (none);
-        else
-            setValue(TopManager.getDefault ().getServices ().find (text));
+        else {
+            Enumeration en = TopManager.getDefault ().getServices ().services (clazz);
+            while (en.hasMoreElements ()) {
+                ServiceType t = (ServiceType)en.nextElement ();
+                if (text.equals (t.getName ())) {
+                    setValue (t);
+                    return;
+                }
+            }
+            setValue (null);
+        }            
     }
 
     /** @return tags */
