@@ -471,8 +471,8 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         return result;
     }
 
-    private String getDownloadWsdl() {
-        String result = null;
+    private byte [] getDownloadWsdl() {
+        byte [] result = null;
         if(retriever != null && retriever.getState() == WsdlRetriever.STATUS_COMPLETE) {
             result = retriever.getWsdl();
         }
