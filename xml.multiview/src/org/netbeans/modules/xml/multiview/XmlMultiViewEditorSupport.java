@@ -42,14 +42,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
     private int xmlMultiViewIndex;
     private TopComponent mvtc, xmlTC;
     private int lastOpenView=0;
-    
-    final SaveCookie saveCookie = new SaveCookie() {
-        /** Implements <code>SaveCookie</code> interface. */
-        public void save() throws java.io.IOException {
-            XmlMultiViewEditorSupport.this.saveDocument();
-            XmlMultiViewEditorSupport.this.getDataObject().setModified(false);
-        }
-    };
     private StyledDocument document;
 
     /** Creates a new instance of XmlMultiviewEditorSupport */
@@ -60,57 +52,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         // Set a MIME type as needed, e.g.:
         setMIMEType ("text/xml");   // NOI18N
     }
-    
-    /**
-     * Overrides superclass method. Adds adding of save cookie if the document has been marked modified.
-     * @return true if the environment accepted being marked as modified
-     *    or false if it has refused and the document should remain unmodified
-     */
-    protected boolean notifyModified () {
-        if (!super.notifyModified())
-            return false;
-        
-        addSaveCookie();
-        return true;
-    }
 
-    /** Overrides superclass method. Adds removing of save cookie. */
-    protected void notifyUnmodified () {
-        super.notifyUnmodified();
-
-        removeSaveCookie();
-        if (mvtc!=null) {
-            String name = mvtc.getDisplayName();
-            if (name.endsWith(" *")) { // NOI18N
-                name = name.substring(0,name.length()-2);
-                mvtc.setDisplayName(name);
-            }
-        }
-    }
-
-    /** Helper method. Adds save cookie to the data object. */
-    private void addSaveCookie() {
-        XmlMultiViewDataObject obj = (XmlMultiViewDataObject)getDataObject();
-
-        // Adds save cookie to the data object.
-        if(obj.getCookie(SaveCookie.class) == null) {
-            obj.getCookieSet0().add(saveCookie);
-            obj.setModified(true);
-        }
-    }
-
-    /** Helper method. Removes save cookie from the data object. */
-    private void removeSaveCookie() {
-        XmlMultiViewDataObject obj = (XmlMultiViewDataObject)getDataObject();
-        
-        // Remove save cookie from the data object.
-        org.openide.nodes.Node.Cookie cookie = obj.getCookie(SaveCookie.class);
-
-        if(cookie != null && cookie.equals(saveCookie)) {
-            obj.getCookieSet0().remove(saveCookie);
-            //obj.setModified(false);
-        }
-    }
     /** providing an UndoRedo object for XMLMultiViewElement
      */
     org.openide.awt.UndoRedo getUndoRedo0() {
@@ -392,10 +334,10 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
                 }
             }
             return true;
-
         }
     }
 
+    // Accessibility for ToolBarMultiViewElement:  
     protected String messageName() {
         return super.messageName();
     }

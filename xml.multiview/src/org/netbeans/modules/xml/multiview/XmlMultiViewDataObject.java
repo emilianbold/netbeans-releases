@@ -16,6 +16,7 @@ package org.netbeans.modules.xml.multiview;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -59,6 +60,14 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private static final int HANDLE_UNPARSABLE_TIMEOUT = 2000;
     protected boolean parseable;
 
+    final SaveCookie saveCookie = new SaveCookie() {
+        /** Implements <code>SaveCookie</code> interface. */
+        public void save() throws java.io.IOException {
+            editor.saveDocument();
+            setModified(false);
+        }
+    };
+
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -75,11 +84,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         } else {
             return null;
         }
-    }
-    
-    // Package accessibility for XmlMultiViewEditorSupport:
-    CookieSet getCookieSet0() {
-        return getCookieSet();
     }
     
     /** Gets editor support for this data object. */
@@ -299,6 +303,29 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             mvtc.setToolTipText(getPrimaryFile().getPath());
         }
         return retValue;
+    }
+
+    /**
+     * Set whether the object is considered modified.
+     * Also fires a change event.
+     * If the new value is <code>true</code>, the data object is added into a {@link #getRegistry registry} of opened data objects.
+     * If the new value is <code>false</code>,
+     * the data object is removed from the registry.
+     */
+    public void setModified(boolean modif) {
+        super.setModified(modif);
+        if (modif) {
+            // Add save cookie
+            if (getCookie(SaveCookie.class) == null) {
+                getCookieSet().add(saveCookie);
+            }
+        } else {
+            // Remove save cookie
+            if(saveCookie.equals(getCookie(SaveCookie.class))) {
+                getCookieSet().remove(saveCookie);
+            }
+
+        }
     }
 
     public void modelChanged() {
