@@ -47,12 +47,12 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
         return "Phadhails";
     }
     
-    public void attachTo(Object o) {
+    protected void attachTo(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.addPhadhailListener(this);
     }
     
-    public void detachFrom(Object o) {
+    protected void detachFrom(Object o) {
         Phadhail ph = (Phadhail)o;
         ph.removePhadhailListener(this);
         Lookup.Result r = (Lookup.Result)phadhails2Results.remove(ph);

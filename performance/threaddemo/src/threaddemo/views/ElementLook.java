@@ -36,13 +36,13 @@ public class ElementLook extends Look implements EventListener {
         return "DOM Elements";
     }
     
-    public void attachTo(Object o) {
+    protected void attachTo(Object o) {
         assert o instanceof Element;
         EventTarget et = (EventTarget)o;
         et.addEventListener("DOMNodeInserted", this, false);
     }
     
-    public void detachFrom(Object o) {
+    protected void detachFrom(Object o) {
         EventTarget et = (EventTarget)o;
         et.removeEventListener("DOMNodeRemoved", this, false);
     }
