@@ -75,6 +75,10 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         helpButton.setMnemonic(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "BTN_Help_Mnemonic").charAt(0));  // NOI18N
         initListeners();
         putClientProperty("PersistenceType", "Never");
+        // http://www.netbeans.org/issues/show_bug.cgi?id=24199
+        // the TabPolicy property's value makes sure that the tab is not shown 
+        // for the topcomponent when it is alone in the mode.
+        putClientProperty("TabPolicy", "HideWhenAlone");        
         setName(org.openide.util.NbBundle.getMessage(MergeDialogComponent.class, "MergeDialogComponent.title"));
     }
     
