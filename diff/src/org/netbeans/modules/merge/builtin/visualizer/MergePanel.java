@@ -24,8 +24,6 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import org.netbeans.editor.*;
-
 import org.openide.util.HelpCtx;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.actions.CopyAction;
@@ -448,6 +446,14 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
             }
             public void focusLost(FocusEvent e) {
                 editorDeactivated(jEditorPane2);
+            }
+        });
+        jEditorPane3.addFocusListener(new FocusListener() {
+            public void focusGained(FocusEvent e) {
+                editorActivated(jEditorPane3);
+            }
+            public void focusLost(FocusEvent e) {
+                editorDeactivated(jEditorPane3);
             }
         });
     }

@@ -24,8 +24,6 @@ import java.io.*;
 import javax.swing.*;
 import javax.swing.text.*;
 
-import org.netbeans.editor.*;
-
 import org.openide.util.HelpCtx;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.actions.CopyAction;
