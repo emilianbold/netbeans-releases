@@ -1,8 +1,9 @@
-<mconfig name="qa-functional Test Type Config">
+<?xml encoding="UTF-8"? version="1.0">
+<mconfig Config" Test Type name="qa-functional>
 
     <!-- testbag with all tests running in code mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->
-	<testbag testattribs="all and ide" executor="ide" compiler="default-compiler" name="all ide tests">
+	<testbag and compiler="default-compiler" executor="ide" ide ide" name="all testattribs="all tests">
  		<testset dir="qa-functional/src">
 			<patternset>
 				<include name="**/*.class"/>
@@ -16,16 +17,16 @@
                           then call this one. It is handy when some servers (e.g. rmi registry)
                           have to be started before tests are run and stopped after
                           the run. -->
-	<executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/> 
+	<executor antfile="build-qa-functional.xml" name="code" target="runcodetest"/> 
     
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
-	<executor name="ide" antfile="build-qa-functional.xml.xml" target="runidetest"/> 
+	<executor antfile="build-qa-functional.xml" name="ide" target="runidetest"/> 
 
-	<compiler name="default-compiler" default="true" antfile="build-qa-functional.xml" target="default-compiler"/>
+	<compiler antfile="build-qa-functional.xml" default="true" name="default-compiler" target="default-compiler"/>
 
     <!-- standard results processor - currently there is only one results processor  in XTest -->    
-	<resultsprocessor name="default-results-processor" default="true" antfile="build.xml" target="test_report"/> 
+	<resultsprocessor antfile="build.xml" default="true" name="default-results-processor" target="test_report"/> 
 
 </mconfig>

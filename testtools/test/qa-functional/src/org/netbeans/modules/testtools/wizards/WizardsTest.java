@@ -20,6 +20,10 @@ package org.netbeans.modules.testtools.wizards;
  */
 
 import java.io.*;
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
@@ -28,6 +32,7 @@ import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.modules.testtools.*;
 import org.netbeans.jellytools.nodes.*;
+import org.netbeans.junit.diff.Diff;
 
 /** JUnit test suite with Jemmy support
  *
@@ -137,27 +142,63 @@ public class WizardsTest extends JellyTestCase {
         wizard.finish();
         new FilesystemNode(ExplorerOperator.invoke().repositoryTab().tree(), "WizardsTest/test/qa-functional").unmount();
     }
-                    
-    private void assertFile(String filePath) throws IOException {
-        assertFile(filePath, false);
-    }
-        
-    private void assertFile(String filePath, boolean filter) throws IOException {
+    
+    private void assertXMLFile(String filePath) throws IOException {
         File f = new File(filePath);
         assertTrue(f.getName()+" not found", f.exists());
-        if (filter) {
-            BufferedReader in = new BufferedReader(new FileReader(f));
-            f = new File(getWorkDir(), f.getName());
-            PrintWriter out = new PrintWriter(new FileWriter(f));
-            String line;
-            while (in.ready()) {
-                line = in.readLine();
-                if (!line.startsWith(" * Created on") && !line.startsWith(" * @author"))
-                    out.println(line);
+        FileInputStream in = new FileInputStream(f);
+        byte data[]=new byte[in.available()];
+        in.read(data);
+        in.close();
+        StringTokenizer file=new StringTokenizer(new String(data), "<");
+        f = new File(getWorkDir(), f.getName());
+        PrintWriter out = new PrintWriter(new FileWriter(f));
+        String token;
+        while (file.hasMoreTokens()) {
+            token=file.nextToken();
+            if (token.startsWith("!--")) {
+                while (token.indexOf("-->")<0 && file.hasMoreTokens()) {
+                    out.print("<"+token);
+                    token=file.nextToken();
+                }
+                out.print("<"+token);
+            } else {
+                out.print('<');
+                int i=token.indexOf('>');
+                if (i>0) {
+                    StringTokenizer st=new StringTokenizer(token.substring(0,i), "\n\t\r ");
+                    if (st.hasMoreTokens()) out.print(st.nextToken());
+                    TreeSet ts=new TreeSet();
+                    while (st.hasMoreTokens()) {
+                        ts.add(st.nextToken());
+                    }
+                    Iterator it=ts.iterator();
+                    while (it.hasNext()) {
+                        out.print(" "+it.next());
+                    }
+                }
+                out.print('>');
+                out.print(token.substring(i+1)); 
             }
-            in.close();
-            out.close();
+        }       
+        out.close();
+        assertFile(f.getName()+" is different", f, getGoldenFile(getName()+"/"+f.getName()+".pass"), getWorkDir());
+    }
+        
+    private void assertFilterFile(String filePath) throws IOException {
+        File f = new File(filePath);
+        assertTrue(f.getName()+" not found", f.exists());
+        BufferedReader in = new BufferedReader(new FileReader(f));
+        f = new File(getWorkDir(), f.getName());
+        PrintWriter out = new PrintWriter(new FileWriter(f));
+        String line;
+        while (in.ready()) {
+            line = in.readLine();
+            if (!line.startsWith(" * Created on") && !line.startsWith(" * @author"))
+                out.println(line);
         }
+        in.close();
+        out.close();
         assertFile(f.getName()+" is different", f, getGoldenFile(getName()+"/"+f.getName()+".pass"), getWorkDir());
     }
     
@@ -166,10 +207,10 @@ public class WizardsTest extends JellyTestCase {
      */
     public void tstVerifySimplePass() throws IOException {
         String dir = getWorkDir().getParentFile().getAbsolutePath()+"/test";
-        assertFile(dir+"/build.xml");
-        assertFile(dir+"/build-qa-functional.xml");
-        assertFile(dir+"/cfg-qa-functional.xml");
-        assertFile(dir+"/qa-functional/src/mypackage1/mypackage2/mypackage3/simpleTest.java", true);
+        assertXMLFile(dir+"/build.xml");
+        assertXMLFile(dir+"/build-qa-functional.xml");
+        assertXMLFile(dir+"/cfg-qa-functional.xml");
+        assertFilterFile(dir+"/qa-functional/src/mypackage1/mypackage2/mypackage3/simpleTest.java");
     }
                     
     /** simple test case
@@ -212,9 +253,9 @@ public class WizardsTest extends JellyTestCase {
      */
     public void tstVerifyNewTestType() throws IOException {
         String dir = getWorkDir().getParentFile().getAbsolutePath()+"/test";
-        assertFile(dir+"/build.xml");
-        assertFile(dir+"/build-mytype.xml");
-        assertFile(dir+"/cfg-mytype.xml");
+        assertXMLFile(dir+"/build.xml");
+        assertXMLFile(dir+"/build-mytype.xml");
+        assertXMLFile(dir+"/cfg-mytype.xml");
     }
                     
     /** simple test case
@@ -258,7 +299,7 @@ public class WizardsTest extends JellyTestCase {
         step.finish();
         EditorOperator editor = new EditorOperator("myTestSuite");
         editor.close(true);
-        assertFile(getWorkDir().getParentFile().getAbsolutePath()+"/test/myTestSuite.java", true);
+        assertFilterFile(getWorkDir().getParentFile().getAbsolutePath()+"/test/myTestSuite.java");
         assertTrue("golden file missing", new File(getWorkDir().getParentFile().getAbsolutePath()+"/test/data/goldenfiles/myTestSuite/myMethod2.pass").exists());
     }
     

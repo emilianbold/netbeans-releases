@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml encoding="UTF-8"? version="1.0">
 <!--
                 Sun Public License Notice
 
@@ -10,7 +10,7 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
---><project basedir="." default="all" name="MyTestWorkspace XTest Workspace Script">
+--><project Script" Workspace XTest basedir="." default="all" name="MyTestWorkspace>
 
     <!-- Points to directory with IDE to test-->
     <property location="../../../nb_all/nbbuild/netbeans" name="netbeans.home"/>
@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
     <target depends="buildtests" name="runtests">
-        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <echo ${xtest.module}, ${xtest.testtype}, Running attribs=${xtest.attribs}"/ for message="Module: tests testtype>
         <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
     </target>
     
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="printconfig">
-        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
+        <echo ${xtest.attribs}."/ ${xtest.testtype}, attributes: config is message="Default testtype:>
     </target>
     
 </project>

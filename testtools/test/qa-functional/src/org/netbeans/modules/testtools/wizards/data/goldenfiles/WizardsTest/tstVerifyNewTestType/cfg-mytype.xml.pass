@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<mconfig name="mytype Test Type Config">
+<?xml encoding="UTF-8"? version="1.0">
+<mconfig Config" Test Type name="mytype>
 
     <!-- testbag with all tests running in code mode (i.e. in standard JVM)
          use ant runtests -Dxtest.attribs=stable,code to run this testbag  -->

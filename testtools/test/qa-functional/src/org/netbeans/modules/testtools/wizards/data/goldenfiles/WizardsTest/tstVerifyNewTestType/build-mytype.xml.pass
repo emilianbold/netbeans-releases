@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml encoding="UTF-8"? version="1.0">
 <!--
                 Sun Public License Notice
 
@@ -10,7 +10,7 @@ http://www.sun.com/
 The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
---><project basedir="." default="all" name="mytype Test Type Script">
+--><project Script" Test Type basedir="." default="all" name="mytype>
 
     <!-- =================== -->
     <!-- Setting classpaths -->
@@ -124,7 +124,7 @@ Microsystems, Inc. All Rights Reserved.
 		 command line. You shoud not modify this unless you know what you are doing.
 	-->    
     <target name="all">
-      <fail message="This buildfile is not intended to be directly executed. It contains executors and compilers. Use build.xml to execute tests."/>
+      <fail It Use and be build.xml buildfile compilers. contains directly execute executed. executors intended is message="This not tests."/ to>
     </target>
 
 
