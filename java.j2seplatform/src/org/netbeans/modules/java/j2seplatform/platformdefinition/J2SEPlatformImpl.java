@@ -17,6 +17,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.net.URL;
+import java.net.MalformedURLException;
 import java.io.File;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -26,6 +27,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.ErrorManager;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -85,7 +87,28 @@ public class J2SEPlatformImpl extends JavaPlatform {
     J2SEPlatformImpl (String dispName, List installFolders, Map initialProperties, Map sysProperties, List sources, List javadoc) {
         super();
         this.displayName = dispName;
-        this.installFolders = installFolders;       //No copy needed, called from this module => safe
+        if (installFolders != null) {
+            this.installFolders = installFolders;       //No copy needed, called from this module => safe
+        }
+        else {
+            //Old version, repair
+            String home = (String) initialProperties.remove ("platform.home");        //NOI18N
+            if (home != null) {
+                this.installFolders = new ArrayList ();
+                StringTokenizer tk = new StringTokenizer (home, File.pathSeparator);
+                while (tk.hasMoreTokens()) {
+                    File f = new File (tk.nextToken());
+                    try {
+                        this.installFolders.add (f.toURI().toURL());
+                    } catch (MalformedURLException mue) {
+                        ErrorManager.getDefault().notify (mue);
+                    }
+                }
+            }
+            else {
+                throw new IllegalArgumentException ("Invalid platform, platform must have install folder.");    //NOI18N
+            }
+        }
         this.properties = initialProperties;
         this.sources = createClassPath(sources);
         if (javadoc != null) {
