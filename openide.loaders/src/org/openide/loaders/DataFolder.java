@@ -584,17 +584,8 @@ implements Serializable, DataObject.Container {
         } catch (IOException iex) {
             /** Annotates exception and throws again*/
             FileObject fo = getPrimaryFile();
-            String fsDisplayName;
-            try {
-                fsDisplayName = fo.getFileSystem().getDisplayName();
-            }  catch (FileStateInvalidException fsx) {
-                fsDisplayName = "";//NOI18N
-            }
-            
-            String   message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete", //NOI18N
-            fo.getPath(), fsDisplayName);
-            
-            ErrorManager.getDefault().annotate(iex, message);//NOI18N
+            String message = NbBundle.getMessage(DataFolder.class, "EXC_CannotDelete", FileUtil.getFileDisplayName(fo));
+            ErrorManager.getDefault().annotate(iex, message);
             throw iex;
         }
         

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -40,6 +40,8 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.actions.SystemAction;
@@ -237,9 +239,7 @@ public class ImageViewer extends CloneableTopComponent {
         setName(name);
         // update tooltip
         FileObject fo = storedObject.getPrimaryFile();
-        // XXX the following is a resource path in NB 3.x and a URL after build system
-        // merge; better to produce something nicer (e.g. FileUtil.toFile):
-        setToolTipText(fo.toString());
+        setToolTipText(FileUtil.getFileDisplayName(fo));
     }
 
     /** Docks the table into the workspace if top component is valid.

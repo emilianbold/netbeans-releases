@@ -533,9 +533,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
         setDisplayName(name);
 
         FormDataObject fdo = formEditorSupport.getFormDataObject();
-        File formFile = FileUtil.toFile(fdo.getFormFile());
-        if (formFile != null)
-            setToolTipText(formFile.getAbsolutePath());
+        setToolTipText(FileUtil.getFileDisplayName(fdo.getFormFile()));
     }
 
     void updateVisualSettings() {

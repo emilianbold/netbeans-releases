@@ -436,18 +436,7 @@ public class DataNode extends AbstractNode {
         }
         
         private String name(FileObject fo) {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                return f.getAbsolutePath();
-            } else {
-                FileSystem fs;
-                try {
-                    fs = fo.getFileSystem();
-                } catch (FileStateInvalidException e) {
-                    return fo.getPath();
-                }
-                return NbBundle.getMessage(DataNode.class, "FMT_file_in_fs", fo.getPath(), fs.getDisplayName());
-            }
+            return FileUtil.getFileDisplayName(fo);
         }
         
     }

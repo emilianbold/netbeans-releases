@@ -7,13 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties;
-
 
 import java.awt.*;
 import java.awt.event.*;
@@ -41,7 +39,6 @@ import org.openide.cookies.CloseCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.FileEntry;
 import org.openide.loaders.DataObject;
@@ -631,19 +628,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         /** Gets string for tooltip. */
         private String messageToolTip() {
             FileObject fo = propDataObject.getPrimaryFile();
-            
-            try {
-                File f = FileUtil.toFile(fo);
-                if (f != null) {
-                    return f.getAbsolutePath();
-                } else {
-                    return NbBundle.getMessage(PropertiesOpen.class, "LAB_EditorToolTip",
-                                               fo.getPath(),
-                                               fo.getFileSystem().getDisplayName());
-                }            
-            } catch(FileStateInvalidException fsie) {
-                return fo.getPath();
-            }
+            return FileUtil.getFileDisplayName(fo);
         }
 
         /** 

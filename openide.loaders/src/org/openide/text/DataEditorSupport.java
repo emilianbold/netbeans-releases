@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -69,8 +69,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     protected String messageOpening () {
         return NbBundle.getMessage (DataObject.class , "CTL_ObjectOpen", // NOI18N
-            obj.getName(),
-            obj.getPrimaryFile().toString()
+            obj.getPrimaryFile().getNameExt(),
+            FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
     }
     
@@ -80,8 +80,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     protected String messageOpened () {
         return NbBundle.getMessage (DataObject.class, "CTL_ObjectOpened", // NOI18N
-            obj.getName (),
-            obj.getPrimaryFile ().toString ()
+            obj.getPrimaryFile().getNameExt(),
+            FileUtil.getFileDisplayName(obj.getPrimaryFile())
         );
     }
 
@@ -94,7 +94,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         return NbBundle.getMessage (
             DataObject.class,
             "MSG_SaveFile", // NOI18N
-            obj.getName()
+            obj.getPrimaryFile().getNameExt()
         );
     }
     
@@ -143,21 +143,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     protected String messageToolTip () {
         // update tooltip
-        FileObject fo = obj.getPrimaryFile ();
-        
-        try {
-            File f = FileUtil.toFile (fo);
-            if (f!=null) {
-                return f.getAbsolutePath ();
-            } else {
-                return NbBundle.getMessage (DataObject.class, "LAB_EditorToolTip", new Object[] {
-                    fo.getPath(),
-                    fo.getFileSystem ().getDisplayName ()
-                });
-            }
-        } catch (FileStateInvalidException fsie) {
-            return fo.getPath();
-        }
+        return FileUtil.getFileDisplayName(obj.getPrimaryFile());
     }
     
     /** Computes display name for a line based on the 
@@ -169,28 +155,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * @since 4.3
      */
     protected String messageLine (Line line) {
-        String fsName;
-        try {
-            fsName = getDataObject ().getPrimaryFile ().getFileSystem().getDisplayName();
-        } catch (FileStateInvalidException ex) {
-            fsName = ""; // NOI18N
-        }
-        
-        String resName = getDataObject ().getPrimaryFile ().getPath();
-        
-        java.io.File f = FileUtil.toFile(getDataObject ().getPrimaryFile ());
-        String fileName = f != null ? f.toString() : fsName + '/' + resName;
-        
-        
-        Object[] args = {
-            getDataObject ().getName (),
-            resName,
-            new Integer (line.getLineNumber () + 1),
-            fsName,
-            fileName
-        };
-        
-        return NbBundle.getMessage(DataObject.class, "FMT_LineDisplayName", args);
+        return NbBundle.getMessage(DataObject.class, "FMT_LineDisplayName2",
+            obj.getPrimaryFile().getNameExt(),
+            FileUtil.getFileDisplayName(obj.getPrimaryFile()),
+            new Integer(line.getLineNumber() + 1));
     }
     
     

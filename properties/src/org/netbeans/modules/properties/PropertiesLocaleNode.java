@@ -27,7 +27,6 @@ import javax.swing.JPanel;
 import org.openide.actions.*;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
@@ -145,18 +144,7 @@ public final class PropertiesLocaleNode extends FileEntryNode
     /** Gets tooltip message for this node. Helper method. */
     private String messageToolTip () {
         FileObject fo = getFileEntry().getFile();
-        try {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                return f.getAbsolutePath();
-            } else {
-                return NbBundle.getMessage(PropertiesEditorSupport.class, "LBL_LocaleNodeToolTip2",
-                                           fo.getPath(),
-                                           fo.getFileSystem().getDisplayName());
-            }
-        } catch (FileStateInvalidException fsie) {
-            return fo.getPath();
-        }
+        return FileUtil.getFileDisplayName(fo);
     }
     
     /** This node can be renamed. Overrides superclass method. */

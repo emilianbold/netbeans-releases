@@ -7,13 +7,11 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-
 package org.netbeans.modules.properties;
-
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -44,7 +42,7 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
@@ -338,19 +336,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     protected String messageToolTip () {
         // copied from DataEditorSupport, more or less
         FileObject fo = myEntry.getFile();
-        
-        try {
-            File f = FileUtil.toFile(fo);
-            if (f != null) {
-                return f.getAbsolutePath();
-            } else {
-                return NbBundle.getMessage(PropertiesEditorSupport.class, "LAB_EditorToolTip",
-                                           fo.getPath(),
-                                           fo.getFileSystem().getDisplayName());
-            }            
-        } catch (FileStateInvalidException fsie) {
-            return fo.getPath();
-        }
+        return FileUtil.getFileDisplayName(fo);
     }
     
     /** Overrides superclass method. Gets <code>UndoRedo</code> manager which maps 

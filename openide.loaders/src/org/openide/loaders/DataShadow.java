@@ -721,22 +721,6 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
             return obj.getName ();
         }
 
-        /** Lazy getter for filesystem name property of original data object
-        * @return the filesystem display name of original
-        */
-        private String getOriginalFileSystemName () {
-            if ( originalFS != null )
-                return originalFS;
-            else {
-                try {
-                    originalFS = obj.getOriginal().getPrimaryFile().getFileSystem().getDisplayName();
-                } catch (FileStateInvalidException ex) {
-                    originalFS = ""; // NOI18N
-                }
-            }
-            return originalFS;
-        }
-        
         /* Creates name based on the original one.
         */
         public String getDisplayName () {
@@ -783,13 +767,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         /** System name of file name
         */
         private static String systemNameOrFileName (FileObject fo) {
-            if (fo.isRoot ()) {
-                try {
-                    return fo.getFileSystem ().getDisplayName ();
-                } catch (FileStateInvalidException ex) {
-                }
-            }
-            return fo.getPath();
+            return FileUtil.getFileDisplayName(fo);
         }
 
         /* Creates description based on the original one.
