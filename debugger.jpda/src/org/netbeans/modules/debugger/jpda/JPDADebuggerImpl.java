@@ -411,18 +411,27 @@ public class JPDADebuggerImpl extends JPDADebugger {
     /**
      * Used by BreakpointImpl.
      */
-    public Value evaluateIn (Expression expression, StackFrame frame) throws InvalidExpressionException {
+    public Value evaluateIn (Expression expression, StackFrame frame) 
+    throws InvalidExpressionException {
         if (frame == null)
             throw new InvalidExpressionException ("No current context");
 
         // TODO: get imports from the source file
-        List imports = new ArrayList();
-        List staticImports = new ArrayList();
-        imports.add("java.lang.*");
-
+        List imports = new ArrayList ();
+        List staticImports = new ArrayList ();
+        imports.add ("java.lang.*");
+        imports.addAll (Arrays.asList (Context.getImports (
+            getEngineContext ().getURL (frame, "Java")
+        )));
         try {
-            org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = expression.evaluator(
-                    new EvaluationContext(frame, imports, staticImports));
+            org.netbeans.modules.debugger.jpda.expr.Evaluator evaluator = 
+                expression.evaluator (
+                    new EvaluationContext (
+                        frame,
+                        imports, 
+                        staticImports
+                    )
+                );
             synchronized (LOCK) {
                 List l = disableAllBreakpoints ();
                 Value v = evaluator.evaluate ();
@@ -430,8 +439,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 return v;
             }
         } catch (Throwable e) {
-            InvalidExpressionException iee = new InvalidExpressionException(e.getMessage());
-            iee.initCause(e);
+            InvalidExpressionException iee = new InvalidExpressionException 
+                (e.getMessage ());
+            iee.initCause (e);
             throw iee;
         }
     }
@@ -657,6 +667,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
     */
     private void firePropertyChange (String name, Object o, Object n) {
         pcs.firePropertyChange (name, o, n);
+    }
+
+    private EngineContext engineContext;
+    EngineContext getEngineContext () {
+        if (engineContext == null)
+            engineContext = (EngineContext) lookupProvider.
+                lookupFirst (EngineContext.class);
+        return engineContext;
     }
 
     private ThreadsTreeModel threadsTreeModel;
