@@ -1133,7 +1133,8 @@ public class FormUtils
         ClassNotFoundException exception = null;
         LinkageError error = null;
 
-        // first try the system class loader (for Swing and form module special components)
+        // first try the system class loader (for Swing components and IDE stuff
+        // like property editors, form module support classes, etc)
         try {
             ClassLoader loader = (ClassLoader)
                                  Lookup.getDefault().lookup(ClassLoader.class);
