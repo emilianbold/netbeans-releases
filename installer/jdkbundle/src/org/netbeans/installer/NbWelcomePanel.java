@@ -35,25 +35,33 @@ public class NbWelcomePanel extends TextDisplayPanel
         boolean okay = super.queryEnter(evt);
         //#48249: Check if user is admin on Windows. JDK installer does not run
         //when user does not have admin rights.
-        if (Util.isAdmin()) {
-            setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-            + "$L(org.netbeans.installer.Bundle,JDK.name),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
-        } else {
-            if (Util.isJDKAlreadyInstalled()) {
+        if (Util.isWindowsOS()) {
+            if (Util.isAdmin()) {
                 setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
                 + "$L(org.netbeans.installer.Bundle,JDK.name),"
                 + "$L(org.netbeans.installer.Bundle,Product.displayName),"
                 + "$L(org.netbeans.installer.Bundle,JDK.name),"
                 + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
             } else {
-                setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.errorText,"
-                + "$L(org.netbeans.installer.Bundle,JDK.name),"
-                + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                + "$L(org.netbeans.installer.Bundle,JDK.name))"));
+                if (Util.isJDKAlreadyInstalled()) {
+                    setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
+                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
+                    + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
+                    + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
+                } else {
+                    setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.errorText,"
+                    + "$L(org.netbeans.installer.Bundle,JDK.name),"
+                    + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+                    + "$L(org.netbeans.installer.Bundle,JDK.name))"));
+                }
             }
+        } else {
+            setText(resolveString("$L(org.netbeans.installer.Bundle, InstallWelcomePanel.text,"
+            + "$L(org.netbeans.installer.Bundle,JDK.name),"
+            + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+            + "$L(org.netbeans.installer.Bundle,JDK.name),"
+            + "$L(org.netbeans.installer.Bundle,Product.displayName))"));
         }
         return okay;
     }
@@ -62,7 +70,7 @@ public class NbWelcomePanel extends TextDisplayPanel
     {
         //#48249: Check if user is admin on Windows. JDK installer does not run
         //when user does not have admin rights.
-        if (!Util.isAdmin() && !Util.isJDKAlreadyInstalled()) {
+        if (Util.isWindowsOS() && !Util.isAdmin() && !Util.isJDKAlreadyInstalled()) {
             if (event.getUserInterface() instanceof SwingWizardUI) {
                 SwingWizardUI ui = (SwingWizardUI) event.getUserInterface();
                 //logEvent(this, Log.DBG, "entered ui: " + ui.getClass().getName());
