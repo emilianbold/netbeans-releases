@@ -10,4 +10,5 @@ OpenIDE-Module-Long-Description: The Image module provides support for viewing i
 
 Name: org/netbeans/modules/image/ImageDataLoader.class
 OpenIDE-Module-Class: Loader
-
+Install-Before: org.netbeans.modules.text.TXTDataObject
+Install-After: org.netbeans.modules.java.JavaDataObject
