@@ -209,9 +209,11 @@ public final class StandardLogger extends AntLogger {
         }
         AntSession session = event.getSession();
         String line = event.getMessage();
+        if (LOGGABLE) ERR.log("Received message: " + line);
         Matcher m = CARET_SHOWING_COLUMN.matcher(line);
         if (m.matches()) {
             // #37358: adjust the column number of the last hyperlink accordingly.
+            if (LOGGABLE) ERR.log("Looks like a special caret line");
             SessionData data = getSessionData(session);
             if (data.lastHyperlink != null) {
                 // For "  ^", infer a column number of 3.
