@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class SystemCatalogReader implements EntityResolver, CatalogReader, Serializable {
     /** */
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     /** Serial Version UID */
     private static final long serialVersionUID = -6353123780493006631L;
