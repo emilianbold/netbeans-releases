@@ -52,7 +52,7 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
     public Dialog createDialog(String title, JPanel panel,boolean modal,JButton[] buttons,boolean sideButtons,int defaultIndex,int cancelIndex,ActionListener listener) {
         Dialog d = TopManager.getDefault().createDialog(
                 new DialogDescriptor( panel, title, modal, buttons,
-                    buttons[defaultIndex],
+                defaultIndex == -1 ? buttons[0] : buttons[defaultIndex],
                     sideButtons ? DialogDescriptor.RIGHT_ALIGN : DialogDescriptor.BOTTOM_ALIGN,
                     new HelpCtx( panel.getClass().getName() ), listener
                 )

@@ -189,8 +189,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         setPropertyEditor(BaseOptions.COLORING_MAP_PROP, ColoringArrayEditor.class);
         setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
-        // Temporal replacement untill I wrote better customizer:
-        setPropertyEditor(BaseOptions.MACRO_MAP_PROP, AbbrevsEditor.class);
+        setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class);
 
         setExpert(EXPERT_PROP_NAMES);
 
