@@ -35,6 +35,7 @@ public class FormLoaderSettings extends SystemOption {
     /** Property name of the indentAWTHierarchy property */
 //    public static final String PROP_INDENT_AWT_HIERARCHY = "indentAWTHierarchy"; // NOI18N
     public static final String PROP_USE_INDENT_ENGINE = "useIndentEngine"; // NOI18N
+    public static final String PROP_GENERATE_ON_SAVE = "generateOnSave"; // NOI18N
     /** Property name of the eventVariableName property */
     public static final String PROP_EVENT_VARIABLE_NAME = "eventVariableName"; // NOI18N
 
@@ -104,6 +105,7 @@ public class FormLoaderSettings extends SystemOption {
      */
 //    private static boolean indentAWTHierarchy = false;
     private static boolean useIndentEngine = false;
+    private static boolean generateOnSave = false;
 
     /** The name of the Event variable generated in the event handlers. */
     private static String eventVariableName = "evt"; // NOI18N
@@ -223,6 +225,18 @@ public class FormLoaderSettings extends SystemOption {
             return;
         useIndentEngine = value;
         firePropertyChange(PROP_USE_INDENT_ENGINE,
+                           new Boolean(!value), new Boolean(value));
+    }
+
+    public boolean getGenerateOnSave() {
+        return generateOnSave;
+    }
+
+    public void setGenerateOnSave(boolean value) {
+        if (value == generateOnSave)
+            return;
+        generateOnSave = value;
+        firePropertyChange(PROP_GENERATE_ON_SAVE,
                            new Boolean(!value), new Boolean(value));
     }
 

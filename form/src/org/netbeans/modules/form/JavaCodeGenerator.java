@@ -99,6 +99,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private boolean initialized = false;
     private boolean canGenerate = true;
+    private boolean codeUpToDate = true;
 
     private JavaEditor.SimpleSection initComponentsSection;
     private JavaEditor.SimpleSection variablesSection;
@@ -1924,13 +1925,23 @@ class JavaCodeGenerator extends CodeGenerator {
         }
 
         public void formChanged(FormModelEvent e) {
-            regenerateVariables();
-            regenerateInitializer();
+            if (!formSettings.getGenerateOnSave()) {
+                regenerateVariables();
+                regenerateInitializer();
+                codeUpToDate = true;
+            }
+            else codeUpToDate = false;
         }
 
         /** Called when the form is about to be saved */
 
         public void formToBeSaved(FormModelEvent e) {
+            if (!codeUpToDate && formSettings.getGenerateOnSave()) {
+                regenerateVariables();
+                regenerateInitializer();
+                codeUpToDate = true;
+            }
+
 //            serializeComponentsRecursively(formModel.getTopRADComponent());
             RADComponent[] components = formModel.getModelContainer().getSubBeans();
             for (int i = 0; i < components.length; i++)

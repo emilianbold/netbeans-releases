@@ -53,6 +53,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 //                                       "getIndentAWTHierarchy", "setIndentAWTHierarchy"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_USE_INDENT_ENGINE, FormLoaderSettings.class,
                                        "getUseIndentEngine", "setUseIndentEngine"), // NOI18N
+                new PropertyDescriptor(FormLoaderSettings.PROP_GENERATE_ON_SAVE, FormLoaderSettings.class,
+                                       "getGenerateOnSave", "setGenerateOnSave"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_EVENT_VARIABLE_NAME, FormLoaderSettings.class,
                                        "getEventVariableName", "setEventVariableName"), // NOI18N
                 new PropertyDescriptor(FormLoaderSettings.PROP_SELECTION_BORDER_SIZE, FormLoaderSettings.class,
@@ -110,58 +112,61 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             desc[0].setDisplayName(formBundle.getString("PROP_USE_INDENT_ENGINE"));
             desc[0].setShortDescription(formBundle.getString("HINT_USE_INDENT_ENGINE"));
 
-            desc[1].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
-            desc[1].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));
-            desc[1].setExpert(true);
+            desc[1].setDisplayName(formBundle.getString("PROP_GENERATE_ON_SAVE"));
+            desc[1].setShortDescription(formBundle.getString("HINT_GENERATE_ON_SAVE"));
 
-            desc[2].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_SIZE"));
-            desc[2].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_SIZE"));
-//            desc[2].setExpert(true);
+            desc[2].setDisplayName(formBundle.getString("PROP_EVENT_VARIABLE_NAME"));
+            desc[2].setShortDescription(formBundle.getString("HINT_EVENT_VARIABLE_NAME"));
+            desc[2].setExpert(true);
 
-            desc[3].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_COLOR"));
-            desc[3].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_COLOR"));
+            desc[3].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_SIZE"));
+            desc[3].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_SIZE"));
 //            desc[3].setExpert(true);
-            
-            desc[4].setDisplayName(formBundle.getString("PROP_CONNECTION_BORDER_COLOR"));
-            desc[4].setShortDescription(formBundle.getString("HINT_CONNECTION_BORDER_COLOR"));
+
+            desc[4].setDisplayName(formBundle.getString("PROP_SELECTION_BORDER_COLOR"));
+            desc[4].setShortDescription(formBundle.getString("HINT_SELECTION_BORDER_COLOR"));
 //            desc[4].setExpert(true);
             
-            desc[5].setDisplayName(formBundle.getString("PROP_DRAG_BORDER_COLOR"));
-            desc[5].setShortDescription(formBundle.getString("HINT_DRAG_BORDER_COLOR"));
+            desc[5].setDisplayName(formBundle.getString("PROP_CONNECTION_BORDER_COLOR"));
+            desc[5].setShortDescription(formBundle.getString("HINT_CONNECTION_BORDER_COLOR"));
 //            desc[5].setExpert(true);
+            
+            desc[6].setDisplayName(formBundle.getString("PROP_DRAG_BORDER_COLOR"));
+            desc[6].setShortDescription(formBundle.getString("HINT_DRAG_BORDER_COLOR"));
+//            desc[6].setExpert(true);
             
 //            desc[6].setDisplayName(formBundle.getString("PROP_SHOW_GRID"));
 //            desc[6].setShortDescription(formBundle.getString("HINT_SHOW_GRID"));
 //            desc[6].setExpert(true);
             
-            desc[6].setDisplayName(formBundle.getString("PROP_GRID_X"));
-            desc[6].setShortDescription(formBundle.getString("HINT_GRID_X"));
-            desc[6].setExpert(true);
-            
-            desc[7].setDisplayName(formBundle.getString("PROP_GRID_Y"));
-            desc[7].setShortDescription(formBundle.getString("HINT_GRID_Y"));
+            desc[7].setDisplayName(formBundle.getString("PROP_GRID_X"));
+            desc[7].setShortDescription(formBundle.getString("HINT_GRID_X"));
             desc[7].setExpert(true);
             
-            desc[8].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_POSITION"));
-            desc[8].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_POSITION"));
+            desc[8].setDisplayName(formBundle.getString("PROP_GRID_Y"));
+            desc[8].setShortDescription(formBundle.getString("HINT_GRID_Y"));
             desc[8].setExpert(true);
             
-            desc[9].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_SIZE"));
-            desc[9].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_SIZE"));
+            desc[9].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_POSITION"));
+            desc[9].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_POSITION"));
             desc[9].setExpert(true);
             
-            desc[10].setDisplayName(formBundle.getString("PROP_VARIABLES_MODIFIER"));
-            desc[10].setShortDescription(formBundle.getString("HINT_VARIABLES_MODIFIER"));
-            desc[10].setPropertyEditorClass(FieldModifierPropertyEditor.class);
+            desc[10].setDisplayName(formBundle.getString("PROP_APPLY_GRID_TO_SIZE"));
+            desc[10].setShortDescription(formBundle.getString("HINT_APPLY_GRID_TO_SIZE"));
             desc[10].setExpert(true);
             
-            desc[11].setDisplayName(formBundle.getString("PROP_EDITOR_SEARCH_PATH"));
-            desc[11].setShortDescription(formBundle.getString("HINT_EDITOR_SEARCH_PATH"));
+            desc[11].setDisplayName(formBundle.getString("PROP_VARIABLES_MODIFIER"));
+            desc[11].setShortDescription(formBundle.getString("HINT_VARIABLES_MODIFIER"));
+            desc[11].setPropertyEditorClass(FieldModifierPropertyEditor.class);
             desc[11].setExpert(true);
             
-            desc[12].setDisplayName(formBundle.getString("PROP_REGISTERED_EDITORS"));
-            desc[12].setShortDescription(formBundle.getString("HINT_REGISTERED_EDITORS"));
+            desc[12].setDisplayName(formBundle.getString("PROP_EDITOR_SEARCH_PATH"));
+            desc[12].setShortDescription(formBundle.getString("HINT_EDITOR_SEARCH_PATH"));
             desc[12].setExpert(true);
+            
+            desc[13].setDisplayName(formBundle.getString("PROP_REGISTERED_EDITORS"));
+            desc[13].setShortDescription(formBundle.getString("HINT_REGISTERED_EDITORS"));
+            desc[13].setExpert(true);
             
 //            desc[14].setDisplayName(formBundle.getString("PROP_OUTPUT_LEVEL"));
 //            desc[14].setShortDescription(formBundle.getString("HINT_OUTPUT_LEVEL"));
@@ -171,34 +176,34 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 //            desc[15].setDisplayName(formBundle.getString("PROP_NULL_LAYOUT"));
 //            desc[15].setShortDescription(formBundle.getString("HINT_NULL_LAYOUT"));
             
-            desc[13].setDisplayName(formBundle.getString("PROP_WORKSPACE"));
-            desc[13].setShortDescription(formBundle.getString("HINT_WORKSPACE"));
-            desc[13].setPropertyEditorClass(WorkspaceEditor.class);
-            desc[13].setExpert(true);
+            desc[14].setDisplayName(formBundle.getString("PROP_WORKSPACE"));
+            desc[14].setShortDescription(formBundle.getString("HINT_WORKSPACE"));
+            desc[14].setPropertyEditorClass(WorkspaceEditor.class);
+            desc[14].setExpert(true);
 
-            desc[14].setDisplayName(formBundle.getString("PROP_SELECTED_PALETTE"));
-            desc[14].setShortDescription(formBundle.getString("HINT_SELECTED_PALETTE"));
-            desc[14].setPropertyEditorClass(PalettesEditor.class);
+            desc[15].setDisplayName(formBundle.getString("PROP_SELECTED_PALETTE"));
+            desc[15].setShortDescription(formBundle.getString("HINT_SELECTED_PALETTE"));
+            desc[15].setPropertyEditorClass(PalettesEditor.class);
 
-            desc[15].setHidden(true);
-            
-            desc[16].setDisplayName(formBundle.getString("PROP_OPEN_FORMS_IN_ONE_WINDOW"));
-            desc[16].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
             desc[16].setHidden(true);
             
-            desc[17].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
-            desc[17].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
+            desc[17].setDisplayName(formBundle.getString("PROP_OPEN_FORMS_IN_ONE_WINDOW"));
+            desc[17].setShortDescription(formBundle.getString("HINT_OPEN_FORMS_IN_ONE_WINDOW"));
+            desc[17].setHidden(true);
             
-            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
-            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
+            desc[18].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BACKGROUND_COLOR"));
+            desc[18].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BACKGROUND_COLOR"));
             
-            desc[19].setHidden(true);
+            desc[19].setDisplayName(formBundle.getString("PROP_FORMDESIGNER_BORDER_COLOR"));
+            desc[19].setShortDescription(formBundle.getString("HINT_FORMDESIGNER_BORDER_COLOR"));
+            
+            desc[20].setHidden(true);
 
-            desc[20].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
-            desc[20].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
-            desc[20].setExpert(true);
+            desc[21].setDisplayName(formBundle.getString("PROP_VARIABLES_LOCAL"));
+            desc[21].setShortDescription(formBundle.getString("HINT_VARIABLES_LOCAL"));
+            desc[21].setExpert(true);
 
-            desc[21].setHidden(true);
+            desc[22].setHidden(true);
 
             return desc;
             

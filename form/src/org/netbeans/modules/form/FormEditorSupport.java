@@ -164,8 +164,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @exception IOException on I/O error
      */
     public void saveDocument() throws IOException {
-        super.saveDocument();
         saveForm();
+        super.saveDocument();
     }
 
     /** Save the document in this thread.
@@ -173,8 +173,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
      * @exception IOException on I/O error
      */
     protected void saveDocumentIfNecessary(boolean parse) throws IOException {
-        super.saveDocumentIfNecessary(parse);
         saveForm();
+        super.saveDocumentIfNecessary(parse);
     }
 
     // ------------
@@ -676,6 +676,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                     String propName = evt.getPropertyName();
 
                     if (FormLoaderSettings.PROP_USE_INDENT_ENGINE.equals(propName)
+                        || FormLoaderSettings.PROP_GENERATE_ON_SAVE.equals(propName)
                         || FormLoaderSettings.PROP_VARIABLES_MODIFIER.equals(propName)
                         || FormLoaderSettings.PROP_VARIABLES_LOCAL.equals(propName))
                     {
@@ -687,9 +688,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
                           || FormLoaderSettings.PROP_CONNECTION_BORDER_COLOR.equals(propName))
                     {
                         formModel.getFormDesigner().repaint();
-                    } else if (FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)) {
+                    }
+                    else if (FormLoaderSettings.PROP_FORMDESIGNER_BACKGROUND_COLOR.equals(propName)) {
                         formModel.getFormDesigner().getFormDesignerPanel().updateBackgroundColor();
-                    } else if (FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
+                    }
+                    else if (FormLoaderSettings.PROP_FORMDESIGNER_BORDER_COLOR.equals(propName)) {
                         formModel.getFormDesigner().getFormDesignerPanel().updateBorderColor();
                     }
                 }
