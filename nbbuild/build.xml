@@ -75,6 +75,7 @@ workspaceswitcher
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
     <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
+    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
     <!-- Overridable. Note: need not necessarily be a number at all): -->
     <property name="buildnum" value="dev-${buildnumber}"/>
     <property name="netbeans.dest" value="netbeans"/>
@@ -465,6 +466,12 @@ workspaceswitcher
       <echo message="Building module openidex/looks..."/>
       <ant dir="../openidex/looks" target="netbeans"/>
   </target>
+
+  <!-- build NBMs for selected modules -->
+  <target name="build-nbms" depends="init">
+      <for-each startdir=".." target="nbm" locations="${fixedmodules},${modules}"/>
+  </target>
+  <target name="nbm" description="Dummy target."/>
 
   <target name="build-messaging" depends="init">
     <echo message="Starting a build for NetBeans (build ${buildnum}, config '${moduleconfig}') ..."/>
