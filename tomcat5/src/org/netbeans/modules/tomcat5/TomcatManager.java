@@ -371,7 +371,10 @@ public class TomcatManager implements DeploymentManager {
         if (catalinaBaseDir!=null) return catalinaBaseDir;
         File baseDir = getCatalinaBaseDir();
         if (baseDir==null) baseDir = getCatalinaHomeDir();
-        if (!baseDir.exists()) createBaseDir(baseDir,getCatalinaHomeDir());
+        String[] files = baseDir.list();
+        if (files == null || files.length == 0) {
+            createBaseDir(baseDir,getCatalinaHomeDir());
+        }
         if (baseDir==null) return null;
         catalinaBaseDir = FileUtil.toFileObject(baseDir);
         if (catalinaBaseDir==null) {

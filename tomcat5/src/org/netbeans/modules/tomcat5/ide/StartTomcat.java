@@ -252,18 +252,15 @@ public final class StartTomcat extends StartServer implements ProgressObject
                 baseDir = new File(base);
                 if (!baseDir.isAbsolute ()) {
                     InstalledFileLocator ifl = InstalledFileLocator.getDefault();
-                    File baseDir2 = ifl.locate (base, null, false);
-                    if (baseDir2 == null) {
-                        baseDir = tm.createBaseDir(baseDir, homeDir);
-                    } else {
-                        baseDir = baseDir2;
+                    File baseDirTemp = ifl.locate (base, null, false);
+                    if (baseDirTemp != null) {
+                        baseDir = baseDirTemp;
                     }
-                } else {
-                    if ((baseDir != null)) {
-                        if ((!baseDir.exists()) || 
-                            (baseDir.isDirectory() && baseDir.listFiles().length <= 0)) {
-                                baseDir = tm.createBaseDir(baseDir, homeDir);
-                        }
+                }
+                if (baseDir != null) {
+                    String[] files = baseDir.list();
+                    if (files == null || files.length == 0) {
+                        baseDir = tm.createBaseDir(baseDir, homeDir);
                     }
                 }
                 if (baseDir == null) {
