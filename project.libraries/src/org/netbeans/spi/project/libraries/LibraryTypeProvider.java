@@ -13,13 +13,14 @@
 package org.netbeans.spi.project.libraries;
 
 import java.beans.Customizer;
+import org.openide.util.Lookup;
 
 /**
  * SPI interface for provider of library type.
  * The LibraryTypeProvider is responsible for creating new libraries of given type
  * and for supplying the customizers of library's volumes.
  */
-public interface LibraryTypeProvider {
+public interface LibraryTypeProvider extends Lookup.Provider {
     
     /**
      * Returns the UI name of the LibraryType.

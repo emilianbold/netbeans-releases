@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -120,7 +121,11 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             return null;
         }
     }
+    
 
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
+    }
 
     public static LibraryTypeProvider create () {
         return new J2SELibraryTypeProvider();
@@ -163,6 +168,6 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                 props.setProperty (propName, propValue.toString());
             }
         }
-    }
-
+    }    
+    
 }
