@@ -196,6 +196,11 @@ public class ServletEditor extends CloneableEditorSupport
             init();
         }
 
+        protected void componentShowing() {
+            super.componentShowing(); // just this initializes the pane now
+            pane.setEditable(false);
+        }
+
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal(in);
             init();
