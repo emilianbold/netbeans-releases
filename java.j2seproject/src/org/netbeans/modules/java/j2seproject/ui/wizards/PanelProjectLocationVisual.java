@@ -203,6 +203,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             NbBundle.getMessage(PanelProjectLocationVisual.class,"MSG_ProjectFolderReadOnly"));
             return false;
         }
+        
+        if (FileUtil.toFileObject(projLoc) == null) {
+            String message = NbBundle.getMessage (PanelProjectLocationVisual.class,"MSG_IllegalProjectLocation");
+            wizardDescriptor.putProperty("WizardPanel_errorMessage", message);
+            return false;
+        }
+        
         File[] kids = destFolder.listFiles();
         if ( destFolder.exists() && kids != null && kids.length > 0) {
             // Folder exists and is not empty
