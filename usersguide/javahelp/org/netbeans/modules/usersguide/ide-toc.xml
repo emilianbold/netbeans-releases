@@ -398,7 +398,7 @@
 <tocitem text="Working With Javadoc Documentation" target="javadoc.jump">
    <tocitem text="The Javadoc Environment" target="javadoc.windows.all"/>
    <tocitem text="Showing Javadoc Documentation" target="javadoc.source_editor"/>
-   <tocitem text="Searching Through Javadoc Documentation" target="javadoc.search"/>
+   <tocitem text="Searching Javadoc Documentation" target="javadoc.search"/>
    <tocitem text="Generating Javadoc Documentation" target="javadoc.generate"/>
    <tocitem text="Checking Code for Javadoc Comments" target="javadoc.accuracy"/>
    <tocitem text="Mounting a Javadoc Filesystem" target="javadoc.search.path">
@@ -406,11 +406,11 @@
       <tocitem text="Removing a Javadoc Filesystem" target="javadoc.filesystem.unmount"/>
     </tocitem>
     <tocitem text="Setting Javadoc Options" target="javadoc.settings.jump">
-      <tocitem text="Turning Off Exact Case Matching" target="javadoc.case.sensitive"/>
+      <tocitem text="Turning Off Exact Case Matching for Javadoc Searches" target="javadoc.case.sensitive"/>
       <tocitem text="Specifying an Output Directory for Javadoc Files" target="javadoc.output"/>
       <tocitem text="Specifying a Style Sheet for Javadoc Documentation" target="javadoc.stylesheet"/>
       <tocitem text="Modifying Doclet Properties" target="javadoc.doclet"/>
-      <tocitem text="Specifying the Default Search Engine" target="javadoc.searchengine"/>
+      <tocitem text="Specifying the Default Javadoc Search Engine" target="javadoc.searchengine"/>
       <tocitem text="Configuring the Javadoc Executor" target="javadoc.externaljavadoc">
       </tocitem>
     </tocitem>

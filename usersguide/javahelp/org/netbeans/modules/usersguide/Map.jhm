@@ -1122,7 +1122,7 @@
    <mapID target="org.netbeans.modules.java.support.AutoCommentAction.dialog" url="pending.html"  />
    <mapID target="org.netbeans.modules.java.support.AutoCommentPanel.dialog" url="pending.html"  />
    <mapID target="org.netbeans.modules.javadoc.GenerateDocAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.javadoc.DestinationPanel" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.javadoc.DestinationPanel" url="javadoc/destination_directory.html" /> 
    <mapID target="org.netbeans.modules.javadoc.comments.JavaDocEditorPanel" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormCustomEditorAdvanced" url="pending.html" />
    <mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />
