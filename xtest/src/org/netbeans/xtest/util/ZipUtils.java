@@ -21,7 +21,7 @@ public class ZipUtils {
     private static final int BUFFER_SIZE = 4096;
     
     // debugging flag - should be set to false :-)
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final void debugInfo(String message) {
         if (DEBUG) System.out.println("ZipUtils."+message);
     }
