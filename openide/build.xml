@@ -43,8 +43,6 @@ Microsystems, Inc. All Rights Reserved.
       </bootclasspath>
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
-	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-<!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
@@ -74,7 +72,6 @@ Microsystems, Inc. All Rights Reserved.
 <!--
       <classpath>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>        
-	<pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
 -->      
@@ -94,8 +91,6 @@ Microsystems, Inc. All Rights Reserved.
       <classpath>
         <pathelement location="src"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
-<!--    <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/> -->
         <pathelement location="${binroot}/core/release/lib/ext/xml-apis.jar"/>
       </classpath>
     </javac>
@@ -488,6 +483,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   <target name="open-apis" depends="open-apis-check-timestamps,open-apis-maybe-skip" if="open-apis-force-rebuild"
           description="Create Open API documentation.">
     <property name="jdk-docs-location" value="http://java.sun.com/j2se/1.4/docs/api"/>
+    <!-- XXX this link is dead: -->
     <property name="xml-docs-location" value="http://xml.apache.org/apiDocs"/>
     <tstamp/>
     <property name="open-apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2001 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
@@ -818,7 +814,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete dir="examplemodulereload"/>
   </target>
 
-    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xml-apis.jar and xerces.jarjar for using standalone filesystems.">
+    <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all JARs necessary for using standalone filesystems, including XML libraries.">
         <zip compress="true" zipfile="standalone/nbfilesystems.zip">
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
@@ -830,7 +826,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
         </zip>
     </target>
 
-    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary for using standalone filesystems. Without xml-apis.jar and xerces.jar.">
+    <target  name="standalone-fs-light" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all JARs necessary for using standalone filesystems, excluding XML libraries.">
         <zip compress="true" zipfile="standalone/nbfilesystems-light.zip">
             <fileset dir="standalone">
                 <include name="openide-fs.jar"/>
