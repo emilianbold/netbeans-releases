@@ -29,6 +29,7 @@ import org.openide.text.*;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
+import org.openide.windows.TopComponent;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 
@@ -59,6 +60,28 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** Table of FormManager instances of open forms */
   private static Hashtable openForms = new Hashtable ();
 
+  private static boolean listenerRegistered = false;
+  private static PropertyChangeListener editorFocusChangeListener = new PropertyChangeListener () {
+    public void propertyChange (PropertyChangeEvent evt) {
+      if (evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED)) {
+        System.out.println("listener - component activated");
+        String componentName = TopComponent.getRegistry ().getActivated ().getName ();
+        System.out.println("component name = "+componentName);
+        // is it a form ? => find formManager for it and focus it in ComponentInspector
+        for (java.util.Enumeration enum = openForms.keys (); enum.hasMoreElements ();) {
+          FormEditorSupport fes = (FormEditorSupport) enum.nextElement ();
+          String formName = fes.getFormObject ().getName ();
+          System.out.println("formName="+formName);
+          if (formName.equals (componentName)) {
+            System.out.println("this it the component !");
+            FormEditor.getComponentInspector().focusForm ((FormManager2) openForms.get (fes));
+            break;
+          }
+        }
+      }
+    }
+  };
+  
   public FormEditorSupport (MultiDataObject.Entry javaEntry, FormDataObject formObject) {
     super (javaEntry);
     this.formObject = formObject;
@@ -100,6 +123,10 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       }
     }
     openForms.put (this, getFormManager ());
+    if (!listenerRegistered) {
+      TopComponent.getRegistry ().addPropertyChangeListener (editorFocusChangeListener);
+      listenerRegistered = true;
+    }
 
     String fromWorkspace = FormEditor.getFormSettings ().getWorkspace ();
     if (!fromWorkspace.equalsIgnoreCase ("None")) {
@@ -445,6 +472,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  41   Gandalf   1.40        1/9/00   Pavel Buzek     #2918
  *  40   Gandalf   1.39        1/8/00   Ian Formanek    Fixes problem with 
  *       corrupted hierarchy in Component Inspector after (re)opening form
  *  39   Gandalf   1.38        1/5/00   Ian Formanek    NOI18N
