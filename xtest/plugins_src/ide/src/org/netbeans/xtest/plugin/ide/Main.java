@@ -212,6 +212,7 @@ public class Main extends Object {
     private static final long DEFAULT_TIMEOUT = 2400000;
     
     private static final String IDE_MOUNTS = "xtest.ide.mounts";
+    private static final String IDE_UMOUNT_DEFAULTS="xtest.ide.umount.defaults";
     
     private static void doTestPart() {
         
@@ -268,12 +269,19 @@ public class Main extends Object {
                     
                     // setup the repository - should not be needed for tests loaded by system classloader
                     
-                    if ((!System.getProperty(IDE_MOUNTS,"").equals("")) && 
-                        System.getProperty(TEST_REUSE_IDE, "false").equals("false")) {
+                    if (System.getProperty(TEST_REUSE_IDE, "false").equals("false")) {
+                        
+                        if (System.getProperty(IDE_UMOUNT_DEFAULTS,"false").equals("true")) {
+                            umountFileSystems();
+                        }
+                        
+                        if (!System.getProperty(IDE_MOUNTS,"").equals("")) {
                             mountFileSystems();
+                        }
                     }
-                     
-                    /* 
+                        
+                        
+        /* 
                     setNodeProperties();
                     */
                     
@@ -369,20 +377,25 @@ public class Main extends Object {
     }
     
     
-    private static void mountFileSystems() {
+    private static void umountFileSystems() {
         Repository repo = Repository.getDefault();
-        
         // unmount the currently mounted filesystems
         // (could be more sofisticated some day)
-        /*
+        
         Enumeration all = repo.getFileSystems();
         while (all.hasMoreElements()) {
             FileSystem fs = (FileSystem)all.nextElement();
             // preserve the hidden and default filesystems
             if (!fs.isHidden() && !fs.isDefault())
                 repo.removeFileSystem(fs);
-        } 
-         */       
+        }   
+    }
+    
+    
+    private static void mountFileSystems() {
+        Repository repo = Repository.getDefault();
+        
+        
         // mount new filesystems as specified in IDE_MOUNTS
         StringTokenizer stok = new StringTokenizer(System.getProperty(IDE_MOUNTS), System.getProperty("path.separator"));
         while (stok.hasMoreElements()) {

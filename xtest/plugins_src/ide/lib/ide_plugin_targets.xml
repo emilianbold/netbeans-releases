@@ -56,6 +56,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.winsys" value="mdi"/>
         <property name="xtest.ide.exit" value="true"/>
         <property name="xtest.ide.mounts" value=""/>
+        <property name="xtest.ide.umount.defaults" value="false"/>
         
         
         <property name="xtest.ide.use.classloader" value=""/>
@@ -211,6 +212,7 @@ Microsystems, Inc. All Rights Reserved.
 -J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
 -J-Dxtest.timeout=${xtest.timeout}
 -J-Dxtest.ide.mounts=${xtest.ide.mounts}
+-J-Dxtest.ide.umount.defaults=${xtest.ide.umount.defaults}
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}    
 ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
 
