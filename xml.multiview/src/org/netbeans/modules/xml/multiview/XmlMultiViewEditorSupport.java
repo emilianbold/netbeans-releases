@@ -180,6 +180,11 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport
         });
     }
     
+    org.netbeans.core.api.multiview.MultiViewPerspective getSelectedPerspective() {
+        if (mvtc!=null) return MultiViews.findMultiViewHandler(mvtc).getSelectedPerspective();
+        return null;
+    }
+    
     /** A description of the binding between the editor support and the object.
      * Note this may be serialized as part of the window system and so
      * should be static, and use the transient modifier where needed.
