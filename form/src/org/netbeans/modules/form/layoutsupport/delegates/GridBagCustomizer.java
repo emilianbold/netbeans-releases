@@ -118,11 +118,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
         }
         else containerProxy.addAllProxies();
 
-        if (formListener == null) {
-            formListener = new FormListener();
-            formModel.addFormModelListener(
-                new FormModelWeakListener(formListener, formModel));
-        }
+        formListener = new FormListener();
+        formModel.addFormModelListener(formListener);
+    }
+    
+    void customizerClosed() {
+        formModel.removeFormModelListener(formListener);
     }
 
     /** inits the components of the customizer */
@@ -1231,7 +1232,7 @@ final public class GridBagCustomizer extends JPanel implements Customizer
 
 
     public static class Window extends JDialog implements Customizer, ActionListener {
-        private GridBagCustomizer customizerPanel;
+        final private GridBagCustomizer customizerPanel;
         private boolean packCalled;
         public Window() {
             super(org.openide.windows.WindowManager.getDefault().getMainWindow());
@@ -1259,6 +1260,12 @@ final public class GridBagCustomizer extends JPanel implements Customizer
             buttonPanel.add(helpButton);
 
             getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+            
+            addWindowListener(new WindowAdapter() {
+                public void windowClosed(WindowEvent e) {
+                    customizerPanel.customizerClosed();
+                }
+            });
 
             setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         }
