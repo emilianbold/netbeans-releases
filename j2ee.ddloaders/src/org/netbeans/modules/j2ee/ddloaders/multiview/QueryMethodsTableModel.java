@@ -35,7 +35,7 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
                 if (source instanceof Entity) {
                     tableChanged();
                 } else if (source instanceof ClassElement) {
-                    //fireTableDataChanged();
+                    fireTableDataChanged();
                 } else if (source instanceof Query) {
                     for (int i = 0, n = getRowCount(); i < n; i++) {
                         QueryMethodHelper queryMethodHelper = getQueryMethodHelper(i);

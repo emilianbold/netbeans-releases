@@ -45,7 +45,7 @@ public class QueryMethodHelper {
         init();
     }
 
-    private void init() {
+    protected void init() {
         QueryMethod queryMethod = query.getQueryMethod();
         Type[] types = getQueryMethodParamTypes(queryMethod);
         Identifier methodName = Identifier.create(queryMethod.getMethodName());
@@ -115,27 +115,10 @@ public class QueryMethodHelper {
     }
 
     public void removeQuery() {
-        if (implementationMethod != null) {
-            try {
-                entityHelper.beanClass.removeMethod(implementationMethod);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-        }
-        if (localMethod != null) {
-            try {
-                entityHelper.getLocalHomeInterfaceClass().removeMethod(localMethod);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-        }
-        if (remoteMethod != null) {
-            try {
-                entityHelper.getHomeInterfaceClass().removeMethod(remoteMethod);
-            } catch (SourceException e) {
-                notifyError(e);
-            }
-        }
+        init();
+        Utils.removeMethod(entityHelper.beanClass, implementationMethod);
+        Utils.removeMethod(entityHelper.getLocalHomeInterfaceClass(), localMethod);
+        Utils.removeMethod(entityHelper.getHomeInterfaceClass(), remoteMethod);
         entityHelper.removeQuery(query);
     }
 

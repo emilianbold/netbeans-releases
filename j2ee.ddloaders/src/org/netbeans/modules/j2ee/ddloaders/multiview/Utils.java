@@ -244,8 +244,8 @@ public class Utils {
         return ClassPathFactory.createClassPath(new ClassPathImpl(groups));
     }
 
-    public static MethodElement getMethod(ClassElement interfaceElement, MethodElement method) {
-        if (interfaceElement == null || method == null) {
+    public static MethodElement getMethod(ClassElement classElement, MethodElement method) {
+        if (classElement == null || method == null) {
             return null;
         } else {
             MethodParameter[] parameters = method.getParameters();
@@ -253,7 +253,7 @@ public class Utils {
             for (int i = 0; i < parameters.length; i++) {
                 paramTypes[i] = parameters[i].getType();
             }
-            return interfaceElement.getMethod(method.getName(), paramTypes);
+            return classElement.getMethod(method.getName(), paramTypes);
         }
     }
 
@@ -358,14 +358,12 @@ public class Utils {
     }
 
     public static void removeMethod(ClassElement classElement, MethodElement method) {
-        if (classElement != null) {
-            method = getMethod(classElement, method);
-            if (method != null) {
-                try {
-                    classElement.removeMethod(method);
-                } catch (SourceException e) {
-                    Utils.notifyError(e);
-                }
+        method = getMethod(classElement, method);
+        if (method != null) {
+            try {
+                classElement.removeMethod(method);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
             }
         }
     }

@@ -315,6 +315,11 @@ public class EntityHelper extends EntityAndSessionHelper {
                 Query query = queries[i];
                 if (query.getQueryMethod().getMethodName().startsWith(s)) {
                     list.add(query);
+                    final QueryMethodHelper helper = (QueryMethodHelper) queryMethodHelperMap.get(query);
+                    if (helper != null) {
+                        helper.init();
+                    }
+
                 }
             }
             return (Query[]) list.toArray(new Query[0]);
