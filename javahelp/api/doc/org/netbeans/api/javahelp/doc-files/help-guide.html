@@ -316,7 +316,9 @@ Note that the <code>CompilerType</code> class extends the <code>ServiceType</cod
 <p>In NetBeans IDE 3.6, the help system has been upgraded to use v. 2.0 of JavaHelp 
 software. The most visible benefit of the upgrade is better merging of TOC and index. 
 NetBeans IDE uses the Unite-Append merge type for the table of contents and the Sort 
-merge type for the index. For more information on merge types, see the 
+merge type for the index. These merge types are set in the master help set and 
+propogate to any help sets that merge into the product, unless those help sets 
+override them with other merge types. For more information on merge types, see the 
 <a href="http://java.sun.com/products/javahelp/README.html">JavaHelp release 
 notes.</a></p>
 
@@ -405,7 +407,7 @@ nested various <samp>folder</samp> elements, where various types of information 
   For help sets, three types of folders are relevant:</p>
   <ul>
   <li><b>Services</b> - (<i>Required</i>). Used to install the help set in the IDE. </li>
-  <li><b>Actions</b> - (<i>Optional, but not recommended</i>). Used to make it possible to open only that specific help set.<b>Optional</b></li>
+  <li><b>Actions</b> - (<i>Optional, but not recommended</i>). Used to make it possible to open only that specific help set.</li>
   <li><b>Menu</b> - (<i>Optional, but not recommended</i>). Used to create a menu item for that help set. By convention, we have 
   used the HelpShortcuts folder (within the <samp>Menu</samp> folder) to put help sets on the 
   Help Sets submenu.</li>
