@@ -13,43 +13,48 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.project.libraries.LibrariesCustomizer;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
-import java.util.Comparator;
-import java.util.Arrays;
 import javax.swing.*;
 import java.awt.*;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
+import java.beans.PropertyChangeListener;
+import java.util.*;
 import java.util.List;
-
-import org.openide.util.Utilities;
 /**
  *
  * @author  tz97951
  */
 public class LibrariesChooser extends javax.swing.JPanel {
+    private Collection incompatibleLibs;
 
     /** Creates new form LibrariesChooser */
     public LibrariesChooser(Collection alreadySelectedLibs, String j2eePlatform) {
         initComponents();
         jList1.setPrototypeCellValue("0123456789012345678901234");      //NOI18N
         jList1.setModel(new LibrariesListModel(alreadySelectedLibs, j2eePlatform));
-        jList1.setCellRenderer(new LibraryRenderer());
+        incompatibleLibs =
+                VisualClasspathSupport.getLibrarySet(WebProjectGenerator.getIncompatibleLibraries(j2eePlatform));
+        jList1.setCellRenderer(new LibraryRenderer(alreadySelectedLibs, incompatibleLibs, j2eePlatform));
     }
 
     public Library[] getSelectedLibraries () {
         Object[] selected = this.jList1.getSelectedValues();
-        Library[] libraries = new Library[selected.length];
-        System.arraycopy(selected,0,libraries,0,selected.length);
-        return libraries;
+        Collection libs = new ArrayList();
+        for (int i = 0; i < selected.length; i++) {
+            final Library lib = (Library) selected[i];
+            if(!incompatibleLibs.contains(lib)) {   // incompatible libraries are not added
+                libs.add(lib);
+            }
+        }
+        return (Library[]) libs.toArray(new Library[libs.size()]);
     }
 
     /** This method is called from within the constructor to
@@ -149,16 +154,11 @@ public class LibrariesChooser extends javax.swing.JPanel {
         private int numberOfLibs;
         private Collection alreadySelectedLibs;
         private String j2eePlatform;
-        private static ArrayList filter13 = new ArrayList ();
-        private static ArrayList filter14 = new ArrayList ();
-        
-        static {
-            filter13.add (LibraryManager.getDefault().getLibrary("servlet24"));
-            filter13.add (LibraryManager.getDefault().getLibrary("jsp20"));
-            filter13.add (LibraryManager.getDefault().getLibrary("jstl11"));
-            filter14.add (LibraryManager.getDefault().getLibrary("servlet23"));
-            filter14.add (LibraryManager.getDefault().getLibrary("jstl"));
-        }
+
+        private static Collection filter13 = VisualClasspathSupport.getLibrarySet(
+                WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_13_LEVEL));
+        private static Collection filter14 = VisualClasspathSupport.getLibrarySet(
+                WebProjectGenerator.getIncompatibleLibraries(WebModule.J2EE_14_LEVEL));
 
         public LibrariesListModel (Collection alreadySelectedLibs, String j2eePlatform) {
             this.j2eePlatform = j2eePlatform;
@@ -210,18 +210,20 @@ public class LibrariesChooser extends javax.swing.JPanel {
         private Library[] createLibraries () {
             Library[] libs = LibraryManager.getDefault().getLibraries();
             numberOfLibs = libs.length;
-            ArrayList asList = new ArrayList ();
             Collection filterOut = j2eePlatform.equals("1.3") ? filter13 : filter14;
-            for (int i = 0; i < libs.length; i++) {
-                if (alreadySelectedLibs.contains(libs [i])) {
-                    continue;
-                }
-                if (filterOut.contains (libs[i])) {
-                    continue;
-                }
-                asList.add(libs [i]);
-            }
-            libs = (Library[]) asList.toArray(new Library [asList.size()]);
+//            final Collection baseLibraries = VisualClasspathSupport.getBaseLibrarySet();
+//            ArrayList asList = new ArrayList ();
+//            for (int i = 0; i < libs.length; i++) {
+//                final Library lib = libs[i];
+//                if (alreadySelectedLibs.contains(lib)) {
+//                    continue;
+//                }
+//                if (filterOut.contains (lib)) {
+//                    continue;
+//                }
+//                asList.add(lib);
+//            }
+//            libs = (Library[]) asList.toArray(new Library [asList.size()]);
             Arrays.sort(libs, new Comparator () {
                 public int compare (Object o1, Object o2) {
                     assert (o1 instanceof Library) && (o2 instanceof Library);
@@ -239,14 +241,41 @@ public class LibrariesChooser extends javax.swing.JPanel {
 
         private static final String LIBRARY_ICON = "org/netbeans/modules/web/project/ui/resources/libraries.gif";  //NOI18N
         private Icon cachedIcon;
+        private Collection alreadySelectedLibs;
+        private Collection incompatibleLibs;
+        private String j2eePlatform;
+
+        public LibraryRenderer(Collection alreadySelectedLibs, Collection incompatibleLibs, String j2eePlatform) {
+            this.alreadySelectedLibs = alreadySelectedLibs;
+            this.j2eePlatform = j2eePlatform;
+            this.incompatibleLibs = incompatibleLibs;
+        }
 
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
             if (value instanceof Library) {
                 displayName = ((Library)value).getDisplayName();
             }
+            final Color foreground;
+            final String toolTipText;
+            if(alreadySelectedLibs.contains(value)) {
+                foreground = Color.LIGHT_GRAY;
+                toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_LibraryAlreadyInProject_ToolTip");
+            } else if(incompatibleLibs.contains(value)) {
+                foreground = Color.RED;
+                toolTipText = NbBundle.getMessage(LibrariesChooser.class, "LBL_IncompatibleLibrary_ToolTip")
+                        + " (" + j2eePlatform + ")";
+                isSelected = false; // selection of incompatible libraries is here only masked
+            } else {
+                foreground = null;
+                toolTipText = null;
+            }
             super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
+            setToolTipText(toolTipText);
             setIcon(createIcon());
+            if(foreground != null) {
+                setForeground(foreground);
+            }
             return this;
         }
 
