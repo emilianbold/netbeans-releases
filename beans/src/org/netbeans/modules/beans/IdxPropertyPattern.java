@@ -357,7 +357,6 @@ public class IdxPropertyPattern extends PropertyPattern {
                 indexedSetterMethod.setParameters( params );
 
                 String body = indexedSetterMethod.getBody();
-                System.out.println("IdxPropertyPattern " + body);
                 
                 //test if body contains change support
                 if( body != null && ( body.indexOf(PropertyPattern.PROPERTY_CHANGE) != -1 || body.indexOf(PropertyPattern.VETOABLE_CHANGE) != -1 ) ) {
