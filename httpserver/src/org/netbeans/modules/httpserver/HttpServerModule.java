@@ -125,6 +125,10 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
         }
     }
 
+    public void uninstalled () {
+        stopHTTPServer();
+    }
+    
     /** stops the HTTP server */
     static void stopHTTPServer() {
         if (inSetRunning)
