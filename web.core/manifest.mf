@@ -12,6 +12,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,org.netbeans.mod
   org.netbeans.modules.html/1,
   org.netbeans.modules.jarpackager/2,
   org.openidex.util/2, org.netbeans.api.xml/1,
+  org.netbeans.modules.xml.catalog/2 > 0.9,
   org.openide.src > 1.0,
   org.openide.compiler > 1.0,
   org.openide.execution > 1.0,
@@ -45,9 +46,6 @@ Name: org/netbeans/modules/web/core/jsploader/ConvertToServletAction.class
 OpenIDE-Module-Class: Action
 
 Name: org/netbeans/modules/web/core/jsploader/ConvertToJavaAction.class
-OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/web/dd/ConvertTo13SpecAction.class
 OpenIDE-Module-Class: Action
 
 Name: org/netbeans/modules/web/html/HtmlLoader.class

@@ -14,8 +14,8 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
 <catalog>
     <!-- public ID defined by XMLDataObject -->
-    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_2.dtd"/>
+    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN" uri="nbres:/org/netbeans/modules/web/dd/resources/web-app_2_2.dtd"/>
     <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_1.dtd"/>
-    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-app_2_3.dtd"/>
+    <public publicId="-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" uri="nbres:/org/netbeans/modules/web/dd/resources/web-app_2_3.dtd"/>
     <public publicId="-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.2//EN" uri="nbres:/org/netbeans/modules/web/core/resources/web-jsptaglibrary_1_2.dtd"/>
 </catalog>

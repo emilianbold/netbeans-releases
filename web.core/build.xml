@@ -84,6 +84,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/j2eeserver/deprecated/netbeans/modules/autoload/j2eeserver.jar"/>
         <pathelement location="${nb_root}/projects/netbeans/modules/projects.jar"/>
+        <pathelement location="${nb_root}/xml/catalog/netbeans/modules/xml-catalog.jar"/>
 	<pathelement path="${nb_root}/xml/api/netbeans/modules/autoload/xml-api.jar" />
 	<pathelement path="${nb_root}/web/jspparser/netbeans/modules/eager/jsp-parser.jar" />
 	<pathelement path="${nb_root}/web/jspsyntax/netbeans/modules/eager/jsp-syntax.jar" />

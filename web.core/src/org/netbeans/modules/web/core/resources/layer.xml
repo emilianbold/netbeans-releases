@@ -256,7 +256,14 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
   
     <folder name="Plugins">
-      <folder name="Web"><folder name="Actions">
+      <!-- Register XML module catalog plugin -->
+      <folder name="XML"><folder name="UserCatalogs">
+        <file name="org-netbeans-modules-web-dd-DDCatalogRegistration.instance">
+            <attr name="instanceCreate" 
+                  methodvalue="org.netbeans.modules.web.dd.DDDataLoader.getDDCatalog"/>
+            <attr name="instanceOf" 
+                  stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+        </file>
       </folder></folder>
     </folder>
 
