@@ -15,6 +15,9 @@ package org.netbeans.modules.schema2beans;
 
 import java.lang.reflect.*;
 
+/**
+ * A BeanProp that works using reflection.
+ */
 public class ReflectiveBeanProp extends BeanProp {
     private Method writer;
     private Method arrayWriter;

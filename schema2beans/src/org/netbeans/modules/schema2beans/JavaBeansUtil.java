@@ -368,7 +368,7 @@ public class JavaBeansUtil {
     /**
      * Fill in the contents of obj from the XML that's in document.
      *
-     * @param cls the object to fill in from the XML.
+     * @param obj the object to fill in from the XML.
      * @param document the source of the XML.
      */
     public static void readBean(Object obj, org.w3c.dom.Document document) throws java.beans.IntrospectionException {

@@ -18,6 +18,12 @@ import java.io.*;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
+/**
+ * @author cliffwd
+ * An org.xml.sax.EntityResolver that does nothing.  Good for those times
+ * when you want 0 validation done, and to make sure it's not going to the
+ * network for a DTD lookup.
+ */
 public class NullEntityResolver implements EntityResolver {
     //protected String dummyDTD = "<!ELEMENT dummy EMPTY >\n";
     protected String dummyDTD = "";

@@ -2391,7 +2391,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     /**
      * The new comment will be added to the first of the bean's children.
      * @return the newly added Comment
-     * @throw NullPointerException if this is a nonroot bean that is
+     * @throws NullPointerException if this is a nonroot bean that is
      * not part of a rooted graph yet.
      */
     public org.w3c.dom.Comment addComment(String comment) {
