@@ -94,7 +94,7 @@ public class EventsAction extends CookieAction {
   * @return the JMenuItem representation for the Action
   */
   public JMenuItem getPopupPresenter() {
-    JMenu popupMenu = new JMenu (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events"));
+    JMenu popupMenu = new org.openide.awt.JMenuPlus (org.openide.util.NbBundle.getBundle (EventsAction.class).getString ("ACT_Events"));
     popupMenu.setEnabled (isEnabled ());
     popupMenu.addMenuListener(new MenuListener() {
         Hashtable mapping = new Hashtable ();
@@ -116,7 +116,7 @@ public class EventsAction extends CookieAction {
          
           for (int i = 0; i < setHandlers.length; i++) {
             String name = setHandlers[i].getName ();            
-            JMenu m = new JMenu (name.substring (0, 1).toUpperCase () + name.substring (1));
+            JMenu m = new org.openide.awt.JMenuPlus (name.substring (0, 1).toUpperCase () + name.substring (1));
             menu.add (m);
             EventsList.Event[] events = setHandlers[i].getEvents();
             for (int j = 0; j < events.length; j++) {
@@ -154,6 +154,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  7    Gandalf   1.6         6/28/99  Ian Formanek    Fixed positioning 
+ *       problems with popup menu
  *  6    Gandalf   1.5         6/27/99  Ian Formanek    FUlly implemented for 
  *       Gandalf
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 

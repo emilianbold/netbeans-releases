@@ -134,7 +134,7 @@ public class SelectLayoutAction extends CookieAction {
   * @return the JMenuItem representation for the Action
   */
   public JMenuItem getPopupPresenter() {
-    JMenu popupMenu = new JMenu (getName ());
+    JMenu popupMenu = new org.openide.awt.JMenuPlus (getName ());
     popupMenu.setEnabled (isEnabled ());
     popupMenu.addMenuListener(new MenuListener() {
         public void menuSelected(MenuEvent e) {
@@ -201,6 +201,8 @@ public class SelectLayoutAction extends CookieAction {
 }
 /*
  * Log
+ *  6    Gandalf   1.5         6/28/99  Ian Formanek    Fixed positioning 
+ *       problems with popup menu
  *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  4    Gandalf   1.3         5/20/99  Ian Formanek    
