@@ -37,7 +37,6 @@ class SelectMethodsNode extends SectionNode {
         InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
                 new SelectMethodsTableModel(ejbJarFile, entity, entityHelper));
         innerTablePanel.getEditButton().setVisible(false);
-        innerTablePanel.getRemoveButton().setVisible(false);
         return innerTablePanel;
 
     }

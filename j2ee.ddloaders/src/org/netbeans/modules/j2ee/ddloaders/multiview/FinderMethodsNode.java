@@ -37,7 +37,6 @@ class FinderMethodsNode extends SectionNode {
         InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
                 new FinderMethodsTableModel(ejbJarFile, entity, entityHelper));
         innerTablePanel.getEditButton().setVisible(false);
-        innerTablePanel.getRemoveButton().setVisible(false);
         return innerTablePanel;
 
     }

@@ -53,7 +53,10 @@ public abstract class QueryMethodsTableModel extends InnerTableModel {
     }
 
     public void removeRow(int row) {
-        // TODO: implement Method removal
+        Query query = (Query) getQueries().get(row);
+        QueryMethodHelper queryMethodHelper = getQueryMethodHelper(query);
+        queryMethodHelper.removeQuery();
+        queryMethodHelperMap.remove(query);
         initMethods();
         fireTableRowsDeleted(-1, -1);
     }

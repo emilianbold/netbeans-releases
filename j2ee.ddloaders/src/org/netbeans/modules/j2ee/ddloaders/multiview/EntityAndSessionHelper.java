@@ -52,9 +52,11 @@ public class EntityAndSessionHelper {
         this.ejbJarFile = ejbJarFile;
         sourceClassPath = Utils.getSourceClassPath(ejbJarFile);
         beanClass = Utils.getClassElement(sourceClassPath, ejb.getEjbClass());
+        localHomeClass = getClassElement(ejb.getLocalHome());
         localInterfaceClass = getClassElement(ejb.getLocal());
         localBusinessInterfaceClass = localInterfaceClass == null ?
                 null : getBusinessInterfaceClass(localInterfaceClass);
+        homeClass = getClassElement(ejb.getHome());
         remoteInterfaceClass = getClassElement(ejb.getRemote());
         remoteBusinessInterfaceClass = remoteInterfaceClass == null ?
                 null : getBusinessInterfaceClass(remoteInterfaceClass);
@@ -91,6 +93,7 @@ public class EntityAndSessionHelper {
             ejb.setLocal(null);
             Utils.removeClass(sourceClassPath, ejb.getLocalHome());
             ejb.setLocalHome(null);
+            localHomeClass = null;
         } else {
             if (remoteBusinessInterfaceClass != remoteInterfaceClass) {
                 removeBeanInterface(remoteBusinessInterfaceClass.getName());
@@ -101,8 +104,8 @@ public class EntityAndSessionHelper {
             ejb.setRemote(null);
             Utils.removeClass(sourceClassPath, ejb.getHome());
             ejb.setHome(null);
+            homeClass = null;
         }
-
     }
 
     private void removeBeanInterface(Identifier identifier) {
@@ -170,6 +173,7 @@ public class EntityAndSessionHelper {
                 ejb.setLocalHome(localHomeInterfaceName);
                 localInterfaceClass = getClassElement(localInterfaceName);
                 localBusinessInterfaceClass = getBusinessInterfaceClass(localInterfaceClass);
+                localHomeClass = getClassElement(ejb.getLocalHome());
             } else {
                 String remoteInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
                 remoteInterfaceName = generator.generateRemote(packageName, packageFile, remoteInterfaceName, ejbName);
@@ -183,6 +187,7 @@ public class EntityAndSessionHelper {
                 ejb.setHome(homeInterfaceName);
                 remoteInterfaceClass = getClassElement(remoteInterfaceName);
                 remoteBusinessInterfaceClass = getBusinessInterfaceClass(remoteInterfaceClass);
+                homeClass = getClassElement(ejb.getHome());
             }
         } catch (IOException e) {
             Utils.notifyError(e);
@@ -194,12 +199,12 @@ public class EntityAndSessionHelper {
     }
 
     public ClassElement getLocalHomeClass() {
-        return getClassElement(ejb.getLocalHome());
+        return localHomeClass;
 
     }
 
     public ClassElement getHomeClass() {
-        return getClassElement(ejb.getHome());
+        return homeClass;
     }
 
     protected EntityNode createEntityNode() {

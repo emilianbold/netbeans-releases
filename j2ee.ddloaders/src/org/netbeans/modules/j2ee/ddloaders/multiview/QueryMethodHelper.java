@@ -19,6 +19,7 @@ import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
 import org.openide.src.Type;
+import org.openide.src.SourceException;
 
 /**
  * @author pfiala
@@ -26,13 +27,28 @@ import org.openide.src.Type;
 public class QueryMethodHelper {
 
     private final Query query;
-    private final EntityHelper helper;
+    private final EntityHelper entityHelper;
     private boolean isSelectMethod;
+    private MethodElement implementationMethod;
+    private MethodElement remoteMethod;
+    private MethodElement localMethod;
 
     public QueryMethodHelper(EntityHelper helper, Query query) {
         this.query = query;
-        this.helper = helper;
+        this.entityHelper = helper;
         isSelectMethod = query.getQueryMethod().getMethodName().startsWith("ejbSelectBy"); //NOI18N
+        init();
+    }
+
+    private void init() {
+        QueryMethod queryMethod = query.getQueryMethod();
+        Type[] types = getQueryMethodParamTypes(queryMethod);
+        Identifier methodName = Identifier.create(queryMethod.getMethodName());
+        implementationMethod = entityHelper.beanClass.getMethod(methodName, types);
+        ClassElement homeClass = entityHelper.getHomeClass();
+        remoteMethod = homeClass == null ? null : homeClass.getMethod(methodName, types);
+        ClassElement localHomeClass = entityHelper.getLocalHomeClass();
+        localMethod = localHomeClass == null ? null : localHomeClass.getMethod(methodName, types);
     }
 
     public String getMethodName() {
@@ -40,22 +56,18 @@ public class QueryMethodHelper {
     }
 
     public String getReturnType() {
-        ClassElement classElement;
+        MethodElement method;
         if (isSelectMethod) {
             //select method
-            classElement = helper.beanClass;
+            method = implementationMethod;
         } else {
             //finder method
-            classElement = helper.getLocalHomeClass();
+            if (localMethod != null) {
+                method = localMethod;
+            } else {
+                method = remoteMethod;
+            }
         }
-        QueryMethod queryMethod = query.getQueryMethod();
-        String[] methodParam = queryMethod.getMethodParams().getMethodParam();
-        Type[] types = new Type[methodParam.length];
-        for (int i = 0; i < methodParam.length; i++) {
-            types[i] = Type.parse(methodParam[i]);
-        }
-        String methodName = queryMethod.getMethodName();
-        MethodElement method = classElement.getMethod(Identifier.create(methodName), types);
         return method == null ? null : method.getReturn().getFullString();
     }
 
@@ -64,7 +76,62 @@ public class QueryMethodHelper {
     }
 
     public String getResultInterface() {
-        // TODO: return local/remote
-        return ""; //NOI18N
+        ClassElement localHomeClass = entityHelper.getLocalHomeClass();
+        ClassElement homeClass = entityHelper.getHomeClass();
+
+        QueryMethod queryMethod = query.getQueryMethod();
+        Type[] types = getQueryMethodParamTypes(queryMethod);
+        String methodName = queryMethod.getMethodName();
+        boolean hasLocal = localHomeClass.getMethod(Identifier.create(methodName), types) != null;
+        boolean hasRemote = homeClass.getMethod(Identifier.create(methodName), types) != null;
+        String remote = "remote"; //NOI18N;
+        String local = "local"; //NOI18N;
+        if (hasLocal) {
+            if (hasRemote) {
+                return local + "+" + remote; //NOI18N;
+            } else {
+                return local;
+            }
+        } else{
+            if (hasRemote) {
+                return remote;
+            } else {
+                return "-"; //NOI18N;
+            }
+        }
+    }
+
+    private Type[] getQueryMethodParamTypes(QueryMethod queryMethod) {
+        String[] methodParam = queryMethod.getMethodParams().getMethodParam();
+        Type[] types = new Type[methodParam.length];
+        for (int i = 0; i < methodParam.length; i++) {
+            types[i] = Type.createClass(Identifier.create(methodParam[i]));
+        }
+        return types;
+    }
+
+    public void removeQuery() {
+        if (implementationMethod != null) {
+            try {
+                entityHelper.beanClass.removeMethod(implementationMethod);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+        }
+        if (localMethod != null) {
+            try {
+                entityHelper.getLocalHomeClass().removeMethod(localMethod);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+        }
+        if (remoteMethod != null) {
+            try {
+                entityHelper.getHomeClass().removeMethod(remoteMethod);
+            } catch (SourceException e) {
+                Utils.notifyError(e);
+            }
+        }
+        entityHelper.removeQuery(query);
     }
 }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddCmpFieldAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddFinderMethodAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.AddSelectMethodAction;
@@ -62,5 +63,9 @@ public class EntityHelper extends EntityAndSessionHelper {
 
     public MethodElement getGetterMethod(String fieldName) {
         return EntityMethodController.getGetterMethod(beanClass, fieldName);
+    }
+
+    public void removeQuery(Query query) {
+        ((Entity) ejb).removeQuery(query);
     }
 }
