@@ -375,7 +375,6 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Shortcuts">
     <file name="CS-F6[org-openide-actions-ExecuteProjectAction].instance" />
     <file name="CS-F5[org-openide-actions-DebugProjectAction].instance" />
-    <file name="S-F12[org-openide-actions-CleanAllAction].instance" />
     <file name="CA-C[org-netbeans-core-actions-StopCompileAction].instance" />
     <file name="C-Z[org-openide-actions-UndoAction].instance" />
     <file name="CS-O[org-openide-actions-OpenProjectAction].instance" />
@@ -384,8 +383,8 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-Y[org-openide-actions-RedoAction].instance" />
     <file name="S-F9[org-openide-actions-CompileAllAction].instance" />
     <file name="C-X[org-openide-actions-CutAction].instance" />
-    <file name="A-F10[org-netbeans-core-actions-NextOutJumpAction].instance" />
-    <file name="F12[org-openide-actions-CleanAction].instance" />
+    <file name="F12[org-netbeans-core-actions-NextOutJumpAction].instance" />
+    <file name="S-F12[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
     <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" />
     <file name="F11[org-openide-actions-BuildAction].instance" />
     <file name="F9[org-openide-actions-CompileAction].instance" />
@@ -405,7 +404,6 @@ Microsystems, Inc. All Rights Reserved.
     <file name="C-3[org-netbeans-core-actions-EditorViewAction].instance" />
     <file name="CS-F11[org-openide-actions-BuildProjectAction].instance" />
     <file name="C-H[org-openide-actions-ReplaceAction].instance" />
-    <file name="CA-F10[org-netbeans-core-actions-PreviousOutJumpAction].instance" />
     <file name="C-2[org-netbeans-core-actions-ExplorerViewAction].instance" />
     <file name="CS-F9[org-openide-actions-CompileProjectAction].instance" />
     <file name="C-1[org-netbeans-core-actions-GlobalPropertiesAction].instance" />
