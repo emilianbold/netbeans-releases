@@ -213,11 +213,13 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             c.insets = new Insets (5, 5, 0, 0);
             c.gridwidth = GridBagConstraints.REMAINDER;
             tfSize = new JTextField ("" + FontEditor.this.font.getSize ()); // NOI18N
+            /* Enter should invoke default button
             tfSize.addActionListener (new ActionListener () {
                                           public void actionPerformed (ActionEvent e) {
                                               setValue ();
                                           }
                                       });
+             */
             tfSize.addFocusListener (new java.awt.event.FocusAdapter () {
                                          public void focusLost (java.awt.event.FocusEvent evt) {
                                              setValue ();
