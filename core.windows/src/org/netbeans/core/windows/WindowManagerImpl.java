@@ -105,12 +105,16 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * Implements <code>WindowManager</code> abstract method.
      * @return the MainWindow */
     public Frame getMainWindow() {
+        assertEventDispatchThreadWeak();
+        
         return central.getMainWindow();
     }
     
     /** Called after a current LookAndFeel change to update the IDE's UI
      * Implements <code>WindowManager</code> abstract method. */
     public void updateUI() {
+        assertEventDispatchThreadWeak();
+        
         central.updateUI();
     }
     
@@ -120,6 +124,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return the manager that handles opening, closing and selecting a component
      * @deprecated Don't use this. */
     protected synchronized WindowManager.Component createTopComponentManager(TopComponent c) {
+        assertEventDispatchThreadWeak();
+        
         return null;
     }
     
@@ -128,6 +134,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return fake implementation of only workspace
      * @deprecated Doesn't have a sense now. Workspaces aren't supported anymore. */
     public Workspace createWorkspace(String name, String displayName) {
+        assertEventDispatchThreadWeak();
+        
         // get back fake workspace.
         return this;
     }
@@ -136,6 +144,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return fake implementation of only workspace
      * @deprecated Doesn't have a sense now. Workspaces aren't supported anymore. */
     public Workspace findWorkspace(String name) {
+        assertEventDispatchThreadWeak();
+        
         // PENDING what to return?
         return this;
     }
@@ -145,6 +155,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return array with only one (fake) workspace impl
      * @deprecated Doesn't have a sense now. Workspaces aren't supported anymore. */
     public Workspace[] getWorkspaces() {
+        assertEventDispatchThreadWeak();
+        
         return new Workspace[] {this};
     }
 
@@ -153,6 +165,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @param workspaces array of new workspaces
      * @deprecated Doesn't have a sense now. Workspaces aren't supported anymore. */
     public void setWorkspaces(Workspace[] workspaces) {
+        assertEventDispatchThreadWeak();
     }
 
     /** Gets current workspace. Can be changed by calling Workspace.activate ()
@@ -160,6 +173,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
      * @return fake implementation of only workspace
      * @deprecated Doesn't have a sense now. Workspaces aren't supported anymore. */
     public Workspace getCurrentWorkspace() {
+        assertEventDispatchThreadWeak();
+        
         // Gets back this as a fake workspace.
         return this;
     }
@@ -188,15 +203,9 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         return PersistenceManager.getDefault().getTopComponentForID(tcID);
     }
     
-    public String findTopComponentID(TopComponent tc) {
-        assertEventDispatchThreadWeak();
-
-        return super.findTopComponentID(tc);
-    }
-    
     /** Adds listener.
-     * Implements <code>WindowManager</code> abstract method. */
-     public void addPropertyChangeListener(PropertyChangeListener l) {
+    * Implements <code>WindowManager</code> abstract method. */
+    public void addPropertyChangeListener(PropertyChangeListener l) {
         changeSupport.addPropertyChangeListener(l);
     }
     
@@ -726,6 +735,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     // Manipulating methods (overriding the superclass dummy ones) >>
     protected void topComponentOpen(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getMode(tc);
 
         if(mode == null) {
@@ -743,6 +754,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected void topComponentClose(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         boolean opened = topComponentIsOpened(tc);
         if(!opened) {
             return;
@@ -755,6 +768,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected void topComponentRequestActive(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             activateTopComponent(tc);
@@ -762,6 +777,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected void topComponentRequestVisible(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             selectTopComponentImpl(tc);
@@ -769,6 +786,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
 
     protected void topComponentDisplayNameChanged(TopComponent tc, String displayName) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentDisplayNameChanged(mode, tc);
@@ -776,6 +795,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected void topComponentToolTipChanged(TopComponent tc, String toolTip) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentToolTipChanged(mode, tc);
@@ -783,6 +804,8 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected void topComponentIconChanged(TopComponent tc, Image icon) {
+        assertEventDispatchThreadWeak();
+        
         ModeImpl mode = getModeForOpenedTopComponent(tc);
         if(mode != null) {
             central.topComponentIconChanged(mode, tc);
@@ -790,18 +813,26 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
 
     protected void topComponentActivatedNodesChanged(TopComponent tc, Node[] activatedNodes) {
+        assertEventDispatchThreadWeak();
+        
         notifyRegistrySelectedNodesChanged(tc, activatedNodes);
     }
     
     protected boolean topComponentIsOpened(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         return getModeForOpenedTopComponent(tc) != null;
     }
     
     protected Action[] topComponentDefaultActions(TopComponent tc) {
+        assertEventDispatchThreadWeak();
+        
         return ActionUtils.createDefaultPopupActions(tc);
     }
     
     protected String topComponentID (TopComponent tc, String preferredID) {
+        assertEventDispatchThreadWeak();
+        
         return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
     }
     // Manipulating methods (overriding the superclass dummy ones) <<
