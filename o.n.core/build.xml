@@ -13,6 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="core" default="netbeans" basedir=".">
+
+  <property name="binroot" value=".."/>
+
   <target name="compile">
     <javac srcdir="libsrc" destdir="libsrc"/>
     <!-- Force use of classic compiler, though slower; modern compiler on Linux 1.3 -->

@@ -16,6 +16,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM"/>
 
+  <property name="binroot" value=".."/>
+
   <target name="compile">
     <javac srcdir="src" destdir="src">
       <classpath>
