@@ -23,6 +23,7 @@ import javax.swing.Action;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
+import org.openide.awt.Actions;
 
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -36,6 +37,7 @@ public class MaximizeWindowAction extends AbstractAction {
 
     private final PropertyChangeListener propListener;
     private TopComponent topComponent;
+    private boolean isPopup = false;
     
     public MaximizeWindowAction() {
         propListener = new PropertyChangeListener() {
@@ -62,6 +64,7 @@ public class MaximizeWindowAction extends AbstractAction {
     MaximizeWindowAction(TopComponent tc) {
         topComponent = tc;
         propListener = null;
+        isPopup = true;
         updateState();
     }
     
@@ -136,11 +139,13 @@ public class MaximizeWindowAction extends AbstractAction {
             }
         }
 
+        String label;
         if(maximize) {
-            putValue(Action.NAME, NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction", param));
+            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_MaximizeWindowAction", param);
         } else {
-            putValue(Action.NAME, NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction", param));
+            label = NbBundle.getMessage(MaximizeWindowAction.class, "CTL_UnmaximizeWindowAction", param);
         }
+        putValue(Action.NAME, (isPopup ? Actions.cutAmpersand(label) : label));
 
         setEnabled(active != null);
     }
