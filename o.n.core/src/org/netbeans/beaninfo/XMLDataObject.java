@@ -40,7 +40,7 @@ public class XMLDataObject {
         if (icon == null) icon = loadImage ("/org/openide/resources/xmlObject.gif"); // NOI18N
         return icon;
       } else {
-        if (icon32 == null) icon32 = loadImage ("/org/openide/resources/xmlObject.gif"); // NOI18N
+        if (icon32 == null) icon32 = loadImage ("/org/openide/resources/xmlObject32.gif"); // NOI18N
         return icon32;
       }
     }
@@ -51,6 +51,7 @@ public class XMLDataObject {
 
 /*
  * Log
+ *  3    Jaga      1.1.1.0     3/9/00   Jesse Glick     
  *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
  *  1    Gandalf   1.0         1/13/00  Jesse Glick     
  * $
