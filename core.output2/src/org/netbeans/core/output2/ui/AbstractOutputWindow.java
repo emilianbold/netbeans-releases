@@ -25,10 +25,11 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
-import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.lang.reflect.Method;
+import javax.swing.plaf.TabbedPaneUI;
 
 /**
  * A panel which, if more than one AbstractOutputTab is added to it, instead
@@ -136,6 +137,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
                     if (Controller.log) Controller.log ("Selected view is being removed: " + c.getName());
                     removedSelectedView = (AbstractOutputTab) c;
                 }
+                checkWinXPLFBug();
                 pane.remove(c);
                 if (pane.getTabCount() == 1) {
                     Component comp = pane.getComponentAt(0);
@@ -330,5 +332,23 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         return -1;
     }
 
+// JDK 1.5, Win L&F - we cannot do the layout synchronously when we've
+// just removed a tab - the layout will have out of sync cache data
+// #56628    
+    private void checkWinXPLFBug() {
+        if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOi18N
+            TabbedPaneUI ui = pane.getUI();
+            try {
+                Method method = ui.getClass().getDeclaredMethod("setRolloverTab", new Class[] {Integer.TYPE}); //NOI18N
+                if (method != null) {
+                    method.setAccessible(true);
+                    method.invoke(ui, new Object[] { new Integer(-1) });
+                    method.setAccessible(false);
+                }
+            } catch (Exception exc) {
+                // well let's cross fingers and see..
+            }
+        }
+    }
     
 }
