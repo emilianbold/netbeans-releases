@@ -379,6 +379,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         if (w instanceof Dialog) {
             Dialog d = (Dialog)w;
             if ((d.isModal() && !(d instanceof ProgressDialog)) || d == dialogViewer) {
+                //#40950: Print and Page Setup dialogs was not displayed from java help window.
                 if ("sun.awt.windows.WPageDialog".equals(d.getClass().getName()) || // NOI18N
                     "sun.awt.windows.WPrintDialog".equals(d.getClass().getName()) || // NOI18N
                     "sun.print.ServiceDialog".equals(d.getClass().getName())) { // NOI18N
