@@ -522,18 +522,15 @@ public class FormModel
             setUndoRedoRecording(true);
         initializeCodeGenerator();
 
-        fireEvents(new FormModelEvent[] {
-            new FormModelEvent(this, FormModelEvent.FORM_LOADED)
-        });
+        sendEventLater(new FormModelEvent(this, FormModelEvent.FORM_LOADED));
     }
 
     /** Fires an event informing about that the form is just about to be saved. */
     public void fireFormToBeSaved() {
         t("firing form to be saved"); // NOI18N
 
-        fireEvents(new FormModelEvent[] {
-            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_SAVED)
-        });
+        sendEventImmediately(
+            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_SAVED));
     }
 
     /** Fires an event informing about that the form is just about to be closed. */
@@ -543,9 +540,8 @@ public class FormModel
         if (undoRedoManager != null)
             undoRedoManager.discardAllEdits();
 
-        fireEvents(new FormModelEvent[] {
-            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_CLOSED)
-        });
+        sendEventImmediately(
+            new FormModelEvent(this, FormModelEvent.FORM_TO_BE_CLOSED));
     }
 
     /** Fires an event informing about changing layout manager of a container.
@@ -835,6 +831,20 @@ public class FormModel
         }
     }
 
+    void sendEventLater(FormModelEvent ev) {
+        EventBroker broker = getEventBroker();
+        if (broker != null)
+            broker.sendEventLater(ev);
+        else {
+            t("no event broker, firing event directly: "+ev.getChangeType()); // NOI18N
+            fireEvents(new FormModelEvent[] { ev });
+        }
+    }
+
+    void sendEventImmediately(FormModelEvent ev) {
+        fireEvents(new FormModelEvent[] { ev });
+    }
+
     EventBroker getEventBroker() {
         if (eventBroker == null && isFormLoaded())
             eventBroker = new EventBroker();
@@ -844,38 +854,45 @@ public class FormModel
     // [EventBroker could be more independent and extensible - interface
     //  definition here, implementation separated elsewhere.]
     private class EventBroker implements Runnable {
-        private List eventsList;
+        private List eventList;
         private boolean compoundUndoStarted;
 
         public void sendEvent(FormModelEvent ev) {
-            if (!placeEvent(ev)) {
-                 // fire the event immediately
-                t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
-                FormModel.this.fireEvents(new FormModelEvent[] { ev });
-            }
+            if (shouldSendLater(ev))
+                sendEventLater(ev);
+            else
+                sendEventImmediately(ev);
         }
 
-        private synchronized boolean placeEvent(FormModelEvent ev) {
-            if (eventsList == null) {
-                if (ev.isModifying() && java.awt.EventQueue.isDispatchThread()) {
-                    eventsList = new ArrayList();
-                    eventsList.add(ev);
-                    compoundUndoStarted = FormModel.this.isUndoRedoRecording()
-                                          && FormModel.this.startCompoundEdit();
-                    if (compoundUndoStarted)
-                        t("compound undoable edit started from event broker"); // NOI18N
-                    java.awt.EventQueue.invokeLater(this);
-                }
-                else return false;
-            }
-            else eventsList.add(ev);
-
-            return true;
+        public void sendEventImmediately(FormModelEvent ev) {
+            t("firing event directly from event broker: "+ev.getChangeType()); // NOI18N
+            FormModel.this.fireEvents(new FormModelEvent[] { ev });
         }
 
-        private synchronized List pickUpEvents() {
-            List list = eventsList;
-            eventsList = null;
+        public void sendEventLater(FormModelEvent ev) {
+            assert java.awt.EventQueue.isDispatchThread();
+
+            if (eventList == null) {
+                eventList = new ArrayList();
+                compoundUndoStarted = ev.isModifying()
+                                      && FormModel.this.isUndoRedoRecording()
+                                      && FormModel.this.startCompoundEdit();
+                if (compoundUndoStarted)
+                    t("compound undoable edit started from event broker"); // NOI18N
+                java.awt.EventQueue.invokeLater(this);
+            }
+
+            eventList.add(ev);
+            t("event "+ev.getChangeType()+" added to queue in event broker");
+        }
+
+        private boolean shouldSendLater(FormModelEvent ev) {
+            return eventList != null || ev.isModifying();
+        }
+
+        private List pickUpEvents() {
+            List list = eventList;
+            eventList = null;
             if (compoundUndoStarted) {
                 compoundUndoStarted = false;
                 FormModel.this.endCompoundEdit();
@@ -965,7 +982,7 @@ public class FormModel
     /** For debugging purposes only. */
     static private int traceCount = 0;
     /** For debugging purposes only. */
-    static private final boolean TRACE = false;
+    static private final boolean TRACE = true;
     /** For debugging purposes only. */
     static void t(String str) {
         if (TRACE)
