@@ -247,7 +247,8 @@
 		 <tocitem text="Registering a Web Service" target="register_ws" />
 		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
-         <tocitem text="Consuming Web Services" >
+	 <tocitem text="Consuming Web Services" >
+		 <tocitem text="About Web Service Clients" target="about_wsc" />
 		 <tocitem text="Creating a Web Service Client" target="create_wsc" />
 		 <tocitem text="Testing a Web Service on the Client Side" target="test_ws_clientside" /> 
 		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />

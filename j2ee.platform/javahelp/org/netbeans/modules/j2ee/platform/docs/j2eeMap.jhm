@@ -104,6 +104,7 @@
 	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
 	<mapID target="register_ws" url="web/webservice/register_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />
+	<mapID target="about_wsc" url="web/webserviceclient/about_wsc.html" />
 	<mapID target="call_ws_operation" url="web/webserviceclient/call_ws_operation.html" />
 	
 <!-- Standard Web Project Properties dialog box-->
