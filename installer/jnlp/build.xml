@@ -15,8 +15,11 @@ All Rights Reserved.
 <project basedir="." default="netbeans" name="jnlpinstaller">
 
     <property name="nb_all" value="../.."/>
+    <property name="jnlp-api.file.location" value="external/jnlp.jar"/>
+    <property name="jnlp-servlet.file.location" value="external/jnlp-servlet.jar"/>
 
     <target name="compile">
+        <ant dir="external"/>
         <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" destdir="src" srcdir="src">
             <classpath refid="cp"/>
         </javac>
