@@ -98,8 +98,9 @@ public class FormPropertyEditor implements PropertyEditor,
 
         Object oldValue = value;
         value = newValue;
-        modifiedEditor.setValue(value);
-        firePropertyChange();
+        if (value != BeanSupport.NO_VALUE)
+            modifiedEditor.setValue(value);
+        firePropertyChange(oldValue, newValue);
     }
 
     /**
@@ -167,7 +168,9 @@ public class FormPropertyEditor implements PropertyEditor,
      *	     be prepared to parse that string back in setAsText().
      */
     public String getAsText() {
-        return modifiedEditor.getAsText();
+        return value != BeanSupport.NO_VALUE ?
+                 modifiedEditor.getAsText() :
+                 FormEditor.getFormBundle().getString("CTL_ValueNotSet"); // NOI18N
     }
 
     /**
@@ -332,7 +335,7 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param source  The PropertyEditor that caused the event.
      */
-    void firePropertyChange() {
+    void firePropertyChange(Object oldValue, Object newValue) {
         java.util.Vector targets;
         synchronized(this) {
             if (listeners == null) {
@@ -341,8 +344,9 @@ public class FormPropertyEditor implements PropertyEditor,
             targets =(java.util.Vector) listeners.clone();
         }
 
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
-
+        PropertyChangeEvent evt = new PropertyChangeEvent(this,
+                                                          property.getName(),
+                                                          oldValue, newValue);
         for (int i = 0; i < targets.size(); i++) {
             PropertyChangeListener target =(PropertyChangeListener)targets.elementAt(i);
             target.propertyChange(evt);
