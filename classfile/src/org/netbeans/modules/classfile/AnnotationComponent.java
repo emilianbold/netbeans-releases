@@ -31,6 +31,35 @@ public abstract class AnnotationComponent {
     String name;
     int tag;
 
+    static AnnotationComponent load(DataInputStream in, ConstantPool pool) 
+	throws IOException {
+	int iName = in.readShort();
+	char tag = (char)in.readByte();
+	switch (tag) {
+	  case 'e': {
+	      int enumType = in.readShort();
+	      int enumConst = in.readShort();
+	      return new EnumAnnotation(pool, iName, tag, enumType, enumConst);
+	  }
+	  case 'c': {
+	      int classType = in.readShort();
+	      return new ClassAnnotation(pool, iName, tag, classType);
+	  }
+	  case '@': {
+	      AnnotationComponent value = AnnotationComponent.load(in, pool);
+	      return new NestedAnnotation(pool, iName, tag, value);
+	  }
+	  case '[': {
+	      AnnotationComponent[] values = 
+		  new AnnotationComponent[in.readShort()];
+	      return new ArrayAnnotation(pool, iName, tag, values);
+	  }
+	  default:
+	      assert "BCDFIJSZs".indexOf(tag) >= 0 : "invalid annotation tag";
+	      return new PrimitiveAnnotation(pool, iName, tag, in.readShort());
+	}
+    }
+
     AnnotationComponent(ConstantPool pool, int iName, int tag) {
 	this.name = ((CPName)pool.get(iName)).getName();
 	this.tag = tag;

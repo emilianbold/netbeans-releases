@@ -19,17 +19,39 @@
 
 package org.netbeans.modules.classfile;
 
-import java.util.Collection;
+import java.io.*;
+import java.util.*;
 
 /**
  * Annotation:  a single annotation on a program element.
  *
  * @author  Thomas Ball
  */
-public abstract class Annotation {
+public class Annotation {
     CPClassInfo type;
     AnnotationComponent[] components;
     boolean runtimeVisible;
+
+    /**
+     * Reads a classfile annotation section and adds its annotations to
+     * a specified map.
+     */
+    static void load(DataInputStream in, ConstantPool pool, 
+		     boolean visible, Map map) throws IOException {
+	int nattrs = in.readShort();
+	for (int i = 0; i < nattrs; i++) {
+	    int type = in.readShort();
+	    int npairs = in.readShort();
+	    List pairList = new ArrayList();
+	    for (int j = 0; j < npairs; j++)
+		pairList.add(AnnotationComponent.load(in, pool));
+	    AnnotationComponent[] acs = 
+		new AnnotationComponent[pairList.size()];
+	    pairList.toArray(acs);
+	    Annotation ann = new Annotation(pool, type, acs, visible);
+	    map.put(ann.getType().getClassName(), ann);
+	}
+    }
 
     Annotation(ConstantPool pool, int iClass, AnnotationComponent[] components,
 			boolean runtimeVisible) {

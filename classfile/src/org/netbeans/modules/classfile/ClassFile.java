@@ -222,12 +222,10 @@ public class ClassFile {
 			new EnclosingMethod(pool, classIndex, natIndex);
 		    attributes.put(name, enclosingMethod);
 		}
-		else if (name.equals("RuntimeVisibleAnnotations")) { //NOI18N
-		    skip(in, len); //FIXME
-		}
-		else if (name.equals("RuntimeInvisibleAnnotations")) { //NOI18N
-		    skip(in, len); //FIXME
-		}
+		else if (name.equals("RuntimeVisibleAnnotations")) //NOI18N
+		    Annotation.load(in, pool, true, annotations);
+		else if (name.equals("RuntimeInvisibleAnnotations")) //NOI18N
+		    Annotation.load(in, pool, false, annotations);
 		else {
 		    skip(in, len);
 		    attributes.put(name, null);
@@ -249,7 +247,6 @@ public class ClassFile {
 	while ((n = (int)in.skip(len)) > 0 && n < len)
 	    len -= n;
     }
-	    
 
     /**
      * Returns the access permissions of this class or interface.
@@ -516,6 +513,14 @@ public class ClassFile {
 	    sb.append(enclosingMethod);
 	}
         sb.append("\n   ");
+	if (annotations.size() > 0) {
+	    Iterator iter = annotations.values().iterator();
+	    sb.append("annotations: ");
+	    while (iter.hasNext()) {
+                sb.append("\n      ");
+		sb.append(iter.next().toString());
+	    }
+	}
         if (interfaces.length > 0) {
             sb.append(arrayToString("interfaces", interfaces)); //NOI18N
             sb.append("\n   ");

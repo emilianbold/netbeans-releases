@@ -20,8 +20,7 @@
 package org.netbeans.modules.classfile;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Base class for variables and methods.
@@ -78,10 +77,10 @@ public abstract class Field {
             else if (name.equals("Synthetic"))
                 synthetic = true;
 	    else if (name.equals("RuntimeVisibleAnnotations")) { //NOI18N
-		ClassFile.skip(in, len); //FIXME
+		Annotation.load(in, pool, true, annotations);
 	    }
 	    else if (name.equals("RuntimeInvisibleAnnotations")) { //NOI18N
-		ClassFile.skip(in, len); //FIXME
+		Annotation.load(in, pool, false, annotations);
 	    }
             else if (!loadAttribute(name, len, in, pool))  {
                 // ignore attribute...
@@ -207,6 +206,16 @@ public abstract class Field {
 	}
         sb.append(", access="); //NOI18N
         sb.append(Access.toString(access));
+	if (annotations.size() > 0) {
+	    Iterator iter = annotations.values().iterator();
+	    sb.append(", annotations={ ");
+	    while (iter.hasNext()) {
+		sb.append(iter.next().toString());
+		if (iter.hasNext())
+		    sb.append(", ");
+	    }
+	    sb.append(" }");
+	}
         return sb.toString();
     }
 }
