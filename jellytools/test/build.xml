@@ -95,7 +95,7 @@ Microsystems, Inc. All Rights Reserved.
             <arg value="${parentdir}/src/org/netbeans/jellytools"/> 
             <arg value="${parentdir}/test/unit/src/org/netbeans/jellytools/BundleKeysTest.properties"/> 
             <classpath>
-                <pathelement location="${parentdir}/test/lib/test.jar"/>
+                <pathelement location="${parentdir}/test/unit/src"/>
             </classpath>
         </java>
     </target>
