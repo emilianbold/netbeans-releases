@@ -32,12 +32,12 @@ public interface XSLCustomizer {
      * @return the <code>Component</code> used to edit the XPath.
      */
     public Component getCustomizer(Node node, DataObject dataObject);
-	
-	/**
-	 * Indicates if this customizer can return a customizing component for this
-	 * node.
+
+    /**
+     * Indicates if this customizer can return a customizing component for this
+     * node.
      * @param node the <code>Node</code> instance to be customized.
-	 * @return true if a customizer is supported for this node, otherwise false.
-	 */
-	public boolean hasCustomizer(Node node);
+     * @return true if a customizer is supported for this node, otherwise false.
+     */
+    public boolean hasCustomizer(Node node);
 }
