@@ -237,19 +237,19 @@ removed !!!!
         
         <echo message="enableAssertions=${xtest.enable.assertions} debugPort=${xtest.debug.port} debugSuspend=${xtest.debug.suspend}"/>
         
-        <ideTestRunner dir="${core.dir}/${nb.bin.dir}" executable="${core.dir}/${nb.bin.dir}/nbexec.exe" workdir="${xtest.workdir}/sys"
+        <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="${netbeans.dest.dir}/bin/netbeans.exe" workdir="${xtest.workdir}/sys"
               os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
-	    	  <arg line="--clusters ..\..\ide4;..\..\nb4.0 --branding nb ${args}"/>
+	    	  <arg line="${args}"/>
              <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
         </ideTestRunner>
         
-        <ideTestRunner dir="${core.dir}/${nb.bin.dir}" executable="sh"  workdir="${xtest.workdir}/sys"
+        <ideTestRunner dir="${netbeans.dest.dir}/bin" executable="sh"  workdir="${xtest.workdir}/sys"
               os="Linux SunOS Solaris Mac OS X" 
               failonerror="no" timeout="${xtest.ide.timeout}" ideuserdir="${xtest.userdir}"
               enableAssertions="${xtest.enable.assertions}" debugPort="${xtest.debug.port}" debugSuspend="${xtest.debug.suspend}">
-            <arg line="./nbexec --clusters ../../ide4:../../nb4.0 --branding nb ${args}"/>
+            <arg line="./netbeans ${args}"/>
             <syspropertyfile file="${_ideplugin.test.propertyfile}"/>
         </ideTestRunner>    
         
