@@ -34,6 +34,7 @@ import javax.swing.plaf.basic.BasicBorders;
 import org.openide.util.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.nodes.*;
+import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.TreeView;
@@ -89,7 +90,10 @@ public class OptionsAction extends CallableSystemAction {
                         DialogDescriptor.DEFAULT_ALIGN,
                         null,
                         null);
-                    
+
+                    // #37673
+                    optionPanel.setDialogDescriptor(dd);
+                        
                     dialog = DialogDisplayer.getDefault().createDialog(dd);
                     dialog.show();
                     dialogWRef = new WeakReference(dialog);
@@ -119,7 +123,8 @@ public class OptionsAction extends CallableSystemAction {
     }
 
     /** Options panel. Uses singleton pattern. */
-    public static final class OptionsPanel extends NbMainExplorer.SettingsTab {
+    public static final class OptionsPanel extends NbMainExplorer.SettingsTab
+    implements PropertyChangeListener {
         /** Name of mode in which options panel is docked by default */
         public static final String MODE_NAME = "options";
         /** Singleton instance of options panel */
@@ -132,6 +137,9 @@ public class OptionsAction extends CallableSystemAction {
         private transient boolean expanded;
         /** root node to use */
         private transient Node rootNode;
+        
+        // XXX #37673
+        private transient Reference descriptorRef = new WeakReference(null);
 
         private OptionsPanel () {
             validateRootContext ();
@@ -139,6 +147,23 @@ public class OptionsAction extends CallableSystemAction {
             putClientProperty("NamingType", "BothOnlyCompName"); // NOI18N
             // Show without tab when alone in container cell.
             putClientProperty("TabPolicy", "HideWhenAlone"); // NOI18N
+            
+            getExplorerManager().addPropertyChangeListener(this);
+        }
+        
+
+        // #37673 It was requested to update helpCtx according to node selection in explorer.
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                DialogDescriptor dd = (DialogDescriptor)descriptorRef.get();
+                if(dd != null) {
+                    dd.setHelpCtx(getHelpCtx());
+                }
+            }
+        }
+        // #37673
+        public void setDialogDescriptor(DialogDescriptor dd) {
+            descriptorRef = new WeakReference(dd);
         }
         
         public HelpCtx getHelpCtx () {
