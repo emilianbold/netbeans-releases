@@ -62,6 +62,7 @@ public class XTestResultsReport extends XMLBean {
         if (xmlat_testingGroup == null) return false;
         if (xmlat_testedType == null) return false;
         if (xmlat_host == null) return false;        
+        if (xmlat_testsTotal < 1) return false;
         return true;
     }
     
