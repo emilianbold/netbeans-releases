@@ -38,7 +38,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
   transient private Container containerDelegate;
   
-  void setComponent (Class beanClass) {
+  public void setComponent (Class beanClass) {
     super.setComponent (beanClass);
     Object value = getBeanInfo ().getBeanDescriptor ().getValue ("containerDelegate");
     if ((value != null) && (value instanceof String) && ((String)value).equals ("getContentPane")) {
@@ -184,6 +184,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  21   Gandalf   1.20        8/6/99   Ian Formanek    setComponent is public
  *  20   Gandalf   1.19        7/5/99   Ian Formanek    implemented additions to
  *       ComponentsContainer
  *  19   Gandalf   1.18        7/5/99   Ian Formanek    Fixed last change

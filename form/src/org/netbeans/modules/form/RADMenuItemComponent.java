@@ -94,7 +94,7 @@ public class RADMenuItemComponent extends RADComponent {
 // -----------------------------------------------------------------------------
 // Public interface
 
-  void setComponent (Class beanClass) {
+  public void setComponent (Class beanClass) {
     super.setComponent (beanClass);
     type = recognizeType(beanClass);
 
@@ -183,6 +183,7 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  3    Gandalf   1.2         8/6/99   Ian Formanek    setComponent is public
  *  2    Gandalf   1.1         7/16/99  Ian Formanek    default action
  *  1    Gandalf   1.0         7/5/99   Ian Formanek    
  * $
