@@ -53,16 +53,7 @@ public final class ProjectManager {
     private ProjectManager() {
         factories.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent e) {
-                synchronized (dir2Proj) {
-                    dir2Proj.values().removeAll(Arrays.asList(new Object[] {
-                        NO_SUCH_PROJECT,
-                        SOME_SUCH_PROJECT,
-                    }));
-                    // XXX remove everything too? but then e.g. AntProjectFactorySingleton
-                    // will stay while its delegates are changed, which does no good
-                    // XXX should there be any way to signal that a particular
-                    // folder should be "reloaded" by a new factory?
-                }
+                clearNonProjectCache();
             }
         });
     }
@@ -310,6 +301,25 @@ public final class ProjectManager {
             }
         }
         return false;
+    }
+    
+    /**
+     * Clear the cached list of folders thought <em>not</em> to be projects.
+     * This may be useful after creating project metadata in a folder, etc.
+     * Cached project objects, i.e. folders that <em>are</em> known to be
+     * projects, are not affected.
+     */
+    public void clearNonProjectCache() {
+        synchronized (dir2Proj) {
+            dir2Proj.values().removeAll(Arrays.asList(new Object[] {
+                NO_SUCH_PROJECT,
+                SOME_SUCH_PROJECT,
+            }));
+            // XXX remove everything too? but then e.g. AntProjectFactorySingleton
+            // will stay while its delegates are changed, which does no good
+            // XXX should there be any way to signal that a particular
+            // folder should be "reloaded" by a new factory?
+        }
     }
     
     private final class ProjectStateImpl implements ProjectState {

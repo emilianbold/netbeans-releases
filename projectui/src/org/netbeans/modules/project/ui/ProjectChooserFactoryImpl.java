@@ -15,6 +15,7 @@ package org.netbeans.modules.project.ui;
 
 import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
 import org.netbeans.spi.project.SourceGroup;
 import org.openide.WizardDescriptor;
@@ -29,6 +30,7 @@ public class ProjectChooserFactoryImpl implements ProjectChooserFactory {
     public ProjectChooserFactoryImpl() {}
     
     public JFileChooser createProjectChooser() {
+        ProjectManager.getDefault().clearNonProjectCache(); // #41882
         return ProjectChooserAccessory.createProjectChooser( false );
     }
 

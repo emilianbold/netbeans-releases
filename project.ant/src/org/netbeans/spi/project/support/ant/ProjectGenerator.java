@@ -74,14 +74,9 @@ public class ProjectGenerator {
         try {
             return (AntProjectHelper)ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
                 public Object run() throws IOException {
-                    // Cannot call PM.findProject here because it will return null
-                    // and *cache* that there is no project there. Currently no API
-                    // to make it discard that cache entry.
-                    /*
                     if (ProjectManager.getDefault().findProject(directory) != null) {
                         throw new IllegalArgumentException("Already a project in " + directory); // NOI18N
                     }
-                     */
                     FileObject projectXml = directory.getFileObject(AntProjectHelper.PROJECT_XML_PATH);
                     if (projectXml != null) {
                         throw new IllegalArgumentException("Already a " + projectXml); // NOI18N
@@ -109,6 +104,7 @@ public class ProjectGenerator {
                     }
                     // OK, disk file project.xml has been created.
                     // Load the project into memory and mark it as modified.
+                    ProjectManager.getDefault().clearNonProjectCache();
                     Project p = ProjectManager.getDefault().findProject(directory);
                     if (p == null) {
                         // Something is wrong, it is not being recognized.

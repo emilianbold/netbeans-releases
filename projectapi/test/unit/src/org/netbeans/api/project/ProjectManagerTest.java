@@ -276,4 +276,31 @@ public class ProjectManagerTest extends NbTestCase {
         assertEquals("p2 was saved exactly once (by one or the other saveAllProjects)", 1, TestUtil.projectSaveCount(p2));
     }
     
+    public void testClearNonProjectCache() throws Exception {
+        FileObject p1 = scratch.createFolder("p1");
+        p1.createFolder("testproject");
+        Project proj1 = pm.findProject(p1);
+        assertNotNull("p1 immediately recognized as a project", proj1);
+        FileObject p2 = scratch.createFolder("p2");
+        assertNull("p2 not yet recognized as a project", pm.findProject(p2));
+        FileObject p2a = scratch.createFolder("p2a");
+        assertNull("p2a not yet recognized as a project", pm.findProject(p2a));
+        FileObject p3 = scratch.createFolder("p3");
+        FileObject p3broken = p3.createFolder("testproject").createData("broken");
+        try {
+            pm.findProject(p3);
+            fail("p3 should throw an error");
+        } catch (IOException e) {
+            // Correct.
+        }
+        p2.createFolder("testproject");
+        p2a.createFolder("testproject");
+        p3broken.delete();
+        pm.clearNonProjectCache();
+        assertNotNull("now p2 is recognized as a project", pm.findProject(p2));
+        assertNotNull("now p2a is recognized as a project", pm.findProject(p2a));
+        assertNotNull("now p3 is recognized as a non-broken project", pm.findProject(p3));
+        assertEquals("p1 still recognized as a project", proj1, pm.findProject(p1));
+    }
+    
 }
