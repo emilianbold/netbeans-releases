@@ -359,6 +359,7 @@ public final class DebuggerManager {
         
         // fire all changes
         Session old = getCurrentSession ();
+        if (session == old) return;
         currentSession = session;
         updateCurrentEngine ();
         firePropertyChange (PROP_CURRENT_SESSION, old, currentSession);

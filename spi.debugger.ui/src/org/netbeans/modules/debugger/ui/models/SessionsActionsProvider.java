@@ -91,6 +91,9 @@ public class SessionsActionsProvider implements NodeActionsProvider {
         if (node == TreeModel.ROOT) 
             return;
         if (node instanceof Session) {
+            if (DebuggerManager.getDebuggerManager ().getCurrentSession () == 
+                node
+            ) return;
             DebuggerManager.getDebuggerManager ().setCurrentSession (
                 (Session) node
             );
