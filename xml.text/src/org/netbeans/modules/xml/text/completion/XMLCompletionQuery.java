@@ -54,7 +54,8 @@ import org.openide.util.RequestProcessor;
  * @author Petr Nejedly
  * @author Sandeep Randhawa
  * @author Petr Kuzel
- * @version 1.00
+ * @author Asgeir Orn Asgeirsson
+ * @version 1.01
  */
 
 class XMLCompletionQuery implements CompletionQuery {
@@ -79,7 +80,7 @@ class XMLCompletionQuery implements CompletionQuery {
      * @param support syntax-support that will be used during resolving of the query.
      * @return result of the query or null if there's no result.
      */
-    public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {
+    public CompletionQuery.Result query(JTextComponent component, int offset, SyntaxSupport support) {        
 
         // assert
         
@@ -158,6 +159,13 @@ class XMLCompletionQuery implements CompletionQuery {
                     String title = org.openide.util.NbBundle.getMessage(XMLCompletionQuery.class, "MSG_result", new Object[] {preText}) + debugMsg;
                     return new CompletionQuery.DefaultResult( component, title, list, offset - erase, erase );
                 } else {
+                    if (preText.endsWith("</") && token.getTokenID().getNumericID() == XMLDefaultTokenContext.TEXT_ID) {
+                        list = findStartTag((SyntaxNode)element);
+                        if (list != null && list.size() == 1) {
+                            ElementResultItem item = (ElementResultItem)list.get(0);
+                            item.substituteText(component, offset, 0, 0);
+                        }
+                    }
                     return null;  //??? end tag handling
                 }
             } else {
@@ -331,8 +339,9 @@ class XMLCompletionQuery implements CompletionQuery {
                 if ( text.endsWith("<" )) {
                     ctx.init(element, "");
                     return queryElements();
-                } else if ( text.endsWith("</" )) {
-                    return findStartTag((SyntaxNode)element);
+// handled by parent method
+//                } else if ( text.endsWith("</" )) {
+//                    return findStartTag((SyntaxNode)element);
                 } else if ( text.startsWith("&")) {
                     ctx.init(element, text.substring(1));
                     return queryEntities();
