@@ -31,6 +31,7 @@ ${javadoc.arch}       architecture summary of the module; default a dummy summar
 ${javadoc.overview}   Overview HTML file; default a generic page
 ${javadoc.check.external.links}  set to "true" to check external HTTP links
 ${javadoc.header}     Special header text.
+${javadoc.manifest}   API module manifest file - permits @SPECIFICATION-VERSION@ in arch summary to be substituted
 
 To call this script you MUST use the form of <ant> with the 'dir' attribute. This
 script expects that its basedir is the directory containing it. If you use only
@@ -155,8 +156,22 @@ cause it to fail.
         <property name="arch.warn" value="true"/>
         <arch answers="${javadoc.arch}" output="${javadoc.out.dir}/architecture-summary.html" stylesheet="prose.css" overviewlink="overview-summary.html" footer="@FOOTER@"/>
     </target>
+
+    <target name="arch-replace-init" if="javadoc.manifest">
+        <property file="${javadoc.manifest}"/>
+        <condition property="javadoc.manifest+export.interfaces">
+            <and>
+                <isset property="javadoc.manifest"/>
+                <isset property="export.interfaces"/>
+            </and>
+        </condition>
+    </target>
+
+    <target name="javadoc-stage-arch-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest">
+        <replace file="${javadoc.out.dir}/architecture-summary.html" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
+    </target>
     
-    <target name="javadoc-export-interfaces" depends="javadoc-init,javadoc-check-timestamps" if="export.interfaces">
+    <target name="javadoc-stage-export-interfaces" depends="javadoc-init,javadoc-check-timestamps" if="export.interfaces">
         <taskdef name="arch" classname="org.netbeans.nbbuild.Arch">
             <classpath>
                 <pathelement location="../nbantext.jar"/>
@@ -169,11 +184,15 @@ cause it to fail.
         <property name="arch.warn" value="true"/>
         <property name="arch.xsl" location="exportInterfaces.xsl" />
         <property name="arch.target" value="${javadoc.name}" />
-        <arch answers="${javadoc.arch}" output="${export.interfaces}/architecture-summary.html" stylesheet="prose.css" />
+        <arch answers="${javadoc.arch}" output="${export.interfaces}/architecture-summary.html" stylesheet="prose.css"/>
         <move file="${export.interfaces}/architecture-summary.html" tofile="${export.interfaces}/${javadoc.name}" />
     </target>
     
-    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-export-interfaces" unless="javadoc.up.to.date">
+    <target name="javadoc-stage-export-interfaces-replace" depends="javadoc-init,javadoc-check-timestamps,arch-replace-init" unless="javadoc.up.to.date" if="javadoc.manifest+export.interfaces">
+        <replace file="${export.interfaces}/${javadoc.name}" token="@SPECIFICATION-VERSION@" value="${OpenIDE-Module-Specification-Version}"/>
+    </target>
+    
+    <target name="javadoc-stage-replace" depends="javadoc-stage-main,javadoc-stage-apichanges,javadoc-stage-arch,javadoc-stage-arch-replace,javadoc-stage-export-interfaces,javadoc-stage-export-interfaces-replace" unless="javadoc.up.to.date">
         <replace dir="${javadoc.out.dir}">
             <include name="**/*.html"/>
             <replacefilter token="@JDK@" value="${javadoc.docs.jdk}"/>

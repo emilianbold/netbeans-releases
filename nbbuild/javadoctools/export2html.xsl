@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <!--
-    Document   : api-questions-to-html.xsl
-    Created on : November 4, 2002, 4:51 PM
-    Author     : jarda
-    Description:
-        Purpose of transformation follows.
--->
+                Sun Public License Notice
 
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html"/>
 
@@ -33,18 +36,18 @@
         <center><h1>NetBeans API List</h1></center>
 
         This document provides a list of <em>NetBeans APIs</em> with a short description
-        of what they are good for and a table describing different types of interfaces
-        (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">what is
-        an API</a> description to understand why we list DTDs, files and etc.) and with
+        of what they are used for, and a table describing different types of interfaces
+        (see <a href="http://openide.netbeans.org/tutorial/api-design.html#api">What is
+        an API?</a> to understand why we list DTDs, file formats, etc.) and with
         a stability category (see <a
         href="http://openide.netbeans.org/tutorial/api-design.html#life">API
-        life-cycle</a> for a list of possible categories and description of what they
-        mean). The aim is to provide as depth definition of NetBeans modules 
+        life-cycle</a> for a list of possible categories and their descriptions).
+        The aim is to provide as detailed a definition of NetBeans module 
         external interfaces as possible and give other developers a chance to decide
-        whether they want to depend on particular API or not.
-        <P/>
-        To get API of your module listed here, see documentation for the 
-        javadoc building 
+        whether they want to depend on a particular API or not.
+        <p/>
+        To get the API of your module listed here, see the documentation for the 
+        Javadoc building
         <a href="http://openide.netbeans.org/tutorial/api.html">infrastructure</a>.
 
         <hr/>
@@ -61,24 +64,21 @@
         <h3>Content</h3>
         <ul>
             <xsl:for-each select="/apis/module" >
+                <li>
                 <xsl:choose>
                     <xsl:when test="api" >
-                        <li><a><xsl:attribute name="href">#def-api-<xsl:value-of select="@name"/></xsl:attribute>
-                            <xsl:value-of select="@name" />
-                            </a> - <xsl:value-of select="substring-before(description, '.')" disable-output-escaping="yes" />.
-                        </li>
+                        <a href="#def-api-{@name}"><xsl:value-of select="@name"/></a> -
+                            <xsl:value-of select="substring-before(description, '.')" disable-output-escaping="yes"/>.
+                        
                     </xsl:when>
                     <xsl:otherwise>
-                        <li>
-                            <xsl:variable name="where" select="substring-before(@target, '/')" />
-                            <b><xsl:value-of select="$where" /></b> - no API description provided
-                            (see <a><xsl:attribute name="href">http://openide.netbeans.org/tutorial/api.html</xsl:attribute>how to 
-                            do</a><xsl:text> </xsl:text>
-                            <a><xsl:attribute name="href"><xsl:value-of select="$where" />/index.html</xsl:attribute>it</a>)
-                            
-                        </li>
+                            <xsl:variable name="where" select="substring-before(@target, '/')"/>
+                            <b><a href="{$where}/index.html"><xsl:value-of select="$where"/></a></b>
+                            - no API description provided
+                            (see <a href="http://openide.netbeans.org/tutorial/api.html">how to do it</a>)
                     </xsl:otherwise>
                 </xsl:choose>
+                </li>
             </xsl:for-each>
         </ul>
     </xsl:template>
@@ -94,12 +94,7 @@
             <xsl:if test="$interfaces">
                 <h5>
 
-                    <a>
-                        <xsl:attribute name="name">
-                            <xsl:text>def-api-</xsl:text><xsl:value-of select="$module.name" />
-                        </xsl:attribute>
-                        <xsl:value-of select="$module.name" />
-                    </a>
+                    <a name="def-api-{$module.name}"><xsl:value-of select="$module.name"/></a>
                     
                     (<a>
                         <xsl:attribute name="href">
@@ -121,8 +116,14 @@
                     </a>)
                 </h5>
 
-                <xsl:apply-templates select="description"/>
-                <P/>
+                <div><xsl:apply-templates select="description"/></div>
+
+                <xsl:if test="deploy-dependencies">
+                    <div>
+                       <p><b>Usage:</b></p>
+                       <xsl:apply-templates select="deploy-dependencies"/>
+                    </div>
+                </xsl:if>
 
                 <table border="3" cellpadding="6" width="90%">
                     <thead>
@@ -150,12 +151,7 @@
                                 <td>Set of <xsl:value-of select="$grp"/> APIs</td>
                                 <td>Individual</td>
                                 <td>
-                                    <a>
-                                        <xsl:attribute name="href" >
-                                            <xsl:value-of select="$arch.target" /><xsl:text>#group-</xsl:text><xsl:value-of select="$grp"/>
-                                        </xsl:attribute>
-                                        table with definitions
-                                    </a>
+                                    <a href="{$arch.target}#group-{$grp}">table with definitions</a>
                                 </td>
                             </xsl:if>
                         </xsl:if>
@@ -177,12 +173,7 @@
 
         <tbody>
             <td>
-                <a>
-                    <xsl:attribute name="name" >
-                        <xsl:text>api-</xsl:text><xsl:value-of select="$name" />
-                    </xsl:attribute>
-                    <xsl:value-of select="$name" />
-                </a>
+                <a name="api-{$name}"><xsl:value-of select="$name"/></a>
             </td>
             <!--
             <td>
@@ -207,12 +198,7 @@
             </td>
 
             <td> <!-- url -->
-                <a>
-                    <xsl:attribute name="href" >
-                        <xsl:value-of select="$url" />
-                    </xsl:attribute>
-                    <xsl:value-of select="$url" />
-                </a>
+                <a href="{$url}"><xsl:value-of select="$url"/></a>
             </td>
         </tbody>
 

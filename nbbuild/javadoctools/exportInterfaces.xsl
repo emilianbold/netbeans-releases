@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <!--
-    Document   : api-questions-to-html.xsl
-    Created on : November 4, 2002, 4:51 PM
-    Author     : jarda
-    Description:
-        Purpose of transformation follows.
--->
+                Sun Public License Notice
 
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html"/>
+    <xsl:output method="xml" omit-xml-declaration="yes"/>
     
     <xsl:param name="arch.stylesheet"/>
     <xsl:param name="arch.overviewlink"/>
@@ -20,16 +23,22 @@
         <xsl:variable name="interfaces" select="//api[@type='export']" />
         <xsl:variable name="all_properties" select="//property" />
 
-        <module>
-            <xsl:attribute name="name"><xsl:value-of select="api-answers/@module" /></xsl:attribute>
-            <xsl:attribute name="target"><xsl:value-of select="$arch.target" /></xsl:attribute>
-            <xsl:attribute name="stylesheet"><xsl:value-of select="$arch.stylesheet" /></xsl:attribute>
-            <xsl:attribute name="overviewlink"><xsl:value-of select="$arch.overviewlink" /></xsl:attribute>
-            <xsl:attribute name="footer"><xsl:value-of select="$arch.footer" /></xsl:attribute>
+        <module name="{api-answers/@module}"
+                target="{$arch.target}"
+                stylesheet="{$arch.stylesheet}"
+                overviewlink="{$arch.overviewlink}"
+                footer="{$arch.footer}">
             
             <description>
                 <xsl:apply-templates select="api-answers/answer[@id='arch-what']/node()"/>
             </description>
+
+            <xsl:variable name="deploy-dependencies" select="api-answers/answer[@id='deploy-dependencies']"/>
+            <xsl:if test="$deploy-dependencies">
+                <deploy-dependencies>
+                    <xsl:apply-templates select="$deploy-dependencies/node()"/>
+                </deploy-dependencies>
+            </xsl:if>
 
             <xsl:for-each select="$interfaces">
                 <xsl:call-template name="api" >
@@ -56,10 +65,7 @@
         <xsl:variable name="category" select="@category" />
         <xsl:variable name="url" select="@url" />
 
-        <api>
-          <xsl:attribute name="name"><xsl:value-of select="$name" /></xsl:attribute>
-          <xsl:attribute name="type"><xsl:value-of select="$type" /></xsl:attribute>
-          <xsl:attribute name="category"><xsl:value-of select="$category" /></xsl:attribute>
+        <api name="{$name}" type="{$type}" category="{$category}">
           <xsl:if test="string-length($url)>0"><xsl:attribute name="url"><xsl:value-of select="$url" /></xsl:attribute>
           </xsl:if>
           <xsl:choose >
@@ -72,9 +78,7 @@
     </xsl:template>
      
     <xsl:template match="api">
-        <api-ref>
-            <xsl:attribute name="name"><xsl:value-of select="@name" /></xsl:attribute>
-        </api-ref>
+        <api-ref name="{@name}"/>
     </xsl:template>  
     
     <!-- Format random HTML elements as is: -->
