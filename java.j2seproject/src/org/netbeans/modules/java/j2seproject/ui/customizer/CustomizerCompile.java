@@ -93,7 +93,6 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jCheckBox14Source = new javax.swing.JCheckBox();
         jCheckBoxDeprecation = new javax.swing.JCheckBox();
         jCheckBoxDebugInfo = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
@@ -111,14 +110,6 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.CompoundBorder(new javax.swing.border.EtchedBorder(), new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12))));
-        jCheckBox14Source.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Src14_JCheckBox"));
-        jCheckBox14Source.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        add(jCheckBox14Source, gridBagConstraints);
-
         jCheckBoxDeprecation.setText(org.openide.util.NbBundle.getMessage(CustomizerCompile.class, "LBL_CustomizeCompile_Compiler_Deprecation_JCheckBox"));
         jCheckBoxDeprecation.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -228,7 +219,6 @@ public class CustomizerCompile extends JPanel implements J2SECustomizer.Panel {
     private javax.swing.JButton jButtonMoveDown;
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
-    private javax.swing.JCheckBox jCheckBox14Source;
     private javax.swing.JCheckBox jCheckBoxDebugInfo;
     private javax.swing.JCheckBox jCheckBoxDeprecation;
     private javax.swing.JLabel jLabelClasspath;
