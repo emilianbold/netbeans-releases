@@ -222,6 +222,9 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.Instantiat
                     }
                     changeCase = false;
                 }
+                else if (Character.isUpperCase(c)) {
+                    c = Character.toLowerCase(c);
+                }                    
                 builder.append(c);
             }
             else {
