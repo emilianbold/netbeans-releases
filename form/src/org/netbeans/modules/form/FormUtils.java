@@ -51,9 +51,7 @@ public class FormUtils extends Object {
   private static String[] jComponentIgnoredList = new String [] {
     "UI", // NOI18N
     "layout", // NOI18N
-    "maximumSize", // NOI18N
-    "minimumSize", // NOI18N
-    "preferredSize", // NOI18N
+    "actionMap", // NOI18N
     "border", // NOI18N
     "model" // NOI18N
   };
@@ -447,6 +445,8 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/18/00  Pavel Buzek     ignoring some properties
+ *       in copy/paste
  *  25   Gandalf   1.24        1/13/00  Ian Formanek    NOI18N #2
  *  24   Gandalf   1.23        1/5/00   Ian Formanek    NOI18N
  *  23   Gandalf   1.22        12/13/99 Pavel Buzek     

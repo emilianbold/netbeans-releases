@@ -136,12 +136,17 @@ public class RADComponent {
     initInternal ();
     PropertyDescriptor[] props = beanInfo.getPropertyDescriptors ();
     for (int i = 0; i < props.length; i++) {
+      if (FormUtils.isIgnoredProperty (beanInstance.getClass (), props[i].getName ())) {
+        // ignore some properties and do not make copies of their values
+        continue;
+      }
       RADProperty prop = (RADProperty)nameToProperty.get (props[i].getName ());
       try {
         if ((!prop.canRead ()) || (!prop.canWrite ())) continue; // ignore this property
         Object currentValue = prop.getValue ();
         Object defaultValue = defaultPropertyValues.get (props[i].getName ());
         if (!Utilities.compareObjects (currentValue, defaultValue)) {
+          System.out.println("Property is changed: "+prop.getName ());
           // add the property to the list of changed properties
           prop.setChanged (true);
         }
@@ -1479,6 +1484,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  76   Gandalf   1.75        1/18/00  Pavel Buzek     ignoring some properties
+ *       in copy/paste
  *  75   Gandalf   1.74        1/17/00  Pavel Buzek     cut/paste - store and 
  *       reuse names, assign new names on paste (not on copy)
  *  74   Gandalf   1.73        1/15/00  Pavel Buzek     
