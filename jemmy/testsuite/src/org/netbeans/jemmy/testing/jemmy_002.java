@@ -75,6 +75,28 @@ public class jemmy_002 extends JemmyTest {
 
 	    JMenuBarOperator mbo = new JMenuBarOperator(JMenuBarOperator.findJMenuBar(win));
 
+            if(!mbo.showMenuItem("menu|submenu", "|").getText().equals("submenu")) {
+		finalize();
+		return(1);
+            }
+
+            if(!mbo.showMenuItem("menu", "|").getText().equals("menu")) {
+		finalize();
+		return(1);
+            }
+
+            if(!mbo.showMenuItem("menu|submenu|subsubmenu|menuItem", "|").getText().equals("menuItem")) {
+		finalize();
+		return(1);
+            }
+
+            if(!mbo.showMenuItem("menu|submenu|subsubmenu", "|").getText().equals("subsubmenu")) {
+		finalize();
+		return(1);
+            }
+
+            //            doSleep(500);
+
 	    mbo.pushMenu("menu|submenu|subsubmenu|menuItem", "|", true, true);
 	    JLabelOperator lbo = new JLabelOperator(JLabelOperator.waitJLabel(win, "Menu \"menu/menuItem\" has been pushed", false, true));
 

@@ -45,13 +45,19 @@ public class Application_005 extends TestFrame {
 	//	tree.add(wrongPopup);
 
 	popup = new JPopupMenu();
-	JMenuItem pb = new JMenuItem("XXX");
-	pb.addActionListener(new ActionListener() {
+        JMenuItem itm = new JMenuItem("menuItem");
+	itm.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    list.setModel(new MyModel(tree.getSelectionPaths()));
 		    popup.setVisible(false);
 		}
 	    });
+        JMenu sbsbm = new JMenu("subsubmenu");
+        sbsbm.add(itm);
+        JMenu sbm = new JMenu("submenu");
+        sbm.add(sbsbm);
+	JMenuItem pb = new JMenu("XXX");
+        pb.add(sbm);
 	popup.add(pb);
 	//	tree.add(popup);
 	

@@ -110,7 +110,26 @@ public class jemmy_005 extends JemmyTest {
 		    }
 		}
 
-		pmo.pushMenu("XXX", "|", true, true);
+                if(!pmo.showMenuItem("XXX|submenu", "|").getText().equals("submenu")) {
+                    finalize();
+                    return(1);
+                }
+                
+                if(!pmo.showMenuItem("XXX", "|").getText().equals("XXX")) {
+                    finalize();
+                    return(1);
+                }
+                
+                if(!pmo.showMenuItem("XXX|submenu|subsubmenu|menuItem", "|").getText().equals("menuItem")) {
+                    finalize();
+                    return(1);
+                }
+                
+                if(!pmo.showMenuItem("XXX|submenu|subsubmenu", "|").getText().equals("subsubmenu")) {
+                    finalize();
+                    return(1);
+                }
+		pmo.pushMenu("XXX|submenu|subsubmenu|menuItem", "|", true, true);
 		TreePath[] pths = {paths[i]};
 		(new Waiter(checker)).waitAction(pths);
 	    }
@@ -129,7 +148,7 @@ public class jemmy_005 extends JemmyTest {
 						  " pathes");
 			    TreePath[] pths = {paths[i], paths[j], paths[k], paths[l]};
 			    pmo = new JPopupMenuOperator(to.callPopupOnPaths(pths));
-			    pmo.pushMenu("XXX", "|", true, true);
+			    pmo.pushMenu("XXX|submenu|subsubmenu|menuItem", "|", true, true);
 			    (new Waiter(checker)).waitAction(pths);
 			}
 		    }
