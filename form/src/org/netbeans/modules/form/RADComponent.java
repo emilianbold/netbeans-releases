@@ -344,7 +344,7 @@ public class RADComponent {
           new Node.PropertySet (
             "properties", 
             FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint"),
+            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getComponentProperties ();
@@ -353,7 +353,7 @@ public class RADComponent {
           new Node.PropertySet (
             "events", 
             FormEditor.getFormBundle().getString("CTL_EventsTab"),
-            FormEditor.getFormBundle().getString("CTL_EventsTabHint"),
+            FormEditor.getFormBundle().getString("CTL_EventsTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getComponentEvents ();
@@ -362,7 +362,7 @@ public class RADComponent {
           new Node.PropertySet (
             "synthetic", 
             FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint"),
+            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getSyntheticProperties ();
@@ -375,7 +375,7 @@ public class RADComponent {
           new Node.PropertySet (
             "properties", 
             FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint"),
+            FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getComponentProperties ();
@@ -384,7 +384,7 @@ public class RADComponent {
           new Node.PropertySet (
             "expert", 
             FormEditor.getFormBundle().getString("CTL_ExpertTab"),
-            FormEditor.getFormBundle().getString("CTL_ExpertTabHint"),
+            FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getComponentExpertProperties ();
@@ -393,7 +393,7 @@ public class RADComponent {
           new Node.PropertySet (
             "events", 
             FormEditor.getFormBundle().getString("CTL_EventsTab"),
-            FormEditor.getFormBundle().getString("CTL_EventsTabHint"),
+            FormEditor.getFormBundle().getString("CTL_EventsTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getComponentEvents ();
@@ -402,7 +402,7 @@ public class RADComponent {
           new Node.PropertySet (
             "synthetic", 
             FormEditor.getFormBundle().getString("CTL_SyntheticTab"),
-            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint"),
+            FormEditor.getFormBundle().getString("CTL_SyntheticTabHint")
           ) {
             public Node.Property[] getProperties () {
               return getSyntheticProperties ();
@@ -1457,6 +1457,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  66   Gandalf   1.65        1/2/00   Ian Formanek    Fixed to compile
  *  65   Gandalf   1.64        1/1/00   Ian Formanek    Syntheti tab renamed to 
  *       Code Generation, I18Nzed
  *  64   Gandalf   1.63        12/17/99 Pavel Buzek     patch for 
