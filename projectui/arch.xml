@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <api-answers
   question-version="1.24"
-  module="projects/projectuiapi"
+  module="projects/projectui"
   author="jglick@netbeans.org"
 >
 
@@ -40,44 +40,29 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
-  <ul>
-   <li>
-    <api group="java" name="ProjectUIAPI" type="export" category="devel">
-     <p> 
-      The Project UI API provides some miscellaneous APIs and SPIs relating to the
-      appearance and UI behavior of generic projects. Most importantly, it permits
-      the customizer and logical view of a project to be defined.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectUIAPI-provider" type="export" category="friend">
-     <p>
-      Callbacks intended to let the Project UI module plug in implementations of
-      APIs defined here. Uses implementation dependencies.
-     </p>
-    </api>
-   </li>
-  </ul>
+  <p>
+   No exported API; just GUI.
+  </p>
  </answer>
 
 
 
 <!--
         <question id="arch-quality" when="init">
-            How the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
-            of your code will be tested and 
-            how future regressions are going to be prevented?
+            How will the <a href="http://www.netbeans.org/community/guidelines/q-evangelism.html">quality</a>
+            of your code be tested and 
+            how are future regressions going to be prevented?
             <hint>
-            What kind of testing
-            you want to use? What/how much area of functionality
+            What kind of testing do
+            you want to use? How much functionality, in which areas,
             should be covered by the tests? 
             </hint>
         </question>
 -->
  <answer id="arch-quality">
   <p>
-   No tests currently, but this is mostly API and not implementation.
+   Unit tests would be appropriate for some code areas; currently few exist.
+   IDE-wide functional tests cover most of the module&rsquo;s functionality.
   </p>
  </answer>
 
@@ -89,14 +74,14 @@ Microsystems, Inc. All Rights Reserved.
             <hint>
             Please express your estimates of how long the design, implementation,
             stabilization are likely to last. How many people will be needed to
-            implement this and what is the expected milestone the work should be 
-            ready.
+            implement this and what is the expected milestone by which the work should be 
+            ready?
             </hint>
         </question>
 -->
  <answer id="arch-time">
   <p>
-   Mostly finished.
+   Mostly done.
   </p>
  </answer>
 
@@ -105,17 +90,14 @@ Microsystems, Inc. All Rights Reserved.
 <!--
         <question id="arch-usecases" when="init">
             Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
-            use cases</a> of the new API. Who will use it at
-            what circumstances and what will be the typical code to write
-            to use the module.
+            use cases</a> of the new API. Who will use it under
+            what circumstances? What kind of code would typically need to be written
+            to use the module?
         </question>
 -->
  <answer id="arch-usecases">
   <p>
-   The main use case is for project type providers to supply logical views and
-   customizers for the project. Also for template providers to create
-   project-aware file templates. Can also get a list of open projects, create
-   different kinds of project-related actions, and select projects on disk.
+   Needed for working with projects in the IDE.
   </p>
  </answer>
 
@@ -133,9 +115,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-what">
   <p>
-   The module supplies the APIs for the basic, generic UI infrastructure for
-   projects: list of opened projects, main project, basic project-sensitive
-   actions, template wizards, etc.
+   General user interface implementation for the project system. <a
+   href="http://projects.netbeans.org/buildsys/build-sys-ui-spec.html">UI
+   Specification</a>
   </p>
  </answer>
 
@@ -189,7 +171,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-version">
   <p>
-   No settings.
+   Uses a system option, but otherwise not much to version.
   </p>
  </answer>
 
@@ -230,7 +212,7 @@ Microsystems, Inc. All Rights Reserved.
         <question id="dep-nb" when="init">
             What other NetBeans projects and modules does this one depend on?
             <hint>
-            If you want, describe such projects as imported API using
+            If you want, describe such projects as imported APIs using
             the <code>&lt;api name="identification" type="import or export" category="stable" url="where is the description" /&gt;</code>
             </hint>
         </question>
@@ -240,28 +222,77 @@ Microsystems, Inc. All Rights Reserved.
    <li>
     <api group="java" name="ProjectAPI" type="import" category="devel">
      <p>
-      For various purposes.
+      For many purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="ProjectUIAPI" type="import" category="devel">
+     <p>
+      For many purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="ProjectUIAPI-provider" type="import" category="friend">
+     <p>
+      Implements callback from this module.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
+     <p>
+      For many purposes.
      </p>
     </api>
    </li>
    <li>
     <api group="java" name="Filesystems" type="import" category="official">
      <p>
-      For various purposes.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="Datasystems" type="import" category="official">
-     <p>
-      For just internal purposes.
+      For many purposes.
      </p>
     </api>
    </li>
    <li>
     <api group="java" name="Nodes" type="import" category="official">
      <p>
-      Part of API.
+      For explorer tabs.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Explorer" type="import" category="official">
+     <p>
+      For explorer tabs.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Windows" type="import" category="official">
+     <p>
+      For explorer tabs.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Actions" type="import" category="official">
+     <p>
+      For menu item UI.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="Datasystems" type="import" category="official">
+     <p>
+      For internal purposes.
+     </p>
+    </api>
+   </li>
+   <li>
+    <api group="java" name="SearchAPI" type="import" category="devel">
+     <p>
+      Special search functionality for project nodes.
      </p>
     </api>
    </li>
@@ -320,9 +351,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="deploy-dependencies">
-  <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.projectuiapi/0 &gt; @SPECIFICATION-VERSION@
-  </pre>
+  <p>
+   N/A
+  </p>
  </answer>
 
 
@@ -343,7 +374,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-jar">
   <p>
-   Just a JAR.
+   JAR only.
   </p>
  </answer>
 
@@ -385,7 +416,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   Yes, only API and SPI packages are public.
+   No public packages.
   </p>
  </answer>
 
@@ -442,8 +473,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   The template creation API uses file attributes to decide which templates are
-   appropriate for certain project types, and to find template wizards.
+   No.
   </p>
  </answer>
 
@@ -543,7 +573,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-reflection">
   <p>
-   No.
+   <code>org.netbeans.modules.project.ui.Hacks</code> does some things to fix
+   actions for folder context menus; update the main window title; and do
+   something strange with <code>TemplateWizard</code>.
   </p>
  </answer>
 
@@ -571,7 +603,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-threading">
   <p>
-   Should all be in EQ (GUI).
+   Mostly EQ.
   </p>
  </answer>
 
@@ -637,13 +669,16 @@ Microsystems, Inc. All Rights Reserved.
             Please describe the interfaces you are searching for, where 
             are defined, whether you are searching for just one or more of them,
             if the order is important, etc. Also classify the stability of such
-            API contract.
+            API contract. For that use &lt;api group=&amp;lookup&amp; /&gt; tag.
             </hint>
         </question>
 -->
  <answer id="lookup-lookup">
   <p>
-   Just finds the Project UI module&rsquo;s callbacks via lookup.
+   The UI asks projects for various documented interfaces in their lookup;
+   details given in the particular interfaces. E.g.
+   <code>LogicalViewProvider</code> is sought out in project lookups when
+   displaying the logical view.
   </p>
  </answer>
 
@@ -660,7 +695,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="lookup-register">
   <p>
-   No.
+   Callback implementation for the Project UI API.
   </p>
  </answer>
 
@@ -690,7 +725,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-exit">
   <p>
-   No.
+   Calls <code>ProjectOpenedHook.projectClosed()</code> on projects.
   </p>
  </answer>
 
@@ -704,7 +739,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No.
+   Nothing too big.
   </p>
  </answer>
 
@@ -718,7 +753,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-limit">
   <p>
-   None known.
+   No.
   </p>
  </answer>
 
@@ -732,7 +767,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-mem">
   <p>
-   Trivial.
+   Unknown.
   </p>
  </answer>
 
@@ -746,7 +781,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-menus">
   <p>
-   No.
+   Yes, project-selection- and file-selection-sensitive actions are updated
+   dynamically.
   </p>
  </answer>
 
@@ -789,7 +825,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-scale">
   <p>
-   None.
+   Number of open modules.
   </p>
  </answer>
 
@@ -800,14 +836,14 @@ Microsystems, Inc. All Rights Reserved.
             How the performance of the plugged in code will be enforced?
             <hint>
             If you allow foreign code to be plugged into your own module, how
-            do you enforce, that it will behave correctly and fast and will not
+            do you enforce that it will behave correctly and quickly and will not
             negatively influence the performance of your own module?
             </hint>
         </question>
 -->
  <answer id="perf-spi">
   <p>
-   No special provisions. GUI code must be fast.
+   No special provisions.
   </p>
  </answer>
 
@@ -820,7 +856,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-startup">
   <p>
-   No.
+   Calls <code>ProjectOpenedHook.projectOpened()</code> on projects.
   </p>
  </answer>
 
@@ -855,7 +891,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-file">
   <p>
-   Only to open projects on disk, since <code>JFileChooser</code> is needed.
+   Sometimes.
   </p>
  </answer>
 
@@ -878,7 +914,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   No.
+   Installs a whole lot of UI through the layer. Menus, templates, etc.
   </p>
  </answer>
 
@@ -899,7 +935,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-mask">
   <p>
-   No.
+   Seems to override mode definitions for explorer components.
   </p>
  </answer>
 
@@ -918,19 +954,11 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="resources-read">
-  <api group="layer" name="ProjectTemplates" type="export" category="devel">
-   <p>
-    New (or import) project wizards can be registered in a special folder
-    <code>Templates/Projects/</code>.
-   </p>
-  </api>
-  <api group="layer" name="Templates" type="export" category="devel">
-   <p>
-    File templates can be registered with various attributes, some specific to
-    the project system.
-   </p>
-  </api>
+  <p>
+   No.
+  </p>
  </answer>
+
 
 
 <!--
@@ -965,6 +993,5 @@ Microsystems, Inc. All Rights Reserved.
    No.
   </p>
  </answer>
-
 
 </api-answers>
