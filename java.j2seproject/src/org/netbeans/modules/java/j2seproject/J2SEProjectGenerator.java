@@ -130,10 +130,17 @@ public class J2SEProjectGenerator {
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {
         
         int lastDotIdx = mainClassName.lastIndexOf( '.' );
-        String mName = mainClassName.substring( lastDotIdx + 1 ).trim();
-        String pName = mainClassName.substring( 0, lastDotIdx ).trim();
+        String mName, pName;
+        if ( lastDotIdx == -1 ) {
+            mName = mainClassName.trim();
+            pName = null;
+        }
+        else {
+            mName = mainClassName.substring( lastDotIdx + 1 ).trim();
+            pName = mainClassName.substring( 0, lastDotIdx ).trim();
+        }
         
-        if ( mName.length() == 0 || pName.length() == 0 ) {            
+        if ( mName.length() == 0 ) {
             return;
         }
         
@@ -145,8 +152,11 @@ public class J2SEProjectGenerator {
                 
         DataObject mt = DataObject.find( mainTemplate );
         
-        String fName = pName.replace( '.', '/' ); // NOI18N
-        FileObject pkgFolder = FileUtil.createFolder( srcFolder, fName );        
+        FileObject pkgFolder = srcFolder;
+        if ( pName != null ) {
+            String fName = pName.replace( '.', '/' ); // NOI18N
+            pkgFolder = FileUtil.createFolder( srcFolder, fName );        
+        }
         DataFolder pDf = DataFolder.findFolder( pkgFolder );        
         mt.createFromTemplate( pDf, mName );
         
