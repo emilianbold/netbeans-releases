@@ -74,8 +74,12 @@ public class JspUtils {
         return JspContextInfo.getContextInfo ().getJSPColoringData (doc, fo);
     }
     
-    public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
+    public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent, boolean forceParse) {
         return JspContextInfo.getContextInfo ().getCachedParseResult (doc, fo, successfulOnly, preferCurrent);
+    }
+    
+    public static JspParserAPI.ParseResult getCachedParseResult(Document doc, FileObject fo, boolean successfulOnly, boolean preferCurrent) {
+        return getCachedParseResult(doc, fo, successfulOnly, preferCurrent, false);
     }
     
     public static URLClassLoader getModuleClassLoader(Document doc, FileObject fo) {
