@@ -151,47 +151,51 @@ class WebActionProvider implements ActionProvider {
     public void invokeAction( String command, Lookup context ) throws IllegalArgumentException {
         Properties p;
         String[] targetNames = (String[])commands.get(command);
-        //EXECUTION PART
-        if (command.equals (COMMAND_RUN) || command.equals (COMMAND_RUN_SINGLE) || command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer ()) {
-                return;
-            }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                String text;
-                if (command.equals (COMMAND_RUN)) {
-                    ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
-                    text = pi.getDisplayName();
-                } else { //COMMAND_RUN_SINGLE
-                    FileObject[] files = ActionUtils.findSelectedFiles(context, null, null, false);
-                    text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
-                }
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
+        
+        // RUN-SINGLE
+        if (command.equals(COMMAND_RUN_SINGLE)) {
+            p = new Properties();
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                targetNames = setupTestSingle(p, files);
+            } else {
+                if (!isSelectedServer ()) {
                     return;
                 }
-            }
-            // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
-            if (isEjbRefAndNoJ2eeApp(project)) {
-                NotifyDescriptor nd;                
-                nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
-            p = new Properties();
-            if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
-                p.setProperty("forceRedeploy", "true"); //NOI18N
-            } else {
-                p.setProperty("forceRedeploy", "false"); //NOI18N
-            }
-            if (command.equals (COMMAND_RUN_SINGLE)) {
+                if (isDebugged()) {
+                    NotifyDescriptor nd;
+                    String text;
+                    if (command.equals (COMMAND_RUN)) {
+                        ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                        text = pi.getDisplayName();
+                    } else { //COMMAND_RUN_SINGLE
+                        files = ActionUtils.findSelectedFiles(context, null, null, false);
+                        text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
+                    }
+                    nd = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
+                                NotifyDescriptor.OK_CANCEL_OPTION);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                    } else {
+                        return;
+                    }
+                }
+                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
+                if (isEjbRefAndNoJ2eeApp(project)) {
+                    NotifyDescriptor nd;                
+                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+                if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
+                    p.setProperty("forceRedeploy", "true"); //NOI18N
+                } else {
+                    p.setProperty("forceRedeploy", "false"); //NOI18N
+                }
                 // run a JSP
-                FileObject[] files = findJsps( context );
+                files = findJsps( context );
                 if (files!=null && files.length>0) {
                     // possibly compile the JSP, if we are not compiling all of them
                     String raw = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (WebProjectProperties.COMPILE_JSPS);
@@ -270,38 +274,84 @@ class WebActionProvider implements ActionProvider {
                         }
                     }
                 }
-
             }
-        //DEBUGGING PART
-        } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
-            if (!isSelectedServer ()) {
-                return;
-            }
-            if (isDebugged()) {
-                NotifyDescriptor nd;
-                nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
-                            NotifyDescriptor.OK_CANCEL_OPTION);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
-                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
-                } else {
+            
+        // RUN, REDEPLOY
+        } else if (command.equals(COMMAND_RUN) || command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
+            p = new Properties();
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                targetNames = setupTestSingle(p, files);
+            } else {
+                if (!isSelectedServer ()) {
                     return;
                 }
+                if (isDebugged()) {
+                    NotifyDescriptor nd;
+                    String text;
+                    if (command.equals (COMMAND_RUN)) {
+                        ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                        text = pi.getDisplayName();
+                    } else { //COMMAND_RUN_SINGLE
+                        files = ActionUtils.findSelectedFiles(context, null, null, false);
+                        text = (files == null) ? "?" : files[0].getNameExt(); // NOI18N
+                    }
+                    nd = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
+                                NotifyDescriptor.OK_CANCEL_OPTION);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                    } else {
+                        return;
+                    }
+                }
+                // 51462 - if there's an ejb reference, but no j2ee app, run/deploy will not work
+                if (isEjbRefAndNoJ2eeApp(project)) {
+                    NotifyDescriptor nd;                
+                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+                if (command.equals (WebProjectConstants.COMMAND_REDEPLOY)) {
+                    p.setProperty("forceRedeploy", "true"); //NOI18N
+                } else {
+                    p.setProperty("forceRedeploy", "false"); //NOI18N
+                }
             }
-            // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
-            if (isEjbRefAndNoJ2eeApp(project)) {
-                NotifyDescriptor nd;                
-                nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
-                Object o = DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
+
+        // DEBUG-SINGLE
+        } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             p = new Properties();
-        
-            if (command.equals (COMMAND_DEBUG)) {
-//                p.setProperty("client.urlPart", project.getWebModule().getUrl());
-            } else { //COMMAND_DEBUG_SINGLE
-                FileObject[] files = findJsps( context );
+            FileObject[] files = findTestSources(context, false);
+            if (files != null) {
+                targetNames = setupDebugTestSingle(p, files);
+            } else {
+                if (!isSelectedServer ()) {
+                    return;
+                }
+                if (isDebugged()) {
+                    NotifyDescriptor nd;
+                    nd = new NotifyDescriptor.Confirmation(
+                                NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
+                                NotifyDescriptor.OK_CANCEL_OPTION);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                        DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                    } else {
+                        return;
+                    }
+                }
+                // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
+                if (isEjbRefAndNoJ2eeApp(project)) {
+                    NotifyDescriptor nd;                
+                    nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                    Object o = DialogDisplayer.getDefault().notify(nd);
+                    return;
+                }
+                p = new Properties();
+
+                files = findJsps( context );
                 if ((files != null) && (files.length>0)) {
                     // debug jsp
                     // possibly compile the JSP, if we are not compiling all of them
@@ -383,6 +433,33 @@ class WebActionProvider implements ActionProvider {
                     }
                 }
             }
+
+        //DEBUG
+        } else if (command.equals (COMMAND_DEBUG)) {
+            if (!isSelectedServer ()) {
+                return;
+            }
+            if (isDebugged()) {
+                NotifyDescriptor nd;
+                nd = new NotifyDescriptor.Confirmation(
+                            NbBundle.getMessage(WebActionProvider.class, "MSG_FinishSession"),
+                            NotifyDescriptor.OK_CANCEL_OPTION);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                if (o.equals(NotifyDescriptor.OK_OPTION)) {            
+                    DebuggerManager.getDebuggerManager().getCurrentSession().kill();
+                } else {
+                    return;
+                }
+            }
+            // 51462 - if there's an ejb reference, but no j2ee app, debug will not work
+            if (isEjbRefAndNoJ2eeApp(project)) {
+                NotifyDescriptor nd;                
+                nd = new NotifyDescriptor.Message(NbBundle.getMessage(WebActionProvider.class, "MSG_EjbRef"), NotifyDescriptor.INFORMATION_MESSAGE);
+                Object o = DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
+            p = new Properties();
+        
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findJavaSources(context);
             String path = null;
@@ -427,13 +504,11 @@ class WebActionProvider implements ActionProvider {
             FileObject[] files = findTestSourcesForSources(context);
             p = new Properties();
             targetNames = setupTestSingle(p, files);
-        } 
-        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
+        } else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
             FileObject[] files = findTestSourcesForSources(context);
             p = new Properties();
             targetNames = setupDebugTestSingle(p, files);
-        } 
-        else {
+        } else {
             p = null;
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -668,7 +743,7 @@ class WebActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_DEBUG_SINGLE ) ) {
-            return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null;
+            return findJavaSources(context) != null || findJsps(context) != null || findHtml(context) != null || findTestSources(context, false) != null;
         }
         else if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSourcesAndPackages( context, project.getSourceRoots().getRoots() ) != null || findJsps (context) != null;
@@ -696,9 +771,14 @@ class WebActionProvider implements ActionProvider {
                     } catch (IOException ex){}
                     return true;
                 } else return true; /* because of java main classes, otherwise we would return false */
-            } else return false;
+            } 
+            javaFiles = findTestSources(context,false);
+            if ((javaFiles != null) && (javaFiles.length > 0)) {
+                return true;
+            }
+            return false;
         }
-        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
+        else if ( command.equals( COMMAND_TEST_SINGLE )) {
             return findTestSourcesForSources(context) != null;
         }
         else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
@@ -753,8 +833,7 @@ class WebActionProvider implements ActionProvider {
         }
         return (FileObject[])files.toArray(new FileObject[files.size()]);
     }
-    
-    
+        
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     
     /** Find selected java sources 
@@ -816,6 +895,33 @@ class WebActionProvider implements ActionProvider {
         }
         return files;
     }
+ 
+    /** Find either selected tests or tests which belong to selected source files
+     */
+    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
+        //XXX: Ugly, should be rewritten
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        for (int i=0; i< testSrcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
+        }
+        if (checkInSrcDir && testSrcPath.length>0) {
+            FileObject[] files = findSources (context);
+            if (files != null) {
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
+                for (int i=0; i<testSrcPath.length; i++) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+                    if (files2 != null) {
+                        return files2;
+                    }
+                }
+            }
+        }
+        return null;
+    }    
     
     private boolean isEjbRefAndNoJ2eeApp(Project p) {
 
