@@ -34,6 +34,7 @@ import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.HttpServer;
+import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
@@ -160,8 +161,15 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         else {
             currentRetries = 0;
             TopManager.getDefault().notify(new NotifyDescriptor.Message(
-                                               NbBundle.getBundle(HttpServerSettings.class).getString("MSG_HTTP_SERVER_START_FAIL"),
+                                               bundle.getString("MSG_HTTP_SERVER_START_FAIL"), // NOI18N
                                                NotifyDescriptor.Message.WARNING_MESSAGE));
+            int p = getPort ();
+            if (p < 1024 && inited && Utilities.isUnix()) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                                               bundle.getString("MSG_onlyRootOnUnix"), // NOI18N
+                                               NotifyDescriptor.WARNING_MESSAGE));
+            }
+
         }
     }
 
@@ -295,7 +303,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
     /** setter for port */
     public void setPort(int p) {
-        Object old = null;
+        Object old = getProperty(PROP_PORT);
+        int port = ((old == null) ? DEFAULT_PORT : ((Integer)old).intValue());
+        
         synchronized (HttpServerSettings.OPTIONS) {
             old = putProperty(PROP_PORT, new Integer(p), false);
             restartIfNecessary(true);
