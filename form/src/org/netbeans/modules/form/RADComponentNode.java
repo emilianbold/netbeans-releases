@@ -35,7 +35,7 @@ import java.util.ArrayList;
 *
 * @author Ian Formanek
 */
-public class RADComponentNode extends AbstractNode implements RADComponentCookie {
+public class RADComponentNode extends AbstractNode implements RADComponentCookie, FormCookie {
 
   static DataFlavor RAD_COMPONENT_COPY_FLAVOR = new RADDataFlavor (
     RADComponentNode.class,
@@ -380,6 +380,19 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     return component;
   }
 
+// -------------------------------------------------------------------------------
+// FormCookie implementation
+
+  /** Focuses the source editor */
+  public void gotoEditor() {
+    component.getFormManager ().getFormEditorSupport ().gotoEditor ();
+  }
+
+  /** Focuses the form */
+  public void gotoForm() {
+    component.getFormManager ().getFormEditorSupport ().gotoForm ();
+  }
+
 // -----------------------------------------------------------------------------
 // Innerclasses
   
@@ -648,6 +661,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  30   Gandalf   1.29        7/28/99  Ian Formanek    Fixed bug 2890 - Go to 
+ *       Source and Go to Form actions are not enabled in a context menu of a 
+ *       component
  *  29   Gandalf   1.28        7/28/99  Ian Formanek    Provides InstanceCookie
  *  28   Gandalf   1.27        7/28/99  Ian Formanek    Formatting of top-level 
  *       form node name
