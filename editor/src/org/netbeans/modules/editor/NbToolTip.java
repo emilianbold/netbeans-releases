@@ -13,6 +13,10 @@
 
 package org.netbeans.modules.editor;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.BadLocationException;
@@ -40,6 +44,7 @@ import java.beans.PropertyChangeEvent;
 import javax.swing.plaf.TextUI;
 import org.netbeans.editor.BaseTextUI;
 import org.openide.filesystems.Repository;
+import org.openide.util.RequestProcessor;
 
 /**
 * ToolTip annotations reading and refreshing
@@ -54,15 +59,28 @@ public class NbToolTip extends FileChangeAdapter {
     
     private static final HashMap mime2tip = new HashMap();
     
+    private static int lastRequestId;
+    
     private String mimeType;
     
     private Annotation[] tipAnnotations;
+    
+    private RequestProcessor toolTipRP = new RequestProcessor("ToolTip-Evaluator", 1);
     
     static synchronized void buildToolTip(JTextComponent target) {
         String mimeType = NbEditorUtilities.getMimeType(target.getDocument());
         NbToolTip tip = getTip(mimeType);
         tip.buildTip(target);
     }
+    
+    private static int newRequestId() {
+        return ++lastRequestId;
+    }
+    
+    private static int getLastRequestId() {
+        return lastRequestId;
+    }
+    
     
     private NbToolTip(String mimeType) {
         this.mimeType = mimeType;
@@ -206,7 +224,11 @@ public class NbToolTip extends FileChangeAdapter {
                                                         if (annoDesc != null && ((offset < annoDesc.getOffset() || offset >= annoDesc.getOffset() + annoDesc.getLength()))) {
                                                             annoDesc = null;
                                                         }
-                                                        new Request(annoDesc, annos, lp, tts).run();
+                                                        org.netbeans.editor.BaseKit kit = org.netbeans.editor.Utilities.getKit(target);
+                                                        if (kit instanceof NbEditorKit) {
+                                                            int requestId = newRequestId();
+                                                            toolTipRP.post(new Request(annoDesc, annos, lp, tts, doc, (NbEditorKit)kit, requestId));
+                                                        }
                                                     }
                                                 }
                                             }
@@ -224,41 +246,103 @@ public class NbToolTip extends FileChangeAdapter {
         }
     }
         
-    private static class Request implements Runnable, PropertyChangeListener {
+    private static class Request implements Runnable, PropertyChangeListener, DocumentListener {
         
         private ToolTipSupport tts;
         
         private Annotation[] annos;
+        
         private AnnotationDesc annoDesc;
+        
+        private Line.Part linePart;
+        
+        private AbstractDocument doc;
+        
+        private NbEditorKit kit;
+        
+        private int requestId;
+        
+        private boolean documentModified;
+        
+        private boolean detached;
 
-        Request(AnnotationDesc annoDesc, Annotation[] annos, Line.Part lp, ToolTipSupport tts) {
+        Request(AnnotationDesc annoDesc, Annotation[] annos, Line.Part lp,
+        ToolTipSupport tts, AbstractDocument doc, NbEditorKit kit, int requestId) {
             this.annoDesc = annoDesc;
             this.annos = annos;
+            this.linePart = lp;
             this.tts = tts;
-            
-            tts.addPropertyChangeListener(this);
-
-            for (int i = 0; i < annos.length; i++) {
-                annos[i].attach(lp);
-            }
-            
+            this.doc = doc;
+            this.kit = kit;
+            this.requestId = requestId;
         }
         
         public void run() {
-            if (annoDesc != null) {
-                tts.setToolTipText(annoDesc.getShortDescription());
-                annoDesc.addPropertyChangeListener(this);
-            } else {
-                for (int i = 0; i < annos.length; i++) {
-                    String desc = annos[i].getShortDescription();
-                    if (desc != null) {
-                        tts.setToolTipText(desc);
+            if (tts.getStatus() == ToolTipSupport.STATUS_HIDDEN) {
+                return; // do nothing
+            }
+            if (!isRequestValid()) {
+                return;
+            }
+
+            kit.toolTipAnnotationsLock(doc);
+            try {
+                doc.readLock();
+                try {
+
+                    if (!isRequestValid()) {
+                        return;
                     }
-                    annos[i].addPropertyChangeListener(this);
+
+                    // Attach tooltip annotations
+                    for (int i = 0; i < annos.length; i++) {
+                        annos[i].attach(linePart);
+                    }
+
+                    if (annoDesc != null) {
+                        tts.setToolTipText(annoDesc.getShortDescription());
+                        annoDesc.addPropertyChangeListener(this);
+                    } else {
+                        for (int i = 0; i < annos.length; i++) {
+                            String desc = annos[i].getShortDescription();
+                            if (desc != null) {
+                                tts.setToolTipText(desc);
+                            }
+                            annos[i].addPropertyChangeListener(this);
+                        }
+                    }
+                } finally {
+                    doc.readUnlock();
                 }
+            } finally {
+                kit.toolTipAnnotationsUnlock(doc);
             }
         }
-        
+          
+        private boolean isRequestValid() {
+            return (getLastRequestId() == this.requestId)
+                && !documentModified
+                && isDocumentValid();
+        }
+
+        private boolean isDocumentValid() {
+            DataObject dob = NbEditorUtilities.getDataObject(doc);
+            if (dob != null) {
+                EditorCookie ec = (EditorCookie)dob.getCookie(EditorCookie.class);
+                if (ec != null) {
+                    StyledDocument openedDoc;
+                    try {
+                        openedDoc = ec.openDocument();
+                    } catch (IOException e) {
+                        openedDoc = null; // should return in next if stmt
+                    }
+                    
+                    return (openedDoc == doc);
+                }
+            }
+            return false;
+        }
+
         private void dismiss() {
             tts.removePropertyChangeListener(this);
             tts = null; // signal that support no longer valid
@@ -294,6 +378,17 @@ public class NbToolTip extends FileChangeAdapter {
                     dismiss();
                 }
             }
+        }
+        
+        public void insertUpdate(DocumentEvent evt) {
+            documentModified = true;
+        }
+        
+        public void removeUpdate(DocumentEvent evt) {
+            documentModified = true;
+        }
+        
+        public void changedUpdate(DocumentEvent evt) {
         }
 
     }

@@ -125,6 +125,25 @@ public class NbEditorKit extends ExtKit {
         return new NbEditorDocument(this.getClass());
     }
 
+    /**
+     * Do any locking necessary prior evaluation of tooltip annotations.
+     * <br>
+     * This method will always be followed by {@link #toolTipAnnotationsUnlock()}
+     * by using <code>try ... finally</code>.
+     * <br>
+     * This method is called prior read locking of the document.
+     */
+    protected void toolTipAnnotationsLock(Document doc) {
+    }
+
+    /**
+     * Release any locking requested previously by {@link #toolTipAnnotationsLock()}.
+     * <br>
+     * This method is called after read unlocking of the document.
+     */
+    protected void toolTipAnnotationsUnlock(Document doc) {
+    }
+
     protected EditorUI createEditorUI() {
         return new NbEditorUI();
     }
