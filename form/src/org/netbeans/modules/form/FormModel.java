@@ -112,9 +112,17 @@ public class FormModel
 
     public List getMetaComponents() {
         ArrayList list = new ArrayList();
+
         if (topRADComponent instanceof ComponentContainer)
-            collectMetaComponents((ComponentContainer) topRADComponent, list);
-        list.addAll(nonVisualComponents);
+            collectMetaComponents((ComponentContainer)topRADComponent, list);
+
+        for (Iterator it=nonVisualComponents.iterator(); it.hasNext(); ) {
+            Object comp = it.next();
+            list.add(comp);
+            if (comp instanceof ComponentContainer)
+                collectMetaComponents((ComponentContainer)comp, list);
+        }
+
         return Collections.unmodifiableList(list);
     }
 
@@ -200,8 +208,14 @@ public class FormModel
     }
 
     public RADComponent[] getNonVisualComponents() {
-        return (RADComponent[]) nonVisualComponents.toArray(
-                                  new RADComponent[nonVisualComponents.size()]);
+        ArrayList list = new ArrayList();
+        for (Iterator it=nonVisualComponents.iterator(); it.hasNext(); ) {
+            Object comp = it.next();
+            list.add(comp);
+            if (comp instanceof ComponentContainer)
+                collectMetaComponents((ComponentContainer)comp, list);
+        }
+        return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
     }
 
     void reorderNonVisualComponents(int[] perm) {
