@@ -16,6 +16,7 @@ package org.netbeans.modules.form.layoutsupport.delegates;
 import java.awt.*;
 import java.beans.*;
 import java.util.*;
+import java.util.List;
 import java.lang.ref.*;
 import java.lang.reflect.*;
 
@@ -93,87 +94,210 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
                 || !(previousConstraints[0]
                      instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints))
             return;
-
-        ArrayList xlines = new ArrayList();
-        ArrayList ylines = new ArrayList();
-
+        
+        List xlines = new ArrayList();
+        List ylines = new ArrayList();
+        
+        Rectangle parentbound;
+        Container con = components[0].getParent();
+        if (con == null) {
+            parentbound = components[0].getBounds();
+        } else {
+            parentbound = con.getBounds();
+        }
+        
+        // Determine the size of the grid
+        insertLines(0, xlines);
+        insertLines(0, ylines);
+        
         for (int i=0; i < components.length; i++) {
             Rectangle ibounds = components[i].getBounds();
-
-            insertLines(ibounds.x, xlines);
-            if (ibounds.width > 0)
+            
+            if (ibounds.width > 0) {
                 insertLines(ibounds.x + ibounds.width, xlines);
-
-            insertLines(ibounds.y, ylines);
-            if (ibounds.height > 0)
+            } else {
+                insertLines(ibounds.x + 1, xlines);
+            }
+            
+            if (ibounds.height > 0) {
                 insertLines(ibounds.y + ibounds.height, ylines);
+            } else {
+                insertLines(ibounds.y + 1, ylines);
+            }
         }
-
+        
+        // Determine grid width of components.
         LayoutInfo[] layouts = new LayoutInfo[components.length];
         for (int i=0; i < layouts.length; i++)
             layouts[i] = new LayoutInfo();
-
-        int x1, x2;
+        
         for (int i=0; i < xlines.size() - 1; i++) {
-            x1 = ((Integer)xlines.get(i)).intValue();
-            x2 = ((Integer)xlines.get(i+1)).intValue();
-
+            int x1 = ((Integer)xlines.get(i)).intValue();
+            int x2 = ((Integer)xlines.get(i+1)).intValue();
+            
             for (int j=0; j < components.length; j++) {
                 Rectangle jbounds = components[j].getBounds();
+                if (jbounds.width <= 0) {
+                    jbounds.width = 1;
+                }
                 if (isOverlapped(x1, x2, jbounds.x, jbounds.x + jbounds.width - 1))
                     layouts[j].incGridWidth(i);
             }
         }
-
-        int y1;
-        int y2;
+        
+        // Determine grid height of components.
         for (int i=0; i < ylines.size() - 1; i++) {
-            y1 = ((Integer)ylines.get(i)).intValue();
-            y2 = ((Integer)ylines.get(i+1)).intValue();
-
+            int y1 = ((Integer)ylines.get(i)).intValue();
+            int y2 = ((Integer)ylines.get(i+1)).intValue();
+            
             for (int j=0; j < components.length; j++) {
                 Rectangle jbounds = components[j].getBounds();
+                if (jbounds.height <= 0) {
+                    jbounds.height = 1;
+                }
                 if (isOverlapped(y1, y2, jbounds.y, jbounds.y + jbounds.height - 1))
                     layouts[j].incGridHeight(i);
             }
         }
+        
+        // Calculate insets of the components.
+        for (int i=0; i < components.length; i++) {
+            Rectangle curbounds = components[i].getBounds();
+            int lastleft = 0;
+            int lasttop = 0;
+            
+            for (int j = 0; j < components.length; j++) {
+                Rectangle jbounds = components[j].getBounds();
+                int width = jbounds.width;
+                if(width < 0) width = 0;
+                if(jbounds.x + width - 1 < curbounds.x){
+                    if(jbounds.x + width > lastleft){
+                        lastleft = jbounds.x + width;
+                    }
+                }
+                int height = jbounds.height;
+                if (height < 0) height = 0;
+                if (jbounds.y + height - 1 < curbounds.y) {
+                    if(jbounds.y + height > lasttop){
+                        lasttop = jbounds.y + height;
+                    }
+                }
+            }
+            
+            layouts[i].setLeft(curbounds.x - lastleft);
+            layouts[i].setTop(curbounds.y - lasttop);
+            
+            int width = (curbounds.width < 0) ? 0 : curbounds.width;
+            int height = (curbounds.height < 0) ? 0 : curbounds.height;
 
+            if (layouts[i].getLastGridX() == xlines.size() - 2) {
+                layouts[i].setRight(parentbound.width - curbounds.x - width);
+            }
+            if (layouts[i].getLastGridY() == ylines.size() - 2) {
+                layouts[i].setBottom(parentbound.height - curbounds.y - height);
+            }
+        }
+        
+        // GridBagLayout puts the remaining width of the component into the last
+        // grid column/row (if the component has weight 0). This would not be
+        // a problem for us if it would take components sorted according to
+        // their increasing x/y grid coordinate. Unfortunately it takes
+        // components sorted according to their increasing grid width/height.
+        // This can result in a layout that is much wider/higher then the previous
+        // absolute layout. The following code forces the right order by
+        // introduction of new (otherwise redundant) grid lines.
+        
+        LayoutInfoComparator comp = new LayoutInfoComparator(LayoutInfoComparator.XAXIS);
+        LayoutInfo [] layoutsX = (LayoutInfo []) layouts.clone();
+        LayoutInfo [] layoutsY = (LayoutInfo []) layouts.clone();
+        Arrays.sort(layoutsX, comp);
+        comp.cord = LayoutInfoComparator.YAXIS;
+        Arrays.sort(layoutsY, comp);
+        
+        for (int i = 0; i < components.length; i++) {
+            int expand = 0;
+            int lastgrid = layoutsX[i].getLastGridX();
+            for (int j = i + 1; j < components.length; j++) {
+                if (layoutsX[j].containsGridX(lastgrid) && (layoutsX[j].getLastGridX() > lastgrid) 
+                    && (layoutsX[i].gridwidth >= layoutsX[j].gridwidth)
+                    && (expand < layoutsX[i].gridwidth - layoutsX[j].gridwidth + 1)) {
+                    expand = layoutsX[i].gridwidth - layoutsX[j].gridwidth + 1;
+                }
+            }
+            if (expand > 0) {
+                for (int j = i + 1; j < components.length; j++) {
+                    if (layoutsX[j].containsGridX(lastgrid) && layoutsX[j].getLastGridX() > lastgrid) {
+                        layoutsX[j].expandGridWidth(expand);
+                    } else if (layoutsX[j].gridx > lastgrid) {
+                        layoutsX[j].moveGridX(expand);
+                    }
+                }
+            }
+            
+            expand = 0;
+            lastgrid = layoutsY[i].getLastGridY();
+            for (int j = i + 1; j < components.length; j++) {
+                if (layoutsY[j].containsGridY(lastgrid) && (layoutsY[j].getLastGridY() > lastgrid)
+                    && (layoutsY[i].gridheight >= layoutsY[j].gridheight)
+                    && (expand < layoutsY[i].gridheight - layoutsY[j].gridheight + 1)) {
+                    expand = layoutsY[i].gridheight - layoutsY[j].gridheight + 1;
+                }
+            }
+            if (expand > 0) {
+                for (int j = i + 1; j < components.length; j++) {
+                    if (layoutsY[j].containsGridY(lastgrid) && layoutsY[j].getLastGridY() > lastgrid) {
+                        layoutsY[j].expandGridHeight(expand);
+                    } else if(layoutsY[j].gridy > lastgrid) {
+                        layoutsY[j].moveGridY(expand);
+                    }
+                }
+            }
+        }
+	
+        // Generate constraints
         for (int i=0; i < components.length; i++) {
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = layouts[i].gridx;
             gbc.gridy = layouts[i].gridy;
             gbc.gridwidth = layouts[i].gridwidth;
             gbc.gridheight = layouts[i].gridheight;
-            gbc.insets = new java.awt.Insets(3, 3, 3, 3);
-
+            gbc.anchor = GridBagConstraints.NORTHWEST;
+            
+            gbc.insets = new java.awt.Insets(layouts[i].top , layouts[i].left,
+            layouts[i].bottom, layouts[i].right);
+            
             if (components[i].getClass().getName().equals("javax.swing.JScrollPane")) {
                 gbc.weightx = 1.0;
                 gbc.weighty = 1.0;
                 gbc.fill = java.awt.GridBagConstraints.BOTH;
             }
-
+            
             Rectangle bounds = components[i].getBounds();
             Dimension minsize = components[i].getMinimumSize();
             Dimension prefsize = components[i].getPreferredSize();
+            
+            // issue 4617682
+            int factor = (System.getProperty("java.version").startsWith("1.4")) ? 1 : 2; // NOI18N
+            
             if (bounds.width > minsize.width)
-                gbc.ipadx = (bounds.width - minsize.width);
+                gbc.ipadx = (bounds.width - minsize.width)/factor;
             else if (bounds.width < prefsize.width)
-                gbc.ipadx = (bounds.width - prefsize.width);
+                gbc.ipadx = (bounds.width - prefsize.width)/factor;
             if (bounds.height > minsize.height)
-                gbc.ipady = (bounds.height - minsize.height);
+                gbc.ipady = (bounds.height - minsize.height)/factor;
             else if (bounds.height < prefsize.height)
-                gbc.ipady = (bounds.height - prefsize.height);
-
+                gbc.ipady = (bounds.height - prefsize.height)/factor;
+            
             currentConstraints[i] = new GridBagLayoutConstraints(gbc);
         }
     }
-
+    
     private static boolean isOverlapped(int border1, int border2,
                                         int compPos1, int compPos2)
     {
         return compPos2 >= border1 && compPos1 < border2;
     }
-
+    
     private static void insertLines(int line, java.util.List lines) {
         if (line < 0)
             line = 0;
@@ -188,27 +312,110 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         }
         lines.add(new Integer(line));
     }
-
+    
+    /**
+     * Comparator of <code>LayoutInfo</code> objects.
+     */
+    private static class LayoutInfoComparator implements java.util.Comparator{
+        final static int XAXIS = 0;
+        final static int YAXIS = 1;
+        int cord;
+        
+        public LayoutInfoComparator(int cord){
+            this.cord = cord;
+        }
+        
+        public int compare(Object left, Object right) {
+            LayoutInfo layoutleft = (LayoutInfo) left;
+            LayoutInfo layoutright = (LayoutInfo) right;
+            
+            if ((left == null) || (right == null)) return 0;
+            if (cord == XAXIS) {
+                return layoutleft.getLastGridX() - layoutright.getLastGridX();
+            } else {
+                return layoutleft.getLastGridY() - layoutright.getLastGridY();
+            }
+        }
+        
+    }
+ 
+    /**
+     * Layout information for one component.
+     */
     private static class LayoutInfo {
-//		int minWidth = 0, minHeight = 0;
-//		int prefWidth = 0, prefHeight = 0;
-//		int maxWidth = 0, maxHeight = 0;
+        /** Grid coordinates. */
         int gridx, gridy;
-        int gridwidth, gridheight;
-//		int top = 3, left = 3, bottom = 3, right = 3;
-//		String name = "";
-
+        /** Grid width. */
+        int gridwidth;
+        /** Grid height. */
+        int gridheight;
+        /** Insets. */
+        int top = 0, left = 0, bottom = 0, right = 0;
+        
+        void setLeft(int left){
+            if(left < 0) left = 0;
+            this.left = left;
+        }
+        
+        void setTop(int top){
+            if(top < 0) top = 0;
+            this.top = top;
+        }
+        
+        void setBottom(int bottom){
+            if(bottom < 0) bottom = 0;
+            this.bottom = bottom;
+        }
+        
+        void setRight(int right){
+            if(right < 0) right = 0;
+            this.right = right;
+        }
+        
+        void moveGridX(int diff) {
+            gridx += diff;
+        }
+        
+        void moveGridY(int diff) {
+            gridy += diff;
+        }
+        
+        void expandGridWidth(int diff) {
+            gridwidth += diff;
+        }
+        
+        void expandGridHeight(int diff) {
+            gridheight += diff;
+        }
+        
         void incGridWidth(int gridx) {
             if (gridwidth == 0)
                 this.gridx = gridx;
             gridwidth++;
         }
-
+        
         void incGridHeight(int gridy) {
             if (gridheight == 0)
                 this.gridy = gridy;
             gridheight++;
         }
+        
+        boolean containsGridX(int grid){
+            return ((grid >= gridx) && (grid < gridx + gridwidth));
+        }
+        
+        boolean containsGridY(int grid){
+            return ((grid >= gridy) && (grid < gridy + gridheight));
+        }
+	
+        int getLastGridX(){
+            return gridx + gridwidth - 1;
+        }
+        
+        int getLastGridY(){
+            return gridy + gridheight - 1;
+        }
+        
     }
 
     // --------

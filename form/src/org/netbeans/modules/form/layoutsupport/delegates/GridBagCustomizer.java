@@ -581,14 +581,10 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                         if (thisIns.right > 0) size.width += thisIns.right;
                     }
 
-                    // size without paddings must be taken into account...
-                    int ipadx = getRealConstraints().ipadx;
-                    int ipady = getRealConstraints().ipady;
-                    Dimension padSize = new Dimension(size.width - ipadx,
-                                                      size.height - ipady);
+                    Dimension padSize = new Dimension(size.width, size.height);
 
-                    if (size.width < 6) padSize.width = 6 - ipadx;
-                    if (size.height < 6) padSize.height = 6 - ipady;
+                    if (size.width < 6) padSize.width = 6;
+                    if (size.height < 6) padSize.height = 6;
 
                     return padSize;
                 }
