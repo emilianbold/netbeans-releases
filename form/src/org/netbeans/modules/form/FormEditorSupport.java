@@ -13,17 +13,20 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.Iterator;
 
-import org.openide.awt.UndoRedo;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.src.nodes.SourceChildren;
 import org.openide.text.*;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 
@@ -36,7 +39,11 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   /** The reference to FormDataObject */
   private FormDataObject formObject;
   /** True, if the design form has been loaded from the form file */
-  transient private boolean formLoaded;
+  transient private boolean formLoaded = false;
+  /** True, if the form has been opened on non-Editing workspace and shoul dbe opened when the user switches back to Editing */
+  transient private boolean openOnEditing = false;
+  
+  transient private PropertyChangeListener workspacesListener;
 
   private UndoRedo.Manager undoManager;
 
@@ -76,17 +83,20 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         }
       }
     }
-
     // 1. show the ComponentInspector
     FormEditor.getComponentInspector().focusForm (getFormManager ());
-    FormEditor.getComponentInspector().open ();
+    boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
+    if (!isEditingWorkspace) attachWorkspacesListener ();
+    if (isEditingWorkspace) FormEditor.getComponentInspector().open ();
 
     // 2. open editor
     super.open();
 
     // 3. Open and focus form window
-    getFormTopComponent ().open ();
-    getFormTopComponent ().requestFocus ();
+    if (isEditingWorkspace) {
+      getFormTopComponent ().open ();
+      getFormTopComponent ().requestFocus ();
+    }
     
     // clear status line
     TopManager.getDefault ().setStatusText ("");
@@ -116,11 +126,13 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     }
 
     // 1. open form window
-    getFormTopComponent ().open ();
+    boolean isEditingWorkspace = isCurrentWorkspaceEditing ();
+    if (!isEditingWorkspace) attachWorkspacesListener ();
+    if (isEditingWorkspace) getFormTopComponent ().open ();
     
     // 2. show the ComponentInspector
     FormEditor.getComponentInspector().focusForm (getFormManager ());
-    FormEditor.getComponentInspector().open ();
+    if (isEditingWorkspace) FormEditor.getComponentInspector().open ();
 
     // 3. Focus form window
     getFormTopComponent ().requestFocus ();
@@ -133,6 +145,36 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
   }
 
+  private boolean isCurrentWorkspaceEditing () {
+    String name = TopManager.getDefault ().getWindowManager ().getCurrentWorkspace ().getName ();
+    if (!("Browsing".equals (name) || "Running".equals (name) || "Debugging".equals (name))) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private void attachWorkspacesListener () {
+    openOnEditing = true;
+    workspacesListener = new PropertyChangeListener () {
+      public void propertyChange (PropertyChangeEvent evt) {
+        if (WindowManager.PROP_CURRENT_WORKSPACE.equals (evt.getPropertyName ())) {
+          if (openOnEditing) {
+            if (isCurrentWorkspaceEditing ()) {
+              openOnEditing = false;
+              TopManager.getDefault ().getWindowManager ().removePropertyChangeListener (workspacesListener);
+              workspacesListener = null;
+
+              FormEditor.getComponentInspector().open ();
+              getFormTopComponent ().open ();
+            }
+          }
+        }
+      }
+    };
+    TopManager.getDefault ().getWindowManager ().addPropertyChangeListener (workspacesListener);
+  }
+  
   public FormDataObject getFormObject () {
     return formObject;
   }
@@ -175,6 +217,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
   protected void notifyClose () {
     super.notifyClose ();
     if (!formLoaded) return;
+    if (workspacesListener != null) {
+      TopManager.getDefault ().getWindowManager ().removePropertyChangeListener (workspacesListener);
+    }
     if (getFormTopComponent () != null) getFormTopComponent ().close ();
     FormEditor.getComponentInspector().focusForm (null);
     SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
@@ -339,6 +384,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  30   Gandalf   1.29        8/15/99  Ian Formanek    Form is opened on 
+ *       editing workspace only
  *  29   Gandalf   1.28        8/13/99  Ian Formanek    Fixed bug 3253 - Messy 
  *       editor when started with more files open.
  *  28   Gandalf   1.27        8/6/99   Ian Formanek    loadFormInternal
