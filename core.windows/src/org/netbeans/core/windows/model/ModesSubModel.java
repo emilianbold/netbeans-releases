@@ -217,13 +217,14 @@ final class ModesSubModel {
 
     
     public boolean removeMode(ModeImpl mode) {
-        modes.remove(mode);
         int kind = mode.getKind();
         if (kind == Constants.MODE_KIND_SLIDING) {
-            String side = getSlidingModeConstraints(mode);
-            slidingSides2Modes.remove(side);
-            return slidingModes2Sides.remove(mode) != null;
+            return true;
+            // don't remove the sliding modes, to make dnd easier..
+//            slidingSides2Modes.remove(side);
+//            return slidingModes2Sides.remove(mode) != null;
         }
+        modes.remove(mode);
         if(mode.getKind() == Constants.MODE_KIND_EDITOR) {
             return editorSplitSubModel.getEditorArea().removeMode(mode);
         } else {

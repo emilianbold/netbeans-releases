@@ -595,7 +595,7 @@ implements AWTEventListener, DragSourceListener {
                     // even it is there.
                     // Performs hacked drop action, simulates ACTION_MOVE when
                     // system set ACTION_NONE (which we do not use).
-                    WindowDnDManager.tryPerformDrop(
+                    windowDnDManager.tryPerformDrop(
                         windowDnDManager.getController(),
                         windowDnDManager.getFloatingFrames(),
                         location,

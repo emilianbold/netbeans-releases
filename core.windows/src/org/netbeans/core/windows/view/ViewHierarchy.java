@@ -47,7 +47,7 @@ final class ViewHierarchy {
     /** Map of separate mode views (view <-> accessor). */
     private final Map separateModeViews = new HashMap(10);
     /** Map of sliding mode views (view <-> accessor) */
-    private final Map slidingModeViews = new HashMap(10);
+    private final Map  slidingModeViews = new HashMap(10);
     
     /** Component in which is editor area, when the editor state is separated. */
     private EditorAreaFrame editorAreaFrame;
@@ -417,6 +417,17 @@ final class ViewHierarchy {
         }
         
         return set;
+    }
+    
+    public Component getSlidingModeComponent(String side) {
+        Iterator it = slidingModeViews.keySet().iterator();
+        while (it.hasNext()) {
+            SlidingView mod = (SlidingView)it.next();
+            if (mod.getSide().equals(side)) {
+                return mod.getComponent();
+            }
+        }
+        return null;
     }
     
     /** Gets set of separate mode view frames and editor frame (if separated). */

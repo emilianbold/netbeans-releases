@@ -1015,6 +1015,10 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
     public Controller getController() {
         return this;
     }
+    
+    public Component getSlidingModeComponent(String side) {
+        return hierarchy.getSlidingModeComponent(side);
+    }
     // ViewAccessor
     ///////////////
 

@@ -46,6 +46,8 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     // XXX PENDING
     private final Informer informer;
     
+    private WindowDnDManager windowDragAndDrop;
+    
     private static boolean isHardwareDoubleBuffer = false;
     
     /** Current location of cursor in over the glass pane,
@@ -63,9 +65,10 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
     
 
     /** Creates non initialized <code>DropTargetGlassPane</code>. */
-    public DropTargetGlassPane(Observer observer, Informer informer) {
-        this.observer = observer;
-        this.informer = informer;
+    public DropTargetGlassPane(WindowDnDManager wdnd) {
+        this.observer = wdnd;
+        this.informer = wdnd;
+        windowDragAndDrop = wdnd;
         isHardwareDoubleBuffer = !RepaintManager.currentManager(this).isDoubleBufferingEnabled();
         
         setOpaque(false);
@@ -325,7 +328,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                 return;
             }
 
-            success = WindowDnDManager.tryPerformDrop(
+            success = windowDragAndDrop.tryPerformDrop(
                     informer.getController(), informer.getFloatingFrames(),
                     location, dropAction, evt.getTransferable());
         } finally {
