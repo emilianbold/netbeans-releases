@@ -76,9 +76,10 @@ public final class Code {
             else {
 		if (debug)
 		    System.out.println("skipped unknown code attribute: " + name);
-		
                 // ignore unknown attribute...
-		//ClassFile.skip(in, len); FIXME
+                int n;
+		while ((n = (int)in.skip(len)) > 0 && n < len)
+		    len -= n;
             }
         }
         if (lineNumberTable == null)
