@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
@@ -53,7 +54,6 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
     
     private static final Color[] DEFAULT_STATUS_COLORS = new Color[] {Color.GREEN, Color.YELLOW, Color.RED};
     
-    private static final Color BACKGROUND_COLOR = new Color(224, 224, 224);
     private static final Color STATUS_UP_PART_COLOR = Color.WHITE;
     private static final Color STATUS_DOWN_PART_COLOR = new Color(180, 180, 180);
     
@@ -181,7 +181,7 @@ public class AnnotationView extends JComponent implements AnnotationsListener, M
         
         Color oldColor = g.getColor();
         
-        g.setColor(BACKGROUND_COLOR);
+        g.setColor(UIManager.getColor("Panel.background"));
         
         g.fillRect(0, 0, getWidth(), getHeight());
         
