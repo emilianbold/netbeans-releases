@@ -674,7 +674,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     
     for (int i = 0; i < children.length; i++) {
       Integer m = (Integer) children[i].getAuxValue (AUX_VARIABLE_MODIFIER);
-      int modifiers = (m == null) ? m.intValue() : FormEditor.getFormSettings ().getVariablesModifier ();
+      int modifiers = (m != null) ? m.intValue() : FormEditor.getFormSettings ().getVariablesModifier ();
       variablesWriter.write (java.lang.reflect.Modifier.toString (modifiers));
       variablesWriter.write (" ");
       variablesWriter.write (children[i].getBeanClass ().getName ());
@@ -1116,6 +1116,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  38   Gandalf   1.37        7/13/99  Ian Formanek    Fixed modifiers code 
+ *       generation
  *  37   Gandalf   1.36        7/13/99  Petr Hamernik   ConstrainedModifiers 
  *       removed
  *  36   Gandalf   1.35        7/11/99  Ian Formanek    Some synthetic 
