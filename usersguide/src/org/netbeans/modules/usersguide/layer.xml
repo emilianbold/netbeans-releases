@@ -25,7 +25,6 @@ Microsystems, Inc. All Rights Reserved.
 <helpctx id="ide.welcome" showmaster="true"/>
 ]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/help.gif"/>
             </file>
             <attr name="org-netbeans-modules-usersguide-master.xml/HelpShortcuts" boolvalue="true"/>
@@ -39,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
 <helpctx id="ide.welcome"/>
 ]]>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                    <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
                 </file>
                 <!-- Also a separator after that. -->
@@ -65,7 +63,6 @@ Microsystems, Inc. All Rights Reserved.
 <helpctx id="ide.welcome"/>
 ]]>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/usersguide/helpset.gif"/>
             </file>
         </folder>
@@ -80,7 +77,6 @@ Microsystems, Inc. All Rights Reserved.
           "http://www.netbeans.org/dtds/helpsetref-1_0.dtd">
 <helpsetref url="nbdocs:/org/netbeans/modules/usersguide/ide.hs"/>
 ]]>
-                <attr boolvalue="false" name="org.apache.tools.ant.module.loader.AntProjectDataLoader.KNOWN_ANT_FILE"/>
             </file>
             <attr name="org-netbeans-modules-usersguide-helpset.xml/org-netbeans-modules-usersguide-above-regular.txt" boolvalue="true"/>
             <file name="org-netbeans-modules-usersguide-above-regular.txt">
@@ -97,6 +93,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="org-netbeans-modules-usersguide-sampledir.instance">
             <attr name="instanceClass" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystemClass"/>
             <attr name="instanceCreate" methodvalue="org.netbeans.modules.usersguide.UGModule.createFileSystem"/>
+            <!-- #14403: make it look better: -->
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
         </file>
     </folder>
 </filesystem>
