@@ -110,6 +110,14 @@ public final class ParseProjectXml extends Task {
         codeNameBaseSlashesProperty = s;
     }
 
+    private String domainProperty;
+    /**
+     * Set the property to set the module's netbeans.org domain to.
+     */
+    public void setDomainProperty(String s) {
+        domainProperty = s;
+    }
+
     private String moduleClassPathProperty;
     /**
      * Set the property to set the computed module class path to,
@@ -210,6 +218,17 @@ public final class ParseProjectXml extends Task {
                 if (cp != null) {
                     define(moduleClassPathProperty, cp);
                 }
+            }
+            if (domainProperty != null) {
+                String path = getPath(pDoc);
+                int index = path.lastIndexOf('/');
+                String domain;
+                if (index == -1) {
+                    domain = path;
+                } else {
+                    domain = path.substring(0, index);
+                }
+                define(domainProperty, domain);
             }
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
@@ -327,6 +346,19 @@ public final class ParseProjectXml extends Task {
         String t = XMLUtil.findText(name);
         if (t == null) {
             throw new BuildException("No text in <code-name-base>", getLocation());
+        }
+        return t;
+    }
+
+    private String getPath(Document d) throws BuildException {
+        Element data = getConfig(d);
+        Element path = XMLUtil.findElement(data, "path", NBM_NS);
+        if (path == null) {
+            throw new BuildException("No <path>", getLocation());
+        }
+        String t = XMLUtil.findText(path);
+        if (t == null) {
+            throw new BuildException("No text in <path>", getLocation());
         }
         return t;
     }

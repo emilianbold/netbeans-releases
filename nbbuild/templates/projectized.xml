@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="build-init" depends="basic-init">
-        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath"/>
+        <parseprojectxml project="." modulesxml="${nb_all}/nbbuild/templates/modules.xml" publicpackagesproperty="public.packages" javadocpackagesproperty="module.javadoc.packages" idedependenciesproperty="ide.dependencies" moduledependenciesproperty="module.dependencies" moduleclasspathproperty="module.classpath" domainproperty="nbm.domain"/>
         <condition property="is.regular">
             <not>
                 <or>
@@ -74,7 +74,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="manifest.mf" location="manifest.mf"/>
         <property name="src.dir" location="src"/>
         <property name="build.classes.dir" location="build/classes"/>
-        <property name="nbm.domain" value="www"/><!-- XXX is this important to override? -->
+        <property name="nbm.homepage" value="http://${nbm.domain}.${homepage.base}/"/>
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>
         <property name="nbm.needs.restart" value="false"/>
@@ -221,7 +221,7 @@ Microsystems, Inc. All Rights Reserved.
         <makenbm file="build/${nbm}"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
                  module="${module.jar}"
-                 homepage="http://${nbm.domain}.${homepage.base}/"
+                 homepage="${nbm.homepage}"
                  distribution="http://${dist.base}/${nbm}"
                  needsrestart="${nbm.needs.restart}"
                  releasedate="${nbm.release.date}"
