@@ -87,8 +87,7 @@ public class CustomCodeEditor extends javax.swing.JDialog {
     getContentPane ().add (jPanel1, gridBagConstraints1);
 
 
-      codeEditorPane.setContentType ("text/x-java"); // NOI18N
-      /*
+      codeEditorPane.setContentType ("text/x-java");
       try {
         codeEditorPane.setText((String) propertySupport.getValue ());
       } catch (java.lang.reflect.InvocationTargetException e1) {
@@ -96,7 +95,6 @@ public class CustomCodeEditor extends javax.swing.JDialog {
       } catch (IllegalAccessException e2) {
         e2.printStackTrace();
       }
-      */
   
       jScrollPane1.setViewportView (codeEditorPane);
   
@@ -148,6 +146,7 @@ private void cancelButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/8/00   Pavel Buzek     #5181
  *  5    Gandalf   1.4         1/5/00   Ian Formanek    NOI18N
  *  4    Gandalf   1.3         12/13/99 Pavel Buzek     scrollPane added
  *  3    Gandalf   1.2         11/27/99 Patrik Knakal   

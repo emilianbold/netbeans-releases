@@ -6,10 +6,23 @@
       <Connection code="&quot;Property Editor: &quot; + propertySupport.getDisplayName ()" type="code"/>
     </Property>
   </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="(No Menu)"/>
+    <SyntheticProperty name="formSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,0,-56,0,0,1,44"/>
+    <SyntheticProperty name="formPosition" type="java.awt.Point" value="-84,-19,0,5,115,114,0,14,106,97,118,97,46,97,119,116,46,80,111,105,110,116,-74,-60,-118,114,52,126,-56,38,2,0,2,73,0,1,120,73,0,1,121,120,112,0,0,0,0,0,0,0,0"/>
+    <SyntheticProperty name="formSizePolicy" type="int" value="2"/>
+    <SyntheticProperty name="generatePosition" type="boolean" value="true"/>
+    <SyntheticProperty name="generateSize" type="boolean" value="true"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="true"/>
+    <SyntheticProperty name="encoding" type="java.lang.String" value="ISO-8859-1"/>
+  </SyntheticProperties>
 
   <Events>
     <EventHandler event="windowClosing" handler="closeDialog"/>
   </Events>
+
+  <AuxValues>
+  </AuxValues>
 
   <Layout class="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout"/>
   <SubComponents>
@@ -83,12 +96,12 @@
           </Properties>
 
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" value="-84,-19,0,5,116,0,0"/>
-            <AuxValue name="JavaCodeGenerator_CreateCodePre" value="-84,-19,0,5,116,0,0"/>
-            <AuxValue name="JavaCodeGenerator_SerializeTo" value="-84,-19,0,5,116,0,31,67,117,115,116,111,109,67,111,100,101,69,100,105,116,111,114,95,99,111,100,101,69,100,105,116,111,114,80,97,110,101"/>
-            <AuxValue name="JavaCodeGenerator_InitCodePost" value="-84,-19,0,5,116,0,-34,47,42,10,116,114,121,32,123,10,32,32,99,111,100,101,69,100,105,116,111,114,80,97,110,101,46,115,101,116,84,101,120,116,40,40,83,116,114,105,110,103,41,32,112,114,111,112,101,114,116,121,83,117,112,112,111,114,116,46,103,101,116,86,97,108,117,101,32,40,41,41,59,10,125,32,99,97,116,99,104,32,40,106,97,118,97,46,108,97,110,103,46,114,101,102,108,101,99,116,46,73,110,118,111,99,97,116,105,111,110,84,97,114,103,101,116,69,120,99,101,112,116,105,111,110,32,101,49,41,32,123,10,32,32,101,49,46,112,114,105,110,116,83,116,97,99,107,84,114,97,99,101,40,41,59,10,125,32,99,97,116,99,104,32,40,73,108,108,101,103,97,108,65,99,99,101,115,115,69,120,99,101,112,116,105,111,110,32,101,50,41,32,123,10,32,32,101,50,46,112,114,105,110,116,83,116,97,99,107,84,114,97,99,101,40,41,59,10,125,10,42,47"/>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" value="-84,-19,0,5,116,0,0"/>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" value="-84,-19,0,5,116,0,0"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="CustomCodeEditor_codeEditorPane"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="try {&#xa;  codeEditorPane.setText((String) propertySupport.getValue ());&#xa;} catch (java.lang.reflect.InvocationTargetException e1) {&#xa;  e1.printStackTrace();&#xa;} catch (IllegalAccessException e2) {&#xa;  e2.printStackTrace();&#xa;}"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value=""/>
+            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value=""/>
           </AuxValues>
           <Constraints>
             <Constraint layoutClass="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout" value="com.netbeans.developerx.loaders.form.formeditor.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
