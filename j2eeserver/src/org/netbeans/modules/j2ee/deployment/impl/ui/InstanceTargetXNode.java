@@ -102,10 +102,7 @@ public class InstanceTargetXNode extends FilterXNode {
     }
     
     public PropertySet[] getPropertySets() {
-        List ret = new ArrayList();
-        ret.addAll(Arrays.asList(getOriginal().getPropertySets()));
-        ret.addAll(Arrays.asList(getDelegateTargetNode().getPropertySets()));
-        return (PropertySet[]) ret.toArray(new PropertySet[ret.size()]);
+        return FilterXNode.merge(getOriginal().getPropertySets(), getDelegateTargetNode().getPropertySets());
     }
     
     public org.openide.nodes.Node.Cookie getCookie(Class type) {

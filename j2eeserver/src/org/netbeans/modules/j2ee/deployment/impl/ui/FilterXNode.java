@@ -18,6 +18,8 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children.Keys;
 import org.openide.nodes.FilterNode;
+import org.openide.nodes.Sheet;
+import org.openide.nodes.Node.PropertySet;
 import javax.swing.Action;
 import java.util.List;
 import java.util.Arrays;
@@ -84,15 +86,47 @@ public class FilterXNode extends FilterNode {
     }
     
     public PropertySet[] getPropertySets() {
-        List ret = new ArrayList();
-        ret.addAll(Arrays.asList(getOriginal().getPropertySets()));
-        ret.addAll(Arrays.asList(xnode.getPropertySets()));
-        return (PropertySet[]) ret.toArray(new PropertySet[ret.size()]);
+        return merge(getOriginal().getPropertySets(), xnode.getPropertySets());
     }
     
     public void refreshChildren() {
         org.openide.nodes.Children c = getChildren();
         if (c instanceof XChildren)
             ((XChildren)c).update();
+    }
+
+    public static PropertySet merge(PropertySet overriding, PropertySet base) {
+        Sheet.Set overridden;
+        if (base instanceof Sheet.Set)
+            overridden = (Sheet.Set) base;
+        else {
+            overridden = new Sheet.Set();
+            overridden.put(base.getProperties());
+        }
+        overridden.put(overriding.getProperties());
+        return overridden;
+    }
+    
+    public static PropertySet[] merge(PropertySet[] overridingSets, PropertySet[] baseSets) {
+        java.util.Map ret = new java.util.HashMap();
+        for (int i=0; i<baseSets.length; i++) {
+            ret.put(baseSets[i].getName(), baseSets[i]);
+        }
+        for (int j=0; j<overridingSets.length; j++) {
+            PropertySet base = (PropertySet) ret.get(overridingSets[j].getName());
+            if (base == null) {
+                ret.put(overridingSets[j].getName(), overridingSets[j]);
+            } else {
+                base = merge(overridingSets[j], base);
+                ret.put(base.getName(), base);
+            }
+        }
+
+        PropertySet top = (PropertySet) ret.remove(Sheet.PROPERTIES);
+        List retList = new ArrayList();
+        if (top != null)
+            retList.add(top);
+        retList.addAll(ret.values());
+        return (PropertySet[]) retList.toArray(new PropertySet[retList.size()]);
     }
 }
