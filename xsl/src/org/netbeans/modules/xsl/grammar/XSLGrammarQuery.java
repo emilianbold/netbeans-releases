@@ -119,6 +119,10 @@ public class XSLGrammarQuery implements GrammarQuery{
     
     // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
     private final static String XHTML_PUBLIC_ID = "-//W3C//DTD XHTML 1.0 Transitional//EN";
+
+    // we cannot parse SGML DTD for HTML, let emulate it by XHTML DTD
+    private final static String XHTML_SYSTEM_ID = "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd";
+    
     
     /** Folder which stores instances of custom external XSL customizers */
     private static final String CUSTOMIZER_FOLDER = "Plugins/XML/XSLCustomizer";// NOI18N
@@ -615,7 +619,7 @@ public class XSLGrammarQuery implements GrammarQuery{
                     XSLScenario scenario = (XSLScenario)selScenarioObj;
                     Document doc = null;
                     try {
-                        doc = scenario.getSourceDocument(dataObject);
+                        doc = scenario.getSourceDocument(dataObject, false);
                     } catch(Exception e) {
                         // We don't care, ignore
                     }
@@ -882,9 +886,12 @@ public class XSLGrammarQuery implements GrammarQuery{
                     String curDoctypePublic = outputEl.getAttribute("doctype-public");
                     String curDoctypeSystem = outputEl.getAttribute("doctype-system");
                     
-                    if ("html".equals(outputMethod)) {                          // NOI18N
+                    if ("html".equals(outputMethod)
+                    	&& (curDoctypePublic == null || curDoctypePublic.length() == 0) 
+                    	&& (curDoctypeSystem == null || curDoctypeSystem.length() == 0)) {                          // NOI18N
                         // html is special case that can be emulated using XHTML
                         curDoctypePublic = XHTML_PUBLIC_ID;
+                        curDoctypeSystem = XHTML_SYSTEM_ID;
                     } else if ("text".equals(outputMethod)) {                   // NOI18N
                         // user error, ignore
                         break;
