@@ -341,11 +341,11 @@ is divided into following sections:
             </xsl:call-template>
 
             <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service|/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-service-clients/ejbjarproject2:web-service-client">
-				<target name="wscompile-init">
+				<target name="wscompile-init" depends="do-compile">
 					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
 					  <classpath path="${{wscompile.classpath}}"/>
 					</taskdef>
-					<mkdir dir="${{build.classes.dir}}/META-INF/wsdl"/>
+					<mkdir dir="${{classes.dir}}/META-INF/wsdl"/>
 					<mkdir dir="${{build.generated.dir}}/wssrc"/>
                     <mkdir dir="${{meta.inf}}/wsdl"/>
 				</target>
@@ -363,7 +363,7 @@ is divided into following sections:
                      features="${{wscompile.service.{$wsname}.features}}"
                      mapping="${{meta.inf}}/wsdl/${{{$wsname}.mapping}}"
                      classpath="${{wscompile.classpath}}" 
-                     nonClassDir="${{build.classes.dir}}/META-INF/wsdl" 
+                     nonClassDir="${{classes.dir}}/META-INF/wsdl" 
                      verbose="true" 
                      xPrintStackTrace="true" 
                      xSerializable="true"
@@ -382,9 +382,9 @@ is divided into following sections:
                      base="${{build.generated.dir}}/wssrc"
                      xPrintStackTrace="true"
                      verbose="true"
-                     nonClassDir="${{build.classes.dir}}/META-INF/wsdl"
-                     classpath="${{wscompile.classpath}}:${{build.classes.dir}}"
-                     mapping="${{build.classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
+                     nonClassDir="${{classes.dir}}/META-INF/wsdl"
+                     classpath="${{wscompile.classpath}}:${{classes.dir}}"
+                     mapping="${{classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
                      config="${{src.dir}}/${{{$wsname}.config.name}}"
                      features="${{wscompile.service.{$wsname}.features}}">
                   </wscompile>
@@ -428,10 +428,10 @@ is divided into following sections:
                         xPrintStackTrace="true" verbose="false" fork="true" keep="true"
                         client="{$useclient}" import="{$useimport}"
                         features="${{wscompile.client.{$wsclientname}.features}}"
-                        base="${{build.classes.dir}}"
+                        base="${{classes.dir}}"
                         sourceBase="${{build.generated.dir}}/wssrc"
                         classpath="${{wscompile.classpath}}"
-                        mapping="${{build.classes.dir}}/META-INF/wsdl/{$wsclientname}-mapping.xml"
+                        mapping="${{classes.dir}}/META-INF/wsdl/{$wsclientname}-mapping.xml"
                         config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
                     </wscompile>
                 </target>
