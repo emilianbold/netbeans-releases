@@ -44,7 +44,7 @@ workspaceswitcher
   <property name="moduleconfig" value="stable"/>
 
   <!-- You can also explicitly set a particular list of modules if you prefer: -->
-  <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
+  <!-- -Dmodules=foo,bar,... (do not include core or openide or openidex) -->
   <target name="init">
     <configmods property="modules" selectedconfig="${moduleconfig}">
       <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,projects,text,utilities"/>
@@ -436,7 +436,7 @@ workspaceswitcher
   </target>
 
   <target name="clean" depends="localclean">
-    <cleanall topdir=".." modules="openide,core,${modules}" targetname="clean"/>
+    <cleanall topdir=".." modules="openide,openidex,core,${modules}" targetname="clean"/>
   </target>
 
 </project>
