@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -238,9 +238,6 @@ public class TopSecurityManager extends SecurityManager {
         Class insecure = getInsecureClass();
         if (insecure != null) {  
             URL ctx = getClassURL(insecure);
-            if (ctx == URL_UNKNOWN) {
-                throw new SecurityException();
-            }
             if (ctx != null) {
                 try {
                     String fromHost = ctx.getHost();
@@ -337,9 +334,6 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
     /** Checks if the class is loaded through the nbfs URL */
     static boolean isSecureClass(final Class clazz) {
         URL source = getClassURL(clazz);
-        if (source == URL_UNKNOWN) {
-            return false;
-        }
         if (source != null) {
             return isSecureProtocol(source.getProtocol());
         } else {
@@ -347,43 +341,13 @@ LOOP:   for (int i = 0; i < ctx.length; i++) {
         }
     }
     
-    static URL URL_UNKNOWN;
-    
-    static {
-        try {
-            URL_UNKNOWN = new URL("http", "UNKNOWN", -1, "UNKNOWN"); // NOI18N
-        } catch (MalformedURLException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-    }
-            
-    
     /** @return a protocol through which was the class loaded (file://...) or null
     */
     static URL getClassURL(Class clazz) {
         java.security.CodeSource cs = clazz.getProtectionDomain().getCodeSource();                                                     
         if (cs != null) {
             URL url = cs.getLocation();
-            if (url != null) {
-                return url;
-            } else {
-                // [PENDING] remove this else if iceblit is not used
-                ClassLoader him = clazz.getClassLoader();
-                Class hisClass = him.getClass();
-                if (hisClass.getName().indexOf("ice.iblite.BrowserClassLoader") >= 0) { // NOI18N
-                    try {
-                        Field fld = getUrlField(hisClass);
-                        if (fld == null) {
-                            return null;
-                        } else {
-                            return (URL) fld.get(him);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                return URL_UNKNOWN;
-            }
+            return url;
         } else { // PROXY CLASS?
             return null;
         }
