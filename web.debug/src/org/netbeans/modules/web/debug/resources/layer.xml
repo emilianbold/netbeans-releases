@@ -25,6 +25,9 @@
     </folder>
 
     <folder name="Shortcuts">
+        <file name="S-F8.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction"/>
+	</file>
         <file name="CS-F7.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.web.debug.actions.AddWatchAction"/>
 	</file>
