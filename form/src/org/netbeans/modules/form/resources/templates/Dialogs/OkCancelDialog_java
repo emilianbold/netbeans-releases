@@ -10,14 +10,14 @@ package Templates.Dialogs;
  *
  * @author  __USER__
  */
-public class OKCancelDialog extends javax.swing.JDialog {
+public class OkCancelDialog extends javax.swing.JDialog {
     /** A return status code - returned if Cancel button has been pressed */
     public static final int RET_CANCEL = 0;
     /** A return status code - returned if OK button has been pressed */
     public static final int RET_OK = 1;
 
     /** Creates new form __NAME__ */
-    public OKCancelDialog(java.awt.Frame parent, boolean modal) {
+    public OkCancelDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
     }
