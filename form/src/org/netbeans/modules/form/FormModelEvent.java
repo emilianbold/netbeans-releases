@@ -37,9 +37,10 @@ public class FormModelEvent extends EventObject
 
     FormModelEvent(FormModel source,
                    RADComponent metacomp,
-                   String propName, Object propOldVal, Object propNewVal) {
+                   String propName, Object propOldVal, Object propNewVal)
+    {
         this(source);
-        if (component != null) {
+        if (metacomp != null) {
             component = metacomp;
             deriveContainer(metacomp);
         }
