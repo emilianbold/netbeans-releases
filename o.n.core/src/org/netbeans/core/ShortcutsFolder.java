@@ -63,6 +63,10 @@ final class ShortcutsFolder extends FolderInstance {
     /** Info for old XML file.*/
     private static final String ATTR_BINDING_ACTION = "action"; // NOI18N
 
+    /** Key for value in action keeping path to original file, when shortcut is saved as '.shadow' file. */
+    private static final String KEY_ORIGINAL_FILE_PATH = "originalFilePath"; // NOI18N
+    
+
     /** Creates new ShortcutsFolder */
     public ShortcutsFolder(DataFolder f) {
         super(f);
@@ -120,6 +124,10 @@ final class ShortcutsFolder extends FolderInstance {
             try {
                 Object o = ic.instanceCreate();
                 if (o instanceof Action) {
+                    // XXX #37306
+                    if(dob instanceof DataShadow) {
+                        ((Action)o).putValue(KEY_ORIGINAL_FILE_PATH, ((DataShadow)dob).getOriginal().getPrimaryFile().getPath());
+                    }
                     KeyActionPair pair = new KeyActionPair(dob.getName(), (Action)o);
                     return pair;
                 }
@@ -405,12 +413,31 @@ final class ShortcutsFolder extends FolderInstance {
         while (it.hasNext()) {
             ChangeRequest r = (ChangeRequest)it.next();
             try {
-                if (r.add) {
-                    if (InstanceDataObject.find (f, r.instanceName (), r.instanceClass ()) == null) {
-                        InstanceDataObject.create(f, r.instanceName(), r.instanceClass());
+                // XXX #37306 Added special handling of '.shadow' files.
+                Action action = (Action)r.instanceCreate();
+                String originalFilePath = (String)action.getValue(KEY_ORIGINAL_FILE_PATH);
+                if(originalFilePath == null) { // It is '.instance' file
+                    if (r.add) {
+                        if (InstanceDataObject.find (f, r.instanceName (), r.instanceClass ()) == null) {
+                            InstanceDataObject.create(f, r.instanceName(), r.instanceClass());
+                        }
+                    } else {
+                        InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
                     }
-                } else {
-                    InstanceDataObject.remove(f, r.instanceName(), r.instanceClass());
+                } else { // It is '.shadow' file
+                    FileObject root = f.getPrimaryFile();
+                    if (r.add) {
+                        FileObject foAdd = root.getFileObject(r.instanceName(), "shadow"); // NOI18N
+                        if(foAdd == null) {
+                            foAdd = FileUtil.createData(root, r.instanceName() + ".shadow"); // NOI18N
+                        }
+                        foAdd.setAttribute("originalFile", originalFilePath); // NOI18N
+                    } else {
+                        FileObject foRemove = root.getFileObject(r.instanceName(), "shadow"); // NOI18N
+                        if(foRemove != null) {
+                            foRemove.delete();
+                        }
+                    }
                 }
             } catch (ClassNotFoundException ex) {
                 ErrorManager.getDefault().notify(ex);
