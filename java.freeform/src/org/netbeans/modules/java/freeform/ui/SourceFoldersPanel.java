@@ -216,6 +216,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(sourceLevel, gridBagConstraints);
+        sourceLevel.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_sourceLevel"));
 
         org.openide.awt.Mnemonics.setLocalizedText(addFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_addFolder"));
         addFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -283,6 +284,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 12);
         add(jScrollPane2, gridBagConstraints);
+        jScrollPane2.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_jScrollPane2"));
 
         jLabel4.setLabelFor(testFolders);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_TestSourceFoldersPanel"));
@@ -307,6 +309,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(addTestFolder, gridBagConstraints);
+        addTestFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_addTestFolder"));
 
         org.openide.awt.Mnemonics.setLocalizedText(removeTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_removeTestFolder"));
         removeTestFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -322,6 +325,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(removeTestFolder, gridBagConstraints);
+        removeTestFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_removeTestFolder"));
 
         org.openide.awt.Mnemonics.setLocalizedText(upFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_upFolder"));
         upFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -337,6 +341,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(upFolder, gridBagConstraints);
+        upFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_upFolder"));
 
         org.openide.awt.Mnemonics.setLocalizedText(downFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_downFolder"));
         downFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -352,6 +357,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(downFolder, gridBagConstraints);
+        downFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_downFolder"));
 
         org.openide.awt.Mnemonics.setLocalizedText(downTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_downTestFolder"));
         downTestFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -367,6 +373,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(downTestFolder, gridBagConstraints);
+        downTestFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_downTestFolder"));
 
         org.openide.awt.Mnemonics.setLocalizedText(upTestFolder, org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "BTN_SourceFoldersPanel_upTestFolder"));
         upTestFolder.addActionListener(new java.awt.event.ActionListener() {
@@ -382,6 +389,7 @@ public class SourceFoldersPanel extends javax.swing.JPanel implements org.openid
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(upTestFolder, gridBagConstraints);
+        upTestFolder.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/freeform/ui/Bundle").getString("AD_SourceFoldersPanel_upTestFolder"));
 
         projectFolderLabel.setText(org.openide.util.NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_ProjFolderLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
