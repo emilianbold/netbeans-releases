@@ -24,6 +24,7 @@ import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
@@ -62,6 +63,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                 p = ProjectManager.getDefault().findProject(f);
             } catch (IOException e) {
                 // There is a project here, but we cannot load it...
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 return null;
             }
             if (p != null) {
@@ -74,6 +76,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
                     return ProjectManager.getDefault().findProject(externalOwner);
                 } catch (IOException e) {
                     // There is a project there, but we cannot load it...
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return null;
                 }
             }
