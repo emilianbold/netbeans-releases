@@ -749,12 +749,12 @@ is divided into following sections:
             
             <target name="library-inclusion-in-manifest" depends="init">
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
-                <xsl:for-each select="//webproject2:library/webproject2:file">
+                <xsl:for-each select="//webproject2:library[webproject2:path-in-war]">
                     <xsl:variable name="included.prop.name">
-                        <xsl:value-of select="."/>
+                        <xsl:value-of select="webproject2:file"/>
                     </xsl:variable>
                     <xsl:variable name="base.prop.name">
-                        <xsl:value-of select="concat('included.lib.', substring-before(substring-after(.,'{'),'}'), '')"/>
+                        <xsl:value-of select="concat('included.lib.', substring-before(substring-after(webproject2:file,'{'),'}'), '')"/>
                     </xsl:variable>
                     <basename>
                         <xsl:attribute name="property"><xsl:value-of select="$base.prop.name"/></xsl:attribute>
@@ -764,21 +764,23 @@ is divided into following sections:
                         <xsl:attribute name="files"><xsl:value-of select="$included.prop.name"/></xsl:attribute>
                      </copyfiles>
                 </xsl:for-each>
-                <mkdir dir="${{build.web.dir.real}}/META-INF"/>
-                <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
-                    <attribute>
-                        <xsl:attribute name="name">Class-Path</xsl:attribute>
-                        <xsl:attribute name="value">
-                            <xsl:for-each select="//webproject2:library/webproject2:file">
-                                <xsl:variable name="base.prop.name">
-                                    <xsl:value-of select="concat('${included.lib.', substring-before(substring-after(.,'{'),'}'), '}')"/>
-                                </xsl:variable>
-                                <xsl:if test="position()>1">,</xsl:if>
-                                <xsl:value-of select="$base.prop.name"/>
-                            </xsl:for-each>  
-                        </xsl:attribute>
-                     </attribute>
-                </manifest>
+                <xsl:if test="//webproject2:library[webproject2:path-in-war]">
+                    <mkdir dir="${{build.web.dir.real}}/META-INF"/>
+                    <manifest file="${{build.web.dir.real}}/META-INF/MANIFEST.MF" mode="update">
+                        <attribute>
+                            <xsl:attribute name="name">Class-Path</xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:for-each select="//webproject2:library[webproject2:path-in-war]">
+                                    <xsl:variable name="base.prop.name">
+                                        <xsl:value-of select="concat('${included.lib.', substring-before(substring-after(webproject2:file,'{'),'}'), '}')"/>
+                                    </xsl:variable>
+                                    <xsl:if test="position()>1">,</xsl:if>
+                                    <xsl:value-of select="$base.prop.name"/>
+                                </xsl:for-each>  
+                            </xsl:attribute>
+                         </attribute>
+                    </manifest>
+                </xsl:if>
             </target>
             
             <target name="library-inclusion-in-archive" depends="init">
