@@ -13,13 +13,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-public class ProcedureListNode extends DatabaseNode
-{
+import org.openide.util.NbBundle;
+
+public class ProcedureListNode extends DatabaseNode {
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_ProcedureList"); //NOI18N
+    }
 }
-/*
- * <<Log>>
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/2/99   Slavek Psenicka 
- * $
- */

@@ -55,4 +55,9 @@ public class ColumnNode extends LeafNode {
             ex.printStackTrace();
         }
     }
+    
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Column"); //NOI18N
+    }
+
 }

@@ -22,6 +22,7 @@ import java.util.*;
 
 import org.openide.cookies.InstanceCookie;
 import org.openide.util.MapFormat;
+import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 import org.openide.util.datatransfer.*;
 
@@ -290,6 +291,10 @@ public class ConnectionNode extends DatabaseNode /*implements InstanceCookie*/ {
         } catch (SQLException exc) {
             return true;
         }
+    }
+
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Connection"); //NOI18N
     }
 
 }

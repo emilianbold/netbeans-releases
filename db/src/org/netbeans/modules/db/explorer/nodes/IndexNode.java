@@ -22,6 +22,7 @@ import java.util.*;
 import org.openide.nodes.Children;
 import org.openide.nodes.NodeTransfer;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 
 import org.netbeans.lib.ddl.*;
@@ -160,4 +161,9 @@ public class IndexNode extends DatabaseNode {
             return null;
         }
     }
+    
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Index"); //NOI18N
+    }
+
 }

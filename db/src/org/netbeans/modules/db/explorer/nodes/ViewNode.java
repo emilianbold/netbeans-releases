@@ -18,6 +18,7 @@ import java.text.MessageFormat;
 
 import org.openide.*;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
@@ -45,4 +46,9 @@ public class ViewNode extends DatabaseNode {
             e.printStackTrace();
         }
     }
+
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_View"); //NOI18N
+    }
+
 }

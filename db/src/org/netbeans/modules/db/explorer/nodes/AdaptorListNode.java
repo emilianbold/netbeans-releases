@@ -13,14 +13,10 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
-public class AdaptorListNode extends DatabaseNode
-{
-}
+import org.openide.util.NbBundle;
 
-/*
- * <<Log>>
- *  2    Gandalf   1.1         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         9/30/99  Slavek Psenicka 
- * $
- */
+public class AdaptorListNode extends DatabaseNode {
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_AdaptorList"); //NOI18N
+    }
+}

@@ -19,6 +19,7 @@ import java.util.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
 import org.openide.options.SystemOption;
+import org.openide.util.NbBundle;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
@@ -108,6 +109,10 @@ public class RootNode extends DatabaseNode {
                         }
             }
         });
+    }
+
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Root"); //NOI18N
     }
 
 }

@@ -257,4 +257,9 @@ public class TableNode extends DatabaseNode /*implements InstanceCookie*/ {
             return null;
         }
     }
+
+    public String getShortDescription() {
+        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Table"); //NOI18N
+    }
+    
 }

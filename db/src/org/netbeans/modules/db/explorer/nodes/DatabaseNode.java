@@ -294,4 +294,18 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
     public HelpCtx getHelpCtx () {
         return new HelpCtx ("dbexpovew");
     }
+    
+    public String getShortDescription() {
+        String code = getInfo().getCode();
+        
+        if (code.equals(DatabaseNode.INDEXCOLUMN))
+            return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_Column"); //NOI18N
+        else if (code.equals("fklist"))
+            return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_ForeignKeyList"); //NOI18N
+        else if (code.equals("ilist"))
+            return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_IndexList"); //NOI18N
+        else
+            return ""; //NOI18N
+    }
+
 }
