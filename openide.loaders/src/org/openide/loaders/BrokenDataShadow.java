@@ -61,7 +61,7 @@ final class BrokenDataShadow extends MultiDataObject {
             url = DataShadow.readURL(fo);
         } catch (IOException ex) {
             try {
-                url = new URL("file://UNKNOWN"); //NOI18N
+                url = new URL("file",null,"/UNKNOWN"); //NOI18N
             } catch (MalformedURLException ex2) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex2);
             }
