@@ -541,7 +541,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
             return false; //Project name not specified
         }
         
-        String result = checkValidity (this.projectName.getText(), this.projectLocation.getText());
+        String result = checkValidity (this.projectName.getText(), this.projectFolder.getText());
         if (result != null) {
             wizardDescriptor.putProperty( "WizardPanel_errorMessage", result); //NOI18N
             return false;
