@@ -1,0 +1,15 @@
+/*
+ * __NAME__.java
+ *
+ * Created on __DATE__, __TIME__
+ */
+
+package Templates.Classes;
+
+/**
+ *
+ * @author __USER__
+ */
+public @interface AnnotationType {
+
+}

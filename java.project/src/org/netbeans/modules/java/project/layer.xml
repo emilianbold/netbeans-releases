@@ -20,7 +20,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Classes">
       <attr name="Class.java/Empty.java" boolvalue="true"/>
       <attr name="Empty.java/Interface.java" boolvalue="true"/>
-      <attr name="Interface.java/Exception.java" boolvalue="true"/>
+      <attr name="Interface.java/Enum.java" boolvalue="true"/>
+      <attr name="Enum.java/AnnotationType.java" boolvalue="true"/>
+      <attr name="AnnotationType.java/Exception.java" boolvalue="true"/>
       <attr name="Exception.java/Main.java" boolvalue="true"/>
       <attr name="Main.java/JApplet.java" boolvalue="true"/>
       <attr name="JApplet.java/Applet.java" boolvalue="true"/>
@@ -60,6 +62,22 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/spi/java/project/support/ui/package.gif"/>
          <attr name="templateCategory" stringvalue="java-classes, java-classes-basic"/>
       </file>        
+      <file name="Enum.java" url="nbres:/org/netbeans/modules/java/project/resources/Enum.template">
+         <attr name="template" boolvalue="true" />
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/Enum.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="javac.source" stringvalue="1.5" />
+      </file>
+      <file name="AnnotationType.java" url="nbres:/org/netbeans/modules/java/project/resources/AnnotationType.template">
+         <attr name="template" boolvalue="true" />
+         <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
+         <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/project/resources/AnnotationType.html" />
+         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.project.Bundle"/>
+         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="javac.source" stringvalue="1.5" />
+      </file>
     </folder>
     
   </folder>

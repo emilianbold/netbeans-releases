@@ -112,6 +112,11 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
+        SpecificationVersion specVersion = null;
+        if (!isPackage) {
+            String sl = SourceLevelQuery.getSourceLevel(rootFolder);
+            specVersion = sl != null? new SpecificationVersion(sl): null;
+        }
         String errorMessage = canUseFileName (rootFolder, gui.getPackageFileName(), gui.getTargetName(), template.getExt ());        
         if (gui != null) {
             setLocalizedErrorMessage (errorMessage);
@@ -125,9 +130,13 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
                return false;
         }
         //Only warning, display it only if everything else id OK.
-        String sl = SourceLevelQuery.getSourceLevel(rootFolder);   
-        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && sl != null && JDK_14.compareTo(new SpecificationVersion(sl))<=0) {                
+        if (!isPackage && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) {                
                 setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
+        }
+        String templateSrcLev = (String) template.getAttribute("javac.source"); // NOI18N
+        //Only warning, display it only if everything else id OK.
+        if (specVersion != null && templateSrcLev != null && specVersion.compareTo(new SpecificationVersion(templateSrcLev)) < 0) {
+            setErrorMessage("ERR_JavaTargetChooser_WrongPlatform"); // NOI18N
         }
         return returnValue;
     }
