@@ -156,12 +156,6 @@ final class ViewHelper {
     
     private static ElementAccessor createSplitAccessor(ModeStructureSnapshot.SplitSnapshot splitSnapshot) {
         List visibleChildren = splitSnapshot.getVisibleChildSnapshots();
-        // Prepare how to distribute the rest of weights.
-        double visibleResizeWeights = 0D;
-        for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
-            ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            visibleResizeWeights += next.getResizeWeight();
-        }
         
         List invisibleChildren = splitSnapshot.getChildSnapshots();
         invisibleChildren.removeAll(visibleChildren);
@@ -171,17 +165,14 @@ final class ViewHelper {
             invisibleWeights += splitSnapshot.getChildSnapshotSplitWeight(next);
         }
         
+        double delta = invisibleWeights;
         // Get the refined weights to work with.
         Map visibleChild2refinedWeight = new HashMap();
         for(Iterator it = visibleChildren.iterator(); it.hasNext(); ) {
             ModeStructureSnapshot.ElementSnapshot next = (ModeStructureSnapshot.ElementSnapshot)it.next();
-            double refinedWeight;
-            if(visibleResizeWeights > 0D) {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next)
-                    + ((next.getResizeWeight() / visibleResizeWeights) * invisibleWeights);
-            } else {
-                refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next);
-            }
+            double refinedWeight = splitSnapshot.getChildSnapshotSplitWeight(next);
+            if( !it.hasNext() )
+                refinedWeight += delta; //add the weight of invisible children to the last element
             
             visibleChild2refinedWeight.put(next, new Double(refinedWeight));
         }
