@@ -24,7 +24,6 @@ import java.util.*;
 import java.text.MessageFormat;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.ImageIcon;
 
 import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
@@ -44,6 +43,7 @@ import org.openide.util.TaskListener;
 import org.openide.util.WeakListener;
 import org.openidex.search.SearchGroup;
 import org.openidex.search.SearchType;
+import org.openide.util.Utilities;
 
 
 /**
@@ -343,7 +343,7 @@ public class ResultModel implements TaskListener {
         /** Gets icon. Overrides superclass method.
          * @return universal search icon. */
         public Image getIcon(int type) {
-            return new ImageIcon(getClass().getResource("/org/netbeans/modules/search/res/find.gif")).getImage();
+            return Utilities.loadImage("org/netbeans/modules/search/res/find.gif"); // NOI18N
         }
 
         /** Gets opened icon. Overrides superclass method. */
