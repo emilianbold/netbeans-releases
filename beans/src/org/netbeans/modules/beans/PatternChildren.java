@@ -35,11 +35,13 @@ public class PatternChildren extends ClassChildren {
 
     private MethodElementListener methodListener = new MethodElementListener();
     private FieldElementListener fieldListener = new FieldElementListener();
+    private ClassElementListener classListener = new ClassElementListener();
     private StyleChangeListener  styleListener = new StyleChangeListener();
     
     private PropertyChangeListener weakMethodListener = WeakListener.propertyChange( methodListener, null);
     // = new WeakListener.PropertyChange( methodListener );
     private PropertyChangeListener weakFieldListener = WeakListener.propertyChange( fieldListener, null);
+    private PropertyChangeListener weakClassListener = WeakListener.propertyChange( classListener, null);
     // = new WeakListener.PropertyChange( fieldListener );
     private PropertyChangeListener weakStyleListener = WeakListener.propertyChange( styleListener, PropertyActionSettings.getDefault());
     
@@ -67,6 +69,9 @@ public class PatternChildren extends ClassChildren {
         super (classElement);
         patternAnalyser = new PatternAnalyser( classElement );
         PropertyActionSettings.getDefault().addPropertyChangeListener(weakStyleListener);
+        //reassignMethodListener();
+        //reassignFieldListener();
+        classElement.addPropertyChangeListener(weakClassListener);
     }
 
     public PatternChildren (ClassElement classElement, boolean isWritable ) {
@@ -115,7 +120,11 @@ public class PatternChildren extends ClassChildren {
         reassignMethodListener();
         reassignFieldListener();
         patternAnalyser.analyzeAll();
-        super.refreshKeys (filter);
+        try{
+            //temporary solution, probably bug in java module
+            super.refreshKeys (filter);
+        } catch(Exception ex){
+        }
         //Thread.dumpStack();
     }
 
@@ -224,6 +233,16 @@ public class PatternChildren extends ClassChildren {
      */
 
     final class FieldElementListener implements PropertyChangeListener {
+        public void propertyChange ( PropertyChangeEvent e ) {
+            if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
+                return;
+            refreshKeys(PatternFilter.ALL);
+            //reassignFieldListener();
+            //patternAnalyser.resolveFields();
+        }
+    }
+
+    final class ClassElementListener implements PropertyChangeListener {
         public void propertyChange ( PropertyChangeEvent e ) {
             if( e.getSource() instanceof org.netbeans.modules.java.JavaDataObject ) //ignore
                 return;
