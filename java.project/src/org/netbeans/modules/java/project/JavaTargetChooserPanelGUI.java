@@ -143,11 +143,12 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 }
             }
         }
-        updateText();
-        
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
         expectedExtension = ext.length() == 0 ? "" : "." + ext; // NOI18N
+        
+        updateText();
+        
     }
         
     public FileObject getRootFolder() {
