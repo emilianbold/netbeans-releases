@@ -58,8 +58,8 @@ public abstract class TestBase extends NbTestCase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        egdir = FileUtil.normalizeFile(new File(System.getProperty("test.eg.dir")));
-        assertTrue("example dir exists", egdir.exists());
+        egdir = FileUtil.normalizeFile(new File(System.getProperty("test.data.dir"), "example-projects"));
+        assertTrue("example dir " + egdir + " exists", egdir.exists());
         egdirFO = FileUtil.toFileObject(egdir);
         assertNotNull("have FileObject for " + egdir);
         FileObject projdir = egdirFO.getFileObject("simple");
