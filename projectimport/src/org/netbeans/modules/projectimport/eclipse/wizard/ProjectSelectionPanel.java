@@ -282,7 +282,7 @@ final class ProjectSelectionPanel extends JPanel {
         }
         selectedProjects = new HashSet();
         requiredProjects = new HashSet();
-        if (projects == null || projects.length == 0) {
+        if (projects.length == 0) {
             setErrorMessage(ProjectImporterWizard.getMessage(
                     "MSG_WorkspaceIsEmpty", workspaceDir)); // NOI18N
         } else {
