@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- No LFI #? -->
             <binary clear="xtest-ext.jar" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
             <!-- LFI #105463: -->
-            <binary clear="ant-1.4.1.jar" scrambled="ant-1.4.1.jar.scrambled" license="apache-license.txt"/>
+            <binary clear="ant-1.4.1.jar" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
         </unscramble>
     </target>
     <target name="scramble">
@@ -35,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
             <binary clear="xerces-2.0.1.jar.master" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="xml-apis-1.0b2.jar.master" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>
             <binary clear="xtest-ext.jar.master" scrambled="xtest-ext.jar.scrambled" license="xtest-ext-license.txt"/>
-            <binary clear="ant-1.4.1.jar.master" scrambled="ant-1.4.1.jar.scrambled" license="apache-license.txt"/>
+            <binary clear="ant-1.4.1.jar.master" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
         </scramble>
     </target>
     <target name="clean">
