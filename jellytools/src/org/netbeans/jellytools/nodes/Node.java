@@ -219,21 +219,22 @@ public class Node {
     /** verifies node's popup path for presence (without invocation)
      * @param popupPath String popup path */    
     public void verifyPopup(String popupPath) {
+        verifyPopup(new String[]{popupPath});
+    }
+    
+    /** verifies node's popup paths for presence (without invocation)
+     * @param popupPaths String[] popup paths
+     */    
+    public void verifyPopup(String[] popupPaths) {
         //invocation of root popup
         final JPopupMenuOperator popup=callPopup();
-        JPopupMenuOperator lastPopup=popup;
-        int i=popupPath.lastIndexOf("|");
-        if (i>=0) {
-            //invocation of sub-popups
-            JMenuItem item=popup.pushMenu(popupPath.substring(0, i), "|");
-            if (item instanceof JMenu)
-                lastPopup=new JPopupMenuOperator(new JMenuOperator((JMenu)item).getPopupMenu());
-            else 
-                throw new JemmyException("Popup menu item does not contain any submenu.");
-            popupPath=popupPath.substring(i+1);
+        for (int i=0; i<popupPaths.length; i++) {
+            try {
+                popup.showMenuItem(popupPaths[i], "|");
+            } catch (NullPointerException npe) {
+                throw new JemmyException("Popup path ["+popupPaths[i]+"] not found.");
+            }
         }
-        //lookup for leaf item
-        new JMenuItemOperator(lastPopup, popupPath);
         //closing popup
         popup.waitState(new ComponentChooser() {
             public boolean checkComponent(Component comp) {
@@ -248,7 +249,7 @@ public class Node {
             }
         });
     }
-    
+
     class StringArraySubPathChooser implements JTreeOperator.TreePathChooser {
 	String[] arr;
 	int[] indices;
@@ -360,7 +361,7 @@ public class Node {
     public boolean isCollapsed() {
         return treeOperator.isCollapsed(getTreePath());
     }
-        
+         
 /*    protected Action[] getActions() {
         return null;
     }
