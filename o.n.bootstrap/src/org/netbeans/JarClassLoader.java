@@ -325,7 +325,8 @@ public class JarClassLoader extends ProxyClassLoader {
         public final URL getResource(String name) {
             try {
                 return doGetResource(name);
-            } catch (MalformedURLException e) {
+            } catch (Exception e) {
+                // can't get the resource. E.g. already closed JarFile
                 log(e.toString());
             }
             return null;
