@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<type
+    name='CurrentPC'
+    description_key='HINT_CURRENT_PC'
+    localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
+    visible='true' 
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/pcglyph.gif'
+    highlight='0x0000FF' 
+    foreground='0xFFFFFF'
+    type='line'
+/>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!DOCTYPE annotationtype PUBLIC "-//NetBeans//DTD annotation type 1.0//EN" "http://www.netbeans.org/dtds/annotation-type-1_0.dtd">
+<type
+    name='CallSite'
+    description_key='HINT_CALLSITE'
+    localizing_bundle='org.netbeans.modules.debugger.support.Bundle'
+    visible='true' 
+    glyph='nbresloc:/org/netbeans/modules/debugger/resources/callsiteglyph.gif'
+    highlight='0xFF00FF' 
+    foreground='0xFFFFFF'
+    type='line'
+/>
