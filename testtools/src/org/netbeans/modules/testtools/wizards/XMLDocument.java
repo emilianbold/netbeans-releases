@@ -21,6 +21,11 @@ package org.netbeans.modules.testtools.wizards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.io.StringReader;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.Document;
@@ -29,9 +34,11 @@ import org.w3c.dom.NodeList;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.cookies.EditorCookie;
+import org.openide.xml.EntityCatalog;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
+import org.xml.sax.SAXException;
 
 /**
  * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
@@ -41,12 +48,26 @@ class XMLDocument {
     private Document doc;
     private DataObject dob;
     
+    private static void fail(Throwable t) {
+        ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, t);
+    }
+    
     XMLDocument(DataObject o) {
         dob=o;
         AntProjectCookie cookie=(AntProjectCookie)o.getCookie(AntProjectCookie.class);
-        if (cookie!=null)
+        if (cookie!=null) {
             doc=cookie.getDocument();
-        doc=new AntProjectSupport(o.getPrimaryFile()).getDocument();
+        } else try {
+            DocumentBuilder builder=DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            builder.setEntityResolver(EntityCatalog.getDefault());
+            doc=builder.parse(o.getPrimaryFile().getInputStream());
+        } catch (IOException ioe) {
+            fail(ioe);
+        } catch (SAXException saxe) {
+            fail(saxe);
+        } catch (ParserConfigurationException pce) {
+            fail(pce);
+        }
     }
     
     void setProperty(String name, String valueName, Object valueValue) {

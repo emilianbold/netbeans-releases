@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.xml.serialize.OutputFormat;
@@ -61,6 +62,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.io.ReaderInputStream;
+import org.openide.xml.EntityCatalog;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -164,7 +166,9 @@ public class ConfigCustomizerPanel extends javax.swing.JPanel implements ChangeL
         try {
             this.dob=dob;
             StyledDocument stdoc=((EditorCookie)dob.getCookie(EditorCookie.class)).openDocument();
-            this.doc=DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
+            DocumentBuilder builder=DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            builder.setEntityResolver(EntityCatalog.getDefault());
+            this.doc=builder.parse(new ReaderInputStream(new StringReader(stdoc.getText(0, stdoc.getLength()))));
             //this.doc=dob.getDocument();
             TreeNode rootNode=createNode(doc.getDocumentElement());
             initComponents();

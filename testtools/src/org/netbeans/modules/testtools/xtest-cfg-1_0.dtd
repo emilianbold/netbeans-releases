@@ -1,0 +1,78 @@
+<!-- DTD for xtest cfg files -->
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+
+<!ELEMENT mconfig (testbag+,executor+,compiler*,resultsprocessor+)>
+<!ATTLIST mconfig
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT testbag (testproperty*,testset+)>
+<!ATTLIST testbag
+    name             CDATA #REQUIRED
+    testattribs	     CDATA #REQUIRED
+    executor         CDATA #IMPLIED
+    compiler         CDATA #IMPLIED
+    resultsprocessor CDATA #IMPLIED
+    prio             NMTOKEN #IMPLIED
+>
+
+<!ELEMENT testproperty EMPTY>
+<!ATTLIST testproperty
+    name  CDATA #REQUIRED
+    value CDATA #REQUIRED
+>
+
+<!ELEMENT testset (patternset*)>
+<!ATTLIST testset
+    dir CDATA #REQUIRED
+>
+
+<!ELEMENT patternset ((include|exclude)*)>
+<!ELEMENT include EMPTY>
+<!ATTLIST include 
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT exclude EMPTY>
+<!ATTLIST exclude 
+    name CDATA #REQUIRED
+>
+
+<!ELEMENT executor EMPTY>
+<!ATTLIST executor
+    name    CDATA #REQUIRED
+    antfile CDATA #IMPLIED
+    target  CDATA #IMPLIED
+    dir     CDATA #IMPLIED
+    default (true|false|yes|no|0|1) "false"
+>
+
+<!ELEMENT compiler EMPTY>
+<!ATTLIST compiler
+    name    CDATA #REQUIRED
+    antfile CDATA #IMPLIED
+    target  CDATA #IMPLIED
+    dir     CDATA #IMPLIED
+    default (true|false|yes|no|0|1) "false"
+>
+
+<!ELEMENT resultsprocessor EMPTY>
+<!ATTLIST resultsprocessor
+    name    CDATA #REQUIRED
+    antfile CDATA #IMPLIED
+    target  CDATA #IMPLIED
+    dir     CDATA #IMPLIED
+    default (true|false|yes|no|0|1) "false"
+>

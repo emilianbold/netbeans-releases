@@ -179,4 +179,15 @@ Author: <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
                 <file name="org-netbeans-modules-testtools-generator-NodeGeneratorAction.instance"/>
         </folder>
     </folder>
+
+    <!-- register entities with system entity resolver -->
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans">
+                <file name="DTD_XTest_cfg_1_0" url="nbres:/org/netbeans/modules/testtools/xtest-cfg-1_0.dtd">
+                        <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD XTest cfg 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>
