@@ -73,16 +73,15 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javadoc">
-    <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-    <property name="_cp" refid="cp"/>
     <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
       <property name="javadoc.base" location="."/>
       <property name="javadoc.name" value="DiffAPI"/>
       <property name="javadoc.title" value="Diff API"/>
       <property name="javadoc.packages" value="org.netbeans.api.diff,org.netbeans.spi.diff"/>
-      <property name="javadoc.classpath" value="${_cp}"/>
+      <property name="javadoc.classpath" refid="cp"/>
       <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
       <property name="javadoc.arch" location="arch/arch-diff.xml"/>
+      <property name="javadoc.manifest" location="manifest.mf"/>
     </ant>
   </target>
 
@@ -99,17 +98,5 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="netbeans"/>
     <delete dir="Info"/>
   </target>
-
-    <target name="apichanges-check" description="Check syntax of API changes list. Requires Ant 1.4!">
-        <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
-    </target>
-    <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
-        <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
-        <!-- 1.3: treated as a name relative to XML file. -->
-        <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
-        <!-- Be safe and give the absolute path here. -->
-        <style in="api/doc/changes/apichanges.xml" out="www/apichanges.html" destdir="www" style="${nbroot}/openide/api/doc/changes/apichanges.xsl"/>
-    </target>
-
 
 </project>
