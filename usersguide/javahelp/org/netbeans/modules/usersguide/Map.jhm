@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -70,7 +70,6 @@
 <mapID target="objects.show-extensions" url="objects/objects_show-extensions.html" />
 <mapID target="objects.treat-as-text" url="objects/objects_treat-as-text.html" />
 <mapID target="objects.specify-extension" url="objects/objects_specify-extension.html" />
-<mapID target="objects.redisplay-explorer" url="objects/objects_redisplay-explorer.html" />
 
 <mapID target="search" url="objects/search/search.html" />
 <mapID target="search.combo" url="objects/search/search_combo.html" />
@@ -212,7 +211,7 @@
 <mapID target="org.netbeans.modules.java.imptool.ImpToolSettings" url="java/imt/configuring.html" />
 
 <!--nodes for filesystems in Filesystem Settings-->
-<!--org.netbeans.core.ExJarFileSystem is used for JAR filesystem node in Explorer-->
+<!--org.netbeans.core.ExJarFileSystem is used for JAR filesystem node in the Filesystems window-->
 <mapID target="org.netbeans.core.ExJarFileSystem" url="filesystems/filesystems_node-JAR.html" />
 <mapID target="org.netbeans.core.JarFileSystem" url="filesystems/filesystems_settings.html" />
 <mapID target="org.netbeans.core.ExLocalFileSystem" url="filesystems/filesystems_settings.html" />
@@ -1270,7 +1269,7 @@
    <mapID target="org.netbeans.modules.projects.settings.OptionsAction" url="project/project_adding-new.html" />
    <mapID target="org.openide.actions.BuildProjectAction" url="project/project_comp-run-debug.html" />
 
-<!--root node on Projects tab of Explorer-->   
+<!--root node in Projects window-->   
    <mapID target="org.netbeans.modules.projects.ProjectDataObject" url="project/project_node.html" /> 
    
    <mapID target="org.netbeans.modules.projects.AddToProjectAction" url="project/project_adding-existing.html" /> 
@@ -1368,10 +1367,10 @@
    <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_properties" url="pending.html" />
    <mapID target="org.netbeans.modules.vcscore.VcsVersioningSystem_expert" url="pending.html" />
 
-   <!--Begin helpIDs for VCS Commands nodes in Runtime tab-->
-   <!--helpID for the properties sheet of FS nodes in Runtime tab-->
+   <!--Begin helpIDs for VCS Commands nodes in Runtime window-->
+   <!--helpID for the properties sheet of FS nodes in Runtime window-->
    <mapID target="org.netbeans.modules.vcscore.runtime.RuntimeFolderNode_properties" url="vcs-nb/vcs_commands_node.html" />
-   <!--helpID for the properties sheet of Generic VCS commands on Runtime tab-->
+   <!--helpID for the properties sheet of Generic VCS commands on Runtime window-->
    <mapID target="org.netbeans.modules.vcscore.runtime.VcsRuntimeCommand_properties" url="vcs-nb/vcs_commands_node.html" />
    <!--csh for VCS Generic mount wizard-->
    <mapID target="org.netbeans.modules.vcs.advanced.wizard.mount.ProfilePanel" url="vcs-nb/vcsgeneric/vcsgeneric_wizard.html" />
@@ -1429,6 +1428,7 @@
    <mapID target="org.netbeans.core.windows.nodes.ModeContext" url="workspace/workspace.html" />
    <mapID target="org.openide.explorer.propertysheet.PropertySheet$BeanPasteType" url="pending.html" />
    <mapID target="org.openide.text.DefaultPrintable.cancelDialog" url="pending.html" />
+<!--TODO-delete help button for this cancel print dialog?; pending IZ40111-->
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.ExLocalFileSystemBeanInfo$RootEd" url="filesystems/filesystems_classpath.html" />

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!--
-*     Copyright © 2003 Sun Microsystems, Inc. All rights reserved.
+*     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
 *     Use is subject to license terms.
 -->
 
@@ -33,8 +33,8 @@
     <tocitem text="Comparing Two Files in the IDE" target="filesystems.diff" />
   </tocitem>    
   <tocitem text="Managing Files" >
-    <tocitem text="The Explorer" target="explorer" />
-    <tocitem text="Node Icons in the Explorer" target="objects.icons" />
+    <tocitem text="Filesystems Window" target="explorer" />
+    <tocitem text="Node Icons in the Filesystems Window" target="objects.icons" />
     <tocitem text="Creating a New File" target="objects.new" />
     <tocitem text="Creating a Group of Files" target="objects.group" />
     <tocitem text="Opening a File in the IDE" target="objects.opening" />
@@ -56,8 +56,7 @@
       <tocitem text="Search Results Window" target="search.window" />
     </tocitem>
     <tocitem text="Refreshing a View" target="objects.refresh" />
-    <tocitem text="Runtime Tab in the Explorer" target="objects.runtime" />
-    <tocitem text="Redisplaying a Closed Explorer Tab" target="objects.redisplay-explorer" />
+    <tocitem text="Runtime Window" target="objects.runtime" />
     <tocitem text="Specifying an Extension for a Text File" target="objects.specify-extension" />
     <tocitem text="Adding a File Extension to an Object Type" target="objects.file-extensions" />
     <tocitem text="Displaying File Extensions" target="objects.show-extensions" />
