@@ -277,7 +277,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module apisupport/ant..."/>
     <ant dir="../apisupport/ant" target="netbeans"/>
   </target>
-  <target name="all-apisupport/apidocs" depends="init,makeparserdb-modules">
+  <!-- Deps include modules for which we build APIs: -->
+  <target name="all-apisupport/apidocs" depends="init,makeparserdb-modules,all-openide/registry,all-openide/looks,all-core/registry,all-openide/convertor,all-java/api,all-core/javahelp">
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
