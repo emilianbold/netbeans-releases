@@ -23,7 +23,7 @@ interface IconBases {
     // and N for non selected features at the end of the string.
 
     public static final String BIF_DESCRIPTOR =
-        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N !!! MUST BE CHANGED, BAD ICON
+        "/org/netbeans/modules/beans/resources/bifDescriptor"; // NOI18N !!! MUST BE CHANGED, BAD ICON
 
     public static final String BIF_PROPERTY_RW =
         "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N

@@ -260,11 +260,11 @@ abstract class BiFeature extends Object implements IconBases, Node.Cookie {
 
         String getIconBase( boolean defaultIcon ) {                
             //now there be no icon !!!
-            if( defaultIcon )
-                return null;
-            else                
-                return null;    // NOI18N
-            //return BIF_DESCRIPTOR + "S"; // NOI18N
+            //if( defaultIcon )
+            //    return null;
+            //else                
+            //    return null;    // NOI18N
+            return BIF_DESCRIPTOR; // NOI18N
         }
         
 
