@@ -161,7 +161,12 @@ public class  PatternGroupNode extends AbstractNode {
   private void createElement(int kind) throws SourceException {
     DialogDescriptor dd;
     Dialog           dialog;
-  
+    boolean          forInterface = false;
+
+    PatternAnalyser pa = (PatternAnalyser)this.getCookie( PatternAnalyser.class );
+    if ( pa != null )    
+      forInterface = pa.getClassElement() == null ? false : pa.getClassElement().isInterface();
+    
     switch (kind) {
     case 0: 
       PropertyPatternPanel propertyPanel;
@@ -177,6 +182,7 @@ public class  PatternGroupNode extends AbstractNode {
        
       dialog = TopManager.getDefault().createDialog( dd );
       propertyPanel.setDialog( dialog ); 
+      propertyPanel.setForInterface( forInterface );
       dialog.show ();
       
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -202,6 +208,7 @@ public class  PatternGroupNode extends AbstractNode {
        
       dialog = TopManager.getDefault().createDialog( dd );
       idxPropertyPanel.setDialog( dialog ); 
+      idxPropertyPanel.setForInterface( forInterface );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -229,6 +236,7 @@ public class  PatternGroupNode extends AbstractNode {
        
       dialog = TopManager.getDefault().createDialog( dd );
       uEventSetPanel.setDialog( dialog ); 
+      uEventSetPanel.setForInterface( forInterface );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -252,6 +260,7 @@ public class  PatternGroupNode extends AbstractNode {
        
       dialog = TopManager.getDefault().createDialog( dd );
       eventSetPanel.setDialog( dialog ); 
+      eventSetPanel.setForInterface( forInterface );
       dialog.show ();
 
       if ( dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
@@ -272,6 +281,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 

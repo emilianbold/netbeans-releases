@@ -188,8 +188,8 @@ public class EventSetPattern extends Pattern {
 
   /** Tests if the pattern is public i.e. all needed parts are public */
   public boolean isPublic() {
-    return  ( addListenerMethod == null || addListenerMethod.getModifiers() == Modifier.PUBLIC ) &&
-            ( removeListenerMethod == null || removeListenerMethod.getModifiers() == Modifier.PUBLIC );
+    return  ( addListenerMethod == null || ( addListenerMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
+            ( removeListenerMethod == null || ( removeListenerMethod.getModifiers() & Modifier.PUBLIC ) != 0 );
   }
 
   /** Test if the name is valid for given pattern */
@@ -433,8 +433,12 @@ public class EventSetPattern extends Pattern {
     newMethod.setReturn( Type.VOID );
     newMethod.setModifiers( Modifier.PUBLIC );
     newMethod.setParameters( newParameters );
-    if ( body != null )
+    
+    if ( declaringClass.isInterface() ) 
+      newMethod.setBody( null );
+    else if ( body != null )
       newMethod.setBody( body );
+    
     if ( isUnicast )
       newMethod.setExceptions( new Identifier[] { Identifier.create( "java.util.TooManyListenersException" ) } );
     if ( javadoc ) {
@@ -465,8 +469,12 @@ public class EventSetPattern extends Pattern {
     newMethod.setReturn( Type.VOID );
     newMethod.setModifiers( Modifier.PUBLIC );
     newMethod.setParameters( newParameters );
-    if ( body != null )
+    
+    if ( declaringClass.isInterface() ) 
+      newMethod.setBody( null );
+    else if ( body != null )
       newMethod.setBody( body );
+    
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_RemoveListenerMethod" ),
                                              new Object[] { type.getClassName().getName() } );
@@ -485,6 +493,8 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 

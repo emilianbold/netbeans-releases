@@ -195,8 +195,8 @@ public class IdxPropertyPattern extends PropertyPattern {
   /** Tests if the pattern is public i.e. all needed parts are public */
   public boolean isPublic() {
     return  super.isPublic() &&
-            (indexedGetterMethod == null || indexedGetterMethod.getModifiers() == Modifier.PUBLIC ) &&
-            (indexedSetterMethod == null || indexedSetterMethod.getModifiers() == Modifier.PUBLIC );
+            (indexedGetterMethod == null || ( indexedGetterMethod.getModifiers() & Modifier.PUBLIC ) != 0 ) &&
+            (indexedSetterMethod == null || ( indexedSetterMethod.getModifiers() & Modifier.PUBLIC ) != 0 );
   }
 
   /** Sets the type of property */
@@ -468,12 +468,16 @@ public class IdxPropertyPattern extends PropertyPattern {
     MethodElement newGetter = new MethodElement();
     MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ) };
 
-    newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) );
+    newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) );
     newGetter.setReturn( indexedType );
     newGetter.setModifiers( Modifier.PUBLIC );
     newGetter.setParameters( newParameters );
-    if ( body != null )
+    if ( declaringClass.isInterface() ) {
+      newGetter.setBody( null );
+    }
+    else if ( body != null )
       newGetter.setBody( body );
+    
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_IdxPropertyGetter" ),
                                              new Object[] { getName() } );
@@ -508,8 +512,13 @@ public class IdxPropertyPattern extends PropertyPattern {
     newSetter.setParameters( newParameters );
     if ( constrained )
       newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) );
-    if ( body != null )
+    if ( declaringClass.isInterface() ) {
+      newSetter.setBody( null );
+    }
+    else if ( body != null ) {
       newSetter.setBody( body );
+    }
+    
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_IdxPropertySetter" ),
                                              new Object[] { getName(), name } );
@@ -566,6 +575,8 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 

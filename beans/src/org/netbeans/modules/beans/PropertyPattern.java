@@ -159,8 +159,8 @@ public class PropertyPattern extends Pattern {
 
   /** Tests if the pattern is public i.e. all needed parts are public */
   public boolean isPublic() {
-    return  (getterMethod == null || getterMethod.getModifiers() == Modifier.PUBLIC) &&
-            (setterMethod == null || setterMethod.getModifiers() == Modifier.PUBLIC);
+    return  (getterMethod == null || ( getterMethod.getModifiers() & Modifier.PUBLIC ) != 0) &&
+            (setterMethod == null || ( setterMethod.getModifiers() & Modifier.PUBLIC ) != 0);
   }
   
   /** Sets the name of PropertyPattern */
@@ -451,16 +451,19 @@ public class PropertyPattern extends Pattern {
     newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) );
     newGetter.setReturn( type );
     newGetter.setModifiers( Modifier.PUBLIC );
-    if ( body != null )
+    
+    if ( declaringClass.isInterface() ) {
+      newGetter.setBody( null );
+    }
+    else if ( body != null ) {
       newGetter.setBody( body );
+    }
+    
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertyGetter" ),
                                              new Object[] { getName() } );
       newGetter.getJavaDoc().setRawText( comment );
     }
-
-
-    //System.out.println ("Generating getter" );
 
     if ( declaringClass == null ) {
       System.out.println ("nodecl - gen getter");
@@ -488,8 +491,14 @@ public class PropertyPattern extends Pattern {
     newSetter.setParameters( ( new MethodParameter[] { new MethodParameter( name, type, false ) } ));
     if ( constrained )
       newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) );
-    if ( body != null )
+    
+    if ( declaringClass.isInterface() ) {
+      newSetter.setBody( null );
+    }
+    else if ( body != null ) {
       newSetter.setBody( body );
+    }
+    
     if ( javadoc ) {
       String comment = MessageFormat.format( bundle.getString( "COMMENT_PropertySetter" ),
                                              new Object[] { getName(), name } );
@@ -598,6 +607,8 @@ public class PropertyPattern extends Pattern {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
+ *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 

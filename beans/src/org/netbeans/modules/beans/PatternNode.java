@@ -65,9 +65,11 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
   private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
     SystemAction.get(OpenAction.class),
     null,
+    /*
     SystemAction.get(CutAction.class),
     SystemAction.get(CopyAction.class),
     null,
+    */
     SystemAction.get(DeleteAction.class),
     SystemAction.get(RenameAction.class),
     null,
