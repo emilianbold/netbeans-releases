@@ -806,6 +806,10 @@ public abstract class NbTopManager extends TopManager {
                         break;
                     
                     int i = line.indexOf("=");
+                    if (i == -1) {
+                        continue;
+                    }
+
                     String key = line.substring(0, i);
                     String value = line.substring(i + 1);
                     if (i >= 0) {
