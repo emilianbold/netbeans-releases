@@ -127,7 +127,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return  m.getSharedMemory();
         };
-        return null;
+        return DEFAULT_NAME_FOR_SHARED_MEMORY_ACCESS;
     }
 
     private Integer getDebugPort () {
@@ -135,7 +135,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return  m.getDebugPort();
         };
-        return null;
+        return new Integer(11555);
     }
     
     private Integer getAdminPort () {
@@ -143,7 +143,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
         if (m != null){
             return m.getAdminPort();
         };
-        return null;
+        return new Integer(8005);
     }
 
     private void setClassic (Boolean classic) {
