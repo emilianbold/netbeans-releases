@@ -389,7 +389,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
             instanceCookieChanged(inst);
             if (inst != null) {
                 attachToInstance(inst);
-                getScheduledRequest().runAndWait();
             }
         }
         
