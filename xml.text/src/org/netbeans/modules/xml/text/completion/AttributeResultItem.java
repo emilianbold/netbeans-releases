@@ -28,10 +28,6 @@ class AttributeResultItem extends XMLResultItem {
     // we are requested to avoid appending extra data
     private boolean inline = false;
     
-    public AttributeResultItem(){
-        selectionForeground = foreground = Color.green.darker().darker();        
-    }
-    
     public AttributeResultItem(GrammarResult res, boolean inline){
         super(res.getNodeName());
         selectionForeground = foreground = Color.green.darker().darker();        

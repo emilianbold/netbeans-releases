@@ -248,7 +248,7 @@ public class DTDGrammar implements GrammarQuery {
             while (it.hasNext()) {
                 String next = (String) it.next();
                 if (next.startsWith(prefix)) {
-                    en.add(new MyText(next));
+                    en.add(new MyText(next, next));
                 }
             }
             return Collections.enumeration (en);
@@ -276,7 +276,7 @@ public class DTDGrammar implements GrammarQuery {
             String key = elementName + " " + attributeName;                 // NOI18N
             String def = (String) defaultAttributeValues.get(key);
             if (def == null) return null;
-            return new MyText(def);
+            return new MyText(def, def);
         }
         
         return null;
@@ -500,10 +500,12 @@ public class DTDGrammar implements GrammarQuery {
     
     private static class MyText extends AbstractResultNode implements Text {
         
-        private String data;
-        
-        MyText(String data) {
+        private final String data;
+        private final String displayName;
+
+        MyText(String data, String displayName) {
             this.data = data;
+            this.displayName = displayName;
         }
         
         public short getNodeType() {
@@ -520,7 +522,11 @@ public class DTDGrammar implements GrammarQuery {
 
         public int getLength() {
             return data == null ? -1 : data.length();
-        }    
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
     }
         
 }

@@ -15,6 +15,8 @@ Microsystems, Inc. All Rights Reserved.
 <project name="xml/api" default="netbeans" basedir=".">
     <import file="../../nbbuild/default.xml"/> 
 
+    <property name="build.compiler.debug" value="on"/>
+
     <target name="init" depends="default.init">
       <patternset id="xml/api.files">
         <include name="${nb.modules/autoload.dir}/xml-api.jar"/>

@@ -32,7 +32,8 @@ class XMLResultItem implements CompletionQuery.ResultItem {
     
     // text to be diplayed to user
     public String displayText;
-    
+    private String replacementText;
+
     // icon to be diplayed
     public javax.swing.Icon icon;
 
@@ -45,15 +46,23 @@ class XMLResultItem implements CompletionQuery.ResultItem {
     static {
         rubberStamp.setOpaque( true );
     }
-        
-    /** Default constructor
-     */    
-    public XMLResultItem(){}
-    
-    public XMLResultItem(String displayText){
-        this.displayText = displayText;
+
+    /**
+     *
+     * @param replacementText replacement text that is used as display name too
+     */
+    public XMLResultItem(String replacementText){
+        this(replacementText, null);
     }
-    
+
+    /**
+     * @param displayText text to display or null if replacementText is OK
+     */
+    public XMLResultItem(String replacementText, String displayText) {
+        this.replacementText = replacementText;
+        this.displayText = displayText != null ? displayText : replacementText;
+    }
+
     /** Creates new XMLResultItem
      * @param displayText The string value that will be displayed in the completion window and will hence
      * be the replacement text if selected.
@@ -126,7 +135,7 @@ class XMLResultItem implements CompletionQuery.ResultItem {
         // The space is prepended to avoid interpretation as HTML Label
         if (getIcon() != null) rubberStamp.setIcon(getIcon());
 
-        rubberStamp.setText( getItemText() );
+        rubberStamp.setText( displayText );
         if (isSelected) {
             rubberStamp.setBackground(selectionBackground);
             rubberStamp.setForeground(selectionForeground);
@@ -138,7 +147,7 @@ class XMLResultItem implements CompletionQuery.ResultItem {
     }
 
     public final String getItemText() {
-        return displayText;
+        return replacementText;
     }
     
     public String toString() {
