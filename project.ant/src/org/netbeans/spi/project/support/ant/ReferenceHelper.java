@@ -210,7 +210,7 @@ public final class ReferenceHelper {
                 File myProjDir = FileUtil.toFile(myProjDirFO);
                 String forProjPath;
                 String propertiesFile;
-                if (CollocationQuery.areCollocated(myProjDir, forProjDir) || FileUtil.isParentOf(myProjDirFO, forProj.getProjectDirectory())) {
+                if (CollocationQuery.areCollocated(myProjDir, forProjDir)) {
                     // Fine, using a relative path to subproject.
                     forProjPath = PropertyUtils.relativizeFile(myProjDir, forProjDir);
                     assert forProjPath != null : "These dirs are not really collocated: " + myProjDir + " & " + forProjDir;
@@ -636,9 +636,7 @@ public final class ReferenceHelper {
                     String propertiesFile;
                     String path;
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
-                    String relPath = PropertyUtils.relativizeFile(myProjDir, file);
-                    boolean relative = relPath != null && !relPath.startsWith("..");
-                    if (CollocationQuery.areCollocated(myProjDir, file) || relative) {
+                    if (CollocationQuery.areCollocated(myProjDir, file)) {
                         propertiesFile = AntProjectHelper.PROJECT_PROPERTIES_PATH;
                         path = PropertyUtils.relativizeFile(myProjDir, file);
                         assert path != null : "expected relative path from " + myProjDir + " to " + file;
