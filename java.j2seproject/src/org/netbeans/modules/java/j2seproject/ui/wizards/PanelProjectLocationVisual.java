@@ -149,6 +149,8 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         String command = evt.getActionCommand();        
         if ( "BROWSE".equals( command ) ) { // NOI18N                
             JFileChooser chooser = new JFileChooser ();
+            chooser.setDialogTitle(NbBundle.getMessage(PanelSourceFolders.class,"LBL_NWP1_SelectProjectLocation"));
+            chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
             String path = this.projectLocationTextField.getText();
             if (path.length() > 0) {
                 File f = new File (path);
@@ -156,7 +158,7 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
                     chooser.setSelectedFile(f);
                 }
             }
-            if ( JFileChooser.APPROVE_OPTION == chooser.showDialog(this, NbBundle.getMessage( PanelConfigureProjectVisual.class, "LBL_NWP1_SelectProjectLocation" ) ) ) { //NOI18N
+            if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText( projectDir.getAbsolutePath() );
             }            
