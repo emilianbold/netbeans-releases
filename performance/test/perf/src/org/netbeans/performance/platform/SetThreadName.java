@@ -27,13 +27,42 @@ public class SetThreadName extends Benchmark {
 
     public SetThreadName(String name) {
         super( name );
+	t.start();
+	t2.start();
     }
 
     protected int getMaxIterationCount() {
 	return Integer.MAX_VALUE;
     }
 
-    Thread t = new Thread();
+    Thread t = new Thread() {
+	public void run() {
+	    try {
+		Thread.sleep(1000000000);
+	    } catch (InterruptedException e) {
+	    }
+	}
+    };
+
+    static class Thread2 extends Thread {
+	int prio;
+	
+	public void run() {
+	    try {
+		Thread.sleep(1000000000);
+	    } catch (InterruptedException e) {
+	    }
+	}
+	
+	public void setPrio(int p) {
+	    if (prio == p) return;
+	    setPriority(p);
+	    prio = p;
+	}
+    }
+
+    Thread2 t2 = new Thread2();
+    
 
     /**
      */
@@ -65,6 +94,37 @@ public class SetThreadName extends Benchmark {
 	    String s = "Thread #" + count;
         }
     }
+
+    /**
+     */
+    public void testSetPriority() throws Exception {
+        int count = getIterationCount();
+
+        while( count-- > 0 ) {
+	    t.setPriority(4+(count%3));
+        }
+    }
+
+    /**
+     */
+    public void testSetFixedPriority() throws Exception {
+        int count = getIterationCount();
+
+        while( count-- > 0 ) {
+	    t.setPriority(5);
+        }
+    }
+
+    /**
+     */
+    public void testSetSimilarPriority() throws Exception {
+        int count = getIterationCount();
+
+        while( count-- > 0 ) {
+	    t2.setPrio(4+((count/100)%3));
+        }
+    }
+
     
     public static void main( String[] args ) {
 	simpleRun( SetThreadName.class );
