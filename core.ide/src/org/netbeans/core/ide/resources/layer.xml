@@ -18,8 +18,12 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
     
     <folder name="Shortcuts">
-        <file name="S-F8[org-openide-actions-ToggleBreakpointAction].instance" /> <!-- PENDING Debugger -->
-        <file name="CS-F7[org-openide-actions-AddWatchAction].instance" />
+        <file name="S-F8.instance"> <!-- PENDING Debugger -->
+	    <attr name="instanceClass" stringvalue="org.openide.actions.ToggleBreakpointAction"/>
+	</file>
+        <file name="CS-F7.instance">
+	    <attr name="instanceClass" stringvalue="org.openide.actions.AddWatchAction"/>
+	</file>
     </folder>
     
     <folder name="Startup">
