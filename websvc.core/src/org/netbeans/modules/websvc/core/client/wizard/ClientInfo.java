@@ -596,6 +596,7 @@ public final class ClientInfo extends JPanel {
         // reporting it to the user early.)  It is a non-trivial change that would
         // require significant synchronization with code in the retriever object.
         // as well as the valid() method of this object.  See IZ 52685.
+        return true;
     }
     
     public void setWsdlDownloadMessage(String m) {
