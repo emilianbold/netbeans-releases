@@ -22,6 +22,7 @@ import org.netbeans.jmi.javamodel.JavaClass;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
@@ -364,6 +365,14 @@ public class Utils {
                 }
             }
         }
+    }
+
+    public static String getEjbDisplayName(Ejb ejb) {
+        String name = ejb.getDefaultDisplayName();
+        if (name == null) {
+            name = ejb.getEjbName();
+        }
+        return name;
     }
 
     private static class ClassPathImpl implements ClassPathImplementation {

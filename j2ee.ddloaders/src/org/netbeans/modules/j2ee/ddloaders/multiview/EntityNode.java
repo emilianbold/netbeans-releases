@@ -27,7 +27,7 @@ class EntityNode extends EjbSectionNode {
     private EntityHelper entityHelper;
 
     EntityNode(SectionNodeView sectionNodeView, Entity entity) {
-        super(sectionNodeView, false, entity, entity.getDefaultDisplayName(), Utils.ICON_BASE_ENTITY_NODE);
+        super(sectionNodeView, false, entity, Utils.getEjbDisplayName(entity), Utils.ICON_BASE_ENTITY_NODE);
         this.entity = entity;
         entityHelper = new EntityHelper(sectionNodeView.getDataObject().getPrimaryFile(), entity);
         addChild(new EntityOverviewNode(sectionNodeView, entity, entityHelper));

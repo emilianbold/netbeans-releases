@@ -24,7 +24,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 class MessageDrivenNode extends EjbSectionNode {
 
     MessageDrivenNode(SectionNodeView sectionNodeView, MessageDriven messageDriven) {
-        super(sectionNodeView, false, messageDriven, messageDriven.getDefaultDisplayName(),
+        super(sectionNodeView, false, messageDriven, Utils.getEjbDisplayName(messageDriven),
                 Utils.ICON_BASE_MESSAGE_DRIVEN_NODE);
         addChild(new MessageDrivenOverviewNode(sectionNodeView, messageDriven));
         addChild(new MdbImplementationNode(sectionNodeView, messageDriven));

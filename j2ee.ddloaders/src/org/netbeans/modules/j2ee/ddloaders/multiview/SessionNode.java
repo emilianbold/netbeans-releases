@@ -24,7 +24,7 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 class SessionNode extends EjbSectionNode {
 
     SessionNode(SectionNodeView sectionNodeView, Session session) {
-        super(sectionNodeView, false, session, session.getDefaultDisplayName(), Utils.ICON_BASE_SESSION_NODE);
+        super(sectionNodeView, false, session, Utils.getEjbDisplayName(session), Utils.ICON_BASE_SESSION_NODE);
         addChild(new SessionOverviewNode(sectionNodeView, session));
         EntityAndSessionHelper helper = new EntityAndSessionHelper(sectionNodeView.getDataObject().getPrimaryFile(),
                 session);
