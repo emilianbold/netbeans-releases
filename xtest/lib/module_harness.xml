@@ -20,7 +20,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- location for results from the harness -->
     <property name="xtest.results" location="results"/>
     <property name="xtest.module" value="Unknown"/>
-    
+    <!-- timeout for single testbag (in miliseconds)-->
+    <property name="xtest.timeout" value="3600000"/>
     
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
@@ -234,12 +235,12 @@ Microsystems, Inc. All Rights Reserved.
 
         <exec dir="${netbeans.test.home}/bin" executable="${netbeans.test.home}/bin/runide.exe" 
               os="Windows 95 Windows 98 Windows NT Windows 2000"
-              failonerror="yes">
+              failonerror="no" timeout="${xtest.timeout}">
 	    <arg line="${args}"/>
         </exec>
         <exec dir="${netbeans.test.home}/bin" executable="sh"  
               os="Linux SunOS Solaris"
-              failonerror="yes">
+              failonerror="no" timeout="${xtest.timeout}">
             <arg line="runide.sh ${args}"/>
         </exec>
 
@@ -296,7 +297,7 @@ Microsystems, Inc. All Rights Reserved.
                       executor="${tbag.executor}" module="${xtest.module}"
                       outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
         <!-- run the tests -->
-        <nbjunit fork="${junit.fork}" printsummary="yes">            
+        <nbjunit fork="${junit.fork}" printsummary="yes" timeout="${xtest.timeout}">            
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}/sys"/>
             <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>

@@ -21,6 +21,7 @@ package org.netbeans.xtest.pe;
 
 import org.apache.tools.ant.*;
 import java.util.*;
+import java.text.SimpleDateFormat;
 import java.io.*;
 
 /**
@@ -88,24 +89,17 @@ public class GetResultsDirsTask extends Task{
     }
     
     
-    private static String getYYMMHH_HHMMSS() {
+    private static String getYYMMDD_HHMMSS() {
         // better sleep for a second, so result is unique
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
         }
-        Calendar now = Calendar.getInstance();
-        //debugInfo("getYYMMHH...(): got new Calendar:"+now);
-        String year = roundTo2Digits(now.get(Calendar.YEAR));
-        String month = roundTo2Digits(now.get(Calendar.MONTH));
-        String day = roundTo2Digits(now.get(Calendar.DAY_OF_MONTH));
-        String hour = roundTo2Digits(now.get(Calendar.HOUR_OF_DAY));
-        String minute = roundTo2Digits(now.get(Calendar.MINUTE));
-        String second = roundTo2Digits(now.get(Calendar.SECOND));
-        //String xx = roundTo2Digits(now.get(Calendar.HOUR));
-        String result = year+month+day+"_"+hour+minute+second;
-        debugInfo("getYYMMHH...(): formatted output="+result);
-        return result;
+        // now generate output
+        SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd-HHmmss");
+        Date currentTime = new Date();
+        String resultString = formatter.format(currentTime);
+        return resultString;
     }    
     
     public static File createReportNode(File rootDir) throws BuildException {
@@ -189,7 +183,7 @@ public class GetResultsDirsTask extends Task{
                     resultsDirname+") does not point to directory");
             }
             // now everything looks ok, create new dir and set it to desired property
-            String testRunDirName = PEConstants.TESTRUN_DIR_PREFIX+getYYMMHH_HHMMSS();
+            String testRunDirName = PEConstants.TESTRUN_DIR_PREFIX+getYYMMDD_HHMMSS();
             File testRunDir = new File(resultsDir,testRunDirName);
             debugInfo("createAndSetTestRun(): try to create dir: "+testRunDir);
             createReportNode(testRunDir);         
@@ -212,7 +206,7 @@ public class GetResultsDirsTask extends Task{
     }
     
     public static void main(String[] args) {       
-        System.out.println("Year = "+getYYMMHH_HHMMSS());
+        System.out.println("Year = "+getYYMMDD_HHMMSS());
     }
 
 }
