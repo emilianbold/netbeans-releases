@@ -15,11 +15,14 @@ package org.netbeans.beaninfo.editors;
 
 import java.beans.*;
 import java.util.*;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 
 import org.openide.loaders.ExtensionList;
 import org.openide.util.enum.ArrayEnumeration;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.*;
+import org.openide.nodes.Node;
 
 /** Property editor for {@link ExtensionList}s.
 *
@@ -28,10 +31,13 @@ import org.openide.explorer.propertysheet.editors.*;
 * @author Jaroslav Tulach
 * @version 0.11 November 11, 1997
 */
-public class ExtensionListEditor extends Object implements PropertyEditor, StringArrayCustomizable {
+public class ExtensionListEditor extends Object implements PropertyEditor, StringArrayCustomizable,
+        ExPropertyEditor {
     /** value to edit */
     private ExtensionList value;
     private PropertyChangeSupport support = new PropertyChangeSupport (this);
+    
+    private boolean editable=true;
 
     /*
     * Set (or change) the object that is to be edited.  Builtin types such
@@ -248,5 +254,17 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
         
         support.firePropertyChange (null, null, null);
     }
-        
+
+    /** gets information if the text in editor should be editable or not */
+    public boolean isEditable(){
+        return (editable);
+    }
+    
+    public void attachEnv(PropertyEnv env) {        
+        FeatureDescriptor desc = env.getFeatureDescriptor();
+        if (desc instanceof Node.Property){
+            Node.Property prop = (Node.Property)desc;
+            editable = prop.canWrite();
+        }
+    }
 }

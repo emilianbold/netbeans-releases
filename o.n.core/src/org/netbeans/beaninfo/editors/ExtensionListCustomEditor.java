@@ -91,6 +91,13 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
         changeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ELCE_Change"));
         removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ELCE_Remove"));
 
+        if ( ! editor.isEditable() ) {
+            // set read-only
+            itemField.setEnabled( false );
+            addButton.setEnabled( false );
+            changeButton.setEnabled( false );
+            removeButton.setEnabled( false );
+        }
         updateButtons ();
     }
 
@@ -297,7 +304,7 @@ public class ExtensionListCustomEditor extends javax.swing.JPanel {
 
     private void updateButtons () {
         int sel = itemList.getSelectedIndex ();
-        if (sel == -1) {
+        if (sel == -1 || !editor.isEditable()) {
             removeButton.setEnabled (false);
             changeButton.setEnabled (false);
         } else {
