@@ -36,6 +36,7 @@ public class LocMakeNBM extends Task {
   protected String fileName = null ;
   protected String baseFileName = null ;
   protected boolean deleteInfo = false ;
+  protected String nbmIncludes = null ;
   protected String modInfo = null ;
   protected String findLocBundle = "." ;  // relative to the directory 
 				          // corresponding to the module's 
@@ -63,6 +64,9 @@ public class LocMakeNBM extends Task {
   }
   public void setDeleteInfo( boolean b) {
     deleteInfo = b ;
+  }
+  public void setNbmIncludes( String s) {
+    nbmIncludes = s ;
   }
   public void setModInfo( String s) {
     modInfo = s ;
@@ -207,6 +211,13 @@ public class LocMakeNBM extends Task {
       includes += s ;
       first_time = false ;
     }
+    // Add any extra includes that were specified. //
+    if( nbmIncludes != null && !nbmIncludes.trim().equals( "")) {
+      if( !first_time) {
+	includes += "," ;
+      }
+      includes += nbmIncludes ;
+    }
     makenbm.setIncludes( includes) ;
 
     makenbm.execute() ;
@@ -308,6 +319,7 @@ public class LocMakeNBM extends Task {
     // For ja locale, include these other variants. //
     if( loc.equals( "ja")) {
       addLocalePatterns( list, "ja_JP.PCK") ;
+      addLocalePatterns( list, "ja_JP.eucJP") ;
       addLocalePatterns( list, "ja_JP.SJIS") ;
       addLocalePatterns( list, "ja_JP.UTF-8") ;
       addLocalePatterns( list, "ja_JP.UTF8") ;
