@@ -28,6 +28,8 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.openide.awt.MenuBar;
 import org.openide.filesystems.*;
@@ -132,6 +134,21 @@ public final class MainWindow extends JFrame {
             desktopPanel.setBackground(fillC);
         }
         getContentPane().add(desktopPanel, BorderLayout.CENTER);
+        //#38810 start - focusing the main window in case it's not active and the menu is
+        // selected..
+        MenuSelectionManager.defaultManager().addChangeListener(new ChangeListener(){
+            public void stateChanged(ChangeEvent e) {
+                MenuElement[] elems = MenuSelectionManager.defaultManager().getSelectedPath();
+                if (elems != null && elems.length > 0) {
+                    if (elems[0] == getJMenuBar()) {
+                        if (!isActive()) {
+                            toFront();
+                        }
+                    }
+                }
+            }
+        });
+        //#38810 end
     }
 
     /** Creates and returns border for desktop which is visually aligned
