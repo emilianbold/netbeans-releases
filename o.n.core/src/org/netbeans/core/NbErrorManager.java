@@ -154,7 +154,7 @@ final class NbErrorManager extends ErrorManager {
     }
 
     public void log(int severity, String s) {
-        if(severity >= minLogSeverity) {
+        if (isLoggable (severity)) {
             if (prefix != null)
                 getLogWriter ().print ("[" + prefix + "] "); // NOI18N
             getLogWriter().println(s);
@@ -171,6 +171,9 @@ final class NbErrorManager extends ErrorManager {
      *    discard the message
      */
     public boolean isLoggable (int severity) {
+        // logging severity is more important - by default INFORMATIONAL
+        // messages are not logged
+        severity = severity >> 1;
         return severity >= minLogSeverity;
     }
     
