@@ -6,6 +6,9 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/netbeans/modules/i18n/I18nModule.class
 OpenIDE-Module-Description: org.netbeans.modules.i18n.docs.HelpSet
 
+Name: org/netbeans/modules/i18n/I18nOptions.class
+OpenIDE-Module-Class: Option
+
 Name: org/netbeans/modules/i18n/I18nAction.class
 OpenIDE-Module-Class: Action
 
