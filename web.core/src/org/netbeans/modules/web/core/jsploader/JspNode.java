@@ -150,18 +150,6 @@ public class JspNode extends DataNode {
 
            }
           );     
-
-        Node.PropertySet[] tmp = sheet.toArray();
-        String ext = getExtension();
-        if (isTagFile())
-            for(int i = 0; i < tmp.length; i++){
-                tmp[i].setValue("helpID", JspNode.class.getName() + ".Tag.PropertySheet"); // NOI18N
-            }
-        else    
-            for(int i = 0; i < tmp.length; i++){
-                tmp[i].setValue("helpID", JspNode.class.getName() + ".PropertySheet"); // NOI18N
-            }
-        
         
         return sheet;
     }
@@ -220,11 +208,5 @@ public class JspNode extends DataNode {
 
     }
 
-    public HelpCtx getHelpCtx() {
-        if (isTagFile())
-            return new HelpCtx(JspNode.class.getName() + ".Tag");//NOI18N
-        else    
-            return new HelpCtx(JspNode.class.getName());//NOI18N
-    }
 }
 

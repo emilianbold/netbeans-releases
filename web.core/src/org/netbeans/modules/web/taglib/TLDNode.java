@@ -103,9 +103,5 @@ public class TLDNode extends DataNode {
     public boolean canDestroy() {
 	return true;
     }
-    
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(TLDNode.class);//NOI18N
-    }
-    
+   
 }
