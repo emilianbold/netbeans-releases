@@ -648,6 +648,10 @@ public final class LoaderPoolNode extends AbstractNode {
         public boolean canRename () {
             return false;
         }
+        
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx (LoaderPoolItemNode.class);
+        }
     } // end of LoaderPoolItemNode
 
     /** Implementation of children for LoaderPool node in explorer.
