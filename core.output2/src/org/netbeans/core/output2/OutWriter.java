@@ -39,6 +39,7 @@ import java.util.StringTokenizer;
 import java.util.TooManyListenersException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.util.Utilities;
 
 /**
  * Implementation of OutputWriter backed by an implementation of Storage (memory mapped file, heap array, etc).
@@ -61,7 +62,11 @@ class OutWriter extends OutputWriter implements Runnable {
     
     private IntList errLines = null;
 
-    private static final boolean USE_HEAP_STORAGE = Boolean.getBoolean("nb.output.heap"); //NOI18N
+    //IZ 44375 - Memory mapping fails with bad file handle on win 98
+    private static final boolean USE_HEAP_STORAGE = 
+        Boolean.getBoolean("nb.output.heap") || Utilities.getOperatingSystem() == //NOI18N
+        Utilities.OS_WIN98 || 
+        Utilities.getOperatingSystem() == Utilities.OS_WIN95;
     
     private int longestLine = 0;
 
