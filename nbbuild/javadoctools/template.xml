@@ -123,6 +123,7 @@ cause it to fail.
             </srcfiles>
             <srcfiles file="${javadoc.apichanges}"/>
             <srcfiles file="${javadoc.arch}"/>
+            <srcfiles file="${javadoc.overview}"/>
         </uptodate>
         <condition property="javadoc.should.not.be.generated" >
             <or>
