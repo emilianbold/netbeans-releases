@@ -15,6 +15,7 @@ package org.netbeans.core.execution;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.beans.Introspector;
@@ -144,6 +145,62 @@ public class Install extends ModuleInstall {
         ExecuteAction.execute(obj, true);
     }
 
+    // A class that server as a pending dialog manager.
+    // It closes the dialog if there are no more pending tasks
+    // and also servers as the action listener for killing the tasks.
+    private static class PendingDialogCloser extends WindowAdapter implements Runnable,
+		PropertyChangeListener, ActionListener, NodeListener {
+	private Dialog[] dialogHolder;
+	private Object exitOption;
+	PendingDialogCloser(Dialog[] holder, Object exit) {
+	    dialogHolder = holder;
+	    exitOption = exit;
+	}
+	
+	public void run() {
+            dialogHolder[0].setVisible(false);
+	}
+
+	// Beware: this may be called also from rootNode's prop changes
+        // Once all pending tasks are gone, close the dialog.
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
+                checkClose();
+            }
+	}
+
+	// kill pending tasks and close the dialog
+        public void actionPerformed(ActionEvent evt) {
+            if(evt.getSource() == exitOption) {
+                killPendingTasks();
+                Mutex.EVENT.readAccess(this); // close in AWT
+            }
+        }
+	
+        public void childrenRemoved(NodeMemberEvent evt) {
+            checkClose();
+	}
+	
+        // Dialog was opened but pending tasks could disappear inbetween.
+        public void windowOpened(java.awt.event.WindowEvent evt) {
+            checkClose();
+	}
+        
+        /** Checks if there are pending tasks and closes (in AWT)
+         * the dialog if not. */
+        private void checkClose() {
+            if(dialogHolder[0] != null && getPendingTasks().isEmpty()) {
+                Mutex.EVENT.readAccess(this);
+            }
+        }
+
+	// noop - rest of node listener
+	public void childrenAdded (NodeMemberEvent ev) {}
+	public void childrenReordered(NodeReorderEvent ev) {}
+	public void nodeDestroyed (NodeEvent ev) {}
+
+    }
+    
     // Remainder moved from ExitDialog:
     
     /** Shows dialog which waits for finishing of pending tasks,
@@ -159,34 +216,26 @@ public class Install extends ModuleInstall {
   
         ExplorerPanel panel = createExplorerPanel();
         
-        final Dialog[] dialog = new Dialog[1];
-        final Node root = new AbstractNode(new PendingChildren());
+        Dialog[] dialog = new Dialog[1];
+        Node root = new AbstractNode(new PendingChildren());
 
-        panel.getExplorerManager().setRootContext(root);
-        panel.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                // Listen on changes of pending tasks and if all has finished
-                // close the dialog.
-                if(ExplorerManager.PROP_EXPLORED_CONTEXT.equals(evt.getPropertyName())) {
-                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            }
-        });
 
-        final JButton exitOption = new JButton(
-            NbBundle.getBundle(Install.class).getString("LAB_EndTasks"));
-        exitOption.setMnemonic(NbBundle.getBundle(Install.class).
-            getString("LAB_EndTasksMnem").charAt(0));
+        JButton exitOption = new JButton(NbBundle.getMessage(Install.class, "LAB_EndTasks"));
+        exitOption.setMnemonic(NbBundle.getMessage(Install.class, "LAB_EndTasksMnem").charAt(0));
         // No default button.
         exitOption.setDefaultCapable(false);
         exitOption.getAccessibleContext().setAccessibleDescription(
-            NbBundle.getBundle(Install.class).getString("ACSD_EndTasks"));
+            NbBundle.getMessage(Install.class, "ACSD_EndTasks"));
+
+	PendingDialogCloser closer = new PendingDialogCloser(dialog, exitOption);
+
+        panel.getExplorerManager().setRootContext(root);
+        // closer will autoclose the dialog if all pending tasks finish
+        panel.getExplorerManager().addPropertyChangeListener(closer);
         
         DialogDescriptor dd = new DialogDescriptor(
             panel,
-            NbBundle.getBundle(Install.class).getString("CTL_PendingTitle"),
+            NbBundle.getMessage(Install.class, "CTL_PendingTitle"),
             true, // modal
             new Object[] {
                 exitOption,
@@ -195,38 +244,17 @@ public class Install extends ModuleInstall {
             null,
             DialogDescriptor.DEFAULT_ALIGN,
             null,
-            new ActionListener() {
-                public void actionPerformed(ActionEvent evt) {
-                    if(evt.getSource() == exitOption) {
-                        killPendingTasks();
-                        dialog[0].setVisible(false);
-                    }
-                }
-            }
+	    closer
         );
         // #33135 - no Help button for this dialog
         dd.setHelpCtx(null);
 
         if(!getPendingTasks().isEmpty()) {
-            root.addNodeListener(new NodeAdapter() {
-                public void childrenRemoved(NodeMemberEvent evt) {
-                    if(dialog[0] != null && getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            });
+            root.addNodeListener(closer);
 
             dialog[0] = DialogDisplayer.getDefault().createDialog(dd);
             
-            dialog[0].addWindowListener(new java.awt.event.WindowAdapter() {
-                public void windowOpened(java.awt.event.WindowEvent evt) {
-                    // Dialog was opened but pending tasks could disappear
-                    // inbetween.
-                    if(getPendingTasks().isEmpty()) {
-                        dialog[0].setVisible(false);
-                    }
-                }
-            });
+            dialog[0].addWindowListener(closer);
             
             dialog[0].show();
             dialog[0].dispose();
@@ -254,10 +282,8 @@ public class Install extends ModuleInstall {
         cons.fill = GridBagConstraints.HORIZONTAL;
         cons.insets = new Insets(11, 11, 0, 12);
 
-        JLabel label = new JLabel(NbBundle.getBundle(Install.class)
-            .getString("LAB_PendingTasks"));
-        label.setDisplayedMnemonic(NbBundle.getBundle(Install.class)
-            .getString("LAB_PendingTasksMnem").charAt(0));
+        JLabel label = new JLabel(NbBundle.getMessage(Install.class, "LAB_PendingTasks"));
+        label.setDisplayedMnemonic(NbBundle.getMessage(Install.class, "LAB_PendingTasksMnem").charAt(0));
         
         panel.add(label, cons);
         
@@ -271,10 +297,10 @@ public class Install extends ModuleInstall {
         
         panel.add(view, cons);
         
-        view.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(Install.class)
-            .getString("ACSD_PendingTasks"));
-        panel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(Install.class)
-            .getString("ACSD_PendingTitle"));
+        view.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(Install.class, "ACSD_PendingTasks"));
+        panel.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(Install.class, "ACSD_PendingTitle"));
 
         return panel;
     }
@@ -428,8 +454,7 @@ public class Install extends ModuleInstall {
             actionName = org.openide.awt.Actions.cutAmpersand(actionName);
             setName(actionName);
             setDisplayName(actionName + " " // NOI18N
-                + NbBundle.getBundle(Install.class)
-                    .getString("CTL_ActionInProgress"));
+                + NbBundle.getMessage(Install.class, "CTL_ActionInProgress"));
             
             if(action instanceof SystemAction) {
                 this.icon = ((SystemAction)action).getIcon();
