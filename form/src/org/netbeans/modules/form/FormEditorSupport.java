@@ -707,8 +707,10 @@ public class FormEditorSupport extends JavaEditor
     }
 
     protected void notifyClosed() {
-        super.notifyClosed(); // java editor closed
-        multiviewTC = null;
+        if (multiviewTC != null) {
+            super.notifyClosed(); // java editor closed
+            multiviewTC = null;
+        }
     }
 
     /** Closes the form. Used when closing the form editor or reloading
@@ -761,12 +763,14 @@ public class FormEditorSupport extends JavaEditor
             formDesigner = null;
 
         // reset references
-        multiviewTC = null;
         formRootNode = null;
         formDesigner = null;
         persistenceManager = null;
         persistenceErrors = null;
         formModel = null;
+
+        if (multiviewTC != null)
+            notifyClosed();
     }
 
     // -----------
