@@ -14,7 +14,12 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import javax.swing.JButton;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.ui.customizer.ClassPathUiSupport;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -223,11 +228,14 @@ public class UpdateHelper {
             props.put("build.test.classes.dir", "");
             props.put("build.test.results.dir", "");
         }
-        
+
         ProjectManager.getDefault().saveProject (this.project);
         synchronized(this) {
             this.isCurrent = Boolean.TRUE;
-        }
+        } 
+ 
+        //fire project updated
+        projectUpdateListener.projectUpdated();
     }
 
     private synchronized Element getUpdatedSharedConfigurationData () {
@@ -313,4 +321,17 @@ public class UpdateHelper {
          */
         public boolean canUpdate ();
     }
+    
+    private ProjectUpdateListener projectUpdateListener;
+    
+    public void setProjectUpdateListener(ProjectUpdateListener l) {
+        this.projectUpdateListener = l;
+    }
+    
+    /** Used to notify someone that the project needs to be updated. 
+     * A workaround for #54077 - Import 4.0 project - remove Servlet/JSP APIs */
+    public static interface ProjectUpdateListener {
+        public void projectUpdated();
+    }
+    
 }

@@ -170,7 +170,7 @@ public class WebProjectProperties {
     public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
 
-    ClassPathSupport cs;
+    public ClassPathSupport cs;
 
     // MODELS FOR VISUAL CONTROLS
     
@@ -231,9 +231,19 @@ public class WebProjectProperties {
     
     private Properties additionalProperties;
 
+    private static boolean needsUpdate = false;
+    
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
+        
+        //this is called from updatehelper when user confirms the project update
+        updateHelper.setProjectUpdateListener(new UpdateHelper.ProjectUpdateListener() {
+            public void projectUpdated() {
+                needsUpdate = true;
+            }
+        });
+        
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         
@@ -336,18 +346,48 @@ public class WebProjectProperties {
         
         // Modify the project dependencies properly        
         resolveProjectDependencies();
+       
+        // Store source roots
+        storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
+        storeRoots( project.getTestSourceRoots(), TEST_ROOTS_MODEL );
+
+        //test whether user wants to update his project to newest version
+        if(needsUpdate) {
+             //remove servlet24 and jsp20 libraries (they are not used in 4.1)
+            ClassPathUiSupport.ClassPathTableModel cptm = getJavaClassPathModel();
+
+            ArrayList cpItemsToRemove = new ArrayList();
+            for(int i = 0; i < cptm.getRowCount(); i++) {
+                Object item = cptm.getValueAt(i,0);
+                if (item instanceof ClassPathSupport.Item) {
+                    ClassPathSupport.Item cpti = (ClassPathSupport.Item)item;
+                    String propertyName = cpti.getEvaluated();
+                    if(propertyName != null) {
+                        if("servlet24".equals(propertyName) || "jsp20".equals(propertyName)) { //NOI18N
+                            cpItemsToRemove.add(cpti);
+                        }
+                    }
+                }
+            }
+            
+            //remove selected libraries
+            Iterator remove = cpItemsToRemove.iterator();
+            while(remove.hasNext()) {
+                ClassPathSupport.Item cpti = (ClassPathSupport.Item)remove.next();
+                cptm.getDefaultListModel().removeElement(cpti);
+                //System.out.println("[4.0->4.1 project update] classpath item " + cpti + " removed from ClassPathUiSupport.ClassPathTableModel !");
+            }
+            
+            needsUpdate = false;
+        }
+        
         
         // Encode all paths (this may change the project properties)
         String[] javac_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_CLASSPATH_MODEL.getDefaultListModel() ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES  );
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getIterator( RUN_TEST_CLASSPATH_MODEL ), null );
-                
         String[] war_includes = cs.encodeToStrings( WarIncludesUiSupport.getIterator( WAR_CONTENT_ADDITIONAL_MODEL ), ClassPathSupport.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES  );
 
-        // Store source roots
-        storeRoots( project.getSourceRoots(), SOURCE_ROOTS_MODEL );
-        storeRoots( project.getTestSourceRoots(), TEST_ROOTS_MODEL );
-                
         // Store standard properties
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );        
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
@@ -627,4 +667,9 @@ public class WebProjectProperties {
         wm.setContextPath(serverInstId, contextPath);
         projectProps.setProperty(CONTEXT_PATH, contextPath);
     }
+    
+    public ClassPathUiSupport.ClassPathTableModel getJavaClassPathModel() {
+        return JAVAC_CLASSPATH_MODEL;
+    }
+            
 }

@@ -584,7 +584,16 @@ public class ClassPathSupport {
             }
 
         }
-                
+     
+        public String toString() {
+            return "artifactURI=" + artifactURI
+                    + ", type=" + type 
+                    + ", property=" + property
+                    + ", pathInWar=" + pathInWar
+                    + ", raw=" + raw
+                    + ", eval=" + eval;
+        }
+        
     }
             
 }
