@@ -348,7 +348,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Compiles all tests -->
-    <target name="compile" depends="init">
+    <target name="compile" depends="init" unless="dont-compile">
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
