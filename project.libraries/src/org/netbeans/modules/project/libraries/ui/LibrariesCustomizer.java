@@ -153,8 +153,7 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
                 public void vetoableChange(PropertyChangeEvent event) throws PropertyVetoException {
                     if (ExplorerManager.PROP_SELECTED_NODES.equals(event.getPropertyName())) {
                         Node[] nodes = (Node[]) event.getNewValue();
-                        if (nodes.length == 0 ||
-                            (nodes.length == 1 && (nodes[0] instanceof LibraryNode))) {
+                        if (nodes.length <=1) {
                             return;
                         }
                         else {

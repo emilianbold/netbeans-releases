@@ -87,10 +87,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             Node[] nodes = (Node[]) evt.getNewValue();
             if (nodes.length>1) {
                 throw new PropertyVetoException ("Invalid length",evt);   //NOI18N
-            }
-            if (nodes.length == 1 && nodes[0].getLookup().lookup(JavaPlatform.class) == null) {
-                throw new PropertyVetoException ("Invalid node",evt);   //NOI18N
-            }
+            }           
         }
     }
     
