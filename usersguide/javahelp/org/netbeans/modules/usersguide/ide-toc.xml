@@ -82,11 +82,12 @@
   </tocitem>
 
   <tocitem text="Editing Source Files" >
+<!--    <tocitem text="About" target="editing.intro"/>-->
     <tocitem text="Source Editor Window" target="editing.editorwindow"/>
     <tocitem text="Opening a File in the Source Editor" target="editing.opening"/>
     <tocitem text="Splitting the Source Editor" target="workspace.clone"/>
     <tocitem text="Creating New Java Code" target="editing.newcode"/>
-<!--    <tocitem text="Error Marking" target="editing_error-marks"/>-->
+    <tocitem text="Error Marking" target="editing_error-marks"/>
     <tocitem text="Formatting Code" target="editing.formatting"/>
     <tocitem text="Working With Tabs" target="editing.tabs"/>
     <tocitem text="Finding and Replacing Text" target="editing.find"/>
