@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Shortcuts">
-        <file name="C-6.instance">
+        <file name="CS-6.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.core.execution.ExecutionViewAction"/>
 	</file>
     </folder>
