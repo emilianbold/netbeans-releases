@@ -454,11 +454,16 @@ public class NonGui extends NbTopManager implements Runnable {
         // Upgrade
         try {
             if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+                System.setProperty("import.canceled", "false");
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        org.netbeans.core.upgrade.UpgradeWizard.showWizard();
+                        boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard();
+                        System.setProperty("import.canceled", new Boolean(canceled).toString());
                     }
                 });
+                
+                if (Boolean.getBoolean("import.canceled"))
+                    System.exit(0);
             }
         } catch (Exception e) {
             TopManager.getDefault().getErrorManager().notify(e);
