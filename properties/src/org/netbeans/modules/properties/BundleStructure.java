@@ -196,8 +196,8 @@ public class BundleStructure extends PropertyChangeSupport {
         for (Iterator it = ps.nonEmptyItems(); it.hasNext(); )
           keyList.setAdd(((Element.ItemElem)it.next()).getKey());
       }                                    
-      else
-        System.out.println("Warning : Properties structure not created / BundleStructure.buildKeySet()");
+      else;
+        //System.out.println("Warning : Properties structure not created / BundleStructure.buildKeySet()");
     }
   }
 

@@ -249,13 +249,11 @@ public class PropertiesFileEntry extends PresentableFileEntry {
           switch (evt.getChangeType()) {
             case PropertyBundleEvent.CHANGE_STRUCT:
             case PropertyBundleEvent.CHANGE_ALL:
-//System.out.println("got CHANGE_ALL - " + getFile().getName());
               mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_FILE:
               if (evt.getEntryName().equals(getFile().getName()))
                 // if it's me
-//System.out.println("got CHANGE_FILE - " + getFile().getName());
                 mySetKeys();
               break;
             case PropertyBundleEvent.CHANGE_ITEM:
@@ -266,12 +264,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                   PropertiesStructure ps = getHandler().getStructure();
                   if (ps != null) {
                     Element.ItemElem it = ps.getItem(evt.getItemName());
-//                 System.out.println("firing -all fine " + evt.getItemName() + " , " + it.getKey());
                     kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_VALUE, null, it.getValue()));
-//                 System.out.println("fired " + evt.getItemName() + " , " + it.getValue());
                     kn.fireChange(new PropertyChangeEvent(kn, Element.ItemElem.PROP_ITEM_COMMENT, null, it.getComment()));
-//                 System.out.println("fired " + evt.getItemName() + " , " + it.getComment());
-//                 System.out.println("firing -all fine - done ");
                   }                                                                                      
                   else
                     /*System.out.println("listening to CHANGE_ITEM - propstruct is null " + evt.getItemName())*/;

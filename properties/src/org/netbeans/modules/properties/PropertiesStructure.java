@@ -78,28 +78,6 @@ System.out.println(" -------------------- ");*/
     if ((deleted.size() > 0) || (inserted.size() > 0))
       structChanged = true;
 
-/*System.out.println("struct : " + structChanged);
-System.out.println("changed : " + changed.size());
-for (int i=0; i<changed.size(); i++) {
-  Element.ItemElem itemik = (Element.ItemElem)changed.get(i);
-  System.out.println(itemik.getKey());
-  System.out.println(itemik.getValue());
-  System.out.println(itemik.getComment());
-}
-System.out.println("inserted : " + inserted.size());
-for (int i=0; i<inserted.size(); i++) {
-  Element.ItemElem itemik = (Element.ItemElem)inserted.get(i);
-  System.out.println(itemik.getKey());
-  System.out.println(itemik.getValue());
-  System.out.println(itemik.getComment());
-}
-System.out.println("deleted : " + deleted.size());
-for (int i=0; i<deleted.size(); i++) {
-  Element.ItemElem itemik = (Element.ItemElem)deleted.get(i);
-  System.out.println(itemik.getKey());
-  System.out.println(itemik.getValue());
-  System.out.println(itemik.getComment());
-}*/
 
     // assign the new structure
     items = new_items;        

@@ -211,7 +211,6 @@ public final class PropertiesDataObject extends MultiDataObject {
       
         public void propertyChange(PropertyChangeEvent evt) {
           if (evt.getPropertyName().equals(PROP_FILES)) {
-//System.out.println("got prop_files");          
             mySetKeys();                                
           }  
         }
@@ -239,6 +238,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  13   Gandalf   1.12        6/11/99  Petr Jiricka    
  *  12   Gandalf   1.11        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  11   Gandalf   1.10        6/8/99   Petr Jiricka    
