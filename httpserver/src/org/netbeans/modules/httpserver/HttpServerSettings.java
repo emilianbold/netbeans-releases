@@ -140,8 +140,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
             return running;
         }
         else {
-            // default value, which is true -> start it
-            setRunning(true);
+            // this used to be true, but it seems more reasonable not to start the server by default
+            // Fixes bug 11347
+            setRunning(false);
             return running;
         }
     }
