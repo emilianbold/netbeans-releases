@@ -14,19 +14,17 @@
 package threaddemo.util;
 
 import java.lang.ref.*;
+import java.lang.reflect.InvocationTargetException;
 import org.openide.util.Mutex;
 
-// XXX Javadoc for other classes
-// XXX need to permit doDerive/doRecreate to throw Exception
-// XXX document external clobbering
-// XXX document single-threaded nature of doRecreate + doDerive
-// XXX think about stacked derived models (e.g. File -> Phadhail -> DomProvider)
 // XXX implement!
 
 /**
  * Support for bidirectional construction of a derived model from an underlying model.
  * Based on a mutex which is assumed to control both models.
  * Handles all locking and scheduling associated with such a system.
+ * It is possible to "nest" supports so that the derived model of one is the
+ * underlying model of another - but they must still share a common mutex.
  *
  * <p>"Derive" means to take the underlying model (not represented explicitly here,
  * but assumed to be "owned" by the subclass) and produce the derived model;
@@ -105,6 +103,32 @@ import org.openide.util.Mutex;
  * derived view into a read-only mode temporarily while there is a stale underlying
  * model so that such a situation cannot arise.
  *
+ * <p>There is a kind of "external clobbering" that can occur if the view does not
+ * update itself promptly after a recreation (generally, after a change in the
+ * derived model leading to a fresh value) but only with some kind of delay. In
+ * that case an attempted change to the derived model may be working with obsolete
+ * data. The support does <em>not</em> try to handle this case; the view is
+ * responsible for detecting it and reacting appropriately.
+ *
+ * <p>Another kind of "clobbering" can occur in case the underlying model is not
+ * completely controlled by the mutex. For example, it might the native filesystem,
+ * which can change at any time without acquiring a lock in the JVM. In that case
+ * an attempted mutation may be operating against a model derived from an older
+ * state of the underlying model. Again, this support does <em>not</em> provide a
+ * solution for this problem. Subclasses should attempt to detect such a condition
+ * and recover from it gracefully, e.g. by throwing an exception from
+ * <code>doRecreate</code> or by merging changes.
+ *
+ * <p>Derivation and recreation may throw checked exceptions. In such cases the
+ * underlying and derived models should be left in a consistent state if at all
+ * possible. If derivation throws an exception, the derived model will be considered
+ * stale, but no attempt to rederive the model will be made unless the underlying
+ * model is invalidated; subsequent calls to {@link #getValueBlocking} with the
+ * same underlying model will result in the same exception being thrown repeatedly.
+ * Views should generally put themselves into a read-only mode in this case.
+ * If recreation throws an exception, this is propagated to {@link #mutate} but
+ * otherwise nothing is changed.
+ *
  * <p>You can attach a listener to this class. You will get an event when the
  * status of the support changes. All events are fired as soon as possible in the
  * read mutex.
@@ -118,6 +142,7 @@ public abstract class TwoWaySupport {
     /**
      * Create an uninitialized support.
      * No derivation or recreation is scheduled initially.
+     * @param m the associated mutex
      */
     protected TwoWaySupport(Mutex m) {
         if (m == Mutex.EVENT) throw new IllegalArgumentException("Mutex.EVENT can deadlock TwoWaySupport!");
@@ -142,6 +167,11 @@ public abstract class TwoWaySupport {
      * until it is finished. For purely functional derived models that are
      * replaced wholesale, this is not necessary.
      *
+     * <p>Note that derivations never run in parallel, even though they are in a
+     * read mutex. In this implementation, all derivations in fact run in a dedicated
+     * thread if they are invoked asynchronously using {@link #initiate}, but that
+     * may change.
+     *
      * <p>{@link TwoWayListener#derived} will be triggered after this method
      * completes. However, in the case of a derived model with internal
      * state with a complex relationship to the underlying model, it may not be
@@ -156,8 +186,9 @@ public abstract class TwoWaySupport {
      *                        particular change was signalled
      * @return the new value of the derived model (might be the same object as
      *         the old value)
+     * @throws Exception (checked only!) if derivation of the model failed
      */
-    protected abstract Object doDerive(Object oldValue, Object underlyingDelta);
+    protected abstract Object doDerive(Object oldValue, Object underlyingDelta) throws Exception;
     
     /**
      * Recreate the underlying model from the derived model.
@@ -174,16 +205,20 @@ public abstract class TwoWaySupport {
      * @param derivedDelta a change in the derived model
      * @return the new value of the derived model (might be the same object as
      *         the old value)
+     * @throws Exception (checked only!) if recreation of the underlying model failed
      */
-    protected abstract Object doRecreate(Object oldValue, Object derivedDelta);
+    protected abstract Object doRecreate(Object oldValue, Object derivedDelta) throws Exception;
     
     /**
      * Get the value of the derived model, blocking as needed until it is ready.
      * This method acquires the read mutex and may block further for
      * {@link #doDerive}.
      * @return the value of the derived model (never null)
+     * @throws InvocationTargetException if <code>doDerive</code> was called
+     *                                   and threw an exception (possibly from an
+     *                                   earlier derivation run that is still broken)
      */
-    public final Object getValueBlocking() {
+    public final Object getValueBlocking() throws InvocationTargetException {
         // XXX
         return null;
     }
@@ -220,9 +255,13 @@ public abstract class TwoWaySupport {
      * @throws ClobberException in case {@link #permitsClobbering} is false and
      *                          the old value of the derived model was stale or
      *                          missing
+     * @throws InvocationTargetException if <code>doRecreate</code> throws an
+     *                                   exception
      */
-    public final Object mutate(Object derivedDelta) throws ClobberException {
+    public final Object mutate(Object derivedDelta) throws ClobberException, InvocationTargetException {
+        if (derivedDelta == null) throw new NullPointerException();
         // XXX
+        return null;
     }
     
     /**
@@ -232,6 +271,7 @@ public abstract class TwoWaySupport {
      * @param underlyingDelta a change to the underlying model
      */
     public final void invalidate(Object underlyingDelta) {
+        if (underlyingDelta == null) throw new NullPointerException();
         // XXX
     }
 

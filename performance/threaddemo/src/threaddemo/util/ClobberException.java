@@ -32,14 +32,26 @@ public final class ClobberException extends RuntimeException {
         this.derivedDelta = derivedDelta;
     }
     
+    /**
+     * Get the associated two-way support.
+     * @return the support
+     */
     public TwoWaySupport getTwoWaySupport() {
         return s;
     }
     
+    /**
+     * Get the old value of the derived model before the attempted clobber.
+     * @return the old value, or null if it was never calculated
+     */
     public Object getOldValue() {
         return oldValue;
     }
     
+    /**
+     * Get the attempted change to the derived model.
+     * @return the derived delta
+     */
     public Object getDerivedDelta() {
         return derivedDelta;
     }
