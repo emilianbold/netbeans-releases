@@ -64,6 +64,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="write-property" classname="org.netbeans.xtest.UserPropertyWriter"/>
             <taskdef name="for" classname="org.netbeans.xtest.driver.ForTask"/>
             <taskdef name="jar-finder" classname="org.netbeans.xtest.JarFinder"/>
+            <taskdef name="ide-jvmargs" classname="org.netbeans.xtest.IdeJvmArgs"/>
         </nbtaskdef>
         
         <nbpath nbhome="${netbeans.home}" xthome="${xtest.home}" xtexhome="${xtest.home}"/>
@@ -229,9 +230,13 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
             </classpath>
         </property>
+        
         <property name="xtest.ide.commandline.suffix" value=""/>
+        <property name="xtest.jvmargs" value=""/>
+        
+        <ide-jvmargs jvmargs="${xtest.jvmargs}" property="xtest.ide.commandline.jvmargs"/>
             
-        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -cp:p &quot;${xtest.ide.path}&quot; -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=${xtest.module} -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.suffix}"/>
+        <property name="args" value="-jdkhome ${jdkhome} -userdir &quot;${xtest.userdir}&quot; -cp:p &quot;${xtest.ide.path}&quot; -nosplash -J-Dtest.class=${test.class} -J-Dtest.classpath=&quot;${test.classpath}&quot; -J-Dtest.basedir=&quot;${basedir}&quot; -J-Dtest.ant.file=&quot;${ant.file}&quot; -J-Dtest.target=${test.target} -J-Dxtest.home=&quot;${xtest.home}&quot; -J-Dxtest.includes=&quot;${xtest.includes}&quot; -J-Dxtest.excludes=&quot;${xtest.excludes}&quot; -J-Dtbag.classpath=&quot;${tbag.classpath}&quot; -J-Dtbag.patternset.include=${tbag.patternset.include} -J-Dtbag.patternset.exclude=${tbag.patternset.exclude} -J-Dtbag.testtype=${tbag.testtype} -J-Dtbag.formater=${tbag.formater} -J-Dtbag.name=&quot;${tbag.name}&quot; -J-Dtbag.executor=${tbag.executor} -J-Dxtest.module=${xtest.module} -J-Dxtest.attribs=&quot;${xtest.attribs}&quot; -J-Dxtest.distexec=true -J-Dtest.exit=true -J-Dtest.propertyfile=&quot;${test.propertyfile}&quot; -J-Dxtest.workdir=&quot;${xtest.workdir}&quot; -J-Dxtest.results=&quot;${xtest.results}&quot; -J-Dxtest.results.testrun.dir=&quot;${xtest.results.testrun.dir}&quot; -J-Dtest.output.redirect=true -J-Dnetbeans.full.hack=true -J-Dnetbeans.windows=${xtest.ide.winsys} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
         <echo message="ARGUMENTS = ${args}"/>
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.home}/lib/patches"/>
@@ -315,17 +320,15 @@ Microsystems, Inc. All Rights Reserved.
         <testbaginfo name="${tbag.name}" testType="${tbag.testtype}" testAttribs="${xtest.attribs}"
                       executor="${tbag.executor}" module="${xtest.module}"
                       outfile="${xtest.workdir}/xmlresults/testbag.xml"/>  
-        <property name="nbjunit.jvmarg" value=""/>
+        <property name="xtest.jvmargs" value=""/>
         <!-- run the tests -->
-        <nbjunit fork="${junit.fork}" printsummary="yes" timeout="${xtest.timeout}">            
+        <nbjunit fork="${junit.fork}" printsummary="yes" timeout="${xtest.timeout}" jvmargs="${xtest.jvmargs}">            
             <sysproperty key="work.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="xtest.workdir" value="${xtest.workdir}/sys"/>
             <sysproperty key="system.dir" value="${xtest.workdir}/sys"/>
             <sysproperty key="nbjunit.workdir" value="${xtest.workdir}/user"/>
             <syspropertyfile file="${test.propertyfile}"/>
-            <!--
-            <jvmarg value="${nbjunit.jvmarg}"/>
-            -->
+
             <formatter classname="org.netbeans.xtest.pe.junit.JUnitResultsReporter" extension=".xml"/>
             
             <classpath refid="test.classpath"/>
