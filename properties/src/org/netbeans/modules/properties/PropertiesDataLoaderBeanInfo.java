@@ -49,21 +49,17 @@ public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
      * describing the editable properties supported by this bean. */
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
-            PropertyDescriptor p1 = new PropertyDescriptor(
-                "displayName", // NOI18N
-                PropertiesDataLoader.class,
-                "getDisplayName", //NOI18N
-                null);
-            p1.setDisplayName(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("PROP_Name"));
-            p1.setShortDescription(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("HINT_Name"));
-            
+
             PropertyDescriptor p2 = new PropertyDescriptor(
                 "extensions", // NOI18N
                 PropertiesDataLoader.class,
                 "getExtensions", // NOI18N
                 "setExtensions"); // NOI18N
-            
-            return new PropertyDescriptor[] {p1, p2};
+
+            p2.setDisplayName(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("PROP_Ext"));
+            p2.setShortDescription(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("HINT_Ext"));
+
+            return new PropertyDescriptor[] {p2};
         } catch(IntrospectionException ie) {
             TopManager.getDefault().getErrorManager().notify(ie);
             
