@@ -115,34 +115,43 @@ class CmpRelationshipsDialogHelper {
             boolean getterChanged = origGetter != getter;
             boolean setterChanged = origSetter != setter;
             if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
-                if (fieldChanged) {
-                    ClassElement beanClass = origEntityHelper.beanClass;
-                    Utils.removeMethod(beanClass, origGetterMethod);
-                    Utils.removeMethod(beanClass, origSetterMethod);
-                }
-                if (getterChanged || fieldChanged) {
-                    Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
-                }
-                if (setterChanged || fieldChanged) {
-                    Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
+                if (origEntityHelper != null) {
+                    if (fieldChanged) {
+                        ClassElement beanClass = origEntityHelper.beanClass;
+                        Utils.removeMethod(beanClass, origGetterMethod);
+                        Utils.removeMethod(beanClass, origSetterMethod);
+                    }
+                    if (getterChanged || fieldChanged) {
+                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
+                    }
+                    if (setterChanged || fieldChanged) {
+                        Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
+                    }
                 }
                 if (fieldName != null) {
-                    EntityHelper entityHelper = ejbNameChanged ?
-                            new EntityHelper(ejbJarFile, getEntity(ejbName)) : origEntityHelper;
-                    Type type = Type.parse(fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType);
-                    MethodElement getterMethod = entityHelper.getGetterMethod(fieldName);
-                    if (getterMethod == null) {
-                        getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
+                    EntityHelper entityHelper;
+                    if (ejbNameChanged) {
+                        Entity entity = getEntity(ejbName);
+                        entityHelper = entity == null ? null : new EntityHelper(ejbJarFile, entity);
+                    } else {
+                        entityHelper = origEntityHelper;
                     }
-                    MethodElement setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
-                    if (setterMethod == null) {
-                        setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
-                    }
-                    if (getter) {
-                        Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
-                    }
-                    if (setter) {
-                        Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
+                    if (entityHelper != null) {
+                        Type type = Type.parse(fieldType == null ? getEntity(opositeEjbName).getLocal() : fieldType);
+                        MethodElement getterMethod = entityHelper.getGetterMethod(fieldName);
+                        if (getterMethod == null) {
+                            getterMethod = entityHelper.createAccessMethod(fieldName, type, true);
+                        }
+                        MethodElement setterMethod = entityHelper.getSetterMethod(fieldName, getterMethod);
+                        if (setterMethod == null) {
+                            setterMethod = entityHelper.createAccessMethod(fieldName, type, false);
+                        }
+                        if (getter) {
+                            Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), getterMethod, false, 0);
+                        }
+                        if (setter) {
+                            Utils.addMethod(entityHelper.getLocalBusinessInterfaceClass(), setterMethod, false, 0);
+                        }
                     }
                 }
             }
@@ -217,7 +226,8 @@ class CmpRelationshipsDialogHelper {
         private void populateFormFields(RelationshipHelper.RelationshipRoleHelper helper) {
             setRoleName(helper.getRoleName());
             origEjbName = helper.getEjbName();
-            origEntityHelper = new EntityHelper(ejbJarFile, getEntity(origEjbName));
+            Entity entity = getEntity(origEjbName);
+            origEntityHelper = entity == null ? null: new EntityHelper(ejbJarFile, entity);
             setEjbName(origEjbName);
             setMultiple(helper.isMultiple());
             setCascadeDelete(helper.isCascadeDelete());
@@ -232,15 +242,17 @@ class CmpRelationshipsDialogHelper {
             } else {
                 origFieldName = field.getCmrFieldName();
                 origFieldType = field.getCmrFieldType();
-                origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
-                origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
-                ClassElement localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
-                origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
-                origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
-                lastGetter = origGetter;
-                lastSetter = origSetter;
-                setLocalGetter(origGetter);
-                setLocalSetter(origSetter);
+                if (origEntityHelper != null) {
+                    origGetterMethod = origEntityHelper.getGetterMethod(origFieldName);
+                    origSetterMethod = origEntityHelper.getSetterMethod(origFieldName, origGetterMethod);
+                    ClassElement localBusinessInterfaceClass = origEntityHelper.getLocalBusinessInterfaceClass();
+                    origGetter = Utils.getMethod(localBusinessInterfaceClass, origGetterMethod) != null;
+                    origSetter = Utils.getMethod(localBusinessInterfaceClass, origSetterMethod) != null;
+                    lastGetter = origGetter;
+                    lastSetter = origSetter;
+                    setLocalGetter(origGetter);
+                    setLocalSetter(origSetter);
+                }
                 setCreateCmrField(true);
                 setFieldName(origFieldName);
                 setFieldType(origFieldType);
