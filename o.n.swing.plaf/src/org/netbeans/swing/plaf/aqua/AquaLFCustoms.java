@@ -31,31 +31,36 @@ public final class AquaLFCustoms extends LFCustoms {
     
     public Object[] createLookAndFeelCustomizationKeysAndValues() {
         Integer cus = (Integer) UIManager.get("customFontSize"); //NOI18N
-        int uiFontSize = 11;
+        Object[] result;
         if (cus != null) {
-            uiFontSize = cus.intValue();
-        }
-        Font controlFont = new GuaranteedValue (new String[] {"controlFont", "Tree.font", "Label.font"},
+            int uiFontSize = cus.intValue();
+            Font controlFont = new GuaranteedValue (new String[] {"controlFont", "Tree.font", "Label.font"},
                                                 new FontUIResource("Dialog", Font.PLAIN, uiFontSize)).getFont(); //NOI18N
+            result = new Object[] {
+                "Button.font", controlFont,
+                "Tree.font", controlFont,
+                "ToggleButton.font", controlFont,
+                "Menu.font", controlFont,
+                "MenuBar.font", controlFont,
+                "MenuItem.font", controlFont,
+                "CheckBoxMenuItem.font", controlFont,
+                "RadioButtonMenuItem.font", controlFont,
+                "PopupMenu.font", controlFont,
+                "List.font", controlFont,
+                "Label.font", controlFont,
+                "ComboBox.font", controlFont, 
+                "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                 SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
 
-        Object[] result = {
-            "Button.font", controlFont,
-            "Tree.font", controlFont,
-            "ToggleButton.font", controlFont,
-            "Menu.font", controlFont,
-            "MenuBar.font", controlFont,
-            "MenuItem.font", controlFont,
-            "CheckBoxMenuItem.font", controlFont,
-            "RadioButtonMenuItem.font", controlFont,
-            "PopupMenu.font", controlFont,
-            "List.font", controlFont,
-            "Label.font", controlFont,
-            "ComboBox.font", controlFont,
-            "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
-            "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
-             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
-
-        }; //NOI18N
+            }; //NOI18N
+        } else {
+            result = new Object[] {
+                "PopupMenuSeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                "SeparatorUI", "org.netbeans.swing.plaf.aqua.AquaSeparatorUI",
+                 SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.AquaSlidingButtonUI",
+            }; 
+        }
         return result;
     }
 
