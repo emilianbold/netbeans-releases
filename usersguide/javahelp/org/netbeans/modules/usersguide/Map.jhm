@@ -445,7 +445,6 @@
 <mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
 <mapID target="webmod_abouttagf" url="web/webmod/mod_tagf_about.html" />
 <mapID target="war_delete" url="web/warpkg/war_delete.html" />
-<mapID target="war_editprop" url="web/warpkg/war_editprop.html" />
 <mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
 <mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
 <mapID target="mod_process" url="web/overvw/mod_process.html" />
@@ -1194,8 +1193,6 @@
 
 <mapID target="org.netbeans.modules.web.core.jsploader.ServletDataNode" 
     url="web/concepts/servlet.html" /> <!-- TEMP -->
-<mapID target="org.netbeans.modules.web.core.jsploader.ServletProperties" 
-    url="web/servlet/servlet_props.html" />
 
 <mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
 	url="web/concepts/jsp.html" />
