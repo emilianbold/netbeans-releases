@@ -100,7 +100,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
         ProjectModel pm = (ProjectModel) wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL);
         File projDir = pm.getNBProjectFolder();//(File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);
         File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
-        if (!antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml")) { // NOI18N
+        if (!(antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml"))) { // NOI18N
             // NON-DEFAULT location of build file
             component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}"); // NOI18N
         }
