@@ -23,7 +23,7 @@ public class jemmy_017 extends JemmyTest {
 		    setDefaultComponentVisualizer(new DefaultVisualizer());
 	    } else {
 		ComponentOperator.
-		    setDefaultComponentVisualizer(new MouseVisualizer());
+		    setDefaultComponentVisualizer(new MouseVisualizer(MouseVisualizer.TOP, .5, 5, false));
 	    }
 
 	    JemmyProperties.getCurrentTimeouts().setTimeout("ComponentOperator.WaitComponentTimeout", 20000);
