@@ -605,6 +605,11 @@ is divided into following sections:
                         <attribute>
                             <xsl:attribute name="name">Class-Path</xsl:attribute>
                             <xsl:attribute name="value">
+                                <!-- classpath element for directories -->
+                                <xsl:if test="//ejbjarproject3:included-library[(@dirs &gt; 0)]">
+                                    <xsl:text>. </xsl:text>
+                                </xsl:if>
+                                <!-- cp elements for included libraries and files -->
                                 <xsl:for-each select="//ejbjarproject3:included-library">
                                     <xsl:variable name="base.prop.name">
                                         <xsl:value-of select="concat('included.lib.', .)"/>
