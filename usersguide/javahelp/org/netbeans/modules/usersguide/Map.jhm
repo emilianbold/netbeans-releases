@@ -1107,6 +1107,8 @@
    <mapID target="org.netbeans.modules.autoupdate.ResultsPanel" url="modules/autoupdate.html" />
    <mapID target="org.netbeans.modules.autoupdate.SelectModulesPanel" url="modules/autoupdate.html" />
 
+   <mapID target="org.netbeans.modules.autoupdate.AutoCheckInfo" url="modules/autoupdate.html" />
+   
 <!--this ID applies only to FFJ update center -->
    <mapID target="org.netbeans.modules.autoupdateffj.QuantumLoginPanel" url="modules/autoupdate.html" />
 
