@@ -33,6 +33,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 
 /**
@@ -63,6 +64,8 @@ public class ProjectModel  {
     
     public static final String TYPE_JAVA = "java"; // NOI18N
     public static final String CLASSPATH_MODE_COMPILE = "compile"; // NOI18N
+    //Upper bound of sourse level supported by the java freeform project
+    private static final SpecificationVersion JDK_MAX_SUPPORTED_VERSION = new SpecificationVersion ("1.5"); //NOI18N
     
     private ProjectModel(File baseFolder, File nbProjectFolder, PropertyEvaluator evaluator, List sourceFolders, List compUnits) {
         this.baseFolder = baseFolder;
@@ -652,7 +655,11 @@ public class ProjectModel  {
      */
     public static String getDefaultSourceLevel() {
         JavaPlatform platform = JavaPlatform.getDefault();
-        return platform.getSpecification().getVersion().toString();
+        SpecificationVersion sv = platform.getSpecification().getVersion();
+        if (sv.compareTo(JDK_MAX_SUPPORTED_VERSION)>0) {
+            sv = JDK_MAX_SUPPORTED_VERSION;
+        }
+        return sv.toString();
     }
     
     public boolean isTestSourceFolder(int index) {
