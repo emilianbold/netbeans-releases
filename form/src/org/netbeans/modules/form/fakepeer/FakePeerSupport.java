@@ -64,7 +64,7 @@ public class FakePeerSupport
             return false;
 
         attachFakePeer(comp, peer);
-        return false;
+        return true;
     }
 
     public static void attachFakePeer(Component comp, ComponentPeer peer) {
