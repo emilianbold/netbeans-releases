@@ -147,11 +147,11 @@ public class WebProjectProperties {
     
     // Well known paths
     public static final String[] WELL_KNOWN_PATHS = new String[] {            
-            "${" + JAVAC_CLASSPATH + "}", 
-            "${" + JAVAC_TEST_CLASSPATH  + "}", 
-            "${" + RUN_TEST_CLASSPATH  + "}", 
-            "${" + BUILD_CLASSES_DIR  + "}", 
-            "${" + BUILD_TEST_CLASSES_DIR  + "}", 
+            "${" + JAVAC_CLASSPATH + "}", //NOI18N
+            "${" + JAVAC_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + RUN_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + BUILD_CLASSES_DIR  + "}", //NOI18N
+            "${" + BUILD_TEST_CLASSES_DIR  + "}", //NOI18N
     };
     
     // Prefixes and suffixes of classpath
@@ -573,8 +573,8 @@ public class WebProjectProperties {
                     ep.setProperty(prop, value);
                     ep.setComment(prop, new String[]{
                         // XXX this should be I18N! Not least because the English is wrong...
-                        "# Property "+prop+" is set here just to make sharing of project simpler.",
-                        "# The library definition has always preference over this property."}, false);
+                        "# Property "+prop+" is set here just to make sharing of project simpler.", //NOI18N
+                        "# The library definition has always preference over this property."}, false); //NOI18N
                     changed = true;
                 }
             }
@@ -759,22 +759,22 @@ public class WebProjectProperties {
             }
             String key;
             if (files.size() > 0) {
-                key = getAntPropertyName(item.getRaw())+".libfiles";
+                key = getAntPropertyName(item.getRaw())+".libfiles"; //NOI18N
                 exLibs.remove(key);
                 for (int i = 0; i < files.size(); i++) {
                     FileObject fo = (FileObject) files.get(i);
-                    key = getAntPropertyName(item.getRaw())+".libfile." + (i+1);
-                    privateProps.setProperty (key, "" + fo.getPath ());
+                    key = getAntPropertyName(item.getRaw())+".libfile." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + fo.getPath ()); //NOI18N
                     exLibs.remove(key);
                 }
             }
             if (dirs.size() > 0) {
-                key = getAntPropertyName(item.getRaw())+".libdirs";
+                key = getAntPropertyName(item.getRaw())+".libdirs"; //NOI18N
                 exLibs.remove(key);
                 for (int i = 0; i < dirs.size(); i++) {
                     FileObject fo = (FileObject) dirs.get(i);
-                    key = getAntPropertyName(item.getRaw())+".libdir." + (i+1);
-                    privateProps.setProperty (key, "" + fo.getPath ());
+                    key = getAntPropertyName(item.getRaw())+".libdir." + (i+1); //NOI18N
+                    privateProps.setProperty (key, "" + fo.getPath ()); //NOI18N
                     exLibs.remove(key);
                 }
             }
