@@ -8,5 +8,3 @@ OpenIDE-Module-Specification-Version: 0.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.httpserver/1
 
-Name: org/netbeans/modules/extbrowser/ExtBrowserSettings.class
-OpenIDE-Module-Class: Option
