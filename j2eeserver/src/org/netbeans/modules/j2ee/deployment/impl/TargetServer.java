@@ -180,12 +180,11 @@ public class TargetServer {
                 // content dir or context root changes since last deploy
                 if ((currentContentDir != null && ! currentContentDir.equals(lastContentDir)) ||
                       (contextRoot != null && ! contextRoot.equals(deployed.getContextRoot()))) {
-                    System.out.println("Changed references:" +currentContentDir);      
+                    
                     undeployTMIDs.add(deployed.delegate());
                     distributeTargets.add(deployed.findTarget());
                     j.remove();
                 }
-                    System.out.println("Changed references:" +currentContentDir);      
             }
         }
         
