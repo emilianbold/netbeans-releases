@@ -422,6 +422,39 @@ in a css termonolgy. Acceptable values are as follows:
 
 </div>
 
+<h2><a name="external-links">Extension of nbdocs protocol</a></h2>
+<div class="nonnormative">
+As documentation is modular ie. it is defined across modules it is possible to define
+link in documentation from one module to another module. When referred module is not
+present or is not enabled such link becomes invalid. We extended nbdocs protocol to handle
+such case by frendlier way. Now it is possible to place at URL host name position base name
+of referred module. Instead of
+<pre>
+nbdocs:/org/nb/mod/foo/docs/somepage.html
+</pre>
+it is possible to use:
+<pre>
+nbdocs://org.nb.mod.bar/org/nb/mod/foo/docs/somepage.html
+</pre>
+where <code>org.nb.mod.bar</code> is module base name. Referred module is checked if it is present
+and enabled in IDE. If yes link is handled as usual. If not informational page is created and displayed.
+Page template is located at <code>core/javahelp/src/org/netbeans/modules/javahelp/resources</code> as 
+<code>notEnabledModule.html</code>
+and <code>notInstalledModule.html</code> so they can be localized.<br><br>
+
+Example: In Users Guide module there is link to HTTP Monitor module:
+<pre>
+&lt;a href="nbdocs:/org/netbeans/modules/web/monitor/docs/monitor/ctx_monitorintro.html"&gt;
+Monitoring Data Flow on the Web Server&lt;/a&gt;
+</pre>
+After adding module base name it will be:
+<pre>
+&lt;a href="nbdocs://org.netbeans.modules.web.monitor/org/netbeans/modules/web/monitor/docs/monitor/ctx_monitorintro.html"&gt;
+Monitoring Data Flow on the Web Server&lt;/a&gt;
+</pre>
+
+</div>
+
 <hr>
 @FOOTER@
 </body>
