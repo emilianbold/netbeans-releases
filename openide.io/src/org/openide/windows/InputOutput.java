@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,10 +20,18 @@ import java.io.OutputStreamWriter;
 import org.openide.util.io.NullOutputStream;
 import org.openide.util.io.NullInputStream;
 
-/** An I/O connection to one tab on the Output Window.
+/** An I/O connection to one tab on the Output Window.  To acquire an instance
+ * to write to, call, e.g., 
+ * <code>IOProvider.getDefault().getInputOutput("someName", false)</code>.
+ * To get actual streams to write to, call <code>getOut()</code> or <code>
+ * getErr()</code> on the returned instance.
  * <p>
- * Note: take also a look at the class OutputWriter. The method to clean
- * an Output tab resides there.
+ * Generally it is preferable not to hold a reference to an instance of 
+ * <code>InputOutput</code>, but rather to fetch it by name from <code>IOProvider</code> as
+ * needed.<p>
+ * <b>Note:</b> For historical reasons, the mechanism to clear an output tab
+ * is via the method <code>OutputWriter.reset()</code>, though it would have
+ * made more sense implemented here.
  * 
  * @see OutputWriter
  * @author   Ian Formanek, Jaroslav Tulach, Petr Hamernik, Ales Novak, Jan Jancura
@@ -54,22 +62,27 @@ public interface InputOutput {
     */
     public OutputWriter getErr();
 
-    /** Closes this tab. */
+    /** Closes this tab.  The effect of calling any method on an instance
+     * of InputOutput after calling closeInputOutput() on it is undefined.
+     */
     public void closeInputOutput();
 
-    /** Test whether this tab is closed.
+    /** Test whether this tab has been closed, either by a call to closeInputOutput()
+    * or by the user closing the tab in the UI.
+    *
     * @see #closeInputOutput
     * @return <code>true</code> if it is closed
     */
     public boolean isClosed();
 
-    /** Show or hide the standard output pane.
+    /** Show or hide the standard output pane, if separated. Does nothing in either
+    * of the available implementations of this API.
     * @param value <code>true</code> to show, <code>false</code> to hide
     */
     public void setOutputVisible(boolean value);
 
-    /** Show or hide the error pane.
-    * If the error is mixed into the output, this may not be useful.
+    /** Show or hide the error pane, if separated.  Does nothing in either
+    * of the available implementations of this API.
     * @param value <code>true</code> to show, <code>false</code> to hide
     */
     public void setErrVisible(boolean value);
@@ -80,27 +93,33 @@ public interface InputOutput {
     public void setInputVisible(boolean value);
 
     /**
-    * Make this pane visible.
-    * For example, may select this tab in a multi-window.
+    * Ensure this pane is visible.
     */
     public void select ();
 
     /** Test whether the error output is mixed into the regular output or not.
+    * Always true for both available implementations of this API.
     * @return <code>true</code> if separate, <code>false</code> if mixed in
     */
     public boolean isErrSeparated();
 
     /** Set whether the error output should be mixed into the regular output or not.
+    * Note that this method is optional and is not supported by either of the
+    * current implementations of InputOutput (core/output and core/output2).
     * @return <code>true</code> to separate, <code>false</code> to mix in
     */
     public void setErrSeparated(boolean value);
 
     /** Test whether the output window takes focus when anything is written to it.
-    * @return <code>true</code> if so
+    * @return <code>true</code> if any write to the tab should cause it to gain
+    * keyboard focus <strong>(not recommended)</strong>
     */
     public boolean isFocusTaken();
 
     /** Set whether the output window should take focus when anything is written to it.
+    * <strong>Note that this really means the output window will steal keyboard
+    * focus whenever a line of output is written.  This is generally an extremely
+    * bad idea and strongly recommended against by most UI guidelines.</strong> 
     * @return <code>true</code> to take focus
     */
     public void setFocusTaken(boolean value);
@@ -108,6 +127,7 @@ public interface InputOutput {
     /** Flush pending data in the input-line's reader.
     * Called when the reader is about to be reused.
     * @return the flushed reader
+    * @deprecated meaningless, does nothing
     */
     public Reader flushReader();
 

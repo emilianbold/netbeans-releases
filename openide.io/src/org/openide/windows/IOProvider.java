@@ -21,7 +21,11 @@ import java.io.Reader;
 import java.io.StringWriter;
 import org.openide.util.Lookup;
 
-/** Serves as a factory for I/O tabs.
+/** A factory for IO tabs shown in the output window.  To create a new tab to
+ * write to, call e.g. <code>IOProvider.getDefault().getIO("MyTab", false)</code>
+ * (pass true if there may be an existing tab with the same name and you want
+ * to write to a new tab).
+ *
  * @author Jesse Glick
  * @since 3.14
  */
@@ -46,10 +50,15 @@ public abstract class IOProvider {
     /** Subclass constructor. */
     protected IOProvider() {}
 
-    /** Support reading from and writing to a specific tab on the Output Window or a similar output device.
-     * @param name desired name of the tab
+    /** 
+     * Get a named instance of InputOutput, which represents an output tab in
+     * the output window.  Streams for reading/writing can be accessed via
+     * getters on the returned instance.
+     *
+     * @param name A localized display name for the tab
      * @param newIO if <tt>true</tt>, a new <code>InputOutput</code> is returned, else an existing <code>InputOutput</code> of the same name may be returned
-     * @return an <code>InputOutput</code> class for accessing the new tab
+     * @return an <code>InputOutput</code> instance for accessing the new tab
+     * @see InputOutput
      */
     public abstract InputOutput getIO(String name, boolean newIO);
 
