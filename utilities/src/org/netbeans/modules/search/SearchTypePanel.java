@@ -459,11 +459,16 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
         SearchType searchType;
         ObjectInputStream ois = null;
         try {
-            ois = new ObjectInputStream(
+            ois = new SearchTypeInputStream(
                     new ByteArrayInputStream(c.criterionData));
             searchType = (SearchType) ois.readObject();
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);       //PENDING
+            String msg = NbBundle.getMessage(
+                    SearchTypePanel.class,
+                    "TEXT_MSG_Error_while_loading_criterion");          //NOI18N
+            ErrorManager.getDefault().notify(
+                    ErrorManager.EXCEPTION,
+                    ErrorManager.getDefault().annotate(ex, msg));
             return;
         } finally {
             if (ois != null) {
