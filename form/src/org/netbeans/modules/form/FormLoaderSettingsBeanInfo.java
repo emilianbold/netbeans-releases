@@ -17,13 +17,9 @@ package org.netbeans.modules.form;
 import java.awt.Image;
 import java.beans.*;
 import java.lang.reflect.Modifier;
-import java.util.ResourceBundle;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Iterator;
+import java.util.*;
 
 import org.openide.TopManager;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
@@ -328,20 +324,19 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
             initializeNamesMap(wss);
 
             // exclude browsing, running and debugging workspaces
-            java.util.Vector tagList = new java.util.Vector();
+            List tagList = new ArrayList();
             for (int i = wss.length; --i >= 0;) {
                 String name = wss[i].getName();
                 if (!("Browsing".equals(name) || "Running".equals(name) || "Debugging".equals(name))) { // NOI18N
                     tagList.add(name);
                 }
             }
-            // XXX(-tdt)
-            // tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
+            tagList.add(FormEditor.getFormBundle().getString("VALUE_WORKSPACE_NONE")); // NOI18N
+
             String[] names = new String [tagList.size()]; // + 1];
             for (int i=0, n = tagList.size(); i < n; i++)
                 names[i] = (String)namesMap.get(tagList.get(i));
 
-//            names[tagList.size()] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
             return names;
         }
 
