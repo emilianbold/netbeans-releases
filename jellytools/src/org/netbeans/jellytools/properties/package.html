@@ -1,0 +1,51 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+     <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+ 
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+  <title></title>
+</head>
+  <body bgcolor="white">
+ Provides a set of classes for setting properties. 
+<p>  In the IDE properties settings happens through so called property sheets.
+ Property sheet can be docked to any other window. Property sheet consists
+ of toolbar ({@link org.netbeans.jellytools.properties.PropertySheetToolbarOperator
+PropertySheetToolbarOperator}) and tabbed pane ({@link org.netbeans.jellytools.properties.PropertySheetOperator
+PropertySheetOperator}). Each tab in pane ({@link org.netbeans.jellytools.properties.PropertySheetTabOperator
+PropertySheetTabOperator}) shows pairs of property name and property value.
+Property names are collected in left panel and property values are colected
+in right panel.To edit a property, user have to click on property name in
+the left panel. Then property value become editable - text field or combo
+box appears. That means properties in IDE can be classified into two categories:
+ </p>
+<ul>
+   <li> text field property - JTextField used to enter a new value</li>
+   <li> combo box property - JComboBox used to enter a new value</li>
+ 
+</ul>
+  Both these types become editable by mouse click or enter keystroke. Also
+ both these types can have associated custom editor which can be invoked
+by "..." button press.<br>
+ You can extend {@link TextFieldProperty} or {@link ComboBoxProperty}, if 
+you want to create your specific property. Some common properties are already 
+created in this package (ColorProperty, PointProperty, ...).<br>
+ Properties can be used the following way:<br>
+ 
+<pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PropertySheetOperator pso = new PropertySheetOperator("Properties of MyClass");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PropertySheetTabOperator psto = new PropertySheetTabOperator(pso, "Properties");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TextFieldProperty pr = new TextFieldProperty(psto, "Name");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pr.setValue("NewValue");</pre>
+ Common custom editors are grouped in package {@link org.netbeans.jellytools.properties.editors 
+editors}.<br>
+ 
+<p></p>
+ <br>
+</body>
+</html>
