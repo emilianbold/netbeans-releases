@@ -86,17 +86,21 @@ final class FreeformSources implements Sources, AntProjectListener {
         return h.createSources();
     }
     
-    public synchronized void addChangeListener(ChangeListener changeListener) {
-        listeners.add(changeListener);
+    public void addChangeListener(ChangeListener changeListener) {
+        synchronized (listeners) {
+            listeners.add(changeListener);
+        }
     }
     
-    public synchronized void removeChangeListener(ChangeListener changeListener) {
-        listeners.remove(changeListener);
+    public void removeChangeListener(ChangeListener changeListener) {
+        synchronized (listeners) {
+            listeners.remove(changeListener);
+        }
     }
     
     private void fireChange() {
         ChangeListener[] _listeners;
-        synchronized (this) {
+        synchronized (listeners) {
             delegate = null;
             if (listeners.isEmpty()) {
                 return;
