@@ -1,1 +1,2 @@
 org.netbeans.modules.debugger.jpda.ui.DebuggerOutput
+org.netbeans.modules.debugger.jpda.ui.BreakpointOutput

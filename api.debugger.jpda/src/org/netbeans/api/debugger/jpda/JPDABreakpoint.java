@@ -15,13 +15,11 @@ package org.netbeans.api.debugger.jpda;
 
 import com.sun.jdi.request.EventRequest;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import org.netbeans.api.debugger.Breakpoint;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -54,11 +52,12 @@ public class JPDABreakpoint extends Breakpoint {
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
-    private String                      printText = null;
+    private String                      printText;
     private HashSet                     breakpointListeners = new HashSet ();
     
    
     JPDABreakpoint () {
+        printText = NbBundle.getBundle(JPDABreakpoint.class).getString("CTL_Default_Print_Text");
     }
     
 
@@ -97,7 +96,7 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Sets value of hidden property.
      *
-     * @param s a new value of hidden property
+     * @param h a new value of hidden property
      */
     public void setHidden (boolean h) {
         if (h == hidden) return;
@@ -118,7 +117,7 @@ public class JPDABreakpoint extends Breakpoint {
     /**
      * Sets value of print text property.
      *
-     * @param s a new value of print text property
+     * @param printText a new value of print text property
      */
     public void setPrintText (String printText) {
         if (this.printText == printText) return;

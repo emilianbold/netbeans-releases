@@ -13,25 +13,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.Runnable;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.HashSet;
-import javax.swing.SwingUtilities;
-
-import org.netbeans.api.debugger.Breakpoint;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
-import org.netbeans.api.debugger.LookupProvider;
-import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.AbstractDICookie;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
@@ -268,6 +256,9 @@ PropertyChangeListener {
             print ("CTL_Step_Over", where, null, null);
     }
 
+    IOManager getIOManager() {
+        return ioManager;
+    }
 
     // helper methods ..........................................................
 
