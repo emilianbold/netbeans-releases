@@ -259,17 +259,17 @@ public class PanelSourceFolders extends SettingsPanel {
 
         String ploc = destFolder.getAbsolutePath ();
         String sloc = f.getAbsolutePath ();
-        if (ploc.equals (sloc) || ploc.startsWith (sloc)) {
+        if (ploc.equals (sloc) || ploc.startsWith (sloc + File.separatorChar)) {
             return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
         }
 
         if (tests.length()>0) {
             File tf = FileUtil.normalizeFile(new File (tests));
             String tloc = tf.getAbsolutePath();
-            if (ploc.equals(tloc) || ploc.startsWith(tloc)) {
+            if (ploc.equals(tloc) || ploc.startsWith(tloc + File.separatorChar)) {
                 return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalProjectFolder");
             }
-            if (tloc.equals(sloc) || tloc.startsWith(sloc) || sloc.startsWith(tloc)) {
+            if (tloc.equals(sloc) || tloc.startsWith(sloc + File.separatorChar) || sloc.startsWith(tloc + File.separatorChar)) {
                 return NbBundle.getMessage(PanelSourceFolders.class,"MSG_IllegalTests");
             }
         }
