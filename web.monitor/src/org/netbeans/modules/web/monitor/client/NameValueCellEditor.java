@@ -45,9 +45,11 @@ import org.openide.util.HelpCtx;
 
 import org.openide.util.NbBundle;
 
-public class NameValueCellEditor extends DefaultCellEditor {
+/* Should this one get the events from the Param editor? MAO, far
+ * Param editorn vara non-modal? */
+public class NameValueCellEditor extends DefaultCellEditor  {
 
-    private final static boolean debug = false;
+    private final static boolean debug = true;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     private static String editNameAndValueTitle;
@@ -124,10 +126,12 @@ public class NameValueCellEditor extends DefaultCellEditor {
     public void showParamEditor() {
 
 	ParamEditor pe;
-	boolean modal = false;
+
+	// The editor is modal unless it is used for viewing only
+	boolean modal = (type > DisplayTable.UNEDITABLE);
+	
 	int currentRow = table.getSelectedRow();
 	String title;
-	
 	TableModel model = table.getModel();
 
 	if(debug) 
@@ -141,6 +145,8 @@ public class NameValueCellEditor extends DefaultCellEditor {
 	    title = msgs.getString("MON_Edit_param"); 
 	else if(type == DisplayTable.REQUEST) 
 	    title = msgs.getString("MON_Edit_request"); 
+	else if(type == DisplayTable.COOKIES) 
+	    title = msgs.getString("MON_Edit_cookie"); 
 	else if(type == DisplayTable.SERVER) 
 	    title = msgs.getString("MON_Edit_server"); 
 	// This should not happen
@@ -155,14 +161,22 @@ public class NameValueCellEditor extends DefaultCellEditor {
 			     nameEditable, 
 			     (type > DisplayTable.UNEDITABLE), 
 			     title);
-	
+
 	pe.showDialog(modal);
+
+	if(debug) 
+	    System.out.println("NameValueCellEditor::has " + //NOI18N
+			       pe.getName() + " " + pe.getValue());//NOI18N
+
 	if ((type > DisplayTable.UNEDITABLE) && pe.getDialogOK()) {
+	    if(debug) System.out.println("Updating the model");//NOI18N
+	    
 	    if (nameEditable) {
 		model.setValueAt(pe.getName(), currentRow, 0);
+		if(debug) System.out.println("Updated the name");//NOI18N
 	    }
 	    model.setValueAt(pe.getValue(), currentRow, 1);
+	    if(debug) System.out.println("Updated the value");//NOI18N
 	}
     }
-
 } // NameValueCellEditor

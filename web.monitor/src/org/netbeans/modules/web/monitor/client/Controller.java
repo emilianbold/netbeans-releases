@@ -65,6 +65,12 @@ import org.netbeans.modules.web.monitor.data.*;
 
 public class Controller  {
 
+
+    // REPLAY strings - must be coordinated with server.MonitorFilter
+    public final static String REPLAY="netbeans.replay"; //NOI18N
+    public final static String REPLAYSTATUS="netbeans.replay.status"; //NOI18N
+    public final static String REPLAYSESSION="netbeans.replay.session"; //NOI18N
+
     static java.util.ResourceBundle resBundle =
 	NbBundle.getBundle(TransactionView.class);
 
@@ -568,7 +574,7 @@ public class Controller  {
 	}
 	
 	try {
-	    replayTransaction(md, replayDirStr);
+	    replayTransaction(md, replayDirStr); 
 	}
 	catch(UnknownHostException uhe) {
 	    throw uhe;
@@ -583,6 +589,7 @@ public class Controller  {
      */
     public void replayTransaction(MonitorData md, String status)
 	throws UnknownHostException, IOException  {
+	
 	if(debug) 
 	    log("Replay transaction from transaction file "); //NOI18N 
 	URL url = null;
@@ -592,14 +599,20 @@ public class Controller  {
 	    
 	    StringBuffer uriBuf = new StringBuffer(128);
 	    uriBuf.append(md.getRequestData().getAttributeValue("uri")); //NOI18N 
-	    uriBuf.append("?ffj_resend="); //NOI18N 
+	    uriBuf.append("?"); //NOI18N 
+	    uriBuf.append(REPLAY); 
+	    uriBuf.append("="); //NOI18N 
 	    uriBuf.append(md.getAttributeValue("id")); //NOI18N 
-	    uriBuf.append("&ffj_status="); //NOI18N 
+	    uriBuf.append("&"); //NOI18N 
+	    uriBuf.append(REPLAYSTATUS); 
+	    uriBuf.append("="); //NOI18N 
 	    uriBuf.append(status);
 
 	    if(md.getRequestData().getReplaceSessionCookie()) { 
-		uriBuf.append("&netbeans_session=");
-		uriBuf.append("12434");
+		uriBuf.append("&"); //NOI18N 
+		uriBuf.append(REPLAYSESSION); 
+		uriBuf.append("="); //NOI18N 
+		uriBuf.append(md.getRequestData().getSessionID());
 	    }
 	    url = new URL("http", name, port, uriBuf.toString()); //NOI18N 
 	}
@@ -919,6 +932,10 @@ public class Controller  {
 	    log("Setting useBrowserCookie to " + //NOI18N
 		String.valueOf(useBrowserCookie));
     }
+
+    public boolean getUseBrowserCookie() { 
+	return useBrowserCookie; 
+    }
     
     // PENDING - should just pass the ID to replay, would be more
     // efficient. 
@@ -959,8 +976,6 @@ public class Controller  {
 		log("Node is not in the hashtable yet"); //NOI18N 
 	    MonitorData md = retrieveMonitorData(id, dir);
 	    ht.put(id, md);
-
-
 	}
         
 	return (MonitorData)ht.get(id);
@@ -999,13 +1014,15 @@ public class Controller  {
 	
 	MonitorData md = null;
 
-	FileObject fo = dir.getFileObject(id, "xml"); // NOI18N
-	if(debug) log("From file: " + fo.getName()); //NOI18N 
+	FileObject fo = null;
+	
 
 	FileLock lock = null; 
 	InputStreamReader in = null;
 	
 	try {
+	    fo = dir.getFileObject(id, "xml"); // NOI18N
+	    if(debug) log("From file: " + fo.getName()); //NOI18N 
 	    if(debug) log("Locking " + fo.getName()); //NOI18N 
 	    lock = fo.lock();
 	    if(debug) log("Getting InputStreamReader"); //NOI18N 

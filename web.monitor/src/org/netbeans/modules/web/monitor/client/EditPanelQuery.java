@@ -307,14 +307,16 @@ public class EditPanelQuery extends DataDisplay {
 			repaint();
 		    }
 		}});
-	++gridy;
 	int gridx = -1;
-	addGridBagComponent(this, createGlue(), ++gridx, gridy,
+	addGridBagComponent(this,
+			    editPanel.createSessionButtonPanel(),
+			    ++gridx, ++gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    buttonInsets,
+			    tableInsets,
 			    0, 0);
+
 	addGridBagComponent(this, createGlue(), ++gridx, gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,

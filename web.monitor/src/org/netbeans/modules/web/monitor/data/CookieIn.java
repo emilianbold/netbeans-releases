@@ -33,6 +33,11 @@ public class CookieIn extends BaseBean {
 	this.setAttributeValue("value", cookie.getValue());//NOI18N
     }
 
+    public CookieIn(String name, String value) {
+	this.setAttributeValue("name", name);//NOI18N
+	this.setAttributeValue("value", value);//NOI18N
+    }
+
     public CookieIn(int options) {
 	super(CookieIn.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
@@ -51,6 +56,32 @@ public class CookieIn extends BaseBean {
 	return true;
     }
 
+        
+    /**
+       * Get the value of name.
+       * @return Value of name.
+       */
+    public String getName() {return this.getAttributeValue("name");}
+    
+    /**
+       * Set the value of Name.
+       * @param v  Value to assign to name.
+       */
+    public void setName(String  v) {this.setAttributeValue("name", v);}
+    
+
+    /**
+       * Get the value of value.
+       * @return Value of value.
+       */
+    public String getValue() {return this.getAttributeValue("value");}
+    
+    /**
+       * Set the value of value.
+       * @param v  Value to assign to value.
+       */
+    public void setValue(String  v)  {this.setAttributeValue("value", v);}
+    
     //
     static public void addComparator(BeanComparator c)
     {

@@ -30,6 +30,8 @@ public class RequestData extends BaseBean {
     static public final String REQUESTATTRIBUTESOUT = 
 	"RequestAttributesOut"; //NOI18N
     static public final String REQUESTDATA = "RequestData"; //NOI18N
+
+    public final static String JSESSIONID = "JSESSIONID"; // NOI18N
     
     static private final boolean debug = false;
     
@@ -193,6 +195,283 @@ public class RequestData extends BaseBean {
     {
 	return this.removeValue(PARAM, value);
     }
+
+    public String getSessionID() {
+	return findSessionID(getCookieString());
+    }
+    
+
+    public String getCookieString() {
+	Param[] headers = getHeaders().getParam();
+	String cookieStr = null;
+	int len = headers.length;
+	for(int j=0; j<len; ++j) {
+	    if(headers[j].getName().equalsIgnoreCase("cookie")) { //NOI18N
+		cookieStr = headers[j].getValue();
+		break;
+	    }
+	}
+	return cookieStr;
+    }
+    
+	    
+
+    static public String findSessionID(String cookieStr) {
+
+	if(cookieStr == null || cookieStr.equals("")) 
+	    return ""; //NOI18N
+	
+	StringTokenizer tok = new StringTokenizer(cookieStr,
+						  ";", false); // NOI18N
+	    
+	while (tok.hasMoreTokens()) {
+		
+	    String token = tok.nextToken();
+	    int i = token.indexOf("="); // NOI18N
+	    if (i > -1) {
+
+		// PENDING (from tomcat source)
+		// the trims here are a *hack* -- this should
+		// be more properly fixed to be spec compliant
+			
+		String name = token.substring(0, i).trim();
+		if(name.equals(JSESSIONID)) {
+		    String value = token.substring(i+1, token.length()).trim();
+		    return value=stripQuote(value);
+		}
+	    }
+	}
+	return ""; //NOI18N
+    }
+    
+
+    public Param[] getCookiesAsParams() {
+
+	Param[] headers = getHeaders().getParam();
+	String cookieStr = null;
+	int len = headers.length;
+	for(int j=0; j<len; ++j) {
+	    if(headers[j].getName().equalsIgnoreCase("cookie")) { //NOI18N
+		cookieStr = headers[j].getValue();
+		break;
+	    }
+	}
+	
+	if(cookieStr == null || cookieStr.equals("")) 
+	    return new Param[0];
+		
+	Vector cookies = new Vector();
+	    
+	StringTokenizer tok = new StringTokenizer(cookieStr,
+						  ";", false); // NOI18N
+	    
+	while (tok.hasMoreTokens()) {
+		
+	    String token = tok.nextToken();
+	    int i = token.indexOf("="); // NOI18N
+	    if (i > -1) {
+
+		// PENDING (from tomcat source)
+		// the trims here are a *hack* -- this should
+		// be more properly fixed to be spec compliant
+			
+		String name = token.substring(0, i).trim();
+		String value = token.substring(i+1, token.length()).trim();
+		
+		// RFC 2109 and bug 
+
+		value=stripQuote(value);
+		    
+		// Do we use the session cookie from the original
+		// request or from the browser?
+		/*
+		if(name.equals(JSESSIONID) && !replaceSession) {
+		    continue;
+		}
+		*/
+		Param  cookie = new Param(name, value);
+		cookies.addElement(cookie);
+	    }
+	}
+	int numCookies = cookies.size();
+	Param[] params = new Param[numCookies]; 
+	for(int k=0; k<numCookies; ++k) 
+	    params[k] = (Param)cookies.elementAt(k);
+	
+	return params;
+	
+	    /*
+	      if(!replaceSession) {
+	      // We use the cookie from the browser - now we 
+	      // have to make sure that this is the cookie
+	      // that is recorded by the wrapper too... 
+	      Cookie cks[] = null; 
+	      try { 
+	      cks = request.getCookies();
+	      for(int j=0; j<cks.length; ++j) {
+	      if(cks[j].getName().equals(JSESSIONID)) {
+	      Cookie cookie = new Cookie(JSESSIONID,
+	      cks[j].getValue());
+	      if(debug) context.log("Created cookie"); // NOI18N
+	      localCookies.addElement(cookie);
+	      if(debug) context.log("Added cookie"); // NOI18N
+	      break;
+	      }
+	      }
+	      }
+	      catch(Exception ex) { 
+				// Do nothing, there were no cookies
+				}
+				}
+	    }	
+	    */
+    }
+    
+
+    // I am assuming that we don't have to check for duplicate cookies 
+    // here. I could be wrong. 
+    public void addCookie(String ckname, String ckvalue) {
+	Param[] headers = getHeaders().getParam();
+	String cookieStr = null;
+	int len = headers.length;
+	for(int i=0; i<len; ++i) {
+	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
+		StringBuffer buf = new StringBuffer(headers[i].getValue());
+		buf.append(";"); //NOI18N
+		buf.append(ckname);
+		buf.append("=");//NOI18N
+		buf.append(ckvalue);
+		headers[i].setValue(buf.toString());
+		break;
+	    }
+	}
+    }
+
+    public void deleteCookie(String ckname, String ckvalue) {
+
+	if(debug) 
+	    System.out.println("Deleting cookie: " + //NOI18N
+			       ckname + " " + ckvalue);
+	
+	Param[] headers = getHeaders().getParam();
+
+	int len = headers.length;
+	for(int i=0; i<len; ++i) {
+	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
+
+		StringBuffer buf = new StringBuffer();
+		StringTokenizer tok = 
+		    new StringTokenizer(headers[i].getValue(),
+					";", false); // NOI18N
+	    
+		while (tok.hasMoreTokens()) {
+		    
+		    String token = tok.nextToken();
+		    int j = token.indexOf("="); // NOI18N
+		    if (j > -1) {
+
+			String name = token.substring(0, j).trim();
+			String value = token.substring(j+1, token.length()).trim();
+			// RFC 2109 and bug 
+			value=stripQuote(value);
+
+			if(debug) 
+			    System.out.println("Processing cookie: " + //NOI18N
+			       name + " " + value);
+			
+			if(name.equals(ckname) && value.equals(ckvalue)) 
+			    continue;
+			else {
+			    if(debug) 
+				System.out.println("Keep this cookie"); //NOI18N
+			    buf.append(name);
+			    buf.append("=");//NOI18N
+			    buf.append(value);
+			    buf.append(";"); //NOI18N
+			}
+		    }
+		    
+		    if(debug) 
+			System.out.println("New cookie string is: " + //NOI18N
+					   buf.toString());
+		}
+		headers[i].setValue(buf.toString());
+		break;
+	    }
+	}
+    }
+
+    public void deleteCookie(String ckname) {
+
+	if(debug) 
+	    System.out.println("Deleting cookie: " + //NOI18N
+			       ckname); 
+	
+	Param[] headers = getHeaders().getParam();
+
+	int len = headers.length;
+	for(int i=0; i<len; ++i) {
+	    if(headers[i].getName().equalsIgnoreCase("cookie")) { //NOI18N
+
+		StringBuffer buf = new StringBuffer();
+		StringTokenizer tok = 
+		    new StringTokenizer(headers[i].getValue(),
+					";", false); // NOI18N
+	    
+		while (tok.hasMoreTokens()) {
+		    
+		    String token = tok.nextToken();
+		    int j = token.indexOf("="); // NOI18N
+		    if (j > -1) {
+
+			String name = token.substring(0, j).trim();
+			if(name.equals(ckname)) continue;
+			else {
+			    if(debug) 
+				System.out.println("Keep this cookie");//NOI18N
+			    String value = 
+				token.substring(j+1, token.length()).trim(); 
+			    value=stripQuote(value);
+			    buf.append(name);
+			    buf.append("=");//NOI18N
+			    buf.append(value);
+			    buf.append(";"); //NOI18N
+			}
+		    }
+		    
+		    if(debug) 
+			System.out.println("New cookie string is: " + //NOI18N
+					   buf.toString());
+		}
+		headers[i].setValue(buf.toString());
+		break;
+	    }
+	}
+    }
+    
+
+    /**
+     *
+     * Strips quotes from the start and end of the cookie string
+     * This conforms to RFC 2109. See comment to processCookies(). 
+     * 
+     * @param value            a <code>String</code> specifying the cookie 
+     *                         value (possibly quoted).
+     *
+     * @see #setValue
+     *
+     */
+    public static String stripQuote( String value )  {
+	
+	if (((value.startsWith("\"")) && (value.endsWith("\""))) || // NOI18N
+	    ((value.startsWith("'") && (value.endsWith("'"))))) { // NOI18N
+	    try {
+		return value.substring(1,value.length()-1);
+	    } catch (Exception ex) { 
+	    }
+	}
+	return value;
+    }  
 
     // This method verifies that the mandatory properties are set
     public boolean verify()

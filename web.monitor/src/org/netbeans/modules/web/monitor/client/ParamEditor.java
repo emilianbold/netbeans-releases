@@ -47,7 +47,7 @@ import org.openide.util.NbBundle;
 
 public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 
-    private final static boolean debug = false;
+    private final static boolean debug = true;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
@@ -114,6 +114,9 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     }
 
     public String getName() {
+	
+	if(debug) System.out.println("Value of name text field: ");
+	if(debug) System.out.println(nameText.getText().trim());
 	return nameText.getText().trim();
     }
     public void setName(String val) {
@@ -124,6 +127,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     }
 
     public String getValue() {
+	if(debug) System.out.println("Value of value textarea: ");
+	if(debug) System.out.println(valueText.getText().trim());
 	return valueText.getText().trim();
     }
     public void setValue(String val) {

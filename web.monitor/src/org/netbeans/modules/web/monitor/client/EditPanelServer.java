@@ -128,6 +128,24 @@ public class EditPanelServer extends DataDisplay {
 			    zeroInsets,
 			    0, 0);
 
+	int gridx = -1;
+	addGridBagComponent(this,
+			    editPanel.createSessionButtonPanel(),
+			    ++gridx, ++gridy,
+			    1, 1, 1.0, 0, 
+			    java.awt.GridBagConstraints.WEST,
+			    java.awt.GridBagConstraints.NONE,
+			    tableInsets,
+			    0, 0);
+
+	addGridBagComponent(this, createGlue(), ++gridx, gridy,
+			    1, 1, 1.0, 0, 
+			    java.awt.GridBagConstraints.WEST,
+			    java.awt.GridBagConstraints.NONE,
+			    buttonInsets,
+			    0, 0);
+
+
 	// Housekeeping
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();

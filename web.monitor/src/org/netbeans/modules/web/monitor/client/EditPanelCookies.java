@@ -18,17 +18,18 @@
  * Created: Fri Feb 9 2001
  *
  * @author Ana von Klopp
- * @author Simran Gleason
  * @version
  */
 
 /**
- * Contains the Request sub-panel for the EditPanel
+ * Contains the Cookie sub-panel for the EditPanel
  */
 
 package org.netbeans.modules.web.monitor.client; 
 
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
+import java.util.Vector;
 import java.awt.event.*;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -44,32 +45,32 @@ import org.openide.NotifyDescriptor;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelHeaders extends DataDisplay {
+public class EditPanelCookies extends DataDisplay {
 
-    private final static boolean debug = true;
+    private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
-    private DisplayTable headerTable = null;    
+    private DisplayTable cookieTable = null;    
     private MonitorData monitorData = null;
     private EditPanel editPanel;
-    private boolean setParams = false;
+    private boolean setCookies = false;
 
     //
     // Widgets
     //
-    JButton newHeaderB;
-    JButton editHeaderB;
-    JButton deleteHeaderB;
+    JButton newCookieB;
+    JButton editCookieB;
+    JButton deleteCookieB;
     
-    public EditPanelHeaders(MonitorData md, EditPanel editPanel) {
+    public EditPanelCookies(MonitorData md, EditPanel editPanel) {
 	super();
 	this.editPanel = editPanel;
 	this.monitorData = md;
     }
 
     //
-    // stoopid versio nof redisplayData: nuke it all & start again.
+    // Redesign this, inefficient. 
     //
     public void redisplayData() {
 	setData(monitorData);
@@ -86,16 +87,15 @@ public class EditPanelHeaders extends DataDisplay {
 	 
 	this.removeAll();
 	
-	// Headers
-	String msg = msgs.getString("MON_HTTP_Headers"); 
-	final RequestData rd = monitorData.getRequestData();
-	Param[] params = rd.getHeaders().getParam();
+	// Cookies
+	String msg = msgs.getString("MON_Cookies_4"); 
 
+	// We get the cookies data from the recorded cookies list
+	Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
+	setCookies(params);
+	 
 	int gridy = -1;
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
-
-	if(params == null) params = new Param[0];
-	setHeaders(params);
 
 	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -104,16 +104,16 @@ public class EditPanelHeaders extends DataDisplay {
 			    topSpacerInsets,
 			    0, 0);
 
-        headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
-        headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
-	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
+        cookieTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_CookiesTableA11yName"));
+        cookieTable.setToolTipText(msgs.getString("ACS_MON_CookiesTableA11yDesc"));
+	addGridBagComponent(this, createSortButtonLabel(msg, cookieTable, msgs.getString("MON_Cookies_Mnemonic").charAt(0), msgs.getString("ACS_MON_CookiesA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
 			    labelInsets,
 			    0, 0);
 
-	JScrollPane scrollpane = new JScrollPane(headerTable);
+	JScrollPane scrollpane = new JScrollPane(cookieTable);
 	addGridBagComponent(this, scrollpane, 0, ++gridy,
 			    fullGridWidth, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
@@ -122,12 +122,12 @@ public class EditPanelHeaders extends DataDisplay {
 			    tableInsets,
 			    0, 0);
 
-	newHeaderB = new JButton(msgs.getString("MON_New_header"));
-        newHeaderB.setMnemonic(msgs.getString("MON_New_header_Mnemonic").charAt(0));
-        newHeaderB.setToolTipText(msgs.getString("ACS_MON_New_headerA11yDesc"));
-	newHeaderB.addActionListener(new ActionListener() {
+	newCookieB = new JButton(msgs.getString("MON_New_cookie"));
+        newCookieB.setMnemonic(msgs.getString("MON_New_cookie_Mnemonic").charAt(0));
+        newCookieB.setToolTipText(msgs.getString("ACS_MON_New_cookieA11yDesc"));
+	newCookieB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
-		    String title = msgs.getString("MON_New_header"); 
+		    String title = msgs.getString("MON_New_cookie"); 
 		    ParamEditor pe = new ParamEditor("", "", //NOI18N
 						     true, true, title);
 
@@ -142,63 +142,48 @@ public class EditPanelHeaders extends DataDisplay {
 			if(debug) System.out.println("Dialog returned OK"); // NOI18N
 			String name = pe.getName();
 			String value = pe.getValue();
-			Param newParam = new Param(name, value);
-			Headers hd = monitorData.getRequestData().getHeaders();
-			int nth = hd.addParam(newParam);
-			if(debug) System.out.println("Headers are " // NOI18N
-						     + hd.toString()); 
-
+			System.out.println(name + " " + value);
+			monitorData.getRequestData().addCookie(name,value);
 			redisplayData();
 		    }
 		}});
 
-	deleteHeaderB = new JButton(msgs.getString("MON_Delete_header"));
-        deleteHeaderB.setMnemonic(msgs.getString("MON_Delete_header_Mnemonic").charAt(0));
-        deleteHeaderB.setToolTipText(msgs.getString("MON_New_header_Mnemonic"));
+	deleteCookieB = new JButton(msgs.getString("MON_Delete_cookie"));
+        deleteCookieB.setMnemonic(msgs.getString("MON_Delete_cookie_Mnemonic").charAt(0));
+        deleteCookieB.setToolTipText(msgs.getString("MON_New_cookie_Mnemonic"));
 
-	deleteHeaderB.addActionListener(new ActionListener() {
+	deleteCookieB.addActionListener(new ActionListener() {
 
 		public void actionPerformed(ActionEvent e) {
 
-		    int numRows = headerTable.getRowCount();
-		    Headers hd = rd.getHeaders();
-
+		    int numRows = cookieTable.getRowCount();
 		    StringBuffer buf = new StringBuffer
-			(msgs.getString("MON_Confirm_Delete_Headers")); 
+			(msgs.getString("MON_Confirm_Delete_Cookies")); 
 		    buf.append("\n"); // NOI18N
 
 		    for(int i=0; i<numRows; ++i) {
 
-			if(headerTable.isRowSelected(i)) {
-			    buf.append(headerTable.getValueAt(i, 0));
+			if(cookieTable.isRowSelected(i)) {
+			    buf.append(cookieTable.getValueAt(i, 0));
 			    buf.append(" ");  // NOI18N
-			    buf.append(headerTable.getValueAt(i, 1));
+			    buf.append(cookieTable.getValueAt(i, 1));
 			    buf.append("\n"); // NOI18N
 			}
 		    }
 
 		    showConfirmDialog(buf.toString()); 
-		    
-		    if(setParams) {
+		    if(setCookies) {
+			
 			for(int i=0; i<numRows; ++i) {
-			    if(headerTable.isRowSelected(i)) {
-
+			    if(cookieTable.isRowSelected(i)) {
 				String name =
-				    (String)headerTable.getValueAt(i, 0); 
+				    (String)cookieTable.getValueAt(i, 0); 
 				String value =
-				    (String)headerTable.getValueAt(i, 1); 
-				
-				// Note that we get the params each
-				// time through that we don't run into
-				// null pointer exceptions. 
-				Param[] myParams = hd.getParam();
-				Param param = findParam(myParams, name, value);
-				if (param != null) 
-				    hd.removeParam(param);
+				    (String)cookieTable.getValueAt(i, 1); 
+				monitorData.getRequestData().deleteCookie(name, value);
+				redisplayData();
 			    }
 			}
-			redisplayData();
-			repaint();
 		    }
 		}});
 	
@@ -217,21 +202,14 @@ public class EditPanelHeaders extends DataDisplay {
 			    java.awt.GridBagConstraints.NONE,
 			    buttonInsets,
 			    0, 0);
-	addGridBagComponent(this, newHeaderB, ++gridx, gridy,
+	addGridBagComponent(this, newCookieB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
 			    buttonInsets,
 			    0, 0);
-	/*
-	addGridBagComponent(this, editHeaderB, ++gridx, gridy,
-			    1, 1, 0, 0, 
-			    java.awt.GridBagConstraints.EAST,
-			    java.awt.GridBagConstraints.NONE,
-			    buttonInsets,
-			    0, 0);
-	*/
-	addGridBagComponent(this, deleteHeaderB, ++gridx, gridy,
+
+	addGridBagComponent(this, deleteCookieB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
@@ -240,7 +218,6 @@ public class EditPanelHeaders extends DataDisplay {
 
 	setEnablings();
 	
-	// Housekeeping
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
@@ -274,9 +251,9 @@ public class EditPanelHeaders extends DataDisplay {
 
 	TopManager.getDefault().notify(confirmDialog);
 	if(confirmDialog.getValue().equals(NotifyDescriptor.OK_OPTION)) 
-	    setParams = true;
+	    setCookies = true;
 	else 
-	    setParams = false;
+	    setCookies = false;
     }
 
 
@@ -285,7 +262,7 @@ public class EditPanelHeaders extends DataDisplay {
 	Object[] options = { NotifyDescriptor.OK_OPTION };
 	
 	NotifyDescriptor errorDialog = 
-	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_header"),
+	    new NotifyDescriptor((Object)msgs.getString("MON_Bad_cookie"),
 				 msgs.getString("MON_Invalid_input"),
 				 NotifyDescriptor.DEFAULT_OPTION,
 				 NotifyDescriptor.ERROR_MESSAGE, 
@@ -300,26 +277,28 @@ public class EditPanelHeaders extends DataDisplay {
 	//
 	// Always enable the Add button.
 	//
-	newHeaderB.setEnabled(true);
+	newCookieB.setEnabled(true);
 
-	int selectedRows[] = headerTable.getSelectedRows();
+	int selectedRows[] = cookieTable.getSelectedRows();
 	//
 	// The edit button is enabled if exactly one row is selected
 	//
-	//editHeaderB.setEnabled(selectedRows.length == 1);
+	//editCookieB.setEnabled(selectedRows.length == 1);
 
 	//
 	// The delete row button is enabled if any rows are selected.
 	//
-	deleteHeaderB.setEnabled(selectedRows.length > 0);
+	deleteCookieB.setEnabled(selectedRows.length > 0);
     }
 
     boolean tableModelChanging;
-    public void setHeaders(Param[] newParams) {
-	headerTable = new DisplayTable(newParams, DisplayTable.HEADERS);
-	headerTable.sortByName(true);
+
+    public void setCookies(Param[] params) {
+
+	cookieTable = new DisplayTable(params, DisplayTable.COOKIES);
+	cookieTable.sortByName(true);
 	
-	ListSelectionModel selma = headerTable.getSelectionModel();
+	ListSelectionModel selma = cookieTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent evt) {
 		if(debug) System.out.println("EditPanelQuery::paramTable list selection listener"); // NOI18N
@@ -327,42 +306,29 @@ public class EditPanelHeaders extends DataDisplay {
 	    }
 	});
 
-	headerTable.addTableModelListener(new TableModelListener() {
+	cookieTable.addTableModelListener(new TableModelListener() {
 	    public void tableChanged(TableModelEvent evt) {
-		
-		if(debug) 
-		    System.out.println("Header table got table changed event"); //NOI18N
-		
 		if (!tableModelChanging) {
 		    tableModelChanging = true;
 		    //
 		    // Loop through the rows and reset the params.
 		    //
-		    int num = headerTable.getRowCount();
-		    Headers hd = monitorData.getRequestData().getHeaders();
-		    Param[] params = hd.getParam();
+		    int num = cookieTable.getRowCount();
+		    Param[] params = monitorData.getRequestData().getCookiesAsParams(); 
 		    
 		    boolean inputOK = true;
 		    
 		    for(int i=0; i < num; i++) {
-			String name = (String)headerTable.getValueAt(i, 0);
+			String name = (String)cookieTable.getValueAt(i, 0);
 			name = name.trim();
-
-			if(debug) 
-			    System.out.println("Name is " + name); //NOI18N
-		       
 			if(name.equals("")) { // NOI18N
-			    headerTable.setValueAt(params[i].getName(), i, 0);
+			    cookieTable.setValueAt(params[i].getName(), i, 0);
 			    inputOK = false;
 			}
-			String value = (String)headerTable.getValueAt(i, 1);
+			String value = (String)cookieTable.getValueAt(i, 1);
 			value = value.trim();
-
-			if(debug)
-			    System.out.println("Value is " + value); //NOI18N
-
 			if(value.equals("")) { // NOI18N
-			    headerTable.setValueAt(params[i].getValue(), i, 1);
+			    cookieTable.setValueAt(params[i].getValue(), i, 1);
 			    inputOK = false;
 			}
 			
@@ -373,17 +339,21 @@ public class EditPanelHeaders extends DataDisplay {
 			params[i].setName(name);
 			params[i].setValue(value);
 		    }
-		    headerTable.sortByName();
+		    cookieTable.sortByName();
 		    tableModelChanging = false;
 		}
 	    }
 	});
     }
 
+
+
+
     public void repaint() {
 	super.repaint();
 	if (editPanel != null) 
 	    editPanel.repaint();
     }
-} // EditPanelHeader
+} // EditPanelCookies
+
 

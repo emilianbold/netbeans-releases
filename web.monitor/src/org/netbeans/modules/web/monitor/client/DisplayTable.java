@@ -48,22 +48,17 @@ public class DisplayTable extends JTable {
     public static final int SERVER = 2;
     public static final int HEADERS = 3;
     public static final int PARAMS = 4;
+    public static final int COOKIES = 5;
 
-   private static final ResourceBundle msgs =
-	NbBundle.getBundle(TransactionView.class);  
+    private static final ResourceBundle msgs =
+       NbBundle.getBundle(TransactionView.class);  
 
     private int numRows = 0;
     private int numCols = 3;
 
-    // PENDING try not to display any headers... 
-    String name = msgs.getString("MON_Name"); 
-    String value = msgs.getString("MON_Value"); 
-    String edit = msgs.getString("MON_Edit"); 
-
-    private String[] headers = { name, value, edit };
     private Object[][] data = null;
+
     private TableCellEditor[][] cellEditors = null;
-    private int[] exceptions = null;
 
     /** determines whether the names of a table are editable or not.
      */
@@ -104,7 +99,7 @@ public class DisplayTable extends JTable {
 		NameValueCellEditor.createCellEditor((JTable)this, data,
 						     false, i, editable);
 	}
-	setMyModel(editable > UNEDITABLE);
+	setMyModel(data, editable > UNEDITABLE);
 	setup();
     }
 
@@ -134,7 +129,7 @@ public class DisplayTable extends JTable {
 		NameValueCellEditor.createCellEditor((JTable)this, data,
 						     true, i, editable);
 	}
-	setMyModel(editable > UNEDITABLE);
+	setMyModel(data, editable > UNEDITABLE); 
 	setup();
     }
 
@@ -142,10 +137,6 @@ public class DisplayTable extends JTable {
 	setBorderAndColorScheme();
 	Dimension margins = new Dimension(6, 4);
 	setIntercellSpacing(margins);
-    }
-    
-    public void setExceptions(int[] ex) {
-	exceptions = ex;
     }
 
     /**
@@ -173,6 +164,9 @@ public class DisplayTable extends JTable {
      * Set the choices used for a cell.
      * This makes the cell use a combo box for its editor.
      * If editable is true, then the combobox is set to editable.
+     *
+     * This method has been superceded. Remove from RequestPanel. 
+     *
      * @return the combobox that is used as the editor.
      */
     public JComboBox setChoices(int row, int col, String[] choices, boolean editable) {
@@ -206,76 +200,33 @@ public class DisplayTable extends JTable {
     }
 
     public void sortByNameAscending() {
-	sortByName(true);
+	((SortingModel)getModel()).sort(true); 
     }
 
     public void sortByNameDescending() {
-	sortByName(false);
+	((SortingModel)getModel()).sort(false); 
     }
 
     public void sortByName() {
-	sortByName(sortAscending);
+	((SortingModel)getModel()).sort(sortAscending); 
+    }
+
+    public void sortByName(boolean asc) {
+	((SortingModel)getModel()).sort(asc); 
     }
     
-    public void sortByName(boolean ascending) {
-	/* Temporarily disabling this functionality until we can
-	 * reimplement the sorter. 
-	try {
-	    TableSorter sorter = (TableSorter)getModel();
-	    sorter.sortByColumn(0, ascending); 
-
-	} catch (ClassCastException ex) {
-	    // ignore. If we can't sort, we can't sort.
-	}
-	*/
-    }
-
     public void noSorting() {
 	if(debug) System.out.println("Neutral sorting selected"); //NOI18N
-	setMyModel(editable > UNEDITABLE);
+	//setMyModel(data, EDITABLE > UNEDITABLE);
     }
-    
 
-    private void setMyModel(final boolean editable) {
+    private void setMyModel(Object[][] data, boolean canEdit) {
+	 
 		
-	// Temporarily disabling the sorting facilities
-	//TableSorter sorter = new TableSorter(new AbstractTableModel() {
-	super.setModel(new AbstractTableModel() {
-	    public String getColumnName(int col) { 
-		return headers[col].toString(); 
-	    }
-	    public int getRowCount() { return data.length; }
-	    public int getColumnCount() { return numCols; }
-	    public Object getValueAt(int row, int col) { 
-		return data[row][col]; 
-	    }
-	    public boolean isCellEditable(int row, int col) { 
-		if(!editable) { 
-		    if(col == 2 || col == 5) return true; 
-		    else return false; 
-		}
-		if(editable && col == 0) return editableNames;
-		if(editable && col == 1) {
-		    if(exceptions == null) return true;
-		    else {
-			for(int i=0; i<exceptions.length; ++i) 
-			    if(row == exceptions[i]) return false;
-		    }
-		    return true;
-		}
-		if(editable && col == 2) {
-		    return true;
-		}
-		return false;
-	    }
-	    public void setValueAt(Object value, int row, int col) {
-		data[row][col] = value;
-		fireTableCellUpdated(row, col);
-	    }
-	});
-
+	SortingModel sorter = new SortingModel(data, canEdit, 
+					       editable > 2); 
 	
-        //super.setModel(sorter);
+	super.setModel(sorter);
 	
 	// PENDING - I can't get the column size to shrink the way I'd 
 	// like it. This works in the AttValTable but not here for
