@@ -14,7 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="usersguide" default="netbeans" basedir=".">
 
-  <property name="binroot" value=".."/>
+  <property name="binroot" location="../../nbextra"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>

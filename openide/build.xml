@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
 <!-- Not clear how to solve this. Try rerunning build if it happens. -->
 
 <project name="openide" default="netbeans" basedir=".">
-  <property name="binroot" value=".."/>
+  <property name="binroot" location="../../nbextra"/>
 
   <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="preprocess" classname="org.netbeans.nbbuild.Preprocess" classpath="../nbbuild/nbantext.jar"/>

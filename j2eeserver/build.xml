@@ -14,9 +14,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <project basedir="." default="netbeans" name="j2eeserver">
 
-  <property name="nbroot" value="../../nb_all"/>
-  <property name="binroot" value="../../nbextra"/>
-  <property name="nbext" value="${nbroot}/nbbuild"/>
+  <property name="nbroot" location="../../nb_all"/>
+  <property name="binroot" location="../../nbextra"/>
+  <property name="nbext" location="${nbroot}/nbbuild"/>
 
   <taskdef name="jhindexer" classname="org.netbeans.nbbuild.JHIndexer" classpath="${nbext}/nbantext.jar"/>
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
