@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.developer.modules.loaders.form.layouts.*;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 import com.netbeans.developer.modules.loaders.form.forminfo.FormInfo;
 
 import java.awt.Container;
@@ -26,11 +26,18 @@ import java.awt.Container;
 public class RADVisualFormContainer extends RADVisualContainer implements FormContainer {
   
   private FormInfo formInfo;
+  private Container topContainer;
   
-  public RADVisualFormContainer (FormInfo formInfo) {
+  public RADVisualFormContainer (Container topContainer, FormInfo formInfo) {
     this.formInfo = formInfo;
+    this.topContainer = topContainer;
   }
   
+  /** @return The JavaBean visual container represented by this RADVisualComponent */
+  public Container getContainer () {
+    return topContainer;
+  }
+
   public String getContainerGenName () {
     return formInfo.getContainerGenName ();
   }
@@ -42,6 +49,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/11/99  Ian Formanek    Build 318 version
  *  1    Gandalf   1.0         5/10/99  Ian Formanek    
  * $
  */

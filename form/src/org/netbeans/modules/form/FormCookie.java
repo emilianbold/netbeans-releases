@@ -28,13 +28,11 @@ public interface FormCookie extends Node.Cookie {
   /** Focuses the form */
   public void gotoForm();
 
-  /** Focuses the Component Inspector */
-  public void gotoInspector();
-
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/11/99  Ian Formanek    Build 318 version
  *  1    Gandalf   1.0         3/17/99  Ian Formanek    
  * $
  */

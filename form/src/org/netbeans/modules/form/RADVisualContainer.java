@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.developer.modules.loaders.form.layouts.*;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.*;
 
 import java.awt.Container;
 
@@ -22,7 +22,7 @@ import java.awt.Container;
 * @author Ian Formanek
 */
 public class RADVisualContainer extends RADVisualComponent implements ComponentContainer {
-  private RADComponent[] subComponents;
+  private RADVisualComponent[] subComponents;
   private DesignLayout designLayout;
 
   /** @return The JavaBean visual container represented by this RADVisualComponent */
@@ -30,12 +30,17 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     return (Container)getComponentInstance ();
   }
 
-  public RADComponent[] getSubComponents () {
+  public RADComponent[] getSubBeans () {
+    return subComponents;
+  }
+  
+  public RADVisualComponent[] getSubComponents () {
     return subComponents;
   }
 
   public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = initComponents;
+    subComponents = new RADVisualComponent[initComponents.length];
+    System.arraycopy (initComponents, 0, subComponents, 0, initComponents.length);
   }
 
   public DesignLayout getDesignLayout () {
@@ -43,6 +48,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   }
   
   public void setDesignLayout (DesignLayout layout) {
+    Thread.dumpStack();
     if (designLayout != null) {
       designLayout.setRADContainer (null);
     }
@@ -57,6 +63,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    

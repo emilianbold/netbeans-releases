@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.form;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.Utilities;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
 import java.beans.*;
 import java.lang.reflect.Method;
@@ -147,7 +148,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     generateComponentInit (comp, text, indent);
     generateComponentEvents (comp, text, indent);
     if (comp instanceof ComponentContainer) {
-      RADComponent[] children = ((ComponentContainer)comp).getSubComponents ();
+      RADComponent[] children = ((ComponentContainer)comp).getSubBeans ();
       for (int i = 0; i < children.length; i++) {
         text.append ("\n"); // [PENDING - indentation engine]
         if (comp instanceof FormContainer) {
@@ -178,6 +179,11 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void generateComponentInit (RADComponent comp, StringBuffer text, String indent) {
+    if (comp instanceof RADVisualContainer) {
+      // generate layout init code
+      DesignLayout dl = ((RADVisualContainer)comp).getDesignLayout ();
+      text.append (dl.generateInitCode (indent, (RADVisualContainer)comp));
+    }
     Map changedProps = comp.getChangedProperties ();
     for (Iterator it = changedProps.keySet ().iterator (); it.hasNext ();) {
       PropertyDescriptor desc = (PropertyDescriptor) it.next ();
@@ -191,11 +197,13 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private void generateComponentAddCode (RADComponent comp, RADVisualContainer container, StringBuffer text, String indent) {
-    text.append (indent);
+    DesignLayout dl = container.getDesignLayout ();
+    text.append (dl.generateComponentCode (indent, container, (RADVisualComponent)comp)); // [PENDING incorrect cast]
+/*    text.append (indent);
     text.append (getVariableGenString (container, true));
     text.append ("add (");
     text.append (comp.getName ());
-    text.append (", null);\n");
+    text.append (", null);\n"); */
   }
   
   private void generateIndexedPropertySetter (RADComponent comp, PropertyDescriptor desc, Object value, StringBuffer text, String indent) {
@@ -403,14 +411,14 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
 
   private void addVariables (ComponentContainer cont, StringBuffer text) {
-    RADComponent[] children = cont.getSubComponents ();
+    RADComponent[] children = cont.getSubBeans ();
     for (int i = 0; i < children.length; i++) {
       text.append (oneIndent); // [PENDING - will be done by indentation engine]
       text.append ("private ");
       text.append (children[i].getComponentClass ().getName ());
       text.append (" ");
       text.append (children[i].getName ());
-      text.append ("\n");
+      text.append (";\n");
       if (children[i] instanceof ComponentContainer) {
         addVariables ((ComponentContainer)children[i], text);
       }
@@ -588,15 +596,10 @@ public class JavaCodeGenerator extends CodeGenerator {
 
   /** Focuses the specified event handler in the editor. */
   public void gotoEventHandler (String handlerName) {
-/*    JavaEditor.InteriorSection sec = getEventHandlerSection (handlerName);
+    JavaEditor.InteriorSection sec = getEventHandlerSection (handlerName);
     if (sec != null) {
-      Position methodPos = sec.getBlock ().getBegin ();
-      editor.setCursorPos (methodPos);
-
-      // center the position in the editor
-      editor.getViewManager ().getScreen ().moveToHalf (
-        editor.getViewManager (). getCaret ().getInfo ().getView ().getInfo (methodPos));
-    } */
+      sec.openAt ();
+    } 
   }
 
 // ------------------------------------------------------------------------------------------
@@ -686,6 +689,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    
  *  5    Gandalf   1.4         5/6/99   Ian Formanek    Generates code into 
  *       guarded sections

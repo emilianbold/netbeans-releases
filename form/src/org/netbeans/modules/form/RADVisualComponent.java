@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import com.netbeans.developer.modules.loaders.form.layouts.DesignLayout;
+import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 
 import java.awt.Component;
 import java.util.HashMap;
@@ -36,6 +36,13 @@ public class RADVisualComponent extends RADComponent {
     return -1; // [PENDING] ((OrderCookie) Cookies.getInstanceOf (getParentNode ().getCookie (), OrderCookie.class)).getIndexOf (this);
   }
   
+  void initConstraints (HashMap map) {
+    for (java.util.Iterator it = map.keySet ().iterator (); it.hasNext ();) {
+      String layoutClassName = (String) it.next ();
+      constraints.put (layoutClassName, map.get (layoutClassName));
+    }
+  }
+  
   public void setConstraints (Class layoutClass, DesignLayout.ConstraintsDescription constr) {
     constraints.put (layoutClass.getName(), constr);
   }
@@ -49,6 +56,7 @@ public class RADVisualComponent extends RADComponent {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/11/99  Ian Formanek    Build 318 version
  *  3    Gandalf   1.2         5/10/99  Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    

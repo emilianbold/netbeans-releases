@@ -77,14 +77,22 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     getFormTopComponent ().open ();
     
     // 3. show the ComponentInspector
-    gotoInspector ();
+    FormEditor.getComponentInspector().focusForm (getFormManager ());
+    FormEditor.getComponentInspector().open ();
 
+    // 4. Focus form window
+    getFormTopComponent ().requestFocus ();
+    
     // clear status line
     TopManager.getDefault ().setStatusText ("");
   }
   
   public FormDataObject getFormObject () {
     return formObject;
+  }
+  
+  public com.netbeans.ide.nodes.Node getFormRootNode () {
+    return formRootNode;
   }
   
   /** @returns the FormManager of this form */
@@ -97,25 +105,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     if (!formLoaded) return null;
     return formManager.getFormTopComponent ();
   }
-
-  public com.netbeans.ide.nodes.Node getFormRootNode () {
-    return formRootNode;
-  }
-  
-  
-  /** @returns the DesignForm of this Form */
-/*  public DesignForm getDesignForm() {
-    if (!formLoaded)
-      loadForm ();
-    return designForm;
-  } */
-
-  /** @returns the root Node of the nodes representing the AWT hierarchy */
-/*  public RADFormNode getComponentsRoot() {
-    if (!formLoaded)
-      if (!loadForm ()) return null;
-    return designForm.getFormManager().getComponentsRoot();
-  } */
 
 // -----------------------------------------------------------------------------
 // Form Loading
@@ -139,7 +128,12 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
     try {
       if (perMan.canLoadForm (formObject)) {
         formManager  = perMan.loadForm (formObject);
+        if (formManager == null) {
+          // [PENDING] - solve the failure
+        }
+        System.out.println("FormEditorSupport.java:132");;
         formManager.initialize ();
+        System.out.println("FormEditorSupport.java:134");;
         
         // create form hierarchy node and add it to SourceChildren
         SourceChildren sc = (SourceChildren)formObject.getNodeDelegate ().getChildren ();
@@ -165,6 +159,7 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
         if (!loadForm ()) return;
     } 
     super.open();
+
   }
 
   /** Method from FormCookie */
@@ -173,21 +168,16 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (!formLoaded)
         if (!loadForm ()) return;
     }
-/*    designForm.getRADWindow().show(); */
-  }
-
-  /** Method from FormCookie */
-  public void gotoInspector() {
-    // show the ComponentInspector
-    FormEditor.getComponentInspector().focusForm (getFormManager ());
-    FormEditor.getComponentInspector().open ();
-    
+    System.out.println("FormEditorSupport.java:169");;
+    getFormTopComponent ().open ();
+    getFormTopComponent ().requestFocus ();
   }
 
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        5/11/99  Ian Formanek    Build 318 version
  *  11   Gandalf   1.10        5/10/99  Ian Formanek    
  *  10   Gandalf   1.9         5/4/99   Ian Formanek    package change 
  *       (formeditor -> ..)

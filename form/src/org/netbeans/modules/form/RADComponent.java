@@ -58,6 +58,7 @@ public class RADComponent {
 
   private HashMap auxValues;
   private HashMap changedPropertyValues;
+  private HashMap valuesCache;
   private Map defaultPropertyValues;
 
   private FormManager formManager;
@@ -286,10 +287,7 @@ public class RADComponent {
         */
         public Object getValue () throws
         IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-          Method readMethod = desc.getReadMethod ();
-          if (readMethod == null)
-            throw new IllegalAccessException ();
-          return readMethod.invoke (beanInstance, new Object[0]);
+          return getPropertyValue (desc);
         }
 
         /** Test whether the property is writable.
@@ -308,6 +306,7 @@ public class RADComponent {
         public void setValue (Object val) throws IllegalAccessException,
         IllegalArgumentException, InvocationTargetException {
           Object old = null;
+          
           if (canRead ()) {
             try {
               old = getValue ();
@@ -316,10 +315,14 @@ public class RADComponent {
             } catch (InvocationTargetException e) { // no problem -> keep null
             }
           }
-          Method writeMethod = desc.getWriteMethod ();
-          if (writeMethod == null)
-            throw new IllegalAccessException ();
-          writeMethod.invoke (beanInstance, new Object[] { val });
+          
+          try {
+            setPropertyValue (desc, val);
+          } catch (IllegalArgumentException e) {  // no problem -> keep null
+          } catch (IllegalAccessException e) {    // no problem -> keep null
+          } catch (InvocationTargetException e) { // no problem -> keep null
+          }
+          
           Object defValue = defaultPropertyValues.get (desc.getName ());
           if ((defValue != null) && (val != null) && (defValue.equals (val))) {
             // resetting to default value
@@ -385,7 +388,7 @@ public class RADComponent {
     return prop;
   }
 
-  protected Node.Property[] createEventsProperties () {
+  private Node.Property[] createEventsProperties () {
     eventsList = new EventsList (this);
 
     Node.Property[] nodeEvents = new Node.Property[eventsList.getEventCount ()];
@@ -453,6 +456,84 @@ public class RADComponent {
 
   }
   
+  void restorePropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    setPropertyValue (desc, value);
+    Object defValue = defaultPropertyValues.get (desc.getName ());
+    // add the property to the list of changed properties
+    changedPropertyValues.put (desc, value);
+  }
+  
+// -----------------------------------------------------------------------------
+// Protected interface to working with properties on bean instance
+
+  protected Object getPropertyValue (PropertyDescriptor desc) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    if (isCachedValue (desc)) {
+      return getCachedValue (desc);
+    }
+    Method readMethod = desc.getReadMethod ();
+    if (readMethod == null) {
+      throw new IllegalAccessException ();
+    }
+    return readMethod.invoke (getComponentInstance (), new Object[0]);
+  }
+
+  protected void setPropertyValue (PropertyDescriptor desc, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    // [PENDING - property names to cache]
+    if ("enabled".equals (desc.getName ()) || 
+        "visible".equals (desc.getName ())) 
+    {
+      // values of these properties are just cached, not represented during design-time
+      cacheValue (desc, value);
+      return;
+    } 
+    
+    Method writeMethod = desc.getWriteMethod ();
+    if (writeMethod == null) {
+      throw new IllegalAccessException ();
+    }
+    writeMethod.invoke (getComponentInstance (), new Object[] { value });
+  }
+
+  protected Object getIndexedPropertyValue (IndexedPropertyDescriptor desc, int index) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    Method readMethod = desc.getIndexedReadMethod ();
+    if (readMethod == null) {
+      throw new IllegalAccessException ();
+    }
+    return readMethod.invoke (getComponentInstance (), new Object[] { new Integer (index) });
+  }
+  
+  protected void setIndexedPropertyValue (IndexedPropertyDescriptor desc, int index, Object value) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    Method writeMethod = desc.getIndexedWriteMethod ();
+    if (writeMethod == null) {
+      throw new IllegalAccessException ();
+    }
+    writeMethod.invoke (getComponentInstance (), new Object[] { new Integer (index), value });
+  }
+
+  protected void cacheValue (PropertyDescriptor desc, Object value) {
+    if (valuesCache == null) {
+      valuesCache = new HashMap (10);
+    }
+    valuesCache.put (desc, value);
+  }
+  
+  protected boolean isCachedValue (PropertyDescriptor desc) {
+    if (valuesCache == null) {
+      return false;
+    }
+    return valuesCache.containsKey (desc);
+  }
+
+  protected Object getCachedValue (PropertyDescriptor desc) {
+    if (valuesCache == null) {
+      throw new InternalError ();
+    }
+    return valuesCache.get (desc);
+  }
+  
+// -----------------------------------------------------------------------------
+// Debug methods
+
   public void debugChangedValues () {
     if (System.getProperty ("netbeans.debug.form.full") != null) {
       System.out.println("-- debug.form: Changed property values in: "+this+" -------------------------");
@@ -543,6 +624,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  7    Gandalf   1.6         5/11/99  Ian Formanek    Build 318 version
  *  6    Gandalf   1.5         5/10/99  Ian Formanek    
  *  5    Gandalf   1.4         5/5/99   Ian Formanek    
  *  4    Gandalf   1.3         5/4/99   Ian Formanek    Package change

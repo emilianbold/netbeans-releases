@@ -20,7 +20,7 @@ package com.netbeans.developer.modules.loaders.form;
 public class RADContainer extends RADComponent implements ComponentContainer {
   private RADComponent[] subComponents;
 
-  public RADComponent[] getSubComponents () {
+  public RADComponent[] getSubBeans () {
     return subComponents;
   }
 
@@ -35,6 +35,7 @@ public class RADContainer extends RADComponent implements ComponentContainer {
 
 /*
  * Log
+ *  5    Gandalf   1.4         5/11/99  Ian Formanek    Build 318 version
  *  4    Gandalf   1.3         5/10/99  Ian Formanek    
  *  3    Gandalf   1.2         5/4/99   Ian Formanek    Package change
  *  2    Gandalf   1.1         4/29/99  Ian Formanek    
