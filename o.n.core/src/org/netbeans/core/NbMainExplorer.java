@@ -514,7 +514,8 @@ public final class NbMainExplorer extends CloneableTopComponent
         }
         // root context node change
         Node n = (Node)source;
-        if (Node.PROP_DISPLAY_NAME.equals(propName)) {
+        if (Node.PROP_DISPLAY_NAME.equals(propName) ||
+            Node.PROP_NAME.equals(propName)) {
           setName(n.getDisplayName());
         } else if (Node.PROP_ICON.equals(propName)) {
           setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
@@ -734,7 +735,7 @@ public final class NbMainExplorer extends CloneableTopComponent
       }
     }
     
-  } // end of ProjectsTab inner class
+  } // end of ModuleTab inner class
   
   /** Top component for project ang global settings. */
   public static class SettingsTab extends ExplorerTab {
@@ -787,6 +788,8 @@ public final class NbMainExplorer extends CloneableTopComponent
 
 /*
 * Log
+*  53   Gandalf   1.52        1/17/00  David Simonek   renaming of tabs now 
+*       react also on NAME node chaanges, not only display name
 *  52   Gandalf   1.51        1/13/00  Jaroslav Tulach I18N
 *  51   Gandalf   1.50        1/11/00  David Simonek   projects tab now second 
 *       tab in main explorer
