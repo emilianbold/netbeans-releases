@@ -22,25 +22,25 @@
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/optionIcon.gif"/>
             <attr name="SystemFileSystem.layer" stringvalue="Project"/>
         </file>
-        
-        <folder name="JavaHelp"> 
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-db-helpset.xml" boolvalue="true"/> 
-            <file name="org-netbeans-modules-db-helpset.xml" url="org-netbeans-modules-db-helpset.xml"/> 
-            <attr name="org-netbeans-modules-db-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/> 
+
+        <folder name="JavaHelp">
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-db-helpset.xml" boolvalue="true"/>
+            <file name="org-netbeans-modules-db-helpset.xml" url="org-netbeans-modules-db-helpset.xml"/>
+            <attr name="org-netbeans-modules-db-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
         </folder>
-        
+
     </folder>
 
     <folder name="Actions">
         <folder name="Help">
             <file name="org-netbeans-modules-db-mainpage.xml" url="org-netbeans-modules-db-mainpage.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/helpset.gif"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/optionIcon.gif"/>
             </file>
         </folder>
     </folder>
-    
-    
+
+
     <!-- UI -->
     <folder name="UI">
         <folder name="Services">
@@ -53,11 +53,11 @@
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
         </folder> <!-- Services -->
-        
+
         <folder name="Runtime">
             <file name="org-netbeans-modules-db-explorer-nodes-RootNode.instance"/>
         </folder> <!-- Runtime -->
-        
+
     </folder> <!-- UI -->
 
 </filesystem>
