@@ -78,6 +78,22 @@ is the proper place.
 
         <change>
             <api name="general"/>
+            <summary>Support SPI for creating/storing swing models for simple ANT proertirs</summary>
+            <version major="1" minor="6"/>
+            <date day="16" month="1" year="2005"/>
+            <author login="phrebejk"/>
+            <compatibility addition="yes"/>
+            <description>
+                Introduced new class <code>org.netbeans.spi.project.support.ant.ui.StoreGroup</code> which
+                is capable of creating Swing models for simple ANT propject properties. And
+                to store them back into the prject properties.
+            </description>
+            <class package="org.netbeans.spi.project.support.ant.ui" name="StoreGroup"/>
+            <issue number="49648"/>
+        </change>
+     
+        <change>
+            <api name="general"/>
             <summary>AntArtifact enhancements</summary>
             <version major="1" minor="5"/>
             <date day="13" month="1" year="2005"/>
