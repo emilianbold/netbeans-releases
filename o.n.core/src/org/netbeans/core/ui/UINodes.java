@@ -83,7 +83,7 @@ public final class UINodes extends Object {
 
 /*
     static Node getProjectSettingsNode () {
-        return ControlPanelNode.getProjectSettings ();
+        return ControlPianelNode.getProjectSettings ();
     }
 */
 
@@ -105,14 +105,12 @@ public final class UINodes extends Object {
     /** Creates startup node.
     */
     public static Node createStartup () {
-System.out.println("createStartup");
         return new StartupNode ();
     }
 
     /** Creates object types node.
     */
     public static Node createObjectTypes () {
-System.out.println("objecttype");
         return new ObjectTypesNode ();
     }
 
