@@ -24,6 +24,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="Spin.jar" location="???/spin-1.1/Spin.jar"/>
     <!-- only needed for optit target: -->
     <property name="optit" location="???/optit"/>
+    <property name="junit.jar" location="${nbroot}/junit/external/junit-3.8.1.jar"/>
     
     <!-- Root directory of the file browsers: -->
     <property name="testdir" location="/tmp"/>
@@ -147,14 +148,56 @@ Microsystems, Inc. All Rights Reserved.
         <nbbrowse url="file://${html}"/>
     </target>
     
+    <target name="test-build" depends="build">
+        <ant dir="${nbroot}/junit/external"/>
+        <javac srcdir="test" destdir="test" debug="true" deprecation="true">
+            <classpath>
+                <path refid="build.cp"/>
+                <pathelement location="threaddemo.jar"/>
+                <pathelement location="${junit.jar}"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="test" depends="test-build">
+        <mkdir dir="test-results"/>
+        <junit printsummary="withOutAndErr" failureproperty="test.failed" showoutput="true">
+            <batchtest todir="test-results">
+                <fileset dir="test">
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
+            <classpath>
+                <path refid="build.cp"/>
+                <pathelement location="threaddemo.jar"/>
+                <pathelement location="test"/>
+            </classpath>
+            <formatter type="xml"/>
+        </junit>
+        <junitreport todir="test-results">
+            <fileset dir="test-results">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="noframes" todir="test-results"/>
+        </junitreport>
+    </target>
+    
+    <target name="test-nb" depends="test">
+        <nbbrowse file="test-results/junit-noframes.html"/>
+    </target>
+    
     <target name="clean" depends="init,clean-looks">
         <delete file="threaddemo.jar"/>
         <delete>
             <fileset dir="src">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir="test">
+                <include name="**/*.class"/>
+            </fileset>
         </delete>
         <delete dir="javadoc"/>
+        <delete dir="test-results"/>
     </target>
     
     <target name="clean-looks" depends="init" if="looks/build.xml">
