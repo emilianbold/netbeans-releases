@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
  
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jellytools" default="jars" basedir=".">
@@ -22,21 +22,9 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
 
-    <!-- Standard jar excludes - can be obtained from
-    	 excludesfile="../nbbuild/standard-jar-excludes.txt" -->
-    <patternset id="standard-jar-excludes">
-        <exclude name="**/*.java"/>
-        <exclude name="**/*.orig"/>
-        <exclude name="**/*.rej"/>
-        <exclude name="**/*.form"/>
-        <exclude name="**/*.jar.MAKEME"/>
-        <exclude name="**/filesystem.attributes"/>
-        <exclude name="**/.nbattrs"/>
-        <exclude name="**/.#*"/>
-    </patternset>
-
     <path id="jellytools.classpath">
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
+        <pathelement location="../openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../core/term/netbeans/modules/autoload/terminalemulator.jar"/>
         <pathelement location="../jemmy/jemmy.jar"/>
@@ -47,7 +35,7 @@ Microsystems, Inc. All Rights Reserved.
     <target name="all" depends="jars,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip">
     </target>
 
-    <target name="compile" depends="buildJemmy,buildNbJUnit">
+    <target name="compile" depends="buildDependentModules">
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
           <classpath>
             <path refid="jellytools.classpath"/>
@@ -55,11 +43,12 @@ Microsystems, Inc. All Rights Reserved.
         </javac>
     </target>
 
-    <target name="buildJemmy" description="Build jemmy.jar">
+    <target name="buildDependentModules">
         <ant dir="../jemmy" target="jar"/>
-    </target>
-    
-    <target name="buildNbJUnit" description="Build NbJUnitt">
+        <ant dir="../openide" antfile="build.xml" target="jars"/>
+        <ant dir="../openide/loaders" antfile="build.xml" target="jars"/>
+        <ant dir="../core" antfile="build.xml" target="jars"/>
+        <ant dir="../core/term" antfile="build.xml" target="jars"/>
         <ant dir="../xtest/nbjunit" target="jar-nbjunit"/>
     </target>
 
@@ -76,9 +65,9 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="VERSION_SUBST" value="1.0"/>
         <delete file="manifest-subst.mf"/>
         <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" manifest="manifest-subst.mf">
+        <jar basedir="src" compress="false" jarfile="jelly-nb.jar" 
+             manifest="manifest-subst.mf" excludesfile="../nbbuild/standard-jar-excludes.txt">
           <include name="**/test/oo/**"/>
-          <patternset refid="standard-jar-excludes"/>
         </jar>
         
         <!-- Create jelly2 jar -->
@@ -86,9 +75,9 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="src/org/netbeans/jellytools/version_info" tofile="manifest-subst.mf" filtering="on"/>
         <move file="src/org/netbeans/jellytools/version_info" todir="."/>
         <copy file="manifest-subst.mf" tofile="src/org/netbeans/jellytools/version_info" overwrite="true"/>
-        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar" manifest="manifest-subst.mf">
+        <jar basedir="src" compress="false" jarfile="jelly2-nb.jar"
+             manifest="manifest-subst.mf" excludesfile="../nbbuild/standard-jar-excludes.txt">
           <include name="**/jellytools/**"/>
-          <patternset refid="standard-jar-excludes"/>
         </jar>
         <move file="./version_info" todir="src/org/netbeans/jellytools"/>
      </target>
