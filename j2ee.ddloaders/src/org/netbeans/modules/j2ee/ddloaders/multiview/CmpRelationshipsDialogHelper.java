@@ -380,6 +380,7 @@ class CmpRelationshipsDialogHelper {
                 Relationships relationships = ejbJar.getSingleRelationships();
                 if (relationships == null) {
                     relationships = ejbJar.newRelationships();
+                    ejbJar.setRelationships(relationships);
                 }
                 helper = new RelationshipHelper(relationships);
             }
