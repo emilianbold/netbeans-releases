@@ -40,6 +40,7 @@ final class FreeformSources implements Sources, AntProjectListener {
     public FreeformSources(FreeformProject project) {
         this.project = project;
         project.helper().addAntProjectListener(this);
+        initSources(); // have to register external build roots eagerly
     }
     
     private Sources delegate;

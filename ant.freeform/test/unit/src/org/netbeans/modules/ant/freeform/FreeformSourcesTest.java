@@ -19,6 +19,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -86,6 +87,13 @@ public class FreeformSourcesTest extends TestBase {
         groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         assertEquals("one Java group", 1, groups.length);
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src2"), groups[0].getRootFolder());
+    }
+    
+    public void testExternalBuildRoot() throws Exception {
+        // Check that <build-folder> works.
+        FileObject builtFile = egdirFO.getFileObject("extbuildroot/build/built.file");
+        assertNotNull("have built.file", builtFile);
+        assertEquals("owned by extbuildroot project", extbuildroot, FileOwnerQuery.getOwner(builtFile));
     }
     
 }
