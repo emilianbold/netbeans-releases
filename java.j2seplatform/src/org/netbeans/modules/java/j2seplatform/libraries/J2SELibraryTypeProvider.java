@@ -148,20 +148,26 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                     url = FileUtil.getArchiveFile (url);
                     // XXX check whether this is really the root
                 }
+                File f = null;
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo != null) {
-                    File f = FileUtil.toFile(fo);
-                    if (f != null) {
-                        if (!first) {
-                            propValue.append(File.pathSeparatorChar);
-                        }
-                        first = false;
-                        f = FileUtil.normalizeFile(f);
-                        propValue.append (f.getAbsolutePath());
+                    f = FileUtil.toFile(fo);
+                }
+                else if ("file".equals(url.getProtocol())) {    //NOI18N
+                    //If the file does not exist (eg library from cleaned project)
+                    // and it is a file protocol URL, add it.
+                    URI uri = URI.create (url.toExternalForm());
+                    if (uri != null) {
+                        f = new File (uri);
                     }
-                    else {
-                        ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
+                }
+                if (f != null) {
+                    if (!first) {
+                        propValue.append(File.pathSeparatorChar);
                     }
+                    first = false;
+                    f = FileUtil.normalizeFile(f);
+                    propValue.append (f.getAbsolutePath());
                 }
                 else {
                     ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
