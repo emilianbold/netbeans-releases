@@ -127,12 +127,12 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
     /** Determines the type of connection design value */
     int type;
     
-    transient RADComponent radComponent = null; // used if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
+    private transient RADComponent radComponent = null; // used if type = TYPE_PROPERTY or TYPE_METHOD or TYPE_BEAN
     String radComponentName = null;             // used if type = TYPE_PROPERTY or TYPE_METHOD
 
-    transient MethodDescriptor method = null;             // used if type = TYPE_METHOD
+    private transient MethodDescriptor method = null;             // used if type = TYPE_METHOD
     String methodName = null;                   // used if type = TYPE_METHOD
-    transient PropertyDescriptor property = null;         // used if type = TYPE_PROPERTY
+    private transient PropertyDescriptor property = null;         // used if type = TYPE_PROPERTY
     String propertyName = null;                 // used if type = TYPE_PROPERTY
     String userCode = null;                     // used if type = TYPE_CODE
     String value = null;                        // used if type = TYPE_VALUE
@@ -163,17 +163,20 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       type = TYPE_PROPERTY;
     }
 
-    private RADConnectionDesignValue (String compName, int type, String name, FormManager2 manager) {
+    private RADConnectionDesignValue (String compName, int valueType, String name, FormManager2 manager) {
       radComponentName = compName;
       formManager = manager;
-      if (type == TYPE_PROPERTY) {
+      if (valueType == TYPE_PROPERTY) {
         needsInit = true;
         type = TYPE_PROPERTY;
         propertyName = name;
-      } else if (type == TYPE_METHOD) {
+      } else if (valueType == TYPE_METHOD) {
         needsInit = true;
         type = TYPE_METHOD;
         methodName = name;
+      } else if (valueType == TYPE_BEAN) {
+        needsInit = true;
+        type = TYPE_BEAN;
       } else throw new IllegalArgumentException ();
     }
 
@@ -206,10 +209,26 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
       return property;
     }
 
+    MethodDescriptor getMethod () {
+      if (needsInit) {
+        if (!initialize ()) return null;
+      }
+      return method;
+    }
+
+    RADComponent getRADComponent () {
+      if (needsInit) {
+        if (!initialize ()) return null;
+      }
+      return radComponent;
+    }
+    
     private boolean initialize () {
       radComponent = formManager.findRADComponent (radComponentName);
       if (radComponent != null) {
-        if (type == TYPE_PROPERTY) { // property
+        if (type == TYPE_BEAN) { // bean
+          return true;
+      } else if (type == TYPE_PROPERTY) { // property
           PropertyDescriptor[] componentsProps = radComponent.getBeanInfo ().getPropertyDescriptors ();
           for (int i = 0; i < componentsProps.length; i++) {
             if (componentsProps[i].getName ().equals (propertyName)) {
