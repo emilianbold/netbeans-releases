@@ -138,9 +138,8 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     public javax.swing.JComponent getVisualRepresentation() {
         return editor;
     }
-    
-    public SectionView getSectionView() {
-        return null;
-    }
+    /** Enable to get the SectionView included in this MultiView Element
+     */ 
+    public abstract SectionView getSectionView();
 
 }
