@@ -985,7 +985,7 @@ class JavaCodeGenerator extends CodeGenerator {
             initCodeWriter.write("try {\n"); // NOI18N
             initCodeWriter.write(comp.getName());
             initCodeWriter.write(" =("); // NOI18N
-            initCodeWriter.write(comp.getBeanClass().getName());
+            initCodeWriter.write(getSourceClassName(comp.getBeanClass()));
             initCodeWriter.write(")java.beans.Beans.instantiate(getClass().getClassLoader(), \""); // NOI18N
             // write package name
             // !! [this won't work when filesystem root != classpath root]
@@ -1014,7 +1014,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 varBuf.append(Modifier.toString(
                                 varType & CodeVariable.ALL_MODIF_MASK));
                 varBuf.append(" "); // NOI18N
-                varBuf.append(comp.getBeanClass().getName());
+                varBuf.append(getSourceClassName(comp.getBeanClass()));
                 varBuf.append(" "); // NOI18N
             }
 
@@ -1445,7 +1445,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 Class adapterClass = BeanSupport.getAdapterForListener(
                                                            listenerType);
                 if (adapterClass != null) { // use listener adapter class
-                    codeWriter.write(adapterClass.getName() + "() {\n"); // NOI18N
+                    codeWriter.write(getSourceClassName(adapterClass) + "() {\n"); // NOI18N
 
                     for (int i=0; i < eventList.size(); i++) {
                         Event event = (Event) eventList.get(i);
@@ -1456,7 +1456,7 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                 }
                 else { // generate full listener implementation (all methods)
-                    codeWriter.write(listenerType.getName() + "() {\n"); // NOI18N
+                    codeWriter.write(getSourceClassName(listenerType) + "() {\n"); // NOI18N
 
                     Method[] methods = eventSetDesc.getListenerMethods();
                     for (int i=0; i < methods.length; i++) {
@@ -1604,6 +1604,10 @@ class JavaCodeGenerator extends CodeGenerator {
             return component.getName() + "."; // NOI18N
     }
 
+    static String getSourceClassName(Class cls) {
+        return cls.getName().replace('$', '.').replace('+', '.').replace('/', '.'); // NOI18N
+    }
+
     private static String getVariablesHeaderComment() {
         if (variablesHeader == null)
             variablesHeader = FormUtils.getBundleString("MSG_VariablesBegin"); // NOI18N
@@ -1654,7 +1658,7 @@ class JavaCodeGenerator extends CodeGenerator {
             }
 
             initCodeWriter.write(" catch ("); // NOI18N
-            initCodeWriter.write(exception.getName());
+            initCodeWriter.write(getSourceClassName(exception));
             initCodeWriter.write(" "); // NOI18N
 
             String varName = "e" + ++exCount; // NOI18N
@@ -1702,7 +1706,7 @@ class JavaCodeGenerator extends CodeGenerator {
             codeWriter.write(getListenerClassName());
             codeWriter.write(" implements "); // NOI18N
             for (int i=0; i < listenersToImplement.length; i++) {
-                codeWriter.write(listenersToImplement[i].getName());
+                codeWriter.write(getSourceClassName(listenersToImplement[i]));
                 if (i + 1 < listenersToImplement.length)
                     codeWriter.write(", "); // NOI18N
             }
@@ -2145,13 +2149,13 @@ class JavaCodeGenerator extends CodeGenerator {
 
         // generate the method
         writer.write(methodName != null ? "private " : "public "); // NOI18N
-        writer.write(originalMethod.getReturnType().getName());
+        writer.write(getSourceClassName(originalMethod.getReturnType()));
         writer.write(" "); // NOI18N
         writer.write(methodName != null ? methodName : originalMethod.getName());
         writer.write("("); // NOI18N
 
         for (int i=0; i < paramTypes.length; i++) {
-            writer.write(paramTypes[i].getName());
+            writer.write(getSourceClassName(paramTypes[i]));
             writer.write(" "); // NOI18N
             writer.write(paramNames[i]);
             if (i + 1 < paramTypes.length)
@@ -2163,7 +2167,7 @@ class JavaCodeGenerator extends CodeGenerator {
         if (exceptions.length != 0) {
             writer.write("throws "); // NOI18N
             for (int i=0; i < exceptions.length; i++) {
-                writer.write(exceptions[i].getName());
+                writer.write(getSourceClassName(exceptions[i]));
                 if (i + 1 < exceptions.length)
                     writer.write(", "); // NOI18N
             }
