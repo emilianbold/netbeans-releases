@@ -19,14 +19,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.MessageFormat;
-import java.util.*;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import javax.swing.*;
 
 import javax.swing.JComponent;
-import javax.swing.event.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.openide.WizardDescriptor;
@@ -39,11 +40,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 
-import org.netbeans.modules.web.project.WebProjectGenerator;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.NbBundle;
+
+import org.netbeans.modules.web.project.WebProjectGenerator;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -74,6 +76,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         String codename = (String) wiz.getProperty(WizardProperties.CODE_NAME);
         String displayName = (String) wiz.getProperty(WizardProperties.DISPLAY_NAME);
+        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
         
         FileObject wmFO = FileUtil.toFileObject (dirSrcF);
         assert wmFO != null : "No such dir on disk: " + dirSrcF;
@@ -88,6 +91,11 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
+        
+        WebModule wm = WebModule.getWebModule(p.getProjectDirectory());
+        if (wm != null) //should not be null
+            wm.setContextPath(contextPath);
+
         // Returning set of DataObject of project diretory. 
         // Project will be open and set as main
         return Collections.singleton(DataObject.find(dir));
@@ -312,11 +320,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         public void storeSettings (Object settings) {
             WizardDescriptor d = (WizardDescriptor)settings;
             String name = panel.projectNameTextField.getText().trim();
-
+            String contextPath = panel.jTextFieldContextPath.getText().trim();
+            if (!contextPath.startsWith("/")) //NOI18N
+                contextPath = "/" + contextPath; //NOI18N
+            
             d.putProperty(WizardProperties.PROJECT_DIR, new File(panel.createdFolderTextField.getText()));
             d.putProperty(WizardProperties.SOURCE_ROOT, new File(panel.moduleLocationTextField.getText()));
             d.putProperty(WizardProperties.DISPLAY_NAME, name);
             d.putProperty(WizardProperties.CODE_NAME, name.replace(' ', '-')); //NOI18N
+            d.putProperty(WizardProperties.CONTEXT_PATH, contextPath);
         }
         
         private boolean isWebModule (FileObject dir) {
