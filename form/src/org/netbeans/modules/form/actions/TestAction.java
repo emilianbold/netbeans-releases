@@ -144,8 +144,10 @@ public class TestAction extends CallableSystemAction {
             // set location
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
             Dimension frameSize = frame.getSize();
-            frame.setLocation((screenSize.width - frameSize.width) / 2,
-                              (screenSize.height - frameSize.height) / 2);
+            frame.setLocation(screenSize.width+20 > frameSize.width ?
+                              (screenSize.width - frameSize.width) / 2 : 0,
+                              screenSize.height+20 > frameSize.height ?
+                              (screenSize.height - frameSize.height) / 2 : 0);
             // show it
             frame.show();
         }
