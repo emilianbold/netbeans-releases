@@ -397,6 +397,7 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 
+    // XXX stop overriding, and make NbErrorManager available directly in lookup
     /** Get the exception manager for the IDE. It can be used to rafine
     * handling of exception and the way they are presented to the user.
     * 
