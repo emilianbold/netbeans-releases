@@ -357,7 +357,7 @@ public class ServerFileDistributor extends ServerProgress {
         private void record(String relativePath) {
             if (! classesChanged) {
                 boolean importantClass = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/classes/"); //NOI18N
-                boolean classes = importantClass && relativePath.endsWith(".class"); //NOI18N
+                boolean classes = importantClass && (relativePath.endsWith(".class") || relativePath.endsWith(".properties")); //NOI18N
                 boolean importantLib = !moduleType.equals (ModuleType.WAR) || relativePath.startsWith ("WEB-INF/lib/"); //NOI18N
                 boolean libs = importantLib && (relativePath.endsWith(".jar") || relativePath.endsWith(".zip")); //NOI18N
                 if (classes || libs) {
@@ -365,7 +365,9 @@ public class ServerFileDistributor extends ServerProgress {
                     return;
                 }
             }
-            if (! descriptorChanged && descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) {
+            if (! descriptorChanged && (
+                ((descriptorRelativePaths != null && descriptorRelativePaths.contains(relativePath)) ||
+                 (relativePath.startsWith ("WEB-INF") && (relativePath.endsWith (".tld") || relativePath.endsWith (".xml")))))) {
                 descriptorChanged = true;
                 return;
             }
