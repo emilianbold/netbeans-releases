@@ -188,13 +188,6 @@
 <mapID target="beans.settings" url="beans/settings.html" />
 <mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
 
-<!--jsp topics probably not used in usersguide; leaving in mapped to pending just in case-->
-<mapID target="jsp.jsp_jump" url="pending.html" />
-<mapID target="jsp.jsp_create" url="pending.html" />
-<mapID target="jsp.jsp_edit" url="pending.html" />
-<mapID target="jsp.jsp_compile" url="pending.html" />
-<mapID target="jsp.jsp_run" url="pending.html" />
-<mapID target="jsp.jsp_queryparams" url="pending.html" />
 
 <mapID target="java.intro" url="java/intro.html" />
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
@@ -1421,10 +1414,7 @@
    
    <mapID target="org.netbeans.editor.GO_TO_DECLARATION" url="pending.html" />
    <mapID target="org.netbeans.editor.REFORMAT_CODE" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ide.netbeans.JSPPageWizardAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.ServletSettings" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.web.core.execution.JakartaExecutor" url="pending.html" />
 
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$ToggleBreakpointAction" url="pending.html" />
    <mapID target="org.netbeans.modules.editor.java.NbEditorJavaKit$AddWatchAction" url="pending.html" />
@@ -1438,15 +1428,6 @@
    <mapID target="org.netbeans.editor.BaseKit$CopyAction" url="pending.html" />
    <mapID target="org.netbeans.editor.BaseKit$PasteAction" url="pending.html" />
 
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBeansSelectionPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPBizMethodsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPDisplayFieldsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPInputFieldsPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageGenerationPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageNameAndStyleInfoPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPPageTypeOptionPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitAndErrorURLInfoPanel" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.wizards.beanjsp.ui.JSPSubmitProcessOptionPanel" url="pending.html" />
 
    <mapID target="org.netbeans.modules.search.ResultViewTopComponent" url="objects/search/search_results-window.html" />
    <mapID target="org.netbeans.modules.search.RepositorySearchAction" url="objects/search/search.html" />
@@ -1458,10 +1439,7 @@
 <!--DataObjectType needs helpID assigned in code??-->
    <mapID target="org.netbeans.modules.search.types.ObjectTypeType" url="objects/search/search_filetype.html" />
 
-   <mapID target="org.netbeans.modules.web.core.EditQueryStringAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.jsploader.EditServletAction" url="pending.html" />
-   <mapID target="org.netbeans.modules.web.core.jswdk.Execute2Action" url="pending.html" />
- 
+
    <mapID target="org.netbeans.beaninfo.LoaderActionsPanel" url="pending.html" />
    <mapID target="org.openide.src.nodes.MethodCustomizer" url="pending.html" />
    <mapID target="org.openide.src.nodes.FieldCustomizer" url="pending.html" />
