@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -12,15 +13,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Javadoc tests" basedir="." default="all">
-    
-    <!-- Name of tested module -->
-    <property name="xtest.module" value="javadoc"/>
-    
-    <import file="../../nbbuild/templates/xtest.xml"/>
-    
-    <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-
+<project name="javadoc/test-unit" basedir="." default="all">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>

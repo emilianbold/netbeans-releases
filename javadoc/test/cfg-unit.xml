@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+
                 Sun Public License Notice
 
 The contents of this file are subject to the Sun Public License
@@ -12,15 +13,17 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="Javadoc tests" basedir="." default="all">
+<mconfig name="javadoc">
     
-    <!-- Name of tested module -->
-    <property name="xtest.module" value="javadoc"/>
+    <testbag testattribs="stable" executor="unit-executor" name="javadoc">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="**/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     
-    <import file="../../nbbuild/templates/xtest.xml"/>
+    <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
     
-    <!-- default testtypes, attributes used when no value is supplied from command line -->
-    <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="stable"/>
-
-</project>
+</mconfig>
