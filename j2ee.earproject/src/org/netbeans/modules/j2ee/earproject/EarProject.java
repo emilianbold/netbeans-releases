@@ -559,9 +559,9 @@ public final class EarProject implements J2eeProject, Project, AntProjectListene
 //            "java-beans",           // NOI18N
 //            "oasis-XML-catalogs",   // NOI18N
             "XML",                  // NOI18N
-            "ant-script",           // NOI18N
-            "ant-task",             // NOI18N
-//            "simple-files"          // NOI18N
+//            "ant-script",           // NOI18N
+//            "ant-task",             // NOI18N
+            "simple-files"          // NOI18N
         };
 //        
         private static final String[] PRIVILEGED_NAMES = new String[] {

@@ -120,6 +120,7 @@ is divided into following sections:
                         <contains string="${{client.module.uri}}" substring=".war"/>
                     </and>
                 </condition>
+                <available property="has.custom.manifest" file="${{meta.inf}}/MANIFEST.MF"/>
             </target>
 
             <target name="post-init">
@@ -365,8 +366,9 @@ is divided into following sections:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
-            <target name="do-dist">
+            <target name="do-dist-without-manifest">
                 <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
+                <xsl:attribute name="unless">has.custom.manifest</xsl:attribute>
                 <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}">
@@ -374,13 +376,23 @@ is divided into following sections:
                 </jar>
             </target>
 
+            <target name="do-dist-with-manifest">
+                <xsl:attribute name="depends">init,compile,pre-dist</xsl:attribute>
+                <xsl:attribute name="if">has.custom.manifest</xsl:attribute>
+                <dirname property="dist.jar.dir" file="${{dist.jar}}"/>
+                <mkdir dir="${{dist.jar.dir}}"/>
+                <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" manifest="${{meta.inf}}/MANIFEST.MF">
+                    <fileset dir="${{build.dir}}"/>
+                </jar>
+            </target>
+            
             <target name="post-dist">
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
 
             <target name="dist">
-                <xsl:attribute name="depends">init,compile,pre-dist,do-dist,post-dist</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,pre-dist,do-dist-without-manifest,do-dist-with-manifest,post-dist</xsl:attribute>
                 <xsl:attribute name="description">Build distribution (JAR).</xsl:attribute>
             </target>
 
