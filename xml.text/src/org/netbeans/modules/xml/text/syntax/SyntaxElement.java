@@ -46,8 +46,8 @@ public abstract class SyntaxElement {
     private SyntaxElement next;        // cached next element
     
     // let it be visible by static inner classes extending us
-    int offset;     // original position in document //??? use item instead
-    int length;     // original lenght in document
+    protected int offset;     // original position in document //??? use item instead
+    protected int length;     // original lenght in document
     
 
     /** Creates new SyntaxElement */
