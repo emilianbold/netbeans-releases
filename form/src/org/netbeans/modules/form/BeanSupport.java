@@ -196,21 +196,6 @@ public class BeanSupport {
     return np;
   }
   
-  public static PropertyEditor getPropertyEditor (PropertyDescriptor desc) {
-    Class ed = desc.getPropertyEditorClass ();
-    if (ed != null) {
-      try {
-        PropertyEditor editor = (PropertyEditor)ed.newInstance ();
-        return editor;
-      } catch (IllegalAccessException e) {
-        return null;
-      } catch (InstantiationException e) {
-        return null;
-      }
-    } else {
-      return PropertyEditorManager.findEditor (desc.getPropertyType ());
-    }
-  }
 // -----------------------------------------------------------------------------
 // Private methods
 
@@ -239,6 +224,8 @@ public class BeanSupport {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/30/99  Ian Formanek    Removed 
+ *       getPropertyEditor
  *  3    Gandalf   1.2         5/5/99   Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/29/99  Ian Formanek    
