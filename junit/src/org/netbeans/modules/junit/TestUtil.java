@@ -114,7 +114,8 @@ public class TestUtil {
     
     /**
      * Converts given package filename to test suite filename, e.g.
-     * "org/netbeans/foo" -> "org/netbeans/foo/{suite-prefix}Foo{suite-suffix}"
+     * &quot;<tt>org/netbeans/foo</tt>&quot; -&gt;
+     * &quot;<tt>org/netbeans/foo/{suite-prefix}Foo{suite-suffix}</tt>&quot;
      * @param packageFileName package filename in form of "org/netbeans/foo"
      */
     public static String convertPackage2SuiteName(String packageFileName) {
@@ -131,9 +132,12 @@ public class TestUtil {
     
     /**
      * Converts given class filename to test filename, e.g.
-     * "org/netbeans/Foo" -> "org/netbeans/{test-prefix}Foo{test-suffix}"
-     * @param classFileName class filename in form of "org/netbeans/Foo",
-     *     i.e. without extension, no inner class
+     * &quot;<tt>org/netbeans/Foo</tt>&quot;
+     * -&gt; &quot;<tt>org/netbeans/{test-prefix}Foo{test-suffix}</tt>&quot;
+     *
+     * @param  classFileName  class filename in form of
+     *                        &quot;<tt>org/netbeans/Foo</tt>&quot;,
+     *                        i.e. without extension, no inner class
      */
     public static String convertClass2TestName(String classFileName) {
         int index = classFileName.lastIndexOf('/');
@@ -268,11 +272,12 @@ public class TestUtil {
     
     /**
      * Converts filename to the fully qualified name of the main class
-     * residing in the file. <br>
-     * For example : "test/myapp/App.java" --> "test.myapp.App"
-     * @param filename
-     * @return corresponding package name. Null if the input is not
-     * well formed.
+     * residing in the file.<br />
+     * For example: <tt>test/myapp/App.java</tt> --&gt; <tt>test.myapp.App</tt>
+     *
+     * @param  filename
+     * @return  corresponding package name. Null if the input is not
+     *          well formed.
      */
     static String fileToClassName(String fileName) {
         if (fileName.endsWith(".java")) {                               //NOI18N
@@ -551,7 +556,14 @@ public class TestUtil {
     }
     
     /**
+     * Finds a <code>SourceGroup</code> the given file belongs to.
+     * Only Java <code>SourceGroup</code>s are taken into account.
      *
+     * @param  file  <code>FileObject</code> whose owning
+     *               <code>SourceGroup</code> to be found
+     * @return  Java <code>SourceGroup</code> containing the given
+     *          file; or <code>null</code> if no such
+     *          <code>SourceGroup</code> was found
      * @author  Marian Petras
      */
     private static SourceGroup findSourceGroupOwner(FileObject file) {
@@ -569,7 +581,18 @@ public class TestUtil {
     }
     
     /**
+     * Creates a copy of the given array, except that <code>null</code> objects
+     * are omitted.
+     * The length of the returned array is (<var>l</var> - <var>n</var>), where
+     * <var>l</var> is length of the passed array and <var>n</var> is number
+     * of <code>null</code> elements of the array. Order of
+     * non-<code>null</code> elements is kept in the returned array.
+     * The returned array is always a new array, even if the passed
+     * array does not contain any <code>null</code> elements.
      *
+     * @param  objs  array to copy
+     * @return  array containing the same objects as the passed array, in the
+     *          same order, just with <code>null</code> elements missing
      * @author  Marian Petras
      */
     public static Object[] skipNulls(final Object[] objs) {
@@ -585,7 +608,15 @@ public class TestUtil {
     }
     
     /**
+     * Creates a map from folders to <code>SourceGroup</code>s of a given
+     * project.
+     * The map allows to ascertian for a given folder
+     * which <code>SourceGroup</code> it is a root folder of.
      *
+     * @param  project  project whose <code>SourceGroup</code>s should be in the
+     *                  returned map
+     * @return  map from containing all <code>SourceGroup</code>s of a given
+     *          project, having their root folders as keys
      * @author  Marian Petras
      */
     public static Map getFileObject2SourceGroupMap(Project project) {
