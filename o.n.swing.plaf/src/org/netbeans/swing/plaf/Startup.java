@@ -271,19 +271,38 @@ public final class Startup {
      * current look and feel.
      */
     private LFCustoms findCustoms () {
-        StringBuffer buf = new StringBuffer(40);
-        buf.append("Nb."); //NOI18N
         if (FORCED_CUSTOMS != null) {
-            System.err.println ("Using explicitly set UI customizations: " + FORCED_CUSTOMS);
-            buf.append (FORCED_CUSTOMS);
-        } else {
-            buf.append(UIManager.getLookAndFeel().getID());
-            if (UIUtils.isXPLF()) {
-                buf.append("XPLFCustoms"); //NOI18N
+            System.err.println("Using explicitly set UI customizations: " + //NOI18N
+                FORCED_CUSTOMS);
+            if ("XP".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new XPLFCustoms();
+            } else if ("Aqua".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new AquaLFCustoms();
+            } else if ("Metal".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new MetalLFCustoms();
+            } else if ("Windows".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new WindowsLFCustoms();
+            } else if ("GTK".equals(FORCED_CUSTOMS)) { //NOI18N
+                return new GtkLFCustoms();
             } else {
-                buf.append("LFCustoms"); //NOI18N
+                try {
+                    return (LFCustoms) Class.forName(FORCED_CUSTOMS).newInstance();
+                } catch (Exception e) {
+                    System.err.println("UI customizations class not found: " //NOI18N
+                        + FORCED_CUSTOMS); //NOI18N
+                }
             }
         }
+        
+        StringBuffer buf = new StringBuffer(40);
+        buf.append("Nb."); //NOI18N
+        buf.append(UIManager.getLookAndFeel().getID());
+        if (UIUtils.isXPLF()) {
+            buf.append("XPLFCustoms"); //NOI18N
+        } else {
+            buf.append("LFCustoms"); //NOI18N
+        }
+
         LFCustoms result = null;
         try {
             result = (LFCustoms)UIManager.get(buf.toString());
