@@ -209,6 +209,7 @@
 	<mapID target="compile_doc" url="webservice/build/compile_doc.html" />
 	<mapID target="compile_rpc" url="webservice/build/compile_rpc.html" />
 	<mapID target="compile_wsdl" url="webservice/build/compile_wsdl.html" />
+	<mapID target="compile_wsdl_regenerate" url="webservice/build/compile_wsdl_regenerate.html" />
 	<mapID target="tweak_wsdl" url="webservice/build/tweak_wsdl.html" />
 	<!-- End of "Build" section -->
 	<!-- Start of "Expose" section -->

@@ -245,15 +245,16 @@
            <tocitem text="Configuring Web Service Deployment Descriptors" target="config_ws_dd" />
 	   <tocitem text="Configuring Web Application Deployment Descriptors" target="configure_webapp_dd" />
            <tocitem text="Configuring EJB Deployment Descriptors" target="config_ejb_dd" />
-        </tocitem>
+        </tocitem>  
 	<tocitem text="Building Web Services" >
 		 <tocitem text="About Building Web Services" target="about_build_ws" />
 	         <tocitem text="About the Web Service Compiler" target="about_wscompile" />
 		 <tocitem text="About the WSDL File" target="about_wsdl" />
                  <tocitem text="About the Service Endpoint Interface" target="about_sei" />
-		 <tocitem text="Building a Web Service from a WSDL File" target="compile_wsdl" />
 		 <tocitem text="Building a Document-Style Web Service" target="compile_doc" />
 		 <tocitem text="Building a RPC-Style Web Service" target="compile_rpc" />
+		 <tocitem text="Building a Web Service from a WSDL File" target="compile_wsdl" />
+		 <tocitem text="Regenerating a Web Service Created from a WSDL File" target="compile_wsdl_regenerate" />
                  <tocitem text="Tweaking the WSDL File by Hand" target="tweak_wsdl" />
 	 </tocitem>
 	 <tocitem text="Deploying and Testing Web Services" >
