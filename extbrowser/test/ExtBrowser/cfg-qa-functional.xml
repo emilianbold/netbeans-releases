@@ -44,6 +44,14 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
+    <testbag testattribs="all" executor="ide" name="Browser Registry tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="**/settings/BrowserRegistry.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
 
     <testbag testattribs="extunix" executor="ide" name="External Unix Browser">
         <testset dir="qa-functional/src">
