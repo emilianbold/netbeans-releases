@@ -1,0 +1,97 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="lexer" default="help" basedir=".">
+
+  <property name="lexer.module.root" location=".."/>
+  <property name="binroot" location="${lexer.module.root}/../../nbextra"/>
+  <property name="lexerjar" location="${lexer.module.root}/netbeans/modules/lexer.jar"/>
+  <!-- <property name="build.compiler.debug" value="on"/> -->
+  <!-- <property name="build.compiler.deprecation" value="on"/> -->
+
+  <!-- <property name="xmlparser" value="${binroot}/core/release/lib/ext/xerces.jar"/> -->
+  <!-- <property name="antlr" value="${binroot}/lexer/release/modules/ext/antlr.jar"/> -->
+
+  <property name="democlass" value="org.netbeans.modules.lexer.demo.javacc.CalcPaneDemo"/>
+  <property name="testclass" value="org.netbeans.modules.lexer.demo.javacc.CalcAlgorithmTest"/>
+
+  <target name="compile">
+    <!-- build complete jar -->
+    <ant dir="${lexer.module.root}" target="jars" inheritAll="false"/>
+               
+    <javac srcdir="src" destdir="src"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <classpath>
+        <!-- <pathelement location="${xmlparser}"/> -->
+        <pathelement location="${lexer.module.root}/tmp"/>
+        <pathelement location="${lexerjar}"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="demo" depends="compile">
+    <java classname="${democlass}" fork="true">
+      <classpath>
+        <pathelement location="${lexerjar}"/>
+        <pathelement location="src"/>
+      </classpath>
+    </java>
+
+  </target>
+
+  <target name="test" depends="compile">
+    <java classname="${testclass}" fork="true">
+      <classpath>
+        <pathelement location="${lexerjar}"/>
+        <pathelement location="src"/>
+      </classpath>
+    </java>
+
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="src">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="cleanall" depends="clean">
+    <ant dir="${lexer.module.root}" target="clean" inheritAll="false"/>
+  </target>
+
+  <!-- helper task to create zip file of the whole lexer module -->
+  <target name="zip" depends="cleanall">
+    <zip zipfile="${lexer.module.root}/../lexer.zip"
+         basedir="${lexer.module.root}/.."
+         compress="true"
+         includes="lexer/**"
+         excludes="lexer/**/*~, lexer/**/.#*"
+         update="false"
+    />
+  </target>
+
+  <target name="help">
+    <echo message="Targets:"/>
+    <echo message="demo     Run editor pane demo (Requires JDK1.4)"/>
+    <echo message="test     Run test that checks generated lexer correctness (Requires JDK1.4)"/>
+    <echo message="compile  Compile the demo sources"/>
+    <echo message="clean    Clean the *.class files under src subdir"/>
+    <echo message="cleanall In addition to clean run the clean target in ../build.xml"/>
+  </target>
+
+</project>
+

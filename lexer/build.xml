@@ -1,0 +1,154 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="lexer" default="netbeans" basedir=".">
+
+  <property name="nbm_alias" value="nb_ide"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="binroot" location="../../nbextra"/>
+  <!-- <property name="build.compiler.debug" value="on"/> -->
+
+  <!-- Patterns for sources that need openide util or antlr classes -->
+  <!-- <property name="src.openide.util" value="org/netbeans/modules/lexer/lang/LookupLanguageProvider.java"/> -->
+  <!-- <property name="src.antlr" value="org/netbeans/modules/lexer/antlr/**/*.java"/> -->
+
+  <!-- antlr.jar and XML parser jar (must include jaxp) -->
+  <property name="xmlparser" value="${binroot}/core/release/lib/ext/xerces.jar"/>
+  <!-- <property name="antlr" value="${binroot}/lexer/release/modules/ext/antlr.jar"/> -->
+
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="tojar" classname="org.netbeans.nbbuild.ToJar" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
+
+  <target name="compile-base" depends="hack13">
+    <javac srcdir="libsrc" destdir="libsrc"
+           excludes="${src.openide.util},${src.antlr}"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="${xmlparser}"/>
+        <pathelement location="tmp"/>
+      </classpath>
+    </javac>
+  </target>
+
+  <target name="hack13">
+    <available property="hack13" classname="java.lang.CharSequence" />
+    <available property="uptodate" file="tmp/java/lang/CharSequence.class" />
+
+    <antcall target="hack13-check" />
+  </target>
+
+  <target name="hack13-check" unless="hack13">
+    <antcall target="hack13-do" />
+  </target>
+
+  <target name="hack13-do" unless="uptodate">
+    <mkdir dir="tmp/java/lang/" />
+    <echo file="tmp/java/lang/CharSequence.java" message="package java.lang;public interface CharSequence {int length();char charAt(int index);CharSequence subSequence(int start, int end);public String toString();}" />
+    <javac srcdir="tmp" destdir="tmp" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" />
+  </target>
+
+  <!-- <target name="compile-antlr" depends="compile-base">
+    <javac srcdir="libsrc" destdir="libsrc"
+           includes="${src.antlr}"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="${xmlparser}"/>
+        <pathelement location="${antlr}"/>
+        <pathelement location="tmp"/>
+      </classpath>
+    </javac>
+  </target> -->
+
+  <!-- <target name="compile-openide-util" depends="compile-base">
+    <javac srcdir="libsrc" destdir="libsrc"
+           includes="${src.openide.util}"
+           deprecation="${build.compiler.deprecation}"
+           debug="${build.compiler.debug}">
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide-util.jar"/>
+        <pathelement location="tmp"/>
+      </classpath>
+    </javac>
+  </target> -->
+
+  <!-- JavaCC does not require runtime and therefore it's included in base compilation -->
+  <!-- <target name="compile" depends="compile-antlr,compile-openide-util"/> -->
+  <target name="compile" depends="compile-base"/>
+
+  <target name="jars" depends="compile">
+    <mkdir dir="netbeans/modules"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <locjar jarfile="netbeans/modules/lexer.jar"
+            manifest="manifest-subst.mf"
+            basedir="libsrc"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <locale name="ja"/>
+    </locjar>
+  </target>
+
+  <target name="netbeans" depends="jars">
+    <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
+  </target>
+
+
+  <target name="nbm" depends="netbeans">
+    <makenbm file="lexer.nbm"
+             topdir="."
+	     module="netbeans/modules/lexer.jar"
+	     homepage="http://lexer.${homepage.base}/"
+	     distribution="http://{dist.base}/lexer.nbm">
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+
+  <target name="clean">
+    <delete>
+      <fileset dir="libsrc">
+        <include name="**/*.class"/>
+      </fileset>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="lexer.nbm"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
+    <delete dir="tmp" />
+  </target>
+
+  <!-- api changes documentation -->
+  <target name="apichanges-check" description="Check syntax of API changes list. Requires Ant 1.4!">
+      <xmlvalidate file="api/doc/changes/apichanges.xml" failonerror="true"/>
+  </target>
+  <target name="apichanges-generate" description="Regenerate HTML from XML API changes list.">
+      <!-- Ant 1.3 and 1.4 disagree on style attribute. -->
+      <!-- 1.3: treated as a name relative to XML file. -->
+      <!-- 1.4: treated as a filename consistent with normal Ant usage. -->
+      <!-- Be safe and give the absolute path here. -->
+      <style in="api/doc/changes/apichanges.xml"
+             out="www/apichanges.html"
+             destdir="www"
+             style="${basedir}/../../openide/api/doc/changes/apichanges.xsl"
+      />
+ 
+  </target>
+</project>
+

@@ -1,0 +1,5 @@
+OpenIDE-Module: org.netbeans.lexer/1
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.25
+Class-Path: ext/lexer.jar

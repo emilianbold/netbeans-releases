@@ -1,0 +1,122 @@
+
+/* Javacc grammar file for the Calc demo. */
+
+options {
+    STATIC = false; // more instances of the token manager will be allowed
+    USER_CHAR_STREAM = true; // user provided CharStream
+    BUILD_PARSER = false; // do not build parser
+    BUILD_TOKEN_MANAGER = true; // build token manager
+    UNICODE_INPUT = true;
+}
+
+/* The following section is necessary in order to add the proper imports
+   to the generated token manager.
+*/
+PARSER_BEGIN(Calc)
+
+package org.netbeans.modules.lexer.demo.javacc;
+
+import org.netbeans.modules.lexer.javacc.CharStream;
+import org.netbeans.modules.lexer.javacc.Token;
+import org.netbeans.modules.lexer.javacc.TokenMgrError;
+
+
+/* The definition of the parser class must be present
+   otherwise the javacc will not continue.
+*/
+public class Calc {
+
+}
+
+PARSER_END(Calc)
+
+/* Declarations that will be added into the token manager class. */
+TOKEN_MGR_DECLS:
+{
+
+    /** Shared token instance used instead Token.newToken()
+     * after postprocessing the generated token manager.
+     */
+    private Token sharedTokenInstance = new Token();
+
+    CharStream getCharStream() {
+        return input_stream;
+    }
+
+}
+
+
+/* The token definitions folow: */
+
+TOKEN:
+{
+    <WHITESPACE: (" " | "\t" | "\r" | "\n")+>
+}
+
+TOKEN: // Multi-line (traditional) comment start
+{
+    <ML_COMMENT_START: "/*" > : IN_ML_COMMENT
+}
+
+<IN_ML_COMMENT> // Inside multi-line comment
+TOKEN:
+{
+    <ML_COMMENT: <ML_COMMENT_RE1> "/" > : DEFAULT
+
+  | <INCOMPLETE_ML_COMMENT:
+        <ML_COMMENT_RE1>
+      | <ML_COMMENT_RE1> ~["*","/"] (~["*"])*
+      | (~["*"])*
+    > : DEFAULT
+
+  | <#ML_COMMENT_RE1: (~["*"])* "*" ("*" | (~["*","/"] (~["*"])* "*"))* >
+    
+}
+
+TOKEN: // Operators
+{
+    <PLUS: "+">
+    | <MINUS: "-">
+    | <MUL: "*">
+    | <DIV: "/">
+    | <MUL3: "***">   /* to get two tokens lookback */
+    | <PLUS5: "+++++">
+}
+
+TOKEN: // Separators
+{
+    <LPAREN: "(">
+    | <RPAREN: ")">
+}
+
+TOKEN: // Constant ('#' means internal tokens)
+{
+    <CONSTANT: <FLOAT>
+        | <FLOAT> (["e","E"] (["-","+"])? <INTEGER>)? 
+    >
+
+    | <#FLOAT: <INTEGER> ("." <INTEGER>)?
+        | "." <INTEGER>
+    >
+
+    | <#INTEGER: (<DIGIT>)+>
+    | <#DIGIT: ["0" - "9"]>
+
+}
+
+TOKEN: // Errorneous constructions
+{
+    <ML_COMMENT_END: "*/">
+}
+
+TOKEN:
+{
+    /* All other things are considered to be error character.
+     * Only one character must be matched because the (~[])+
+     * would be the longest match so it would be always
+     * preferred. The ERROR clause must be the last
+     * in the grammar specification so that other one-char
+     * clauses are matched preferably.
+     */
+    <ERROR: ~[] >
+}
