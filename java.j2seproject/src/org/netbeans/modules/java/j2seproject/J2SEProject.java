@@ -342,6 +342,10 @@ final class J2SEProject implements Project, AntProjectListener {
             "templateType_Java",        // NOI18N
             "templateType_JavaBeans",   // NOI18N
             "templateType_JavaForms",   // NOI18N
+            "templateType_JUnit",       // NOI18N
+            "templateType_Ant",         // NOI18N
+            "templateType_XML",         // NOI18N
+            "templateType_Other",       // NOI18N
             "templateType_J2SE",        // NOI18N
         };
         
