@@ -41,10 +41,10 @@ public class Difference extends Object implements Serializable {
     private List firstLineDiffs;
     private List secondLineDiffs;
     
-    /** The text of the difference. For ADD the newly added text, for CHANGE
-     * the new text which the old is changed to.
-     */
-    private String text;
+    /** The text of the difference in the first file. */
+    private String firstText;
+    /** The text of the difference in the second file. */
+    private String secondText;
     
     private static final long serialVersionUID = 7638201981188907148L;
     
@@ -58,7 +58,7 @@ public class Difference extends Object implements Serializable {
      * @param secondEnd The line number on which the difference ends in the second file.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd) {
-        this(type, firstStart, firstEnd, secondStart, secondEnd, null, null, null);
+        this(type, firstStart, firstEnd, secondStart, secondEnd, null, null, null, null);
     }
     
     /**
@@ -69,12 +69,12 @@ public class Difference extends Object implements Serializable {
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
      * @param secondEnd The line number on which the difference ends in the second file.
-     * @param text The text content of the difference. For ADD the text added,
-     *        for CHANGE the new text.
+     * @param firstText The text content of the difference in the first file.
+     * @param secondText The text content of the difference in the second file.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
-                      String text) {
-        this(type, firstStart, firstEnd, secondStart, secondEnd, text, null, null);
+                      String firstText, String secondText) {
+        this(type, firstStart, firstEnd, secondStart, secondEnd, firstText, secondText, null, null);
     }
     
     /**
@@ -85,8 +85,8 @@ public class Difference extends Object implements Serializable {
      * @param firstEnd The line number on which the difference ends in the first file.
      * @param secondStart The line number on which the difference starts in the second file.
      * @param secondEnd The line number on which the difference ends in the second file.
-     * @param text The text content of the difference. For ADD the text added,
-     *        for CHANGE the new text.
+     * @param firstText The text content of the difference in the first file.
+     * @param secondText The text content of the difference in the second file.
      * @param firstLineDiffs The list of differences on lines in the first file.
      *                    The list contains instances of {@link Difference.Line}.
      *                    Can be <code>null</code> when there are no line differences.
@@ -95,7 +95,7 @@ public class Difference extends Object implements Serializable {
      *                    Can be <code>null</code> when there are no line differences.
      */
     public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
-                      String text, List firstLineDiffs, List secondLineDiffs) {
+                      String firstText, String secondText, List firstLineDiffs, List secondLineDiffs) {
         if (type > 2 || type < 0) {
             throw new IllegalArgumentException("Bad Difference type = "+type);
         }
@@ -104,7 +104,8 @@ public class Difference extends Object implements Serializable {
         this.firstEnd = firstEnd;
         this.secondStart = secondStart;
         this.secondEnd = secondEnd;
-        this.text = text;
+        this.firstText = firstText;
+        this.secondText = secondText;
         this.firstLineDiffs = firstLineDiffs;
         this.secondLineDiffs = secondLineDiffs;
     }
@@ -163,10 +164,17 @@ public class Difference extends Object implements Serializable {
     }
     
     /**
-     * Get the text content of the difference.
+     * Get the text content of the difference in the first file.
      */
-    public String getText() {
-        return text;
+    public String getFirstText() {
+        return firstText;
+    }
+    
+    /**
+     * Get the text content of the difference in the second file.
+     */
+    public String getSecondText() {
+        return secondText;
     }
     
     public String toString() {
