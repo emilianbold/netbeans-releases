@@ -160,6 +160,7 @@ public class EjbJarProjectProperties {
     // CustomizerSources
     DefaultTableModel SOURCE_ROOTS_MODEL;
     DefaultTableModel TEST_ROOTS_MODEL;
+    Document META_INF_MODEL;
     ComboBoxModel JAVAC_SOURCE_MODEL;
      
     // CustomizerLibraries
@@ -247,6 +248,7 @@ public class EjbJarProjectProperties {
         // CustomizerSources
         SOURCE_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getSourceRoots() );
         TEST_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getTestSourceRoots() );
+        META_INF_MODEL = projectGroup.createStringDocument( evaluator, META_INF );
                 
         // CustomizerLibraries
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
