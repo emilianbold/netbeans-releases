@@ -115,8 +115,8 @@ public class TestStringWizardPanel extends JPanel {
     private void postInitComponents() {
         sourceLabel.setLabelFor(sourceCombo);
         sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source").charAt(0));
-        hardStringLabel.setLabelFor(hardStringTable);
-        hardStringLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_FoundStrings_Mnem").charAt(0));
+        testStringLabel.setLabelFor(testStringTable);
+        testStringLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_FoundStrings_Mnem").charAt(0));
     }
 
     /** Getter for <code>resources</code> property. */
@@ -152,7 +152,7 @@ public class TestStringWizardPanel extends JPanel {
     
     /** Inits table component. */
     private void initTable() {
-        hardStringTable.setDefaultRenderer(HardCodedString.class, new DefaultTableCellRenderer() {
+        testStringTable.setDefaultRenderer(HardCodedString.class, new DefaultTableCellRenderer() {
             public Component getTableCellRendererComponent(JTable table, Object value,
                 boolean isSelected, boolean hasFocus, int row, int column) {
                     
@@ -169,7 +169,7 @@ public class TestStringWizardPanel extends JPanel {
             }
         });
         
-        hardStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
+        testStringTable.setDefaultRenderer(I18nString.class, new DefaultTableCellRenderer() {
             private final JButton dotButton = new JButton("..."); // NOI18N
             
             public Component getTableCellRendererComponent(JTable table, Object value,
@@ -179,8 +179,10 @@ public class TestStringWizardPanel extends JPanel {
 
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
+                int modelColumn = testStringTable.convertColumnIndexToModel(column);
+                
                 if(i18nString != null) {
-                    if(column == COLUMN_INDEX_KEY) {
+                    if(modelColumn == COLUMN_INDEX_KEY) {
                         label.setText(i18nString.getKey());
                     } else {
                         label.setText(i18nString.getValue());
@@ -194,7 +196,7 @@ public class TestStringWizardPanel extends JPanel {
             }
         });
 
-        hardStringTable.setDefaultEditor(I18nString.class, new DefaultCellEditor(new JTextField()) {
+        testStringTable.setDefaultEditor(I18nString.class, new DefaultCellEditor(new JTextField()) {
             
             public Component getTableCellEditorComponent(
                 JTable table, Object value,
@@ -203,9 +205,11 @@ public class TestStringWizardPanel extends JPanel {
 
                 I18nString i18nString = (I18nString)value;
                 
-                if(column == 1)
+                int modelColumn = testStringTable.convertColumnIndexToModel(column);
+                
+                if(modelColumn == COLUMN_INDEX_KEY)
                     value = i18nString == null ? "" : i18nString.getKey(); // NOI18N
-                else if(column == 2)
+                else if(modelColumn == COLUMN_INDEX_VALUE)
                     value = i18nString == null ? "" : i18nString.getValue(); // NOI18N
                 else
                     value = ""; // NOI18N
@@ -215,7 +219,7 @@ public class TestStringWizardPanel extends JPanel {
         });
         
         // PENDING: Setting the size of columns with check box and  customize button editor.
-        hardStringTable.getColumnModel().getColumn(COLUMN_INDEX_CHECK).setMaxWidth(30);
+        testStringTable.getColumnModel().getColumn(COLUMN_INDEX_CHECK).setMaxWidth(30);
     }
     
     /** This method is called from within the constructor to
@@ -226,26 +230,24 @@ public class TestStringWizardPanel extends JPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         sourceLabel = new javax.swing.JLabel();
         sourceCombo = new javax.swing.JComboBox();
-        hardStringLabel = new javax.swing.JLabel();
+        testStringLabel = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
-        hardStringTable = new javax.swing.JTable();
+        testStringTable = new javax.swing.JTable();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         sourceLabel.setText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Source"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(sourceLabel, gridBagConstraints1);
-        
         
         sourceCombo.setRenderer(new SourceWizardPanel.DataObjectListCellRenderer());
         sourceCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sourceComboActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -255,22 +257,17 @@ public class TestStringWizardPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(sourceCombo, gridBagConstraints1);
         
-        
-        hardStringLabel.setText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_FoundStrings"));
-        
+        testStringLabel.setText(NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_FoundStrings"));
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.insets = new java.awt.Insets(11, 0, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-        add(hardStringLabel, gridBagConstraints1);
-        
+        add(testStringLabel, gridBagConstraints1);
         
         scrollPane.setPreferredSize(new java.awt.Dimension(100, 100));
-        
-        hardStringTable.setModel(tableModel);
-        scrollPane.setViewportView(hardStringTable);
-        
+        testStringTable.setModel(tableModel);
+        scrollPane.setViewportView(testStringTable);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -290,7 +287,7 @@ public class TestStringWizardPanel extends JPanel {
             label.setHorizontalAlignment(JLabel.CENTER);
             scrollPane.setViewportView(label);
         } else {
-            scrollPane.setViewportView(hardStringTable);
+            scrollPane.setViewportView(testStringTable);
             tableModel.fireTableDataChanged();
         }
         tableModel.fireTableDataChanged();
@@ -299,9 +296,9 @@ public class TestStringWizardPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel sourceLabel;
     private javax.swing.JComboBox sourceCombo;
-    private javax.swing.JLabel hardStringLabel;
+    private javax.swing.JLabel testStringLabel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JTable hardStringTable;
+    private javax.swing.JTable testStringTable;
     // End of variables declaration//GEN-END:variables
 
     /** Table model for this class. */

@@ -179,14 +179,16 @@ public class HardStringWizardPanel extends JPanel {
                 boolean isSelected, boolean hasFocus, int row, int column) {
 
                 I18nString i18nString = (I18nString)value;
+                
+                int modelColumn = hardStringTable.convertColumnIndexToModel(column);
 
-                if(column == COLUMN_INDEX_CUSTOM)
+                if(modelColumn == COLUMN_INDEX_CUSTOM)
                     return dotButton;
                     
                 JLabel label = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 if(i18nString != null) {
-                    if(column == COLUMN_INDEX_KEY) {
+                    if(modelColumn == COLUMN_INDEX_KEY) {
                         label.setText(i18nString.getKey());
                     } else {
                         label.setText(i18nString.getValue());
@@ -209,9 +211,11 @@ public class HardStringWizardPanel extends JPanel {
 
                 I18nString i18nString = (I18nString)value;
                 
-                if(column == COLUMN_INDEX_KEY)
+                int modelColumn = hardStringTable.convertColumnIndexToModel(column);
+                
+                if(modelColumn == COLUMN_INDEX_KEY)
                     value = i18nString == null ? "" : i18nString.getKey(); // NOI18N
-                else if(column == COLUMN_INDEX_VALUE)
+                else if(modelColumn == COLUMN_INDEX_VALUE)
                     value = i18nString == null ? "" : i18nString.getValue(); // NOI18N
                 else
                     value = ""; // NOI18N
