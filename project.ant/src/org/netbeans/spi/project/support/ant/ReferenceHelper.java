@@ -55,7 +55,7 @@ import org.w3c.dom.NodeList;
  * as dependencies before your project is built.
  * <p>
  * You probably only need the higher-level methods such as {@link #addReference}
- * and {@link #removeReference}; the lower-level methods such as {@link #addRawReference}
+ * and {@link #removeReference(String,String)}; the lower-level methods such as {@link #addRawReference}
  * are provided for completeness, but typical client code should not need them.
  * <p>
  * Only deals with references needed to support build artifacts coming from
