@@ -7,15 +7,19 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
-import org.openide.src.ClassElement;
-import org.openide.src.SourceException;
 import org.openide.nodes.Node;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.ErrorManager;
+import org.netbeans.jmi.javamodel.JavaClass;
+
+import javax.jmi.reflect.JmiException;
 
 /** Base class for patterns object. These objects hold information
  * about progarammatic patterns i.e. Properties and Events in the source code
@@ -25,6 +29,7 @@ public abstract class  Pattern extends Object {
 
     /** PatternAnalyser which created this pattern */
     PatternAnalyser patternAnalyser;
+    private DataObject src;
 
     /** Constructor of Pattern. The patternAnalyser is the only connetion
      * to class which created this pattern.
@@ -32,6 +37,11 @@ public abstract class  Pattern extends Object {
      */
     public Pattern( PatternAnalyser patternAnalyser ) {
         this.patternAnalyser = patternAnalyser;
+        try {
+            this.src = DataObject.find(patternAnalyser.findFileObject());
+        } catch (DataObjectNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
     }
 
     /** Gets the name of pattern.
@@ -41,14 +51,13 @@ public abstract class  Pattern extends Object {
 
     /** Sets the name of the pattern
      * @param name New name of the pattern.
-     * @throws SourceException If the change of source code is not possible.
      */
-    public abstract void setName( String name ) throws SourceException;
+    public abstract void setName( String name );
 
     /** Gets the class which declares this Pattern.
      * @return Class in which this pattern is defined.
      */
-    public ClassElement getDeclaringClass() {
+    public JavaClass getDeclaringClass() {
         return patternAnalyser.getClassElement();
     }
 
@@ -57,13 +66,15 @@ public abstract class  Pattern extends Object {
      * @return The Cookie.
      */
     Node.Cookie getCookie( Class type ) {
+        if (DataObject.class.isAssignableFrom(type)) {
+            return this.src; 
+        }
         return null;
     }
 
     /** Default behavior for destroying pattern is to do nothing
-     * @throws SourceException If the modification of source code is impossible.
      */
-    public void destroy() throws SourceException {
+    public void destroy() throws JmiException {
     }
 
     // UTILITY METHODS ----------------------------------------------------------

@@ -7,41 +7,41 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
+import java.text.Format;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.src.*;
+import org.openide.ErrorManager;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Field;
+import org.netbeans.modules.java.ui.nodes.SourceNodes;
+
+import javax.jmi.reflect.JmiException;
 
 /** Node representing a field (variable).
-* @see FieldElement
+* @see PropertyPattern
 * @author Petr Hrebejk
 */
 public class PropertyPatternNode extends PatternNode implements IconBases {
 
-    /** Create a new field node.
-    * @param element field element to represent
+    /** Create a new pattern node.
+    * @param pattern pattern to represent
     * @param writeable <code>true</code> to be writable
     */
     public PropertyPatternNode( PropertyPattern pattern, boolean writeable) {
         super(pattern, Children.LEAF, writeable);
         superSetName( pattern.getName() );
-
-        //BHM
-        //setElementFormat (sourceOptions.getFieldElementFormat());
     }
 
     /* Resolve the current icon base.
@@ -116,7 +116,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
     /** Sets the name of pattern
      */
-    protected void setPatternName( String name ) throws SourceException {
+    protected void setPatternName( String name ) throws JmiException {
         
         if ( pattern.getName().equals( name ) ) {
             return;
@@ -124,21 +124,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
         
         if (testNameValidity(name)) {
             ((PropertyPattern)pattern).setName( name );
-            superSetName( name );
         }
-    }
-
-    /** Sets the name of the node */
-    public void setName( String name ) {
-        
-        try {
-            pattern.patternAnalyser.setIgnore( true );
-            setPatternName( name );
-            pattern.patternAnalyser.setIgnore( false );
-        }
-        catch (SourceException e) {
-        }
-
     }
 
     /** Tests if the given string is valid name for associated pattern and if not, notifies
@@ -161,7 +147,6 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     protected Node.Property createTypeProperty(boolean canW) {
         return new PatternPropertySupport(PROP_TYPE, Type.class, canW) {
 
@@ -182,10 +167,10 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        try {
                            pattern.patternAnalyser.setIgnore( true );
                            ((PropertyPattern)pattern).setType((Type)val);
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                       catch (SourceException e) {
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
+                       } finally {
+                           pattern.patternAnalyser.setIgnore( false );
                        }
 
                    }
@@ -196,14 +181,14 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                };
     }
 
-    /** Create a property for the mode of property pattern.
-     * @param canW <code>false</code> to force property to be read-only
-     * @return the property
-     */
     void fire () {
         firePropertyChange( null, null, null );
     }
 
+    /** Create a property for the mode of property pattern.
+     * @param canW <code>false</code> to force property to be read-only
+     * @return the property
+     */
     protected Node.Property createModeProperty(boolean canW) {
         return new PatternPropertySupport(PROP_MODE, int.class, canW) {
 
@@ -220,15 +205,17 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                        if (!(val instanceof Integer))
                            throw new IllegalArgumentException();
 
+                       pattern.patternAnalyser.setIgnore( true );
                        try {
-                           pattern.patternAnalyser.setIgnore( true );
                            ((PropertyPattern)pattern).setMode(((Integer)val).intValue());
-                           pattern.patternAnalyser.setIgnore( false );
-                           setIconBase( resolveIconBase() );
-                       }
-                       catch (SourceException e) {
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
+                       } catch (GenerateBeanException e) {
+                           throw new InvocationTargetException(e);
+                       } finally {
+                           pattern.patternAnalyser.setIgnore( false );
                        }
+                       setIconBase( resolveIconBase() );
 
                    }
 
@@ -248,15 +235,9 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     protected Node.Property createGetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_GETTER, String.class, canW) {
 
-                   /** Gets the value */
-
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((PropertyPattern)pattern).getGetterMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((PropertyPattern) pattern).getGetterMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }
@@ -268,15 +249,9 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     protected Node.Property createSetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_SETTER, String.class, canW) {
 
-                   /** Gets the value */
-
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((PropertyPattern)pattern).getSetterMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((PropertyPattern) pattern).getSetterMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }
@@ -292,12 +267,18 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
                    /** Gets the value */
 
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{t} {n}"); // NOI18N
-                       FieldElement field = ((PropertyPattern)pattern).getEstimatedField();
-                       if ( field == null )
-                           return PatternNode.getString("LAB_NoField");
-                       else
-                           return (fmt.format (field));
+                       Format fmt = SourceNodes.createElementFormat("{t} {n}"); // NOI18N
+                       Field field = ((PropertyPattern) pattern).getEstimatedField();
+                       String name = null;
+                       try {
+                           if (field != null) {
+                               name = fmt.format(field);
+                           }
+                       } catch (IllegalArgumentException e) {
+                           ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                       }
+
+                       return name != null? name: PatternNode.getString("LAB_NoField"); // NOI18N
                    }
                };
     }

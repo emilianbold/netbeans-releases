@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,40 +17,26 @@ import java.awt.datatransfer.Transferable;
 import java.beans.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.text.Format;
 
-import org.openide.src.*;
-import org.openide.src.nodes.*;
 import org.openide.nodes.*;
 import org.openide.actions.*;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.modules.java.ui.nodes.SourceNodes;
 
-/** Superclass of nodes representing elements in the source hierarchy.
-* <p>Element nodes generally:
-* <ul>
-* <li>Have an associated icon, according to {@link #resolveIconBase}.
-* <li>Have a display name based on the element's properties, using {@link #elementFormat};
-* changes to {@link ElementFormat#dependsOnProperty relevant} element properties
-* automatically affect the display name.
-* <li>Have some node properties (displayable on the property sheet), according to
-* the element's properties, and with suitable editors.
-* <li>Permit renames and deletes, if a member element and writeable.
-* <li>As permitted by the element, and a writable flag in the node,
-* permit cut/copy/paste operations, as well as creation of new members.
-* </ul>
+import javax.jmi.reflect.JmiException;
+
+/** Superclass of nodes representing bean patterns.
 *
 * @author Petr Hrebejk
 */
 
 
 public abstract class PatternNode extends AbstractNode implements IconBases, PatternProperties, PropertyChangeListener {
-
-    /** Options for the display name format. */
-    protected static SourceOptions sourceOptions = null;
 
     /** Default return value of getIconAffectingProperties method. */
     private static final String[] ICON_AFFECTING_PROPERTIES = new String[] {
@@ -59,9 +45,9 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
 
     /** Array of the actions of the java methods, constructors and fields. */
     private static final SystemAction[] DEFAULT_ACTIONS = new SystemAction[] {
+                /*
                 SystemAction.get(OpenAction.class),
                 null,
-                /*
                 SystemAction.get(CutAction.class),
                 SystemAction.get(CopyAction.class),
                 null,
@@ -80,12 +66,9 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     /** Is this node read-only or are modifications permitted? */
     protected boolean writeable;
 
-    /** Listener to forbid its garbage collection */
-    private transient PropertyChangeListener listener;
-
     /** Create a new pattern node.
     *
-    * @param element element to represent
+    * @param pattern pattern to represent
     * @param children child nodes
     * @param writeable <code>true</code> if this node should allow modifications.
     *        These include writable properties, clipboard operations, deletions, etc.
@@ -95,9 +78,6 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         this.pattern = pattern;
         this.writeable = writeable;
         
-        if( sourceOptions == null ){
-            sourceOptions = (SourceOptions) SharedClassObject.findObject (SourceOptions.class, true);
-        }        
         setIconBase(resolveIconBase());
         setActions(DEFAULT_ACTIONS);
 
@@ -128,8 +108,8 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     }
     
     /** Get the names of all element properties which might affect the choice of icon.
-    * The default implementation just returns {@link #PROP_MODIFIERS}.
-    * @return the property names, from {@link ElementProperties}
+    * The default implementation just returns {@link PatternProperties#PROP_MODE}.
+    * @return the property names
     */
     protected String[] getIconAffectingProperties() {
         return ICON_AFFECTING_PROPERTIES;
@@ -207,14 +187,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     }
 
     /** Get a cookie from this node.
-    * First tries the node itself, then {@link Element#getCookie}.
-    * Since {@link Element} implements <code>Node.Cookie</code>, it is
-    * possible to find the element from a node using code such as:
-    * <p><code><pre>
-    * Node someNode = ...;
-    * MethodElement element = (MethodElement) someNode.getCookie (MethodElement.class);
-    * if (element != null) { ... }
-    * </pre></code>
+    * First tries the node itself, then {@link Pattern#getCookie}.
     * @param type the cookie class
     * @return the cookie or <code>null</code>
     */
@@ -227,28 +200,49 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     }
 
     /** Test for equality.
-    * @return <code>true</code> if the represented {@link Element}s are equal
+    * @return <code>true</code> if the represented {@link Pattern}s are equal
     */
     public boolean equals (Object o) {
         return (o instanceof PatternNode) && (pattern.equals (((PatternNode)o).pattern));
     }
 
     /** Get a hash code.
-    * @return the hash code from the represented {@link Element}
+    * @return the hash code from the represented {@link Pattern}
     */
     public int hashCode () {
         return pattern.hashCode ();
     }
 
+    /** Sets the name of the node */
+    public final void setName( String name ) {
+        try {
+            JMIUtils.beginTrans(true);
+            boolean rollback = true;
+            try {
+                pattern.patternAnalyser.setIgnore(true);
+                setPatternName(name);
+                rollback = false;
+            } finally {
+                pattern.patternAnalyser.setIgnore(false);
+                JMIUtils.endTrans(rollback);
+            }
+            
+            superSetName( name );
+            
+        } catch (JmiException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
+
+    }
 
     /** Called when node name is changed */
-    public void superSetName(String name) {
+    public final void superSetName(String name) {
         super.setName( name );
     }
 
     /** Set's the name of pattern. Must be defined in descendants
     */
-    abstract protected void setPatternName(String name) throws SourceException;
+    protected abstract void setPatternName(String name) throws JmiException;
 
     /** Create a node property representing the pattern's name.
     * @param canW if <code>false</code>, property will be read-only
@@ -265,18 +259,22 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
                    public void setValue(Object val) throws IllegalArgumentException,
                        IllegalAccessException, InvocationTargetException {
                        super.setValue(val);
+                       String str = (String) val;
                        try {
-                           String str = (String) val;
-                           pattern.patternAnalyser.setIgnore( true );
-                           setPatternName( str );
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                       catch (SourceException e) {
+                           JMIUtils.beginTrans(true);
+                           boolean rollback = true;
+                           try {
+                               pattern.patternAnalyser.setIgnore(true);
+                               setPatternName(str);
+                               rollback = false;
+                           } finally {
+                               pattern.patternAnalyser.setIgnore(false);
+                               JMIUtils.endTrans(rollback);
+                           }
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
-                       }
-                       catch (ClassCastException e) {
+                       } catch (ClassCastException e) {
                            throw new IllegalArgumentException();
-
                        }
                    }
                };
@@ -285,14 +283,35 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     /** Called when the node has to be destroyed */
     public void destroy() throws IOException {
         try {
-            pattern.destroy();
-        }
-        catch (SourceException e) {
-            throw new IOException(e.getMessage());
+            JMIUtils.beginTrans(true);
+            boolean rollback = true;
+            try {
+                pattern.destroy();
+                rollback = false;
+            } finally {
+                JMIUtils.endTrans(rollback);
+            }
+        } catch (JmiException e) {
+            IOException ioe = new IOException();
+            ioe.initCause(e);
+            throw ioe;
         }
         super.destroy();
     }
 
+    protected static String getFormattedMethodName(Method method) {
+        String name = null;
+        Format fmt = SourceNodes.createElementFormat("{n} ({p})"); // NOI18N
+        try {
+            if (method != null) {
+                name = fmt.format (method);
+            }
+        } catch (IllegalArgumentException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
+
+        return name != null? name: PatternNode.getString("LAB_NoMethod"); // NOI18N
+    }
 
     // ================== Pattern listener =================================
 

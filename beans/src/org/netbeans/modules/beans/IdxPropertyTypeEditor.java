@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,8 +16,12 @@ package org.netbeans.modules.beans;
 import java.awt.*;
 import java.beans.*;
 
-import org.openide.src.Type;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.JavaModelPackage;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
+import javax.jmi.reflect.JmiException;
 
 /** Property editor for the property type property
 *
@@ -38,34 +42,39 @@ public class IdxPropertyTypeEditor extends PropertyEditorSupport implements Enha
         type = null;
     }
 
-    /**
-    * @return The property value as a human editable string.
-    * <p>   Returns null if the value can't be expressed as an editable string.
-    * <p>   If a non-null value is returned, then the PropertyEditor should
-    *       be prepared to parse that string back in setAsText().
-    */
     public String getAsText () {
-        return (type == null) ? "" : type.toString(); // NOI18N
+        Type type = (Type) getValue();
+        return (type == null) ? "" : type.getName(); // NOI18N
     }
 
-    /**
-    * Set the property value by parsing a given String.
-    * @param text  The string to be parsed.
-    */
     public void setAsText (String string) throws IllegalArgumentException {
-        type = Type.parse(string);
+        String normalizedInput;
+        if (string == null || (normalizedInput = string.trim()).length() == 0 ||
+                !normalizedInput.endsWith("[]")) { // NOI18N
+            throw new IllegalArgumentException(string);
+        }
+        Type oldType = (Type) getValue();
+        Type newType;
+        try {
+            JMIUtils.beginTrans(false);
+            try {
+                JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(oldType);
+                newType = jmodel.getType().resolve(normalizedInput);
+            } finally {
+                JMIUtils.endTrans();
+            }
+            setValue(newType);
+        } catch (JmiException e) {
+            IllegalArgumentException iae = new IllegalArgumentException();
+            iae.initCause(e);
+            throw iae;
+        }
     }
 
-    /**
-    * @param v new value
-    */
     public void setValue(Object v) {
-        type = (Type) v;
+        this.type = (Type) v;
     }
 
-    /**
-    * @return value
-    */
     public Object getValue() {
         return type;
     }
@@ -75,7 +84,7 @@ public class IdxPropertyTypeEditor extends PropertyEditorSupport implements Enha
     * current value.
     */
     public String getJavaInitializationString () {
-        return (type == null) ? "" : type.toString(); // NOI18N
+        return getAsText();
     }
 
     /**

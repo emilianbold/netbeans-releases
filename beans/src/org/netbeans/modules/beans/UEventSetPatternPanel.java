@@ -7,28 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.awt.Dialog;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
+import javax.jmi.reflect.JmiException;
+
 import org.openide.DialogDisplayer;
 
-import org.openide.util.Utilities;
-import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
-import org.openide.src.*;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.JavaClass;
 /** Customizer for new Unicast Event Set Pattern
  *
  * @author Petr Hrebejk
  */
-public class UEventSetPatternPanel extends javax.swing.JPanel
+public final class UEventSetPatternPanel extends javax.swing.JPanel
     implements java.awt.event.ActionListener {
 
     /** Dialog for displaiyng this panel */
@@ -305,56 +306,73 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
     }
 
     public void actionPerformed( java.awt.event.ActionEvent e ) {
-        if ( dialog != null ) {
-
-            if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
-                //Test wether the string is empty
-                if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-
-                Type type;
-                
-                try {
-                    type = Type.parse( typeComboBox.getEditor().getItem().toString() );
-                    // Test wheter property with this name already exists
-                    if ( groupNode.eventSetExists( type ) ) {
-                        String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
-                                                           new Object[] { type.toString() } );
-                        DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
-
-                        typeComboBox.requestFocus();
-                        return;
-                    }
-                }
-                catch ( IllegalArgumentException ex ) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-                
-                // Check whether the property points to a valid listener
-                if ( !PatternAnalyser.isSubclass(
-                    patternAnalyser.findClassElement( type.getClassName().getFullName() ),
-                    patternAnalyser.findClassElement( "java.util.EventListener" ) ) ) { // NOI18N
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
-                                                     NotifyDescriptor.ERROR_MESSAGE) );
-                    return;
-                }
+        if (dialog == null ) {
+            return;
+        }
+        if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
+            //Test wether the string is empty
+            String userText = typeComboBox.getEditor().getItem().toString().trim();
+            if ( userText.length() <= 0) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Not_Valid_Type"),
+                        NotifyDescriptor.ERROR_MESSAGE) );
+                typeComboBox.requestFocus();
+                return;
             }
+            try {
+                JMIUtils.beginTrans(false);
+                try {
+                    validateType(userText);
+                } finally {
+                    JMIUtils.endTrans();
+                }
+            } catch (JmiException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+        }
 
-            dialog.setVisible( false );
-            dialog.dispose();
+        dialog.setVisible( false );
+        dialog.dispose();
+    }
+    
+    private void validateType(String typeName) throws JmiException {
+        Type type;
+                
+        try {
+            assert JMIUtils.isInsideTrans();
+            type = patternAnalyser.findType(typeName);
+            if (type == null || !(type instanceof JavaClass)) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Not_Valid_Type"),
+                        NotifyDescriptor.ERROR_MESSAGE) );
+                typeComboBox.requestFocus();
+                return;
+            }
+            // Test wheter property with this name already exists
+            EventSetPattern eventSetPattern = groupNode.findEventSetPattern( type );
+            if (eventSetPattern != null) {
+                String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
+                                                   new Object[] { eventSetPattern.getName() } );
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
+
+                typeComboBox.requestFocus();
+                return;
+            }
+        } catch ( JmiException ex ) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            return;
+        }
+                
+        // Check whether the property points to a valid listener
+        JavaClass elClass = patternAnalyser.findClassElement("java.util.EventListener"); //NOI18N
+        if (!((JavaClass) type).isSubTypeOf(elClass)) {
+            DialogDisplayer.getDefault().notify(
+                new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
+                                             NotifyDescriptor.ERROR_MESSAGE) );
+            return;
         }
     }
 

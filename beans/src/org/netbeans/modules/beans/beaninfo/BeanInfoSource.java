@@ -7,26 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.beans.*;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.ArrayList;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
-import org.openide.src.SourceElement;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
 
-import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.java.JavaEditor;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Resource;
 import org.openide.filesystems.Repository;
 
 /**
@@ -35,7 +29,7 @@ import org.openide.filesystems.Repository;
  * @author  Petr Hrebejk
  */
 
-public class BeanInfoSource extends Object {
+public final class BeanInfoSource extends Object {
 
     private static final String BEANINFO_NAME_EXT = "BeanInfo"; // NOI18N
     private static final String BEANINFONOICON_NAME_EXT = "BeanInfoNoIcon"; // NOI18N
@@ -48,14 +42,14 @@ public class BeanInfoSource extends Object {
     private static final String METHODS_SECTION = "Methods"; // NOI18N
     private static final String SUPERCLASS_SECTION = "Superclass";  // NOI18N
     
-    private ClassElement classElement;
+    private JavaClass classElement;
 
     private DataObject   biDataObject = null;
     private JavaEditor   javaEditor =  null;
     //private PatternAnalyser pa = null;
 
     /** Creates new BeanInfoSource */
-    public BeanInfoSource (ClassElement classElement ) {
+    public BeanInfoSource (JavaClass classElement ) {
         this.classElement = classElement;
         //this.pa = pa;
 
@@ -120,13 +114,13 @@ public class BeanInfoSource extends Object {
     void findBeanInfo() {
 
         javaEditor = null;
-
-        SourceElement sc = classElement.getSource();
+        
+        Resource sc = classElement.getResource();
         if ( sc == null ) {
             return;
         }
         
-        DataObject dataObject = (DataObject)sc.getCookie( DataObject.class );
+        DataObject dataObject = JavaMetamodel.getManager().getDataObject(sc);
         if ( dataObject == null ) {
             return;
         }
@@ -185,12 +179,12 @@ public class BeanInfoSource extends Object {
 
         try {
             DataObject doBiTemplate = DataObject.find ( foBiTemplate );
- 
-            SourceElement sc = classElement.getSource();
+             
+            Resource sc = classElement.getResource();
             if ( sc == null )
                 return;
 
-            DataObject dataObject = (DataObject)sc.getCookie( DataObject.class );
+            DataObject dataObject = JavaMetamodel.getManager().getDataObject(sc);
 
             if ( dataObject == null ) {
                 return;

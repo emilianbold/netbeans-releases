@@ -7,35 +7,31 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
-import java.io.*;
 import java.beans.Introspector;
 import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
+import java.text.Format;
+import java.util.List;
+import java.util.Iterator;
+
 import org.openide.DialogDisplayer;
 
-import org.openide.src.ClassElement;
-import org.openide.src.FieldElement;
-import org.openide.src.MethodElement;
-import org.openide.src.MemberElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.Type;
-import org.openide.src.SourceException;
-import org.openide.src.Identifier;
-import org.openide.src.ElementFormat;
 import org.openide.nodes.Node;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
-import org.openide.util.NbBundle;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.modules.java.ui.nodes.SourceNodes;
 
-//import org.netbeans.modules.java.support.AutoCommenter;
+import javax.jmi.reflect.JmiException;
+
 
 /** Class representing a JavaBeans Property
  * @author Petr Hrebejk
@@ -55,11 +51,11 @@ public class PropertyPattern extends Pattern {
     static final String VETOABLE_CHANGE = "fireVetoableChange"; // NOI18N
     
     /** Getter method of this property */
-    protected MethodElement getterMethod = null;
+    protected Method getterMethod = null;
     /** Setter method of this property */
-    protected MethodElement setterMethod = null;
+    protected Method setterMethod = null;
     /** Field which probably belongs to this property */
-    protected FieldElement  estimatedField = null;
+    protected Field  estimatedField = null;
 
     /** Holds the type of the property resolved from methods. */
     protected Type type;
@@ -73,8 +69,8 @@ public class PropertyPattern extends Pattern {
      * @throws IntrospectionException If specified methods do not follow beans Property rules.
      */
     public PropertyPattern( PatternAnalyser patternAnalyser,
-                            MethodElement getterMethod, MethodElement setterMethod )
-    throws IntrospectionException {
+                            Method getterMethod, Method setterMethod )
+    throws IntrospectionException, JmiException {
 
         super( patternAnalyser );
 
@@ -92,27 +88,6 @@ public class PropertyPattern extends Pattern {
         super( patternAnalyser );
     }
 
-    /** Creates new PropertyPattern.
-     * @param patternAnalyser patternAnalyser which creates this Property.
-     * @param name Name of the Property.
-     * @param type Type of the Property.
-     * @throws SourceException If the Property can't be created in the source.
-     * @return Newly created PropertyPattern.
-     */
-    static PropertyPattern create( PatternAnalyser patternAnalyser,
-                                   String name, String type ) throws SourceException {
-
-        PropertyPattern pp = new PropertyPattern( patternAnalyser );
-
-        pp.name = name;
-        pp.type = Type.parse( type );
-
-        pp.generateGetterMethod();
-        pp.generateSetterMethod();
-
-        return pp;
-    }
-
     /** Creates new property pattern with extended options
      * @param patternAnalyser patternAnalyser which creates this Property.
      * @param name Name of the Property.
@@ -124,14 +99,14 @@ public class PropertyPattern extends Pattern {
      * @param withReturn Generate return statement in getter?
      * @param withSet Generate seter statement for private field in setter.
      * @param withSupport Generate PropertyChange support?
-     * @throws SourceException If the Property can't be created in the source.
+     * @throws JmiException If the Property can't be created in the source.
      * @return Newly created PropertyPattern.
      */
     static PropertyPattern create( PatternAnalyser patternAnalyser,
                                    String name, String type,
                                    int mode, boolean bound, boolean constrained,
                                    boolean withField, boolean withReturn,
-                                   boolean withSet, boolean withSupport ) throws SourceException {
+                                   boolean withSet, boolean withSupport ) throws JmiException, GenerateBeanException {
 
         return create(patternAnalyser, name, type, mode, bound, constrained, withField, withReturn, withSet, withSupport, false, false);
     }
@@ -149,7 +124,7 @@ public class PropertyPattern extends Pattern {
      * @param withSupport Generate PropertyChange support?
      * @param useSupport use change support without prompting
      * @param fromField signalize that all action are activatet on field
-     * @throws SourceException If the Property can't be created in the source.
+     * @throws JmiException If the Property can't be created in the source.
      * @return Newly created PropertyPattern.
      */
     static PropertyPattern create( PatternAnalyser patternAnalyser,
@@ -157,21 +132,22 @@ public class PropertyPattern extends Pattern {
                                    int mode, boolean bound, boolean constrained,
                                    boolean withField, boolean withReturn,
                                    boolean withSet, boolean withSupport, 
-                                   boolean useSupport, boolean fromField ) throws SourceException {
+                                   boolean useSupport, boolean fromField ) throws JmiException, GenerateBeanException {
 
+        assert JMIUtils.isInsideTrans();
         PropertyPattern pp = new PropertyPattern( patternAnalyser );
 
         pp.name = name;
-        pp.type = Type.parse( type );
+        pp.type = patternAnalyser.findType(type);
 
         // Generate field
         if ( ( withField || withSupport ) && !fromField ) {
             try {
                 pp.generateField( true );
-            } catch (SourceException e) {
+            } catch (GenerateBeanException e) {
                 DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
-                        PatternNode.getString("MSG_Cannot_Create_Field"),
+                        PatternNode.getString("MSG_Cannot_Create_Field"), // NOI18N
                         NotifyDescriptor.WARNING_MESSAGE));
             }
         }
@@ -233,40 +209,53 @@ public class PropertyPattern extends Pattern {
 
     /** Sets the name of PropertyPattern
      * @param name New name of the property.
-     * @throws SourceException If the modification of source code is impossible.
+     * @throws JmiException If the modification of source code is impossible.
      */
-    public void setName( String name ) throws SourceException {
-        String oldName = this.name;
-        
+    public void setName( String name ) throws IllegalArgumentException, JmiException {
         if ( !Utilities.isJavaIdentifier( name )  )
-            throw new SourceException( "Invalid event source name" ); // NOI18N
+            throw new IllegalArgumentException( "Invalid event source name" ); // NOI18N
+        
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            setNameImpl(name);
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
+        }
+    }
 
+    private void setNameImpl( String name ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String oldName = this.name;
         this.name = name;
         name = capitalizeFirstLetter( name );
 
         if ( getterMethod != null ) {
-            Identifier getterMethodID = Identifier.create(( getterMethod.getName().getName().startsWith("get") ? // NOI18N
-                                        "get" : "is" ) + name ); // NOI18N
+            String getterMethodID = ( getterMethod.getName().startsWith("get") ? // NOI18N
+                                        "get" : "is" ) + name ; // NOI18N
             getterMethod.setName( getterMethodID );
             String oldGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
                                            new Object[] { oldName } );
             String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
                                            new Object[] { getName() } );
-            if (!getterMethod.getJavaDoc().isEmpty() &&
-                oldGetterComment.trim().equals(getterMethod.getJavaDoc().getRawText().trim())) {
-                getterMethod.getJavaDoc().setRawText( newGetterComment );
+            String javadocText = getterMethod.getJavadocText();
+            if (javadocText != null &&
+                    oldGetterComment.trim().equals(javadocText.trim())) {
+                getterMethod.setJavadocText( newGetterComment );
             }
         }
         if ( setterMethod != null ) {
-            Identifier setterMethodID = Identifier.create( "set" + name ); // NOI18N
+            String setterMethodID = "set" + name; // NOI18N
             setterMethod.setName( setterMethodID );
             String oldSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
                                            new Object[] { oldName, oldName } );
             String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertySetter" ),
                                            new Object[] { getName(), getName() } );
-            if (!setterMethod.getJavaDoc().isEmpty() &&
-                oldSetterComment.trim().equals(setterMethod.getJavaDoc().getRawText().trim())) {
-                setterMethod.getJavaDoc().setRawText( newSetterComment );
+            String javadocText = setterMethod.getJavadocText();
+            if (javadocText != null &&
+                oldSetterComment.trim().equals(javadocText.trim())) {
+                setterMethod.setJavadocText( newSetterComment );
             }
         }
         
@@ -276,13 +265,14 @@ public class PropertyPattern extends Pattern {
                                                    new Object[] { oldName } );
             String newFieldComment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
                                                    new Object[] { getName() } );
-            if (!estimatedField.getJavaDoc().isEmpty() &&
-                oldFieldComment.trim().equals(estimatedField.getJavaDoc().getRawText().trim())) {
-                estimatedField.getJavaDoc().setRawText(newFieldComment);
+            String javadocText = estimatedField.getJavadocText();
+            if (javadocText != null &&
+                oldFieldComment.trim().equals(javadocText.trim())) {
+                estimatedField.setJavadocText(newFieldComment);
             }
                                                    
             int mode = getMode();
-            ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
+            Format fmt = SourceNodes.createElementFormat ("{m} {t} {n}"); // NOI18N
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldName" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -291,26 +281,25 @@ public class PropertyPattern extends Pattern {
                 
                 if( PropertyActionSettings.getDefault().getPropStyle().equals(PropertyActionSettings.GENERATE_UNDERSCORED))
                     fieldName = PropertyActionSettings.GENERATE_UNDERSCORED + fieldName;
-                estimatedField.setName(Identifier.create(fieldName));
+                estimatedField.setName(fieldName);
                 if ( mode == READ_WRITE || mode == READ_ONLY ) {
-                    String existingGetterBody = getterMethod.getBody().trim();
+                    String existingGetterBody = getterMethod.getBodyText().trim();
                     String oldGetterBody1 = BeanPatternGenerator.propertyGetterBody( oldName, true, true ).trim();
                     String oldGetterBody2 = BeanPatternGenerator.propertyGetterBody( oldName, true, false ).trim();
                     if (existingGetterBody.equals(oldGetterBody1)) {
-                        getterMethod.setBody(BeanPatternGenerator.propertyGetterBody( getName(), true, true));
+                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( getName(), true, true));
                     } else if (existingGetterBody.equals(oldGetterBody2)) {
-                        getterMethod.setBody(BeanPatternGenerator.propertyGetterBody( getName(), true, false));
+                        getterMethod.setBodyText(BeanPatternGenerator.propertyGetterBody( getName(), true, false));
                     }
                 }
                 if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
-                    String existingSetterBody = setterMethod.getBody().trim();
+                    String existingSetterBody = setterMethod.getBodyText().trim();
                     String oldSetterBody = BeanPatternGenerator.propertySetterBody (oldName, this.type, false, false, true, false, null, null).trim();
                     if (existingSetterBody.equals(oldSetterBody)) {
-                        setterMethod.setBody(BeanPatternGenerator.propertySetterBody (getName(), getType(), false, false, true, false, null, null));
+                        setterMethod.setBodyText(BeanPatternGenerator.propertySetterBody (getName(), getType(), false, false, true, false, null, null));
                         if ( setterMethod != null ) {
-                            MethodParameter params[] = setterMethod.getParameters();
-                            params[0].setName(Introspector.decapitalize( name ));
-                            setterMethod.setParameters(params);
+                            Parameter param = (Parameter) setterMethod.getParameters().get(0);
+                            param.setName(Introspector.decapitalize( name ));
                         }
                     }
                 }
@@ -337,56 +326,63 @@ public class PropertyPattern extends Pattern {
     /** Sets the property to be writable
      * @param mode New Mode {@link #READ_WRITE READ_WRITE}, {@link #READ_ONLY READ_ONLY}
      *  or {@link #WRITE_ONLY WRITE_ONLY}
-     * @throws SourceException If the modification of source code is impossible.
+     * @throws GenerateBeanException If the modification of source code is impossible.
      */
-    public void setMode( int mode ) throws SourceException {
+    public void setMode( int mode ) throws GenerateBeanException, JmiException {
 
         if ( getMode() == mode )
             return;
 
-        switch ( mode ) {
-        case READ_WRITE:
-            if ( getterMethod == null )
-                generateGetterMethod(null, true);
-            if ( setterMethod == null )
-                generateSetterMethod(null, false, true);
-            break;
-        case READ_ONLY:
-            if ( getterMethod == null )
-                generateGetterMethod(null, true);
-            if ( setterMethod != null ) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                DialogDisplayer.getDefault().notify( nd );
-                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                    deleteSetterMethod();
-                }
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            switch (mode) {
+                case READ_WRITE:
+                    if (getterMethod == null)
+                        generateGetterMethod(null, true);
+                    if (setterMethod == null)
+                        generateSetterMethod(null, false, true);
+                    break;
+                case READ_ONLY:
+                    if (getterMethod == null)
+                        generateGetterMethod(null, true);
+                    if (setterMethod != null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(PatternNode.getString("MSG_Delete_Setter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                            deleteSetterMethod();
+                        }
+                    }
+                    break;
+                case WRITE_ONLY:
+                    if (setterMethod == null)
+                        generateSetterMethod(null, false, true);
+                    if (getterMethod != null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(PatternNode.getString("MSG_Delete_Getter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                            deleteGetterMethod();
+                        }
+                    }
+                    break;
             }
-            break;
-        case WRITE_ONLY:
-            if ( setterMethod == null )
-                generateSetterMethod(null, false, true);
-            if ( getterMethod != null ) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                DialogDisplayer.getDefault().notify( nd );
-                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                    deleteGetterMethod();
-                }
-            }
-            break;
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
         }
     }
 
     /** Returns the getter method
      * @return Getter method of the property
      */
-    public MethodElement getGetterMethod() {
+    public Method getGetterMethod() {
         return getterMethod;
     }
 
     /** Returns the setter method
      * @return Setter method of the property
      */
-    public MethodElement getSetterMethod() {
+    public Method getSetterMethod() {
         return setterMethod;
     }
 
@@ -399,54 +395,65 @@ public class PropertyPattern extends Pattern {
 
     /** Sets the type of propertyPattern
      * @param type New type of the property
-     * @throws SourceException If the modification of source code is impossible
+     * @throws JmiException If the modification of source code is impossible
      */
-    public void setType(Type type) throws SourceException {
-        if ( this.type.compareTo( type, true ) )
+    public void setType(Type type) throws JmiException {
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            setTypeImpl(type);
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
+        }
+    }
+    
+    private void setTypeImpl(Type type) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        if ( this.type.equals( type ) )
             return;
 
         if (getterMethod != null ) {
-            if ( this.type.compareTo( Type.BOOLEAN, false ) ) {
-                getterMethod.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
-            }
-            else if ( type.compareTo( Type.BOOLEAN, false ) ) {
+            if (JMIUtils.isPrimitiveType(this.type, PrimitiveTypeKindEnum.BOOLEAN)) {
+                getterMethod.setName("get" + capitalizeFirstLetter( getName() ) ); // NOI18N
+            } else if (JMIUtils.isPrimitiveType(type, PrimitiveTypeKindEnum.BOOLEAN)) {
                 String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeToIs" ),
                                                     new Object[] { capitalizeFirstLetter( getName() ) } );
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                 DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                    getterMethod.setName( Identifier.create( "is" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
+                    getterMethod.setName( "is" + capitalizeFirstLetter( getName() ) ); // NOI18N
                 }
             }
-            getterMethod.setReturn( type );
+            getterMethod.setType( type );
         }
 
         if (setterMethod != null ) {
-            MethodParameter[] params = setterMethod.getParameters();
-            if ( params.length > 0 ) {
-                Type oldType = params[0].getType();
-                params[0].setType( type );
-                setterMethod.setParameters( params );
+            List/*<Parameter>*/ params = setterMethod.getParameters();
+            for (Iterator it = params.iterator(); it.hasNext();) {
+                Parameter param = (Parameter) it.next();
+                Type oldType = param.getType();
+                param.setType( type );
                 
-                String body = setterMethod.getBody();
+                String body = setterMethod.getBodyText();
                 //test if body contains change support
                 if( body != null && ( body.indexOf(PROPERTY_CHANGE) != -1 || body.indexOf(VETOABLE_CHANGE) != -1 ) ) {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
-                                                        new Object[] { setterMethod.getName().getName() } );
+                                                        new Object[] { setterMethod.getName() } );
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                     DialogDisplayer.getDefault().notify( nd );
                     if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                        String newBody = regeneratePropertySupport( setterMethod.getBody(), null, params[0].getName(), type, oldType );
+                        String newBody = regeneratePropertySupport( setterMethod.getBodyText(), null, param.getName(), type, oldType );
                         if( newBody != null )
-                            setterMethod.setBody(newBody);
+                            setterMethod.setBodyText(newBody);
 
-                        newBody = regeneratePropertySupport( setterMethod.getBody(), PROPERTY_CHANGE, params[0].getName(), type, oldType );
+                        newBody = regeneratePropertySupport( setterMethod.getBodyText(), PROPERTY_CHANGE, param.getName(), type, oldType );
                         if( newBody != null )
-                            setterMethod.setBody(newBody);
+                            setterMethod.setBodyText(newBody);
 
-                        newBody = regeneratePropertySupport( setterMethod.getBody(), VETOABLE_CHANGE, params[0].getName(), type, oldType );
+                        newBody = regeneratePropertySupport( setterMethod.getBodyText(), VETOABLE_CHANGE, param.getName(), type, oldType );
                         if( newBody != null )
-                            setterMethod.setBody(newBody);
+                            setterMethod.setBodyText(newBody);
                     }
                 }
             }
@@ -457,7 +464,7 @@ public class PropertyPattern extends Pattern {
         // Ask if to change estimated field Type
 
         if ( estimatedField != null ) {
-            ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
+            Format fmt = SourceNodes.createElementFormat("{m} {t} {n}"); // NOI18N
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldType" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
@@ -479,7 +486,7 @@ public class PropertyPattern extends Pattern {
      * @param oldType old type of property value
      * @return null if no change is possible or new body if it is
      */
-    protected String regeneratePropertySupport( String methodBody, String changeType, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
+    protected String regeneratePropertySupport( String methodBody, String changeType, String name, Type type, Type oldType ) throws JmiException {
         if( methodBody == null )
             return null;
         
@@ -488,8 +495,9 @@ public class PropertyPattern extends Pattern {
         boolean pre_index  = false;
         String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         
-        if( oldType.isArray() )
-            oldType = getPrimitiveType(oldType);
+        assert JMIUtils.isInsideTrans();
+        if( oldType instanceof Array)
+            oldType = getPrimitiveType((Array) oldType);
         //will search for line containing property support or field
         if( changeType != null ){
             if( (first = methodBody.indexOf(changeType)) == -1 )
@@ -522,7 +530,7 @@ public class PropertyPattern extends Pattern {
         if( changeType != null ){
             newBody.append( changeType + " (\"").append( name ).append( "\", " ); // NOI18N
 
-            if ( type.isPrimitive() ) {            
+            if ( type instanceof PrimitiveType ) {            
                 newBody.append( "new ").append( BeanPatternGenerator.getWrapperClassName( type )).append( " (" ); // NOI18N
                 newBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
                 newBody.append( "), " ); // NOI18N
@@ -552,13 +560,13 @@ public class PropertyPattern extends Pattern {
         return sb.toString();        
     }
     
-    private static org.openide.src.Type getPrimitiveType(org.openide.src.Type type){        
-        if( type.isArray() ){
-            return getPrimitiveType( type.getElementType() );
+    private static Type getPrimitiveType(Array atype) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        Type type = atype.getType();
+        while (type instanceof Array) {
+            type = ((Array) type).getType();
         }
-        else{
-            return type;
-        }        
+        return type;
     }
 
     /** Gets the cookie of the first available method
@@ -566,39 +574,33 @@ public class PropertyPattern extends Pattern {
      * @return Cookie of Getter or Setter MethodElement
      */
     public Node.Cookie getCookie( Class cookieType ) {
-        if ( getterMethod != null )
-            return getterMethod.getCookie( cookieType );
-
-        if ( setterMethod != null )
-            return setterMethod.getCookie( cookieType );
-
-        return null;
+        return super.getCookie(cookieType);
     }
 
     /** Gets the estimated field
      * @return Field which (probably) belongs to the property.
      */
-    public FieldElement getEstimatedField( ) {
+    public Field getEstimatedField( ) {
         return estimatedField;
     }
 
     /** Sets the estimated field
      * @param field Field for the property
      */
-    void setEstimatedField( FieldElement field ) {
+    void setEstimatedField( Field field ) {
         estimatedField = field;
     }
 
     /** Destroys methods associated methods with the pattern in source
-     * @throws SourceException If modification of source is impossible
      */
-    public void destroy() throws SourceException {
-        if ( estimatedField != null ) {
-            ElementFormat fmt = new ElementFormat ("{m} {t} {n}"); // NOI18N
-            String mssg = MessageFormat.format( PatternNode.getString( "FMT_DeleteField" ),
-                                                new Object[] { fmt.format (estimatedField) } );
-            NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-            if ( DialogDisplayer.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
+    public void destroy() throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        if (estimatedField != null) {
+            Format fmt = SourceNodes.createElementFormat("{m} {t} {n}"); // NOI18N
+            String mssg = MessageFormat.format(PatternNode.getString("FMT_DeleteField"),
+                    new Object[]{fmt.format(estimatedField)});
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(mssg, NotifyDescriptor.YES_NO_OPTION);
+            if (DialogDisplayer.getDefault().notify(nd).equals(NotifyDescriptor.YES_OPTION)) {
                 deleteEstimatedField();
             }
         }
@@ -614,26 +616,29 @@ public class PropertyPattern extends Pattern {
      * @param x The first (lower priority) PropertyPattern.
      * @param y The second (higher priority) PropertyPattern.
      */
-    PropertyPattern( PropertyPattern x, PropertyPattern y ) {
+    PropertyPattern( PropertyPattern x, PropertyPattern y ) throws JmiException {
         super( y.patternAnalyser );
+        
+        assert JMIUtils.isInsideTrans();
 
         // Figure out the merged getterMethod
-        MethodElement xr = x.getterMethod;
-        MethodElement yr = y.getterMethod;
+        Method xr = x.getterMethod;
+        Method yr = y.getterMethod;
         getterMethod = xr;
 
         // Normaly give priority to y's getterMethod
         if ( yr != null ) {
             getterMethod = yr;
         }
+        
         // However, if both x and y reference read method in the same class,
         // give priority to a boolean "is" method over boolean "get" method. // NOI18N
         if ( xr != null && yr != null &&
                 xr.getDeclaringClass() == yr.getDeclaringClass() &&
-                xr.getReturn().compareTo( Type.BOOLEAN, false ) &&
-                yr.getReturn().compareTo( Type.BOOLEAN, false ) &&
-                xr.getName().getName().indexOf("is") == 0 && // NOI18N
-                yr.getName().getName().indexOf("get") == 0 ) { // NOI18N
+                JMIUtils.isPrimitiveType(xr.getType(), PrimitiveTypeKindEnum.BOOLEAN) &&
+                JMIUtils.isPrimitiveType(yr.getType(), PrimitiveTypeKindEnum.BOOLEAN) &&
+                xr.getName().indexOf("is") == 0 && // NOI18N
+                yr.getName().indexOf("get") == 0 ) { // NOI18N
             getterMethod = xr;
         }
 
@@ -664,28 +669,31 @@ public class PropertyPattern extends Pattern {
      * @throws IntrospectionException if the property doesnt folow the design patterns
      * @return The type of the property.
      */
-    Type findPropertyType() throws IntrospectionException {
+    Type findPropertyType() throws IntrospectionException, JmiException {
+        
+        assert JMIUtils.isInsideTrans();
         Type resolvedType = null;
 
         if ( getterMethod != null ) {
-            if ( getterMethod.getParameters().length != 0 ) {
+            if ( !getterMethod.getParameters().isEmpty() ) {
                 throw new IntrospectionException( "bad read method arg count" ); // NOI18N
             }
-            resolvedType = getterMethod.getReturn();
-            if ( resolvedType.compareTo( Type.VOID, false ) ) {
-                throw new IntrospectionException( "read method " + getterMethod.getName().getName() + // NOI18N
+            resolvedType = getterMethod.getType();
+            if ( JMIUtils.isPrimitiveType(resolvedType, PrimitiveTypeKindEnum.VOID) ) {
+                throw new IntrospectionException( "read method " + getterMethod.getName() + // NOI18N
                                                   " returns void" ); // NOI18N
             }
         }
         if ( setterMethod != null ) {
-            MethodParameter params[] = setterMethod.getParameters();
-            if ( params.length != 1 ) {
+            List/*<Parameter>*/ params = setterMethod.getParameters();
+            if ( params.size() != 1 ) {
                 throw new IntrospectionException( "bad write method arg count" ); // NOI18N
             }
-            if ( resolvedType != null && !resolvedType.compareTo( params[0].getType(), false ) ) {
+            Parameter param = (Parameter) params.get(0);
+            if ( resolvedType != null && !resolvedType.equals( param.getType() ) ) {
                 throw new IntrospectionException( "type mismatch between read and write methods" ); // NOI18N
             }
-            resolvedType = params[0].getType();
+            resolvedType = param.getType();
         }
         return resolvedType;
     }
@@ -693,14 +701,14 @@ public class PropertyPattern extends Pattern {
     /** Based on names of getter and setter resolves the name of the property.
      * @return Name of the property
      */
-    String findPropertyName() {
-
+    String findPropertyName() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String methodName = null;
 
         if ( getterMethod != null )
-            methodName = getterMethod.getName().getName() ;
+            methodName = getterMethod.getName() ;
         else if ( setterMethod != null )
-            methodName = setterMethod.getName().getName() ;
+            methodName = setterMethod.getName() ;
         else {
             return null;
         }
@@ -713,54 +721,56 @@ public class PropertyPattern extends Pattern {
     // METHODS FOR GENERATING AND DELETING METHODS AND FIELDS--------------------
 
     /** Generates getter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException if modification of source code is impossible.
      */
-    void generateGetterMethod() throws SourceException {
+    void generateGetterMethod() throws GenerateBeanException, JmiException {
         generateGetterMethod( null, false );
     }
 
     /** Generates getter method with body and optionaly with Javadoc comment.
      * @param body Body of the method
      * @param javadoc Generate Javadoc comment?
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException if modification of source code is impossible.
      */
-    void generateGetterMethod( String body, boolean javadoc ) throws SourceException {
+    void generateGetterMethod( String body, boolean javadoc ) throws GenerateBeanException, JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
+        Method newGetter = jmodel.getMethod().createMethod();
 
-        ClassElement declaringClass = getDeclaringClass();
-        MethodElement newGetter = new MethodElement();
-
-        newGetter.setName( Identifier.create( (type == Type.BOOLEAN ? "is" : "get") + capitalizeFirstLetter( getName() ) ) ); // NOI18N
-        newGetter.setReturn( type );
+        String namePrefix = JMIUtils.isPrimitiveType(type, PrimitiveTypeKindEnum.BOOLEAN) ? "is" : "get"; // NOI18N
+        newGetter.setName( namePrefix + capitalizeFirstLetter( getName() ) );
+        newGetter.setType( type );
         newGetter.setModifiers( Modifier.PUBLIC );
 
         if ( declaringClass.isInterface() ) {
             newGetter.setBody( null );
         }
         else if ( body != null ) {
-            newGetter.setBody( body );
+            newGetter.setBodyText( body );
         }
 
         if ( javadoc ) {
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyGetter" ),
                                                    new Object[] { getName() } );
-            newGetter.getJavaDoc().setRawText( comment );
+            newGetter.setJavadocText( comment );
         }
 
         if ( declaringClass == null ) {
             //System.out.println ("nodecl - gen getter"); // NOI18N
-            throw new SourceException();
+            throw new GenerateBeanException();
         }
         else {
-            declaringClass.addMethod( newGetter );
-            getterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
+            declaringClass.getFeatures().add(newGetter);
+            getterMethod = newGetter;
         }
 
     }
 
     /** Generates setter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateSetterMethod() throws SourceException {
+    void generateSetterMethod() throws GenerateBeanException, JmiException {
         generateSetterMethod( null, false, false );
     }
 
@@ -768,24 +778,31 @@ public class PropertyPattern extends Pattern {
      * @param body Body of the method
      * @param javadoc Generate Javadoc comment?
      * @param constrained Is the property constrained?
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateSetterMethod( String body, boolean constrained, boolean javadoc ) throws SourceException {
-        ClassElement declaringClass = getDeclaringClass();
-        MethodElement newSetter = new MethodElement();
+    void generateSetterMethod( String body, boolean constrained, boolean javadoc ) throws GenerateBeanException, JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
+        Method newSetter = jmodel.getMethod().createMethod();
 
-        newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
-        newSetter.setReturn( Type.VOID );
+        newSetter.setName( "set" + capitalizeFirstLetter( getName() ) ); // NOI18N
+        newSetter.setType( patternAnalyser.findType("void") ); // NOI18N
         newSetter.setModifiers( Modifier.PUBLIC );
-        newSetter.setParameters( ( new MethodParameter[] { new MethodParameter( name, type, false ) } ));
-        if ( constrained )
-            newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) ); // NOI18N
+        Parameter param = jmodel.getParameter().createParameter();
+        param.setName(name);
+        param.setType(type);
+        newSetter.getParameters().add(param);
+        if ( constrained ) {
+            JavaClass exception = patternAnalyser.findClassElement("java.beans.PropertyVetoException"); // NOI18N
+            newSetter.getExceptions().add(exception);
+        }
 
         if ( declaringClass.isInterface() ) {
             newSetter.setBody( null );
         }
         else if ( body != null ) {
-            newSetter.setBody( body );
+            newSetter.setBodyText( body );
         }
 
         if ( javadoc ) {
@@ -793,148 +810,119 @@ public class PropertyPattern extends Pattern {
                                                    new Object[] { getName(), name } );
             if ( constrained )
                 comment = comment + PatternNode.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
-            newSetter.getJavaDoc().setRawText( comment );
+            newSetter.setJavadocText( comment );
         }
 
 
         if ( declaringClass == null ) {
             //System.out.println ("nodecl - gen setter"); // NOI18N
-            throw new SourceException();
+            throw new GenerateBeanException();
         }
         else {
-            declaringClass.addMethod( newSetter );
-            setterMethod = declaringClass.getMethod( newSetter.getName(), getParameterTypes( newSetter ) );
+            declaringClass.getFeatures().add(newSetter);
+            setterMethod = newSetter;
         }
     }
 
     /** Generates fied for the property. No javadoc comment is generated.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateField() throws SourceException {
+    void generateField() throws GenerateBeanException, JmiException {
         generateField( false );
     }
 
-    /** Generates fied for the property.
+    /** Generates field for the property.
      * @param javadoc Generate javadoc comment?
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateField( boolean javadoc ) throws SourceException {
-        ClassElement declaringClass = getDeclaringClass();
-        FieldElement newField = new FieldElement();
+    void generateField( boolean javadoc ) throws GenerateBeanException, JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
+        Field newField = jmodel.getField().createField();
 
         String name = getName();
         if( PropertyActionSettings.getDefault().getPropStyle().equals(PropertyActionSettings.GENERATE_UNDERSCORED))
             name = PropertyActionSettings.GENERATE_UNDERSCORED + name;
-        newField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
+        name = Introspector.decapitalize( name );
+        newField.setName( name );
         newField.setType( type );
         newField.setModifiers( Modifier.PRIVATE );
         if ( javadoc ) {
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_PropertyField" ),
                                                    new Object[] { name } );
-            newField.getJavaDoc().setRawText( comment );
+            newField.setJavadocText( comment );
         }
         if ( declaringClass == null ) {
             //System.out.println ("nodecl - gen setter"); // NOI18N
-            throw new SourceException();
-        }
-        else {
-            if( declaringClass.getField(newField.getName()) == null ){
-                declaringClass.addField( newField );
-                estimatedField = declaringClass.getField( newField.getName() );
-            }
-            else{
-                FieldElement fe = declaringClass.getField(newField.getName());
-                if( (fe.getModifiers() & Modifier.STATIC) != 0 )    //static can not be accessed via property
-                    throw new SourceException();
-                if( !fe.getType().getFullString().equals(newField.getType().getFullString()) )  //type not equal
-                    throw new SourceException();
+            throw new IllegalStateException("Missing declaring class");
+        } else {
+            String newFieldName = newField.getName();
+            Field f = declaringClass.getField(newFieldName, false);
+            if ( f == null ){
+                declaringClass.getFeatures().add(newField);
+                estimatedField = newField;
+            } else{
+                if( (f.getModifiers() & Modifier.STATIC) != 0 )    //static can not be accessed via property
+                    throw new GenerateBeanException();
+                if( !f.getType().equals(newField.getType()) )  //type not equal
+                    throw new GenerateBeanException();
             }
         }
     }
 
     /** Deletes the estimated field in source
-     * @throws SourceException If modification of source code is impossible.
+     * @throws JmiException If modification of source code is impossible.
      */ 
-    void deleteEstimatedField() throws SourceException {
+    void deleteEstimatedField() throws JmiException {
 
         if ( estimatedField == null )
             return;
 
-        ClassElement declaringClass = getDeclaringClass();
-
-        if ( declaringClass == null ) {
-            //System.out.println ("nodecl"); // NOI18N
-            throw new SourceException();
-        }
-        else {
-            declaringClass.removeField( estimatedField );
-            estimatedField = null;
-        }
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        declaringClass.getFeatures().remove(estimatedField);
+        estimatedField = null;
     }
 
 
     /** Deletes the setter method in source
-     * @throws SourceException If modification of source code is impossible.
+     * @throws JmiException If modification of source code is impossible.
      */
-    void deleteGetterMethod() throws SourceException {
+    void deleteGetterMethod() throws JmiException {
 
         if ( getterMethod == null )
             return;
-
-        ClassElement declaringClass = getDeclaringClass();
-
-        if ( declaringClass == null ) {
-            throw new SourceException();
-        }
-        else {
-            declaringClass.removeMethod( getterMethod );
-            getterMethod = null;
-        }
+        
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        declaringClass.getFeatures().remove(getterMethod);
+        getterMethod = null;
     }
 
     /** Deletes the setter method in source
-     * @throws SourceException If modification of source code is impossible.
+     * @throws JmiException If modification of source code is impossible.
      */
-    void deleteSetterMethod() throws SourceException {
+    void deleteSetterMethod() throws JmiException {
 
         if ( setterMethod == null )
             return;
 
-        ClassElement declaringClass = getDeclaringClass();
-
-        if ( declaringClass == null ) {
-            throw new SourceException();
-        }
-        else {
-            declaringClass.removeMethod( setterMethod );
-            setterMethod = null;
-        }
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        declaringClass.getFeatures().remove(setterMethod);
+        setterMethod = null;
 
     }
 
     // UTILITY METHODS ----------------------------------------------------------
 
-    /** Utility method resturns array of types of parameters of a method
-     * @param methodElement Method which parameter types should be resolved
-     * @return Array of types of parameters
-     */
-    static Type[] getParameterTypes( MethodElement methodElement ) {
-        MethodParameter[] params = methodElement.getParameters();
-        Type[] types = new Type[ params == null ? 0 : params.length ];
-
-        for( int i = 0; i < params.length; i++ ) {
-            types[i] = params[i].getType();
-        }
-
-        return types;
-    }
-
     /** Sets the properties to values of other property pattern. If the
      * properties change fires PropertyChange event.
      * @param src Source PropertyPattern it's properties will be copied.
      */
-    void copyProperties( PropertyPattern src ) {
-
+    void copyProperties( PropertyPattern src ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         boolean changed = !src.getType().equals( getType() ) ||
                           !src.getName().equals( getName() ) ||
                           !(src.getMode() == getMode()) ||
@@ -955,6 +943,7 @@ public class PropertyPattern extends Pattern {
             }
             name = findPropertyName();
 
+            // XXX cannot be fired inside mdr transaction; post to dedicated thread or redesigne somehow
             firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
         }
     }

@@ -7,23 +7,26 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
+import javax.jmi.reflect.JmiException;
 
-/** Property editor for the listener type property
-*
-* @author Martin Matula
-*/
-public final class EventTypeEditor extends PropertyTypeEditor {
+/**
+ * Signals a problem while a bean is generated or analyzed
+ */ 
+public class GenerateBeanException extends Exception {
+    public GenerateBeanException() {
+    }
 
-    /**
-    * @return The tag values for this property.
-    */
-    public String[] getTags () {
-        return EventSetPattern.WELL_KNOWN_LISTENERS;
+    public GenerateBeanException(String message) {
+        super(message);
+    }
+    
+    public GenerateBeanException(JmiException ex) {
+        super(ex);
     }
 }

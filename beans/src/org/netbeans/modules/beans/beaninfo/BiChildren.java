@@ -7,33 +7,27 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.src.*;
+import org.netbeans.jmi.javamodel.JavaClass;
 
 /** Implements children for basic source code patterns
  * 
  * @author Petr Hrebejk
  */
-public class BiChildren extends Children.Keys {
+public final class BiChildren extends Children.Keys {
 
     /** The class element its subelements are represented */
-    protected ClassElement        classElement;
-
-    /** Main storage of nodes */
-    private Collection[]          cpl;
+    protected JavaClass        classElement;
 
     /** Object for finding patterns in class */
     private BiAnalyser       biAnalyser;
@@ -42,7 +36,6 @@ public class BiChildren extends Children.Keys {
     // Constructors -----------------------------------------------------------------------
 
     /** Create pattern children. The children are initilay unfiltered.
-     * @param elemrent the atteached class. For this class we recognize the patterns 
      */ 
 
     public BiChildren ( BiAnalyser biAnalyser, Class[] keys ) {

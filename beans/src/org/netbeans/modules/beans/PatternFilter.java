@@ -7,19 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
-import org.openide.src.nodes.ClassElementFilter;
-
 /** Orders and filters members in a pattern node.
 *
 * @author Petr Hrebejk
 */
-public class PatternFilter extends ClassElementFilter {
+public final class PatternFilter {
 
     /** Specifies a child representing a property. */
     public static final int     PROPERTY = 256;
@@ -30,7 +28,7 @@ public class PatternFilter extends ClassElementFilter {
     /** Specifies a child representing a method. */
 
     /** Does not specify a child type. */
-    public static final int     ALL = ClassElementFilter.ALL | PROPERTY | IDXPROPERTY | EVENT_SET;
+    public static final int     ALL = PROPERTY | IDXPROPERTY | EVENT_SET;
 
     /** Default order and filtering.
     * Places all fields, constructors, methods, and inner classes (interfaces) together

@@ -7,32 +7,28 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 
-import org.openide.NotifyDescriptor;
-import org.openide.src.*;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.Method;
+
+import javax.jmi.reflect.JmiException;
 
 /** Node representing a indexed property.
-* @see FieldElement
+* @see IdxPropertyPattern
 * @author Petr Hrebejk
 */
-public class IdxPropertyPatternNode extends PropertyPatternNode  {
-    /** Create a new field node.
-    * @param element field element to represent
+public final class IdxPropertyPatternNode extends PropertyPatternNode  {
+    /** Create a new pattern node.
+    * @param pattern field element to represent
     * @param writeable <code>true</code> to be writable
     */
     public IdxPropertyPatternNode( IdxPropertyPattern pattern, boolean writeable) {
@@ -105,10 +101,10 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
                        try {
                            pattern.patternAnalyser.setIgnore( true );
                            ((IdxPropertyPattern)pattern).setIndexedType((Type)val);
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                       catch (SourceException e) {
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
+                       } finally {
+                           pattern.patternAnalyser.setIgnore( false );
                        }
 
                    }
@@ -140,10 +136,10 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
                        try {
                            pattern.patternAnalyser.setIgnore( true );
                            ((PropertyPattern)pattern).setType((Type)val);
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                       catch (SourceException e) {
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
+                       } finally {
+                           pattern.patternAnalyser.setIgnore( false );
                        }
 
                    }
@@ -159,19 +155,12 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     protected Node.Property createIndexGetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_INDEXEDGETTER, String.class, canW) {
 
-                   /** Gets the value */
-
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((IdxPropertyPattern)pattern).getIndexedGetterMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((IdxPropertyPattern) pattern).getIndexedGetterMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }
@@ -180,19 +169,14 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     protected Node.Property createIndexSetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_INDEXEDSETTER, String.class, canW) {
 
                    /** Gets the value */
 
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((IdxPropertyPattern)pattern).getIndexedSetterMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((IdxPropertyPattern) pattern).getIndexedSetterMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }

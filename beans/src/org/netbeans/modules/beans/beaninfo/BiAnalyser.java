@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,17 +16,17 @@ package org.netbeans.modules.beans.beaninfo;
 import java.io.IOException;
 import java.util.*;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.beans.EventSetPattern;
-import org.netbeans.modules.beans.IdxPropertyPattern;
-import org.netbeans.modules.beans.PatternAnalyser;
-import org.netbeans.modules.beans.PropertyPattern;
+import javax.jmi.reflect.JmiException;
+
+import org.netbeans.modules.beans.*;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.Method;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.Array;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
 import org.openide.util.RequestProcessor;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
@@ -35,7 +35,7 @@ import org.openide.util.RequestProcessor;
  * @author Petr Hrebejk, Petr Suchomel
  */
 
-public class BiAnalyser extends Object implements Node.Cookie {
+public final class BiAnalyser extends Object implements Node.Cookie {
 
     private static final String TAB = "    "; // NOI18N
     private static final String TABx2 = TAB +TAB;
@@ -98,7 +98,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private boolean superClassVersion=true;
 
     /* Holds the class for which the bean info is generated */
-    ClassElement classElement;
+    JavaClass classElement;
 
     private String iconC16;
     private String iconM16;
@@ -108,28 +108,18 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private int defaultEventIndex = -1;
     private boolean useSuperClass = false;
     
-    private int getIndexOfMethod(List al, MethodElement method) {
+    private int getIndexOfMethod(List al, Method method) throws JmiException {
         if (method == null) return -1;
         
-        MethodElement method2;
-        MethodParameter[] parameters = method.getParameters();
-        MethodParameter[] parameters2;
+        assert JMIUtils.isInsideTrans();
+        Method method2;
         
-        int j;
+        int i = 0;
         
-        for (int i = 0; i < al.size(); i ++) {
-            method2 = ((BiFeature.Method) al.get(i)).getElement();
-            if (!method2.getDeclaringClass().getName().getFullName().equals(method.getDeclaringClass().getName().getFullName()))
-                continue;
-            if (!method2.getName().getFullName().equals(method.getName().getFullName()))
-                continue;
-            parameters2 = method2.getParameters();
-            if (parameters.length != parameters2.length)
-                continue;
-            j = 0;
-            while ((j < parameters.length) && (parameters[j].getFullString().equals(parameters2[j].getFullString())))
-                j ++;
-            if (j == parameters.length) {
+        for (Iterator it = al.iterator(); it.hasNext(); i++) {
+            BiFeature.Method bifMethod = (BiFeature.Method) it.next();
+            method2 = bifMethod.getElement();
+            if (method.equals(method2)) {
                 return i;
             }
         }
@@ -138,11 +128,9 @@ public class BiAnalyser extends Object implements Node.Cookie {
     }
     /** Creates Bean Info analyser which contains all patterns from PatternAnalyser
     */
-    BiAnalyser ( PatternAnalyser pa, ClassElement classElement ) {
+    BiAnalyser ( PatternAnalyser pa, JavaClass classElement ) throws GenerateBeanException {
         Collection col;
-        Iterator it;
         int index;
-
         this.classElement = classElement;
 
         // Try to find and analyse existing bean info
@@ -157,10 +145,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
         // Fill methods list (only in case we have new templates)
         methods = new ArrayList();
         if (!olderVersion) {
-            ClassElement superClass = pa.getClassElement();
-            MethodElement[] meMethods = superClass.getMethods();
-            for (int i = 0; i < meMethods.length; i ++) {
-                methods.add(new BiFeature.Method(meMethods[i], pa));
+            JavaClass superClass = pa.getClassElement();
+            List/*<Method>*/ meMethods = JMIUtils.getMethods(superClass);
+            for (Iterator it = meMethods.iterator(); it.hasNext();) {
+                Method method = (Method) it.next();
+                methods.add(new BiFeature.Method(method, pa));
             }
         }
 
@@ -168,9 +157,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         col = pa.getPropertyPatterns();
         properties = new ArrayList( col.size() );
-        it = col.iterator();
-        while( it.hasNext() ) {
-            PropertyPattern pp = (PropertyPattern)it.next();
+        for (Iterator it = col.iterator(); it.hasNext();) {
+            PropertyPattern pp = (PropertyPattern) it.next();
             properties.add( new BiFeature.Property( pp ) );
             for (int i = 0; i < methods.size(); i ++) {
                 if ((index = getIndexOfMethod(methods, pp.getGetterMethod())) != -1) methods.remove(index);
@@ -182,12 +170,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         col = pa.getIdxPropertyPatterns();
         idxProperties = new ArrayList( col.size() );
-        it = col.iterator();
-        while( it.hasNext() ) {
+        for (Iterator it = col.iterator(); it.hasNext();) {
             IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
-
-            if ( ipp.getType() != null && ( !ipp.getType().isArray() ||
-                                            !ipp.getType().getElementType().equals( ipp.getIndexedType() ) ) ) {
+            Type type = ipp.getType();
+            if ( type != null && ( !(type instanceof Array) ||
+                    !((Array) type).getType().equals( ipp.getIndexedType() ) ) ) {
                 continue;
             }
 
@@ -202,9 +189,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         col = pa.getEventSetPatterns();
         eventSets = new ArrayList( col.size() );
-        it = col.iterator();
-        while( it.hasNext() ) {
-            EventSetPattern esp = (EventSetPattern)it.next();
+        for (Iterator it = col.iterator(); it.hasNext();) {
+            EventSetPattern esp = (EventSetPattern) it.next();
             eventSets.add( new BiFeature.EventSet( esp ) );
             if ((index = getIndexOfMethod(methods, esp.getRemoveListenerMethod())) != -1) methods.remove(index);
             if ((index = getIndexOfMethod(methods, esp.getAddListenerMethod())) != -1) methods.remove(index);
@@ -457,9 +443,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
                                                 } );
     }
 
-    private void regenerateBeanDescriptor(){
+    private void regenerateBeanDescriptor() {
         StringBuffer sb = new StringBuffer( 512 );
-        int methodCount = 0;
                 
         if ( nullDescriptor ) {
             sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_NullDescriptor" ) );  // NOI18N
@@ -807,7 +792,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         StringBuffer sb = new StringBuffer(100);
         if( this.isUseSuperClass() ){
             sb.append( TAB + "public BeanInfo[] getAdditionalBeanInfo() {\n");  // NOI18N
-            sb.append( TABx2 + "Class superclass = " + classElement.getName().getName() + ".class.getSuperclass();\n");  // NOI18N
+            sb.append( TABx2 + "Class superclass = " + classElement.getName() + ".class.getSuperclass();\n");  // NOI18N
             sb.append( TABx2 + "BeanInfo sbi = null;\n");  // NOI18N
             sb.append( TABx2 + "try {\n");  // NOI18N
             sb.append( TABx2 + TAB + "sbi = Introspector.getBeanInfo(superclass);\n");  // NOI18N
@@ -820,7 +805,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     }
 
     /** Analyzes existing BeanInfo */
-    private void analyzeBeanInfoSource() {
+    private void analyzeBeanInfoSource() throws GenerateBeanException {
 
         if ( !bis.isNbBeanInfo() )
             return;
@@ -875,7 +860,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
     /** "Normalizes" the JavaCode. Removes all unneeded whitespaces. Makes strings from
      * commands. 
      * @param code String containg the java source code
-     * @returns Normalized code as collection of string.
+     * @return Normalized code as collection of string.
      */
     static Collection normalizeText( String code ) {
 
@@ -1042,7 +1027,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
 
     /** Let's the collection of features check for it's properties in BeanInfo */
-    boolean setPropertiesFromBeanInfo( Collection features, Collection code, String name ) {
+    boolean setPropertiesFromBeanInfo( Collection features, Collection code, String name ) throws GenerateBeanException {
 
         Iterator it = code.iterator();
 

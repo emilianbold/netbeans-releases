@@ -7,14 +7,13 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.ResourceBundle;
-import javax.swing.SwingUtilities;
+import java.awt.*;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
@@ -24,10 +23,15 @@ import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.actions.NodeAction;
-import org.openide.src.ClassElement;
 
 import org.netbeans.modules.beans.PatternAnalyser;
+import org.netbeans.modules.beans.JMIUtils;
+import org.netbeans.modules.beans.GenerateBeanException;
+import org.netbeans.jmi.javamodel.JavaClass;
 import org.openide.DialogDisplayer;
+import org.openide.ErrorManager;
+
+import javax.jmi.reflect.JmiException;
 
 /**
 * Generate BI action.
@@ -35,13 +39,12 @@ import org.openide.DialogDisplayer;
 * @author   Petr Hrebejk
 */
 public class GenerateBeanInfoAction extends NodeAction implements java.awt.event.ActionListener {
+    private Dialog biDialog;
 
     /** generated Serialized Version UID */
     //static final long serialVersionUID = 1391479985940417455L;
 
     // The dialog for BeanInfo generation
-    private java.awt.Dialog biDialog = null;
-
 
     static final long serialVersionUID =-4937492476805017833L;
     /** Human presentable name of the action. This should be
@@ -75,8 +78,13 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
             if (pa == null) {
                 return false;
             }
-            ClassElement theClass = pa.getClassElement();
-            return !theClass.isInner();
+            JavaClass theClass = pa.getClassElement();
+            JMIUtils.beginTrans(false);
+            try {
+                return theClass.isValid() && !theClass.isInner();
+            } finally {
+                JMIUtils.endTrans();
+            }
         }
     }
 
@@ -112,30 +120,46 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         // Get pattern analyser & bean info and create BiAnalyser & BiNode
 
         final BiAnalyserReference biaReference = new BiAnalyserReference();
-
+        
         final Task analyseTask = new Task( new Runnable() {
-                                               public void run() {
-                                                   PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
-
-                                                   ClassElement superClass = BiSuperClass.createForClassElement( pa.getClassElement() );
-                                                   ClassElement theClass = pa.getClassElement();
-
-                                                   pa = new PatternAnalyser( superClass, pa.getClassElement() );
-                                                   pa.analyzeAll();
-
-                                                   BiAnalyser bia = new BiAnalyser( pa, theClass );
-                                                   final Node biNode = new BiNode( bia );
-
-                                                   javax.swing.SwingUtilities.invokeLater( new Runnable() {
-                                                                                               public void run() {
-                                                                                                   biPanel.setContext( biNode );
-                                                                                                   biPanel.expandAll();
-                                                                                               }
-                                                                                           } );
-
-                                                   biaReference.setReference( bia );
-                                               }
-                                           } );
+            public void run() {
+                PatternAnalyser pa = (PatternAnalyser)nodes[0].getCookie( PatternAnalyser.class );
+                
+                try {
+                    JMIUtils.beginTrans(true);
+                    boolean rollback = true;
+                    BiAnalyser bia;
+                    try {
+                        JavaClass theClass = pa.getClassElement();
+                        JavaClass syntheticSuperClass = BiSuperClass.createForClassElement(theClass);
+                        
+                        pa = new PatternAnalyser(syntheticSuperClass, theClass);
+                        pa.analyzeAll();
+                        
+                        bia = new BiAnalyser(pa, theClass);
+                        biaReference.syntheticClass = syntheticSuperClass;
+                        rollback = false;
+                    } finally {
+                        JMIUtils.endTrans(rollback);
+                    }
+                    final Node biNode = new BiNode( bia );
+                    
+                    javax.swing.SwingUtilities.invokeLater( new Runnable() {
+                        public void run() {
+                            biPanel.setContext( biNode );
+                            biPanel.expandAll();
+                        }
+                    } );
+                    
+                    biaReference.setReference( bia );
+                    
+                } catch (GenerateBeanException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                } catch (JmiException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+                }
+            }
+        } );
 
         RequestProcessor.getDefault().post( analyseTask );
 
@@ -144,16 +168,32 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         if ( biaReference.getReference() != null && dd.getValue().equals( NotifyDescriptor.OK_OPTION ) ) {
 
             Task task = new Task( new Runnable() {
-                                      public void run () {
-                                          analyseTask.waitFinished();
-                                          biaReference.getReference().regenerateSource();
-                                      }
-                                  } );
+                public void run () {
+                    analyseTask.waitFinished();
+                    biaReference.getReference().regenerateSource();
+                    JMIUtils.beginTrans(true);
+                    boolean rollback = true;
+                    try {
+                        final JavaClass syntheticClass = biaReference.syntheticClass;
+                        if (syntheticClass != null && syntheticClass.isValid()) {
+                            System.out.println("##GBIAction.delete");
+                            syntheticClass.refDelete();
+                        }
+                        rollback = false;
+                    } finally {
+                        JMIUtils.endTrans(rollback);
+                    }
+                }
+            } );
             RequestProcessor.getDefault().post( task );
         }
 
     }
-    
+
+    protected boolean asynchronous() {
+        return false;
+    }
+
     private void initAccessibility() {
         biDialog.getAccessibleContext().setAccessibleDescription(getString("ACSD_BeanInfoEditorDialog"));
     }    
@@ -162,8 +202,9 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
         return NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle").getString(key);
     }
 
-    private static class BiAnalyserReference {
+    private static final class BiAnalyserReference {
         private BiAnalyser analyser = null;
+        JavaClass syntheticClass = null;
 
         private void setReference( BiAnalyser analyser ) {
             this.analyser = analyser;

@@ -7,33 +7,23 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.lang.reflect.Modifier;
-import java.util.Collection;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Hashtable;
-import java.util.Enumeration;
-import java.beans.Introspector;
+import java.util.*;
 import java.beans.IntrospectionException;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 
 import org.openide.nodes.Node;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodElement;
-import org.openide.src.FieldElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.Type;
-import org.openide.src.Identifier;
 import org.openide.filesystems.FileObject;
+import org.openide.ErrorManager;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
+import javax.jmi.reflect.JmiException;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -41,7 +31,7 @@ import org.openide.filesystems.FileObject;
  * @author Petr Hrebejk
  */
 
-public class PatternAnalyser extends Object implements Node.Cookie {
+public final class PatternAnalyser extends Object implements Node.Cookie {
 
     private static final int    PROPERTIES_RESERVE = 11;
     private static final String GET_PREFIX = "get"; // NOI18N
@@ -60,9 +50,9 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     private HashMap idxPropertyPatterns;
     private HashMap eventSetPatterns;
 
-    private ClassElement classElement;
+    private JavaClass classElement;
     
-    private ClassElement referenceClassElement;
+    private JavaClass referenceClassElement;
     
     private boolean analyzed = false;
 
@@ -70,7 +60,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
     /** Creates new analyser for ClassElement
      */
-    public PatternAnalyser( ClassElement classElement ) {
+    public PatternAnalyser( JavaClass classElement ) {
         this.classElement = classElement;
     }
 
@@ -78,7 +68,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
      * @param referenceClassElement some ClassElements which contains the 
      *        dataObjectCookie.
      */
-    public PatternAnalyser( ClassElement classElement, ClassElement referenceClassElement ) {
+    public PatternAnalyser( JavaClass classElement, JavaClass referenceClassElement ) {
         this( classElement );
         this.referenceClassElement = referenceClassElement;   
     }
@@ -91,20 +81,31 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         
         analyzed = true;
 
-        int methodCount = classElement.getMethods().length;
-        propertyPatterns = new HashMap( methodCount / 2 + PROPERTIES_RESERVE );
+        propertyPatterns = new HashMap( PROPERTIES_RESERVE );
         idxPropertyPatterns = new HashMap();        // Initial size 11
         eventSetPatterns = new HashMap();           // Initial size 11
 
         // Analyse patterns
 
-        resolveMethods();
-        resolveFields();
+        try {
+            JMIUtils.beginTrans(false);
+            try {
+                if (!classElement.isValid()) {
+                    return;
+                }
+                resolveMethods();
+                resolveFields();
 
-        // Compare old and new patterns to resolve changes
-        resolveChangesOfProperties();
-        resolveChangesOfIdxProperties();
-        resolveChangesOfEventSets();
+                // Compare old and new patterns to resolve changes
+                resolveChangesOfProperties();
+                resolveChangesOfIdxProperties();
+                resolveChangesOfEventSets();
+            } finally {
+                JMIUtils.endTrans();
+            }
+        } catch (JmiException e) {
+            ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
+        }
     }
     
     boolean isAnalyzed() {
@@ -128,20 +129,20 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 }
     */
 
-    public Collection getPropertyPatterns() {
+    public Collection/*<PropertyPattern>*/ getPropertyPatterns() {
         return currentPropertyPatterns;
     }
 
-    public Collection getIdxPropertyPatterns() {
+    public Collection/*<IdxPropertyPattern>*/ getIdxPropertyPatterns() {
         return currentIdxPropertyPatterns;
     }
 
-    public Collection getEventSetPatterns() {
+    public Collection/*<EventSetPattern>*/ getEventSetPatterns() {
         return currentEventSetPatterns;
     }
 
     /** Gets the classelemnt of this pattern analyser */
-    public ClassElement getClassElement() {
+    public JavaClass getClassElement() {
         return classElement;
     }
 
@@ -149,19 +150,20 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     * The method is analogous to JavaBean Introspector methods for classes
     * without a BeanInfo.
     */
-    public void resolveMethods() {
+    private void resolveMethods() throws JmiException {
 
+        assert JMIUtils.isInsideTrans();
         // First get all methods in classElement
-        MethodElement[] methods = classElement.getMethods();
+        List/*<Method>*/ methods = JMIUtils.getMethods(classElement);
 
         // Temporary structures for analysing EventSets
-        Hashtable adds = new Hashtable();
-        Hashtable removes = new Hashtable();
+        Map adds = new HashMap();
+        Map removes = new HashMap();
 
         // Analyze each method
-        for ( int i = 0; i < methods.length ; i++ ) {
-            MethodElement method = methods[i];
-            String name = method.getName().getName();
+        for ( Iterator it = methods.iterator(); it.hasNext() ; ) {
+            Method method = (Method) it.next();
+            String name = method.getName();
             int len = name.length();
 
             if ( (name.startsWith(GET_PREFIX) && len>GET_PREFIX.length())
@@ -179,10 +181,10 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         // Resolve the temporay structures of event sets
 
         // Now look for matching addFooListener+removeFooListener pairs.
-        Enumeration keys = adds.keys();
+        Iterator keys = adds.keySet().iterator();
 
-        while (keys.hasMoreElements()) {
-            String compound = (String) keys.nextElement();
+        while (keys.hasNext()) {
+            String compound = (String) keys.next();
             // Skip any "add" which doesn't have a matching remove // NOI18N
             if (removes.get (compound) == null ) {
                 continue;
@@ -192,57 +194,35 @@ public class PatternAnalyser extends Object implements Node.Cookie {
                 continue;
             }
 
-            /*
-            String listenerName = compound.substring( 0, compound.indexOf( ':' ) );
-            String eventName = Introspector.decapitalize( listenerName.substring( 0, listenerName.length() - 8 ));
-            */
-            MethodElement addMethod = (MethodElement)adds.get(compound);
-            MethodElement removeMethod = (MethodElement)removes.get(compound);
-            Type argType = addMethod.getParameters()[0].getType();
+            Method addMethod = (Method) adds.get(compound);
+            Method removeMethod = (Method) removes.get(compound);
+            List/*<Parameter>*/ params = addMethod.getParameters();
+            Type argType = ((Parameter) params.get(0)).getType();
 
             // Check if the argument is a subtype of EventListener
-            //try {
-            //if (!Introspector.isSubclass( argType.toClass(), java.util.EventListener.class ) ) {
-            //if (!java.util.EventListener.class.isAssignableFrom( argType.toClass() ) ) {
-            if ( !isSubclass(
-                        findClassElement( argType.getClassName().getFullName() ),
-                        findClassElement( "java.util.EventListener" ) ) ) // NOI18N
+            if ( !(argType instanceof ClassDefinition) || // filter out primitive types + arrays
+                    !isSubclass((ClassDefinition) argType, findClassElement("java.util.EventListener")) ) // NOI18N
                 continue;
-            /*
-              }
-        }
-            catch ( java.lang.ClassNotFoundException ex ) {
-              continue;
-        }
-            */
 
-            EventSetPattern esp;
-
-            try {
-                esp = new EventSetPattern( this, addMethod, removeMethod );
-            }
-            catch ( IntrospectionException ex ) {
-                esp = null;
-            }
-
-            if (esp != null)
-                addEventSet( esp );
+            EventSetPattern esp = new EventSetPattern( this, addMethod, removeMethod );
+            addEventSet( esp );
         }
     }
 
-    void resolveFields() {
+    private void resolveFields() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         // Analyze fields
-        FieldElement fields[] = classElement.getFields();
+        List/*<Field>*/ fields = JMIUtils.getFields(classElement);
         String propertyStyle = PropertyActionSettings.getDefault().getPropStyle();
         
-        for ( int i = 0; i < fields.length; i++ ) {
-            FieldElement field=fields[i];
+        for ( Iterator it = fields.iterator(); it.hasNext();  ) {
+            Field field = (Field) it.next();
 
             if ( ( field.getModifiers() & Modifier.STATIC ) != 0 )
                 continue;
             
             //System.out.println("Property style " + propertyStyle);   
-            String fieldName = field.getName().getName();
+            String fieldName = field.getName();
             //System.out.println("Field name1 " + fieldName);
             if( fieldName.startsWith(propertyStyle) ){
                 fieldName = fieldName.substring(1);
@@ -255,7 +235,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
             if ( pp == null )
                 continue;
             Type ppType = pp.getType();
-            if ( ppType != null && pp.getType().compareTo( field.getType(), false ) )
+            if ( ppType != null && ppType.equals( field.getType() ) )
                 pp.setEstimatedField( field );
         }
     }
@@ -273,7 +253,8 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     }
 
 
-    static ArrayList resolveChanges( Collection current, Map created, LevelComparator comparator ) {
+    static ArrayList resolveChanges( Collection current, Map created, LevelComparator comparator ) throws JmiException {
+        JMIUtils.isInsideTrans();
         ArrayList old = new ArrayList( current );
         ArrayList cre = new ArrayList( created.size() );
         cre.addAll( created.values() );
@@ -303,41 +284,41 @@ public class PatternAnalyser extends Object implements Node.Cookie {
 
     /** Analyses one method for property charcteristics */
 
-    PropertyPattern analyseMethodForProperties( MethodElement method ) {
+    PropertyPattern analyseMethodForProperties( Method method ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         // Skip static methods as Introspector does.
         int modifiers = method.getModifiers();
         if ( Modifier.isStatic( modifiers ) )
             return null;
 
-        String name = method.getName().getName();
-        MethodParameter[] params = method.getParameters();
-        int paramCount = params == null ? 0 : params.length;
-        Type returnType = method.getReturn();
+        String name = method.getName();
+        Parameter[] params = (Parameter[]) method.getParameters().toArray(new Parameter[0]);
+        Type returnType = method.getType();
 
         PropertyPattern pp = null;
 
         try {
-            if ( paramCount == 0 ) {
+            if ( params.length == 0 ) {
                 if (name.startsWith( GET_PREFIX )) {
                     // SimpleGetter
                     pp = new PropertyPattern( this, method, null);
                 }
-                else if ( returnType.compareTo( Type.BOOLEAN, false ) && name.startsWith( IS_PREFIX )) {
+                else if ( JMIUtils.isPrimitiveType( returnType, PrimitiveTypeKindEnum.BOOLEAN) && name.startsWith( IS_PREFIX )) {
                     // Boolean getter
                     pp = new PropertyPattern( this, method, null );
                 }
             }
-            else if ( paramCount == 1 ) {
-                if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( GET_PREFIX )) {
+            else if ( params.length == 1 ) {
+                if ( JMIUtils.isPrimitiveType(params[0].getType(), PrimitiveTypeKindEnum.INT) && name.startsWith( GET_PREFIX )) {
                     pp = new IdxPropertyPattern( this, null, null, method, null );
                 }
-                else if ( returnType.compareTo( Type.VOID, false ) && name.startsWith( SET_PREFIX )) {
+                else if ( JMIUtils.isPrimitiveType(returnType, PrimitiveTypeKindEnum.VOID) && name.startsWith( SET_PREFIX )) {
                     pp = new PropertyPattern( this, null, method );
                     // PENDING vetoable => constrained
                 }
             }
-            else if ( paramCount == 2 ) {
-                if ( params[0].getType().compareTo( Type.INT, false ) && name.startsWith( SET_PREFIX )) {
+            else if ( params.length == 2 ) {
+                if ( JMIUtils.isPrimitiveType(params[0].getType(), PrimitiveTypeKindEnum.INT) && name.startsWith( SET_PREFIX )) {
                     pp = new IdxPropertyPattern( this, null, null, null, method );
                     // PENDING vetoable => constrained
                 }
@@ -345,31 +326,38 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         }
         catch (IntrospectionException ex) {
             // PropertyPattern constructor found some differencies from design patterns.
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             pp = null;
         }
 
         return pp;
     }
 
-    /** Method analyses cass methods for EventSetPatterns
+    /** Method analyses class methods for EventSetPatterns
      */
-    void analyseMethodForEventSets( MethodElement method, Map adds, Map removes ) {
+    void analyseMethodForEventSets( Method method, Map adds, Map removes ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         // Skip static methods
         int modifiers = method.getModifiers();
         if ( Modifier.isStatic( modifiers ) )
             return;
 
-        String name = method.getName().getName();
-        MethodParameter params[] = method.getParameters();
-        Type returnType = method.getReturn();
+        String name = method.getName();
+        Parameter params[] = (Parameter[]) method.getParameters().toArray(new Parameter[0]);
+        Type returnType = method.getType();
 
-        if ( name.startsWith( ADD_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
-            String compound = name.substring(3) + ":" + params[0].getType(); // NOI18N
-            adds.put( compound, method );
-        }
-        else if ( name.startsWith( REMOVE_PREFIX ) && params.length == 1 && returnType == Type.VOID ) {
-            String compound = name.substring(6) + ":" + params[0].getType(); // NOI18N
-            removes.put( compound, method );
+        if ( params.length == 1 && JMIUtils.isPrimitiveType(returnType, PrimitiveTypeKindEnum.VOID) ) {
+            Type paramType = params[0].getType();
+            if (paramType instanceof JavaClass) {
+                JavaClass lsnrType = (JavaClass) paramType;
+                if (name.startsWith(ADD_PREFIX) && name.substring(3).equals(lsnrType.getSimpleName())) {
+                    String compound = name.substring(3) + ":" + lsnrType.getName(); // NOI18N
+                    adds.put( compound, method );
+                } else if (name.startsWith(REMOVE_PREFIX) && name.substring(6).equals(lsnrType.getSimpleName())) {
+                    String compound = name.substring(6) + ":" + lsnrType.getName(); // NOI18N
+                    removes.put( compound, method );
+                }
+            }
         }
 
     }
@@ -397,7 +385,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         // If the property type has changed, use new property pattern
         Type opt = old.getType();
         Type npt = pp.getType();
-        if (  opt != null && npt != null && !opt.compareTo(npt, false) ) {
+        if (  opt != null && npt != null && !opt.equals(npt) ) {
             hm.put( name, pp );
             return;
         }
@@ -439,7 +427,7 @@ public class PatternAnalyser extends Object implements Node.Cookie {
     /** adds an eventSetPattern */
 
     void addEventSet( EventSetPattern esp ) {
-        String key = esp.getName() + esp.getType();
+        String key = esp.getName() + esp.getType().getName();
         EventSetPattern old = (EventSetPattern)eventSetPatterns.get( key );
 
 
@@ -452,33 +440,16 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         eventSetPatterns.put( key, composite );
     }
 
-    static boolean isSubclass(ClassElement a, ClassElement b) {
+    // XXX can be replaced with ClassDefinition.isSubTypeOf()
+    static boolean isSubclass(ClassDefinition a, ClassDefinition b) {
 
         if (a == null || b == null) {
             return false;
         }
+        assert JMIUtils.isInsideTrans();
+        
+        return a.isSubTypeOf(b);
 
-        if (a.getName().compareTo( b.getName(), false ) ) {
-            return true;
-        }
-
-        for ( ClassElement x = a;
-                x != null;
-                x = x.getSuperclass() == null ? null : ClassElement.forName( x.getSuperclass().getFullName(), fileObjectForElement( a ) )  ){
-            if (x.getName().compareTo( b.getName(), false ) ) {
-                return true;
-            }
-            if (b.isInterface()) {
-                Identifier interfaces[] = x.getInterfaces();
-                for (int i = 0; i < interfaces.length; i++) {
-                    ClassElement interfaceElement = ClassElement.forName( interfaces[i].getFullName(), fileObjectForElement( a ) );
-                    if (isSubclass(interfaceElement, b)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     // Inner Classes --- comparators for patterns -------------------------------------------------
@@ -575,15 +546,11 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         }
     }
     
-            
-    public static org.openide.filesystems.FileObject fileObjectForElement( org.openide.src.Element element ) {
-        
-        org.openide.loaders.DataObject dobj = (org.openide.loaders.DataObject)element.getCookie( org.openide.loaders.DataObject.class );        
-        return dobj == null ? null : dobj.getPrimaryFile();
-        
+    public static FileObject fileObjectForElement( Element element ) {
+        return JavaMetamodel.getManager().getFileObject(element.getResource());
     }
     
-    public static ClassElement findClassElement( String name, Pattern pattern ) {
+    public static JavaClass findClassElement( String name, Pattern pattern ) {
         return pattern.patternAnalyser.findClassElement( name );
     }
 
@@ -592,10 +559,24 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         return fileObjectForElement( referenceClassElement != null ? referenceClassElement : classElement );
     }
 
-    ClassElement findClassElement( String name ) {
-        // Find the fileobject either by referenceElement or classElement
-        org.openide.filesystems.FileObject fo = this.findFileObject();
-        return fo == null ? null : ClassElement.forName( name, fo );
+    JavaClass findClassElement( String name ) {
+        Type t = findType(name);
+        if (t instanceof JavaClass) {
+            return (JavaClass) t;
+        } else {
+            return null;
+        }
+    }
+    
+    Type findType(String name) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass jc = referenceClassElement != null? referenceClassElement: classElement;
+        Type t = null;
+        if (jc.isValid()) {
+            t = JavaMetamodel.getManager().getJavaExtent(jc).getType().resolve(name);
+        }
+
+        return t;
     }
     
 }

@@ -7,30 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.IOException;
-import java.beans.BeanInfo;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.PropertiesAction;
-import org.openide.actions.ToolsAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
@@ -40,7 +30,7 @@ import org.openide.nodes.Sheet;
 * the type of the BiFeature and creates properties according to it.
 * @author Petr Hrebejk
 */
-class BiFeatureNode extends AbstractNode implements Node.Cookie {
+final class BiFeatureNode extends AbstractNode implements Node.Cookie {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -8680621542479107034L;
 
@@ -139,16 +129,6 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
         return super.getIcon(type);
     }
 
-    /** Setter for parent node. Is protected for subclasses. Fires info about
-    * change of the parent.
-    *
-    * @param n new parent node
-    */
-    /*
-    protected void setParentNode (Node n) {
-      super.setParentNode (n);
-}
-    */
     private void init () {
         createProperties ();
         getCookieSet().add ( this );

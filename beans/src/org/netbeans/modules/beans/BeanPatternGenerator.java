@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,17 +15,22 @@ package org.netbeans.modules.beans;
 
 import java.lang.reflect.Modifier;
 import java.beans.Introspector;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import java.util.List;
+import java.util.Iterator;
+import java.util.Collections;
+import java.util.ArrayList;
 
-import org.openide.util.NbBundle;
-import org.openide.src.*;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
+import javax.jmi.reflect.JmiException;
 
 /** Singleton with static methods for generating bodies of and
  * additional elements for bean patterns.
  * @author Petr Hrebejk
  */
-class BeanPatternGenerator extends Object {
+final class BeanPatternGenerator extends Object {
     private static final String THIS_QUALIFIER = "this."; // NOI18N
     /** Constant for one Tab */
     private static final String TAB = "  "; // NOI18N
@@ -65,7 +70,7 @@ class BeanPatternGenerator extends Object {
     static String propertySetterBody(String name, Type type,
                                      boolean bound, boolean constrained,
                                      boolean withSet, boolean withSupport,
-                                     String supportName, String vetoSupportName) {
+                                     String supportName, String vetoSupportName) throws JmiException {
          return propertySetterBody(name, type, bound, constrained, withSet, withSupport, supportName,
             vetoSupportName, true);
     }
@@ -73,7 +78,8 @@ class BeanPatternGenerator extends Object {
     static String propertySetterBody(String name, Type type,
                                      boolean bound, boolean constrained,
                                      boolean withSet, boolean withSupport,
-                                     String supportName, String vetoSupportName, boolean adjustName) {
+                                     String supportName, String vetoSupportName, boolean adjustName) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         StringBuffer setterBody = new StringBuffer( 200 );
         String decoratedName = createFieldName(name, adjustName, true);
         
@@ -85,14 +91,14 @@ class BeanPatternGenerator extends Object {
                changes.firePropertyChange(propName, oldPropName, propName );
             */
 
-            setterBody.append( TAB + type.toString() );
+            setterBody.append( TAB + type.getName() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
             setterBody.append( " = " ).append( decoratedName ).append( ";\n"); // NOI18N
 
             if ( constrained ) {
                 setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " ); // NOI18N
 
-                if ( type.isPrimitive() ) {
+                if ( type instanceof PrimitiveType) {
                     setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
                     setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
                     setterBody.append( "), " ); // NOI18N
@@ -113,7 +119,7 @@ class BeanPatternGenerator extends Object {
                 setterBody.append( " = " ).append( name ).append( ";\n"); // NOI18N
                 setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " ); // NOI18N
 
-                if ( type.isPrimitive() ) {
+                if ( type instanceof PrimitiveType) {
                     setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" ); // NOI18N
                     setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
                     setterBody.append( "), " ); // NOI18N
@@ -151,7 +157,7 @@ class BeanPatternGenerator extends Object {
                                          boolean bound, boolean constrained,
                                          boolean withSet, boolean withSupport,
                                          String supportName,
-                                         String vetoSupportName ) {
+                                         String vetoSupportName ) throws JmiException {
         return idxPropertySetterBody(name, indexedType, bound, constrained,
             withSet, withSupport, supportName, vetoSupportName, true);
     }
@@ -160,14 +166,15 @@ class BeanPatternGenerator extends Object {
                                          boolean bound, boolean constrained,
                                          boolean withSet, boolean withSupport,
                                          String supportName,
-                                         String vetoSupportName, boolean adjustName ) {
+                                         String vetoSupportName, boolean adjustName ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         StringBuffer setterBody = new StringBuffer( 200 );
         String decoratedName = createFieldName(name, adjustName, true);
         setterBody.append( "\n" ); // NOI18N
 
         if ( withSupport && constrained ) {
 
-            setterBody.append( TAB + indexedType.toString() );
+            setterBody.append( TAB + indexedType.getName() );
             setterBody.append( " old" ).append( Pattern.capitalizeFirstLetter( name ) ); // NOI18N
             setterBody.append( " = " ).append( decoratedName ); // NOI18N
             setterBody.append( "[index];\n"); // NOI18N
@@ -252,31 +259,33 @@ class BeanPatternGenerator extends Object {
      * a field of type <CODE>PropertyChangeSupport</CODE>. If such field doesn't
      * exist creates a new one with name <CODE>propertyChangeSupport</CODE>.
      * @param ce Class to operate on.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      * @return Name of foun or newly created <CODE>PropertyChangeSupport</CODE> field.
      */
-    static String supportField(ClassElement ce) throws SourceException {
+    static String supportField(JavaClass ce) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String supportName = null;
-        Identifier supportId = Identifier.create( "java.beans.PropertyChangeSupport" ); // NOI18N
-        FieldElement[] fields = ce.getFields();
-
-        for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-            if ( fields[i].getType().isClass() &&
-                    fields[i].getType().getClassName().compareTo( supportId, false ) ) {
-                supportName = fields[i].getName().getName();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
+        Type pcsType = jmodel.getType().resolve("java.beans.PropertyChangeSupport"); // NOI18N
+        List/*<Field>*/ fields = JMIUtils.getFields(ce);
+        
+        for (Iterator it = fields.iterator(); it.hasNext();) {
+            Field field = (Field) it.next();
+            if (pcsType.equals(field.getType())) {
+                supportName = field.getName();
                 break;
             }
         }
 
         if ( supportName == null ) { // Field not found we create new
             supportName = "propertyChangeSupport"; // NOI18N
-            FieldElement supportField = new FieldElement();
-            supportField.setName( Identifier.create( supportName ) );
-            supportField.setType( Type.createClass( supportId ) );
+            Field supportField = jmodel.getField().createField();
+            supportField.setName(supportName);
+            supportField.setType(pcsType);
             supportField.setModifiers( Modifier.PRIVATE );
-            supportField.setInitValue( " new java.beans.PropertyChangeSupport (this)" ); // NOI18N
-            supportField.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_PropertyChangeSupport" ) );
-            ce.addField( supportField );
+            supportField.setInitialValueText( " new java.beans.PropertyChangeSupport(this)" ); // NOI18N
+            supportField.setJavadocText( PatternNode.getString( "COMMENT_PropertyChangeSupport" ) );
+            ce.getFeatures().add( supportField );
         }
 
         return supportName;
@@ -286,31 +295,33 @@ class BeanPatternGenerator extends Object {
      * a field of type <CODE>VetoableChangeSupport</CODE>. If such field doesn't
      * exist creates a new one with name <CODE>vetoableChangeSupport</CODE>.
      * @param ce Class to operate on.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      * @return Name of foun or newly created <CODE>vetoableChangeSupport</CODE> field.
      */  
-    static String vetoSupportField( ClassElement ce ) throws SourceException {
+    static String vetoSupportField( JavaClass ce ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String vetoSupportName = null;
-        Identifier vetoSupportId = Identifier.create( "java.beans.VetoableChangeSupport" ); // NOI18N
-        FieldElement[] fields = ce.getFields();
-
-        for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-            if ( fields[i].getType().isClass() &&
-                    fields[i].getType().getClassName().compareTo( vetoSupportId, false ) ) {
-                vetoSupportName = fields[i].getName().getName();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
+        Type vcsType = jmodel.getType().resolve("java.beans.VetoableChangeSupport"); // NOI18N
+        List/*<Field>*/ fields = JMIUtils.getFields(ce);
+        
+        for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
+            Field field = (Field) it.next();
+            if (vcsType.equals(field.getType())) {
+                vetoSupportName = field.getName();
                 break;
             }
         }
 
         if ( vetoSupportName == null ) { // Field not found we create new
             vetoSupportName = "vetoableChangeSupport"; // NOI18N
-            FieldElement supportField = new FieldElement();
-            supportField.setName( Identifier.create( vetoSupportName ) );
-            supportField.setType( Type.createClass( vetoSupportId ) );
+            Field supportField = jmodel.getField().createField();
+            supportField.setName( vetoSupportName );
+            supportField.setType( vcsType );
             supportField.setModifiers( Modifier.PRIVATE );
-            supportField.setInitValue( " new java.beans.VetoableChangeSupport (this)" ); // NOI18N
-            supportField.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_VetoableChangeSupport" ) );
-            ce.addField( supportField );
+            supportField.setInitialValueText( " new java.beans.VetoableChangeSupport(this)" ); // NOI18N
+            supportField.setJavadocText( PatternNode.getString( "COMMENT_VetoableChangeSupport" ) );
+            ce.getFeatures().add( supportField );
         }
 
         return vetoSupportName;
@@ -320,55 +331,59 @@ class BeanPatternGenerator extends Object {
      * for given field adds them.
      * @param classElement Class to operate on.
      * @param supportName The <CODE>PropertyChangeSupport</CODE> field the methods will be generated for.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      */
-    static void supportListenerMethods( ClassElement classElement, String supportName )
-    throws SourceException {
+    static void supportListenerMethods( JavaClass classElement, String supportName ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String addMethodId = "addPropertyChangeListener"; // NOI18N
+        Method addMethod = null;
+        String removeMethodId = "removePropertyChangeListener"; // NOI18N
+        Method removeMethod = null;
+        String listenerTypeId = "java.beans.PropertyChangeListener"; // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(classElement);
+        Type listenerType = jmodel.getType().resolve(listenerTypeId);
 
-        Identifier addMethodId = Identifier.create( "addPropertyChangeListener" ); // NOI18N
-        MethodElement addMethod = null;
-        Identifier removeMethodId = Identifier.create( "removePropertyChangeListener" ); // NOI18N
-        MethodElement removeMethod = null;
-        Identifier listenerTypeId = Identifier.create( "java.beans.PropertyChangeListener" ); // NOI18N
-        Type listenerType = Type.createClass( listenerTypeId );
-
-        addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
+        addMethod = classElement.getMethod( addMethodId, Collections.singletonList(listenerType), false);
         if ( addMethod == null ) {
-            addMethod = new MethodElement();
+            addMethod = jmodel.getMethod().createMethod();
             addMethod.setName( addMethodId );
-            addMethod.setReturn( Type.VOID );
+            addMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
             addMethod.setModifiers( Modifier.PUBLIC );
-            addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
+            Parameter param = jmodel.getParameter().createParameter();
+            param.setName("l"); // NOI18N
+            param.setType(listenerType);
+            addMethod.getParameters().add(param);
 
             StringBuffer body = new StringBuffer( 80 );
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
-            body.append( ".addPropertyChangeListener (l);\n" ); // NOI18N
-            addMethod.setBody( body.toString() );
+            body.append( ".addPropertyChangeListener(l);\n" ); // NOI18N
+            addMethod.setBodyText( body.toString() );
 
             /*
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_AddPropertyChangeListener" ), 
                                                    new Object[] { listenerType.getClassName().getName() } );
             */                                          
-            addMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_AddPropertyChangeListener" ) );
-
-
-            classElement.addMethod( addMethod );
+            addMethod.setJavadocText( PatternNode.getString( "COMMENT_AddPropertyChangeListener" ) );
+            classElement.getFeatures().add( addMethod );
         }
 
-        removeMethod = classElement.getMethod( removeMethodId, new Type[] { listenerType }  );
+        removeMethod = classElement.getMethod(removeMethodId, Collections.singletonList(listenerType), false);
         if ( removeMethod == null ) {
-            removeMethod = new MethodElement();
+            removeMethod = jmodel.getMethod().createMethod();
             removeMethod.setName( removeMethodId );
-            removeMethod.setReturn( Type.VOID );
+            removeMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
             removeMethod.setModifiers( Modifier.PUBLIC );
-            removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
+            Parameter param = jmodel.getParameter().createParameter();
+            param.setName("l"); // NOI18N
+            param.setType(listenerType);
+            removeMethod.getParameters().add(param);
 
             StringBuffer body = new StringBuffer( 80 );
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
-            body.append( ".removePropertyChangeListener (l);\n" ); // NOI18N
-            removeMethod.setBody( body.toString() );
-            removeMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_RemovePropertyChangeListener" ) );
-            classElement.addMethod( removeMethod );
+            body.append( ".removePropertyChangeListener(l);\n" ); // NOI18N
+            removeMethod.setBodyText( body.toString() );
+            removeMethod.setJavadocText( PatternNode.getString( "COMMENT_RemovePropertyChangeListener" ) );
+            classElement.getFeatures().add( removeMethod );
         }
     }
 
@@ -377,48 +392,54 @@ class BeanPatternGenerator extends Object {
      * for given field adds them.
      * @param classElement Class to operate on.
      * @param supportName The <CODE>vetoableChangeSupport</CODE> field the methods will be generated for.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      */
-    static void vetoSupportListenerMethods( ClassElement classElement, String supportName )
-    throws SourceException {
+    static void vetoSupportListenerMethods( JavaClass classElement, String supportName ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String addMethodId = "addVetoableChangeListener"; // NOI18N
+        Method addMethod = null;
+        String removeMethodId = "removeVetoableChangeListener"; // NOI18N
+        Method removeMethod = null;
+        String listenerTypeId = "java.beans.VetoableChangeListener"; // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(classElement);
+        Type listenerType = jmodel.getType().resolve(listenerTypeId);
 
-        Identifier addMethodId = Identifier.create( "addVetoableChangeListener" ); // NOI18N
-        MethodElement addMethod = null;
-        Identifier removeMethodId = Identifier.create( "removeVetoableChangeListener" ); // NOI18N
-        MethodElement removeMethod = null;
-        Identifier listenerTypeId = Identifier.create( "java.beans.VetoableChangeListener" ); // NOI18N
-        Type listenerType = Type.createClass( listenerTypeId );
-
-        addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
+        addMethod = classElement.getMethod( addMethodId, Collections.singletonList(listenerType), false);
         if ( addMethod == null ) {
-            addMethod = new MethodElement();
+            addMethod = jmodel.getMethod().createMethod();
             addMethod.setName( addMethodId );
-            addMethod.setReturn( Type.VOID );
+            addMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
             addMethod.setModifiers( Modifier.PUBLIC );
-            addMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
+            Parameter param = jmodel.getParameter().createParameter();
+            param.setName("l"); // NOI18N
+            param.setType(listenerType);
+            addMethod.getParameters().add(param);
 
             StringBuffer body = new StringBuffer( 80 );
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
             body.append( ".addVetoableChangeListener (l);\n" ); // NOI18N
-            addMethod.setBody( body.toString() );
-            addMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_AddVetoableChangeListener" ) );
-            classElement.addMethod( addMethod );
+            addMethod.setBodyText( body.toString() );
+            addMethod.setJavadocText( PatternNode.getString( "COMMENT_AddVetoableChangeListener" ) );
+            classElement.getFeatures().add( addMethod );
         }
 
-        removeMethod = classElement.getMethod( removeMethodId, new Type[] { listenerType }  );
+        removeMethod = classElement.getMethod(removeMethodId, Collections.singletonList(listenerType), false);
         if ( removeMethod == null ) {
-            removeMethod = new MethodElement();
+            removeMethod = jmodel.getMethod().createMethod();
             removeMethod.setName( removeMethodId );
-            removeMethod.setReturn( Type.VOID );
+            removeMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
             removeMethod.setModifiers( Modifier.PUBLIC );
-            removeMethod.setParameters( ( new MethodParameter[] { new MethodParameter( "l", listenerType, false ) } )); // NOI18N
+            Parameter param = jmodel.getParameter().createParameter();
+            param.setName("l"); // NOI18N
+            param.setType(listenerType);
+            removeMethod.getParameters().add(param);
 
             StringBuffer body = new StringBuffer( 80 );
             body.append( "\n" ).append( TAB + supportName ); // NOI18N
             body.append( ".removeVetoableChangeListener (l);\n" ); // NOI18N
-            removeMethod.setBody( body.toString() );
-            removeMethod.getJavaDoc().setRawText( PatternNode.getString( "COMMENT_RemoveVetoableChangeListener" ) );
-            classElement.addMethod( removeMethod );
+            removeMethod.setBodyText( body.toString() );
+            removeMethod.setJavadocText( PatternNode.getString( "COMMENT_RemoveVetoableChangeListener" ) );
+            classElement.getFeatures().add( removeMethod );
         }
     }
 
@@ -428,37 +449,39 @@ class BeanPatternGenerator extends Object {
      * creates new one.
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      * @return Name of found or newly created field.
      */
-    static String listenersArrayListField( ClassElement ce, Type type ) throws SourceException {
-
+    static String listenersArrayListField( JavaClass ce, Type type ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String fieldName = null;
-        String fieldNameToFind = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
+        String simpleTypeName = ((JavaClass) type).getSimpleName();
+        String fieldNameToFind = Introspector.decapitalize( simpleTypeName ) + "List"; // NOI18N
 
-        Identifier fieldTypeId = Identifier.create( "java.util.ArrayList" ); // NOI18N
-        FieldElement[] fields = ce.getFields();
-
-        for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-            if ( fields[i].getType().isClass() &&
-                    fields[i].getType().getClassName().compareTo( fieldTypeId, false ) &&
-                    fields[i].getName().getName().equals( fieldNameToFind ) ) {
-                fieldName = fields[i].getName().getName();
+        String fieldTypeId = "java.util.ArrayList"; // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
+        Type fieldType = jmodel.getType().resolve(fieldTypeId);
+        
+        List/*<Field>*/ fields = JMIUtils.getFields(ce);
+        for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
+            Field field = (Field) it.next();
+            if (fieldType.equals(field.getType()) && fieldNameToFind.equals(field.getName())) {
+                fieldName = fieldNameToFind;
                 break;
             }
         }
 
         if ( fieldName == null ) { // Field not found we create new
             fieldName = fieldNameToFind;
-            FieldElement field = new FieldElement();
-            field.setName( Identifier.create( fieldName ) );
-            field.setType( Type.createClass( fieldTypeId ) );
+            Field field = jmodel.getField().createField();
+            field.setName( fieldName );
+            field.setType( fieldType );
             field.setModifiers( Modifier.PRIVATE | Modifier.TRANSIENT );
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_ListenerArrayList" ),
-                                                   new Object[] { type.getClassName().getName() } );
-            field.getJavaDoc().setRawText( comment );
+                                                   new Object[] { simpleTypeName } );
+            field.setJavadocText( comment );
 
-            ce.addField( field );
+            ce.getFeatures().add( field );
         }
 
         return fieldName;
@@ -470,36 +493,38 @@ class BeanPatternGenerator extends Object {
      * creates new one.
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      * @return Name of found or newly created field.
      */
-    static String eventListenerListField( ClassElement ce, Type type ) throws SourceException {
-
+    static String eventListenerListField( JavaClass ce, Type type ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String fieldName = null;
 
-        Identifier fieldTypeId = Identifier.create( "javax.swing.event.EventListenerList" ); // NOI18N
-        FieldElement[] fields = ce.getFields();
-
-        for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-            if ( fields[i].getType().isClass() &&
-                    fields[i].getType().getClassName().compareTo( fieldTypeId, false ) ) {
-                fieldName = fields[i].getName().getName();
+        String fieldTypeId = "javax.swing.event.EventListenerList"; // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
+        Type fieldType = jmodel.getType().resolve(fieldTypeId);
+        List/*<Field>*/ fields = JMIUtils.getFields(ce);
+        
+        for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
+            Field field = (Field) it.next();
+            if (fieldType.equals(field.getType())) {
+                fieldName = field.getName();
                 break;
             }
         }
 
         if ( fieldName == null ) { // Field not found we create new
             fieldName = "listenerList"; // NOI18N
-            FieldElement field = new FieldElement();
-            field.setName( Identifier.create( fieldName ) );
-            field.setType( Type.createClass( fieldTypeId ) );
+            Field field = jmodel.getField().createField();
+            field.setName( fieldName );
+            field.setType( fieldType );
             field.setModifiers( Modifier.PRIVATE );
-            field.setInitValue( " null" ); // NOI18N
+            field.setInitialValueText( " null" ); // NOI18N
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_EventListenerList" ),
-                                                   new Object[] { type.getClassName().getName() } );
-            field.getJavaDoc().setRawText( comment );
+                                                   new Object[] { ((JavaClass) type).getSimpleName() } );
+            field.setJavadocText( comment );
 
-            ce.addField( field );
+            ce.getFeatures().add( field );
         }
 
         return fieldName;
@@ -511,44 +536,45 @@ class BeanPatternGenerator extends Object {
      * creates new one.
      * @param ce Class to operate on.
      * @param type Type of the Event Listener.
-     * @throws SourceException If the modification of the source is impossible.
+     * @throws JmiException If the modification of the source is impossible.
      */
-    static void unicastListenerField( ClassElement ce, Type type ) throws SourceException {
-
+    static void unicastListenerField( JavaClass ce, Type type ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String fieldName = null;
-        String fieldNameToFind = Introspector.decapitalize( type.getClassName().getName() );
-        if ( fieldNameToFind.equals( type.getClassName().getName() ) ) {
+        String typeSimpleName = ((JavaClass) type).getSimpleName();
+        String fieldNameToFind = Introspector.decapitalize( typeSimpleName );
+        if ( fieldNameToFind.equals( typeSimpleName ) ) {
             fieldNameToFind = new String( "listener" + fieldNameToFind  ); // NOI18N
         }
 
-        FieldElement[] fields = ce.getFields();
-
-        for( int i = 0; i < fields.length; i++ ) {      // Try to find suitable field
-            if ( fields[i].getType().isClass() &&
-                    fields[i].getType().getClassName().compareTo( type.getClassName(), false ) &&
-                    fields[i].getName().getName().equals( fieldNameToFind ) ) {
-                fieldName = fields[i].getName().getName();
+        List/*<Field>*/ fields = JMIUtils.getFields(ce);
+        
+        for (Iterator it = fields.iterator(); it.hasNext();) {      // Try to find suitable field
+            Field field = (Field) it.next();
+            if (type.equals(field.getType()) && fieldNameToFind.equals(field.getName())) {
+                fieldName = fieldNameToFind;
                 break;
             }
         }
 
         if ( fieldName == null ) { // Field not found we create new
             fieldName = fieldNameToFind;
-            FieldElement field = new FieldElement();
-            field.setName( Identifier.create( fieldName ) );
+            JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ce);
+            Field field = jmodel.getField().createField();
+            field.setName( fieldName );
             field.setType( type );
             field.setModifiers( Modifier.PRIVATE  | Modifier.TRANSIENT );
-            field.setInitValue( " null" ); // NOI18N
+            field.setInitialValueText( " null" ); // NOI18N
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_UnicastEventListener" ),
-                                                   new Object[] { type.getClassName().getName() } );
-            field.getJavaDoc().setRawText( comment );
-            ce.addField( field );
+                                                   new Object[] { ((JavaClass) type).getSimpleName() } );
+            field.setJavadocText( comment );
+            ce.getFeatures().add( field );
         }
     }
 
-    static String mcAddBody( Type type, int implementation, String listenerList ) {
-
-        String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
+    static String mcAddBody( Type type, int implementation, String listenerList ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String fieldName = Introspector.decapitalize( ((JavaClass) type).getSimpleName() ) + "List"; // NOI18N
 
         StringBuffer body = new StringBuffer( 50 );
 
@@ -568,15 +594,15 @@ class BeanPatternGenerator extends Object {
             body.append( TABx2 ).append( listenerList ).append( " = new javax.swing.event.EventListenerList();\n" ); // NOI18N
             body.append( TAB ).append( "}\n" ); // NOI18N
             body.append( TAB + listenerList ).append( ".add (" ); // NOI18N
-            body.append( type.toString()).append( ".class, listener);\n" ); // NOI18N
+            body.append( type.getName()).append( ".class, listener);\n" ); // NOI18N
         }
 
         return body.toString();
     }
 
-    static String mcRemoveBody( Type type, int implementation, String listenerList ) {
-
-        String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
+    static String mcRemoveBody( Type type, int implementation, String listenerList ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String fieldName = Introspector.decapitalize( ((JavaClass) type).getSimpleName() ) + "List"; // NOI18N
 
         if ( listenerList == null )
             listenerList = "listenerList"; // NOI18N
@@ -591,16 +617,17 @@ class BeanPatternGenerator extends Object {
         }
         else if ( implementation == 2 ) {
             body.append( TAB + listenerList ).append( ".remove (" ); // NOI18N
-            body.append( type.toString()).append( ".class, listener);\n" ); // NOI18N
+            body.append( type.getName()).append( ".class, listener);\n" ); // NOI18N
         }
 
         return body.toString();
     }
 
-    static String ucAddBody( Type type, int implementation ) {
-
-        String fieldName = Introspector.decapitalize( type.getClassName().getName() );
-        if ( fieldName.equals( type.getClassName().getName() ) ) {
+    static String ucAddBody( Type type, int implementation ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String simpleTypeName = ((JavaClass) type).getSimpleName();
+        String fieldName = Introspector.decapitalize( simpleTypeName );
+        if ( fieldName.equals( simpleTypeName ) ) {
             fieldName = new String( "listener" + fieldName  ); // NOI18N
         }
 
@@ -618,10 +645,11 @@ class BeanPatternGenerator extends Object {
         return body.toString();
     }
 
-    static String ucRemoveBody( Type type, int implementation ) {
-
-        String fieldName = Introspector.decapitalize( type.getClassName().getName() );
-        if ( fieldName.equals( type.getClassName().getName() ) ) {
+    static String ucRemoveBody( Type type, int implementation ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String simpleTypeName = ((JavaClass) type).getSimpleName();
+        String fieldName = Introspector.decapitalize( simpleTypeName );
+        if ( fieldName.equals( simpleTypeName ) ) {
             fieldName = new String( "listener" + fieldName  ); // NOI18N
         }
 
@@ -636,54 +664,56 @@ class BeanPatternGenerator extends Object {
     }
 
 
-    static void fireMethod( ClassElement classElement, Type type,
-                            MethodElement method, int implementation,
+    static void fireMethod( JavaClass classElement, Type type,
+                            Method method, int implementation,
                             String listenerList,
                             boolean passEvent )
-    throws SourceException {
+    throws JmiException {
 
+        assert JMIUtils.isInsideTrans();
         if ( listenerList == null )
             listenerList = "listenerList"; // NOI18N
 
-        Identifier methodId = Identifier.create(
-                                  "fire" + // NOI18N
-                                  Pattern.capitalizeFirstLetter( type.getClassName().getName() ) +
-                                  Pattern.capitalizeFirstLetter( method.getName().getName() ) );
+        String simpleTypeName = ((JavaClass) type).getSimpleName();
+        String methodId = "fire" + // NOI18N
+                                  Pattern.capitalizeFirstLetter( simpleTypeName ) +
+                                  Pattern.capitalizeFirstLetter( method.getName() );
 
-        MethodElement newMethod = null;
+        Method newMethod = null;
 
         Type eventType = null;
-        MethodParameter params[] = method.getParameters();
-        if ( params.length > 0 )
-            eventType = params[0].getType();
-        else
-            eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(classElement);
+        List/*<Parameter>*/ params = method.getParameters();
+        if ( params.isEmpty() ) {
+            eventType = jmodel.getType().resolve("java.util.EventObject"); // NOI18N
+        } else {
+            eventType = ((Parameter) params.get(0)).getType();
+        }
 
-        ClassElement eventClass = ClassElement.forName( eventType.toString(), PatternAnalyser.fileObjectForElement( classElement ) );
-
+        JavaClass eventClass = (JavaClass) eventType;
 
         //addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
 
         //if ( addMethod == null ) {
-        newMethod = new MethodElement();
+        newMethod = jmodel.getMethod().createMethod();
         newMethod.setName( methodId );
-        newMethod.setReturn( Type.VOID );
+        newMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
         newMethod.setModifiers( Modifier.PRIVATE );
 
-        MethodParameter[] newMethodParams = generateFireParameters( eventType, eventClass, passEvent );
-        newMethod.setParameters( newMethodParams );
+        List/*<Parameter>*/ newMethodParams = generateFireParameters( eventClass, jmodel, passEvent );
+        newMethod.getParameters().addAll( newMethodParams );
 
         StringBuffer body = new StringBuffer( 80 );
         body.append( "\n" ); // NOI18N
 
         if ( implementation == 1 ) {
-            String fieldName = Introspector.decapitalize( type.getClassName().getName() ) + "List"; // NOI18N
+            String fieldName = Introspector.decapitalize( simpleTypeName ) + "List"; // NOI18N
 
             body.append( TAB + "java.util.ArrayList list;\n" ); // NOI18N
 
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
-                body.append( TAB + eventType.toString() ).append( " e = new "); // NOI18N
-                body.append( eventType.toString() ).append( " (" ); // NOI18N
+                body.append( TAB + eventType.getName() ).append( " e = new "); // NOI18N
+                body.append( eventType.getName() ).append( " (" ); // NOI18N
                 body.append( fireParameterstoString( newMethodParams ) );
                 body.append(");\n"); // NOI18N
             }
@@ -692,7 +722,7 @@ class BeanPatternGenerator extends Object {
             body.append( TABx2 + "list = (java.util.ArrayList)" ); // NOI18N
             body.append( fieldName ).append( ".clone ();\n" + TAB +"}\n" ); // NOI18N
             body.append( TAB + "for (int i = 0; i < list.size (); i++) {\n" ); // NOI18N
-            body.append( TABx2 + "((" ).append( type.toString() ); // NOI18N
+            body.append( TABx2 + "((" ).append( type.getName() ); // NOI18N
             body.append( ")list.get (i)).").append( method.getName() ); // NOI18N
             body.append(" ("); // NOI18N
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
@@ -704,13 +734,12 @@ class BeanPatternGenerator extends Object {
             body.append( ");\n" + TAB + "}\n" ); // NOI18N
         }
         else if ( implementation == 2 ) {
-            String fooEvent = "theEvent"; // NOI18N
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( TAB + eventType.toString() ).append( " e = null;\n "); // NOI18N
             }
             body.append( TAB + "if (" + listenerList + " == null) return;\n"); // NOI18N
             body.append( TAB + "Object[] listeners = ").append(listenerList).append(".getListenerList ();\n" ); // NOI18N
-            body.append( TAB + "for (int i = listeners.length-2; i>=0; i-=2) {\n"); // NOI18N
+            body.append( TAB + "for (int i = listeners.length - 2; i >= 0; i -= 2) {\n"); // NOI18N
             body.append( TABx2 + "if (listeners[i]==" ).append( type.toString()).append( ".class) {\n" ); // NOI18N
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
                 body.append( TABx3 + "if (e == null)\n" ); // NOI18N
@@ -729,67 +758,70 @@ class BeanPatternGenerator extends Object {
             body.append( ");\n" + TABx2 + "}\n" + TAB + "}\n"); // NOI18N
         }
 
-        newMethod.setBody( body.toString() );
+        newMethod.setBodyText( body.toString() );
 
         StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodMC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
             comment.append( "\n@param event The event to be fired\n" ); // NOI18N
         }
         else {
-            comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) );
+            comment.append( fireParametersComment( newMethodParams, ((JavaClass) eventType).getSimpleName() ) );
         }
-        newMethod.getJavaDoc().setRawText( comment.toString() );
+        newMethod.setJavadocText( comment.toString() );
 
-        classElement.addMethod( newMethod );
+        classElement.getFeatures().add( newMethod );
         //}
     }
 
-    static void unicastFireMethod( ClassElement classElement, Type type,
-                                   MethodElement method, int implementation,
+    static void unicastFireMethod( JavaClass classElement, Type type,
+                                   Method method, int implementation,
                                    boolean passEvent )
-    throws SourceException {
+    throws JmiException {
 
-        Identifier methodId = Identifier.create(
-                                  "fire" + // NOI18N
-                                  Pattern.capitalizeFirstLetter( type.getClassName().getName() ) +
-                                  Pattern.capitalizeFirstLetter( method.getName().getName() ) );
+        assert JMIUtils.isInsideTrans();
+        String simpleTypeName = ((JavaClass) type).getSimpleName();
+        String methodId = "fire" + // NOI18N
+                          Pattern.capitalizeFirstLetter( simpleTypeName ) +
+                          Pattern.capitalizeFirstLetter( method.getName() );
 
-        MethodElement newMethod = null;
+        Method newMethod = null;
 
         Type eventType = null;
-        MethodParameter params[] = method.getParameters();
-        if ( params.length > 0 )
-            eventType = params[0].getType();
-        else
-            eventType = Type.createClass( Identifier.create( "java.util.EventObject" ) ); // NOI18N
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(classElement);
+        List/*<Parameter>*/ params = method.getParameters();
+        if ( params.isEmpty() ) {
+            eventType = jmodel.getType().resolve("java.util.EventObject"); // NOI18N
+        } else {
+            eventType = ((Parameter) params.get(0)).getType();
+        }
 
-        ClassElement eventClass = ClassElement.forName( eventType.toString(), PatternAnalyser.fileObjectForElement( classElement ) );
+        JavaClass eventClass = (JavaClass) eventType;
 
         //addMethod = classElement.getMethod( addMethodId, new Type[] { listenerType }  );
 
         //if ( addMethod == null ) {
-        newMethod = new MethodElement();
+        newMethod = jmodel.getMethod().createMethod();
         newMethod.setName( methodId );
-        newMethod.setReturn( Type.VOID );
+        newMethod.setType( jmodel.getType().resolve("void") ); // NOI18N
         newMethod.setModifiers( Modifier.PRIVATE );
 
-        MethodParameter[] newMethodParams = generateFireParameters( eventType, eventClass, passEvent );
-        newMethod.setParameters( newMethodParams );
+        List/*<Parameter>*/ newMethodParams = generateFireParameters( eventClass, jmodel, passEvent );
+        newMethod.getParameters().addAll( newMethodParams );
 
         StringBuffer body = new StringBuffer( 80 );
         body.append( "\n" ); // NOI18N
 
         if ( implementation == 1 ) {
-            String fieldName = Introspector.decapitalize( type.getClassName().getName() );
-            if ( fieldName.equals( type.getClassName().getName() ) ) {
+            String fieldName = Introspector.decapitalize( simpleTypeName );
+            if ( fieldName.equals( simpleTypeName ) ) {
                 fieldName = new String( "listener" + fieldName  ); // NOI18N
             }
             
             body.append(TAB + "if (" + fieldName + " == null) return;\n"); // NOI18N
 
             if ( usesConstructorParameters( eventClass, passEvent ) ) {
-                body.append( TAB + eventType.toString() ).append( " e = new "); // NOI18N
-                body.append( eventType.toString() ).append( " (" ); // NOI18N
+                body.append( TAB + eventType.getName() ).append( " e = new "); // NOI18N
+                body.append( eventType.getName() ).append( " (" ); // NOI18N
                 body.append( fireParameterstoString( newMethodParams ) );
                 body.append(");\n"); // NOI18N
             }
@@ -805,70 +837,84 @@ class BeanPatternGenerator extends Object {
             body.append( ");\n" ); // NOI18N
         }
 
-        newMethod.setBody( body.toString() );
+        newMethod.setBodyText( body.toString() );
 
         StringBuffer comment = new StringBuffer ( PatternNode.getString( "COMMENT_FireMethodUC" ) );
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
             comment.append( "\n@param event The event to be fired\n" ); // NOI18N
         }
         else {
-            comment.append( fireParametersComment( newMethodParams, eventType.getClassName().getName() ) ); // the event parameter
+            comment.append( fireParametersComment( newMethodParams, ((JavaClass) eventType).getSimpleName()) ); // the event parameter
         }
-        newMethod.getJavaDoc().setRawText( comment.toString() );
+        newMethod.setJavadocText( comment.toString() );
 
-        classElement.addMethod( newMethod );
+        classElement.getFeatures().add( newMethod );
         //}
     }
 
 
 
-    static boolean usesConstructorParameters( ClassElement eventClass, boolean passEvent ) {
+    static boolean usesConstructorParameters( JavaClass eventClass, boolean passEvent ) throws JmiException {
 
-        if ( passEvent || eventClass == null || eventClass.getConstructors().length > 1 )
+        assert JMIUtils.isInsideTrans();
+        if ( passEvent || eventClass == null || JMIUtils.getConstructors(eventClass).size() > 1 )
             return false;
         else
             return true;
     }
 
 
-    static MethodParameter[] generateFireParameters( Type eventType, ClassElement eventClass, boolean passEvent ) {
+    static List/*<Parameter>*/ generateFireParameters( JavaClass eventClass, JavaModelPackage jmodel, boolean passEvent )
+            throws JmiException {
 
-
+        assert JMIUtils.isInsideTrans();
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
-            return new MethodParameter[]
-                   { new MethodParameter( "event", getFQNType(eventType), false ) }; // NOI18N
+            Parameter param = jmodel.getParameter().createParameter();
+            param.setName("event"); // NOI18N
+            param.setType(eventClass);
+            return Collections.singletonList(param);
         }
         else {
-            ConstructorElement constructor = eventClass.getConstructors()[0];
-            MethodParameter[] params = constructor.getParameters();
-            MethodParameter[] result = new MethodParameter[ params.length ];
-            for ( int i = 0; i < params.length; i++ ) {
-                result[i] = new MethodParameter( "param" + (i + 1), getFQNType(params[i].getType()), false  ); // NOI18N
+            Constructor constructor = (Constructor) JMIUtils.getConstructors(eventClass).get(0);
+            List/*<Parameter>*/ params = constructor.getParameters();
+            List/*<Parameter>*/ result = new ArrayList/*<Parameter>*/(params.size());
+            for (Iterator it = params.iterator(); it.hasNext();) {
+                Parameter param = (Parameter) it.next();
+                Parameter newParam = jmodel.getParameter().createParameter();
+                newParam.setName("param"); // NOI18N
+                newParam.setType(param.getType());
             }
             return result;
         }
 
     }
 
-    static String fireParameterstoString( MethodParameter[]  params ) {
-
+    static String fireParameterstoString( List/*<Parameter>*/  params ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         StringBuffer buffer = new StringBuffer( 60 );
-
-        for( int i = 0; i < params.length; i++ ) {
-            buffer.append( params[i].getName() );
-            if ( i < params.length -1 )
-                buffer.append( ", " ); // NOI18N
+        
+        for (Iterator it = params.iterator(); it.hasNext();) {
+            Parameter param = (Parameter) it.next();
+            buffer.append( param.getName() );
+            buffer.append( ", " ); // NOI18N
         }
-        return buffer.toString();
+        if (buffer.length() > 2) {
+            return buffer.substring(0, buffer.length() - 2);
+        } else {
+            return buffer.toString();
+        }
     }
 
-    static String fireParametersComment( MethodParameter[]  params, String evntType ) {
+    static String fireParametersComment( List/*<Parameter>*/  params, String evntType ) throws JmiException {
 
+        assert JMIUtils.isInsideTrans();
         StringBuffer buffer = new StringBuffer( 60 );
+        int i = 0;
 
-        for( int i = 0; i < params.length; i++ ) {
-            buffer.append( "\n@param ").append( params[i].getName() ); // NOI18N
-            buffer.append( " Parameter #" ).append( i + 1 ).append( " of the <CODE>" ); // NOI18N
+        for (Iterator it = params.iterator(); it.hasNext();) {
+            Parameter param = (Parameter) it.next();
+            buffer.append( "\n@param ").append( param.getName() ); // NOI18N
+            buffer.append( " Parameter #" ).append( (i++) + 1 ).append( " of the <CODE>" ); // NOI18N
             buffer.append( evntType ).append( "<CODE> constructor." ); // NOI18N
         }
         buffer.append( "\n" ); // NOI18N
@@ -883,40 +929,36 @@ class BeanPatternGenerator extends Object {
      * @param type Primitive type.
      * @return Class which wraps the primitive type.
      */
-    public static String getWrapperClassName(Type type) {
-        if ( type.isClass() )
-            return type.getClassName().getName();
-        else if ( type == Type.BOOLEAN )
-            return "Boolean"; // NOI18N
-        else if ( type == Type.BYTE )
-            return "Byte"; // NOI18N
-        else if ( type == Type.DOUBLE )
-            return "Double"; // NOI18N
-        else if ( type == Type.FLOAT )
-            return "Float"; // NOI18N
-        else if ( type == Type.CHAR )
-            return "Character"; // NOI18N
-        else if ( type == Type.INT )
-            return "Integer"; // NOI18N
-        else if ( type == Type.LONG )
-            return "Long"; // NOI18N
-        else if ( type == Type.SHORT )
-            return "Short"; // NOI18N
-        else
-            return "Object"; // NOI18N
-    }
-
-    private static Type getFQNType(Type t) {
-        if (t.isArray())
-            return Type.createArray(getFQNType(t.getElementType()));
-        if (t.isClass()) {
-            Identifier id=t.getClassName();
-            String fqnName=id.getFullName();
-            
-            if (fqnName==id.getSourceName())
-                return t;
-            return Type.createClass(Identifier.create(fqnName));
+    public static String getWrapperClassName(Type type) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        if (type instanceof ClassDefinition)
+            return type.getName();
+        if (!(type instanceof PrimitiveType)) 
+            throw new IllegalStateException("Unknonw type: " + type);
+        
+        String typeName = type.getName();
+        char[] ctype = typeName.toCharArray();
+        switch (ctype[0]) {
+            case 'b':
+                if (ctype[1] == 'o') // boolean
+                    return "Boolean"; //NOI18N
+                else
+                    return "Byte"; // NOI18N
+            case 'd':
+                return "Double"; // NOI18N
+            case 'f':
+                return "Float"; // NOI18N
+            case 'c':
+                return "Character"; // NOI18N
+            case 'i':
+                return "Integer"; // NOI18N
+            case 'l':
+                return "Long"; // NOI18N
+            case 's':
+                return "Short"; // NOI18N
+            default:
+                return "Object"; // NOI18N
         }
-        return t;
     }
+    
 }

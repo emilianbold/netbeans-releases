@@ -7,28 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.awt.Dialog;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
+import javax.jmi.reflect.JmiException;
+
 import org.openide.DialogDisplayer;
 
 import org.openide.util.Utilities;
-import org.openide.util.NbBundle;
-import org.openide.src.Type;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.netbeans.jmi.javamodel.Type;
 /** Customizer for new Property Pattern
  *
  * @author Petr Hrebejk
  */
-public class PropertyPatternPanel extends javax.swing.JPanel
+public final class PropertyPatternPanel extends javax.swing.JPanel
     implements java.awt.event.ActionListener {
 
     /** Dialog for displaiyng this panel */
@@ -431,64 +432,68 @@ public class PropertyPatternPanel extends javax.swing.JPanel
     }
 
     public void actionPerformed( java.awt.event.ActionEvent e ) {
-        if ( dialog != null ) {
-            //System.out.println( e );
-
-            //if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
-
-            if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
-
-                //Test wether the string is empty
-                if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-
-
-                if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Identifier"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    nameTextField.requestFocus();
-                    return;
-                }
-
-                // Test wheter property with this name already exists
-                if ( groupNode.propertyExists( nameTextField.getText() ) ) {
-                    String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
-                                                       new Object[] { nameTextField.getText() } );
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
-
-                    nameTextField.requestFocus();
-                    return;
-                }
-
-                try {
-                    Type.parse( typeComboBox.getEditor().getItem().toString() );
-                }
-                catch ( IllegalArgumentException ex ) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                            PatternNode.getString("MSG_Not_Valid_Type"),
-                            NotifyDescriptor.ERROR_MESSAGE) );
-                    typeComboBox.requestFocus();
-                    return;
-                }
-                dialog.setVisible( false );
-                dialog.dispose();
-            }
-            else if ( e.getSource() == org.openide.DialogDescriptor.CANCEL_OPTION ) {
-                dialog.setVisible( false );
-                dialog.dispose();
-            }
-
+        if (dialog == null ) {
+            return;
         }
-    }
+        if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
 
+            String typeName = typeComboBox.getEditor().getItem().toString().trim(); 
+            //Test wether the string is empty
+            if ( typeName.length() <= 0) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Not_Valid_Type"),
+                        NotifyDescriptor.ERROR_MESSAGE) );
+                typeComboBox.requestFocus();
+                return;
+            }
+
+            String name = nameTextField.getText().trim();
+            if ( !Utilities.isJavaIdentifier( name ) ) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Not_Valid_Identifier"),
+                        NotifyDescriptor.ERROR_MESSAGE) );
+                nameTextField.requestFocus();
+                return;
+            }
+
+            // Test wheter property with this name already exists
+            if ( groupNode.propertyExists( name ) ) {
+                String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
+                                                   new Object[] { nameTextField.getText() } );
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
+
+                nameTextField.requestFocus();
+                return;
+            }
+
+            PatternAnalyser patternAnalyser = (PatternAnalyser) groupNode.getLookup().lookup(PatternAnalyser.class);
+            boolean isWrongType = true;
+            try {
+                JMIUtils.beginTrans(false);
+                try {
+                    Type type = patternAnalyser.findType(typeName);
+                    isWrongType = type == null;
+                } finally {
+                    JMIUtils.endTrans();
+                }
+            } catch (JmiException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
+            }
+            if (isWrongType) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        PatternNode.getString("MSG_Not_Valid_Type"),
+                        NotifyDescriptor.ERROR_MESSAGE) );
+                typeComboBox.requestFocus();
+                return;
+            }
+        }
+        
+        dialog.setVisible( false );
+        dialog.dispose();
+    }
+    
 }

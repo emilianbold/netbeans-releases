@@ -79,11 +79,6 @@ Microsystems, Inc. All Rights Reserved.
         </file>    
       </folder>
     </folder>
-    <folder name="clazz">
-      <folder name="explorer">
-        <file name="org-netbeans-modules-beans-PatternsExplorerFactory.instance"/>
-      </folder>
-    </folder>
   </folder>
 
   <folder name="Services">

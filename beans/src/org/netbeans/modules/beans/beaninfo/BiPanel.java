@@ -7,51 +7,39 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.awt.BorderLayout;
-import java.beans.BeanInfo;
-import java.io.ObjectInput;
-import java.io.IOException;
-
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.NodeAction;
-
-
-import org.openide.windows.TopComponent;
-import org.openide.explorer.view.BeanTreeView;
-
-import org.openide.awt.SplittedPanel;
-import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.propertysheet.PropertySheetView;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
+
+import javax.swing.*;
+import java.awt.*;
+
 
 /**
 * Search doc action.
 *
 * @author   Petr Hrebejk
 */
-public class BiPanel extends ExplorerPanel  {
+public final class BiPanel extends TopComponent implements ExplorerManager.Provider {
     public static final String BEANINFO_HELP = "beans.beaninfo.nodes"; // NOI18N
 
-    private SplittedPanel sp;
     private static ExplorerManager em;
-    private PropertySheetView psv;
     private BeanTreeView btv;
 
     static final long serialVersionUID =4088175782441275332L;
 
-    BiPanel( ) {
+    public BiPanel( ) {
         Node waitNode = new BiNode.Wait();
 
         createContent( waitNode );
@@ -59,9 +47,9 @@ public class BiPanel extends ExplorerPanel  {
 
     private void createContent ( Node biNode ) {
 
-        SplittedPanel sp = new SplittedPanel ();
         btv = new BeanTreeView ();
-        em = getExplorerManager ();
+        em = new ExplorerManager();
+        
         PropertySheetView psv = new PropertySheetView ();
 
         try {
@@ -70,9 +58,7 @@ public class BiPanel extends ExplorerPanel  {
         catch (java.beans.PropertyVetoException e) {
         }
 
-        //sp.add (new org.openide.explorer.view.ListView (), SplittedPanel.ADD_LEFT);
-        sp.add (btv, SplittedPanel.ADD_LEFT);
-        sp.add (psv, SplittedPanel.ADD_RIGHT);
+        JSplitPane sp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, btv, psv);
 
         em.setRootContext ( biNode );
         em.setExploredContext( biNode );
@@ -88,6 +74,16 @@ public class BiPanel extends ExplorerPanel  {
     public java.awt.Dimension getPreferredSize () {
         java.awt.Dimension sup = super.getPreferredSize ();
         return new java.awt.Dimension ( Math.max (sup.width, 450), Math.max (sup.height, 300 ));
+    }
+
+    protected void componentActivated() {
+        super.componentActivated();
+        ExplorerUtils.activateActions(em, true);
+    }
+
+    protected void componentDeactivated() {
+        ExplorerUtils.activateActions(em, false);
+        super.componentDeactivated();
     }
 
     void expandAll() {
@@ -110,5 +106,9 @@ public class BiPanel extends ExplorerPanel  {
     private void initAccessibility() {
         btv.getAccessibleContext().setAccessibleName((NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle")).getString("ACSN_BeanInfoLeftTreeView"));
         btv.getAccessibleContext().setAccessibleDescription((NbBundle.getBundle("org.netbeans.modules.beans.beaninfo.Bundle")).getString("ACSD_BeanInfoLeftTreeView"));
+    }
+
+    public ExplorerManager getExplorerManager() {
+        return em;
     }
 }

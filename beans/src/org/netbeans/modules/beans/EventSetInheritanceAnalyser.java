@@ -7,23 +7,24 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
- */
-
-/*
- * EventSetInheritanceAnalyser.java
- *
- * Created on 24. leden 2001, 9:14
  */
 
 package org.netbeans.modules.beans;
 
-import java.lang.reflect.*;
 import java.text.MessageFormat;
+import java.text.Format;
+import java.util.List;
+import java.util.Iterator;
+import java.lang.reflect.Modifier;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.src.*;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.java.ui.nodes.SourceNodes;
+
+import javax.jmi.reflect.JmiException;
 
 /**
  *
@@ -31,13 +32,13 @@ import org.openide.src.*;
  * @version 0.1
  * utility class, try to detect if given ClassElement has parent which contains given event set
  */
-class EventSetInheritanceAnalyser extends Object {
+final class EventSetInheritanceAnalyser extends Object {
     
     /** Used to test if PropertyChangeSupport exists
      * @param clazz Class which be tested for PropertyChangeSupport
      * @return Class in which PropertySupport exist, or null
      */    
-    static MemberElement detectPropertyChangeSupport(ClassElement clazz){
+    static ClassMember detectPropertyChangeSupport(JavaClass clazz) throws JmiException {
         return findSupport(clazz, "java.beans.PropertyChangeSupport" ); // NOI18N
     }
 
@@ -45,7 +46,7 @@ class EventSetInheritanceAnalyser extends Object {
      * @param clazz Class which be tested for VetoableChangeSupport
      * @return Class in which VetoableSupport exist, or null
      */    
-    static MemberElement detectVetoableChangeSupport(ClassElement clazz){
+    static ClassMember detectVetoableChangeSupport(JavaClass clazz) throws JmiException {
         return findSupport(clazz, "java.beans.VetoableChangeSupport" ); // NOI18N
     }
     
@@ -54,47 +55,44 @@ class EventSetInheritanceAnalyser extends Object {
      * @param supportName full name of ChangeSupport
      * @return Class in which ChangeSupport exist, or null
      */    
-    private static MemberElement findSupport(ClassElement clazz, String supportName){
-        Identifier propertyChangeField = null;
+    private static ClassMember findSupport(JavaClass clazz, String supportName) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        String propertyChangeField = supportName;
         
-        if( clazz == null || clazz.getName().getFullName().equals("java.lang.Object")) //NOI18N
+        if( clazz == null || "java.lang.Object".equals(clazz.getName())) //NOI18N
             return null;    //no super class given or super class is Object
         
-        Identifier superClass = clazz.getSuperclass();
-        if( superClass == null ) //no extends or implements clause
+        JavaClass superClass = clazz.getSuperClass();
+        if( superClass == null || superClass instanceof UnresolvedClass) //no extends or implements clause
             return null;
-
-        ClassElement parent = ClassElement.forName( superClass.getFullName(), PatternAnalyser.fileObjectForElement( clazz ) );
-        if( parent == null )
-            return parent; 
-        else {
-            if( propertyChangeField == null )
-                propertyChangeField = Identifier.create( supportName ); // NOI18N                
-
-            MethodElement methods[] = parent.getMethods();
-            for( int i = 0; i < methods.length; i++ ) {
-                if( !Modifier.isPrivate(methods[i].getModifiers()) && methods[i].getParameters().length == 0 ){
-                    if( !methods[i].getReturn().isPrimitive() && !methods[i].getReturn().isArray() && methods[i].getReturn().getClassName().compareTo(propertyChangeField, false )  ){
-                        return methods[i];
-                    }
-                }            
+        
+        List/*<Method>*/ methods = JMIUtils.getMethods(superClass);
+        for (Iterator it = methods.iterator(); it.hasNext();) {
+            Method method = (Method) it.next();
+            if( !Modifier.isPrivate(method.getModifiers()) && method.getParameters().isEmpty() ){
+                Type returnType = method.getType();
+                if( propertyChangeField.equals(returnType.getName()) ){
+                    return method;
+                }
             }            
-            FieldElement fields[] = parent.getFields();
-            for( int i = 0; i < fields.length; i++ ) {
-                if( !Modifier.isPrivate(fields[i].getModifiers()) ){                    
-                    if( !fields[i].getType().isPrimitive() && !fields[i].getType().isArray() && fields[i].getType().getClassName().compareTo(propertyChangeField, false )  ){
-                        return fields[i];
-                    }
-                }            
+        }            
+        List/*<Field>*/ fields = JMIUtils.getFields(superClass);
+        for (Iterator it = fields.iterator(); it.hasNext();) {
+            Field field = (Field) it.next();
+            if( !Modifier.isPrivate(field.getModifiers()) ){
+                if (propertyChangeField.equals(field.getType().getName())) {
+                    return field;
+                }
             }            
-        }
-        return findSupport(parent, supportName);    //Try to search recursively            
+        }            
+        return findSupport(superClass, supportName);    //Try to search recursively            
     }
 
-    static String showInheritanceEventDialog( MemberElement me , String supportTypeName){        
+    static String showInheritanceEventDialog( ClassMember me , String supportTypeName) throws JmiException {        
+        assert JMIUtils.isInsideTrans();
         String supportName = getInheritanceEventSupportName(me, supportTypeName);
         if( me != null ){
-            Object msgfields[] = new Object[] {me.getDeclaringClass().getName().getFullName(), supportTypeName };
+            Object msgfields[] = new Object[] {me.getDeclaringClass().getName(), supportTypeName };
             String msg = MessageFormat.format(PatternNode.getString("MSG_Inheritance_Found"), msgfields);
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( msg , NotifyDescriptor.YES_NO_OPTION );
             DialogDisplayer.getDefault().notify( nd );
@@ -105,14 +103,15 @@ class EventSetInheritanceAnalyser extends Object {
         return null;
     }
     
-    static String getInheritanceEventSupportName( MemberElement me , String supportTypeName){
-        ElementFormat format = new ElementFormat("{n}({p})"); // NOI18N
+    static String getInheritanceEventSupportName( ClassMember me , String supportTypeName) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        Format format = SourceNodes.createElementFormat("{n}({p})"); // NOI18N
         String supportName = null;
         if( me != null ){
-            if( me instanceof MethodElement )
-                supportName = format.format(((MethodElement)me));
+            if( me instanceof Method )
+                supportName = format.format(me);
             else
-                supportName = me.getName().getFullName();   //prepare for later usage            
+                supportName = me.getName();   //prepare for later usage            
         }        
         return supportName;
     }

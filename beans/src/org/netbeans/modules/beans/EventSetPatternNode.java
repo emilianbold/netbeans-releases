@@ -7,46 +7,42 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.beans;
 
 import java.beans.*;
-import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
+
 import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
-import org.openide.src.*;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.src.nodes.ClassChildren;
+import org.netbeans.jmi.javamodel.Type;
+import org.netbeans.jmi.javamodel.Method;
+
+import javax.jmi.reflect.JmiException;
 
 /** Node representing a event set pattern.
-* @see Event Set Pattern
+* @see EventSetPattern
 * @author Petr Hrebejk
 */
-public class EventSetPatternNode extends PatternNode implements IconBases {
+public final class EventSetPatternNode extends PatternNode implements IconBases {
 
-    /** Create a new field node.
-    * @param element field element to represent
+    /** Create a new pattern node.
+    * @param pattern pattern to represent
     * @param writeable <code>true</code> to be writable
     */
     public EventSetPatternNode( EventSetPattern pattern, boolean writeable) {
-        //super(pattern, Children.LEAF, writeable);
-        super(pattern, new PatternChildren( org.openide.src.nodes.DefaultFactory.READ_ONLY, pattern.getTypeElement(), false ), writeable);
+        super(pattern, Children.LEAF, writeable);
         superSetName( pattern.getName() );
     }
 
-    /** Sets the name of Pattern, to new value */
-    protected void setPatternName( String name ) throws SourceException {
+    protected void setPatternName( String name ) throws JmiException {
         
         if ( pattern.getName().equals( name ) ) {
             return;
@@ -54,19 +50,8 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
         
         if ( testNameValidity(name) ) {
             ((EventSetPattern)pattern).setName(name);
-            superSetName( name );
         }
     }
-
-    /** Sets the name of the node */
-    public void setName( String name ) {
-        try {
-            setPatternName(name);
-        }
-        catch (SourceException e) {
-        }
-    }
-
 
     /** Tests if the given string is valid name for associated pattern and if not, notifies
     * the user.
@@ -112,13 +97,6 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                + " : " + getName(); // NOI18N
     }
 
-    /** This method resolve the appropriate hint format for the type
-    * of the element. It defines the short description.
-    */
-    protected ElementFormat getHintElementFormat() {
-        return sourceOptions.getFieldElementLongFormat();
-    }
-
     /** Creates property set for this node */
     protected Sheet createSheet () {
         Sheet sheet = Sheet.createDefault();
@@ -133,24 +111,6 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
         return sheet;
     }
 
-    /** Removes the element from the class and calls superclass.
-    *
-    * @exception IOException if SourceException is thrown
-    *            from the underlayed Element.
-    */
-    /*
-    public void destroy() throws IOException {
-      /*
-      try {
-        FieldElement el = (FieldElement) element;
-        el.getDeclaringClass().removeField(el);
-      }
-      catch (SourceException e) {
-        throw new IOException(e.getMessage());
-      }
-      super.destroy();
-}
-    */
     /** Overrides the default implementation of clone node
      */
 
@@ -183,10 +143,10 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                        try {
                            pattern.patternAnalyser.setIgnore( true );
                            ((EventSetPattern)pattern).setType((Type)val);
-                           pattern.patternAnalyser.setIgnore( false );
-                       }
-                       catch (SourceException e) {
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
+                       } finally {
+                           pattern.patternAnalyser.setIgnore( false );
                        }
                    }
 
@@ -220,12 +180,14 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
                            throw new IllegalArgumentException();
 
                        try {
-                           pattern.patternAnalyser.setIgnore( true );
-                           ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
-                           pattern.patternAnalyser.setIgnore( false );
-                           setIconBase( resolveIconBase() );
-                       }
-                       catch (SourceException e) {
+                           try {
+                               pattern.patternAnalyser.setIgnore( true );
+                               ((EventSetPattern)pattern).setIsUnicast(((Boolean)val).booleanValue());
+                               setIconBase( resolveIconBase() );
+                           } finally {
+                               pattern.patternAnalyser.setIgnore( false );
+                           }
+                       } catch (JmiException e) {
                            throw new InvocationTargetException(e);
                        }
                    }
@@ -241,15 +203,9 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     protected Node.Property createAddListenerProperty(boolean canW) {
         return new PatternPropertySupport(PROP_ADDLISTENER, String.class, canW) {
 
-                   /** Gets the value */
-
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((EventSetPattern)pattern).getAddListenerMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((EventSetPattern) pattern).getAddListenerMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }
@@ -262,15 +218,9 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     protected Node.Property createRemoveListenerProperty(boolean canW) {
         return new PatternPropertySupport(PROP_REMOVELISTENER, String.class, canW) {
 
-                   /** Gets the value */
-
                    public Object getValue () {
-                       ElementFormat fmt = new ElementFormat ("{n} ({p})"); // NOI18N
-                       MethodElement method = ((EventSetPattern)pattern).getRemoveListenerMethod();
-                       if ( method == null )
-                           return PatternNode.getString("LAB_NoMethod");
-                       else
-                           return (fmt.format (method));
+                       Method method = ((EventSetPattern) pattern).getRemoveListenerMethod();
+                       return getFormattedMethodName(method);
                    }
                };
     }

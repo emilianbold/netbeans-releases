@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,30 +16,29 @@ package org.netbeans.modules.beans;
 import java.beans.Introspector;
 import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
-import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import java.util.List;
+
 import org.openide.DialogDisplayer;
 
-import org.openide.src.MethodElement;
-import org.openide.src.MethodParameter;
-import org.openide.src.ClassElement;
-import org.openide.src.Type;
-import org.openide.src.SourceException;
-import org.openide.src.Identifier;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
+import org.netbeans.jmi.javamodel.*;
+import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
+
+import javax.jmi.reflect.JmiException;
 
 
 /** Class representing JavaBeans IndexedProperty.
  * @author Petr Hrebejk
  */
-public class IdxPropertyPattern extends PropertyPattern {
+public final class IdxPropertyPattern extends PropertyPattern {
 
     /** Getter method of this indexed property */
-    protected MethodElement indexedGetterMethod = null;
+    protected Method indexedGetterMethod = null;
     /** Setter method of this indexed property */
-    protected MethodElement indexedSetterMethod = null;
+    protected Method indexedSetterMethod = null;
 
     /** Holds the indexed type of the property resolved from methods. */
     protected Type indexedType;
@@ -54,9 +53,9 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @throws IntrospectionException If specified methods do not follow beans Property rules.
      */  
     public IdxPropertyPattern( PatternAnalyser patternAnalyser,
-                               MethodElement getterMethod, MethodElement setterMethod,
-                               MethodElement indexedGetterMethod, MethodElement indexedSetterMethod )
-    throws IntrospectionException {
+                               Method getterMethod, Method setterMethod,
+                               Method indexedGetterMethod, Method indexedSetterMethod )
+    throws IntrospectionException, JmiException {
 
         super ( patternAnalyser, getterMethod, setterMethod );
 
@@ -64,6 +63,10 @@ public class IdxPropertyPattern extends PropertyPattern {
         this.indexedSetterMethod = indexedSetterMethod;
 
         findIndexedPropertyType();
+        if (this.type == null && this.indexedType != null) {
+            JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(this.indexedType);
+            this.type = jmodel.getArray().resolveArray(this.indexedType);
+        }
         name = findIndexedPropertyName();
     }
 
@@ -72,31 +75,6 @@ public class IdxPropertyPattern extends PropertyPattern {
      */
     private IdxPropertyPattern( PatternAnalyser patternAnalyser ) {
         super( patternAnalyser );
-    }
-
-    /** Creates new IdxPropertyPattern.
-     * @param patternAnalyser patternAnalyser which creates this Property.
-     * @param name Name of the Property.
-     * @param type Type of the Property ( i.e. Array or Collection )
-     * @param indexedType Indexed type of the property.
-     * @throws SourceException If the Property can't be created in the source.
-     * @return Newly created IdxPropertyPattern.
-     */
-    static IdxPropertyPattern create( PatternAnalyser patternAnalyser,
-                                      String name, String type, String indexedType ) throws SourceException {
-
-        IdxPropertyPattern ipp = new IdxPropertyPattern( patternAnalyser );
-
-        ipp.name = name;
-        ipp.type = Type.parse( type );
-        ipp.indexedType = Type.parse( indexedType );
-
-        ipp.generateGetterMethod();
-        ipp.generateSetterMethod();
-        ipp.generateIndexedGetterMethod();
-        ipp.generateIndexedSetterMethod();
-
-        return ipp;
     }
 
     /** Creates new indexed property pattern with extended options
@@ -114,7 +92,7 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @param niWithReturn Generate return statement in non-indexed getter?
      * @param niSetter Non-indexed setter method
      * @param niWithSet Generate set field statement in non-indexed setter?
-     * @throws SourceException If the Property can't be created in the source.
+     * @throws JmiException If the Property can't be created in the source.
      * @return Newly created PropertyPattern.
      */
     static IdxPropertyPattern create( PatternAnalyser patternAnalyser,
@@ -123,7 +101,7 @@ public class IdxPropertyPattern extends PropertyPattern {
                                       boolean withField, boolean withReturn,
                                       boolean withSet, boolean withSupport,
                                       boolean niGetter, boolean niWithReturn,
-                                      boolean niSetter, boolean niWithSet ) throws SourceException {
+                                      boolean niSetter, boolean niWithSet ) throws JmiException, GenerateBeanException {
 
         return create(patternAnalyser, name, type, mode, bound, constrained, withField, withReturn, withSet, withSupport, niGetter, niWithReturn, niSetter, niWithSet, false, false );
     }
@@ -144,7 +122,7 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @param niWithSet Generate set field statement in non-indexed setter?
      * @param useSupport use change support without prompting
      * @param fromField signalize that all action are activatet on field
-     * @throws SourceException If the Property can't be created in the source.
+     * @throws JmiException If the Property can't be created in the source.
      * @return Newly created PropertyPattern.
      */
     static IdxPropertyPattern create( PatternAnalyser patternAnalyser,
@@ -154,29 +132,32 @@ public class IdxPropertyPattern extends PropertyPattern {
                                       boolean withSet, boolean withSupport,
                                       boolean niGetter, boolean niWithReturn,
                                       boolean niSetter, boolean niWithSet,
-                                      boolean useSupport, boolean fromField ) throws SourceException {
+                                      boolean useSupport, boolean fromField ) throws JmiException, GenerateBeanException {
 
+        assert JMIUtils.isInsideTrans();
         IdxPropertyPattern ipp = new IdxPropertyPattern( patternAnalyser );
 
         ipp.name = name;
         ipp.type = null;
-        ipp.indexedType = Type.parse( type );
+        ipp.indexedType = patternAnalyser.findType(type);
 
         // Set the non-indexed type when needed
         if ( withField || withSupport || niGetter || niSetter ) {
-            ipp.type = Type.createArray( ipp.indexedType );
+            JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(ipp.indexedType);
+            ipp.type = jmodel.getArray().resolveArray(ipp.indexedType);
         }
 
         // Generate field
         if ( ( withField || withSupport ) && !fromField ) {
-            if ( ipp.type != null )
-            try {
-                ipp.generateField( true );
-            } catch (SourceException e) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(
-                        PatternNode.getString("MSG_Cannot_Create_Field"),
-                        NotifyDescriptor.WARNING_MESSAGE));
+            if ( ipp.type != null ) {
+                try {
+                    ipp.generateField( true );
+                } catch (GenerateBeanException e) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(
+                            PatternNode.getString("MSG_Cannot_Create_Field"),
+                            NotifyDescriptor.WARNING_MESSAGE));
+                }
             }
         }
 
@@ -252,63 +233,65 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     /** Sets the name of IdxPropertyPattern
      * @param name New name of the property.
-     * @throws SourceException If the modification of source code is impossible.
+     * @throws JmiException If the modification of source code is impossible.
      */
-    public void setName(String name) throws  SourceException {
+    public void setName(String name) throws IllegalArgumentException, JmiException {
         String oldName = this.name;
         super.setName( name );
 
         name = capitalizeFirstLetter( name );
 
         if ( indexedGetterMethod != null ) {
-            Identifier idxGetterMethodID = Identifier.create(( indexedGetterMethod.getName().getName().startsWith("get") ? // NOI18N
-                                           "get" : "is" ) + name ); // NOI18N
+            String idxGetterMethodID = ( indexedGetterMethod.getName().startsWith("get") ? // NOI18N
+                                           "get" : "is" ) + name ; // NOI18N
             indexedGetterMethod.setName( idxGetterMethodID );
             String oldGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
                                            new Object[] { oldName } );
             String newGetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
                                            new Object[] { getName() } );
-            if (!indexedGetterMethod.getJavaDoc().isEmpty() &&
-                oldGetterComment.trim().equals(indexedGetterMethod.getJavaDoc().getRawText().trim())) {
-                indexedGetterMethod.getJavaDoc().setRawText( newGetterComment );
+            String indexedGetterJavadoc = indexedGetterMethod.getJavadocText();
+            if (indexedGetterJavadoc != null &&
+                    oldGetterComment.trim().equals(indexedGetterJavadoc.trim())) {
+                indexedGetterMethod.setJavadocText( newGetterComment );
             }
         }
         if ( indexedSetterMethod != null ) {
-            Identifier idxSetterMethodID = Identifier.create( "set" + name ); // NOI18N
+            String idxSetterMethodID = "set" + name; // NOI18N
             indexedSetterMethod.setName( idxSetterMethodID );
             String oldSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
                                            new Object[] { oldName, oldName } );
             String newSetterComment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertySetter" ),
                                            new Object[] { getName(), getName() } );
-            if (!indexedSetterMethod.getJavaDoc().isEmpty() &&
-                oldSetterComment.trim().equals(indexedSetterMethod.getJavaDoc().getRawText().trim())) {
-                indexedSetterMethod.getJavaDoc().setRawText( newSetterComment );
+            String indexedSetterJavadoc = indexedSetterMethod.getJavadocText();
+            if (indexedSetterJavadoc != null &&
+                    oldSetterComment.trim().equals(indexedSetterJavadoc.trim())) {
+                indexedSetterMethod.setJavadocText( newSetterComment );
             }
         }
         
         // change body and javadoc of idx accessors if the field has been changed
-        if ( estimatedField != null && estimatedField.getName().getName().equals(getName())) {
+        if ( estimatedField != null && estimatedField.getName().equals(getName())) {
             int mode = getMode();
             if ( mode == READ_WRITE || mode == READ_ONLY ) {
-                String existingGetterBody = indexedGetterMethod.getBody().trim();
+                String existingGetterBody = indexedGetterMethod.getBodyText().trim();
                 String oldGetterBody1 = BeanPatternGenerator.idxPropertyGetterBody( oldName, true, true ).trim();
                 String oldGetterBody2 = BeanPatternGenerator.idxPropertyGetterBody( oldName, true, false ).trim();
                 if (existingGetterBody.equals(oldGetterBody1)) {
-                    indexedGetterMethod.setBody(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, true));
+                    indexedGetterMethod.setBodyText(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, true));
                 } else if (existingGetterBody.equals(oldGetterBody2)) {
-                    indexedGetterMethod.setBody(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, false));
+                    indexedGetterMethod.setBodyText(BeanPatternGenerator.idxPropertyGetterBody( getName(), true, false));
                 }
             }
             if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
-                String existingSetterBody = indexedSetterMethod.getBody().trim();
+                String existingSetterBody = indexedSetterMethod.getBodyText().trim();
                 String oldSetterBody = BeanPatternGenerator.idxPropertySetterBody (oldName, this.type, false, false, true, false, null, null).trim();
                 if (existingSetterBody.equals(oldSetterBody)) {
-                    indexedSetterMethod.setBody(BeanPatternGenerator.idxPropertySetterBody (getName(), getType(), false, false, true, false, null, null));
+                    indexedSetterMethod.setBodyText(BeanPatternGenerator.idxPropertySetterBody (getName(), getType(), false, false, true, false, null, null));
 
                     if ( indexedSetterMethod != null ) {
-                        MethodParameter params[] = indexedSetterMethod.getParameters();
-                        params[1].setName(Introspector.decapitalize( name ));
-                        indexedSetterMethod.setParameters(params);
+                        List/*<Parameter>*/ params = indexedSetterMethod.getParameters();
+                        Parameter param = (Parameter) params.get(1);
+                        param.setName(Introspector.decapitalize( name ));
                     }
                 }
             }
@@ -321,24 +304,35 @@ public class IdxPropertyPattern extends PropertyPattern {
     /** Returns the indexed getter method
      * @return Getter method of the property
      */
-    public MethodElement getIndexedGetterMethod() {
+    public Method getIndexedGetterMethod() {
         return indexedGetterMethod;
     }
 
     /** Returns the indexed setter method
      * @return Getter method of the property
      */
-    public MethodElement getIndexedSetterMethod() {
+    public Method getIndexedSetterMethod() {
         return indexedSetterMethod;
     }
 
     /** Sets the non-indexed type of IdxPropertyPattern
      * @param type New non-indexed type of the indexed property
-     * @throws SourceException If the modification of source code is impossible
+     * @throws JmiException If the modification of source code is impossible
      */
-    public void setType(Type type) throws SourceException {
-
-        if ( this.type != null && this.type.compareTo( type, true ) )
+    public void setType(Type type) throws JmiException {
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            setTypeImpl(type);
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
+        }
+    }
+    
+    private void setTypeImpl(Type type) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        if ( this.type != null && this.type.equals( type ) )
             return;
 
         // Remember the old type & old indexed type
@@ -349,42 +343,52 @@ public class IdxPropertyPattern extends PropertyPattern {
             this.type = type;
             oldType = type;
             int mode = getMode();
-            if ( mode == READ_WRITE || mode == READ_ONLY )
-                generateGetterMethod();
-            if ( mode == READ_WRITE || mode == WRITE_ONLY )
-                generateSetterMethod();
+            if ( mode == READ_WRITE || mode == READ_ONLY ) {
+                try {
+                    generateGetterMethod();
+                } catch (GenerateBeanException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                }
+            }
+            if ( mode == READ_WRITE || mode == WRITE_ONLY ) {
+                try {
+                    generateSetterMethod();
+                } catch (GenerateBeanException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+                }
+            }
         }
         else
             // Change the type
             super.setType( type );
 
         // Test if the idexedType is the type of array and change it if so
-        if ( type.isArray() && oldType.isArray() && oldType.getElementType().compareTo( oldIndexedType, false ) ) {
-            Type newType = type.getElementType();
-
-            if (indexedGetterMethod != null ) {
-                indexedGetterMethod.setReturn( newType );
-            }
-            if (indexedSetterMethod != null ) {
-                MethodParameter[] params = indexedSetterMethod.getParameters();
-                if ( params.length > 1 ) {
-                    params[1].setType( newType );
-                    indexedSetterMethod.setParameters( params );
-                }
-            }
+        if ( type instanceof Array && oldType instanceof Array && oldIndexedType.equals(((Array) oldType).getType()) ) {
+            Type newType = ((Array) type).getType();
 
             // Set the type  to new type
-            setIndexedType( newType );
+            setIndexedTypeImpl( newType, false );
         }
     }
 
     /** Sets the indexed type of IdxPropertyPattern
      * @param type New indexed type of the indexed property
-     * @throws SourceException If the modification of source code is impossible
+     * @throws JmiException If the modification of source code is impossible
      */
-    public void setIndexedType(Type type) throws SourceException {
-
-        if ( this.indexedType.compareTo( type, true ) )
+    public void setIndexedType(Type type) throws JmiException {
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            setIndexedTypeImpl(type, true);
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
+        }
+    }
+    
+    private void setIndexedTypeImpl(Type type, boolean changeType) throws JmiException {
+        assert JMIUtils.isInsideTrans();
+        if ( this.indexedType.equals( type ) )
             return;
 
         // Remember the old type & old indexed type
@@ -393,26 +397,26 @@ public class IdxPropertyPattern extends PropertyPattern {
 
         // Change the indexed type
         if (indexedGetterMethod != null ) {
-            indexedGetterMethod.setReturn( type );
+            indexedGetterMethod.setType( type );
         }
         if (indexedSetterMethod != null ) {
-            MethodParameter[] params = indexedSetterMethod.getParameters();
-            if ( params.length > 1 ) {
-                params[1].setType( type );
-                indexedSetterMethod.setParameters( params );
+            List/*<Parameter>*/ params = indexedSetterMethod.getParameters();
+            if ( params.size() > 1 ) {
+                Parameter param = (Parameter) params.get(1);
+                param.setType( type );
 
-                String body = indexedSetterMethod.getBody();
+                String body = indexedSetterMethod.getBodyText();
                 
                 //test if body contains change support
                 if( body != null && ( body.indexOf(PropertyPattern.PROPERTY_CHANGE) != -1 || body.indexOf(PropertyPattern.VETOABLE_CHANGE) != -1 ) ) {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
-                                                        new Object[] { setterMethod.getName().getName() } );
+                                                        new Object[] { setterMethod.getName() } );
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                     DialogDisplayer.getDefault().notify( nd );
                     if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                        String newBody = regeneratePropertySupport( indexedSetterMethod.getBody(), null, params[1].getName(), type, oldType );
+                        String newBody = regeneratePropertySupport( indexedSetterMethod.getBodyText(), null, param.getName(), type, oldType );
                         if( newBody != null )
-                            indexedSetterMethod.setBody(newBody);
+                            indexedSetterMethod.setBodyText(newBody);
                     }
                 }
             }
@@ -420,8 +424,9 @@ public class IdxPropertyPattern extends PropertyPattern {
 
         // Test if the old type of getter and seter was an array of indexedType
         // if so change the type of that array.
-        if ( oldType != null && oldType.isArray() && oldType.getElementType().compareTo( oldIndexedType, false ) ) {
-            Type newArrayType = Type.createArray( type );
+        if (changeType) {
+            JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(type);
+            Type newArrayType = jmodel.getArray().resolveArray(type);
             super.setType( newArrayType );
         }
 
@@ -430,13 +435,13 @@ public class IdxPropertyPattern extends PropertyPattern {
 
     /**
      * @param methodBody old method body
-     * @param changeType  .. propertyChange, vetoableChange or null if need to change only support field 
      * @param name of property
      * @param type new type of property value
      * @param oldType old type of property value
      * @return null if no change is possible or new body if it is
      */
-    private String regenerateIdxPropertySupport( String methodBody, String name, org.openide.src.Type type, org.openide.src.Type oldType ){
+    // XXX seems that noone uses this
+    private String regenerateIdxPropertySupport( String methodBody, String name, Type type, Type oldType ){
         if( methodBody == null )
             return null;
         
@@ -467,8 +472,8 @@ public class IdxPropertyPattern extends PropertyPattern {
         return sb.toString();        
     }
 
-    /** Returns the mode of the property {@link PropertPattern#READ_WRITE READ_WRITE},
-     * {@link PropertPattern#READ_ONLY READ_ONLY} or {@link PropertPattern#WRITE_ONLY WRITE_ONLY}
+    /** Returns the mode of the property {@link PropertyPattern#READ_WRITE READ_WRITE},
+     * {@link PropertyPattern#READ_ONLY READ_ONLY} or {@link PropertyPattern#WRITE_ONLY WRITE_ONLY}
      * @return Mode of the property
      */
     public int getMode() {
@@ -483,58 +488,65 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
 
     /** Sets the property to be writable
-     * @param mode New Mode {@link PropertPattern#READ_WRITE READ_WRITE}, 
-     *   {@link PropertPattern#READ_ONLY READ_ONLY} or {@link PropertPattern#WRITE_ONLY WRITE_ONLY}
-     * @throws SourceException If the modification of source code is impossible.
+     * @param mode New Mode {@link PropertyPattern#READ_WRITE READ_WRITE}, 
+     *   {@link PropertyPattern#READ_ONLY READ_ONLY} or {@link PropertyPattern#WRITE_ONLY WRITE_ONLY}
+     * @throws GenerateBeanException If the modification of source code is impossible.
      */
-    public void setMode( int mode ) throws SourceException {
+    public void setMode( int mode ) throws GenerateBeanException, JmiException {
         if ( getMode() == mode )
             return;
 
-        switch ( mode ) {
-        case READ_WRITE:
-            if ( getterMethod == null )
-                generateGetterMethod();
-            if ( setterMethod == null )
-                generateSetterMethod();
-            if ( indexedGetterMethod == null )
-                generateIndexedGetterMethod();
-            if ( indexedSetterMethod == null )
-                generateIndexedSetterMethod();
-            break;
-        case READ_ONLY:
-            if ( getterMethod == null )
-                generateGetterMethod();
-            if ( indexedGetterMethod == null )
-                generateIndexedGetterMethod();
-            
-            if (setterMethod != null || indexedSetterMethod != null) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                DialogDisplayer.getDefault().notify( nd );
-                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                    if ( setterMethod != null )
-                        deleteSetterMethod();
-                    if ( indexedSetterMethod != null )
-                        deleteIndexedSetterMethod();
-                }
+        JMIUtils.beginTrans(true);
+        boolean rollback = true;
+        try {
+            switch (mode) {
+                case READ_WRITE:
+                    if (getterMethod == null)
+                        generateGetterMethod();
+                    if (setterMethod == null)
+                        generateSetterMethod();
+                    if (indexedGetterMethod == null)
+                        generateIndexedGetterMethod();
+                    if (indexedSetterMethod == null)
+                        generateIndexedSetterMethod();
+                    break;
+                case READ_ONLY:
+                    if (getterMethod == null)
+                        generateGetterMethod();
+                    if (indexedGetterMethod == null)
+                        generateIndexedGetterMethod();
+
+                    if (setterMethod != null || indexedSetterMethod != null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(PatternNode.getString("MSG_Delete_Setters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                            if (setterMethod != null)
+                                deleteSetterMethod();
+                            if (indexedSetterMethod != null)
+                                deleteIndexedSetterMethod();
+                        }
+                    }
+                    break;
+                case WRITE_ONLY:
+                    if (setterMethod == null)
+                        generateSetterMethod();
+                    if (indexedSetterMethod == null)
+                        generateIndexedSetterMethod();
+                    if (getterMethod != null || indexedGetterMethod != null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Confirmation(PatternNode.getString("MSG_Delete_Getters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION);
+                        DialogDisplayer.getDefault().notify(nd);
+                        if (nd.getValue().equals(NotifyDescriptor.YES_OPTION)) {
+                            if (getterMethod != null)
+                                deleteGetterMethod();
+                            if (indexedGetterMethod != null)
+                                deleteIndexedGetterMethod();
+                        }
+                    }
+                    break;
             }
-            break;
-        case WRITE_ONLY:
-            if ( setterMethod == null )
-                generateSetterMethod();
-            if ( indexedSetterMethod == null )
-                generateIndexedSetterMethod();
-            if (getterMethod != null || indexedGetterMethod != null) {
-                NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                DialogDisplayer.getDefault().notify( nd );
-                if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
-                    if ( getterMethod != null )
-                        deleteGetterMethod();
-                    if ( indexedGetterMethod != null )
-                        deleteIndexedGetterMethod();
-                }
-            }
-            break;
+            rollback = false;
+        } finally {
+            JMIUtils.endTrans(rollback);
         }
 
     }
@@ -544,19 +556,13 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @return Cookie of indexedGetter or indexedSetter MethodElement
      */
     public Node.Cookie getCookie( Class cookieType ) {
-        if ( indexedGetterMethod != null )
-            return indexedGetterMethod.getCookie( cookieType );
-
-        if ( indexedSetterMethod != null )
-            return indexedSetterMethod.getCookie( cookieType );
-
-        return super.getCookie( cookieType );
+        return super.getCookie(cookieType);
     }
 
     /** Destroys methods associated methods with the pattern in source
-     * @throws SourceException If modification of source is impossible
      */
-    public void destroy() throws SourceException {
+    public void destroy() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         deleteIndexedSetterMethod();
         deleteIndexedGetterMethod();
         super.destroy();
@@ -569,13 +575,15 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @param x The first (lower priority) PropertyPattern.
      * @param y The second (higher priority) PropertyPattern.
      */
-    IdxPropertyPattern( PropertyPattern x, PropertyPattern y ) {
+    IdxPropertyPattern( PropertyPattern x, PropertyPattern y ) throws JmiException {
         super( x, y );
+        assert JMIUtils.isInsideTrans();
         if ( x instanceof IdxPropertyPattern ) {
             IdxPropertyPattern ix = (IdxPropertyPattern)x;
             indexedGetterMethod = ix.indexedGetterMethod;
             indexedSetterMethod = ix.indexedSetterMethod;
             indexedType = ix.indexedType;
+            type = type == null? ix.type: type;
         }
         if ( y instanceof IdxPropertyPattern ) {
             IdxPropertyPattern iy = (IdxPropertyPattern)y;
@@ -584,6 +592,7 @@ public class IdxPropertyPattern extends PropertyPattern {
             if ( iy.indexedSetterMethod != null )
                 indexedSetterMethod = iy.indexedSetterMethod;
             indexedType = iy.indexedType;
+            type = type == null? iy.type: type;
         }
         name  = findIndexedPropertyName();
     }
@@ -592,43 +601,48 @@ public class IdxPropertyPattern extends PropertyPattern {
      * Chcecks for conformance to Beans design patterns.
      * @throws IntrospectionException if the property doesnt folow the design patterns
      */
-    private void findIndexedPropertyType() throws IntrospectionException {
+    private void findIndexedPropertyType() throws IntrospectionException, JmiException {
 
+        assert JMIUtils.isInsideTrans();
         indexedType = null;
 
         if ( indexedGetterMethod != null ) {
-            MethodParameter[] params = indexedGetterMethod.getParameters();
-            if ( params.length != 1 ) {
+            List/*<Parameter>*/ params = indexedGetterMethod.getParameters();
+            if ( params.size() != 1 ) {
                 throw new IntrospectionException( "bad indexed read method arg count" ); // NOI18N
             }
-            if ( !params[0].getType().compareTo( Type.INT, false ) ) {
+            Parameter param = (Parameter) params.get(0);
+            if ( !JMIUtils.isPrimitiveType(param.getType(), PrimitiveTypeKindEnum.INT) ) {
                 throw new IntrospectionException( "not int index to indexed read method" ); // NOI18N
             }
-            indexedType = indexedGetterMethod.getReturn();
-            if ( indexedType.compareTo( Type.VOID, false ) ) {
+            indexedType = indexedGetterMethod.getType();
+            if ( JMIUtils.isPrimitiveType(indexedType, PrimitiveTypeKindEnum.VOID) ) {
                 throw new IntrospectionException( "indexed read method return void" ); // NOI18N
             }
         }
 
         if (indexedSetterMethod != null ) {
-            MethodParameter params[] = indexedSetterMethod.getParameters();
-            if ( params.length != 2 ) {
+            List/*<Parameter>*/ params = indexedSetterMethod.getParameters();
+            if ( params.size() != 2 ) {
                 throw new IntrospectionException( "bad indexed write method arg count" ); // NOI18N
             }
-            if ( !params[0].getType().compareTo( Type.INT, false ) ) {
+            Parameter param1 = (Parameter) params.get(0);
+            if ( !JMIUtils.isPrimitiveType(param1.getType(), PrimitiveTypeKindEnum.INT) ) {
                 throw new IntrospectionException( "non int index to indexed write method" ); // NOI18N
             }
-            if (indexedType != null && !indexedType.compareTo( params[1].getType(), false ) ) {
+            Parameter param2 = (Parameter) params.get(1);
+            if (indexedType != null && !indexedType.equals( param2.getType() ) ) {
                 throw new IntrospectionException(
                     "type mismatch between indexed read and write methods" ); // NOI18N
             }
-            indexedType = params[1].getType();
+            indexedType = param2.getType();
         }
 
         //type = indexedType;
 
         Type propType = getType();
-        if ( propType != null &&  (!propType.isArray() || !propType.getElementType().compareTo(indexedType, false))) {
+        if ( propType != null &&
+                (!(propType instanceof Array) || !indexedType.equals(((Array) propType).getType()))) {
             throw new IntrospectionException(
                 "type mismatch between property type and indexed type" ); // NOI18N
         }
@@ -638,17 +652,17 @@ public class IdxPropertyPattern extends PropertyPattern {
      * of the indexed property.
      * @return Name of the indexed property
      */ 
-    String findIndexedPropertyName() {
-
+    String findIndexedPropertyName() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         String superName = findPropertyName();
 
         if ( superName == null ) {
             String methodName = null;
 
             if ( indexedGetterMethod != null )
-                methodName = indexedGetterMethod.getName().getName();
+                methodName = indexedGetterMethod.getName();
             else if ( indexedSetterMethod != null )
-                methodName = indexedSetterMethod.getName().getName();
+                methodName = indexedSetterMethod.getName();
             else
                 throw new InternalError( "Indexed property with all methods == null" ); // NOI18N
 
@@ -664,70 +678,73 @@ public class IdxPropertyPattern extends PropertyPattern {
 
 
     /** Generates non-indexed getter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException if modification of source code is impossible.
      */
-    void generateGetterMethod() throws SourceException {
+    void generateGetterMethod() throws GenerateBeanException, JmiException {
         if ( type != null )
             super.generateGetterMethod();
     }
 
     /** Generates non-indexed setter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateSetterMethod() throws SourceException {
+    void generateSetterMethod() throws GenerateBeanException, JmiException {
         if ( type != null )
             super.generateSetterMethod();
     }
 
     /** Generates indexed getter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateIndexedGetterMethod() throws SourceException {
+    void generateIndexedGetterMethod() throws GenerateBeanException, JmiException {
         generateIndexedGetterMethod( null, false );
     }
 
     /** Generates indexed getter method with body and optionaly with Javadoc comment.
      * @param body Body of the method
      * @param javadoc Generate Javadoc comment?
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateIndexedGetterMethod( String body, boolean javadoc ) throws SourceException {
+    void generateIndexedGetterMethod( String body, boolean javadoc ) throws GenerateBeanException, JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
+        Method newGetter = jmodel.getMethod().createMethod();
+        Parameter newParameter = jmodel.getParameter().createParameter();
+        newParameter.setName("index"); // NOI18N
+        newParameter.setType(jmodel.getType().resolve("int")); // NOI18N
 
-        ClassElement declaringClass = getDeclaringClass();
-        MethodElement newGetter = new MethodElement();
-        MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ) }; // NOI18N
-
-        newGetter.setName( Identifier.create( "get" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
-        newGetter.setReturn( indexedType );
+        newGetter.setName( "get" + capitalizeFirstLetter( getName() ) ); // NOI18N
+        newGetter.setType( indexedType );
         newGetter.setModifiers( Modifier.PUBLIC );
-        newGetter.setParameters( newParameters );
+        newGetter.getParameters().add(newParameter);
         if ( declaringClass.isInterface() ) {
-            newGetter.setBody( null );
+            newGetter.setBodyText( null );
         }
         else if ( body != null )
-            newGetter.setBody( body );
+            newGetter.setBodyText( body );
 
         if ( javadoc ) {
             String comment = MessageFormat.format( PatternNode.getString( "COMMENT_IdxPropertyGetter" ),
                                                    new Object[] { getName() } );
-            newGetter.getJavaDoc().setRawText( comment );
+            newGetter.setJavadocText( comment );
         }
 
         //System.out.println ("Generating getter" ); // NOI18N
 
         if ( declaringClass == null )
-            throw new SourceException();
+            throw new GenerateBeanException();
         else {
             //System.out.println ( "Adding getter method" ); // NOI18N
-            declaringClass.addMethod( newGetter );
-            indexedGetterMethod = declaringClass.getMethod( newGetter.getName(), getParameterTypes( newGetter ) );
+            declaringClass.getFeatures().add( newGetter );
+            indexedGetterMethod = newGetter;
         }
     }
 
     /** Generates indexed setter method without body and without Javadoc comment.
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateIndexedSetterMethod() throws SourceException {
+    void generateIndexedSetterMethod() throws GenerateBeanException, JmiException {
         generateIndexedSetterMethod(null, false, false );
     }
 
@@ -735,26 +752,38 @@ public class IdxPropertyPattern extends PropertyPattern {
      * @param body Body of the method
      * @param javadoc Generate Javadoc comment?
      * @param constrained Is the property constrained?
-     * @throws SourceException If modification of source code is impossible.
+     * @throws GenerateBeanException If modification of source code is impossible.
      */
-    void generateIndexedSetterMethod( String body, boolean constrained, boolean javadoc ) throws SourceException {
+    void generateIndexedSetterMethod( String body, boolean constrained, boolean javadoc ) throws GenerateBeanException, JmiException {
+        assert JMIUtils.isInsideTrans();
+        JavaClass declaringClass = getDeclaringClass();
+        JavaModelPackage jmodel = JavaMetamodel.getManager().getJavaExtent(declaringClass);
+        Method newSetter = jmodel.getMethod().createMethod();
+        Parameter newParamIndex = jmodel.getParameter().createParameter();
+        newParamIndex.setName("index"); // NOI18N
+        newParamIndex.setType(jmodel.getType().resolve("int")); // NOI18N
+        Parameter newParamValue = jmodel.getParameter().createParameter();
+        newParamValue.setName(name);
+        newParamValue.setType(indexedType);
 
-        ClassElement declaringClass = getDeclaringClass();
-        MethodElement newSetter = new MethodElement();
-        MethodParameter[] newParameters = { new MethodParameter( "index", Type.INT, false ), // NOI18N
-                                            new MethodParameter( name, indexedType, false ) };
-
-        newSetter.setName( Identifier.create( "set" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
-        newSetter.setReturn( Type.VOID );
+        newSetter.setName( "set" + capitalizeFirstLetter( getName() ) ); // NOI18N
+        newSetter.setType(jmodel.getType().resolve("void")); // NOI18N
         newSetter.setModifiers( Modifier.PUBLIC );
-        newSetter.setParameters( newParameters );
-        if ( constrained )
-            newSetter.setExceptions( ( new Identifier[] { Identifier.create( "java.beans.PropertyVetoException" ) } ) ); // NOI18N
+        List/*<Parameter>*/ params = newSetter.getParameters();
+        params.add(newParamIndex);
+        params.add(newParamValue);
+        
+        if ( constrained ) {
+            JavaClass propVetoEx = patternAnalyser.findClassElement("java.beans.PropertyVetoException"); // NOI18N
+            if (propVetoEx == null) 
+                throw new GenerateBeanException("cannot resolve java.beans.PropertyVetoException"); // NOI18N
+            newSetter.getExceptions().add(propVetoEx);
+        }
         if ( declaringClass.isInterface() ) {
-            newSetter.setBody( null );
+            newSetter.setBodyText( null );
         }
         else if ( body != null ) {
-            newSetter.setBody( body );
+            newSetter.setBodyText( body );
         }
 
         if ( javadoc ) {
@@ -762,56 +791,42 @@ public class IdxPropertyPattern extends PropertyPattern {
                                                    new Object[] { getName(), name } );
             if ( constrained )
                 comment = comment + PatternNode.getString( "COMMENT_Tag_ThrowsPropertyVeto" );
-            newSetter.getJavaDoc().setRawText( comment );
+            newSetter.setJavadocText( comment );
         }
 
         if ( declaringClass == null )
-            throw new SourceException();
+            throw new GenerateBeanException();
         else {
-            declaringClass.addMethod( newSetter );
-            indexedSetterMethod = declaringClass.getMethod( newSetter.getName(), getParameterTypes( newSetter ) );
+            declaringClass.getFeatures().add(newSetter);
+            indexedSetterMethod = newSetter;
         }
     }
 
 
     /** Deletes the indexed getter method in source
-     * @throws SourceException If modification of source code is impossible.
+     * @throws JmiException If modification of source code is impossible.
      */
-    void deleteIndexedGetterMethod() throws SourceException {
-
+    void deleteIndexedGetterMethod() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         if ( indexedGetterMethod == null )
             return;
 
-        ClassElement declaringClass = getDeclaringClass();
-
-        if ( declaringClass == null ) {
-            throw new SourceException();
-        }
-        else {
-            declaringClass.removeMethod( indexedGetterMethod );
-            indexedGetterMethod = null;
-        }
+        JavaClass declaringClass = getDeclaringClass();
+        declaringClass.getFeatures().remove( indexedGetterMethod );
+        indexedGetterMethod = null;
     }
 
     /** Deletes the indexed setter method in source
-     * @throws SourceException If modification of source code is impossible.
+     * @throws JmiException If modification of source code is impossible.
      */
-    void deleteIndexedSetterMethod() throws SourceException {
-
+    void deleteIndexedSetterMethod() throws JmiException {
+        assert JMIUtils.isInsideTrans();
         if ( indexedSetterMethod == null )
             return;
 
-        ClassElement declaringClass = getDeclaringClass();
-
-        if ( declaringClass == null ) {
-            throw new SourceException();
-        }
-        else {
-            declaringClass.removeMethod( indexedSetterMethod );
-            indexedSetterMethod = null;
-        }
-
-
+        JavaClass declaringClass = getDeclaringClass();
+        declaringClass.getFeatures().remove( indexedSetterMethod );
+        indexedSetterMethod = null;
     }
 
     // Property change support ----------------------------------
@@ -820,8 +835,8 @@ public class IdxPropertyPattern extends PropertyPattern {
      * properties change fires PropertyChange event.
      * @param src Source IdxPropertyPattern it's properties will be copied.
      */
-    void copyProperties( IdxPropertyPattern src ) {
-
+    void copyProperties( IdxPropertyPattern src ) throws JmiException {
+        assert JMIUtils.isInsideTrans();
         boolean changed = !src.getIndexedType().equals( getIndexedType() ) ||
                           !( src.getType() == null ? getType() == null : src.getType().equals( getType() ) ) ||
                           !src.getName().equals( getName() ) ||
@@ -854,6 +869,7 @@ public class IdxPropertyPattern extends PropertyPattern {
             }
             name = findIndexedPropertyName();
 
+            // XXX cannot be fired inside mdr transaction; post to dedicated thread or redesigne somehow
             firePropertyChange( new java.beans.PropertyChangeEvent( this, null, null, null ) );
         }
     }
