@@ -60,11 +60,12 @@ public class AntBasedTestUtilTest extends NbTestCase {
         String f2 =
             "one\n" +
             // two deleted
-            "three\n" +
+            // three deleted
             "four\n" +
             "four #2\n" + // added
+            "four #3\n" + // added
             "five\n" +
-            "six\n" +
+            "six six six\n" + // modified
             "sevvin'!\n" + // modified
             "eight\n" +
             "najn\n" + // modified
@@ -72,9 +73,9 @@ public class AntBasedTestUtilTest extends NbTestCase {
             "ten #2\n"; // added
         int[] count = AntBasedTestUtil.countTextDiffs(new StringReader(f1), new StringReader(f2));
         assertEquals("should have three entries", 3, count.length);
-        assertEquals("two lines modified", 2, count[0]);
-        assertEquals("two lines added", 2, count[1]);
-        assertEquals("one line deleted", 1, count[2]);
+        assertEquals("three lines modified", 3, count[0]);
+        assertEquals("three lines added", 3, count[1]);
+        assertEquals("two lines deleted", 2, count[2]);
     }
     
     public void testTestCollocationQueryImplementation() throws Exception {

@@ -321,13 +321,13 @@ public class AntBasedTestUtil {
         for (int i = 0; i < diffs.length; i++) {
             switch (diffs[i].getType()) {
                 case Difference.CHANGE:
-                    count[0]++;
+                    count[0] += Math.max(diffs[i].getFirstEnd() - diffs[i].getFirstStart()+1, diffs[i].getSecondEnd() - diffs[i].getSecondStart()+1);
                     break;
                 case Difference.ADD:
-                    count[1]++;
+                    count[1] += (diffs[i].getSecondEnd() - diffs[i].getSecondStart()+1);
                     break;
                 case Difference.DELETE:
-                    count[2]++;
+                    count[2] += (diffs[i].getFirstEnd() - diffs[i].getFirstStart()+1);
                     break;
                 default:
                     assert false : diffs[i];    
