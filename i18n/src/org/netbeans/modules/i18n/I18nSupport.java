@@ -94,11 +94,11 @@ public class I18nSupport {
     private TreeSet formProperties;
     
     /** Holds document object. */
-    //    protected BaseDocument myDoc;
-    private StyledDocument doc;
+    private StyledDocument document;
     
-    /** Holds data object which document is internationalized. */
-    private DataObject obj;
+    /** Holds <code>DataObject</code> which document is internationalized. 
+     * @see org.openide.loaders.DataObject */
+    private DataObject targetDataObject;
     
     /** Listener which listens on changes of form document. */
     DocumentListener listener;
@@ -116,25 +116,28 @@ public class I18nSupport {
     
     
     /** Constructor. Don't call this. Use getI18nSupport method instead. */
-    private I18nSupport(StyledDocument doc, DataObject obj) {
-        initialize(doc, obj);
+    private I18nSupport(StyledDocument document, DataObject targetDataObject) {
+        initialize(document, targetDataObject);
+    }
+
+    
+    /** Initializes the <code>document</code> and <code>targetDataObject</code> variables. */
+    private void initialize(StyledDocument document, DataObject targetDataObject) {
+        if(this.document == null || !this.document.equals(document) )
+            this.document = document;
+        if(this.targetDataObject == null || !this.targetDataObject.equals(targetDataObject) )
+            this.targetDataObject = targetDataObject;
     }
     
     /** Gets the only insance of I18nSupport. */
-    public static I18nSupport getI18nSupport(StyledDocument doc, DataObject obj) {
+    public static I18nSupport getI18nSupport(StyledDocument document, DataObject targetDataObject) {
         if(instance == null)
-            instance = new I18nSupport(doc, obj);
+            instance = new I18nSupport(document, targetDataObject);
         else {
-            instance.initialize(doc, obj);
+            instance.initialize(document, targetDataObject);
         }
             
         return instance;
-    }
-    
-    /** Initializes the <code>doc</code> and <code>obj</code> variables. */
-    private void initialize(StyledDocument doc, DataObject obj) {
-        if(this.doc == null || !this.doc.equals(doc) ) this.doc = doc;
-        if(this.obj == null || !this.obj.equals(obj) ) this.obj = obj;
     }
     
     /** The 'heart' method called by <code>I18nAction</code>. */
@@ -142,7 +145,7 @@ public class I18nSupport {
         reset(); // always reset the dialog
        
         // initialize the component
-        editCook = (EditorCookie)obj.getCookie(EditorCookie.class);
+        editCook = (EditorCookie)targetDataObject.getCookie(EditorCookie.class);
         if (editCook == null)
             return;  // PENDING
         JEditorPane[] panes = editCook.getOpenedPanes();
@@ -160,7 +163,7 @@ public class I18nSupport {
         // add listener on form in case the guarded block was changed add new components to the formProperties,
         // PENDING 1) how to reset the position of lastPosition
         //         2) how to remove from formProperties removed components
-        if(obj instanceof FormDataObject) {
+        if(targetDataObject instanceof FormDataObject) {
             // create form properties
             createFormProperties();
             
@@ -175,7 +178,7 @@ public class I18nSupport {
                 public void removeUpdate(DocumentEvent e) {
                 }
             };
-            doc.addDocumentListener(listener);
+            document.addDocumentListener(listener);
         }
         
         // do the search
@@ -248,17 +251,23 @@ public class I18nSupport {
             return;
         }
         
-        // Set replacingString -> like bundle.getString(<keyname>);
         ResourceBundleStringEditor rbStringEditor = new ResourceBundleStringEditor();
         rbStringEditor.setValue(rbString);
-        String javaInitString = rbStringEditor.getJavaInitializationString();
         
         if (rbString instanceof ResourceBundleStringForm) {
-            // form
-            replaceInForm(getI18nInfo().getNodeProperty(), (ResourceBundleStringForm)rbString, javaInitString);
+            // Form.
+            // Note: Last argument (replace string) is get via getReplace method, cause the getJavaInitialization method
+            // which causes also (there is a hook) creating field for bundle (if needed) is invoked from form module while regenerating guarded blocks.
+            replaceInForm(getI18nInfo().getNodeProperty(), (ResourceBundleStringForm)rbString, rbStringEditor.getReplaceString());
         } else {
-            // no form (but could be guarded!, see guarded blocks in beaninfo)
-            replaceDirect(getI18nInfo().getPosition().getOffset(), getI18nInfo().getLength(), javaInitString);
+            // PENDING
+            // Hack for setting targetDataObject.
+            rbStringEditor.setTargetDataObject(targetDataObject);
+            
+            // No form (could be guarded, see guarded blocks in beaninfo, but this case doesn't fear us).
+            // Note: Lst argument (replace string) is get via getJavaInitialization method which causes also (teher is a hook) cretaing field for bundle
+            // (if needed).
+            replaceDirect(getI18nInfo().getPosition().getOffset(), getI18nInfo().getLength(), rbStringEditor.getJavaInitializationString());
         }
         
         skipped = false;
@@ -272,38 +281,7 @@ public class I18nSupport {
             doCancel();
     }
     
-    /** Gets SourceElement form document which works  this support on. */
-    private SourceElement getSourceElement() {
-        SourceCookie.Editor sec = (SourceCookie.Editor)obj.getCookie(SourceCookie.Editor.class);
-        return sec.getSource();
-    }
-    
-    /** Finds main top-level class element of "this" source. */
-    public static ClassElement getSourceClassElement(SourceElement sourceElem) {
-        
-        DataObject dob = (DataObject)sourceElem.getCookie(DataObject.class);
-        
-        ClassElement sourceClass = sourceElem.getClass(Identifier.create(dob.getName()));
-        
-        if(sourceClass != null)
-            return sourceClass;
-        
-        
-        ClassElement[] classes = sourceElem.getClasses();
-        
-        // find source class
-        for(int i=0; i<classes.length; i++) {
-            int modifs = classes[i].getModifiers();
-            if(classes[i].isClass() && Modifier.isPublic(modifs)) {
-                sourceClass = classes[i];
-                break;
-            }
-        }
-        
-        return sourceClass;
-    }
-    
-    /* Replace All button handler. */
+    /* Replace All button handler. At the time does nothing. */
     private void doReplaceAll() {
         // PENDING
     }
@@ -323,8 +301,8 @@ public class I18nSupport {
     /* Cancel button handler. */
     private void doCancel() {
         // no memory leaks
-        doc = null;
-        obj = null;
+        document = null;
+        targetDataObject = null;
         lastPos = null;
         currentComponent = null;
         i18nInfoInstance = null;
@@ -336,19 +314,19 @@ public class I18nSupport {
     }
     
     /** Replaces found hard coded string outside of guarded blocks (or beaninfo guarded blocks respectivelly). */
-    private void replaceDirect(final int startPos, final int length, final String replaceWith) {
+    private void replaceDirect(final int startPos, final int length, final String replaceString) {
         if (ensureComponentValid(startPos)) {
             // Call runAtomic method to break guarded flag if it is necessary. (For non-guarded works as well).
             NbDocument.runAtomic(
-            doc,
+            document,
             new Runnable() {
                 public void run() {
                     try {
                         if (length > 0) {
-                            doc.remove(startPos, length);
+                            document.remove(startPos, length);
                         }
-                        if (replaceWith != null && replaceWith.length() > 0) {
-                            doc.insertString(startPos, replaceWith, null);
+                        if (replaceString != null && replaceString.length() > 0) {
+                            document.insertString(startPos, replaceString, null);
                         }
                     } catch (BadLocationException ble) {
                         NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
@@ -357,45 +335,11 @@ public class I18nSupport {
                     }
                 }
             });
-
-/*            // Note: This is just because the runAtomicAsUser method of NbDocument takes as first argument StyledDocument, 
-            // but we want to have also a possibility for documents which don't implement StyledDocument interface.
-            // If the OpenAPI changes uncomment the above code and remove this one.
-            Runnable run = new Runnable() {
-                public void run() {
-                    try {
-                        if (len > 0) {
-                            doc.remove(startPos, len);
-                        }
-                        if (replaceWith != null && replaceWith.length() > 0) {
-                            doc.insertString(startPos, replaceWith, null);
-                        }
-                    } catch (BadLocationException ble) {
-                        NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-                        getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
-                        TopManager.getDefault().notify(message);
-                    }
-                }
-            };
-            
-            if (doc instanceof NbDocument.WriteLockable) {
-                try {
-                    ((NbDocument.WriteLockable)doc).runAtomicAsUser (run);
-                } catch (BadLocationException ble) {
-                    NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
-                    getString("MSG_CouldNotReplace"), NotifyDescriptor.ERROR_MESSAGE);
-                    TopManager.getDefault().notify(message);
-                }
-            } else {
-                synchronized (doc) {
-                    run.run();
-                }
-            }*/
         }
     }
     
     /** Replaces found hard coded string in guarded blocks. */
-    private void replaceInForm(Node.Property property, ResourceBundleStringForm newValue, String javaInitString) {
+    private void replaceInForm(Node.Property property, ResourceBundleStringForm rbStringForm, String replaceString) {
         try {
             // remember position offset before change of guarded block
             int pos;
@@ -405,21 +349,21 @@ public class I18nSupport {
                 pos = currentComponent.getCaret().getDot();
             
             // new value to set
-            Object setValue;
+            Object newValue;
             
             // old value
-            Object value = property.getValue();
+            Object oldValue = property.getValue();
             
             // RAD property -> like text, title etc.
             if(property instanceof RADProperty) {
-                if(value instanceof RADConnectionDesignValue
-                && ((RADConnectionDesignValue)value).getType() == RADConnectionDesignValue.TYPE_CODE) {
-                    // the value is set in RADConnectionPropertyEditor
+                if(oldValue instanceof RADConnectionDesignValue
+                && ((RADConnectionDesignValue)oldValue).getType() == RADConnectionDesignValue.TYPE_CODE) {
+                    // The old value is set via RADConnectionPropertyEditor,
                     // (in our case if value was RADConnectionDesignValue of type TYPE_CODE (= user code))
-                    String oldValue = (String)((RADConnectionDesignValue)value).getDesignValue(((RADProperty)property).getRADComponent());
-                    StringBuffer buff = new StringBuffer(oldValue);
+                    String oldString = (String)((RADConnectionDesignValue)oldValue).getDesignValue(((RADProperty)property).getRADComponent());
+                    StringBuffer buff = new StringBuffer(oldString);
                     
-                    int index = indexOfNonI18nString(oldValue, getI18nInfo().getHardString(), validProp.getSkip());
+                    int index = indexOfNonI18nString(oldString, getI18nInfo().getHardString(), validProp.getSkip());
                     if (index == -1) {
                         NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
                         getString("MSG_StringNotFoundInGuarded"), NotifyDescriptor.ERROR_MESSAGE);
@@ -428,26 +372,26 @@ public class I18nSupport {
                     }
                     
                     int startOffset = index;
-                    // the last operand in expression + 2 stands for double quotes for hard string
+                    // The last operand in expression + 2 stands for double quotes for hard string.
                     int endOffset = startOffset + getI18nInfo().getHardString().length() + 2;
                     
-                    buff.replace(startOffset, endOffset, javaInitString);
+                    buff.replace(startOffset, endOffset, replaceString);
                     
                     RADConnectionDesignValue newConnectionValue = new RADConnectionDesignValue(buff.toString());
-                    setValue = newConnectionValue;
+                    newValue = newConnectionValue;
                 } else {
-                    // the value is set in ResourceBundleStringFormEditor
-                    // (in our case if value was "plain string" or RADConnectionDesignValue of type TYPE_VALUE
+                    // The old value is set via ResourceBundleStringFormEditor,
+                    // (in our case if value was "plain string" or RADConnectionDesignValue of type TYPE_VALUE.
                     ((RADProperty)property).setCurrentEditor(new ResourceBundleStringFormEditor());
-                    setValue = newValue;
+                    newValue = rbStringForm;
                 }
             } else {
-                // Node.Property -> like code generation properties
-                // replace the part of old value which matches "quoted" hardString only
-                String oldValue = (String)value;
-                StringBuffer buff = new StringBuffer(oldValue);
+                // Node.Property -> code generation properties.
+                // Replace the part of old value which matches "quoted" hardString only.
+                String oldString = (String)oldValue;
+                StringBuffer buff = new StringBuffer(oldString);
                 
-                int index = indexOfNonI18nString(oldValue, getI18nInfo().getHardString(), validProp.getSkip());
+                int index = indexOfNonI18nString(oldString, getI18nInfo().getHardString(), validProp.getSkip());
                 
                 if (index == -1) {
                     NotifyDescriptor.Message message = new NotifyDescriptor.Message(NbBundle.getBundle(I18nModule.class).
@@ -457,23 +401,23 @@ public class I18nSupport {
                 }
                 
                 int startOffset = index;
-                // the last operand in expression + 2 stands for double quotes to hard string
+                // The last operand in expression + 2 stands for double quotes to hard string.
                 int endOffset = startOffset + getI18nInfo().getHardString().length() + 2;
                 
-                buff.replace(startOffset, endOffset, javaInitString);
+                buff.replace(startOffset, endOffset, replaceString);
                 
-                setValue = buff.toString();
+                newValue = buff.toString();
             }
             
-            // finally set the value to property
-            property.setValue(setValue);
+            // Finally set the new value to property.
+            property.setValue(newValue);
             
-            // little trick to reset new position after guarded block was changed
-            if (doc instanceof AbstractDocument)
-                ((AbstractDocument)doc).readLock();
+            // Little trick to reset new position after guarded block was regenerated.
+            if (document instanceof AbstractDocument)
+                ((AbstractDocument)document).readLock();
             try {
-                pos += javaInitString.length() - getI18nInfo().getHardString().length() + 2;
-                lastPos = doc.createPosition(pos);
+                pos += replaceString.length() - getI18nInfo().getHardString().length() + 2;
+                lastPos = document.createPosition(pos);
             } catch (BadLocationException ble) {
                 if(Boolean.getBoolean(DEBUG))
                     System.err.println("I18nSupport: Position reset in guarded block not successful."); // NOI18N
@@ -481,8 +425,8 @@ public class I18nSupport {
                 if(Boolean.getBoolean(DEBUG))
                     e.printStackTrace();
             } finally {
-                if(doc instanceof AbstractDocument)
-                    ((AbstractDocument)doc).readUnlock();
+                if(document instanceof AbstractDocument)
+                    ((AbstractDocument)document).readUnlock();
             }
         } catch (IllegalAccessException iae) {
             if(Boolean.getBoolean(DEBUG))
@@ -493,14 +437,14 @@ public class I18nSupport {
         }
     }
     
-    /** Finds from the position (or the current position if position == -1,
+    /** Finds from the <code>lastPos</code> (or the current position if position == -1).
      * @return true if a hardcoded string was found
+     * @see #lastPos
      */
     private boolean find() {
         if (ensureComponentValid(-1)) {
             int dotPos = -1;
             int[] ret;
-
             
             do {
                 // Clean values from possibly previous search.
@@ -521,22 +465,22 @@ public class I18nSupport {
                 if (ret != null) {
                     try {
                         // Set i18n info values.
-                        getI18nInfo().setPosition(doc.createPosition(ret[0]));
+                        getI18nInfo().setPosition(document.createPosition(ret[0]));
                         getI18nInfo().setLength(ret[1]);
-                        getI18nInfo().setHardString(extractString(doc.getText(ret[0], ret[1])));
+                        getI18nInfo().setHardString(extractString(document.getText(ret[0], ret[1])));
                         try {
-                            javax.swing.text.Element paragraph = doc.getParagraphElement(ret[0]);
-                            getI18nInfo().setHardLine(doc.getText(paragraph.getStartOffset(), paragraph.getEndOffset()-paragraph.getStartOffset()).trim());
+                            javax.swing.text.Element paragraph = document.getParagraphElement(ret[0]);
+                            getI18nInfo().setHardLine(document.getText(paragraph.getStartOffset(), paragraph.getEndOffset()-paragraph.getStartOffset()).trim());
                         } catch (BadLocationException ble) {
                             getI18nInfo().setHardLine(""); // NOI18N
                         }
-
                         getI18nInfo().setGuarded(isGuardedPosition(ret[0]));
 
                     }
                     catch (BadLocationException e) {
                         throw new InternalError();
                     }
+                    // Highlight found hard coded string.
                     caret.setDot(ret[0]);
                     caret.moveDot(ret[0] + ret[1]);
                 } else {
@@ -546,13 +490,13 @@ public class I18nSupport {
 
                 // save position after just found string
                 try {
-                    lastPos = doc.createPosition(ret[0]+ret[1]);
+                    lastPos = document.createPosition(ret[0]+ret[1]);
                 } catch (BadLocationException ble) {
                     lastPos = null;
                 }
 
             // Skip found hardcoded string if is in form, guarded and not found appropriate form component property.
-            } while (getI18nInfo().isGuarded() && obj instanceof FormDataObject && !findInForm());
+            } while (getI18nInfo().isGuarded() && targetDataObject instanceof FormDataObject && !findInForm());
 
             return true;
         }
@@ -571,15 +515,15 @@ public class I18nSupport {
     synchronized boolean isGuardedPosition(final int position) {
         guardedPosition = false ;
 
-        final StyledDocument doc = this.doc;
+        final StyledDocument document = this.document;
         
         try {
             NbDocument.runAtomicAsUser(
-            doc,
+            document,
             new Runnable() {
                 public void run() {
                     try {
-                        doc.insertString(position, "x", null);
+                        document.insertString(position, "x", null);
                     } catch (BadLocationException ble) {
                         // Is in guarded
                         // It is possible to set it this way cause this method is called directly in the same thread.
@@ -594,7 +538,7 @@ public class I18nSupport {
         } finally {
             // If was notguarded -> means "x" test string was inserted -> undo it.
             if(!guardedPosition) {
-                SourceCookie.Editor sec = (SourceCookie.Editor)obj.getCookie(SourceCookie.Editor.class);
+                SourceCookie.Editor sec = (SourceCookie.Editor)targetDataObject.getCookie(SourceCookie.Editor.class);
                 if(sec != null) {
                     JEditorPane[] panes = sec.getOpenedPanes();
                     if(panes != null && panes.length > 0) {
@@ -617,7 +561,7 @@ public class I18nSupport {
         return guardedPosition;
     }
     
-    /** Extrats pure string from hard coded one (without start and end double quotes). */
+    /** Extracts pure string from hard coded one (without start and end double quotes). */
     private String extractString(String sourceString) {
         if ((sourceString.length() >= 2) &&
         (sourceString.charAt(0) == '"') &&
@@ -641,7 +585,7 @@ public class I18nSupport {
             I18nFinder finder = getI18nFinder();
             int pos = -1;
             try {
-                final int docLen = doc.getLength();
+                final int docLen = document.getLength();
                 if (startPos == -1) {
                     startPos = docLen;
                 }
@@ -703,7 +647,7 @@ public class I18nSupport {
     /** Method which actually calls finder to find a string in document.
      * Note: Code copied and adjusted from org.netbeans.editor.DocCache to avoid dependency on editor module. */
     private int find(I18nFinder finder, int startPos, int endPos) throws BadLocationException {
-        int docLen = doc.getLength();
+        int docLen = document.getLength();
         
         if (startPos == -1) {
             startPos = docLen;
@@ -735,7 +679,7 @@ public class I18nSupport {
             // Call finder to find a string in the buffer.
             pos = finder.find(0,
                 // Gets the all document text.
-                doc.getText(0, docLen).toCharArray(),
+                document.getText(0, docLen).toCharArray(),
                 forward ? startPos : endPos,
                 forward ? endPos : startPos,
                 pos, endPos);
@@ -774,11 +718,11 @@ public class I18nSupport {
     /** Get i18n finder */
     private I18nFinder getI18nFinder() {
         I18nFinder i18nFinder;
-        i18nFinder = (I18nFinder)doc.getProperty(I18N_FINDER_PROP);
+        i18nFinder = (I18nFinder)document.getProperty(I18N_FINDER_PROP);
         
         if (i18nFinder == null) {
             i18nFinder = new I18nFinder();
-            doc.putProperty(I18N_FINDER_PROP, i18nFinder);
+            document.putProperty(I18N_FINDER_PROP, i18nFinder);
         }
         
         return i18nFinder;
@@ -814,7 +758,7 @@ public class I18nSupport {
             topComponent.setCloseOperation(TopComponent.CLOSE_EACH);
             topComponent.setLayout(new BorderLayout());
             topComponent.add(i18nPanel, BorderLayout.CENTER);
-            topComponent.setName(obj.getName());
+            topComponent.setName(targetDataObject.getName());
             
             // dock into I18N mode if possible
             Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
@@ -829,6 +773,9 @@ public class I18nSupport {
                 i18nMode.dockInto(topComponent);
             }
         }
+        
+        // Hook for setting target data object for resource bundle panel.
+        i18nPanel.getResourceBundlePanel().setTargetDataObject(targetDataObject);
     }
     
     /** Shows dialog. In our case it is a top component. */
@@ -850,13 +797,13 @@ public class I18nSupport {
     
     /** Fills values presented in internationalize dialog. */
     private void fillDialogValues() {
-        ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getValue();
-        PropertiesDataObject pdo = (oldRbString == null) ? null : i18nPanel.getResourceBundlePanel().getValue().getResourceBundle();
+        ResourceBundleString oldRbString = i18nPanel.getResourceBundlePanel().getResourceBundleString();
+        PropertiesDataObject pdo = (oldRbString == null) ? null : i18nPanel.getResourceBundlePanel().getResourceBundleString().getResourceBundle();
         ResourceBundleString newRbString = getI18nInfo().getDefaultBundleString(pdo);
         // Passes old field element from previous search if exist.
         if(oldRbString != null)
             newRbString.setIdentifier(oldRbString.getIdentifier());
-        i18nPanel.setValue(newRbString);
+        i18nPanel.setResourceBundleString(newRbString);
         i18nPanel.setI18nInfo(getI18nInfo());
     }
     
@@ -865,7 +812,7 @@ public class I18nSupport {
      * Collection is referenced to formProperties variable.
      * @return True if sorted collection was created. */
     private synchronized boolean createFormProperties() {
-        if(!(obj instanceof FormDataObject))
+        if(!(targetDataObject instanceof FormDataObject))
             // is not form
             return false;
         
@@ -883,7 +830,7 @@ public class I18nSupport {
             return;
         
         // all components in current FormDataObject
-        Collection c = ((FormDataObject)obj).getFormEditor().getFormManager().getAllComponents();
+        Collection c = ((FormDataObject)targetDataObject).getFormEditor().getFormManager().getAllComponents();
         Iterator it = c.iterator();
         
         // search thru all RADComponents in the form
@@ -938,7 +885,7 @@ public class I18nSupport {
             return true;
         
         // must be a form (returns true -> hardstring found already)
-        if (!(obj instanceof FormDataObject))
+        if (!(targetDataObject instanceof FormDataObject))
             return true;
         
         boolean found = false;
@@ -1183,16 +1130,15 @@ public class I18nSupport {
         /** Gets the default bundle string given a PropertiesDataObject. May return null if the value
          * can not be replaced (i.e. is in a guraded block and a form property has not been found). */
         private ResourceBundleString getDefaultBundleString(PropertiesDataObject pdo) {
-            if (isGuarded() && obj instanceof FormDataObject) {
+            if (isGuarded() && targetDataObject instanceof FormDataObject) {
                 // guarded block in form
                 Node.Property  prop = getI18nInfo().getNodeProperty();
                 if (prop != null) {
                     // form
                     if (prop instanceof RADProperty) { // RADProperty
                         ResourceBundleStringForm rbStringForm = new ResourceBundleStringForm();
-                        rbStringForm.setClassElement(I18nSupport.getSourceClassElement(getSourceElement()));
                         rbStringForm.setResourceBundle(pdo);
-                        rbStringForm.setDefaultValue(getHardString());
+                        rbStringForm.setDefaultValue(hardString);
                         
                         rbStringFormEditor.setRADComponent(((RADProperty)prop).getRADComponent(), (RADProperty)prop);
                         rbStringFormEditor.setValue(rbStringForm);
@@ -1207,14 +1153,13 @@ public class I18nSupport {
                             rbString = new ResourceBundleString();
                             rbString.setResourceBundle(pdo);
                         }
-                        putDefaultStringKey(rbString);
-                        rbString.setDefaultValue(getHardString());
-                        rbString.setClassElement(I18nSupport.getSourceClassElement(getSourceElement()));
+                        setDefaultKey(rbString);
+                        rbString.setDefaultValue(hardString);
                         return new ResourceBundleStringForm(rbString);
                     }
                 } else {
                     // not found
-                    InvalidResourceBundleString invalidRbString = new InvalidResourceBundleString();
+                    ResourceBundleString.InvalidResourceBundleString invalidRbString = new ResourceBundleString.InvalidResourceBundleString();
                     invalidRbString.setResourceBundle(pdo);
                     return invalidRbString;
                 }
@@ -1229,18 +1174,18 @@ public class I18nSupport {
                     rbString = new ResourceBundleString();
                     rbString.setResourceBundle(pdo);
                 }
-                putDefaultStringKey(rbString);
-                rbString.setDefaultValue(getHardString());
-                rbString.setClassElement(I18nSupport.getSourceClassElement(getSourceElement()));
+                setDefaultKey(rbString);
+                rbString.setDefaultValue(hardString);
                 return rbString;
             }
         }
-        
-        private void putDefaultStringKey(ResourceBundleString rbString) {
+
+        /** Sets default key value. */
+        private void setDefaultKey(ResourceBundleString rbString) {
             String baseKey = Util.stringToKey(hardString);
             int index = 0;
             rbString.setKey(baseKey);
-            while (rbString.getPropertyValue() != null) {
+            while (rbString.getExistingValue() != null) {
                 index ++;
                 rbString.setKey(baseKey + "." + index); // NOI18N
             }
@@ -1317,7 +1262,7 @@ public class I18nSupport {
         private static final String INIT_CODE_POST = "initCodePost"; // NOI18N
         
         /** Array of all components in current FormDataObject */
-        private final Object[] components = ((FormDataObject)obj).getFormEditor().getFormManager().getAllComponents().toArray();
+        private final Object[] components = ((FormDataObject)targetDataObject).getFormEditor().getFormManager().getAllComponents().toArray();
         
         
         public int compare(Object o1, Object o2) {
@@ -1427,14 +1372,5 @@ public class I18nSupport {
             return equals(obj);
         }
     } // End of ValidFormPropertyCompoarator inner class.
-    
-    /** ResourceBundleString representing invalid value. */
-    public static class InvalidResourceBundleString extends ResourceBundleString {
-        
-        static final long serialVersionUID =8135168688193465968L;
-        public InvalidResourceBundleString() {
-        }
-        
-    } // End of InvalidResourceBundleString inner class.
     
 }

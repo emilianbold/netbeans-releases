@@ -68,10 +68,9 @@ public class InsertI18nStringAction extends CookieAction {
 
         final ResourceBundleStringEditor rbStringEditor = new ResourceBundleStringEditor();
         ResourceBundleString rbString = (ResourceBundleString)rbStringEditor.getValue();
-        rbString.setClassElement(I18nSupport.getSourceClassElement(sec.getSource())); // Set ClassElement. // TEMP
         
         final ResourceBundlePanel rbPanel = (ResourceBundlePanel)rbStringEditor.getCustomEditor();
-        rbPanel.setValue(rbString);
+        rbPanel.setResourceBundleString(rbString);
         
         DialogDescriptor dd = new DialogDescriptor(
             rbPanel,
@@ -86,7 +85,7 @@ public class InsertI18nStringAction extends CookieAction {
                             ResourceBundleString newRbString = (ResourceBundleString)rbPanel.getPropertyValue();
                             rbStringEditor.setValue(newRbString);
                             // Set targetDataObject so the field  could be created properly.
-//                            rbStringEditor.setTargetDataObject(dobj); // TEMP // PENINDG
+                            rbStringEditor.setTargetDataObject(dobj);
                             
                             doc.insertString(position, rbStringEditor.getJavaInitializationString(), null);
                             
@@ -121,7 +120,7 @@ public class InsertI18nStringAction extends CookieAction {
             return false;
         
         // if has an open editor pane must not be in a guarded block
-// TEMP PENDING>>
+        // PENDING>>
         // It causes StackOverflowError
         // I18nSupport.isGuardedPosittion() checks teh way it causes change cookies (remove add SaveCookie), what
         // in turn calls back enable method, it calls isGueardedPosition again etc. etc.
@@ -136,7 +135,7 @@ public class InsertI18nStringAction extends CookieAction {
                     return false;
             }
         }*/
-// TEMP PENDING<<        
+        // PENDING<<        
         
         return true;
     }
