@@ -370,6 +370,8 @@ public class NonGui extends NbTopManager implements Runnable {
         PropertyEditorManager.setEditorSearchPath(allpesp);
         PropertyEditorManager.registerEditor (java.lang.Character.TYPE, getKlass("org.netbeans.beaninfo.editors.CharEditor"));
         PropertyEditorManager.registerEditor(getKlass("[Ljava.lang.String;"), getKlass("org.netbeans.beaninfo.editors.StringArrayEditor")); // NOI18N
+        // bugfix #28676, register editor for a property which type is array of data objects
+        PropertyEditorManager.registerEditor(getKlass("[Lorg.openide.loaders.DataObject;"), getKlass("org.netbeans.beaninfo.editors.DataObjectArrayEditor")); // NOI18N
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------

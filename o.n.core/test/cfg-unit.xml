@@ -30,6 +30,7 @@ Microsystems, Inc. All Rights Reserved.
             <patternset>
                 <include name="org/netbeans/core/windows/*.class"/>
                 <include name="org/netbeans/core/filesystems/*.class"/>
+                <include name="org/netbeans/beaninfo/editors/*.class"/>
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
                 <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
                 <exclude name="org/netbeans/core/windows/UIModeManagerTest.class"/>
