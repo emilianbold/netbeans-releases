@@ -43,7 +43,9 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ========= -->
     
     <target name="unit-compiler">
-        <!-- PENDING need to build guitracker library first -->
+        <!-- build guitracker library first -->
+        <ant dir="../guitracker" target="jar"/>
+        
         <buildTests srcDir="unit/src" compileexcludes="**/data/**">
             <classpath refid="jemmy.and.jelly.path"/>
         </buildTests>
