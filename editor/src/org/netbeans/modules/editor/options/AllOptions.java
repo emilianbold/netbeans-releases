@@ -59,13 +59,14 @@ public class AllOptions extends ContextSystemOption {
   }
 
   public boolean isGlobal() {
-    return false;
+    return true;
   }
 
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        1/15/00  Miloslav Metelka now global
  *  10   Gandalf   1.9         1/13/00  Miloslav Metelka Localization
  *  9    Gandalf   1.8         11/5/99  Jesse Glick     Context help jumbo 
  *       patch.

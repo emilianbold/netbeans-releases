@@ -133,13 +133,14 @@ public class OptionSupport extends SystemOption {
   }
 
   public boolean isGlobal() {
-    return false;
+    return true;
   }
 
 }
 
 /*
  * Log
+ *  12   Gandalf   1.11        1/15/00  Miloslav Metelka now global
  *  11   Gandalf   1.10        1/13/00  Miloslav Metelka Localization
  *  10   Gandalf   1.9         12/28/99 Miloslav Metelka 
  *  9    Gandalf   1.8         11/11/99 Miloslav Metelka SVUID explicitly 
