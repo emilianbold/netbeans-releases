@@ -86,7 +86,7 @@ public class PropertiesTableModel extends AbstractTableModel {
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
                 // reset all header values as well
-                Object list[] = listenerList.getListenerList();
+                Object list[] = PropertiesTableModel.this.listenerList.getListenerList();
                 for (int i = 0; i < list.length; i++) {
                     if (list[i] instanceof JTable) {
                         JTable jt = (JTable)list[i];
