@@ -38,6 +38,8 @@ public class Testbag implements XMLSerializable {
     
     private String pluginName;
     
+    private SetupAndTeardown setupAndTeardown;
+    
     private String resultsprocessor;
     private Integer prio;
     private Integer timeout;
@@ -61,10 +63,12 @@ public class Testbag implements XMLSerializable {
             classMappingRegistry.registerSimpleField("compiler",ClassMappingRegistry.ATTRIBUTE,"compiler");
             classMappingRegistry.registerSimpleField("pluginName",ClassMappingRegistry.ATTRIBUTE,"plugin");
             classMappingRegistry.registerSimpleField("resultsprocessor",ClassMappingRegistry.ATTRIBUTE,"resultsprocessor");
-            classMappingRegistry.registerSimpleField("prio",ClassMappingRegistry.ATTRIBUTE,"prio");
+            classMappingRegistry.registerSimpleField("prio",ClassMappingRegistry.ATTRIBUTE,"prio"); 
             classMappingRegistry.registerSimpleField("timeout",ClassMappingRegistry.ATTRIBUTE,"timeout");
             classMappingRegistry.registerContainerField("testsets","testset",ClassMappingRegistry.DIRECT);
             classMappingRegistry.registerContainerField("testProperties","testproperty",ClassMappingRegistry.DIRECT);
+            //classMappingRegistry.registerContainerField("setupAndTeardown","setup", ClassMappingRegistry.DIRECT);
+            classMappingRegistry.registerSimpleField("setupAndTeardown",ClassMappingRegistry.ELEMENT, "setup");
             
         } catch (MappingException me) {
             me.printStackTrace();
@@ -135,6 +139,38 @@ public class Testbag implements XMLSerializable {
     public String getPluginName() {
         return pluginName;
     }
+    
+    public String getSetUpClassName() {
+        if (setupAndTeardown != null) {
+            return setupAndTeardown.setUpClassName;
+        } else {
+            return null;
+        }
+    }
+    
+    public String getSetUpMethodName() {
+        if (setupAndTeardown != null) {
+            return setupAndTeardown.setUpMethodName;
+        } else {
+            return null;
+        }
+    }
+    
+    public String getTearDownClassName() {
+        if (setupAndTeardown != null) {
+            return setupAndTeardown.tearDownClassName;
+        } else {
+            return null;
+        }
+    }
+    
+    public String getTearDownMethodName() {
+        if (setupAndTeardown != null) {
+            return setupAndTeardown.tearDownMethodName;
+        } else {
+            return null;
+        }
+    }   
     
     public Testset[] getTestsets() {
         return testsets;
@@ -431,6 +467,34 @@ public class Testbag implements XMLSerializable {
                 throw new XMLSerializeException("Attribute name is required for element include/exclude.");
         }
         
+    }
+    
+    // TestBag setup inner class
+    public static class SetupAndTeardown implements XMLSerializable {
+        
+        static ClassMappingRegistry classMappingRegistry = new ClassMappingRegistry(Testbag.SetupAndTeardown.class);
+        static {
+            try {
+                // register this class
+                classMappingRegistry.registerSimpleField("setUpClassName",ClassMappingRegistry.ATTRIBUTE,"setupClass");
+                classMappingRegistry.registerSimpleField("setUpMethodName",ClassMappingRegistry.ATTRIBUTE,"setupMethod");
+                classMappingRegistry.registerSimpleField("tearDownClassName",ClassMappingRegistry.ATTRIBUTE,"teardownClass");
+                classMappingRegistry.registerSimpleField("tearDownMethodName",ClassMappingRegistry.ATTRIBUTE,"teardownMethod");
+                
+            } catch (MappingException me) {
+                me.printStackTrace();
+                classMappingRegistry = null;
+            }
+        }
+        
+        public ClassMappingRegistry registerXMLMapping() {
+            return classMappingRegistry;
+        }            
+        private String setUpClassName;
+        private String setUpMethodName;
+        private String tearDownClassName;
+        private String tearDownMethodName;
+                        
     }
 
 }

@@ -244,6 +244,13 @@ public class MTestExecutor extends Task {
         JUnitTestRunnerProperties props = new JUnitTestRunnerProperties();
         // results dir
         props.setResultsDirName(resultDir.getAbsolutePath());
+        // setup teardown
+        if ((testbag.getSetUpClassName() != null) && (testbag.getSetUpMethodName() != null)) {
+            props.setTestbagSetup(testbag.getSetUpClassName(), testbag.getSetUpMethodName());
+        }
+        if ((testbag.getTearDownClassName() != null) && (testbag.getTearDownMethodName() != null)) {
+            props.setTestbagTeardown(testbag.getTearDownClassName(), testbag.getTearDownMethodName());
+        }        
         // tests
         for (int i=0; i < testsWithFilters.size(); i++) {
             TestWithFilter test = (TestWithFilter)testsWithFilters.get(i);

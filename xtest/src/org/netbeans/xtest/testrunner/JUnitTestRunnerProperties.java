@@ -37,6 +37,10 @@ public class JUnitTestRunnerProperties {
     static final String TEST_FILTER_INCLUDE="xtest.junit-test-runner.test-filter.include/";
     static final String TEST_FILTER_EXCLUDE="xtest.junit-test-runner.test-filter.exclude/";
     static final String TEST_FILTER_EXPECTED_FAIL="xtest.junit-test-runner.test-filter.expected-fail/";
+    static final String TESTBAG_SETUP_CLASS="xtest.testbag.setup.class";
+    static final String TESTBAG_TEARDOWN_CLASS="xtest.testbag.teardown.class";
+    static final String TESTBAG_SETUP_METHOD="xtest.testbag.setup.method";
+    static final String TESTBAG_TEARDOWN_METHOD="xtest.testbag.teardown.method";
     
     // testrun type stuff
     static final String TESTRUN_TYPE="xtest.junit-test-runner.testrun-type";
@@ -166,6 +170,43 @@ public class JUnitTestRunnerProperties {
         runnerProperties.setProperty(TESTRUN_TYPE,value);
     }
     
+    public String getTestbagSetupClassName() {
+        return setupClassName;
+    }
+    
+    public String getTestbagSetupMethodName() {
+        return setupMethodName;
+    }
+    
+    public String getTestbagTeardownClassName() {
+        return teardownClassName;
+    }
+    
+    public String getTestbagTeardownMethodName() {
+        return teardownMethodName;
+    }
+    
+    public void setTestbagSetup(String className, String methodName) {
+        if ((className == null) || (methodName == null)) {
+            throw new NullPointerException("className or methodName cannot be null");
+        }
+        setupClassName = className;        
+        setupMethodName = methodName;
+        runnerProperties.setProperty(TESTBAG_SETUP_CLASS,className);
+        runnerProperties.setProperty(TESTBAG_SETUP_METHOD,methodName);
+    }
+
+    
+    public void setTestbagTeardown(String className, String methodName) {
+        if ((className == null) || (methodName == null)) {
+            throw new NullPointerException("className or methodName cannot be null");
+        }
+        teardownClassName = className;
+        teardownMethodName = methodName;
+        runnerProperties.setProperty(TESTBAG_TEARDOWN_CLASS,className);
+        runnerProperties.setProperty(TESTBAG_TEARDOWN_METHOD,methodName);
+    }    
+    
     
     public String getResultsDirName() {
         return runnerProperties.getProperty(RESULTS_DIRECTORY);
@@ -209,6 +250,13 @@ public class JUnitTestRunnerProperties {
     private Filter.IncludeExclude[][] testFilterIncludes;
     // excludes
     private Filter.IncludeExclude[][] testFilterExcludes;
+    
+    // setup/teardown classes and methods
+    private String setupClassName;
+    private String setupMethodName;
+    private String teardownClassName;
+    private String teardownMethodName;
+    
     
     
     
@@ -289,6 +337,15 @@ public class JUnitTestRunnerProperties {
                         // only for debugging purposes
                         System.err.println("Cannot find test class for key "+key);
                     }
+                } else if (key.startsWith(TESTBAG_SETUP_CLASS)) {
+                    setupClassName = runnerProperties.getProperty(key);
+                } else if (key.startsWith(TESTBAG_SETUP_METHOD)) {
+                    setupMethodName = runnerProperties.getProperty(key);
+                } else if (key.startsWith(TESTBAG_TEARDOWN_CLASS)) {
+                    teardownClassName = runnerProperties.getProperty(key);
+                } else if (key.startsWith(TESTBAG_TEARDOWN_METHOD)) {
+                    teardownMethodName = runnerProperties.getProperty(key);                
+                    
                 } else if (key.startsWith(TEST_FILTER_INCLUDE) | key.startsWith(TEST_FILTER_EXCLUDE) | 
                            key.startsWith(TEST_FILTER_EXPECTED_FAIL)) {
                     String value = runnerProperties.getProperty(key);

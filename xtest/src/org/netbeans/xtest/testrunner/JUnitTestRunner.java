@@ -22,6 +22,7 @@ package org.netbeans.xtest.testrunner;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import junit.framework.*;
 
@@ -116,8 +117,13 @@ public class JUnitTestRunner {
         return listeners;
     }
     
-    /** run the junit tests */
+    // compability method;
     public void runTests() {
+        runTests(false);
+    }
+    
+    /** run the junit tests */
+    public void runTests(boolean doSetup) {
 
         // get result processors
        resultProcessors = getJUnitTestListeners();
@@ -126,6 +132,17 @@ public class JUnitTestRunner {
         if (suites == null) {
             // something is wrong - throw Exception ?
             return;
+        }
+        
+        if ((doSetup) & (runnerProperties.getTestbagSetupClassName() != null)) {
+            
+            try {
+                callMethod(runnerProperties.getTestbagSetupClassName(), 
+                    runnerProperties.getTestbagSetupMethodName());
+            } catch (InvocationTargetException ite) {
+                out.println("Testbag setup method call failed. Reason = "+ite.getMessage());
+                ite.printStackTrace(out);
+            }
         }
         
         // test whether we run testbag or just test suite
@@ -156,8 +173,16 @@ public class JUnitTestRunner {
             // TBD !!!
         }
          */
+        if ((doSetup) & (runnerProperties.getTestbagTeardownClassName() != null)) {
+            try {
+                callMethod(runnerProperties.getTestbagTeardownClassName(), 
+                    runnerProperties.getTestbagTeardownMethodName());
+            } catch (InvocationTargetException ite) {
+                out.println("Testbag teardown method call failed. Reason = "+ite.getMessage());
+                ite.printStackTrace(out);
+            }
+        }
     }
-    
     
     
     // main is called only when running tests in their own VM (in XTest 'code' mode)
@@ -352,6 +377,28 @@ public class JUnitTestRunner {
             return testLoader.loadClass(className);
         }
     }
+    
+    // call setup/teardown method in a setup object
+    private  void callMethod(String className, String methodName) throws InvocationTargetException {
+        try {
+            Class setupClass = getTestClassForName(className);
+            // try to find the method
+            Method setupMethod = setupClass.getMethod(methodName, null);
+            // instintiate the object
+            Object obj = setupClass.newInstance();
+            setupMethod.invoke(obj, null);
+        } catch (ClassNotFoundException cnfe) {
+            throw new InvocationTargetException(cnfe,"Cannot invoke setup/teardown method, because of ClassNotFoundException.");
+        } catch (InstantiationException ie) {
+            throw new InvocationTargetException(ie,"Cannot invoke setup/teardown method, because of InstantiationException.");
+        } catch (NoSuchMethodException nsme) {
+            throw new InvocationTargetException(nsme,"Cannot invoke setup/teardown method, because of NoSuchMethodException.");
+        } catch (IllegalAccessException iae) {
+            throw new InvocationTargetException(iae,"Cannot invoke setup/teardown method, because of IllegalAccessException.");
+        }
+    }
+    
+
     
     private String getClassnameFromFilename(String filename) {
         String shortFilename;
