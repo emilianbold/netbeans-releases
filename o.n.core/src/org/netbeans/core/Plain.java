@@ -95,7 +95,7 @@ public class Plain extends NbTopManager implements Runnable {
       // and autoload modules
       ModuleInstaller.autoLoadModules ();
     } else {
-        //ModuleClassLoader.initialize (new URL[] { });
+        ModuleInstaller.initialize (null, null);
     }
   }
   
