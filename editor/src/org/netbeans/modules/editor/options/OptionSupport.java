@@ -18,6 +18,8 @@ import java.beans.PropertyChangeEvent;
 import java.util.ResourceBundle;
   
 import com.netbeans.editor.Settings;
+import com.netbeans.editor.Coloring;
+import com.netbeans.editor.ColoringManager;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -90,6 +92,27 @@ public class OptionSupport extends SystemOption {
   void refresh(PropertyChangeEvent evt) {
   }
 
+  public void setColoringsHelper(Object[] value, int[] sets) {
+    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
+    for (int i = 0; i < sets.length; i++) {
+      Coloring[] cols = (Coloring[])value[i + 2];
+      System.arraycopy(cols, 0,
+          cm.getColorings(getKitClass(), sets[i]), 0, cols.length);
+    }
+    Settings.touchValue(Settings.COLORING_MANAGER);
+  }
+  
+  public Object[] getColoringsHelper(int[] sets) {
+    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
+    Object[] ret = new Object[2 + sets.length];
+    ret[0] = getTypeName();
+    ret[1] = cm.getDefaultColoring(getKitClass());
+    for (int i = 0; i < sets.length; i++) {
+      ret[i + 2] = cm.getColorings(getKitClass(), sets[i]);
+    }
+    return ret;
+  }
+
   /** @return localized string */
   static String getString(String s) {
     if (bundle == null) {
@@ -113,6 +136,7 @@ public class OptionSupport extends SystemOption {
 
 /*
  * Log
+ *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 

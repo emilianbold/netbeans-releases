@@ -49,7 +49,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
   */
   public PropertyDescriptor[] getPropertyDescriptors () {
     if (descriptors == null) {
-      ResourceBundle bundle = NbBundle.getBundle(PlainOptionsBeanInfo.class);
+      ResourceBundle bundle = NbBundle.getBundle(BaseOptionsBeanInfo.class);
       String[] propNames = getPropNames();
       try {
         descriptors = new PropertyDescriptor[propNames.length];
@@ -71,15 +71,15 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
     return descriptors;
   }
 
-  Class getBeanClass() {
+  protected Class getBeanClass() {
     return BasePrintOptions.class;
   }
   
-  String[] getPropNames() {
+  protected String[] getPropNames() {
     return BasePrintOptions.BASE_PROP_NAMES;
   }
   
-  PropertyDescriptor getPD(String prop) {
+  protected PropertyDescriptor getPD(String prop) {
     String[] propNames = getPropNames();
     for (int i = 0; i < descriptors.length; i++) {
       if (prop.equals(propNames[i])) {
@@ -108,6 +108,7 @@ public class BasePrintOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/29/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 

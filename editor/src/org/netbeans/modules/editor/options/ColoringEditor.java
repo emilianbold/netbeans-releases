@@ -71,7 +71,7 @@ public class ColoringEditor extends PropertyEditorSupport {
     Coloring c = value.getColoring();
     Coloring ret = null;
     if (dc != null && c != null) {
-      ret = dc.apply(c);
+      ret = c.apply(dc);
     }
     return ret;
   }
@@ -138,6 +138,7 @@ public class ColoringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  8    Gandalf   1.7         8/17/99  Miloslav Metelka 
  *  7    Gandalf   1.6         7/26/99  Miloslav Metelka 
  *  6    Gandalf   1.5         7/21/99  Miloslav Metelka 
  *  5    Gandalf   1.4         7/20/99  Miloslav Metelka 

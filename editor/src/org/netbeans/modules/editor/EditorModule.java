@@ -140,7 +140,6 @@ public class EditorModule implements ModuleInstall {
 
     // Preloading of some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
-//    DialogSupport.getFindDialogSupport().getFindDialog();
 
     // Registration of the editor kits to JEditorPane
     for (int i = 0; i < replacements.length; i++) {
@@ -203,6 +202,7 @@ public class EditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  26   Gandalf   1.25        8/17/99  Miloslav Metelka 
  *  25   Gandalf   1.24        8/4/99   Petr Jiricka    Added editor kits for 
  *       text/x-jsp and text/x-properties
  *  24   Gandalf   1.23        7/31/99  Ian Formanek    removed debug messages

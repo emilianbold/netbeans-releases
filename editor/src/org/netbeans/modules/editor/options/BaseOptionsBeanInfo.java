@@ -93,16 +93,16 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
     }
     return descriptors;
   }
-  
-  Class getBeanClass() {
+
+  protected Class getBeanClass() {
     return BaseOptions.class;
   }
   
-  String[] getPropNames() {
+  protected String[] getPropNames() {
     return BaseOptions.BASE_PROP_NAMES;
   }
   
-  PropertyDescriptor getPD(String prop) {
+  protected PropertyDescriptor getPD(String prop) {
     String[] propNames = getPropNames();
     for (int i = 0; i < descriptors.length; i++) {
       if (prop.equals(propNames[i])) {
@@ -431,6 +431,7 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  3    Gandalf   1.2         8/17/99  Miloslav Metelka 
 *  2    Gandalf   1.1         7/29/99  Miloslav Metelka 
 *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 
 * $

@@ -38,6 +38,15 @@ public class BasePrintOptions extends OptionSupport {
   
   public static final String PRINT_TOKEN_COLORING_ARRAY_PROP = "printTokenColoringArray";
   
+  private static final int[] SYSTEM_COLORING_SETS = new int[] {
+    ColoringManager.PRINT_DEFAULT_SET,
+    ColoringManager.PRINT_DOCUMENT_SET,
+  };
+
+  private static final int[] TOKEN_COLORING_SETS = new int[] {
+    ColoringManager.PRINT_TOKEN_SET
+  };
+
   static final String[] BASE_PROP_NAMES = {
     PRINT_LINE_NUMBER_VISIBLE_PROP,
     PRINT_SYSTEM_COLORING_ARRAY_PROP,
@@ -64,33 +73,24 @@ public class BasePrintOptions extends OptionSupport {
   }
 
   public Object[] getPrintSystemColoringArray() {
-    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {
-      cm.getPrintSystemColorings(getKitClass()),
-      cm.getPrintDefaultColoring(getKitClass()),
-      BASE
-    };
+    return getColoringsHelper(SYSTEM_COLORING_SETS);
   }
-  public void setPrintSystemColoringArray(Object[] notUsed) {
-    Settings.touchValue(Settings.COLORING_MANAGER);
+  public void setPrintSystemColoringArray(Object[] value) {
+    setColoringsHelper(value, SYSTEM_COLORING_SETS);
   }
   
   public Object[] getPrintTokenColoringArray() {
-    ColoringManager cm = (ColoringManager)getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {
-      cm.getPrintTokenColorings(getKitClass()),
-      cm.getPrintDefaultColoring(getKitClass()),
-      getTypeName()
-    };
+    return getColoringsHelper(TOKEN_COLORING_SETS);
   }
-  public void setPrintTokenColoringArray(Object[] notUsed) {
-    Settings.touchValue(Settings.COLORING_MANAGER);
+  public void setPrintTokenColoringArray(Object[] value) {
+    setColoringsHelper(value, TOKEN_COLORING_SETS);
   }
   
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         8/17/99  Miloslav Metelka 
  *  3    Gandalf   1.2         7/21/99  Miloslav Metelka 
  *  2    Gandalf   1.1         7/21/99  Miloslav Metelka 
  *  1    Gandalf   1.0         7/20/99  Miloslav Metelka 

@@ -16,6 +16,8 @@ package com.netbeans.developer.modules.text.options;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
+import java.util.MissingResourceException;
+import java.util.ArrayList;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -52,20 +54,47 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
   public java.awt.Component getCustomEditor() {
     Object[] vals = (Object[])getValue();
-    Coloring[] colorings =  (Coloring[])vals[0];
+    String typeName = (String)vals[0];
     Coloring defaultColoring = (Coloring)vals[1];
-    String typeName = (String)vals[2];
     
-    ColoringProperty[] cps = new ColoringProperty[colorings.length];
+    ArrayList cpsList = new ArrayList();
     ResourceBundle bundle = NbBundle.getBundle(ColoringArrayEditor.class);
-    for (int i = 0; i < colorings.length; i++) {
-//      System.out.println("ColoringArrayEditor.java:63 typeName=" + typeName + ", name=" + colorings[i].getName());
-      String desc = bundle.getString("HINT_coloring_" + typeName
-          + "_" + colorings[i].getName());
-      String example = bundle.getString("EXAMPLE_coloring_" + typeName
-          + "_" + colorings[i].getName());
-      cps[i] = new ColoringProperty(colorings, i, desc, example, defaultColoring);
+    for (int coloringSet = 2; coloringSet < vals.length; coloringSet++) {
+      Coloring[] colorings =  (Coloring[])vals[coloringSet];
+
+      for (int i = 0; i < colorings.length; i++) {
+        String desc;
+        try {
+          desc = bundle.getString("HINT_coloring_" + typeName
+              + "_" + colorings[i].getName());
+        } catch (MissingResourceException e) {
+          try {
+            desc = bundle.getString("HINT_coloring_" + BaseOptions.BASE
+                + "_" + colorings[i].getName());
+          } catch (MissingResourceException e2) {
+            desc = colorings[i].getName();
+          }
+        }
+
+        String example;
+        try {
+          example = bundle.getString("EXAMPLE_coloring_" + typeName
+            + "_" + colorings[i].getName());
+        } catch (MissingResourceException e) {
+          try {
+            example = bundle.getString("EXAMPLE_coloring_" + BaseOptions.BASE
+              + "_" + colorings[i].getName());
+          } catch (MissingResourceException e2) {
+            example = "";
+          }
+        }
+
+        cpsList.add(new ColoringProperty(colorings, i, desc, example, defaultColoring));
+      }
     }
+
+    ColoringProperty[] cps = new ColoringProperty[cpsList.size()];
+    cpsList.toArray(cps);
 
     FakeNode fn = new FakeNode(cps);
     PropertySheet psheet = new PropertySheet();
@@ -151,6 +180,7 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
 
 /*
 * Log
+*  6    Gandalf   1.5         8/17/99  Miloslav Metelka 
 *  5    Gandalf   1.4         7/30/99  Miloslav Metelka 
 *  4    Gandalf   1.3         7/29/99  Miloslav Metelka 
 *  3    Gandalf   1.2         7/26/99  Miloslav Metelka 

@@ -83,6 +83,17 @@ public class BaseOptions extends OptionSupport {
   
   public static final String TOKEN_COLORING_ARRAY_PROP = "tokenColoringArray";
   
+  private static final int[] SYSTEM_COLORING_SETS = new int[] {
+    ColoringManager.DEFAULT_SET,
+    ColoringManager.DOCUMENT_SET,
+    ColoringManager.COMPONENT_SET,
+    ColoringManager.STATUS_BAR_SET
+  };
+
+  private static final int[] TOKEN_COLORING_SETS = new int[] {
+    ColoringManager.TOKEN_SET
+  };
+
   static final String[] BASE_PROP_NAMES = {
     ABBREV_MAP_PROP,
     CARET_BLINK_RATE_PROP,
@@ -235,40 +246,19 @@ static final long serialVersionUID =-5469192431366914841L;
   }
 
   public Object[] getSystemColoringArray() {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {
-      cm.getSystemColorings(getKitClass()),
-      cm.getDefaultColoring(getKitClass()),
-      BASE
-    };
+    return getColoringsHelper(SYSTEM_COLORING_SETS);
   }
+
   public void setSystemColoringArray(Object[] value) {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    Coloring[] c = cm.getSystemColorings(getKitClass());
-    Coloring[] valC = (Coloring[])value[0];
-    for (int i = 0; i < c.length; i++ ) {
-      c[i] = valC[i];
-    }
-    Settings.touchValue(Settings.COLORING_MANAGER);
+    setColoringsHelper(value, SYSTEM_COLORING_SETS);
   }
   
   public Object[] getTokenColoringArray() {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    return new Object[] {
-      cm.getTokenColorings(getKitClass()),
-      cm.getDefaultColoring(getKitClass()),
-      getTypeName()
-    };
+    return getColoringsHelper(TOKEN_COLORING_SETS);
   }
 
   public void setTokenColoringArray(Object[] value) {
-    ColoringManager cm = (ColoringManager) getSettingValue(Settings.COLORING_MANAGER);
-    Coloring[] c = cm.getTokenColorings(getKitClass());
-    Coloring[] valC = (Coloring[])value[0];
-    for (int i = 0; i < c.length; i++ ) {
-      c[i] = valC[i];
-    }
-    Settings.touchValue(Settings.COLORING_MANAGER);
+    setColoringsHelper(value, TOKEN_COLORING_SETS);
   }
   
   public float getLineHeightCorrection() {
@@ -311,6 +301,7 @@ static final long serialVersionUID =-5469192431366914841L;
 
 /*
  * Log
+ *  7    Gandalf   1.6         8/17/99  Miloslav Metelka 
  *  6    Gandalf   1.5         8/9/99   Ian Formanek    Generated Serial Version
  *       UID
  *  5    Gandalf   1.4         7/29/99  Miloslav Metelka 
