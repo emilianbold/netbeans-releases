@@ -314,8 +314,10 @@ Microsystems, Inc. All Rights Reserved.
        <attr name="Window/Help" boolvalue="true" />
        <folder name="Help">
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-          <file name="org-netbeans-core-actions-ModuleHelpAction.instance"/>
-          <attr name="org-netbeans-core-actions-ModuleHelpAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
+          <file name="org-netbeans-core-actions-ModuleHelpAction$MasterOnly.instance"/>
+          <attr name="org-netbeans-core-actions-ModuleHelpAction$MasterOnly.instance/org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance" boolvalue="true" />
+          <file name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance"/>
+          <attr name="org-netbeans-core-actions-ModuleHelpAction$ShortcutsOnly.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
           <file name="Separator1[javax-swing-JSeparator].instance"/>
           <!-- Miscellaneous help menu items (URLs) now installed by utilities module. -->
           <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-core-actions-WelcomeAction.instance" boolvalue="true" />
