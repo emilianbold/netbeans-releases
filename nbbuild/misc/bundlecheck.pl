@@ -108,5 +108,7 @@ foreach $f (@files) {
 }
 
 foreach $p (@props) {
+    next if $p->{line} =~ m!/!; # probably a filename localization, not in Java code
+    next if $p->{line} =~ m!^OpenIDE-Module-!; # manifest localization, not in Java code
     print "$p->{file}:$p->{lineno}: $p->{line}\n" if $p->{used} == 0;
 }
