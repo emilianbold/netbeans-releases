@@ -187,11 +187,7 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            if (
-                                !n.equals ("org.netbeans.core.LookupCache") // NOI18N
-                            ) {
-                                System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
-                            }
+                            System.err.println("Warning: use of system property netbeans.home in " + n + " has been obsoleted in favor of InstalledFileLocator"); // NOI18N
                         }
                     }
                     break;
@@ -201,7 +197,10 @@ public class TopSecurityManager extends SecurityManager {
         return;
     }
     private final Set warnedClassesNDE = new HashSet(25); // Set<String>
-    private final Set warnedClassesNH = new HashSet(25); // Set<String>
+    private static final Set warnedClassesNH = new HashSet(25); // Set<String>
+    static {
+        warnedClassesNH.add ("org.netbeans.core.LookupCache"); // NOI18N
+    }
 
     /* ----------------- private methods ------------- */
 
