@@ -3,3 +3,4 @@ OpenIDE-Module: org.netbeans.modules.projectimport/1
 OpenIDE-Module-Specification-Version: 1.1.9
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/projectimport/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/projectimport/layer.xml
+
