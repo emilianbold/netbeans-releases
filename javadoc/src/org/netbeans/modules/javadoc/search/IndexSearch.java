@@ -55,10 +55,7 @@ public class IndexSearch
     implements Externalizable {
 
     private static final String INDEX_SEARCH_HELP_CTX_KEY = "javadoc.search.window"; //NOI18N
-    
-    //static final long serialVersionUID =3206093459760846163L;
-    private static ResourceBundle bundle = null;
-        
+            
     private static final java.awt.Dimension PREFFERED_SIZE = new java.awt.Dimension( 580, 430 );
 
     static final long serialVersionUID =1200348578933093459L;
