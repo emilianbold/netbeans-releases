@@ -540,7 +540,7 @@ is divided into following sections:
                     <fileset dir="${{meta.inf}}" includes="**/*.dbschema"/>
                 </copy>
                 <copy todir="${{classes.dir}}/META-INF">
-                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema"/> 
+                  <fileset dir="${{meta.inf}}" excludes="**/*.dbschema ${{meta.inf.excludes}}"/> 
                 </copy>
                 <xsl:if test="/p:project/p:configuration/ejbjarproject2:data/ejbjarproject2:web-services/ejbjarproject2:web-service">
                     <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  

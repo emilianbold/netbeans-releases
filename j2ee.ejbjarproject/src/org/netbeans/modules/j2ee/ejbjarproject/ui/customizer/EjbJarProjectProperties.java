@@ -128,6 +128,8 @@ public class EjbJarProjectProperties {
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
     
+    public static final String META_INF_EXCLUDES="meta.inf.excludes"; // NOI18N
+    
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
     
