@@ -121,16 +121,16 @@ class CmpRelationshipsDialogHelper {
             boolean setterChanged = origSetter != setter;
             if (ejbNameChanged || fieldChanged || getterChanged || setterChanged) {
                 if (origEntityHelper != null) {
-                    if (fieldChanged) {
-                        ClassElement beanClass = origEntityHelper.beanClass;
-                        Utils.removeMethod(beanClass, origGetterMethod);
-                        Utils.removeMethod(beanClass, origSetterMethod);
-                    }
                     if (getterChanged || fieldChanged) {
                         Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origGetterMethod);
                     }
                     if (setterChanged || fieldChanged) {
                         Utils.removeMethod(origEntityHelper.getLocalBusinessInterfaceClass(), origSetterMethod);
+                    }
+                    if (fieldChanged) {
+                        ClassElement beanClass = origEntityHelper.beanClass;
+                        Utils.removeMethod(beanClass, origGetterMethod);
+                        Utils.removeMethod(beanClass, origSetterMethod);
                     }
                 }
                 if (fieldName != null) {
