@@ -13,16 +13,12 @@
 
 package gui.window;
 
-import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.ProjectsTabOperator;
-
-import org.netbeans.jellytools.actions.FindAction;
-import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.nodes.Node;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  * Test of Find dialog from source editor.
@@ -33,7 +29,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
     
     private static EditorOperator editor;
     
-    private final String TITLE =  org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
+    private String MENU, TITLE;
     
     /** Creates a new instance of FindInSourceEditor */
     public FindInSourceEditor(String testName) {
@@ -48,6 +44,9 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
     }
     
     public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.project.Bundle","LBL_SearchProjects");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.Bundle", "find");
+        
         // open a java file in the editor
         editor = gui.Utilities.openJavaFile();
     }
@@ -57,8 +56,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
    }
     
     public ComponentOperator open(){
-        // press CTRL+F
-        new FindAction().performShortcut();
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(MENU,"|");
         return new NbDialogOperator(TITLE);
     }
 
