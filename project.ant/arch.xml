@@ -278,7 +278,7 @@
 -->
  <answer id="deploy-dependencies">
   <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.project.ant/0 &gt; @SPECIFICATION-VERSION@
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.project.ant/1 &gt; @SPECIFICATION-VERSION@
   </pre>
  </answer>
 

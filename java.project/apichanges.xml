@@ -76,7 +76,25 @@ is the proper place.
 
     <changes>
 
-        <!-- Start here... -->
+        <change id="rel-vers-1">
+            <api name="general"/>
+            <summary>Switched to major release version 1</summary>
+            <version major="1" minor="3"/>
+            <date day="22" month="12" year="2004"/>
+            <author login="jglick"/>
+            <compatibility>
+                <p>
+                    Clients should begin requesting the new version to avoid a warning at startup.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    To indicate that this is now considered a stable API, the major release version was
+                    incremented to 1 from 0.
+                </p>
+            </description>
+            <issue number="51468"/>
+        </change>
 
     </changes>
 
@@ -108,7 +126,7 @@ is the proper place.
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
-      <standard-changelists module-code-name="org.netbeans.modules.java.project/0"/>
+      <standard-changelists module-code-name="org.netbeans.modules.java.project/1"/>
 
       <hr/><p>@FOOTER@</p>
 

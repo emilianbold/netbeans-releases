@@ -99,27 +99,22 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-<dependency>
-<code-name-base>org.netbeans.modules.projectapi</code-name-base>
-<build-prerequisite/>
-<compile-dependency/>
-
-	<run-dependency>
-<release-version>0</release-version>
-</run-dependency>
-</dependency>
-
-
-
-	<dependency>
-<code-name-base>org.netbeans.modules.java.project</code-name-base>
-<build-prerequisite/>
-<compile-dependency/>
-
-	<run-dependency>
-<release-version>0</release-version>
-</run-dependency>
-</dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                     <build-prerequisite/>

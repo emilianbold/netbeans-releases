@@ -291,7 +291,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-dependencies">
   <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.queries/0 &gt; @SPECIFICATION-VERSION@
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.queries/1 &gt; @SPECIFICATION-VERSION@
   </pre>
  </answer>
 

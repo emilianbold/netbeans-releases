@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
             <manifest>
                 <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.projectapi/0, org.netbeans.modules.project.libraries/0, org.netbeans.modules.project.ant/0, org.netbeans.modules.projectuiapi/0, org.netbeans.api.java/1, org.netbeans.modules.java.project/0 = ${java.project.impl.version}, org.netbeans.modules.java/1, org.netbeans.modules.java.platform/0, org.netbeans.modules.javacore/1, org.netbeans.jmi.javamodel/1, org.netbeans.modules.javahelp/1, org.openide.loaders, org.openide.src > 1.3, org.netbeans.core.multiview/1 > 1.0"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.projectapi/1, org.netbeans.modules.project.libraries/1, org.netbeans.modules.project.ant/1, org.netbeans.modules.projectuiapi/1, org.netbeans.api.java/1, org.netbeans.modules.java.project/1 = ${java.project.impl.version}, org.netbeans.modules.java/1, org.netbeans.modules.java.platform/1, org.netbeans.modules.javacore/1, org.netbeans.jmi.javamodel/1, org.netbeans.modules.javahelp/1, org.openide.loaders, org.openide.src > 1.3, org.netbeans.core.multiview/1 > 1.0"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
             </manifest>
             <fileset dir="${build.classes.dir}"/>

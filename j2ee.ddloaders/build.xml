@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
                 <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
                 <attribute name="OpenIDE-Module-Module-Dependencies" 
-                value="org.netbeans.modules.schema2beans/1, org.netbeans.modules.j2ee.dd/1 = 1.0 , org.netbeans.api.web.dd/1 , org.netbeans.modules.j2ee.api.ejbmodule, org.openide.loaders, org.netbeans.libs.xerces/1, org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.tools/2 = ${xml.common.impl.version}, org.netbeans.api.xml/1, org.netbeans.modules.projectapi/0, org.openide.io, org.netbeans.core.multiview/1, org.netbeans.modules.xml.multiview/1 = 1.0-release41, org.netbeans.modules.java.project/0"/>            
+                value="org.netbeans.modules.schema2beans/1, org.netbeans.modules.j2ee.dd/1 = 1.0 , org.netbeans.api.web.dd/1 , org.netbeans.modules.j2ee.api.ejbmodule, org.openide.loaders, org.netbeans.libs.xerces/1, org.netbeans.modules.xml.core/2 = ${xml.common.impl.version}, org.netbeans.modules.xml.tools/2 = ${xml.common.impl.version}, org.netbeans.api.xml/1, org.netbeans.modules.projectapi/1, org.openide.io, org.netbeans.core.multiview/1, org.netbeans.modules.xml.multiview/1 = 1.0-release41, org.netbeans.modules.java.project/1"/>            
                 
                 
                 
@@ -36,4 +36,3 @@ Microsystems, Inc. All Rights Reserved.
     </target>    
   
 </project>
-

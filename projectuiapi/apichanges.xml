@@ -75,21 +75,43 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change>
+
+        <change id="OpenProjects.open+close">
             <api name="general"/>
-            <summary>Added open and close methods into OpenProjects class</summary>
+            <summary>Added open and close methods into <code>OpenProjects</code> class</summary>
             <version major="1" minor="2"/>
             <date day="14" month="12" year="2004"/>
             <author login="tzezula"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                Added open and close methods into org.netbeans.api.project.ui.OpenProjects. The open method
-		opens given projects. The close method closes the specified projects.
+                    Added <code>open</code> and <code>close</code> methods to <code>org.netbeans.api.project.ui.OpenProjects</code>. The <code>open</code> method
+                    opens the specified projects. The <code>close</code> method closes the specified projects.
                 </p>
             </description>
             <class package="org.netbeans.api.project.ui" name="OpenProjects"/>
         </change>
+
+        <change id="rel-vers-1">
+            <api name="general"/>
+            <summary>Switched to major release version 1</summary>
+            <version major="1" minor="3"/>
+            <date day="22" month="12" year="2004"/>
+            <author login="jglick"/>
+            <compatibility>
+                <p>
+                    Clients should begin requesting the new version to avoid a warning at startup.
+                </p>
+            </compatibility>
+            <description>
+                <p>
+                    To indicate that this is now considered a stable API, the major release version was
+                    incremented to 1 from 0.
+                </p>
+            </description>
+            <issue number="51468"/>
+        </change>
+
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
@@ -120,7 +142,7 @@ is the proper place.
 
 <!-- The actual lists of changes, as summaries and details: -->
       <hr/>
-      <standard-changelists module-code-name="org.netbeans.modules.projectuiapi/0"/>
+      <standard-changelists module-code-name="org.netbeans.modules.projectuiapi/1"/>
 
       <hr/><p>@FOOTER@</p>
 

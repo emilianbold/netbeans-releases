@@ -387,13 +387,13 @@ Microsystems, Inc. All Rights Reserved.
    For normal usage:
   </p>
   <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/0 &gt; @SPECIFICATION-VERSION@
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/1 &gt; @SPECIFICATION-VERSION@
   </pre>
   <p>
    For access to <code>ProjectClassPathExtender</code>:
   </p>
   <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/0 = ${java.project.impl.version}
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/1 = ${java.project.impl.version}
   </pre>
   <p>
    with the property taken from <code>java/project/spec-ver.properties</code>.

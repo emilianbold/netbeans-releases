@@ -12,8 +12,8 @@ OpenIDE-Module-Module-Dependencies:
   org.netbeans.modules.xml.core/2 = ${xml.common.impl.version},
   org.netbeans.modules.servletapi/1,
   org.openide.execution > 1.2,
-  org.netbeans.modules.projectapi/0,
-  org.netbeans.modules.projectuiapi/0
+  org.netbeans.modules.projectapi/1,
+  org.netbeans.modules.projectuiapi/1
 OpenIDE-Module-Requires: org.openide.util.HttpServer$Impl
 
 Name: org/netbeans/modules/xsl/XSLDataLoader.class

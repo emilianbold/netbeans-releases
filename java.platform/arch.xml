@@ -348,7 +348,7 @@ The platform module does not provide any persistence mechanism.
 
  <answer id="deploy-dependencies">
   <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform/0 &gt; @SPECIFICATION-VERSION@
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.platform/1 &gt; @SPECIFICATION-VERSION@
   </pre>
  </answer>
 
