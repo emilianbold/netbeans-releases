@@ -200,15 +200,11 @@
 <mapID target="xml_schemas" url="xml/schema/schemas.html" />
 <mapID target="xml_xslabout"     url="xml/xsl/xsl_about.html" />
 <mapID target="xml_xsltransform"     url="xml/xsl/xsl_transform.html" />
+<mapID target="css_editcss"     url="xml/css/css_edit.html" />
+<mapID target="css_checkcss"     url="xml/css/css_check.html" />
+<mapID target="css_copypastecss" url="xml/css/css_addreference.html" />
+<mapID target="css_createcss"    url="xml/css/css_create.html" />
 
-
-<!-- CSS Help -->
-
-<mapID target="css_editcss"     url="xml/editcss.html" />
-<mapID target="css_checkcss"     url="xml/checkcss.html" />
-<mapID target="css_copypastecss" url="xml/copypastecss.html" />
-<mapID target="css_createcss"    url="xml/createcss.html" />
-<mapID target="org.netbeans.modules.css.CSSObject"     url="xml/cssnodes.html" />
 
 <!-- debug IDs -->
 
