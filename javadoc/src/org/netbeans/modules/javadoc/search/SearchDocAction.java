@@ -70,11 +70,18 @@ public class SearchDocAction extends CallableSystemAction {
     indexSearch.open ();
     
   }
-  
+
+  public static void main  ( String args[] ) {
+    if (indexSearch == null) 
+      indexSearch = new IndexSearch ();
+    indexSearch.open ();  
+ }
 }
 
 /*
  * Log
+ *  8    Gandalf   1.7         6/23/99  Petr Hrebejk    HTML doc view & sort 
+ *       modes added
  *  7    Gandalf   1.6         6/11/99  Petr Hrebejk    Better support for 
  *       search from editor; Enter for start searching
  *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 

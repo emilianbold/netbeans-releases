@@ -34,12 +34,22 @@ class IndexListCellRenderer extends DefaultListCellRenderer {
     JLabel cr = (JLabel)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
 
     cr.setIcon( DocSearchIcons.getIcon( ((DocIndexItem)value).getIconIndex() ) );
+    
+    try {
+      if (  ((DocIndexItem)value).getURL() == null )
+        setForeground (java.awt.SystemColor.textInactiveText);
+    }
+    catch ( java.net.MalformedURLException e ) {
+        setForeground (java.awt.SystemColor.textInactiveText);
+    }
     return cr;
   }
 }
 
 /* 
  * Log
+ *  2    Gandalf   1.1         6/23/99  Petr Hrebejk    HTML doc view & sort 
+ *       modes added
  *  1    Gandalf   1.0         5/13/99  Petr Hrebejk    
  * $ 
  */ 

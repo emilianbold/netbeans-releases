@@ -233,8 +233,10 @@ class SearchThreadJdk12 extends IndexSearchThread {
         // Add the item when all information is available
         insertDocIndexItem( currentDii );
 
-        if ( text.endsWith( "." ) )
+        if ( text.endsWith( "." ) ) {
           where = IN_DESCRIPTION_SUFFIX;
+          currentDii.setPackage( text.substring( text.lastIndexOf( ' ' ) ) );
+        }
         else
           where = IN_BALAST;
       }
@@ -247,21 +249,6 @@ class SearchThreadJdk12 extends IndexSearchThread {
     }
     
   }
-        /*
-        if ( text.substring( 0, Math.min(toFind.length(), text.length()) ).compareTo( toFind ) > 0 ) {
-          try {
-            in.close();
-          }
-          catch ( java.io.IOException e ) {
-            //System.out.println ( "Can't close stream" );
-          }
-        }
-        
-      }
-      
-      where = IN_BALAST;
-    }  
-  }
-    */
+   
 }
 

@@ -30,8 +30,9 @@ class DocSearchIcons extends Object {
   public static final int ICON_METHOD_ST = ICON_METHOD + 1;
   public static final int ICON_VARIABLE = ICON_METHOD_ST + 1;
   public static final int ICON_VARIABLE_ST = ICON_VARIABLE + 1;
-
-  private static ImageIcon[] icons = new ImageIcon[ ICON_VARIABLE_ST + 1 ];
+  public static final int ICON_WAIT = ICON_VARIABLE_ST + 1;
+  
+  private static ImageIcon[] icons = new ImageIcon[ ICON_WAIT + 1 ];
 
   static {
     try {
@@ -44,6 +45,7 @@ class DocSearchIcons extends Object {
       icons[ ICON_METHOD_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/methodStPublic.gif"));
       icons[ ICON_VARIABLE ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variablePublic.gif"));
       icons[ ICON_VARIABLE_ST ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/variableStPublic.gif"));
+      icons[ ICON_WAIT ] = new ImageIcon (DocSearchIcons.class.getResource ("/org/openide/resources/src/wait.gif"));
     } 
     catch (Throwable w) {
       w.printStackTrace ();
@@ -58,6 +60,8 @@ class DocSearchIcons extends Object {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         6/23/99  Petr Hrebejk    HTML doc view & sort 
+ *       modes added
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    Fixed resources for 
  *       package change
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
