@@ -847,7 +847,7 @@ is divided into following sections:
             <target name="run-main">
                 <xsl:attribute name="depends">init,compile-single</xsl:attribute>
                 <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
-                <webproject2:java classname="${{run.class}}"/>
+                <webproject1:java classname="${{run.class}}"/>
             </target>
 
 
