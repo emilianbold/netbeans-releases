@@ -54,7 +54,8 @@ public final class ConstantPool {
      * @param size number of entries in this constant pool.
      * @param bytes a stream of bytes defining the constant pool.
      */
-    /* package-private */ ConstantPool(int size, InputStream bytes) {
+    /* package-private */ ConstantPool(int size, InputStream bytes) 
+      throws IOException {
         if (size < 0)
             throw new IllegalArgumentException("size cannot be negative");
         if (bytes == null)
@@ -141,7 +142,7 @@ public final class ConstantPool {
     	return utf.getName();
     }
     
-    private void load(InputStream cpBytes) {
+    private void load(InputStream cpBytes) throws IOException {
         try {
 	    ConstantPoolReader cpr = new ConstantPoolReader(cpBytes);
 
@@ -162,8 +163,10 @@ public final class ConstantPool {
                 }
                 entry.resolve(cpEntries);
             }
-        } catch (IOException ioe) {
-            throw new IllegalArgumentException("invalid class format");
+        } catch (IllegalArgumentException ioe) {
+            throw new IOException("invalid class format");
+	} catch (IndexOutOfBoundsException iobe) {
+            throw new IOException("invalid class format");
         }
     }
 
