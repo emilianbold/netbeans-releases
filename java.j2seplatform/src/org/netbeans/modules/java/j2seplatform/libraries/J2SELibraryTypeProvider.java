@@ -153,6 +153,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                             propValue.append(File.pathSeparatorChar);
                         }
                         first = false;
+                        f = FileUtil.normalizeFile(f);
                         propValue.append (f.getAbsolutePath());
                     }
                     else {
