@@ -258,6 +258,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public Map getProperties() {
         return Collections.unmodifiableMap (this.properties);
     }
+    
+    Collection getInstallFolderURLs () {
+        return Collections.unmodifiableList(this.installFolders);
+    }
 
 
     private static ClassPath createClassPath (List urls) {

@@ -14,6 +14,8 @@
 package org.netbeans.modules.java.platform.ui;
 
 import java.awt.*;
+import java.awt.Component;
+import java.awt.Container;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
@@ -22,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
+import javax.swing.JComponent;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
@@ -120,14 +123,18 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanel3 = new javax.swing.JPanel();
         platforms = new PlatformsView ();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        cards = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        platformName = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
         platformHome = new javax.swing.JTextField();
         clientArea = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        platformName = new javax.swing.JTextField();
+        messageArea = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -138,7 +145,6 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
@@ -147,8 +153,8 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         platforms.getAccessibleContext().setAccessibleName(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AN_PlatformsCustomizerPlatforms"));
         platforms.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformsCustomizerPlatforms"));
 
-        addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_AddPlatform"));
         addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_AddPlatform").charAt(0));
+        addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_AddPlatform"));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addNewPlatform(evt);
@@ -157,14 +163,14 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 0, 6);
         add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_AddPlatform"));
 
-        removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_Remove"));
         removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_Remove").charAt(0));
+        removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_Remove"));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removePlatform(evt);
@@ -173,71 +179,78 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(removeButton, gridBagConstraints);
         removeButton.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_Remove"));
 
-        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformHome").charAt(0));
-        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformHome"));
-        jLabel1.setLabelFor(platformHome);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 3);
-        add(jLabel1, gridBagConstraints);
+        cards.setLayout(new java.awt.CardLayout());
 
-        platformHome.setEditable(false);
-        platformHome.setColumns(25);
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
+        jLabel1.setLabelFor(platformName);
+        jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel1.add(jLabel1, gridBagConstraints);
+
+        platformName.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 12);
-        add(platformHome, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel1.add(platformName, gridBagConstraints);
+        platformName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformName"));
+
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformHome").charAt(0));
+        jLabel2.setLabelFor(platformHome);
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformHome"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 12, 0);
+        jPanel1.add(jLabel2, gridBagConstraints);
+
+        platformHome.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 0);
+        jPanel1.add(platformHome, gridBagConstraints);
         platformHome.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformHome"));
 
         clientArea.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(clientArea, gridBagConstraints);
+
+        cards.add(jPanel1, "card2");
+
+        messageArea.setLayout(new java.awt.GridBagLayout());
+
+        cards.add(messageArea, "card3");
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
-        add(clientArea, gridBagConstraints);
-
-        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
-        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName"));
-        jLabel2.setLabelFor(platformName);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 3);
-        add(jLabel2, gridBagConstraints);
-
-        platformName.setEditable(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 3, 6, 12);
-        add(platformName, gridBagConstraints);
-        platformName.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("AD_PlatformName"));
+        add(cards, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -304,44 +317,53 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     private void selectPlatform (Node pNode) {
         this.clientArea.removeAll();
-        this.jLabel1.setVisible(false);
-        this.platformHome.setVisible(false);
-        this.jLabel2.setVisible(false);
-        this.platformName.setVisible(false);
+        this.messageArea.removeAll();
         this.removeButton.setEnabled (false);
         if (pNode == null) {
+            ((CardLayout)cards.getLayout()).last(cards);
             return;
-        }        
+        }
+        JComponent target = messageArea;
         JavaPlatform platform = (JavaPlatform) pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
-            this.jLabel1.setVisible(true);
-            this.platformHome.setVisible(true);
-            this.jLabel2.setVisible(true);
-            this.platformName.setVisible(true);
-            this.removeButton.setEnabled (isDefaultPLatform(platform));
-            this.platformName.setText(pNode.getDisplayName());
-            Iterator it = platform.getInstallFolders().iterator();
-            if (it.hasNext()) {
-                File file = FileUtil.toFile ((FileObject)it.next());
-                if (file != null) {
-                    this.platformHome.setText (file.getAbsolutePath());
+            this.removeButton.setEnabled (isDefaultPLatform(platform));            
+            if (platform.getInstallFolders().size() != 0) {
+                this.platformName.setText(pNode.getDisplayName());
+                Iterator it = platform.getInstallFolders().iterator();
+                if (it.hasNext()) {
+                    File file = FileUtil.toFile ((FileObject)it.next());
+                    if (file != null) {
+                        this.platformHome.setText (file.getAbsolutePath());
+                    }
                 }
+                target = clientArea;
             }
-        }        
+        }            
         if (pNode.hasCustomizer()) {
             Component component = pNode.getCustomizer();
             if (component != null) {
-                GridBagConstraints c = new GridBagConstraints();
-                c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-                c.gridheight = c.gridwidth = GridBagConstraints.REMAINDER;
-                c.fill = GridBagConstraints.BOTH;
-                c.anchor = GridBagConstraints.NORTHWEST;
-                c.weightx = c.weighty = 1.0;
-                ((GridBagLayout)this.clientArea.getLayout()).setConstraints (component,c);
-                this.clientArea.add (component);
+                addComponent(target, component);
             }
+        }        
+        target.revalidate();
+        CardLayout cl = (CardLayout) cards.getLayout();
+        if (target == clientArea) {
+            cl.first (cards);
         }
-        this.clientArea.revalidate();
+        else {
+            cl.last (cards);
+        }
+    }
+        
+    private static void addComponent (Container container, Component component) {
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = c.gridy = GridBagConstraints.RELATIVE;
+        c.gridheight = c.gridwidth = GridBagConstraints.REMAINDER;
+        c.fill = GridBagConstraints.BOTH;
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.weightx = c.weighty = 1.0;
+        ((GridBagLayout)container.getLayout()).setConstraints (component,c);
+        container.add (component);
     }
 
     private static boolean isDefaultPLatform (JavaPlatform platform) {
@@ -378,9 +400,13 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JPanel cards;
     private javax.swing.JPanel clientArea;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel messageArea;
     private javax.swing.JTextField platformHome;
     private javax.swing.JTextField platformName;
     private org.openide.explorer.view.BeanTreeView platforms;

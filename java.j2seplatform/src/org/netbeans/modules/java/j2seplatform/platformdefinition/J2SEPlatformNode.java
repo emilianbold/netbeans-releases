@@ -23,6 +23,7 @@ class J2SEPlatformNode extends AbstractNode {
 
     private J2SEPlatformImpl platform;
     private String toolTip;
+    private boolean broken;
 
     public J2SEPlatformNode (J2SEPlatformImpl platform, DataObject definition) {
         super (Children.LEAF, Lookups.fixed(new Object[] {platform, definition}));
@@ -32,6 +33,15 @@ class J2SEPlatformNode extends AbstractNode {
 
     public String getDisplayName () {
         return this.platform.getDisplayName();
+    }
+
+    public String getHtmlDisplayName() {
+        if (isBroken()) {
+            return "<font color=\"#A40000\">"+this.platform.getDisplayName()+"</font>";
+        }
+        else {
+            return null;
+        }
     }
 
     public String getName () {
@@ -62,7 +72,16 @@ class J2SEPlatformNode extends AbstractNode {
     }
 
     public java.awt.Component getCustomizer () {
-        return new J2SEPlatformCustomizer (this.platform);
+        if (isBroken()) {
+            return new BrokenPlatformCustomizer (this.platform);
+        }
+        else {
+            return new J2SEPlatformCustomizer (this.platform);
+        }
+    }
+
+    private boolean isBroken () {
+        return this.platform.getInstallFolders().size()==0;
     }
 
 }
