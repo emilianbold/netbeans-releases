@@ -38,7 +38,6 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.deployment.plugins.api.*;
@@ -67,8 +66,15 @@ import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 import org.netbeans.jmi.javamodel.*;
 import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.HashSet;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -459,6 +465,64 @@ class WebActionProvider implements ActionProvider {
                 return;
             }
             p = new Properties();
+            
+            WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
+            if (wscs != null) { //project contains ws reference
+                List serviceClients = wscs.getServiceClients();
+                //we store all ws client names into hash set for later fast searching
+                HashSet scNames = new HashSet();
+                for (Iterator scIt = serviceClients.iterator(); scIt.hasNext(); ) {
+                    WsCompileEditorSupport.ServiceSettings serviceClientSettings = 
+                            (WsCompileEditorSupport.ServiceSettings)scIt.next();
+                    scNames.add(serviceClientSettings.getServiceName());
+                }
+                
+                StringBuffer clientDCP = new StringBuffer();//additional debug.classpath
+                StringBuffer clientWDD = new StringBuffer();//additional web.docbase.dir
+
+                //we find all projects containg a web service            
+                Set globalPath = GlobalPathRegistry.getDefault().getSourceRoots();
+                HashSet serverNames = new HashSet();
+                //iteration through all source roots
+                for (Iterator iter = globalPath.iterator(); iter.hasNext(); ) {
+                    FileObject sourceRoot = (FileObject)iter.next();
+                    Project serverProject = FileOwnerQuery.getOwner(sourceRoot);
+                    if (serverProject != null) {
+                        if (!serverNames.add(serverProject.getProjectDirectory().getName())) //project was already visited
+                            continue;
+                        WebServicesSupport wss = WebServicesSupport.getWebServicesSupport(serverProject.getProjectDirectory());
+                        if (wss != null) { //project contains ws
+                            List services = wss.getServices();
+                            boolean match = false;
+                            for (Iterator sIt = services.iterator(); sIt.hasNext(); ) {
+                                WsCompileEditorSupport.ServiceSettings serviceSettings =
+                                        (WsCompileEditorSupport.ServiceSettings)sIt.next();
+                                String serviceName = serviceSettings.getServiceName();
+                                if (scNames.contains(serviceName)) { //matching ws name found
+                                    match = true;
+                                    break; //no need to continue
+                                }
+                            }
+                            if (match) { //matching ws name found in project
+                                //we need to add project's source folders onto a debugger's search path
+                                AntProjectHelper serverHelper = wss.getAntProjectHelper();
+                                String dcp = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.DEBUG_CLASSPATH);
+                                if (dcp != null) {
+                                    //remove beginning colon ':'
+                                    if (dcp.charAt(0) == ':')
+                                        dcp = dcp.substring(1, dcp.length());
+                                    clientDCP.append(serverProject.getProjectDirectory().getPath() + "/" + dcp + ":");
+                                }
+                                String wdd = serverHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.WEB_DOCBASE_DIR);
+                                if (wdd != null)
+                                    clientWDD.append(serverProject.getProjectDirectory().getPath() + "/" + wdd + ":");
+                            }
+                        }
+                    }
+                }
+                p.setProperty("ws.debug.classpaths", clientDCP.toString());
+                p.setProperty("ws.web.docbase.dirs", clientWDD.toString());
+            }
         
         } else if (command.equals(JavaProjectConstants.COMMAND_DEBUG_FIX)) {
             FileObject[] files = findJavaSources(context);

@@ -865,10 +865,10 @@ is divided into following sections:
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
-                <path path="${{debug.classpath}}"/>
+                <path path="${{debug.classpath}}:${{ws.debug.classpaths}}"/>
             </classpath>
             <sourcepath>
-                <path path="${{web.docbase.dir}}"/>
+                <path path="${{web.docbase.dir}}:${{ws.web.docbase.dirs}}"/>
             </sourcepath>
             <xsl:if test="/p:project/p:configuration/webproject1:data/webproject1:explicit-platform">
             <bootclasspath>
