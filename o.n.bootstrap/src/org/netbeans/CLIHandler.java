@@ -86,9 +86,7 @@ public abstract class CLIHandler extends Object {
     protected abstract int cli(Args args);
     
     private static void showHelp(PrintWriter w, List handlers) {
-        w.println("-?");
-        w.println("--help");
-        w.println("  Show this help information.");
+//        w.println("  -? or --help          Show this help information.");
         Iterator it = handlers.iterator();
         while (it.hasNext()) {
             ((CLIHandler)it.next()).usage(w);
@@ -128,16 +126,14 @@ public abstract class CLIHandler extends Object {
     private static int notifyHandlers(Args args, List handlers, int when, boolean failOnUnknownOptions, boolean consume) {
         try {
             //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
-            if (failOnUnknownOptions) {
-                String[] argv = args.getArguments();
-                for (int i = 0; i < argv.length; i++) {
-                    assert argv[i] != null;
-                    if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
-                        PrintWriter w = new PrintWriter(args.getOutputStream());
-                        showHelp(w, handlers);
-                        w.flush();
-                        return 2;
-                    }
+            String[] argv = args.getArguments();
+            for (int i = 0; i < argv.length; i++) {
+                assert argv[i] != null;
+                if (argv[i].equals("-?") || argv[i].equals("--help") || argv[i].equals ("-help")) { // NOI18N
+                    PrintWriter w = new PrintWriter(args.getOutputStream());
+                    showHelp(w, handlers);
+                    w.flush();
+                    return 2;
                 }
             }
             int r = 0;
@@ -153,13 +149,18 @@ public abstract class CLIHandler extends Object {
                 }
             }
             if (failOnUnknownOptions) {
-                String[] argv = args.getArguments();
+                argv = args.getArguments();
                 for (int i = 0; i < argv.length; i++) {
                     if (argv[i] != null) {
                         // Unhandled option.
                         PrintWriter w = new PrintWriter(args.getOutputStream());
-                        w.println("Unknown option: " + argv[i]); // NOI18N
-                        showHelp(w, handlers);
+                        w.println("Ignored unknown option: " + argv[i]); // NOI18N
+
+                        // XXX(-ttran) not good, this doesn't show the help for
+                        // switches handled by the launcher
+                        //
+                        //showHelp(w, handlers);
+                        
                         w.flush();
                         return 2;
                     }
@@ -240,8 +241,8 @@ public abstract class CLIHandler extends Object {
      * @param cleanLockFile removes lock file if it appears to be dead
      * @return the file to be used as lock file or null parsing of args failed
      */
-    static Status initialize(String[] args, ClassLoader loader, boolean failOnUnknownOptions, boolean cleanLockFile) {
-        return initialize(new Args(args, System.in, System.err, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), failOnUnknownOptions, cleanLockFile);
+    static Status initialize(String[] args, InputStream is, OutputStream os, ClassLoader loader, boolean failOnUnknownOptions, boolean cleanLockFile) {
+        return initialize(new Args(args, is, os, System.getProperty ("user.dir")), (Integer)null, allCLIs(loader), failOnUnknownOptions, cleanLockFile);
     }
     
     /**

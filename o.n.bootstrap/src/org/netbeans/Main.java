@@ -29,6 +29,48 @@ public class Main extends Object {
      * @throws Exception for lots of reasons
      */
     public static void main (String args[]) throws Exception {
+        java.lang.reflect.Method[] m = new java.lang.reflect.Method[1];
+        int res = execute (args, System.in, System.err, m);
+        if (res == -1) {
+            // Connected to another running NB instance and succeeded in making a call.
+            System.exit(0);
+        } else if (res != 0) {
+            // Some CLIHandler refused the invocation
+            System.exit(res);
+        }
+
+        m[0].invoke (null, new Object[] { args });
+    }
+    
+    /** Returns string describing usage of the system. Does that by talking to
+     * all registered handlers and asking them to show their usage.
+     *
+     * @return the usage string for the system
+     */
+    public static String usage () throws Exception {
+        java.io.ByteArrayOutputStream os = new java.io.ByteArrayOutputStream ();
+        
+        String[] newArgs = { "--help" };
+        
+        int res = execute (newArgs, System.in, os, null);
+        return new String (os.toByteArray ());
+    }
+        
+    /** Constructs the correct ClassLoader, finds main method to execute 
+     * and invokes all registered CLIHandlers.
+     *
+     * @param args the arguments to pass to the handlers
+     * @param reader the input stream reader for the handlers
+     * @param writer the output stream for the handlers
+     * @param methodToCall null or array with one item that will be set to 
+     *   a method that shall be executed as the main application
+     */
+    private static int execute (
+        String[] args, 
+        java.io.InputStream reader, 
+        java.io.OutputStream writer,
+        java.lang.reflect.Method[] methodToCall
+    ) throws Exception {     
         ArrayList list = new ArrayList ();
 
         String home = System.getProperty ("netbeans.home"); // NOI18N
@@ -98,7 +140,7 @@ public class Main extends Object {
         //
         
         CLIHandler.Status result;
-        result = CLIHandler.initialize(args, loader, true, false);
+        result = CLIHandler.initialize(args, reader, writer, loader, true, false);
         if (result.getExitCode () == CLIHandler.Status.CANNOT_CONNECT) {
             int value = javax.swing.JOptionPane.showConfirmDialog (
                 null, 
@@ -108,20 +150,16 @@ public class Main extends Object {
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
             if (value == javax.swing.JOptionPane.OK_OPTION) {
-                result = CLIHandler.initialize(args, loader, true, true);
+                result = CLIHandler.initialize(args, reader, writer, loader, true, true);
             }
             
         }
-        int res = result.getExitCode();
-        if (res == -1) {
-            // Connected to another running NB instance and succeeded in making a call.
-            System.exit(0);
-        } else if (res != 0) {
-            // Some CLIHandler refused the invocation
-            System.exit(res);
+        
+        if (methodToCall != null) {
+            methodToCall[0] = m;
         }
 
-        m.invoke (null, new Object[] { args });
+        return result.getExitCode ();
     }
     
     /**
