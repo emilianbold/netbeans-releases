@@ -149,6 +149,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
         <xsd:sequence>
             <xsd:element name="type" type="xsd:NMTOKEN"/>
             <xsd:element name="location" type="substitutable-text"/>
+            <xsd:element name="script" type="xsd:token" minOccurs="0"/>
             <xsd:element name="build-target" type="xsd:token"/>
             <xsd:element name="clean-target" type="xsd:token" minOccurs="0"/>
         </xsd:sequence>

@@ -69,7 +69,8 @@ public final class FreeformProject implements Project {
             helper().createAuxiliaryConfiguration(), // AuxiliaryConfiguration
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
-            new Subprojects(this),
+            new Subprojects(this), // SubprojectProvider
+            new ArtifactProvider(this), // AntArtifactProvider
         });
     }
     
