@@ -228,7 +228,10 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             return false;
         }
         
-        if ( !dir.isDirectory() ) {
+        /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
+         * its used testFile instead of dir. 
+        */    
+        if ( !testFile.isDirectory() ) {
             return false;
         }
         
