@@ -231,8 +231,20 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                     parseResultSuccessfulRef = new SoftReference(locResult);
                 }
                 PageInfo pageInfo = locResult.getPageInfo();
-                Map prefixMapper = (pageInfo.getXMLPrefixMapper().size() > 0) ?
-                    pageInfo.getApproxXmlPrefixMapper() : pageInfo.getJspPrefixMapper();
+                //Map prefixMapper = (pageInfo.getXMLPrefixMapper().size() > 0) ?
+                //    pageInfo.getApproxXmlPrefixMapper() : pageInfo.getJspPrefixMapper();
+                //Map prefixMapper = pageInfo.getJspPrefixMapper();
+                Map prefixMapper = null;
+                if (pageInfo.getXMLPrefixMapper().size() > 0) {
+                    prefixMapper = pageInfo.getApproxXmlPrefixMapper();
+                    if (prefixMapper.size() == 0){
+                        prefixMapper = pageInfo.getXMLPrefixMapper();
+                    }
+                    prefixMapper.putAll(pageInfo.getJspPrefixMapper());
+                }
+                else {
+                    prefixMapper = pageInfo.getJspPrefixMapper();
+                }
                 getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), prefixMapper, 
                                                           pageInfo.isELIgnored(), locResult.isParsingSuccess());
                 // if failure do nothing

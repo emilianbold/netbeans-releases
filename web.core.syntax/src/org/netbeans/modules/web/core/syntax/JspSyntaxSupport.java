@@ -141,18 +141,24 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private Map getPrefixMapper() {
         // PENDING - must also take xmlPrefixMapper into account
         JspParserAPI.ParseResult result = getParseResult();
+        Map prefixMapper = null;
         if (result != null) {
-            if (result.isParsingSuccess()) {
+            //if (result.isParsingSuccess()) {
                 // PENDING - can we somehow get incomplete parsed information ?
-                if (result.getPageInfo().getXMLPrefixMapper().size() > 0) {
-                    return result.getPageInfo().getApproxXmlPrefixMapper();
+            if (result.getPageInfo().getXMLPrefixMapper().size() > 0) {
+                prefixMapper = result.getPageInfo().getApproxXmlPrefixMapper();
+                if (prefixMapper.size() == 0){
+                    prefixMapper = result.getPageInfo().getXMLPrefixMapper();
                 }
-                else {
-                    return result.getPageInfo().getJspPrefixMapper();
-                }
+                prefixMapper.putAll(result.getPageInfo().getJspPrefixMapper());
+
             }
+            else {
+                prefixMapper = result.getPageInfo().getJspPrefixMapper();
+            }
+            //}
         }
-        return null;
+        return prefixMapper;
     }
     
     private Map getTagLibraries() {
@@ -413,26 +419,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     items.add(tags[i]);
                 }
             }
+            
+            
         }
-        // tags from tag libraries
- /*       TagLibParseSupport support = (dobj == null) ? 
-            null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-        if (support != null) {
-            // add all tags for the given prefix
-            TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
-            if (tagLibData != null) {
-                TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
-                if (tli != null) {
-                    TagInfo[] tags = tli.getTags();
-                    if (tags != null) {
-                        for (int i = 0; i < tags.length; i++) {
-                            items.add(tags[i]);
-                        }
-                    }
-                }
-            }
-        }
-*/        
         return items;
     }
     
@@ -463,27 +452,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 TagAttributeInfo[] attributes = tagInfo.getAttributes();
                 for (int i = 0; i < attributes.length; i++) 
                     items.add(attributes[i]);
-            }    
-        }
-        // attributes for tags from libraries
-/*        TagLibParseSupport support = (dobj == null) ? 
-            null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-        if (support != null) {
-            // add all attributes for the given prefix and tag name
-            TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
-            if (tagLibData != null) {
-                TagLibraryInfo tli = (TagLibraryInfo)tagLibData.getTagLibraryInfo();
-                if (tli != null) {
-                    TagInfo tagInfo = tli.getTag(tag);
-                    if (tagInfo != null) {
-                        TagAttributeInfo[] attributes = tagInfo.getAttributes();
-                        for (int i = 0; i < attributes.length; i++) 
-                            items.add(attributes[i]);
-                    }    
-                }
             }
         }
-*/        
         return items;
     }
     
