@@ -284,6 +284,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     String args1 = "\""+urlStr+"\",,-1,0x1,,,";  // NOI18N
 
                     try {
+                        Thread.sleep(500); // trying hack for bug #42438 - Browser executes twice which is a Mozilla bug
                         task.browser.reqDdeMessage(task.browser.realDDEServer(),WWW_OPEN_URL,args1,task.browser.getOpenUrlTimeout());
                     } catch (NbBrowserException ex) {
                         if (ExtWebBrowser.getEM().isLoggable(ErrorManager.INFORMATIONAL)) {
