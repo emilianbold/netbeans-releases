@@ -118,7 +118,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         // Populate the combo box with list of projects
         Project openProjects[] = OpenProjectList.getDefault().getOpenProjects();
         Arrays.sort( openProjects, OpenProjectList.PROJECT_BY_DISPLAYNAME );
-         DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
+        DefaultComboBoxModel projectsModel = new DefaultComboBoxModel( openProjects );
         projectsComboBox.setModel( projectsModel );
         this.selectProject (p);
     }
@@ -295,8 +295,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         public void actionPerformed (ActionEvent event) {
-            String cat = getCategoryName ();
+            final String cat = getCategoryName ();
             String template =  ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).getSelectedTemplateName();
+            this.setKeys(Collections.EMPTY_SET);
             this.updateKeys ();
             setCategory (cat);
             ((TemplatesPanelGUI)TemplateChooserPanelGUI.this.templatesPanel).setSelectedTemplateByName(template);
