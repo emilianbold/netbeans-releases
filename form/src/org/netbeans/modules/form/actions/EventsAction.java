@@ -25,6 +25,7 @@ import javax.swing.plaf.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.*;
 import org.openide.nodes.Node;
+import com.netbeans.developer.modules.loaders.form.EventsManager;
 import com.netbeans.developer.modules.loaders.form.FormEditor;
 import com.netbeans.developer.modules.loaders.form.RADComponent;
 import com.netbeans.developer.modules.loaders.form.EventsList;
@@ -98,7 +99,8 @@ public class EventsAction extends CookieAction {
     popupMenu.setEnabled (isEnabled ());
     HelpCtx.setHelpIDString (popupMenu, EventsAction.class.getName ());
     popupMenu.addMenuListener(new MenuListener() {
-        Hashtable mapping = new Hashtable ();
+        Hashtable mapping = new Hashtable ();  // events by menu
+        Hashtable mapping2 = new Hashtable (); // handlers by menu
         public void menuSelected(MenuEvent e) {
           JMenu menu = (JMenu)e.getSource ();
           if (menu.getMenuComponentCount () > 0) // [IAN - Patch for Swing 1.1, which throws NullPointerException if removeAll is called on empty uninitialized JMenu]
@@ -124,14 +126,44 @@ public class EventsAction extends CookieAction {
             EventsList.Event[] events = setHandlers[i].getEvents();
             for (int j = 0; j < events.length; j++) {
               StringBuffer menuText = new StringBuffer(events[j].getName ());
-              if (events[j].getHandler () != null) {
-                menuText.append (" [");
-                menuText.append (events[j].getHandler ().getName ());
-                menuText.append ("]");
+              JMenuItem jmi=null;
+              if (events[j].getHandlers ().size () == 0) {
+                jmi = new JMenuItem (menuText.toString ());
               }
-              JMenuItem jmi = new JMenuItem (menuText.toString ());
+              if (events[j].getHandlers ().size () == 1) {
+                menuText.append (" [");
+                menuText.append (((EventsManager.EventHandler) events[j].getHandlers ().get (0)).getName ());
+                menuText.append ("]");
+                jmi = new JMenuItem (menuText.toString ());
+              }
+              if (events[j].getHandlers ().size () > 1) {
+                jmi = new org.openide.awt.JMenuPlus (menuText.toString ());
+                for (java.util.Iterator it = events[j].getHandlers ().iterator(); it.hasNext(); ) {
+                  EventsManager.EventHandler handler = (EventsManager.EventHandler) it.next ();
+                  JMenuItem hItem = new JMenuItem (handler.getName ());
+                  hItem.addActionListener (new ActionListener () {
+                      public void actionPerformed (ActionEvent evt) {
+                        EventsList.Event event = (EventsList.Event)mapping.get (evt.getSource ());
+                        String handlerName = (String) mapping2.get(evt.getSource ());
+                        if (event != null) {
+                          if (handlerName == null)
+                            event.gotoEventHandler ();
+                          else
+                            event.gotoEventHandler (handlerName);
+                        }
+                      }
+                    }
+                  );
+                  Font hFont = hItem.getFont();
+                  hItem.setFont(new Font (hFont.getFontName(), hFont.getStyle() + Font.BOLD, hFont.getSize()));
+                  HelpCtx.setHelpIDString (hItem, EventsAction.class.getName ());
+                  ((JMenu) jmi).add (hItem);
+                  mapping.put(hItem, events[j]);
+                  mapping2.put(hItem, handler.getName ());
+                }
+              }
               HelpCtx.setHelpIDString (jmi, EventsAction.class.getName ());
-              if (events[j].getHandler () != null) {
+              if (events[j].getHandlers ().size () > 0 ) {
                 eventSetHasHandlers = true;
                 Font jmiFont = jmi.getFont();
                 jmi.setFont(new Font (jmiFont.getFontName(), jmiFont.getStyle() + Font.BOLD, jmiFont.getSize()));
@@ -142,7 +174,7 @@ public class EventsAction extends CookieAction {
                   public void actionPerformed (ActionEvent evt) {
                     EventsList.Event event = (EventsList.Event)mapping.get (evt.getSource ());
                     if (event != null) {
-                      if (event.getHandler () == null)
+                      if (event.getHandlers ().size () == 0)
                         event.createDefaultEventHandler ();
                       event.gotoEventHandler ();
                     }
@@ -167,6 +199,8 @@ public class EventsAction extends CookieAction {
 }
 /*
  * Log
+ *  11   Gandalf   1.10        11/25/99 Pavel Buzek     support for multiple 
+ *       handlers for one event
  *  10   Gandalf   1.9         11/1/99  Pavel Buzek     displying events and 
  *       event groups that have some handler assigned in bold font
  *  9    Gandalf   1.8         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

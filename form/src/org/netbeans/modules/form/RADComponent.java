@@ -239,20 +239,10 @@ public class RADComponent {
     }
     getFormManager ().getVariablesPool ().createVariable (componentName, beanClass);
 
-    // [PENDING - patch to make JInternalFrames appear under JDK 1.3]
-    if (getBeanInstance () instanceof javax.swing.JInternalFrame) {
-      String oldInitCode = oldName + ".setVisible (true);";
-      String oldInitSet = (String)getAuxValue (JavaCodeGenerator.AUX_CREATE_CODE_POST);
-      if ((oldInitSet != null) && (oldInitSet.equals (oldInitCode))) {
-        setAuxValue (JavaCodeGenerator.AUX_CREATE_CODE_POST, componentName+".setVisible (true);");
-      }
-    }
-
     getFormManager ().fireComponentChanged (this, PROP_NAME, oldName, componentName);
     if (getNodeReference () != null) {
       getNodeReference ().updateName ();
     }
-
   }
   
   /** @return component name preserved between Cut and Paste */
@@ -420,7 +410,7 @@ public class RADComponent {
 
   protected void attachDefaultEvent () {
     EventsList.Event defaultEvt = eventsList.getDefaultEvent ();
-    if (defaultEvt.getHandler () == null)
+    if (defaultEvt.getHandlers () == null)
       defaultEvt.createDefaultEventHandler ();
     defaultEvt.gotoEventHandler ();
   }
@@ -474,52 +464,68 @@ public class RADComponent {
         Node.Property ep = new EventProperty (events[j]) {
 
           public Object getValue () {
-            if (event.getHandler () == null)
-              return FormEditor.getFormBundle().getString("CTL_NoEvent");
-            else
-              return event.getHandler ().getName ();
+            if (event.getHandlers () == null || event.getHandlers ().size () == 0) 
+              lastSelectedHandler = null;
+            else if (lastSelectedHandler==null && event.getHandlers () != null && event.getHandlers ().size () >0 )
+              lastSelectedHandler = ((EventsManager.EventHandler) event.getHandlers ().get (0)).getName ();
+            return lastSelectedHandler;
+            /*
+            if (event.getHandlers () == null)
+            return new String[0];
+            else {
+              Vector handlers = event.getHandlers ();
+              String [] names = new String [handlers.size()];
+              for (int k=0, n=handlers.size(); k<n; k++)
+                names [k] = (String) handlers.get (k);
+              return names;
+            }
+            */
           }
 
           public void setValue (Object val) throws IllegalArgumentException {
-            if (!(val instanceof String))
+            if (!(val instanceof HandlerSetChange)) {
               throw new IllegalArgumentException();
-
-            if ((!("".equals (val))) && (!Utilities.isJavaIdentifier ((String)val)))
-              return;
-
-            EventsManager.EventHandler oldValue = event.getHandler ();
-
-            if ("".equals (val)) {  
-              
-              // removing event hanlder
-              if (oldValue == null) return; // no change
-              formManager.getEventsManager ().removeEventHandler (event);
-              formManager.fireEventRemoved (RADComponent.this, oldValue);
-              notifyPropertiesChange ();
-              
-            } else {
-              
-              // adding/changing event handler
-              String handlerName = (String) val;
-              if (oldValue != null) { // renaming
-                if (handlerName.equals (oldValue)) return; // no change
-                String oldName = oldValue.getName ();
-                formManager.getEventsManager ().renameEventHandler (event.getHandler (), handlerName);
-                formManager.fireEventRenamed (RADComponent.this, oldValue, oldName);
-                
-              } else {                
+            }
+            Hashtable handlersByName = new Hashtable ();
+            Vector handlers = event.getHandlers ();
+            for (int k=0, n=handlers.size(); k<n; k++) {
+              EventsManager.EventHandler h = (EventsManager.EventHandler) handlers.get(k);
+              handlersByName.put(h.getName (), h);
+            }
+            
+            HandlerSetChange change = (HandlerSetChange) val;
+            if (change.hasAdded ()) {
+              for (Iterator iter = change.getAdded ().iterator (); iter.hasNext(); ) {
+                String handlerName = (String) iter.next ();
+                if (!Utilities.isJavaIdentifier (handlerName)) {
+                  System.out.println(handlerName +" is not a Java identifier");
+                  continue;
+                }
                 // adding event handler
                 formManager.getEventsManager ().addEventHandler (event, handlerName);
-                formManager.fireEventAdded (RADComponent.this, event.getHandler ());
+                EventsManager.EventHandler handler = (EventsManager.EventHandler) event.getHandlers ().get (event.getHandlers ().size () -1);
+                formManager.fireEventAdded (RADComponent.this, handler);
               }
-
-              notifyPropertiesChange ();
-
-              if ((gotoMethod != null) && gotoMethod.equals (handlerName)) {
-                gotoMethod = null;
-                event.gotoEventHandler ();
+            }
+            if (change.hasRenamed ()) {
+              for (int k=0, n = change.getRenamedOldNames ().size (); k<n; k++) {
+                String oldName = (String) change.getRenamedOldNames ().get (k);
+                String newName = (String) change.getRenamedNewNames ().get (k);
+                if (!Utilities.isJavaIdentifier (newName)) continue;
+                if (newName.equals (oldName)) continue; // no change
+                EventsManager.EventHandler handler = (EventsManager.EventHandler) handlersByName.get(oldName);
+                formManager.getEventsManager ().renameEventHandler (handler, newName);
+                formManager.fireEventRenamed (RADComponent.this, handler, oldName);
               }
-            } 
+            }
+            if (change.hasRemoved ()) {
+              for (Iterator iter = change.getRemoved ().iterator (); iter.hasNext(); ) {
+                EventsManager.EventHandler handler = (EventsManager.EventHandler) handlersByName.get((String) iter.next ());
+                formManager.getEventsManager ().removeEventHandler (event, handler);
+                formManager.fireEventRemoved (RADComponent.this, handler);
+              }
+            }
+            notifyPropertiesChange ();
           } 
 
         };
@@ -621,7 +627,7 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Debug methods
 
-  public String toString () {
+  public java.lang.String toString () {
     return super.toString () + ", name: "+getName ()+", class: "+getBeanClass ()+", beaninfo: "+getBeanInfo () + ", instance: "+getBeanInstance ();
   }
   
@@ -1218,6 +1224,7 @@ public class RADComponent {
 
   abstract class EventProperty extends PropertySupport.ReadWrite {
     EventsList.Event event;
+    String lastSelectedHandler;
 
     EventProperty (EventsList.Event event) {
       super (FormEditor.EVENT_PREFIX + event.getName(),
@@ -1234,36 +1241,116 @@ public class RADComponent {
     public java.beans.PropertyEditor getPropertyEditor () {
       return new EventEditor ();
     }                               
+
+    class HandlerSetChange {
+      boolean hasAdded () { 
+        return (added !=null && added.size()>0);
+      }
+      boolean hasRemoved () {
+        return (removed !=null && removed.size()>0);
+      }     
+      boolean hasRenamed () {
+        return (renamedOldName !=null && renamedOldName.size()>0);
+      }
+      Vector getAdded () {
+        if (added == null) added = new Vector ();
+        return added;
+      }
+      Vector getRemoved () {
+        if (removed == null) removed = new Vector ();
+        return removed;
+      }
+      Vector getRenamedOldNames () {
+        if (renamedOldName == null) renamedOldName = new Vector ();
+        return renamedOldName;
+      }
+      Vector getRenamedNewNames () {
+        if (renamedNewName == null) renamedNewName = new Vector ();
+        return renamedNewName;
+      }
+      private Vector added;
+      private Vector removed;
+      private Vector renamedOldName;
+      private Vector renamedNewName;
+    }
     
     class EventEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
-      public void setAsText (String string) {
-        gotoMethod = string;
-        setValue(string);
-      }
-                                   
-      private String getEditText () {
-        if (event.getHandler () == null)
-          return FormUtils.getDefaultEventName (RADComponent.this, event.getListenerMethod ());
+      public String getAsText () {
+        if (getValue () == null)
+          return FormEditor.getFormBundle().getString("CTL_NoEvent");
         else 
-          return event.getHandler ().getName (); // [PENDING]
+          return (String) getValue ();
       }
-      
       /**
       * @return Returns custom property editor to be showen inside the property
       *         sheet.
       */
       public java.awt.Component getInPlaceCustomEditor () {
-        final JTextField eventField = new JTextField ();
-        eventField.setText (getEditText ());
-        eventField.addActionListener (new java.awt.event.ActionListener () {
-            public void actionPerformed (java.awt.event.ActionEvent e) {
-              setAsText (eventField.getText ());
+        if (formManager.getFormEditorSupport ().supportsAdvancedFeatures ()) {
+          final javax.swing.JComboBox eventCombo = new javax.swing.JComboBox ();
+          eventCombo.setEditable (true);
+          Vector handlers = event.getHandlers ();
+          if (handlers.size () == 0) {
+            eventCombo.getEditor().setItem(FormUtils.getDefaultEventName (RADComponent.this, event.getListenerMethod ()));
+          } else {
+            for (int i=0, n=handlers.size(); i<n; i++) {
+              eventCombo.addItem (((EventsManager.EventHandler) handlers.get(i)).getName ()); // [PENDING]
             }
           }
-        );
+          eventCombo.addActionListener(new java.awt.event.ActionListener () {
+              public void actionPerformed (java.awt.event.ActionEvent e) {
+                //.addItemListener (new java.awt.event.ItemListener () {
+                //    public void itemStateChanged (java.awt.event.ItemEvent evt) {
+                
+                String selected = (String) eventCombo.getEditor().getItem();
+                lastSelectedHandler = selected;
+                HandlerSetChange change = new HandlerSetChange ();
+                setValue (change); // just to call notifyPropertyChange
+                event.gotoEventHandler (selected);              
+              }
+            }
+          );
+          eventCombo.getEditor().addActionListener(new java.awt.event.ActionListener () {
+              public void actionPerformed (java.awt.event.ActionEvent e) {
+                String selected = (String) eventCombo.getEditor().getItem();
+                lastSelectedHandler = selected;
+                boolean isNew = true;
+                String items[] = new String[eventCombo.getItemCount()];
+                for (int i=0, n=eventCombo.getItemCount(); i<n; i++) {
+                  items[i] = (String) eventCombo.getItemAt(i);
+                  if(eventCombo.getItemAt(i).equals(selected)) {
+                    isNew = false;
+                  }
+                }
+                if(isNew) {
+                  HandlerSetChange change = new HandlerSetChange ();
+                  change.getAdded ().add (selected);
+                  setValue (change);
+                  eventCombo.addItem(selected);
+                }
+                event.gotoEventHandler (selected);
+              }
+            }
+          );
+          return eventCombo;
+        } else {
+          final JTextField eventField = new JTextField ();
+          Vector handlers = event.getHandlers ();
+          if (handlers.size () == 0) {
+            eventField.setText (FormUtils.getDefaultEventName (RADComponent.this, event.getListenerMethod ()));
+          } else {
+            eventField.setText (((EventsManager.EventHandler) handlers.get(0)).getName ());
+          }
+          eventField.addActionListener (new java.awt.event.ActionListener () {
+              public void actionPerformed (java.awt.event.ActionEvent e) {
+                setAsText (eventField.getText ());
+              }
+            }
+          );
         return eventField;
+        }
       }
-    
+      
       /**
       * @return true if this PropertyEditor provides a enhanced in-place custom 
       *              property editor, false otherwise
@@ -1271,7 +1358,17 @@ public class RADComponent {
       public boolean hasInPlaceCustomEditor () {
         return true;
       }
-    
+
+      public boolean supportsCustomEditor () {
+        return true;
+      }
+      
+      public java.awt.Component getCustomEditor () {        
+        EventCustomEditor ed = new EventCustomEditor (new javax.swing.JFrame (), true, EventProperty.this);
+        FormUtils.centerWindow (ed);
+        return ed;
+      }
+      
       /**
       * @return true if this property editor provides tagged values and
       * a custom strings in the choice should be accepted too, false otherwise
@@ -1286,6 +1383,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  58   Gandalf   1.57        11/25/99 Pavel Buzek     support for multiple 
+ *       handlers for one event
  *  57   Gandalf   1.56        11/15/99 Ian Formanek    Fixed bug 4717 - On JDK 
  *       1.3, added JInternalFrames are not visible and the generated code does 
  *       not contain the required setVisible call.

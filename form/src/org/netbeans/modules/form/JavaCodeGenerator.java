@@ -229,7 +229,7 @@ public class JavaCodeGenerator extends CodeGenerator {
               value = "";
             }
             return value;
-          }
+          }          
         },
         new CodePropertySupportRW ("creationCodePost", String.class, "Post Creation Code",  // [PENDING - localize]
                                        "Code after creation of this component") {
@@ -497,12 +497,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
-    //System.out.println("Adding init code for: "+comp.getName ()+ " level:"+level);
-    /* all components are created before init code in addCreateCode ()
-    if (!(comp instanceof FormContainer)) {
-      generateComponentCreate (comp, initCodeWriter);
-    }
-    */
+    //System.out.println("Adding init code for: "+comp.getName ());
     generateComponentInit (comp, initCodeWriter);
     generateComponentEvents (comp, initCodeWriter);
     if (comp instanceof ComponentContainer) {
@@ -785,7 +780,7 @@ public class JavaCodeGenerator extends CodeGenerator {
       boolean shouldGenerate = false;
       boolean[] shouldGenerateEvent = new boolean[events.length];
       for (int j = 0; j < events.length; j++) {
-        if (events[j].getHandler () != null) {
+        if (events[j].getHandlers ().size () > 0) {
           shouldGenerate = true;
           shouldGenerateEvent[j] = true;
           continue;
@@ -840,16 +835,21 @@ public class JavaCodeGenerator extends CodeGenerator {
           initCodeWriter.write (getMethodHeaderText (evtMethod, varNames));
           initCodeWriter.write (" {\n");
 
-          if (events[j].getHandler () != null) {
-            // generate the call to the handler
-            initCodeWriter.write (events[j].getHandler ().getName ());
-            initCodeWriter.write (" (");
-            for (int k = 0; k < varNames.length; k++) {
-              initCodeWriter.write (varNames[k]);
-              if (k != varNames.length - 1)
-               initCodeWriter.write (", ");
+          if (events[j].getHandlers ().size () > 0) {
+            // generate the call to the handlers
+            for (Iterator it = events[j].getHandlers ().iterator (); it.hasNext();) {
+              EventsManager.EventHandler handler = (EventsManager.EventHandler) it.next ();
+              initCodeWriter.write (handler.getName ());
+              initCodeWriter.write (" (");
+              for (int k = 0; k < varNames.length; k++) {
+                initCodeWriter.write (varNames[k]);
+                if (k != varNames.length - 1)
+                 initCodeWriter.write (", ");
+              }
+              initCodeWriter.write (");");
+              if (it.hasNext())
+                initCodeWriter.write ("\n");
             }
-            initCodeWriter.write (");");
           }
           initCodeWriter.write ("\n");
           initCodeWriter.write ("}\n");
@@ -1341,9 +1341,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     * Write a string.
     */
     public void write(String str) {
-      if (currentIndent != null) {
-        str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
-      }
+      if (currentIndent != null) str = Utilities.replaceString (str, "\n", "\n"+currentIndent);
       super.write (str);
     }
     
@@ -1372,7 +1370,7 @@ public class JavaCodeGenerator extends CodeGenerator {
     }
 
     /** @return names of the possible directions */
-    public java.lang.String[] getTags () {
+    public String[] getTags () {
       if (component.hasHiddenState ()) {
         return new String[] { serializeName } ;
       } else {
@@ -1402,8 +1400,6 @@ public class JavaCodeGenerator extends CodeGenerator {
       }
     }
   } 
-  
-  
           
   abstract class CodePropertySupportRW extends PropertySupport.ReadWrite {
     CodePropertySupportRW (String name, Class type, String displayName, String shortDescription) {
@@ -1420,11 +1416,12 @@ public class JavaCodeGenerator extends CodeGenerator {
       };
     }
   }
-  
 }
 
 /*
  * Log
+ *  59   Gandalf   1.58        11/25/99 Pavel Buzek     support for multiple 
+ *       handlers for one event
  *  58   Gandalf   1.57        11/24/99 Pavel Buzek     2882 (AWT hierarchy) 
  *       fixed
  *  57   Gandalf   1.56        11/15/99 Pavel Buzek     editors for code support
