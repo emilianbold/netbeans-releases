@@ -156,7 +156,7 @@ Microsystems, Inc. All Rights Reserved.
         <file name="create-menu-items-from-classes.html" url="tips/create-menu-items-from-classes.html"/>
         <attr name="create-menu-items-from-classes.html/editor-indentation.html" boolvalue="true"/>
         <file name="editor-indentation.html" url="tips/editor-indentation.html"/>
-        <attr name="editor-indentation.html/"explore-from-here.html" boolvalue="true"/>
+        <attr name="editor-indentation.html/explore-from-here.html" boolvalue="true"/>
         <file name="explore-from-here.html" url="tips/explore-from-here.html"/>
         <attr name="explore-from-here.html/edit-html.html" boolvalue="true"/>
         <file name="edit-html.html" url="tips/edit-html.html"/>
