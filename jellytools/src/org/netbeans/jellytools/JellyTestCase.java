@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -57,6 +57,8 @@ public class JellyTestCase extends NbTestCase {
     /** closing all modal dialogs after each test case is disabled by default
      */
     public boolean closeAllModal = Boolean.valueOf(System.getProperty("jelly.close.modal", "true")).booleanValue();
+    /** Wait 1000 ms before every test case */
+    public boolean waitNoEvent = Boolean.valueOf(System.getProperty("jelly.wait.no.event", "true")).booleanValue();
 
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -107,7 +109,9 @@ public class JellyTestCase extends NbTestCase {
         Toolkit.getDefaultToolkit().addAWTEventListener(distributingHierarchyListener, 
                                                         HierarchyEvent.HIERARCHY_EVENT_MASK);
         // wait 
-        new EventTool().waitNoEvent(1000);
+        if(waitNoEvent) {
+            new EventTool().waitNoEvent(1000);
+        }
         try {
             super.runBare();
         } catch (ThreadDeath td) {
