@@ -44,6 +44,7 @@
 		<mapID target="html_create" url="web/create/html/html_create.html" />
 		<!-- End of "Create/HTML" subsection -->
 		<!-- Start of "Create/JSP" subsection -->
+		<mapID target="about_jsp_edit" url="web/create/jsp/about_jsp_edit.html" />
 		<mapID target="about_jsp_syntax" url="web/create/jsp/about_jsp_syntax.html" />
 		<mapID target="about_jsp_technology" url="web/create/jsp/about_jsp_technology.html" />
 		<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html" />

@@ -66,7 +66,8 @@
 	   <tocitem text="About Structuring Web Source Files" target="about_struct_webapps" />
 	   <tocitem text="Creating a Web Application Project" target="create_webapps_proj" />
 	   <tocitem text="Upgrading to the J2EE 1.4 Specification" target="upgrade_to_j2ee14" />
-      <tocitem text="JSP Files"> 
+       <tocitem text="JSP Files">
+          <tocitem text="About Creating and Editing JSP Files" target="about_jsp_edit" />
           <tocitem text="About JavaServer Pages Technology" target="about_jsp_technology" />
           <tocitem text="About JSP Syntax" target="about_jsp_syntax" />
           <tocitem text="Creating a JSP File" target="jsp_create" />
@@ -133,7 +134,6 @@
       </tocitem>
       <tocitem text="HTML Files" >      
 	  <tocitem text="Creating an HTML File" target="html_create" />  
-          <tocitem text="Folding Code in a JSP or HTML File" target="jsp_foldcode" />
       </tocitem> 
       <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
