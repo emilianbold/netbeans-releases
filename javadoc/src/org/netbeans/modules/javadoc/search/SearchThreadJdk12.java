@@ -35,11 +35,15 @@ import org.openide.filesystems.FileObject;
 
 class SearchThreadJdk12 extends IndexSearchThread {
 
-    private BufferedReader    in;
-    private URL               contextURL;
+    private BufferedReader in;
+    private URL contextURL;
 
-    private boolean  stopSearch = false;
+    private boolean stopSearch = false;
 
+    private boolean splitedIndex = false;
+    private int currentIndexNumber;
+    private FileObject folder = null;
+    
     public SearchThreadJdk12 ( String toFind,
                                FileObject fo,
                                IndexSearchThread.DocIndexItemConsumer diiConsumer ) {
@@ -48,23 +52,28 @@ class SearchThreadJdk12 extends IndexSearchThread {
 
         if ( fo.isFolder() ) {
             // Documentation uses splited index - resolve the right file
-            Integer fileNumber = new Integer( (int)(Character.toUpperCase( toFind.charAt(0) ))  - 'A' + 1);
-
-            if ( fileNumber.intValue() < 1 || fileNumber.intValue() > 26 ) {
-                fileNumber = new Integer( 27 );
+            
+            
+            // This is just a try in most cases the fileNumber should be
+            // the right one but when some index files are missing we have
+            // to find the right one
+            folder = fo;
+            currentIndexNumber = (int)(Character.toUpperCase( toFind.charAt(0) ))  - 'A' + 1;
+            if ( currentIndexNumber < 1 ) {
+                currentIndexNumber = 1;
             }
-
-            String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
-            this.fo = fo.getFileObject( fileName, "html" ); // NOI18N
-
-            if ( this.fo != null ) {
-                try {
-                    contextURL = this.fo.getURL();
-                }
-                catch ( org.openide.filesystems.FileStateInvalidException e ) {
-                    throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
-                }
+            else if ( currentIndexNumber > 26 ) {
+                currentIndexNumber = 27;
             }
+                
+            /*
+            if ( currentIndexNumber < 1 || currentIndexNumber > 26 ) {
+                currentIndexNumber = 27;
+            }
+            */
+            findFileObject( 0 );
+            
+            splitedIndex = true;
         }
         else {
             try {
@@ -74,6 +83,8 @@ class SearchThreadJdk12 extends IndexSearchThread {
             catch ( org.openide.filesystems.FileStateInvalidException e ) {
                 throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
             }
+            
+            splitedIndex = false;
         }
     }
 
@@ -90,23 +101,101 @@ class SearchThreadJdk12 extends IndexSearchThread {
     public void run () {
 
         ParserDelegator pd = new ParserDelegator();
-
+        
         if ( fo == null || toFind == null ) {
             taskFinished();
             return;
         }
 
+        
+        SearchCallbackJdk12 sc = null;
+
+        int theDirection = 0;
+        
+        do {
+            if ( sc != null ) {
+                
+                if (sc.badFile != theDirection ) {
+                    break;
+                }
+                
+                findFileObject( sc.badFile );
+                if ( fo == null ) {
+                    // No other file to search
+                    break;
+                }
+            }
+
+            try {    
+                in = new BufferedReader( new InputStreamReader( fo.getInputStream () ));        
+                pd.parse( in, sc = new SearchCallbackJdk12( splitedIndex ), true );
+            }
+            catch ( java.io.IOException e ) {
+               // Do nothing
+            }
+            
+            if ( sc.badFile != 0 && theDirection == 0 ) {
+                theDirection = sc.badFile;
+            }            
+        }
+        while ( sc.badFile != 0 );
+
         try {
-            in = new BufferedReader( new InputStreamReader( fo.getInputStream () ));
-            pd.parse( in, new SearchCallbackJdk12(), true );
             in.close();
         }
         catch ( java.io.IOException e ) {
             // Do nothing
         }
         //is.searchEnded();
-        //System.out.println ("THE REAL END"); // NOI18N
         taskFinished();
+    }
+    
+    void findFileObject( int direction ) {
+
+        
+        if ( direction < 0 ) {
+            currentIndexNumber--;
+        }
+        else if ( direction > 0 ) {
+            currentIndexNumber++;
+        }
+        
+        do {
+            
+            // Assure the only one direction of looking for Files
+            
+            
+            if ( currentIndexNumber < 0 || currentIndexNumber > 27 ) {
+                fo = null;
+                return;
+            }
+
+            Integer fileNumber = new Integer( currentIndexNumber );
+
+            String fileName = new String( "index-" + fileNumber.toString() ); // NOI18N
+
+            if ( folder == null ) {
+                fo = null;
+                return;
+            }
+
+            fo = folder.getFileObject( fileName, "html" ); // NOI18N
+
+            if ( fo != null ) {
+                try {
+                    contextURL = this.fo.getURL();
+                }
+                catch ( org.openide.filesystems.FileStateInvalidException e ) {
+                    throw new InternalError( "Can't create documentation folder URL - file state invalid" ); // NOI18N
+                }
+            }
+            else {
+                
+                currentIndexNumber += direction > 0 ? 1 : -1;
+            }
+        }
+        while ( fo == null );
+        
     }
 
     // Inner classes ------------------------------------------------------------------------------------
@@ -128,20 +217,6 @@ class SearchThreadJdk12 extends IndexSearchThread {
     static private final String STR_DASH = bundle.getString( "JDK12_DASH" );
     static private final String STR_PACKAGE = bundle.getString( "JDK12_PACKAGE" );
 
-    /*
-    static {
-      bundle = NbBundle.getBundle(SearchThreadJdk12.class);
-      STR_CLASS = bundle.getString( "JDK12_CLASS" );
-      STR_INTERFACE = bundle.getString( "JDK12_INTERFACE" );
-      STR_CONSTRUCTOR = bundle.getString( "JDK12_CONSTRUCTOR" );
-      STR_METHOD = bundle.getString( "JDK12_METHOD" );
-      STR_VARIABLE = bundle.getString( "JDK12_VARIABLE" );
-      STR_STATIC = bundle.getString( "JDK12_STATIC" );
-      STR_DASH = bundle.getString( "JDK12_DASH" );
-      STR_PACKAGE = bundle.getString( "JDK12_PACKAGE" );
-}
-    */
-
     static private final int IN_BALAST = 0;
     static private final int IN_DT = 1;
     static private final int IN_AREF = 2;
@@ -150,7 +225,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
     static private final int IN_DESCRIPTION_SUFFIX = 5;
 
     /** This inner class parses the JDK 1.2 Documentation index and returns
-     *  found indexItems
+     *  found indexItems. 
      */
 
     private class SearchCallbackJdk12 extends HTMLEditorKit.ParserCallback {
@@ -159,8 +234,18 @@ class SearchThreadJdk12 extends IndexSearchThread {
         private DocIndexItem        currentDii = null;
         private int                 where = IN_BALAST;
 
+        private boolean             splited;
+        private boolean             stopOnNext = false;
+        
+        private int                 badFile = 0;         
+        
         int printText = 0;
-
+        
+        SearchCallbackJdk12( boolean splited ) {
+            super();
+            this.splited = splited;
+        }
+        
         public void handleStartTag(HTML.Tag t, MutableAttributeSet a, int pos) {
 
             if ( t == HTML.Tag.DT ) {
@@ -187,28 +272,69 @@ class SearchThreadJdk12 extends IndexSearchThread {
         public void handleText(char[] data, int pos) {
 
             if ( where == IN_AREF ) {
+                
+                if ( stopOnNext ) {
+                    try {
+                        in.close();
+                        where = IN_BALAST;
+                        return;
+                    }
+                    catch ( java.io.IOException e ) {
+                        TopManager.getDefault().notifyException( e );
+                    }
+                }
+                
                 String text = new String( data );
+                
+                if ( splited ) {
+                    // it is possible that we search wrong file
+                    char first = Character.toUpperCase( toFind.charAt( 0 ) );
+                    char curr = Character.toUpperCase( data[0] );
+                    if ( first != curr ) {
+                        
+                        badFile = first < curr ? -1 : 1;
+                        try {
+                           in.close();
+                           where = IN_BALAST;
+                           return;
+                        }
+                        catch ( java.io.IOException e ) {
+                            TopManager.getDefault().notifyException( e );
+                        }
+                    }
+                    
+                }
+                
                 if ( text.startsWith( toFind ) ) {
                     DocIndexItem dii = new DocIndexItem( text, null, contextURL, hrefVal );
                     //insertDocIndexItem( dii );
                     currentDii = dii;
                     where = IN_DESCRIPTION;
                 }
+                else if ( text.substring( 0, Math.min(toFind.length(), text.length()) ).toUpperCase().compareTo( toFind.toUpperCase() ) > 0 ) {
+                    // Stop suffering if we are behind the searched words
+                    stopOnNext = true;
+                }
+                else {
+                    where = IN_BALAST;
+                }
             }
             else if ( where == IN_DESCRIPTION  ) {
                 String text = new String( data );
-
-
+                
+                /*
                 // Stop suffering if we are behind the searched words
                 if ( text.substring( 0, Math.min(toFind.length(), text.length()) ).compareTo( toFind ) > 0 ) {
                     try {
+                        System.out.println("Stoping suffering");
                         in.close();
                     }
                     catch ( java.io.IOException e ) {
                         TopManager.getDefault().notifyException( e );
                     }
                 }
-
+                */
+                
                 currentDii.setRemark( text );
                 text = text.toUpperCase();
 
