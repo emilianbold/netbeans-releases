@@ -241,11 +241,15 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
   /** Implementation of the ItemListener interface */
   public void itemStateChanged (ItemEvent evt) {
     sheetVisible = sheetSwitcher.isSelected();
-
-    //Component parent = getParent();
-    //while (!(parent instanceof Frame)) parent = parent.getParent();
     java.awt.Dimension size = split.getSize ();
     java.awt.Dimension compSize = getSize ();
+    // add enclosing mode insets
+    Rectangle modeBounds = 
+      TopManager.getDefault().getWindowManager().getCurrentWorkspace().
+      findMode(this).getBounds();
+    compSize.width += modeBounds.width - compSize.width;
+    compSize.height += modeBounds.height - compSize.height;
+    // compute further...
     int splitType = split.getSplitType ();
     boolean swapped = split.getPanesSwapped();
     if (sheetVisible) { // showing property sheet pane
@@ -283,18 +287,17 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
     }
   }
 
-  private void setRequestedSize(Dimension dim) {
+  private void setRequestedSize (Dimension dim) {
     Workspace ws = TopManager.getDefault().getWindowManager().
                    getCurrentWorkspace();
-    if (ws != null) {
-      Mode mode = ws.findMode(this);
-      if (mode != null) {
-        Rectangle bounds = mode.getBounds();
-        bounds.width = dim.width;
-        bounds.height = dim.height;
-        mode.setBounds(bounds);
-      }
+    Mode mode = ws.findMode(this);
+    if (mode != null) {
+      Rectangle bounds = mode.getBounds();
+      Rectangle newBounds = 
+        new Rectangle(bounds.x, bounds.y, dim.width, dim.height);
+      mode.setBounds(newBounds);
     }
+    repaint();
   }
 
   private void updateTitle () {
@@ -437,6 +440,7 @@ public final class NbMainExplorer extends TopComponent implements ItemListener {
 
 /*
 * Log
+*  20   Gandalf   1.19        7/21/99  David Simonek   properties switcher fixed
 *  19   Gandalf   1.18        7/19/99  Jesse Glick     Context help.
 *  18   Gandalf   1.17        7/16/99  Ian Formanek    Fixed bug #1800 - You can
 *       drag off the explorer toolbar. 
