@@ -425,15 +425,6 @@ public final class OpenProjectList {
             OpenProjectListSettings.getInstance().setMainProjectURL( null );
         }
     }
-    
-    private static boolean compareProjects( Project p1, Project p2 ) {
-        if ( p1 == null || p2 == null ) {
-            return false;
-        }
-        else {
-            return p1.getProjectDirectory().equals( p2.getProjectDirectory() );
-        }
-    }
         
     private ArrayList /*<FileObject>*/ getTemplateNamesLRU( Project project ) {
         // First take recently used templates and try to find those which
