@@ -54,13 +54,16 @@ public final class Deployment {
      * @return complete URL to be displayed in browser (server part plus the client module and/or client part provided as a parameter)
      */
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
+        return deploy(jmp, debugmode, clientModuleUrl, clientUrlPart, forceRedeploy, null);
+    }
+    public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
 
         String err;
         ServerString server = target.getServer();
         J2eeModule module = target.getModule();
         TargetModule[] modules = null;
-        DeployProgressUI progress = new DeployProgressMonitor(false, true);  // modeless with stop/cancel buttons
+        DeployProgressUI progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
         progress.startProgressUI(MAX_DEPLOY_PROGRESS);
         
         try {
@@ -175,5 +178,9 @@ public final class Deployment {
     
     public String getServerDisplayName (String id) {
         return ServerRegistry.getInstance ().getServer (id).getShortName ();
+    }
+    
+    public static interface Logger {
+        public void log(String message);
     }
 }

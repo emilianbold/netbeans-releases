@@ -797,12 +797,10 @@ public class ServerInstance implements Node.Cookie {
     
     public static boolean isProgressing(ProgressObject po) {
         StateType state = po.getDeploymentStatus().getState();
-        System.out.println("isProgressing(): "+state.toString());
         return (state == StateType.RUNNING || state == StateType.RELEASED);
     }
     public static boolean hasFailed(ProgressObject po) {
         StateType state = po.getDeploymentStatus().getState();
-        System.out.println("hasFailed(): "+state.toString());
         return (state == StateType.FAILED);
     }
     

@@ -27,7 +27,7 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
  * Ant task that starts the server if needed and deploys module to the server
  * @author Martin Grebac
  */
-public class Deploy extends Task {
+public class Deploy extends Task implements Deployment.Logger {
     
     /**
      * Holds value of property debugmode.
@@ -53,7 +53,7 @@ public class Deploy extends Task {
         }
 
         try {
-            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart, forceRedeploy);
+            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart, forceRedeploy, this);
             if (clientUrl != null) {
                 getProject().setProperty("client.url", clientUrl);
             }
