@@ -285,7 +285,7 @@ public class ClassFile {
         int n = variables.length;
         for (int i = 0; i < n; i++) {
             Variable v = variables[i];
-            if (v.getName() == name)
+            if (v.getName().equals(name))
                 return v;
         }
         return null;
@@ -321,7 +321,7 @@ public class ClassFile {
         int n = methods.length;
         for (int i = 0; i < n; i++) {
             Method m = methods[i];
-            if (m.getName() == name && m.getDescriptor() == signature)
+            if (m.getName().equals(name) && m.getDescriptor().equals(signature))
                 return m;
         }
         return null;
