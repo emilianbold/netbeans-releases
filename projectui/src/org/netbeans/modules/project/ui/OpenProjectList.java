@@ -13,32 +13,26 @@
 
 package org.netbeans.modules.project.ui;
 
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-
+import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Enumeration;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringTokenizer;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
+import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -84,7 +78,7 @@ public final class OpenProjectList {
     OpenProjectList() {
         openProjects = new ArrayList();
         pchSupport = new PropertyChangeSupport( this );
-        recentProjects = new RecentProjectList( 5 ); 
+        recentProjects = new RecentProjectList(10); // #47134
     }
     
            
