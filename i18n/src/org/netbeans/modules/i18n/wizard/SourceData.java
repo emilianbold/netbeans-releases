@@ -18,6 +18,7 @@ package org.netbeans.modules.i18n.wizard;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.i18n.*;
 
 import org.netbeans.modules.i18n.I18nSupport;
 
@@ -45,7 +46,16 @@ final class SourceData {
     private I18nSupport support;
 
     /** Mapping found hard coded strings to i18n strings. */
-    private Map stringMap;
+    private Map stringMap = new java.util.TreeMap(new HardStringComparator());
+    
+    private static class HardStringComparator implements java.util.Comparator {
+        public int compare(Object obj, Object obj1) {
+            HardCodedString hcs1 = (HardCodedString)obj;
+            HardCodedString hcs2 = (HardCodedString)obj1;
+            return hcs1.getStartPosition().getOffset() - 
+                    hcs2.getStartPosition().getOffset();
+        }
+     }
     
     /** Hard coded strings user selected to non-proceed. */
     private Set removedStrings;
@@ -82,7 +92,8 @@ final class SourceData {
     
     /** Setter for <code>stringMap</code> prtoperty. */
     public void setStringMap(Map stringMap) {
-        this.stringMap = stringMap;
+        this.stringMap.clear();
+        this.stringMap.putAll(stringMap);
     }
     
     /** Getter for <code>removedStrings</code> property. */
