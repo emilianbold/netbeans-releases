@@ -19,10 +19,8 @@ import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.InstanceDataObject;
 import org.openide.modules.*;
 import org.openide.nodes.*;
-import org.openide.options.SystemOption;
 
 import org.netbeans.lib.ddl.*;
 import org.netbeans.modules.db.DatabaseException;
@@ -30,7 +28,6 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
 import org.netbeans.modules.db.explorer.infos.*;
 import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
 
 public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOperations {
     static final long serialVersionUID =-8079386805046070315L;

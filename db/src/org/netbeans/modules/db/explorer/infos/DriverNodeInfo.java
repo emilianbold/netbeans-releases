@@ -7,42 +7,29 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.*;
-import java.sql.*;
+import java.util.Vector;
 import java.text.MessageFormat;
 
-import org.openide.nodes.Node;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
-public class DriverNodeInfo extends DriverListNodeInfo
-{
+public class DriverNodeInfo extends DatabaseNodeInfo {
+        
     static final long serialVersionUID =6994829681095273161L;
-    public DatabaseDriver getDatabaseDriver()
-    {
+    
+    public DatabaseDriver getDatabaseDriver() {
         return (DatabaseDriver)get(DatabaseNodeInfo.DBDRIVER);
     }
 
-    public void setDatabaseDriver(DatabaseDriver drv)
-    {
+    public void setDatabaseDriver(DatabaseDriver drv) {
         put(DatabaseNodeInfo.NAME, drv.getName());
         put(DatabaseNodeInfo.URL, drv.getURL());
         put(DatabaseNodeInfo.PREFIX, drv.getDatabasePrefix());
@@ -50,14 +37,13 @@ public class DriverNodeInfo extends DriverListNodeInfo
         put(DatabaseNodeInfo.DBDRIVER, drv);
     }
 
-    public void delete()
-    throws IOException
-    {
+    public void delete() throws IOException {
         try {
             DatabaseDriver drv = getDatabaseDriver();
             Vector drvs = RootNode.getOption().getAvailableDrivers();
             int idx = drvs.indexOf(drv);
-            if (idx != -1) drvs.removeElementAt(idx);
+            if (idx != -1)
+                drvs.removeElementAt(idx);
             else {
                 String message = MessageFormat.format(bundle.getString("EXC_DriverNotFound"), new String[] {drv.toString()}); // NOI18N
                 throw new DatabaseException(message);
@@ -69,4 +55,15 @@ public class DriverNodeInfo extends DriverListNodeInfo
             throw new IOException(e.getMessage());
         }
     }
+    
+    public String getIconBase() {
+        return (String) get("iconbaseprefered"); //NOI18N
+//        return (String) get("iconbasepreferednotinstalled"); //NOI18N
+    }
+
+    public void setIconBase(String base) {
+        put("iconbaseprefered", base); //NOI18N
+//        put("iconbasepreferednotinstalled", base); //NOI18N
+    }
+
 }

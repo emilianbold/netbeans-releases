@@ -7,51 +7,51 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.db.explorer.infos;
 
-import java.beans.PropertyChangeSupport;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.InputStream;
-import java.util.*;
-import java.sql.*;
+import java.util.Vector;
 import java.text.MessageFormat;
 
-import org.openide.nodes.Node;
-
-import org.netbeans.lib.ddl.*;
-import org.netbeans.lib.ddl.util.PListReader;
-import org.netbeans.modules.db.*;
-import org.netbeans.modules.db.explorer.*;
-import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.netbeans.modules.db.explorer.actions.DatabaseAction;
+import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.DatabaseNodeChildren;
+import org.netbeans.modules.db.explorer.DatabaseOption;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
 public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperations {
     static final long serialVersionUID =-7948529055260667590L;
     
+    private JDBCDriverManager dm = JDBCDriverManager.getDefault();
+    
+    private final PropertyChangeListener connectionListener = new PropertyChangeListener() {
+        public void propertyChange(PropertyChangeEvent event) {
+            if (event.getPropertyName().equals("add") || event.getPropertyName().equals("remove")) { //NOI18N
+                //PENDING
+            }
+        }
+    };
+    
     protected void initChildren(Vector children) throws DatabaseException {
-        Vector cons = RootNode.getOption().getAvailableDrivers();
-        if (cons != null) {
-            try {
-                Enumeration cons_e = cons.elements();
-                while (cons_e.hasMoreElements()) {
-                    DatabaseDriver drv = (DatabaseDriver)cons_e.nextElement();
-                    DriverNodeInfo chinfo = (DriverNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
-                    if (chinfo != null && drv != null) {
-                        chinfo.setDatabaseDriver(drv);
-                        children.add(chinfo);
-                    } else {
-                        String message = MessageFormat.format(bundle.getString("EXC_Driver"), new String[] {drv.toString()}); // NOI18N
-                        throw new Exception(message);
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+        dm.addPropertyChangeListener(connectionListener);
+        JDBCDriver[] drvs = dm.getDrivers();
+        for (int i = 0; i < drvs.length; i++) {
+            DatabaseDriver drv = new DatabaseDriver(drvs[i].getName(), drvs[i].getClassName(), drvs[i].getURLs()[0].toString());
+            DriverNodeInfo chinfo = (DriverNodeInfo) DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.DRIVER);
+            if (chinfo != null && drv != null) {
+                chinfo.setDatabaseDriver(drv);
+                children.add(chinfo);
+            } else {
+//                String message = MessageFormat.format(bundle.getString("EXC_Driver"), new String[] {drv.toString()}); // NOI18N
+//                throw new Exception(message);
             }
         }
     }
@@ -59,9 +59,7 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
     /** Adds driver specified in drv into list.
     * Creates new node info and adds node into node children.
     */
-    public void addDriver(DatabaseDriver drv)
-    throws DatabaseException
-    {
+    public void addDriver(DatabaseDriver drv) throws DatabaseException {
         DatabaseOption option = RootNode.getOption();
         Vector drvs = option.getAvailableDrivers();
         if (!drvs.contains(drv))
@@ -76,4 +74,5 @@ public class DriverListNodeInfo extends DatabaseNodeInfo implements DriverOperat
         ninfo.setDatabaseDriver(drv);
         chld.createSubnode(ninfo, true);
     }
+    
 }

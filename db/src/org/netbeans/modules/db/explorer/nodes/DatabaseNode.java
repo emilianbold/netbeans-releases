@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,13 +15,14 @@ package org.netbeans.modules.db.explorer.nodes;
 
 import java.io.IOException;
 import java.util.*;
+
 import org.openide.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.MapFormat;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import java.awt.datatransfer.Transferable;
+
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.actions.*;
 import org.netbeans.modules.db.DatabaseException;
@@ -91,7 +92,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
             String dname = MapFormat.format(fmt, info);
             //			if (dname != null) setDisplayName(dname);
         }
-
+        
         // Read options
         // Cut, copy and delete flags
 

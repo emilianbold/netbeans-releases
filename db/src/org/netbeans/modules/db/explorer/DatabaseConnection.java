@@ -15,7 +15,9 @@ package org.netbeans.modules.db.explorer;
 
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
+import java.net.URLClassLoader;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -31,7 +33,10 @@ import org.openide.util.RequestProcessor;
 
 import org.netbeans.lib.ddl.DBConnection;
 import org.netbeans.lib.ddl.DDLException;
+
 import org.netbeans.modules.db.ExceptionListener;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 
 /**
 * Connection information
@@ -279,9 +284,19 @@ public class DatabaseConnection implements DBConnection {
 
         try {
             propertySupport.firePropertyChange("connecting", null, null);
-            Class.forName(drv);
-            Connection connection = DriverManager.getConnection(db, dbprops);
+            Connection connection;
+            JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
+            if (drvs.length == 0) {
+                Class.forName(drv);
+                connection = DriverManager.getConnection(db, dbprops);
+            } else {
+                URLClassLoader l = new URLClassLoader(drvs[0].getURLs());
+                Class c = Class.forName(drv, true, l);
+                Driver d = (Driver) c.newInstance();
+                connection = d.connect(db, dbprops);
+            }
             propertySupport.firePropertyChange("connected", null, null);
+            
             return connection;
         } catch (SQLException e) {
             // hack for Pointbase Network Server
@@ -312,8 +327,17 @@ public class DatabaseConnection implements DBConnection {
 
                 try {
                     propertySupport.firePropertyChange("connecting", null, null);
-                    Class.forName(drv);
-                    Connection connection = DriverManager.getConnection(db, dbprops);
+                    Connection connection;
+                    JDBCDriver[] drvs = JDBCDriverManager.getDefault().getDriver(drv);
+                    if (drvs.length == 0) {
+                        Class.forName(drv);
+                        connection = DriverManager.getConnection(db, dbprops);
+                    } else {
+                        URLClassLoader l = new URLClassLoader(drvs[0].getURLs());
+                        Class c = Class.forName(drv, true, l);
+                        Driver d = (Driver) c.newInstance();
+                        connection = d.connect(db, dbprops);
+                    }
                     setConnection(connection);
                     propertySupport.firePropertyChange("connected", null, null);
                 } catch (SQLException e) {
@@ -325,7 +349,7 @@ public class DatabaseConnection implements DBConnection {
 
                     propertySupport.firePropertyChange("failed", null, null);
                     sendException(new DDLException(message));
-                } catch (ClassNotFoundException exc) {
+                } catch (Exception exc) {
                     propertySupport.firePropertyChange("failed", null, null);
                     sendException(exc);
                 }
@@ -424,5 +448,4 @@ public class DatabaseConnection implements DBConnection {
     public String toString() {
         return "Driver:" + drv + "Database:" + db.toLowerCase() + "User:" + usr.toLowerCase() + "Schema:" + schema.toLowerCase();
     }
-
 }

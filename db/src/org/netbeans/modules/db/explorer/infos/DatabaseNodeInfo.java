@@ -570,61 +570,11 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     }
 
     public String getIconBase() {
-        LinkedList list = new LinkedList();
-        
-        list.add("IBM DB2 (local)"); // NOI18N
-        list.add("IBM DB2 (net)"); // NOI18N
-        list.add("JDBC-ODBC Bridge"); // NOI18N
-        list.add("Microsoft SQL Server (Weblogic driver)"); // NOI18N
-        list.add("Oracle thin"); // NOI18N
-        list.add("PointBase Embedded Server"); // NOI18N
-        list.add("PointBase Mobile Edition"); // NOI18N
-        list.add("PointBase Network Server"); // NOI18N
-        
-        if (getCode().equals("driver")) //NOI18N
-            try {
-                Class.forName(getURL());
-                if (list.contains(getName()))
-                    return (String) get("iconbaseprefered"); //NOI18N
-                else
-                    return (String) get("iconbase"); //NOI18N
-            } catch (ClassNotFoundException exc) {
-                if (list.contains(getName()))
-                    return (String) get("iconbasepreferednotinstalled"); //NOI18N
-                else
-                    return (String) get("iconbasenotinstalled"); //NOI18N
-            }
-        else
-            return (String) get("iconbase"); //NOI18N
+        return (String) get("iconbase"); //NOI18N
     }
 
     public void setIconBase(String base) {
-        LinkedList list = new LinkedList();
-        
-        list.add("IBM DB2 (local)"); // NOI18N
-        list.add("IBM DB2 (net)"); // NOI18N
-        list.add("JDBC-ODBC Bridge"); // NOI18N
-        list.add("Microsoft SQL Server (Weblogic driver)"); // NOI18N
-        list.add("Oracle thin"); // NOI18N
-        list.add("PointBase Embedded Server"); // NOI18N
-        list.add("PointBase Mobile Edition"); // NOI18N
-        list.add("PointBase Network Server"); // NOI18N
-        
-        if (getCode().equals("driver")) //NOI18N
-            try {
-                Class.forName(getURL());
-                if (list.contains(getName()))
-                    put("iconbaseprefered", base); //NOI18N
-                else
-                    put("iconbase", base); //NOI18N
-            } catch (ClassNotFoundException exc) {
-                if (list.contains(getName()))
-                    put("iconbasepreferednotinstalled", base); //NOI18N
-                else
-                    put("iconbasenotinstalled", base); //NOI18N
-            }
-        else
-            put("iconbase", base); //NOI18N
+        put("iconbase", base); //NOI18N
     }
 
     public String getDisplayname()

@@ -13,23 +13,44 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
-class TypeElement {
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.lib.ddl.*;
+import org.openide.DialogDescriptor;
+import org.openide.util.NbBundle;
+import org.netbeans.modules.db.explorer.*;
+
+/**
+* xxx
+*
+* @author Slavek Psenicka
+*/
+
+class TypeElement
+{
     private String tstr, tname;
 
-    public TypeElement(String typestr, String name) {
+    public TypeElement(String typestr, String name)
+    {
         tstr = typestr;
         tname = name;
     }
 
-    public String getType() {
+    public String getType()
+    {
         return tstr;
     }
 
-    public String getName() {
+    public String getName()
+    {
         return tname;
     }
 
-    public String toString() {
+    public String toString()
+    {
         return tname;
     }
 }

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -28,12 +28,11 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
-import org.netbeans.lib.ddl.impl.CreateIndex;
-import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.lib.ddl.impl.CreateTable;
 import org.netbeans.lib.ddl.util.CommandBuffer;
+import org.netbeans.lib.ddl.impl.CreateIndex;
 import org.netbeans.lib.ddl.util.PListReader;
-
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.util.TextFieldValidator;
 import org.netbeans.modules.db.util.ValidableTextField;
@@ -82,7 +81,7 @@ public class CreateTableDialog {
             pane.setLayout(layout);
             pane.setMinimumSize(new Dimension(200,100));
             pane.setPreferredSize(new Dimension(502,200));
-
+     
             // Table name field
 
             label = new JLabel(bundle.getString("CreateTableName")); // NOI18N
@@ -245,9 +244,9 @@ public class CreateTableDialog {
                               DataModel dataModel = (DataModel)table.getModel();
                               Vector data = dataModel.getData();
                               CreateTable cmd = spec.createCommandCreateTable(tablename);
-
+                              
                               cmd.setObjectOwner((String)ownercombo.getSelectedItem());
-
+                              
                               /* this variables and operation provide support for
                                * creating indexes for primary or unique keys,
                                * most of database are creating indexes by myself,
@@ -266,7 +265,7 @@ public class CreateTableDialog {
                                   
                                   //bugfix for #31064
                                   combo.setSelectedItem(combo.getSelectedItem());
-                                  
+
                                   cmdcol.setColumnType(Specification.getType(enuele.getType().getType()));
                                   cmdcol.setColumnSize(enuele.getSize());
                                   cmdcol.setDecimalSize(enuele.getScale());
@@ -314,7 +313,7 @@ public class CreateTableDialog {
 
                           } catch (Exception e) {
                               e.printStackTrace();
-
+                              
                           }
                       } else {
                           String msg = bundle.getString("EXC_InsufficientCreateTableInfo");
@@ -414,7 +413,7 @@ public class CreateTableDialog {
                 public void focusGained(FocusEvent e) {
                     SwingUtilities.invokeLater(new FocusInvoker(x));
                 }
-
+                
                 public void focusLost(FocusEvent e) {
                     table.setValueAt(x.getText(), table.getEditingRow(), table.getEditingColumn());
                 }

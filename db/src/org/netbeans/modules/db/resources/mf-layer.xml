@@ -23,10 +23,16 @@
             <attr name="SystemFileSystem.layer" stringvalue="Project"/>
         </file>
 
-        <folder name="JavaHelp">
-            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-db-helpset.xml" boolvalue="true"/>
-            <file name="org-netbeans-modules-db-helpset.xml" url="org-netbeans-modules-db-helpset.xml"/>
-            <attr name="org-netbeans-modules-db-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/>
+        <folder name="JDBCDrivers">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/db/resources/driverPrefered.gif"/>
+            <file name="JDBC-ODBC Bridge.xml" url="nbresloc:/org/netbeans/modules/db/resources/JDBCODBC.xml"/>
+        </folder>
+
+        <folder name="JavaHelp"> 
+            <attr name="org-netbeans-modules-usersguide-above-regular.txt/org-netbeans-modules-db-helpset.xml" boolvalue="true"/> 
+            <file name="org-netbeans-modules-db-helpset.xml" url="org-netbeans-modules-db-helpset.xml"/> 
+            <attr name="org-netbeans-modules-db-helpset.xml/org-netbeans-modules-usersguide-below-regular.txt" boolvalue="true"/> 
         </folder>
 
     </folder>
@@ -40,7 +46,6 @@
         </folder>
     </folder>
 
-
     <!-- UI -->
     <folder name="UI">
         <folder name="Services">
@@ -49,7 +54,7 @@
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.db.resources.Bundle"/>
                     <file name="DatabaseOption.shadow">
                         <attr name="originalFile" stringvalue="Services/org-netbeans-modules-db-explorer-DatabaseOption.settings"/>
-                    </file>
+                    </file>                    
                 </folder> <!-- ServerAndExternalToolSettings -->
             </folder> <!-- IDEConfiguration -->
         </folder> <!-- Services -->
@@ -60,4 +65,24 @@
 
     </folder> <!-- UI -->
 
+    <folder name="xml">
+        <folder name="entities">
+            <folder name="NetBeans" >
+                <file name="DTD_JDBC_Driver_1_0" url="nbresloc:/org/netbeans/modules/db/explorer/driver/driver.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD JDBC Driver 1.0//EN"/>
+                </file>
+            </folder>
+        </folder>
+        
+        <folder name="lookups">
+            <folder name="NetBeans">
+                <file name="DTD_JDBC_Driver_1_0.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor"/>
+                    <attr name="instanceOf" stringvalue="org.openide.loaders.Environment.Provider"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.createProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+    
 </filesystem>

@@ -39,16 +39,11 @@ public class ConnectionDialog {
         
     Dialog dialog = null;
     
-    public ConnectionDialog(JPanel basePane, 
-                            JPanel extendPane, 
-                            String dlgTitle, 
-                            ActionListener actionListener, 
-                            ChangeListener tabListener) {
-                                
+    public ConnectionDialog(JPanel basePane, JPanel extendPane,  String dlgTitle, ActionListener actionListener, ChangeListener tabListener) {
         if(basePane.equals(extendPane))
             return;
 
-        tabs = new JTabbedPane(JTabbedPane.BOTTOM);
+        tabs = new JTabbedPane(JTabbedPane.TOP);
         basePane = basePane;
         schemaPanel = (SchemaPanel)extendPane;
         
@@ -79,7 +74,6 @@ public class ConnectionDialog {
     }
     
     public void close() {
-
         // dialog is closed after successfully create connection
         dialog.setVisible(false);
         dialog.dispose();

@@ -33,11 +33,6 @@
 		options = {};
 		actions = (
 			{
-				name = "AddConnection";
-				class = org.netbeans.modules.db.explorer.actions.AddConnectionAction;
-			},
-			delimiter,
-			{
 				name = "EnableDebug";
 				class = org.netbeans.modules.db.explorer.actions.EnableDebugAction;
 			},
@@ -62,197 +57,14 @@
 		children = ();
 		properties = ();
 		options = {};
-		defaultdriverlist = (
-			{
-				name = "IBM DB2 (local)";
-				driver = "COM.ibm.db2.jdbc.app.DB2Driver";
-				prefix = "jdbc:db2:<DB>";
-			},
-			{
-				name = "IBM DB2 (net)";
-				driver = "COM.ibm.db2.jdbc.net.DB2Driver";
-				prefix = "jdbc:db2://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "JDBC-ODBC Bridge";
-				driver = "sun.jdbc.odbc.JdbcOdbcDriver";
-				prefix = "jdbc:odbc:<DB>";
-			},
-			{
-				name = "Microsoft SQL Server (Weblogic driver)";
-				driver = "weblogic.jdbc.mssqlserver4.Driver";
-				prefix = "jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>";
-			},
-			{
-				name = "Oracle thin";
-				driver = "oracle.jdbc.driver.OracleDriver";
-				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
-			},
-			{
-				name = "PointBase Embedded Server";
-				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
-				prefix = "jdbc:pointbase://embedded[:<PORT>]/<DB>";
-			},
-			{
-				name = "PointBase Mobile Edition";
-				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
-				prefix = "jdbc:pointbase:<DB>";
-			},
-			{
-				name = "PointBase Network Server";
-				driver = "com.pointbase.jdbc.jdbcUniversalDriver";
-				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
-			},
-			{
-				name = "Cloudscape";
-				driver = "COM.cloudscape.core.JDBCDriver";
-				prefix = "jdbc:cloudscape:<DB>";
-			},
-			{
-				name = "Cloudscape RMI";
-				driver = "RmiJdbc.RJDriver";
-				prefix = "jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>";
-			},
-			{
-				name = "Firebird (JCA/JDBC driver)";
-				driver = "org.firebirdsql.jdbc.FBDriver";
-				prefix = "jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>";
-			},
-			{
-				name = "FirstSQL/J Enterprise Server Edition";
-				driver = "COM.FirstSQL.Dbcp.DbcpDriver";
-				prefix = "jdbc:dbcp://<HOST>:<PORT>";
-			},
-			{
-				name = "FirstSQL/J Professional Edition";
-				driver = "COM.FirstSQL.Dbcp.DbcpDriver";
-				prefix = "jdbc:dbcp://local";
-			},
-			{
-				name = "IDS Server";
-				driver = "ids.sql.IDSDriver";
-				prefix = "jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'";
-			},
-			{
-				name = "Informix Dynamic Server";
-				driver = "com.informix.jdbc.IfxDriver";
-				prefix = "jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>";
-			},
-			{
-				name = "InstantDB (v3.13 and earlier)";
-				driver = "jdbc.idbDriver";
-				prefix = "jdbc:idb:<DB>";
-			},
-			{
-				name = "InstantDB (v3.14 and later)";
-				driver = "org.enhydra.instantdb.jdbc.idbDriver";
-				prefix = "jdbc:idb:<DB>";
-			},
-			{
-				name = "Interbase (InterClient driver)";
-				driver = "interbase.interclient.Driver";
-				prefix = "jdbc:interbase://<HOST>/<DB>";
-			},
-			{
-				name = "HSQLDB (in-memory)";
-				driver = "org.hsqldb.jdbcDriver";
-				prefix = "jdbc:hsqldb:.";
-			},
-			{
-				name = "HSQLDB (server)";
-				driver = "org.hsqldb.jdbcDriver";
-				prefix = "jdbc:hsqldb:hsql://<HOST>[:<PORT>]";
-			},
-			{
-				name = "HSQLDB (standalone)";
-				driver = "org.hsqldb.jdbcDriver";
-				prefix = "jdbc:hsqldb:<DB>";
-			},
-			{
-				name = "HSQLDB (webserver)";
-				driver = "org.hsqldb.jdbcDriver";
-				prefix = "jdbc:hsqldb:http://<HOST>[:<PORT>]";
-			},
-			{
-				name = "Hypersonic SQL (v1.2 and earlier)";
-				driver = "hSql.hDriver";
-				prefix = "jdbc:HypersonicSQL:<DB>";
-			},
-			{
-				name = "Hypersonic SQL (v1.3 and later)";
-				driver = "org.hsql.jdbcDriver";
-				prefix = "jdbc:HypersonicSQL:<DB>";
-			},
-			{
-				name = "Mckoi SQL Database (server)";
-				driver = "com.mckoi.JDBCDriver";
-				prefix = "jdbc:mckoi://<HOST>[:<PORT>]";
-			},
-			{
-				name = "Mckoi SQL Database (standalone)";
-				driver = "com.mckoi.JDBCDriver";
-				prefix = "jdbc:mckoi:local://<DB>";
-			},
-			{
-				name = "Microsoft SQL Server (JTurbo driver)";
-				driver = "com.ashna.jturbo.driver.Driver";
-				prefix = "jdbc:JTurbo://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "Microsoft SQL Server (Sprinta driver)";
-				driver = "com.inet.tds.TdsDriver";
-				prefix = "jdbc:inetdae:<HOST>:<PORT>?database=<DB>";
-			},
-			{
-				name = "Microsoft SQL Server 2000 (Microsoft driver)";
-				driver = "com.microsoft.jdbc.sqlserver.SQLServerDriver";
-				prefix = "jdbc:microsoft:sqlserver://<HOST>:<PORT>[;DatabaseName=<DB>]";
-			},
-			{
-				name = "MySQL (MM.MySQL driver)";
-				driver = "org.gjt.mm.mysql.Driver";
-				prefix = "jdbc:mysql://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "Oracle OCI 8i";
-				driver = "oracle.jdbc.driver.OracleDriver";
-				prefix = "jdbc:oracle:oci8:@<SID>";
-			},
-			{
-				name = "Oracle OCI 9i";
-				driver = "oracle.jdbc.driver.OracleDriver";
-				prefix = "jdbc:oracle:oci:@<SID>";
-			},
-			{
-				name = "PostgreSQL (v6.5 and earlier)";
-				driver = "postgresql.Driver";
-				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "PostgreSQL (v7.0 and later)";
-				driver = "org.postgresql.Driver";
-				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
-			},
-			{
-				name = "Quadcap Embeddable Database";
-				driver = "com.quadcap.jdbc.JdbcDriver";
-				prefix = "jdbc:qed:<DB>";
-			},
-			{
-				name = "Sybase (jConnect 4.2 and earlier)";
-				driver = "com.sybase.jdbc.SybDriver";
-				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
-			},
-			{
-				name = "Sybase (jConnect 5.2)";
-				driver = "com.sybase.jdbc2.jdbc.SybDriver";
-				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
-			}
-		);
 		actions = (
 			{
 				name = "AddNewDriver";
 				class = org.netbeans.modules.db.explorer.actions.AddDriverAction;
+			},
+			{
+				name = "Refresh";
+				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
 			},
 			delimiter
 		);
@@ -294,12 +106,6 @@
 				name = "DatabasePrefix";
 				class = java.lang.String;
 				writable = YES;
-			},
-			{
-				code = adaptorClass;
-				name = "AdaptorClass";
-				class = java.lang.String;
-				writable = YES;
 			}
 		);
 		actions = (
@@ -307,17 +113,6 @@
 				name = "ConnectUsing";
 				class = org.netbeans.modules.db.explorer.actions.ConnectUsingDriverAction;
 				node = root;
-			},
-			{
-				name = "AddNewDriver";
-				class = org.netbeans.modules.db.explorer.actions.AddDriverAction;
-				node = driverlist;
-			},
-			delimiter,
-			{
-				name = "TestDriver";
-				class = org.netbeans.modules.db.explorer.actions.TestDriverAction;
-				node = driver;
 			},
 			delimiter,
 			{
@@ -356,38 +151,17 @@
 		};
 		actions = (
 			{
-				name = "AddConnection";
-				class = org.netbeans.modules.db.explorer.actions.AddConnectionAction;
-				node = root;
-			},
-			delimiter,
-			{
 				name = "Connect";
 				class = org.netbeans.modules.db.explorer.actions.ConnectAction;
-			},
-			{
-				name = "ConnectAs";
-				class = org.netbeans.modules.db.explorer.actions.ConnectAsAction;
 			},
 			{
 				name = "Disconnect";
 				class = org.netbeans.modules.db.explorer.actions.DisconnectAction;
 			},
 			delimiter,
-//			{
-//				name = "CaptureDatabaseSchema";
-//				class = org.netbeans.modules.db.explorer.actions.CaptureSchemaAction;
-//			},
-			delimiter,
 			{
 				name = "ExecuteCommand";
 				class = org.netbeans.modules.db.explorer.actions.ExecuteCommandAction;
-			},
-			delimiter,
-			{
-				name = "TestDriver";
-				class = org.netbeans.modules.db.explorer.actions.TestDriverAction;
-				node = driver;
 			},
 			delimiter,
 			{

@@ -13,19 +13,28 @@
 
 package org.netbeans.modules.db.explorer;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.net.URL;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.Vector;
+import java.util.jar.JarFile;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.netbeans.modules.db.util.DriverListUtil;
 
 /** Root system option. It stores a list of available drivers and open connections.
 * These connections will be restored at startup, drivers will be placed in Drivers
@@ -160,7 +169,7 @@ public class DatabaseOption extends SystemOption {
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         
-        out.writeObject(getAvailableDrivers());
+        out.writeObject(null);
         out.writeObject(getConnections());
         out.writeInt(fetchlimit);
     }
@@ -172,24 +181,13 @@ public class DatabaseOption extends SystemOption {
         super.readExternal(in);
         
         drivers = (Vector) in.readObject();
-        drivers = checkDrivers(drivers);
-        connections = (Vector)in.readObject();
+        if (drivers != null)
+            lookForDrivers();
+
+        connections = (Vector) in.readObject();
         fetchlimit = in.readInt();
     }
-    
-    private Vector checkDrivers(Vector old) {
-        //get the drivers from explorer.plist
-        Map xxx = (Map) DatabaseNodeInfo.readInfo().get(DatabaseNode.DRIVER_LIST);
-        Vector plistDrv = createDrivers(xxx);
         
-        //add missing drivers from explorer.plist to the list of serialized drivers
-        for (int i = 0; i < plistDrv.size(); i++)
-            if (! old.contains(plistDrv.get(i)))
-                old.add(plistDrv.get(i));
-        
-        return old;
-    }
-    
     private Vector createDrivers(Map drvMap) {
         Vector def = (Vector) drvMap.get("defaultdriverlist"); //NOI18N
         Vector rvec = null;
@@ -210,5 +208,50 @@ public class DatabaseOption extends SystemOption {
             rvec = new Vector();
         
         return rvec;
+    }
+    
+    private void lookForDrivers() {
+        StringBuffer sb = new StringBuffer();
+        sb.append(File.separator);
+        sb.append("lib");
+        sb.append(File.separator);
+        sb.append("ext");
+        String libext = sb.toString();        
+        String nbhome = System.getProperty("netbeans.home");
+        
+        preinstallDrivers(nbhome + libext);
+    }
+    
+    private void preinstallDrivers(String dirPath) {
+        File dir = new File(dirPath);
+        if (!dir.isDirectory())
+            return;
+        
+        File[] files = dir.listFiles(new FileFilter() {
+            public boolean accept(File f) {
+                return (f.isDirectory() || f.getName().endsWith(".jar") || f.getName().endsWith(".zip")); //NOI18N
+            }
+        });
+        
+        for (int i = 0; i < files.length; i++) {
+            JarFile jf;
+            String drv;
+
+            try {
+                jf = new JarFile(files[i]);
+                Set drvs = DriverListUtil.getDrivers();
+                Iterator it = drvs.iterator();
+                while (it.hasNext()) {
+                    drv = (String) it.next();
+                    if (jf.getEntry(drv.replace('.', '/') + ".class") != null) {//NOI18N
+                        JDBCDriver driver = new JDBCDriver(DriverListUtil.findFreeName(DriverListUtil.getName(drv)), drv, new URL[] {files[i].toURL()});
+                        JDBCDriverManager.getDefault().addDriver(driver);
+                    }
+                }
+                jf.close();
+            } catch (IOException exc) {
+                //PENDING
+            }
+        }
     }
 }

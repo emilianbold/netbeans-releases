@@ -30,7 +30,6 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseOption;
 import org.netbeans.modules.db.explorer.PointbasePlus;
-import org.netbeans.modules.db.explorer.dlg.UnsupportedDatabaseDialog;
 import org.netbeans.modules.db.explorer.nodes.ConnectionNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
 
@@ -48,11 +47,11 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             if (drvurl.startsWith(PointbasePlus.DRIVER)) {
                 Node n[] = getParent().getNode().getChildren().getNodes();
                 for (int i = 0; i < n.length; i++)
-                    if(n[i] instanceof ConnectionNode) {
+                    if (n[i] instanceof ConnectionNode) {
                         ConnectionNodeInfo cinfo = (ConnectionNodeInfo)((ConnectionNode)n[i]).getInfo();
-                        if(cinfo.getDriver().startsWith(PointbasePlus.DRIVER))
-                            if(!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
-                                if((cinfo.getConnection()!=null))
+                        if (cinfo.getDriver().startsWith(PointbasePlus.DRIVER))
+                            if (!(cinfo.getDatabase().equals(dburl)&&cinfo.getUser().equals(getUser())))
+                                if ((cinfo.getConnection()!=null))
                                     throw new Exception(bundle.getString("EXC_PBConcurrentConn")); // NOI18N
                     }
             }
@@ -61,16 +60,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             Connection connection = con.createJDBCConnection();
             
             finishConnect(dbsys, con, connection);
-        } catch (DatabaseProductNotFoundException e) {
-
-            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
-            dlg.show();
-            setReadOnly(false);
-            switch (dlg.getResult()) {
-            case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
-            case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
-            default: return;
-            }
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -97,10 +86,10 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             DriverSpecification drvSpec;
 
             if (dbsys != null) {
-                spec = (Specification)factory.createSpecification(con, dbsys, connection);
+                spec = (Specification) factory.createSpecification(con, dbsys, connection);
             } else {
                 setReadOnly(false);
-                spec = (Specification)factory.createSpecification(con, connection);
+                spec = (Specification) factory.createSpecification(con, connection);
             }
             put(DBPRODUCT, spec.getProperties().get(DBPRODUCT));
 
@@ -116,17 +105,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             drvSpec.setSchema(getSchema());
             setDriverSpecification(drvSpec);
             setConnection(connection); // fires change
-            
         } catch (DatabaseProductNotFoundException e) {
-
-            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
-            dlg.show();
             setReadOnly(false);
-            switch (dlg.getResult()) {
-            case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
-            case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
-            default: return;
-            }
+            connect("GenericDatabaseSystem"); //NOI18N
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -159,14 +140,8 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             setDriverSpecification(drvSpec);
             setConnection(connection); // fires change
         } catch (DatabaseProductNotFoundException e) {
-            UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
-            dlg.show();
             setReadOnly(false);
-            switch (dlg.getResult()) {
-                case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
-                case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
-                default: return;
-            }
+            connect("GenericDatabaseSystem"); //NOI18N
         } catch (Exception e) {
             throw new DatabaseException(e.getMessage());
         }
@@ -201,14 +176,13 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
     public Object put(Object key, Object obj) {
         if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE) || key.equals(SCHEMA)) {
-            String oldVal = (String)get(key);
             String newVal = (String)obj;
-            updateConnection((String)key, oldVal, newVal);
+            updateConnection((String)key, newVal);
         }
         return super.put(key, obj);
     }
     
-    private void updateConnection(String key, String oldVal, String newVal) {
+    private void updateConnection(String key, String newVal) {
         DatabaseOption option = RootNode.getOption();
         Vector cons = option.getConnections();
         DBConnection infoConn = getDatabaseConnection();

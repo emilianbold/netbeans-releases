@@ -16,6 +16,7 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.event.DocumentListener;
@@ -24,7 +25,8 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.lib.ddl.DBConnection;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.util.DriverListUtil;
 
 import org.openide.util.NbBundle;
 
@@ -33,6 +35,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     private Vector templates;
     private DatabaseConnection connection;
 
+    private final String BUNDLE = "org.netbeans.modules.db.resources.Bundle"; //NOI18N
+    
     /** The support for firing property changes */
     private PropertyChangeSupport propertySupport;
 
@@ -41,7 +45,6 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     public NewConnectionPanel(Vector templates, DatabaseConnection connection) {
-//    public NewConnectionPanel() {
         propertySupport = new PropertyChangeSupport(this);
         this.templates = templates;
         this.connection = connection;
@@ -65,16 +68,17 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         this.connection.addPropertyChangeListener(connectionListener);
 
         driverTextField.setText(connection.getDriver());
-        urlTextField.setText(connection.getDatabase());
+//        urlTextField.setText(connection.getDatabase());       
+        urlComboBox.setSelectedItem(connection.getDatabase());
         userTextField.setText(connection.getUser());
 
         String driver = connection.getDriver();
         String driverName = connection.getDriverName();
         if (driver != null && driverName != null) {
-            DatabaseDriver dbDriver;
+            JDBCDriver dbDriver;
             for (int i = 0; i < templates.size(); i++) {
-                dbDriver = (DatabaseDriver) templates.elementAt(i);
-                if (dbDriver.getURL().equals(driver) && dbDriver.getName().equals(driverName)) {
+                dbDriver = (JDBCDriver) templates.elementAt(i);
+                if (dbDriver.getClassName().equals(driver) && dbDriver.getName().equals(driverName)) {
                     templateComboBox.setSelectedIndex(i);
                     break;
                 }
@@ -82,25 +86,25 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         }
 
         driverTextField.getDocument().addDocumentListener(this);
-        urlTextField.getDocument().addDocumentListener(this);
         userTextField.getDocument().addDocumentListener(this);
         passwordField.getDocument().addDocumentListener(this);
         templateComboBox.getModel().addListDataListener(this);
+        urlComboBox.getModel().addListDataListener(this);
     }
 
     private void initAccessibility() {
-        templateLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
-        templateComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
-        driverLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassA11yDesc")); //NOI18N
-        driverTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassComboBoxA11yName")); //NOI18N
-        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLA11yDesc")); //NOI18N
-        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
-        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
-        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
-        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
-        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
-        connectProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
+        templateLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDriverNameA11yDesc")); //NOI18N
+        templateComboBox.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDriverNameComboBoxA11yName")); //NOI18N
+        driverLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDriverClassA11yDesc")); //NOI18N
+        driverTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDriverClassComboBoxA11yName")); //NOI18N
+        urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDatabaseURLA11yDesc")); //NOI18N
+//        urlTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionDatabaseURLTextFieldA11yName")); //NOI18N
+        userLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionUserNameA11yDesc")); //NOI18N
+        userTextField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionUserNameTextFieldA11yName")); //NOI18N
+        passwordLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionPasswordA11yDesc")); //NOI18N
+        passwordField.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_NewConnectionPasswordTextFieldA11yName")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleName(NbBundle.getBundle(BUNDLE).getString("ACS_ConnectionProgressBarA11yName")); //NOI18N
+        connectProgressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(BUNDLE).getString("ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -112,14 +116,14 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         java.awt.GridBagConstraints gridBagConstraints;
 
         templateLabel = new javax.swing.JLabel();
-        driverLabel = new javax.swing.JLabel();
-        urlLabel = new javax.swing.JLabel();
-        userLabel = new javax.swing.JLabel();
-        passwordLabel = new javax.swing.JLabel();
         templateComboBox = new javax.swing.JComboBox(templates);
+        driverLabel = new javax.swing.JLabel();
         driverTextField = new javax.swing.JTextField();
-        urlTextField = new javax.swing.JTextField();
+        urlLabel = new javax.swing.JLabel();
+        urlComboBox = new javax.swing.JComboBox();
+        userLabel = new javax.swing.JLabel();
         userTextField = new javax.swing.JTextField();
+        passwordLabel = new javax.swing.JLabel();
         passwordField = new javax.swing.JPasswordField();
         passwordCheckBox = new javax.swing.JCheckBox();
         connectProgressBar = new javax.swing.JProgressBar();
@@ -135,50 +139,6 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(templateLabel, gridBagConstraints);
 
-        driverLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass_Mnemonic").charAt(0));
-        driverLabel.setLabelFor(driverTextField);
-        driverLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(driverLabel, gridBagConstraints);
-
-        urlLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
-        urlLabel.setLabelFor(urlTextField);
-        urlLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(urlLabel, gridBagConstraints);
-
-        userLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName_Mnemonic").charAt(0));
-        userLabel.setLabelFor(userTextField);
-        userLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(userLabel, gridBagConstraints);
-
-        passwordLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword_Mnemonic").charAt(0));
-        passwordLabel.setLabelFor(passwordField);
-        passwordLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
-        add(passwordLabel, gridBagConstraints);
-
         templateComboBox.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverNameComboBoxA11yDesc"));
         templateComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -191,6 +151,17 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
         add(templateComboBox, gridBagConstraints);
 
+        driverLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass_Mnemonic").charAt(0));
+        driverLabel.setLabelFor(driverTextField);
+        driverLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDriverClass"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(driverLabel, gridBagConstraints);
+
         driverTextField.setColumns(50);
         driverTextField.setEditable(false);
         driverTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDriverClassComboBoxA11yDesc"));
@@ -201,14 +172,34 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(driverTextField, gridBagConstraints);
 
-        urlTextField.setColumns(50);
-        urlTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionDatabaseURLTextFieldA11yDesc"));
+        urlLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL_Mnemonic").charAt(0));
+        urlLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDatabaseURL"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(urlLabel, gridBagConstraints);
+
+        urlComboBox.setEditable(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
-        add(urlTextField, gridBagConstraints);
+        add(urlComboBox, gridBagConstraints);
+
+        userLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName_Mnemonic").charAt(0));
+        userLabel.setLabelFor(userTextField);
+        userLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionUserName"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(userLabel, gridBagConstraints);
 
         userTextField.setColumns(50);
         userTextField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionUserNameTextFieldA11yDesc"));
@@ -218,6 +209,17 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(userTextField, gridBagConstraints);
+
+        passwordLabel.setDisplayedMnemonic(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword_Mnemonic").charAt(0));
+        passwordLabel.setLabelFor(passwordField);
+        passwordLabel.setText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionPassword"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
+        add(passwordLabel, gridBagConstraints);
 
         passwordField.setColumns(50);
         passwordField.setToolTipText(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ACS_NewConnectionPasswordTextFieldA11yDesc"));
@@ -256,16 +258,19 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }//GEN-END:initComponents
 
     private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
-        javax.swing.JComboBox combo = (javax.swing.JComboBox) evt.getSource();
-        Object drv = combo.getSelectedItem();
-        String urlPrefix = null;
+        JDBCDriver drv = (JDBCDriver) templateComboBox.getSelectedItem();
+        List urls = null;
         String driver = null;
-        if (drv != null && drv instanceof DatabaseDriver) {
-           urlPrefix = ((DatabaseDriver) drv).getDatabasePrefix();
-           driver = ((DatabaseDriver) drv).getURL();
+        if (drv != null) {
+           driver = drv.getClassName();           
+           urls = DriverListUtil.getURLs(driver);
         }
-        if (urlPrefix != null)
-           urlTextField.setText(urlPrefix);
+        
+        urlComboBox.removeAllItems();
+        if (urls != null)
+            for (int i = 0; i < urls.size(); i++)
+                urlComboBox.addItem((String) urls.get(i));
+        
         if (driver != null)
            driverTextField.setText(driver);
     }//GEN-LAST:event_templateComboBoxActionPerformed
@@ -280,27 +285,19 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JComboBox templateComboBox;
     private javax.swing.JLabel templateLabel;
+    private javax.swing.JComboBox urlComboBox;
     private javax.swing.JLabel urlLabel;
-    private javax.swing.JTextField urlTextField;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userTextField;
     // End of variables declaration//GEN-END:variables
 
     private String getSelectedDriver() {
-        String drvval;
-        int idx = templateComboBox.getSelectedIndex();
-
-        if (idx != -1)
-            drvval = ((DatabaseDriver) templateComboBox.getItemAt(idx)).getURL();
-        else
-            drvval = (String) templateComboBox.getSelectedItem();
-
-        return drvval;
+        return ((JDBCDriver) templateComboBox.getSelectedItem()).getClassName();
     }
 
     public void setConnectionInfo() {
         connection.setDriver(getSelectedDriver());
-        connection.setDatabase(urlTextField.getText());
+        connection.setDatabase((String) urlComboBox.getSelectedItem());
         connection.setUser(userTextField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
@@ -315,7 +312,7 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     public String getDatabase() {
-        return urlTextField.getText();
+        return (String) urlComboBox.getSelectedItem();
     }
 
     public String getUser() {
@@ -338,22 +335,22 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     }
 
     public String getTitle() {
-        return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("NewConnectionDialogTitle"); //NOI18N
+        return NbBundle.getBundle(BUNDLE).getString("NewConnectionDialogTitle"); //NOI18N
     }
 
     private void startProgress() {
         connectProgressBar.setBorderPainted(true);
         connectProgressBar.setIndeterminate(true);
-        connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Connecting")); //NOI18N
+        connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Connecting")); //NOI18N
     }
 
     private void stopProgress(boolean connected) {
         if (connected) {
             connectProgressBar.setValue(connectProgressBar.getMaximum());
-            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
+            connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Established")); //NOI18N
         } else {
             connectProgressBar.setValue(connectProgressBar.getMinimum());
-            connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
+            connectProgressBar.setString(NbBundle.getBundle(BUNDLE).getString("ConnectionProgress_Failed")); //NOI18N
         }
         connectProgressBar.setIndeterminate(false);
     }

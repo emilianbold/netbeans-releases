@@ -36,6 +36,7 @@ import org.netbeans.modules.db.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.nodes.RootNode;
+
 //import org.openide.util.Mutex;
 
 // XXX This entire class is junk. Should have a sensible data model independent of

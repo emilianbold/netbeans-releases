@@ -13,35 +13,72 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.text.MessageFormat;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
 
-import org.openide.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import org.openide.util.actions.*;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 
-import org.netbeans.modules.db.explorer.nodes.*;
-import org.netbeans.modules.db.explorer.infos.*;
-import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.dlg.AddDriverDialog;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 
 public class AddDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
+    
+    private Dialog dialog;
+    
     public void performAction(Node[] activatedNodes) {
-        Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
-            node = activatedNodes[0];
-        else
-            return;
+        final AddDriverDialog dlgPanel = new AddDriverDialog();
         
-        try {
-            DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            DriverOperations nfo = (DriverOperations)info.getParent(nodename);
-            AddDriverDialog dlg = new AddDriverDialog();
-            if (dlg.run()) nfo.addDriver(dlg.getDriver());
-        } catch(Exception exc) {
-            String message = MessageFormat.format(bundle.getString("ERR_UnableToAddDriver"), new String[] {exc.getMessage()}); // NOI18N
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-        }
+        final Node[] n = activatedNodes;
+        
+        ActionListener actionListener = new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                if (event.getSource() == DialogDescriptor.OK_OPTION) {
+                    String name = dlgPanel.getName();
+                    List drvLoc = dlgPanel.getDriverLocation();
+                    String drvClass = dlgPanel.getDriverClass();
+                    
+                    if (drvLoc.size() < 1 || drvClass == null || drvClass.equals(""))
+                        return;
+                    
+                    closeDialog();
+                    
+                    //create driver instance and save it in the XML format
+                    if (name == null || name.equals(""))
+                        name = drvClass;
+                    
+                    try {
+                        JDBCDriverManager.getDefault().addDriver(new JDBCDriver(name, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
+                        
+                        //REIMPLEMENT !!!
+                        DatabaseAction dbAction = (DatabaseAction) SystemAction.get(RefreshChildrenAction.class);
+                        dbAction.performAction(n);
+                    } catch (IOException exc) {
+                        //PENDING
+                        System.out.println("!!! " + exc.getMessage());
+                    }
+                    
+                }
+            }
+        };
+
+        DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, "New Driver", true, actionListener); //NOI18N
+        Object [] closingOptions = {DialogDescriptor.CANCEL_OPTION};
+        descriptor.setClosingOptions(closingOptions);
+        dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        dialog.show();
+    }
+    
+    private void closeDialog() {
+        if (dialog != null)
+            dialog.dispose();
     }
 }

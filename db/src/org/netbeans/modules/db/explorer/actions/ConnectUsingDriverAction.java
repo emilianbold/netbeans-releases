@@ -39,11 +39,13 @@ import org.netbeans.modules.db.explorer.PointbasePlus;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
+import org.netbeans.modules.db.explorer.driver.JDBCDriver;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.ConnectionOwnerOperations;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
-import org.netbeans.modules.db.explorer.nodes.RootNode;
+import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 
 public class ConnectUsingDriverAction extends DatabaseAction {
     static final long serialVersionUID =8245005834483564671L;
@@ -60,8 +62,16 @@ public class ConnectUsingDriverAction extends DatabaseAction {
     public void performAction(Node[] activatedNodes) {
         Node node = activatedNodes[0];
         DriverNodeInfo info = (DriverNodeInfo) node.getCookie(DatabaseNodeInfo.class);
+        
+        if (nodename == null)
+            nodename = DatabaseNode.ROOT;
         final ConnectionOwnerOperations nfo = (ConnectionOwnerOperations) info.getParent(nodename);
-        Vector drvs = RootNode.getOption().getAvailableDrivers();
+        
+        Vector drvs = new Vector();
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
+        for (int i = 0; i < drivers.length; i++)
+            drvs.add(drivers[i]);
+        
         final DatabaseConnection cinfo = new DatabaseConnection();
         cinfo.setDriverName(info.getName());
         cinfo.setDriver(info.getURL());
