@@ -25,7 +25,7 @@ import org.openide.awt.HtmlBrowser;
 
 public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable {
 
-    private transient PropertyChangeSupport pcs;
+    private PropertyChangeSupport pcs;
     
     private static final long serialVersionUID = -3021027901671504127L;
     
@@ -57,6 +57,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable 
     /**
      * @param l new PropertyChangeListener */    
     public void addPropertyChangeListener (PropertyChangeListener l) {
+        if (pcs == null)
+            pcs = new PropertyChangeSupport (this);
         pcs.addPropertyChangeListener (l);
     }
     
