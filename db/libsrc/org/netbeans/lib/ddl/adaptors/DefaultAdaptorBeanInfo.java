@@ -239,15 +239,23 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 		
 		public void setValue(Object object) 
 		{
+			int value, k = constants.length;
+			
 			if (object == null) return;
-			if (!(object instanceof Integer)) throw new IllegalArgumentException();
-			int ii = ((Integer)object).intValue ();
-			int i, k = constants.length;
-			for (i = 0; i < k; i++) if (constants [i] == ii) break;
-			if (i == k) throw new IllegalArgumentException ();
-			index = i;
-			name = names [i];
-			support.firePropertyChange ("", null, null);
+			if (object instanceof Integer) {
+				value = ((Integer)object).intValue();
+			} else throw new IllegalArgumentException();
+			
+			for (int i = 0; i < k; i++) {
+				if (constants[i] == value) {
+					index = i;
+					name = names[i];
+					support.firePropertyChange ("", null, null);
+					return;
+				}
+			}
+			
+			throw new IllegalArgumentException();
 		}
 	
 		public String getAsText() 
@@ -256,14 +264,20 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 			return name;
 		}
 		
-		public void setAsText (String string) throws IllegalArgumentException 
+		public void setAsText(String string) throws IllegalArgumentException 
 		{
-			int i, k = names.length;
-			for (i = 0; i < k; i++) if (names [i].equals (string)) break;
-			if (i == k) throw new IllegalArgumentException ();
-			index = i;
-			name = names [i];
-			support.firePropertyChange("", null, null);
+			if (string == null) return;
+			int k = names.length;
+			for (int i = 0; i < k; i++) {
+				if (names[i].equals(string)) {
+					index = i;
+					name = names[i];
+					support.firePropertyChange("", null, null);
+					return;
+				}	
+			}
+			
+			throw new IllegalArgumentException ();
 		}
 		
 		public String getJavaInitializationString() 

@@ -30,7 +30,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	public static final String NOT_SET_STRING = "";	
 	
 	public static final int YES = 1;
-	public static final int NO = 1;
+	public static final int NO = 2;
 		
 	public static final int NULLSORT_HIGH = 1;
 	public static final int NULLSORT_LOW = 2;
