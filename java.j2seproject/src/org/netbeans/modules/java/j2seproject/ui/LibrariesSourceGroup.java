@@ -22,6 +22,8 @@ import org.netbeans.api.project.SourceGroup;
 
 /**
  * LibrariesSourceGroup
+ * {@link SourceGroup} implementation passed to
+ * {@link org.netbeans.spi.java.project.support.ui.PackageView#createPackageView(SourceGroup)}
  * @author Tomas Zezula
  */
 final class LibrariesSourceGroup implements SourceGroup {

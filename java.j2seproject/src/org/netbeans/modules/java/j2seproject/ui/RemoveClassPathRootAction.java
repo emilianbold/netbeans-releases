@@ -23,13 +23,28 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import java.util.Iterator;
 
 /**
- * Action for removing ClassPathRoot 
+ * Action for removing an ClassPathRoot. The action looks up
+ * the {@link RemoveClassPathRootAction.Removable} in the
+ * activated node's Lookups and delegates to it.
  * @author Tomas Zezula
  */
 final class RemoveClassPathRootAction extends NodeAction {
 
+    /**
+     * Implementation of this interfaces has to be placed
+     * into the node's Lookup to allow {@link RemoveClassPathRootAction}
+     * on the node.
+     */
     static interface Removable {
+        /**
+         * Checks if the classpath root can be removed
+         * @return returns true if the action should be enabled
+         */
         public boolean canRemove ();
+
+        /**
+         * Removes the classpath root
+         */
         public abstract void remove ();
     }
 
@@ -67,6 +82,13 @@ final class RemoveClassPathRootAction extends NodeAction {
         return false;
     }
 
+    /**
+     * Checks if the reference is still used in the project.
+     * @param props the array of {@link EditableProperties} which
+     * should be checked.
+     * @param reference
+     * @return true if the reference is used
+     */
     public static boolean isReferenced (EditableProperties[] props, String reference) {
         for (int i=0; i< props.length; i++) {
             for (Iterator it = props[i].values().iterator(); it.hasNext();) {

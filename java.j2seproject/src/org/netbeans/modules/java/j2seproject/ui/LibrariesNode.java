@@ -90,6 +90,20 @@ final class LibrariesNode extends AbstractNode {
     private final Action[] librariesNodeActions;
 
 
+    /**
+     * Creates new LibrariesNode named displayName displaying classPathProperty classpath
+     * and optionaly Java platform.
+     * @param displayName the display name of the node
+     * @param eval {@link PropertyEvaluator} used for listening
+     * @param helper {@link UpdateHelper} used for reading and updating project's metadata
+     * @param refHelper {@link ReferenceHelper} used for destroying unused references
+     * @param classPathProperty the ant property name of classpath which should be visualized
+     * @param classPathIgnoreRef the array of ant property names which should not be displayed, may be
+     * an empty array but not null
+     * @param platformProperty the ant name property holding the J2SE platform system name or null
+     * if the platform should not be displayed
+     * @param librariesNodeActions actions which should be available on the created node.
+     */
     LibrariesNode (String displayName, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                    String classPathProperty, String[] classPathIgnoreRef, String platformProperty,
                    Action[] librariesNodeActions) {

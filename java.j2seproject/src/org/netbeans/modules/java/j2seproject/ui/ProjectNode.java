@@ -52,7 +52,9 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 
 
 /**
- * ProjectNode represnts a dependent project under the Libraries Node
+ * ProjectNode represents a dependent project under the Libraries Node.
+ * It is a leaf node with the following actions: {@link OpenProjectAction},
+ * {@link ShowJavadocAction} and {@link RemoveClassPathRootAction}
  * @author Tomas Zezula
  */
 class ProjectNode extends AbstractNode {

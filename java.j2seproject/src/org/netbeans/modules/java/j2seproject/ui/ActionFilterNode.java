@@ -40,7 +40,13 @@ import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 
 
-
+/**
+ * This class decorates package nodes and file nodes under the Libraries Nodes.
+ * It removes all actions from these nodes except of file node's {@link OpenAction}
+ * and package node's {@link FindAction} It also adds the {@link ShowJavadocAction}
+ * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
+ * class path roots.
+ */
 class ActionFilterNode extends FilterNode {
 
     private static final int MODE_ROOT = 1;
@@ -51,6 +57,17 @@ class ActionFilterNode extends FilterNode {
     private final int mode;
     private Action[] actionCache;
 
+    /**
+     * Creates new ActionFilterNode for class path root
+     * @param original the original node
+     * @param helper used for implementing {@link RemoveClassPathRootAction.Removable} or null if
+     * the node should not have the {@link RemoveClassPathRootAction}
+     * @param classPathId ant property name of classpath to which these classpath root belongs or null if
+     * the node should not have the {@link RemoveClassPathRootAction}
+     * @param entryId ant property name of this classpath root or null if
+     * the node should not have the {@link RemoveClassPathRootAction}
+     * @return ActionFilterNode
+     */
     static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;

@@ -37,6 +37,10 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 
 /**
  * PlatformNode represents Java platform in the logical view.
+ * Listens on the {@link PropertyEvaluator} for change of
+ * the ant property holding the platform name.
+ * It displays the content of boot classpath.
+ * @see JavaPlatform
  * @author Tomas Zezula
  */
 class PlatformNode extends AbstractNode implements PropertyChangeListener {
