@@ -17,31 +17,33 @@ package org.netbeans.api.java.project;
  * Constants useful for Java-based projects.
  * @author Jesse Glick
  */
-public interface JavaProjectConstants {
+public class JavaProjectConstants {
+    
+    private JavaProjectConstants() {}
     
     /**
      * Java package root sources type.
      * @see org.netbeans.api.project.Sources
      */
-    String SOURCES_TYPE_JAVA = "java"; // NOI18N
+    public static final String SOURCES_TYPE_JAVA = "java"; // NOI18N
     
     /**
      * Standard artifact type representing a JAR file, presumably
      * used as a Java library of some kind.
      * @see org.netbeans.api.project.ant.AntArtifact
      */
-    String ARTIFACT_TYPE_JAR = "jar"; // NOI18N
+    public static final String ARTIFACT_TYPE_JAR = "jar"; // NOI18N
 
     /**
      * Standard command for running Javadoc on a project.
      * @see ActionProvider
      */
-    String COMMAND_JAVADOC = "javadoc"; // NOI18N
+    public static final String COMMAND_JAVADOC = "javadoc"; // NOI18N
     
     /** 
      * Standard command for reloading a class in a foreign VM and continuing debugging.
      * @see ActionProvider
      */
-    String COMMAND_DEBUG_FIX = "debug.fix"; // NOI18N
+    public static final String COMMAND_DEBUG_FIX = "debug.fix"; // NOI18N
     
 }
