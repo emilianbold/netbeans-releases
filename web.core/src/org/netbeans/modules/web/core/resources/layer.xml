@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
     <attr name="Beans/JSP_Servlet" boolvalue="true"/>
     <folder name="JSP_Servlet">
-        <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/context/resources/WebModule.html" />
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
         <attr name="templateWizardURL" 
               urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/Web.html"/>
@@ -63,7 +62,7 @@ Microsystems, Inc. All Rights Reserved.
          <attr name="template" boolvalue="true" />
          <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/html/TemplateHelp.html" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
-          <attr name="templateWizardIterator" 
+         <attr name="templateWizardIterator" 
                 methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createHtmlIterator"/>
          <attr name="templateCategory" stringvalue="web-types"/>
       </file>
@@ -86,10 +85,6 @@ Microsystems, Inc. All Rights Reserved.
       </file>
       <!--  Tag Library 1.2 --> 
       <file name="TagLibrary_1_2.tld" url="templates/BlankTagLibrary_1_2.template"/>
-      
-      <attr name="JSP.jsp/Servlet.java" boolvalue="true"/>
-      <attr name="Servlet.java/Html.html" boolvalue="true"/>
-      
       <!-- Filters --> 
       <file name="SimpleFilter.java" url="templates/SimpleFilter.template">
         <attr name="template" boolvalue="true"/>
