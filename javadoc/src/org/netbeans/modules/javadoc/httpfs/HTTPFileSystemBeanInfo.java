@@ -62,6 +62,11 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         return propertyDescriptors;        
     }
 
+    /**
+     *	Returns this bean's superclass' BeanInfos.
+     *
+     *	@since 1.0
+     */
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (FileSystem.class) };
