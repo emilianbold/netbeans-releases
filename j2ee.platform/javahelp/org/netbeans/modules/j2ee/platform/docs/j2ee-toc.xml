@@ -75,7 +75,7 @@
 	  <tocitem text="Creating an HTML File" target="html_create" />
 	  <tocitem text="Editing a JSP, XML, HTML, or Tag File" target="jsp_edit" />
           <tocitem text="Setting Character Encoding for a JSP File">
-		  <tocitem text="About Setting Character Encoding for a JSP File" target="jsp_encoding" />
+		  <tocitem text="Setting Character Encoding for a JSP File" target="jsp_encoding" />
 		  <tocitem text="Setting Request Character Encoding for a JSP File" target="jsp_encoding_request" />
 		  <tocitem text="Setting Page Character Encoding for a JSP File" target="jsp_encoding_page" />
 		  <tocitem text="Setting Response Character Encoding for a JSP File" target="jsp_encoding_response" />
