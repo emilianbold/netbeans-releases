@@ -23,7 +23,6 @@ Microsystems, Inc. All Rights Reserved.
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
   <property name="nbm_alias" value="nb_ide"/>
-  <property name="webbeans_root" location="src/org/netbeans/modules/web/dd/model"/>
   <property name="s2b_root_2_3" location="src/org/netbeans/modules/web/dd/model_2_3"/>
   <property name="s2b_root_2_4" location="src/org/netbeans/modules/web/dd/model_2_4"/>
   <property name="s2b_res_root" location="src/org/netbeans/modules/web/dd/resources"/>
@@ -144,15 +143,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="clean-ddgen-src">
-        <mkdir dir="${webbeans_root}"/>
         <mkdir dir="${s2b_root_2_3}"/>
         <mkdir dir="${s2b_root_2_4}"/>
-        <delete>
-            <fileset dir="${webbeans_root}">
-                <include name="*.java"/>
-            </fileset>
-        </delete>
-        <delete dir="${webbeans_root}"/>
         <delete>
             <fileset dir="${s2b_root_2_3}">
                 <include name="*.java"/>
