@@ -68,10 +68,24 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
                
     }
     
-    private String[] createSteps() {
-        return new String[] {
-            "Configure Project", // XXX I18N
-        };
+    private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
+        assert panels != null;
+        // hack to use the steps set before this panel processed
+        int diff = 0;
+        if (before == null) {
+            before = new String[0];
+        } else if (before.length > 0) {
+            diff = ("...".equals (before[before.length - 1])) ? 1 : 0; // NOI18N
+        }
+        String[] res = new String[ (before.length - diff) + panels.length];
+        for (int i = 0; i < res.length; i++) {
+            if (i < (before.length - diff)) {
+                res[i] = before[i];
+            } else {
+                res[i] = panels[i - before.length + diff].getComponent ().getName ();
+            }
+        }
+        return res;
     }
         
     public Set/*<FileObject>*/ instantiate () throws IOException {
@@ -96,7 +110,12 @@ public class NewJavaFileWizardIterator implements InstantiatingIterator {
         index = 0;
         panels = createPanels( wiz );
         // Make sure list of steps is accurate.
-        String[] steps = createSteps();
+        String[] beforeSteps = null;
+        Object prop = wiz.getProperty ("WizardPanel_contentData"); // NOI18N
+        if (prop != null && prop instanceof String[]) {
+            beforeSteps = (String[])prop;
+        }
+        String[] steps = createSteps (beforeSteps, panels);
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {

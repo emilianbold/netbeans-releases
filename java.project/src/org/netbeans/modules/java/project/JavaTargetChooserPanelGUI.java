@@ -38,8 +38,7 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-
-// XXX I18N
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,7 +69,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 
         rootComboBox.addActionListener( this );
         packageComboBox.addActionListener( this );
-        setName( "Name & Location");
+        setName( NbBundle.getBundle (JavaTargetChooserPanelGUI.class).getString ("LBL_JavaTargetChooserPanelGUI_Name") ); // NOI18N
     }
     
     public void initValues( Project p, SourceGroup[] groups, FileObject template, String preselectedFolder ) {
@@ -167,7 +166,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel3.setText("Java Class Name:");
+        jLabel3.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel3"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
@@ -186,7 +185,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
-        jLabel5.setText("Project");
+        jLabel5.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel5"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -199,7 +198,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
 
-        jLabel1.setText("Package Root:");
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel1"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
@@ -212,7 +211,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(rootComboBox, gridBagConstraints);
 
-        jLabel2.setText("Package:");
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel2"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
@@ -226,7 +225,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(packageComboBox, gridBagConstraints);
 
-        jLabel4.setText("Created File:");
+        jLabel4.setText(org.openide.util.NbBundle.getMessage(JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_jLabel4"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
