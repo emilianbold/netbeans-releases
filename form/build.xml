@@ -13,7 +13,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!-- ToDo: create TimerBean.jar and src/ from source, rather than have them in release/ -->
-<!-- Ditto AbsoluteLayout.jar (and move the sources into libsrc/ where they belong). -->
 <!-- Also should beans/beans.properties really be there, since firststart removes them afterwards? -->
 
 <project name="form" default="netbeans" basedir=".">
@@ -32,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/openide-13javac-workaround.jar"/>
         <!-- XXX illegally uses org.netbeans.beaninfo classes: -->
         <pathelement location="../core/netbeans/lib/core.jar"/>
-        <pathelement location="release/lib/ext/AbsoluteLayout.jar"/>
+        <pathelement location="release/modules/ext/AbsoluteLayout.jar"/>
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
