@@ -151,6 +151,7 @@ Microsystems, Inc. All Rights Reserved.
 	<path id="compiletest.classpath">        
 	    	<pathelement location="../../openide/openide-13javac-workaround.jar"/>
 	    	<pathelement location="../netbeans/lib/core.jar"/>
+                <pathelement location="../term/netbeans/modules/autoload/terminalemulator.jar"/>
 	    	<fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar"/>
              	</fileset>
@@ -170,6 +171,7 @@ Microsystems, Inc. All Rights Reserved.
     	<path id="compiletest.classpath">        
 	        <pathelement location="../../openide/openide-13javac-workaround.jar"/>
 	        <pathelement location="../src"/>
+                <pathelement location="../libsrc"/>
                 <!-- XXX -->
                 <pathelement location="../bootstrap/src/"/>
                 
@@ -200,6 +202,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${netbeans.home}/modules/autoload">
                     <include name="openide-*.jar"/>
                     <include name="core-*.jar"/>
+                    <include name="terminalemulator.jar"/>
                 </fileset>
                 
 	        <pathelement path="${junit.path}"/>
@@ -263,6 +266,7 @@ Microsystems, Inc. All Rights Reserved.
                 <fileset dir="${netbeans.home}/modules/autoload">
                     <include name="openide-*.jar"/>
                     <include name="core-*.jar"/>
+                    <include name="terminalemulator.jar"/>
                 </fileset>
                 
     	</path>

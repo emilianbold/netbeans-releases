@@ -32,6 +32,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/filesystems/*.class"/>
                 <exclude name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
                 <exclude name="org/netbeans/core/windows/LazyLoadingTest.class"/>
+                <exclude name="org/netbeans/core/windows/UIModeManagerTest.class"/>
             </patternset>
         </testset>
     </testbag>
@@ -84,6 +85,18 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/windows/LazyLoadingTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+
+    <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility" resultsprocessor="unit">
+        <testset dir="unit/src">
+            <patternset>
+                <include name="org/netbeans/core/awt/TabControlTest.class"/>
+                <include name="org/netbeans/core/windows/frames/PerimeterPaneTest.class"/>
+                <include name="org/netbeans/core/windows/UIModeManagerTest.class"/>
+                <include name="org/netbeans/lib/terminalemulator/TermTest.class"/>
+                <include name="org/netbeans/core/projects/FileStatePropertyTest.class"/>
             </patternset>
         </testset>
     </testbag>
