@@ -27,6 +27,7 @@ import org.openide.src.MethodParameter;
 import org.openide.src.SourceException;
 import org.openide.src.Type;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import java.io.IOException;
 
@@ -57,62 +58,82 @@ public class CmpFieldHelper {
         }
     }
 
-    public String getType() {
-        return getterMethod == null ? null : getterMethod.getReturn().getFullString();
+    public String getTypeString() {
+        Type type = getType();
+        return type == null ? null : type.getFullString();
+    }
+
+    public Type getType() {
+        Type type = getterMethod == null ? null : getterMethod.getReturn();
+        return type;
+    }
+
+    public void reloadType() {
+        setType(getTypeString());
     }
 
     public void setType(String type) {
-        initAccessMethods();
-        Type newType = createType(type);
-        if (isPrimary()) {
-            entityHelper.setPrimKeyClass(type);
-            Identifier primaryMethod = Identifier.create("findByPrimaryKey");
-            ClassElement classElement = entityHelper.getLocalHomeInterfaceClass();
-            Type[] origArguments = new Type[]{createType(getType())};
-            if (classElement != null) {
-                MethodElement method = classElement.getMethod(primaryMethod, origArguments);
-                changeParameterType(method, newType);
+        Type newType;
+        try {
+            newType = Type.parse(type);
+            if (newType.isPrimitive() && isPrimary()) {
+                Class newTypeClass;
+                newTypeClass = newType.toClass();
+                newType = Type.createFromClass(Utilities.getObjectType(newTypeClass));
+
             }
-            classElement = entityHelper.getHomeInterfaceClass();
-            if (classElement != null) {
-                MethodElement method = classElement.getMethod(primaryMethod, origArguments);
-                changeParameterType(method, newType);
-            }
-            MethodElement method = entityHelper.beanClass.getMethod(Identifier.create("ejbCreate"), origArguments);
-            changeParameterType(method, newType);
-            changeReturnType(method, newType);
-            method = entityHelper.beanClass.getMethod(Identifier.create("ejbPostCreate"), origArguments);
-            changeParameterType(method, newType);
+        } catch (ClassNotFoundException e) {
+            Utils.notifyError(e);
+            return;
         }
+        setType(newType);
+    }
+
+    public void setType(Type newType) {
+        initAccessMethods();
+        boolean primary = isPrimary();
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         ClassElement remoteBusinessInterfaceClass = entityHelper.getRemoteBusinessInterfaceClass();
         changeReturnType(getBusinessMethod(localBusinessInterfaceClass, getterMethod), newType);
-        changeParameterType(getBusinessMethod(localBusinessInterfaceClass, setterMethod), newType);
+        Utils.changeParameterType(getBusinessMethod(localBusinessInterfaceClass, setterMethod), newType);
         changeReturnType(getBusinessMethod(remoteBusinessInterfaceClass, getterMethod), newType);
-        changeParameterType(getBusinessMethod(remoteBusinessInterfaceClass, setterMethod), newType);
+        Utils.changeParameterType(getBusinessMethod(remoteBusinessInterfaceClass, setterMethod), newType);
         changeReturnType(getterMethod, newType);
-        changeParameterType(setterMethod, newType);
+        Utils.changeParameterType(setterMethod, newType);
+        newType = Type.parse(getTypeString());
+        if (primary) {
+            entityHelper.setPrimKeyClass(newType);
+        }
+        String fieldName = getFieldName();
+        MethodElement[] methods = entityHelper.beanClass.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            MethodElement method = methods[i];
+            String name = method.getName().getName();
+            if ("ejbCreate".equals(name) || "ejbPostCreate".equals(name)) {
+                if (primary) {
+                    changeReturnType(method, newType);
+                }
+                MethodParameter[] parameters = method.getParameters();
+                for (int j = 0; j < parameters.length; j++) {
+                    MethodParameter parameter = parameters[j];
+                    if (fieldName.equals(parameter.getName())) {
+                        parameter.setType(newType);
+                        try {
+                            method.setParameters(parameters);
+                        } catch (SourceException e) {
+                            Utils.notifyError(e);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        entityHelper.cmpFields.firePropertyChange(null);
         modelUpdatedFromUI();
     }
 
     private void modelUpdatedFromUI() {
         entityHelper.modelUpdatedFromUI();
-    }
-
-    private static Type createType(String type) {
-        return Type.createClass(Identifier.create(type));
-    }
-
-    private void changeParameterType(final MethodElement method, Type type) {
-        if (method != null) {
-            MethodParameter[] parameters = method.getParameters();
-            parameters[0].setType(type);
-            try {
-                method.setParameters(parameters);
-            } catch (SourceException e) {
-                Utils.notifyError(e);
-            }
-        }
     }
 
     private void changeReturnType(MethodElement method, Type type) {
@@ -220,7 +241,33 @@ public class CmpFieldHelper {
     public void setFieldName(String newName) {
         //todo: launch refactoring instead of following code
         if (isPrimary()) {
-            entityHelper.setPrimkeyField(newName);
+            try {
+                entityHelper.setPrimkeyField(newName);
+            } catch (ClassNotFoundException e) {
+                Utils.notifyError(e);
+                return;
+            }
+        }
+        String fieldName = getFieldName();
+        MethodElement[] methods = entityHelper.beanClass.getMethods();
+        for (int i = 0; i < methods.length; i++) {
+            MethodElement method = methods[i];
+            String name = method.getName().getName();
+            if ("ejbCreate".equals(name) || "ejbPostCreate".equals(name)) {
+                MethodParameter[] parameters = method.getParameters();
+                for (int j = 0; j < parameters.length; j++) {
+                    MethodParameter parameter = parameters[j];
+                    if (fieldName.equals(parameter.getName())) {
+                        parameter.setName(newName);
+                        try {
+                            method.setParameters(parameters);
+                        } catch (SourceException e) {
+                            Utils.notifyError(e);
+                        }
+                        break;
+                    }
+                }
+            }
         }
         ClassElement localBusinessInterfaceClass = entityHelper.getLocalBusinessInterfaceClass();
         MethodElement localGetter = getBusinessMethod(localBusinessInterfaceClass, getterMethod);
@@ -261,7 +308,7 @@ public class CmpFieldHelper {
         FieldElement element = new FieldElement();
         try {
             element.setName(Identifier.create(getFieldName()));
-            element.setType(createType(getType()));
+            element.setType(Type.parse(getTypeString()));
         } catch (SourceException e) {
             Utils.notifyError(e);
             return false;
@@ -272,19 +319,22 @@ public class CmpFieldHelper {
                 hasLocalSetter(), hasRemoteGetter(), hasRemoteSetter());
         NotifyDescriptor nd = new NotifyDescriptor(customizer, title, NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, null, null);
-        boolean resultIsOk = DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION;
-        customizer.isOK();  // apply possible changes in dialog fields
-        if (resultIsOk) {
-            setFieldName(element.getName().toString());
-            setType(element.getType().toString());
-            setDescription(customizer.getDescription());
-            setLocalGetter(customizer.isLocalGetter());
-            setLocalSetter(customizer.isLocalSetter());
-            setRemoteGetter(customizer.isRemoteGetter());
-            setRemoteSetter(customizer.isRemoteSetter());
-            modelUpdatedFromUI();
-            return true;
+        while (true) {
+            boolean resultIsOk = DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION;
+            customizer.isOK();  // apply possible changes in dialog fields
+            if (resultIsOk) {
+                setFieldName(element.getName().toString());
+                setType(element.getType().toString());
+                setDescription(customizer.getDescription());
+                setLocalGetter(customizer.isLocalGetter());
+                setLocalSetter(customizer.isLocalSetter());
+                setRemoteGetter(customizer.isRemoteGetter());
+                setRemoteSetter(customizer.isRemoteSetter());
+                modelUpdatedFromUI();
+                return true;
+            } else {
+                return false;
+            }
         }
-        return false;
     }
 }

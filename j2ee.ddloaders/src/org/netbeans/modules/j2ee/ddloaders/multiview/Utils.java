@@ -412,6 +412,17 @@ public class Utils {
         org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(runnable);
     }
 
+    public static void changeParameterType(final MethodElement method, Type type) {
+        if (method != null) {
+            MethodParameter[] parameters = method.getParameters();
+            parameters[0].setType(type);
+            try {
+                method.setParameters(parameters);
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+        }
+    }
 
     private static class ClassPathImpl implements ClassPathImplementation {
 

@@ -33,6 +33,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
 
     private EjbJarMultiViewDataObject dataObject;
     private Entity entity;
+    private static final String PK_COMPOUND = Utils.getBundleMessage("LBL_Compound_PK");
 
     /**
      * Creates new form EntityOverviewForm
@@ -81,22 +82,29 @@ public class EntityOverviewPanel extends EntityOverviewForm {
             primaryKeyClassComboBox.setVisible(true);
             primaryKeyClassTextField.setVisible(false);
 
-            primaryKeyFieldComboBox.addItem(Utils.getBundleMessage("LBL_Compound_PK"));
-            CmpField[] cmpFields = entity.getCmpField();
+            primaryKeyFieldComboBox.addItem(PK_COMPOUND);
+            CmpField[] cmpFields = entityHelper.cmpFields.getCmpFields();
             for (int i = 0; i < cmpFields.length; i++) {
                 CmpField cmpField = cmpFields[i];
                 primaryKeyFieldComboBox.addItem(cmpField.getFieldName());
-                primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
             }
-            addRefreshable(new ItemComboBoxHelper(dataObject, primaryKeyFieldComboBox) {
+            primaryKeyFieldComboBox.setEditor(new ValidatingTextField());
+            final ItemComboBoxHelper primaryKeyComboBoxHelper = new ItemComboBoxHelper(dataObject,
+                    primaryKeyFieldComboBox) {
                 public String getItemValue() {
-                    return entity.getPrimkeyField();
+                    String value = entity.getPrimkeyField();
+                    return value == null ? PK_COMPOUND : value;
                 }
 
                 public void setItemValue(String value) {
-                    entity.setPrimkeyField(value);
+                    try {
+                        entityHelper.setPrimkeyField(value == PK_COMPOUND ? null : value);
+                    } catch (ClassNotFoundException e) {
+                        Utils.notifyError(e);
+                    }
                 }
-            });
+            };
+            addRefreshable(primaryKeyComboBoxHelper);
             primaryKeyFieldComboBox.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     int selectedIndex = primaryKeyFieldComboBox.getSelectedIndex();
@@ -105,9 +113,6 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                         primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                     } else {
                         primaryKeyClassComboBox.setEnabled(false);
-                        CmpField cmpField = entity.getCmpField(selectedIndex - 1);
-                        CmpFieldHelper helper = new CmpFieldHelper(entityHelper, cmpField);
-                        entityHelper.setPrimKeyClass(helper.getType());
                     }
                     primaryKeyClassComboBox.setSelectedItem(entity.getPrimKeyClass());
                 }
@@ -141,7 +146,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                     if (Utils.isValidPackageName(value)) {
                         entity.setPrimKeyClass(value);
                     } else {
-                        primaryKeyClassComboBox.setSelectedItem(getItemValue());
+                        primaryKeyComboBoxHelper.refresh();
                     }
                 }
             });

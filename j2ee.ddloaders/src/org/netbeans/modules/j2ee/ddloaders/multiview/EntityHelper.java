@@ -31,11 +31,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Comparator;
 
 /**
  * @author pfiala
@@ -109,13 +109,29 @@ public class EntityHelper extends EntityAndSessionHelper {
         return entity.getPrimKeyClass();
     }
 
-    public void setPrimkeyField(String fieldName) {
+    public void setPrimkeyField(String fieldName) throws ClassNotFoundException {
         entity.setPrimkeyField(fieldName);
+        if (fieldName != null) {
+            CmpFieldHelper helper = cmpFields.getCmpFieldHelper(fieldName);
+            helper.reloadType();
+        }
         modelUpdatedFromUI();
     }
 
-    public void setPrimKeyClass(String className) {
-        entity.setPrimKeyClass(className);
+    public void setPrimKeyClass(Type newType) {
+        Identifier primaryMethod = Identifier.create("findByPrimaryKey");
+        ClassElement classElement = getLocalHomeInterfaceClass();
+        Type[] origArguments = new Type[]{Type.parse(entity.getPrimKeyClass())};
+        if (classElement != null) {
+            MethodElement method = classElement.getMethod(primaryMethod, origArguments);
+            Utils.changeParameterType(method, newType);
+        }
+        classElement = getHomeInterfaceClass();
+        if (classElement != null) {
+            MethodElement method = classElement.getMethod(primaryMethod, origArguments);
+            Utils.changeParameterType(method, newType);
+        }
+        entity.setPrimKeyClass(newType.getFullString());
         modelUpdatedFromUI();
     }
 
@@ -157,13 +173,37 @@ public class EntityHelper extends EntityAndSessionHelper {
             CmpField field = getCmpField(row);
             CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(field);
             if (cmpFieldHelper == null) {
-                cmpFieldHelper = new CmpFieldHelper(EntityHelper.this, field);
-                cmpFieldHelperMap.put(field, cmpFieldHelper);
+                cmpFieldHelper = createCmpFieldHelper(field);
             }
             return cmpFieldHelper;
         }
 
+        private CmpFieldHelper getCmpFieldHelper(String fieldName) {
+            CmpFieldHelper cmpFieldHelper = (CmpFieldHelper) cmpFieldHelperMap.get(fieldName);
+            if (cmpFieldHelper == null) {
+                CmpField[] cmpFields = entity.getCmpField();
+                for (int i = 0; i < cmpFields.length; i++) {
+                    CmpField field = cmpFields[i];
+                    if (fieldName.equals(field.getFieldName())) {
+                        cmpFieldHelper = createCmpFieldHelper(field);
+                    }
+                }
+            }
+            return cmpFieldHelper;
+        }
+
+        private CmpFieldHelper createCmpFieldHelper(CmpField field) {
+            CmpFieldHelper cmpFieldHelper;
+            cmpFieldHelper = new CmpFieldHelper(EntityHelper.this, field);
+            cmpFieldHelperMap.put(field, cmpFieldHelper);
+            return cmpFieldHelper;
+        }
+
         private CmpField getCmpField(int row) {
+            return getCmpFields()[row];
+        }
+
+        public CmpField[] getCmpFields() {
             CmpField[] cmpFields = entity.getCmpField();
             Arrays.sort(cmpFields, new Comparator() {
                 public int compare(Object o1, Object o2) {
@@ -178,7 +218,7 @@ public class EntityHelper extends EntityAndSessionHelper {
                     return s1.compareTo(s2);
                 }
             });
-            return cmpFields[row];
+            return cmpFields;
         }
 
         public void addPropertyChangeListener(PropertyChangeListener listener) {

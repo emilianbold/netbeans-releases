@@ -50,7 +50,7 @@ class CmpFieldsTableModel extends InnerTableModel {
 
     public void editRow(int row) {
         if (cmpFields.getCmpFieldHelper(row).edit()) {
-            //fireTableRowsUpdated(row, row);
+            fireTableRowsUpdated(row, row);
         }
     }
 
@@ -72,7 +72,7 @@ class CmpFieldsTableModel extends InnerTableModel {
             case 0:
                 return helper.getFieldName();
             case 1:
-                return helper.getType();
+                return helper.getTypeString();
             case 2:
                 return new Boolean(helper.hasLocalGetter());
             case 3:
