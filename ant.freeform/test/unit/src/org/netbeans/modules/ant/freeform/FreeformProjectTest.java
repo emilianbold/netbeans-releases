@@ -26,7 +26,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Lookup;
 
-// XXX testSourceForBinaryQuery
 // XXX testAuxiliaryConfiguration
 // XXX testCacheProvider
 // XXX testSubprojectProvider
