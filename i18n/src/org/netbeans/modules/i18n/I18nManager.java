@@ -208,8 +208,12 @@ public class I18nManager {
         // Replace hardcoded string.
         support.getReplacer().replace(hcString, i18nString);
 
-        skip();
-    }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                skip();
+            }
+        });
+  }
     
     /** Skips foudn hard coded string and conitnue to search for next one. */
     private void skip() {
