@@ -37,8 +37,6 @@ public class DatabaseModule extends ModuleInstall {
     static final long serialVersionUID =5426465356344170725L;
     
     public void installed() {
-        System.out.println("INSTALLED!!!!!!!!!!");
-
         TopManager tm = TopManager.getDefault();
 
         try {
@@ -78,29 +76,14 @@ public class DatabaseModule extends ModuleInstall {
                 } catch (Exception e) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
                         System.out.println("DBExplorer: Uninstalled: "+e.getMessage()); //NOI18N
+                } finally {
+                    l.releaseLock();
                 }
             }
         } catch (Exception ex) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
                 System.out.println("DBExplorer: Uninstalled: "+ex.getMessage()); //NOI18N
         }
-
-        // closing all open connection
-        //close();
-        
-       /*Children.MUTEX.writeAccess (new Runnable () {
-            public void run () {
-                try {
-                    Node n[] = TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().getNodes(); //NOI18N
-                    TopManager.getDefault().getPlaces().nodes().environment().getChildren().findChild("Databases").getChildren().remove(n);
-                } catch (Exception exc) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                        System.out.println("DBExplorer: Uninstalled: "+exc.getMessage()); //NOI18N
-                }
-            }
-        });*/
-        
-
     }
     
     public void close () {
