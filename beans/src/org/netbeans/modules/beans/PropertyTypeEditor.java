@@ -24,8 +24,6 @@ import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 * @author Martin Matula
 */
 public class PropertyTypeEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
-    /** Current value */
-    private Type type;
     
     /** Default types */
     private final String[] types = new String[] {
@@ -35,7 +33,6 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
 
     /** Creates new editor */
     public PropertyTypeEditor () {
-        type = null;
     }
 
     /**
@@ -45,6 +42,7 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     *       be prepared to parse that string back in setAsText().
     */
     public String getAsText () {
+        Type type = (Type)getValue();
         return (type == null) ? "" : type.toString(); // NOI18N
     }
 
@@ -53,9 +51,7 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     * @param text  The string to be parsed.
     */
     public void setAsText (String string) throws IllegalArgumentException {
-        if (string.equals("void"))
-            throw new IllegalArgumentException();
-        type = Type.parse(string);
+        setValue(Type.parse(string));
     }
 
     /**
@@ -64,14 +60,7 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     public void setValue(Object v) {
         if (!(v instanceof Type) || Type.VOID.equals(v))
             throw new IllegalArgumentException();
-        type = (Type) v;
-    }
-
-    /**
-    * @return value
-    */
-    public Object getValue() {
-        return type;
+        super.setValue(v);
     }
 
     /**
@@ -79,7 +68,7 @@ public class PropertyTypeEditor extends PropertyEditorSupport implements Enhance
     * current value.
     */
     public String getJavaInitializationString () {
-        return (type == null) ? "" : type.toString(); // NOI18N
+        return getAsText();
     }
 
     /**
