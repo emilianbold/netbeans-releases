@@ -28,7 +28,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -49,7 +48,7 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+
 
 /**
  *
@@ -60,17 +59,17 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     private WebProject project;
     private AntProjectHelper helper;
     private ReferenceHelper referenceHelper;
-
+    
     /** Creates a new instance of WebProjectWebServicesSupport */
     public WebProjectWebServicesSupport(WebProject project, AntProjectHelper helper, ReferenceHelper referenceHelper) {
         this.project = project;
         this.helper = helper;
         this.referenceHelper = referenceHelper;
     }
-
+    
     //implementation of WebServicesSupportImpl
     
-    public void addServiceImpl(String serviceName, FileObject configFile) {
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
         //Add properties to project.properties file
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String packageName = getPackageName(configFile);
@@ -95,6 +94,11 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         Element webserviceName = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WEB_SERVICE_NAME); //NOI18N
         webservice.appendChild(webserviceName);
         webserviceName.appendChild(doc.createTextNode(serviceName));
+        if(fromWSDL) {
+            Element fromWSDLElem = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, "from-wsdl");
+            webservice.appendChild(fromWSDLElem);
+        }
+        
         helper.putPrimaryConfigurationData(data, true);
         // Update wscompile related properties.  boolean return indicates whether
         // any changes were made.
@@ -105,7 +109,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             throw new RuntimeException(ioe.getMessage());
         }
     }
-
+    
     private WebApp getWebApp() {
         try {
             FileObject deploymentDescriptor = getDeploymentDescriptor();
@@ -132,7 +136,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 webApp.addBean("ServletMapping", new String[]{"ServletName","UrlPattern"},
                 new Object[]{servletName, "/" + serviceName}, "ServletName");
                 webApp.write(getDeploymentDescriptor());
-
+                
                 //Hack to save any defaults put in vendor-specific DD
                 //Need a better way to save selectively from server plugins(an api that allows
                 //server plugins to save server configuration in selective manner)
@@ -143,8 +147,8 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             }
         }
     }
-
-
+    
+    
     /**
      * Get the webservices.xml file object
      * descriptive in interface, e.g., getWebserviceDD
@@ -159,14 +163,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         return getWebInf().getFileObject(WEBSERVICES_DD, "xml");
     }
-
+    
     /**
      *  Returns the directory that contains webservices.xml in the project
      */
     public FileObject getWsDDFolder() {
         return getWebInf();
     }
-
+    
     /**
      * Returns the name of the directory that contains the webservices.xml in
      * the archive
@@ -174,7 +178,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     public String getArchiveDDFolderName() {
         return "WEB-INF";
     }
-
+    
     /**
      * Returns the name of the implementation bean class
      * given the servlet-link name
@@ -189,39 +193,10 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         return null;
     }
-
-
-
-    public void removeServiceEntry(String serviceName, String linkName) {
-        //remove servlet entry in web.xml
-        WebApp webApp = getWebApp();
-        Servlet[] servlets = webApp.getServlet();
-        for(int i = 0; i < servlets.length; i++) {
-            Servlet servlet = servlets[i];
-            if(servlet.getServletName().equals(linkName)) {
-                webApp.removeServlet(servlet);
-                break;
-            }
-        }
-        ServletMapping[] mappings = webApp.getServletMapping();
-        for(int j = 0; j < mappings.length; j++ ) {
-            ServletMapping mapping = mappings[j];
-            if(mapping.getServletName().equals(linkName)) {
-                webApp.removeServletMapping(mapping);
-            }
-        }
-        try {
-            webApp.write(getDeploymentDescriptor());
-        }
-        catch(java.io.IOException e) {
-            NotifyDescriptor ndd =
-            new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_WS_DD"),
-            NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(ndd);
-        }
-
+    
+    public void removeProjectEntries(String serviceName) {
         boolean needsSave = false;
-
+        
         //Remove entries in the project.properties file
         //FIX-ME:we should move this to websvc
         EditableProperties ep =  helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -235,7 +210,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             ep.remove(mappingProperty);
             needsSave = true;
         }
-
+        
         if(needsSave){
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
@@ -287,25 +262,54 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 DialogDisplayer.getDefault().notify(desc);			}
         }
     }
-
+    
+    public void removeServiceEntry(String linkName) {
+        //remove servlet entry in web.xml
+        WebApp webApp = getWebApp();
+        Servlet[] servlets = webApp.getServlet();
+        for(int i = 0; i < servlets.length; i++) {
+            Servlet servlet = servlets[i];
+            if(servlet.getServletName().equals(linkName)) {
+                webApp.removeServlet(servlet);
+                break;
+            }
+        }
+        ServletMapping[] mappings = webApp.getServletMapping();
+        for(int j = 0; j < mappings.length; j++ ) {
+            ServletMapping mapping = mappings[j];
+            if(mapping.getServletName().equals(linkName)) {
+                webApp.removeServletMapping(mapping);
+            }
+        }
+        try {
+            webApp.write(getDeploymentDescriptor());
+        }
+        catch(java.io.IOException e) {
+            NotifyDescriptor ndd =
+            new NotifyDescriptor.Message(NbBundle.getMessage(this.getClass(), "MSG_Unable_WRITE_WS_DD"),
+            NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(ndd);
+        }
+    }
+    
     public AntProjectHelper getAntProjectHelper() {
         return helper;
     }
-
+    
     public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)
     throws java.io.IOException {
         return null;
         //FIX-ME: move impl bean generation here
     }
-
+    
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
         serviceImplBean.setServletLink(WebServiceServlet_PREFIX + wsName);
     }
-
+    
     public ReferenceHelper getReferenceHelper(){
         return referenceHelper;
     }
-
+    
     private String getPackageName(FileObject file){
         FileObject parent = file.getParent();
         Sources sources = ProjectUtils.getSources(project);
@@ -316,7 +320,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         return packageName + "";
     }
-
+    
     // Implementation of WebServiceClientSupportImpl
     public void addServiceClient(String serviceName, String packageName, FileObject configFile, StubDescriptor stubDescriptor) {
         // !PW FIXME I have two concerns with this implementation:
@@ -326,7 +330,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         //    interface.
         boolean needsSave = false;
         boolean modifiedProjectProperties = false;
-
+        
         /** Locate root of web service client node structure in project,xml, creating it
          *  if it's not found.
          */
@@ -334,7 +338,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
         Element clientElements = null;
-
+        
         if(nodes.getLength() == 0) {
             // 'needsSave' deliberately left false here because this is a trival change
             // that only should be saved if additional changes are also made below.
@@ -343,7 +347,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         } else {
             clientElements = (Element) nodes.item(0);
         }
-
+        
         /** Make sure this service is not already registered in project.xml
          */
         boolean serviceAlreadyAdded = false;
@@ -364,7 +368,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 }
             }
         }
-
+        
         /** Add entry for the client to project.xml and regenerate build-impl.xml.
          */
         if(!serviceAlreadyAdded) {
@@ -412,13 +416,13 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
             needsSave = true;
         }
-
+        
         // Update wscompile related properties.  boolean return indicates whether
         // any changes were made.
         if(updateWsCompileProperties(serviceName)) {
             needsSave = true;
         }
-
+        
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
         if(needsSave) {
@@ -426,13 +430,17 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
-                    NotifyDescriptor.ERROR_MESSAGE);
+                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientAdd", serviceName, ex.getMessage()), // NOI18N
+                NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
         }
     }
-
+    
+    public void addInfrastructure(String implBeanClass, FileObject pkg) {
+        //nothing to do here, there are no infrastructure elements
+    }
+    
     public FileObject getDeploymentDescriptor() {
         FileObject webInfFo = getWebInf();
         if (webInfFo==null) {
@@ -443,15 +451,15 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         }
         return getWebInf().getFileObject(ProjectWebModule.FILE_DD);
     }
-
+    
     public FileObject getWebInf() {
         return getDocumentBase().getFileObject(ProjectWebModule.FOLDER_WEB_INF);
     }
-
+    
     public FileObject getDocumentBase() {
         return getFileObject("web.docbase.dir"); // NOI18N
     }
-
+    
     private FileObject getFileObject(String propname) {
         String prop = helper.getStandardPropertyEvaluator().getProperty(propname);
         if (prop != null) {
@@ -460,8 +468,8 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             return null;
         }
     }
-
-
+    
+    
     private boolean updateWsCompileProperties(String serviceName) {
         /** Ensure wscompile.classpath and wscompile.tools.classpath are
          *  properly defined.
@@ -476,27 +484,27 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
          *  Hopefully we can do this better for release.
          */
         boolean globalPropertiesChanged = false;
-
+        
         EditableProperties globalProperties = PropertyUtils.getGlobalProperties();
         if(globalProperties.getProperty(WSCOMPILE_TOOLS_CLASSPATH) == null) {
             globalProperties.setProperty(WSCOMPILE_TOOLS_CLASSPATH, "${java.home}\\..\\lib\\tools.jar"); // NOI18N
-
+            
             try {
                 PropertyUtils.putGlobalProperties(globalProperties);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingGlobalProperties", serviceName, ex.getMessage()), // NOI18N
-                    NotifyDescriptor.ERROR_MESSAGE);
+                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingGlobalProperties", serviceName, ex.getMessage()), // NOI18N
+                NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
-
+            
             globalPropertiesChanged = true;
         }
-
-
+        
+        
         boolean projectPropertiesChanged = false;
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
+        
         { // Block that adjusts wscompile.client.classpath as necessary.
             HashSet wscJars = new HashSet();
             boolean newWscJars = false;
@@ -507,14 +515,14 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                     wscJars.add(libs[i]);
                 }
             }
-
+            
             for(int i = 0; i < WSCOMPILE_JARS.length; i++) {
                 if(!wscJars.contains(WSCOMPILE_JARS[i])) {
                     wscJars.add(WSCOMPILE_JARS[i]);
                     newWscJars = true;
                 }
             }
-
+            
             if(newWscJars) {
                 StringBuffer newClasspathBuf = new StringBuffer(256);
                 for(Iterator iter = wscJars.iterator(); iter.hasNext(); ) {
@@ -527,34 +535,34 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 projectPropertiesChanged = true;
             }
         }
-
+        
         // Set websvc.generated.dir property, if not set.
         if(projectProperties.getProperty(WEBSVC_GENERATED_DIR) == null) {
             projectProperties.setProperty(WEBSVC_GENERATED_DIR, "${build.generated.dir}/wssrc"); // NOI18N
             projectPropertiesChanged = true;
         }
-
+        
         if(projectPropertiesChanged) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
         }
-
+        
         return globalPropertiesChanged || projectPropertiesChanged;
     }
-
-
+    
+    
     public void removeServiceClient(String serviceName) {
         // 2. Remove service from project.xml
         //    Side effect: Regenerate build-impl.xsl
         //    Optional - if last service, remove properties we generated.
         boolean needsSave = false;
-
+        
         /** Locate root of web service client node structure in project,xml
          */
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         NodeList nodes = data.getElementsByTagName(WEB_SERVICE_CLIENTS);
         Element clientElements = null;
-
+        
         /* If there is a root, get all the names of the child services and search
          * for the one we want to remove.
          */
@@ -578,7 +586,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 }
             }
         }
-
+        
         // !PW Lastly, save the project if we actually made any changes to any
         // properties or the build script.
         if(needsSave) {
@@ -586,17 +594,17 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 ProjectManager.getDefault().saveProject(project);
             } catch(IOException ex) {
                 NotifyDescriptor desc = new NotifyDescriptor.Message(
-                    NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
-                    NotifyDescriptor.ERROR_MESSAGE);
+                NbBundle.getMessage(WebProjectWebServicesSupport.class,"MSG_ErrorSavingOnWSClientRemove", serviceName, ex.getMessage()), // NOI18N
+                NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
             }
         }
     }
-
+    
     public FileObject getWsdlFolder(boolean create) throws IOException {
         FileObject wsdlFolder = null;
         FileObject webInf = getWebInf();
-
+        
         if(webInf != null) {
             wsdlFolder = webInf.getFileObject(WSDL_FOLDER);
             if(wsdlFolder == null && create) {
@@ -606,18 +614,18 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             // !PW FIXME create was specified, but no WEB-INF was found, so how
             // do we create it?  (Expect an NPE if we return null for this case.)
         }
-
+        
         return wsdlFolder;
     }
-
+    
     public List/*StubDescriptor*/ getStubDescriptors() {
         ArrayList stubs = new ArrayList(2);
         stubs.add(jsr109ClientStub);
         stubs.add(jaxrpcClientStub);
         return stubs;
     }
-
-    /** !PW This method is exposed in the client support API.  Though it's 
+    
+    /** !PW This method is exposed in the client support API.  Though it's
      *  implementation makes more sense here than anywhere else, perhaps this
      *  and the other project.xml/project.properties related methods in this
      *  object should be refactored into another object that this one delegates
@@ -627,10 +635,10 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
      */
     private static final String [] WSCOMPILE_CLIENT_FEATURES = {
         "datahandleronly",
-//        "documentliteral", // SEI ONLY
-//        "rpcliteral", // SEI ONLY
+        //        "documentliteral", // SEI ONLY
+        //        "rpcliteral", // SEI ONLY
         "explicitcontext",
-//        "infix:<name>", // difficult to implement.
+        //        "infix:<name>", // difficult to implement.
         "jaxbenumtype",
         "nodatabinding",
         "noencodedtypes",
@@ -641,35 +649,35 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         "searchschema",
         "serializeinterfaces",
         "strict",
-//        "useonewayoperations", // SEI ONLY
+        //        "useonewayoperations", // SEI ONLY
         "wsi",
         "unwrap",
         "donotoverride",
         "donotunwrap",
     };
-
+    
     private static final List allClientFeatures = Arrays.asList(WSCOMPILE_CLIENT_FEATURES);
-
+    
     private static final String [] WSCOMPILE_KEY_CLIENT_FEATURES = {
-//        "documentliteral",
-//        "rpcliteral",
+        //        "documentliteral",
+        //        "rpcliteral",
         "noencodedtypes",
         "wsi",
     };
-
+    
     private static final List importantClientFeatures = Arrays.asList(WSCOMPILE_KEY_CLIENT_FEATURES);
-
+    
     public List getServiceClients() {
         List serviceNames = new ArrayList();
-
+        
         Element data = helper.getPrimaryConfigurationData(true);
         NodeList nodes = data.getElementsByTagName(WebServicesConstants.WEB_SERVICE_CLIENTS);
         EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-
+        
         if(nodes.getLength() != 0) {
             Element clientElements = (Element) nodes.item(0);
             NodeList clientNameList = clientElements.getElementsByTagNameNS(
-                WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
+            WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, WebServicesConstants.WEB_SERVICE_CLIENT_NAME);
             for(int i = 0; i < clientNameList.getLength(); i++ ) {
                 Element clientNameElement = (Element) clientNameList.item(i);
                 NodeList nl = clientNameElement.getChildNodes();
@@ -681,9 +689,9 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                         if(currentFeatures == null) {
                             currentFeatures = "documentliteral, wsi, norpcstructures";
                         }
-
+                        
                         WsCompileEditorSupport.ServiceSettings settings = new WsCompileEditorSupport.ServiceSettings(
-                            serviceName, currentFeatures, allClientFeatures, importantClientFeatures);
+                        serviceName, currentFeatures, allClientFeatures, importantClientFeatures);
                         serviceNames.add(settings);
                     } else {
                         // !PW FIXME node is wrong type?! - log message or trace?
@@ -693,24 +701,24 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 }
             }
         }
-
+        
         return serviceNames;
     }
-
+    
     private static final JAXRPCStubDescriptor jsr109ClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JSR109_CLIENT_STUB, 
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
-        new String [] { "norpcstructures" });
-
+    StubDescriptor.JSR109_CLIENT_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JSR109ClientStub"),
+    new String [] { "norpcstructures" });
+    
     private static final JAXRPCStubDescriptor jaxrpcClientStub = new JAXRPCStubDescriptor(
-        StubDescriptor.JAXRPC_CLIENT_STUB,
-        NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
-        new String [0]);
+    StubDescriptor.JAXRPC_CLIENT_STUB,
+    NbBundle.getMessage(WebProjectWebServicesSupport.class,"LBL_JAXRPCStaticClientStub"),
+    new String [0]);
     
     /** !PW FIXME add required features, etc. for this stub.
      */
     private static class JAXRPCStubDescriptor extends StubDescriptor {
-
+        
         private String [] defaultFeatures;
         
         public JAXRPCStubDescriptor(String name, String displayName, String [] defaultFeatures) {
@@ -718,9 +726,9 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
             
             this.defaultFeatures = defaultFeatures;
         }
-
-		public String [] getDefaultFeatures() {
-			return defaultFeatures;
+        
+        public String [] getDefaultFeatures() {
+            return defaultFeatures;
         }
         
         public String getDefaultFeaturesAsArgument() {

@@ -76,8 +76,8 @@ public final class WebServicesSupport {
     
     // Delegated methods from WebServicesSupportImpl
     
-    public void addServiceImpl(String serviceName, FileObject configFile) {
-        impl.addServiceImpl(serviceName, configFile);
+    public void addServiceImpl(String serviceName, FileObject configFile, boolean fromWSDL) {
+        impl.addServiceImpl(serviceName, configFile, fromWSDL);
     }
     
     public void addServiceEntriesToDD(String serviceName, String serviceEndpointInterface, String servantClassName){
@@ -100,8 +100,12 @@ public final class WebServicesSupport {
         return impl.getImplementationBean(linkName);
     }
     
-    public void removeServiceEntry(String serviceName, String linkName) {
-        impl.removeServiceEntry(serviceName, linkName);
+    public void removeServiceEntry(String linkName) {
+        impl.removeServiceEntry(linkName);
+    }
+    
+    public void removeProjectEntries(String serviceName){
+        impl.removeProjectEntries(serviceName);
     }
     
     public AntProjectHelper getAntProjectHelper() {
@@ -115,9 +119,13 @@ public final class WebServicesSupport {
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
         impl.addServiceImplLinkEntry(serviceImplBean, wsName);
     }
-  
+    
     public ReferenceHelper getReferenceHelper(){
         return impl.getReferenceHelper();
+    }
+    
+    public void addInfrastructure(String implBeanClass, FileObject pkg){
+        impl.addInfrastructure(implBeanClass, pkg);
     }
     
 /* !! What to put here?
