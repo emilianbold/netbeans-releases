@@ -68,6 +68,11 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
 
     private void updateDisplayName () {
         AntProjectCookie cookie = (AntProjectCookie) getCookie (AntProjectCookie.class);
+        if (cookie.getFile() == null && cookie.getFileObject() == null) {
+            // Script has been invalidated perhaps? Don't continue, we would
+            // just get an NPE from the getParseException.
+            return;
+        }
         Element pel = cookie.getProjectElement ();
         if (pel != null) {
             String projectName = pel.getAttribute ("name"); // NOI18N
