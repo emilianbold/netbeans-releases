@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/util/*.class"/>
                 <include name="org/openide/loaders/*.class"/>
                 <include name="org/openide/xml/*.class"/>
-                <include name="org/openide/explorer/*.class"/>
+                <include name="org/openide/explorer/propertysheet/*.class"/>
                 <include name="org/openide/nodes/*.class"/>
                 <include name="org/openide/modules/*.class"/>
             </patternset>
