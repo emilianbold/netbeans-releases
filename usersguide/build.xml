@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
     <javac destdir="demosrc" srcdir="demosrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-        <pathelement location="../form/release/beans/TimerBean.jar"/>
+        <pathelement location="release/beans/TimerBean.jar"/>
       </classpath>
     </javac>
   </target>
@@ -59,6 +59,12 @@ Microsystems, Inc. All Rights Reserved.
             basedir="src">
       <locale name="ja"/>
     </locjar>
+  </target>
+
+  <target name="release">
+    <copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy>
   </target>
 
   <target name="javahelp">
@@ -91,7 +97,7 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="javahelp/org/netbeans/modules/usersguide/ide.css" tofile="netbeans/docs/org/netbeans/modules/usersguide/ide.css"/>
   </target>
 
-  <target name="netbeans" depends="jars,javahelp">
+  <target name="netbeans" depends="jars,release,javahelp">
     <genlist targetname="nbm" outputfiledir="../nbbuild/netbeans"/>
   </target>
 

@@ -83,7 +83,7 @@ public class FormEditorModule extends ModuleInstall
     
     public void restored() {
         Beans.setDesignTime(true);
-        BeanInstaller.autoLoadBeans();
+
         timerBeanHack();
         
         FormPropertyEditorManager.registerEditor(

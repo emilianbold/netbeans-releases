@@ -74,7 +74,20 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
         </file>
+        <file name="org-netbeans-modules-usersguide-timerbean.settings" url="timerbean.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
+        </file>
     </folder>
+    <folder name="Palette">
+        <folder name="Beans">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+            <file name="org-netbeans-examples-lib-timerbean-Timer.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
+            </file>
+        </folder>
+    </folder>
+    
     <!-- Cf. #19623: -->
     <folder name="TipsOfTheDay">
         <!-- Don't forget to keep ordering constraints intact; and update layer_ja.xml too: -->

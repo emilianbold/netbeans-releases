@@ -12,9 +12,6 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<!-- ToDo: create TimerBean.jar and src/ from source, rather than have them in release/ -->
-<!-- Also should beans/beans.properties really be there, since firststart removes them afterwards? -->
-
 <project name="form" default="netbeans" basedir=".">
 
   <property name="nbm_alias" value="nb_ide"/>
