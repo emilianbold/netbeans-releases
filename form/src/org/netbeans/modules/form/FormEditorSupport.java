@@ -124,11 +124,22 @@ public class FormEditorSupport extends JavaEditor
         multiviewTC.requestActive();
     }
 
-    /** Overriden from JavaEditor - opens editor at give position, ebsures
-     * multiview TopComponent is created and opened.
+    /** Overriden from JavaEditor - opens editor and ensures it is selected
+     * in the multiview.
+     */
+    public void open() {
+        super.open();
+
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+        handler.requestActive(handler.getPerspectives()[0]);
+    }
+
+    /** Overriden from JavaEditor - opens editor at given position and ensures
+     * it is selected in the multiview.
      */
     protected EditorSupport.Editor openAt(PositionRef pos) {
         openCloneableTopComponent();
+
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
         handler.requestActive(handler.getPerspectives()[0]);
 
