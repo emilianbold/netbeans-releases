@@ -20,6 +20,7 @@ import org.openide.DialogDescriptor;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /*
@@ -103,6 +104,12 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         java.awt.GridBagConstraints gridBagConstraints;
 
         packagesPanel = new org.openide.explorer.ExplorerPanel();
+        Mutex.EVENT.writeAccess (new Runnable () {
+            public void run () {
+                packagesPanel.setName("");
+            }
+        });
+
         packagesTreeView = new org.openide.explorer.view.BeanTreeView();
         selectLabel = new javax.swing.JLabel();
         helpLabel = new javax.swing.JLabel();
@@ -122,7 +129,6 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         setAlignmentX(0.0F);
         setAlignmentY(0.0F);
         setPreferredSize(new java.awt.Dimension(420, 300));
-        packagesPanel.setName("");
         packagesTreeView.setToolTipText(NbBundle.getMessage(NodeGeneratorPanel.class, "TTT_SelectFilesystem"));
         packagesTreeView.setPopupAllowed(false);
         packagesTreeView.setAutoscrolls(true);
@@ -179,10 +185,10 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         add(stopButton, gridBagConstraints);
 
         startButton.setMnemonic(NbBundle.getMessage(NodeGeneratorPanel.class, "MNM_Start").charAt(0) );
@@ -199,10 +205,10 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(17, 12, 12, 0);
         add(startButton, gridBagConstraints);
 
         nodeField.setToolTipText(NbBundle.getMessage(NodeGeneratorPanel.class, "TTT_Package"));
@@ -395,18 +401,18 @@ public class NodeGeneratorPanel extends javax.swing.JPanel implements java.beans
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton startButton;
-    private javax.swing.JLabel helpLabel;
-    private org.openide.explorer.view.BeanTreeView packagesTreeView;
-    private javax.swing.JCheckBox inlineCheck;
     private javax.swing.JTextField actionField;
     private javax.swing.JLabel actionLabel;
+    private javax.swing.JLabel helpLabel;
+    private javax.swing.JCheckBox inlineCheck;
     private javax.swing.JCheckBox noBlockCheck;
     private javax.swing.JTextField nodeField;
-    private javax.swing.JLabel selectLabel;
-    private org.openide.explorer.ExplorerPanel packagesPanel;
-    private javax.swing.JButton stopButton;
     private javax.swing.JLabel nodeLabel;
+    private org.openide.explorer.ExplorerPanel packagesPanel;
+    private org.openide.explorer.view.BeanTreeView packagesTreeView;
+    private javax.swing.JLabel selectLabel;
+    private javax.swing.JButton startButton;
+    private javax.swing.JButton stopButton;
     // End of variables declaration//GEN-END:variables
 
     /** creates Component Generator dialog for debugging purposes
