@@ -81,8 +81,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 
-import org.netbeans.modules.diff.builtin.ShowingNotifier;
-
 /** Support for associating an editor and a Swing {@link Document} to a revision object.
  * This is a modification of org.openide.text.DataEditorSupport
  *
@@ -409,20 +407,33 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         
     } // end of Env
     
-    public static class DiffCloneableEditor extends CloneableEditor implements ShowingNotifier {
+    public static class DiffCloneableEditor extends CloneableEditor {
         
         DiffCloneableEditor(CloneableEditorSupport support) {
             super(support);
         }
         
         /**
-         * The componentShowing() method is used in CloneableEditor to make
-         * some initializations. Therefore it must have public access
-         * so that DiffPresenter will be able to call it when the component
-         * is made visible.
+         * When I'm added to some other component I suppose, that I'll be displayed.
+         * In this case this method call componentShowing(). It must be assured,
+         * that the initialization is done.
          */
-        public void componentShowingNotify() {
+        public void addNotify() {
             componentShowing();
+            super.addNotify();
+        }
+        
+        private boolean componentShowingCalled = false;
+        /**
+         * The componentShowing() method is used in CloneableEditor to make
+         * some initializations. It calls super method only once, since
+         * it can be called multiple times when called from addNotify() as well.
+         */
+        protected void componentShowing() {
+            if (!componentShowingCalled) {
+                super.componentShowing();
+                componentShowingCalled = true;
+            }
         }
 
         public HelpCtx getHelpCtx() {

@@ -289,11 +289,6 @@ public class DiffPresenter extends javax.swing.JPanel {
         visualizerPanel.removeAll();
         if (visualizer != null) {
             visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
-            // If the component needs to be initialized after it's visually
-            // presented, it must implement the ShowingNotifier.
-            if (visualizer instanceof ShowingNotifier) {
-                ((ShowingNotifier) visualizer).componentShowingNotify();
-            }
         }
         revalidate();
         repaint();
