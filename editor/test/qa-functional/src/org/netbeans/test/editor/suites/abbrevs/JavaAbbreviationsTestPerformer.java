@@ -43,7 +43,7 @@ public class JavaAbbreviationsTestPerformer extends AbbreviationsTest {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new JavaAbbreviationsTestPerformer("testAbbreviationTest").testAbbreviationTest();
+        //new JavaAbbreviationsTestPerformer("testAbbreviationTest").testAbbreviationTest();
 /*        new JavaAbbreviationsTestPerformer("testAbbreviationWithoutExpansion").testAbbreviationWithoutExpansion();
         new JavaAbbreviationsTestPerformer("testAbbreviationInsideComment").testAbbreviationInsideComment();
         new JavaAbbreviationsTestPerformer("testAbbreviationAdd").testAbbreviationAdd();

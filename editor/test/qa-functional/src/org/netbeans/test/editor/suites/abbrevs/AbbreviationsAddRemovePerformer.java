@@ -32,7 +32,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author  Jan Lahoda
  */
 public class AbbreviationsAddRemovePerformer extends JellyTestCase {
-
+    
     private static final String editor = "Java Editor";
     private boolean isInFramework;
     
@@ -60,7 +60,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
 /*        assertTrue(false);
         return null;*/
     }
-
+    
     private void checkAbbreviation(String abbreviation) throws Exception {
         //Open an editor:
         EditorOperator editor = openFile();
@@ -88,7 +88,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public void doTest() throws Exception {
         log("doTest start");
         Object backup = Utilities.saveAbbreviationsState();
-
+        
         try {
             //For test testing, remove two testing abbreviations. Remove in final version.
             Abbreviations.addAbbreviation(editor, "ts", "Thread.dumpStack();");
@@ -96,12 +96,15 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             
             checkAbbreviation("ts");
             checkAbbreviation("tst");
-            Abbreviations.removeAbbreviation(editor, "ts");
+            System.out.println("remove1: "+Abbreviations.removeAbbreviation(editor, "ts"));
+            System.out.println("remove2: "+Abbreviations.removeAbbreviation(editor, "ts"));
             checkAbbreviation("ts");
             checkAbbreviation("tst");
-            Abbreviations.removeAbbreviation(editor, "tst");
+            System.out.println("remove1: "+Abbreviations.removeAbbreviation(editor, "tst"));
+            System.out.println("remove2: "+Abbreviations.removeAbbreviation(editor, "tst"));
             checkAbbreviation("ts");
             checkAbbreviation("tst");
+            
         } catch (Exception ex) {
             log("Bug in test: "+ex.getMessage()+" by "+ex.getClass());
             ex.printStackTrace(getLog());
@@ -119,7 +122,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             System.out.println("TEST_OUTPUT:" + ref);
         }
     }
-
+ 
     public void log(String log) {
         if (isInFramework) {
             getLog().println(log);
@@ -128,16 +131,21 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
             System.err.println(log);
         }
     }*/
-
+    
     public void setUp() {
         isInFramework = true;
         log("Starting abbreviations add/remove test.");
-	log("Test name=" + getName());
+        log("Test name=" + getName());
+        try {
+            new EditorWindowOperator().closeDiscard();
+            log("Closed Welcome screen.");
+        } catch (Exception ex) {
+        }
     }
     
     public void tearDown() throws Exception {
         log("Finishing abbreviations add/remove test.");
-        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), 
+        assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"),
         new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         isInFramework = false;
     }

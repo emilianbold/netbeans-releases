@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.HTMLOptions;
 import org.netbeans.modules.editor.options.JavaOptions;
 import org.netbeans.modules.editor.options.PlainOptions;

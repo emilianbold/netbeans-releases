@@ -118,7 +118,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         editor.pushKey(KeyEvent.VK_END);
         editor.pushKey(KeyEvent.VK_ENTER);
     }
- /*   
+    
     public void testAbbreviationTest() {
         log("testAbbreviationTest start");
         try {
@@ -315,7 +315,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             log("testAbbreviationRemoveCancel finished");
         }
     }
-    */
+    
     public void testAbbreviationRemove() {
         log("testAbbreviationRemove start");
         Object backup = Utilities.saveAbbreviationsState();
@@ -355,7 +355,7 @@ public abstract class AbbreviationsTest extends JellyTestCase {
                 //Test whether the old abbreviation does NOT work:
                 useAbbreviation((String)keys[cntr], true);
             }
-                        
+            
             log("testAbbreviationRemove flush results:");
             
             flushResult();
