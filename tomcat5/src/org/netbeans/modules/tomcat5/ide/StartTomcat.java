@@ -22,23 +22,39 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.StringTokenizer;
+import javax.enterprise.deploy.shared.ActionType;
+import javax.enterprise.deploy.shared.CommandType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.Target;
+import javax.enterprise.deploy.spi.TargetModuleID;
+import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
+import javax.enterprise.deploy.spi.status.ClientConfiguration;
+import javax.enterprise.deploy.spi.status.DeploymentStatus;
+import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
+import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.execution.ProcessExecutor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
+ * <p>
+ * TODO: create lib and classes dirs in base dir and modify catalina.policy to load from them
+ * TODO: progress when starting
+ *
  * @author Radim Kubacki
  */
-public final class StartTomcat implements StartServer
+public final class StartTomcat implements StartServer, Runnable, ProgressObject
 {
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
@@ -59,8 +75,11 @@ public final class StartTomcat implements StartServer
 
     private TomcatManager tm;
     
+    private ProgressEventSupport pes;
+    
     /** Default constructor. */
     public StartTomcat () {
+        pes = new ProgressEventSupport (this);
     }
     
     /** Associates with @see javax.enterprise.deploy.spi.DeploymentManager */
@@ -78,8 +97,13 @@ public final class StartTomcat implements StartServer
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("StartTomcat.startDeploymentManager called on "+tm);    // NOI18N
         }
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
+        RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+        return this;
+    }
+    
+    public synchronized void run () {
         // PENDING check whether is runs or not
-        System.out.println("begining");
         String uri = tm.getUri ();
         String home = tm.getCatalinaHome ();
         String base = tm.getCatalinaBase ();
@@ -87,14 +111,12 @@ public final class StartTomcat implements StartServer
             base = home;
         }
         
-        System.out.println("get home");
         InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
         File homeDir = new File (home);
         if (!homeDir.isAbsolute ()) {
             homeDir = ifl.locate (home, null, false);
         }
         
-        System.out.println("get base");
         File baseDir = new File (base);
         if (!baseDir.isAbsolute ()) {
             File baseDir2 = ifl.locate (base, null, false);
@@ -104,9 +126,17 @@ public final class StartTomcat implements StartServer
         }
         // XXX check for null's
         
-        System.out.println("exec");
         NbProcessDescriptor pd  = defaultExecDesc ();
         try { 
+            pes.fireHandleProgressEvent (
+                null, 
+                new Status (
+                    ActionType.EXECUTE, 
+                    CommandType.START, 
+                    NbBundle.getMessage (StartTomcat.class, "MSG_startProcess"), 
+                    StateType.RUNNING
+                )
+            );
             Process p = pd.exec (
                 new TomcatFormat (homeDir.getAbsolutePath ()), 
                 new String[] { 
@@ -118,12 +148,16 @@ public final class StartTomcat implements StartServer
                 new File (homeDir, "bin")
             );
         } catch (java.io.IOException ioe) {
-            org.openide.ErrorManager.getDefault ().notify (ioe);
-            return null;
+            if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+                TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
+            }
+            pes.fireHandleProgressEvent (
+                null, 
+                new Status (ActionType.EXECUTE, CommandType.START, ioe.getLocalizedMessage (), StateType.FAILED)
+            );
         }
         
-        System.out.println("done");
-        return null; // PENDING
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.COMPLETED));
     }
     
     /** This implementation does nothing.
@@ -151,6 +185,15 @@ public final class StartTomcat implements StartServer
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("creating base dir for "+tm);    // NOI18N
         }
+        pes.fireHandleProgressEvent (
+            null, 
+            new Status (
+                ActionType.EXECUTE, 
+                CommandType.START, 
+                NbBundle.getMessage (StartTomcat.class, "MSG_createBaseDir"), 
+                StateType.RUNNING
+            )
+        );
         FileObject targetFolder;
         if (!baseDir.isAbsolute ()) {
             baseDir = new File(System.getProperty("netbeans.user")+System.getProperty("file.separator")+baseDir);
@@ -267,6 +310,44 @@ public final class StartTomcat implements StartServer
             }
         }
         return true;
+    }
+    
+    public ClientConfiguration getClientConfiguration (TargetModuleID targetModuleID) {
+        return null; // XXX is it OK?
+    }
+    
+    public DeploymentStatus getDeploymentStatus () {
+        return pes.getDeploymentStatus ();
+    }
+    
+    public TargetModuleID[] getResultTargetModuleIDs () {
+        return new TargetModuleID [] {};
+    }
+    
+    public boolean isCancelSupported () {
+        return false;
+    }
+    
+    public void cancel () 
+    throws OperationUnsupportedException {
+        throw new OperationUnsupportedException ("");
+    }
+    
+    public boolean isStopSupported () {
+        return false;
+    }
+    
+    public void stop () 
+    throws OperationUnsupportedException {
+        throw new OperationUnsupportedException ("");
+    }
+    
+    public void addProgressListener (ProgressListener pl) {
+        pes.addProgressListener (pl);
+    }
+    
+    public void removeProgressListener (ProgressListener pl) {
+        pes.removeProgressListener (pl);
     }
     
     /** Format that provides value usefull for Tomcat execution. 
