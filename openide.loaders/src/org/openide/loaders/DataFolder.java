@@ -785,8 +785,6 @@ implements Serializable, DataObject.Container {
     protected DataObject handleCreateFromTemplate (
         DataFolder f, String name
     ) throws IOException {
-        if (name == null) name = getPrimaryFile ().getName ();
-
         DataFolder newFolder = (DataFolder)super.handleCreateFromTemplate (f, name);
         Enumeration en = children ();
 
