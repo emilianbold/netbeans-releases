@@ -219,7 +219,8 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public File getAntHome() {
         File f = (File)getProperty(PROP_ANT_HOME);
         if (f == null) {
-            f = InstalledFileLocator.getDefault().locate("ant", "org.apache.tools.ant.module", false); // NOI18N
+            File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
+            f = antJar.getParentFile().getParentFile();
             putProperty(PROP_ANT_HOME, f, false);
         }
         return f;
