@@ -297,7 +297,12 @@ class OutWriter extends PrintWriter {
                         Controller.log("Clearing listener " + ol);
                     }
                     e.setLine(listenerLines[i]);
-                    ol.outputLineCleared(e);
+                    if (ol != null) {
+                        ol.outputLineCleared(e);
+                    } else {
+                        //#56826 - debug messaging
+                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Warning: issue #56826 - There was a null OutputListener on line:" + listenerLines[i]);
+                    }
                 }
             } else {
                 if (Controller.log) Controller.log (this + ": No listeners to clear");

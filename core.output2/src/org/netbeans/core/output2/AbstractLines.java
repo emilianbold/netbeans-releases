@@ -497,9 +497,14 @@ abstract class AbstractLines implements Lines, Runnable {
     }
 
     public void addListener (int line, OutputListener l, boolean important) {
-        linesToListeners.put(line, l);
-        if (important) {
-            importantLines.add(line);
+        if (l == null) {
+            //#56826 - debug messaging
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Warning: Issue #56826 - Adding a null OutputListener for line:" + line);
+        } else {
+            linesToListeners.put(line, l);
+            if (important) {
+                importantLines.add(line);
+            }
         }
     }
     
