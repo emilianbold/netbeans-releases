@@ -113,6 +113,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private boolean useCustomBracketFinder = true;
     
     private boolean isXmlSyntax = false;
+    
+    private static final TagNameComparator TAG_NAME_COMPARATOR = new TagNameComparator();
 
     /** Creates new HTMLSyntaxSupport */
     
@@ -775,30 +777,31 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             };
             
             standardTagTagDatas = new TagInfo[standardJspTagDatas.length + 2 ];
-            standardTagTagDatas[0] = standardJspTagDatas[0];
-            standardTagTagDatas[1] = standardJspTagDatas[1];
+            standardTagTagDatas[0] = standardJspTagDatas[0]; //"attribute"
+            standardTagTagDatas[1] = standardJspTagDatas[1]; //"body"
             standardTagTagDatas[2] = new TagInfo ("doBody", null, TagInfo.BODY_CONTENT_EMPTY, url + "syntaxref2017.html", null, null,            // NOI18N
                                         new TagAttributeInfo[] { new TagAttributeInfo ("scope", false, url + "syntaxref2017.html#1006246#syntaxref20.html", false),           // NOI18N
                                           new TagAttributeInfo ("var", false, url + "syntaxref2017.html#1006234#1006240", false),           // NOI18N
                                           new TagAttributeInfo ("varReader", false, url + "syntaxref2017.html#1006240#1006246", false)});           // NOI18N
 
-            standardTagTagDatas[3] = standardJspTagDatas[2];
-            standardTagTagDatas[4] = standardJspTagDatas[3];
-            standardTagTagDatas[5] = standardJspTagDatas[4];
-            standardTagTagDatas[6] = standardJspTagDatas[5];
-            standardTagTagDatas[7] = standardJspTagDatas[6];
-            standardTagTagDatas[8] = new TagInfo ("invoke", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2021.html#8837#1003634", null, null,            // NOI18N
+            standardTagTagDatas[3] = standardJspTagDatas[2]; //"element"
+            standardTagTagDatas[4] = standardJspTagDatas[3]; //"expression"
+            standardTagTagDatas[5] = standardJspTagDatas[4]; //"fallback"
+            standardTagTagDatas[6] = standardJspTagDatas[5]; //"forward"
+            standardTagTagDatas[7] = standardJspTagDatas[6]; //"getProperty"
+            standardTagTagDatas[8] = standardJspTagDatas[7]; //"include"
+            standardTagTagDatas[9] = new TagInfo ("invoke", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2021.html#8837#1003634", null, null,            // NOI18N
                                         new TagAttributeInfo[] { new TagAttributeInfo ("fragment", true, url + "syntaxref2021.html#1007359#1007361", false),           // NOI18N
                                           new TagAttributeInfo ("scope", false, url + "syntaxref2021.html#1007373#1003634", false),           // NOI18N
                                           new TagAttributeInfo ("var", false, url + "syntaxref2021.html#1007361#1007367", false),           // NOI18N
                                           new TagAttributeInfo ("varReader", false, url + "syntaxref2021.html#1007367#1007373", false)});           // NOI18N
            
-            standardTagTagDatas[9] = standardJspTagDatas[7];
-            standardTagTagDatas[10] = standardJspTagDatas[8];
-            standardTagTagDatas[11] = standardJspTagDatas[9];
-            standardTagTagDatas[12] = standardJspTagDatas[10];
-            standardTagTagDatas[13] = standardJspTagDatas[11];
-            standardTagTagDatas[14] = standardJspTagDatas[12];
+            standardTagTagDatas[10] = standardJspTagDatas[8]; //"param"
+            standardTagTagDatas[11] = standardJspTagDatas[9]; //"params"
+            standardTagTagDatas[12] = standardJspTagDatas[10]; //"plugin"
+            standardTagTagDatas[13] = standardJspTagDatas[11]; //"setProperty"
+            standardTagTagDatas[14] = standardJspTagDatas[12]; //"text"
+            standardTagTagDatas[15] = standardJspTagDatas[13]; //"useBean"
         }
         
 
@@ -889,19 +892,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             };
             
             ArrayList list = new ArrayList();
-            for (int i = 0; i < xmlJspTagDatas.length; i++)
+            for (int i = 0; i < xmlJspTagDatas.length; i++){
                 list.add(xmlJspTagDatas[i]);
-            for (int i = 0; i < standardJspTagDatas.length; i++)
+            }
+            for (int i = 0; i < standardJspTagDatas.length; i++){
                 list.add(standardJspTagDatas[i]);
-            for (int i = 0; i < commonXMLTagDatas.length; i++)
+            }
+            for (int i = 0; i < commonXMLTagDatas.length; i++){
                 list.add(commonXMLTagDatas[i]);
+            }
          
             // sort the list of xml tags
-            Collections.sort(list,  new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
-                }
-            });
+            Collections.sort(list,  TAG_NAME_COMPARATOR);
             
             xmlJspTagDatas = new TagInfo[list.size()];
             for (int i = 0; i < list.size(); i++)
@@ -919,18 +921,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             };
             
             list = new ArrayList();
-            for (int i = 0; i < xmlTagFileTagDatas.length; i++)
+            for (int i = 0; i < xmlTagFileTagDatas.length; i++){
                 list.add(xmlTagFileTagDatas[i]);
-            for (int i = 0; i < standardTagTagDatas.length; i++)
+            }
+            for (int i = 0; i < standardTagTagDatas.length; i++){
                 list.add(standardTagTagDatas[i]);
-            for (int i = 0; i < commonXMLTagDatas.length; i++)
+            }
+            for (int i = 0; i < commonXMLTagDatas.length; i++){
                 list.add(commonXMLTagDatas[i]);
+            }
          
-            Collections.sort(list,  new Comparator() {
-                public int compare(Object o1, Object o2) {
-                    return ((TagInfo)o1).getTagName().compareTo(((TagInfo)o2).getTagName());
-                }
-            });
+            Collections.sort(list, TAG_NAME_COMPARATOR);
             xmlTagFileTagDatas = new TagInfo[list.size()];
             for (int i = 0; i < list.size(); i++)
                 xmlTagFileTagDatas[i] = (TagInfo)list.get(i);
@@ -1873,4 +1874,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
 
     }    
+    
+    private static class TagNameComparator implements Comparator{
+        public int compare(Object o1, Object o2) {
+            if (o1 == o2 || o1 == null || o2 == null){
+                return 0;
+            }
+            String tagNameOne = ((TagInfo)o1).getTagName();
+            String tagNameTwo = ((TagInfo)o2).getTagName();
+            if (tagNameOne == null || tagNameTwo == null){
+                return 0;
+            }
+            return tagNameOne.compareTo(tagNameTwo);
+        }
+    }
 }
