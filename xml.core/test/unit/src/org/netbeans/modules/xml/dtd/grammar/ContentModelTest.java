@@ -172,7 +172,26 @@ public class ContentModelTest extends NbTestCase {
         in = new InputEnumeration("conflict");
         gold = new InputEnumeration("qu ce se");        
         probe("((conflict,qu) | (conflict,ce?,se))", in, gold);
+        
+        in = new InputEnumeration("");
+        gold = new InputEnumeration("a b");
+        probe("(a*, b*)", in, gold);
+        
+        in = new InputEnumeration("a");
+        gold = new InputEnumeration("a b");
+        probe("(a*, b*)", in, gold);
                 
+        in = new InputEnumeration("a a a a a a");
+        gold = new InputEnumeration("a b");
+        probe("(a*, b*)", in, gold);
+        
+        in = new InputEnumeration("a b");
+        gold = new InputEnumeration("b");
+        probe("(a*, b*)", in, gold);
+                
+        in = new InputEnumeration("a b b b");
+        gold = new InputEnumeration("b");
+        probe("(a*, b*)", in, gold);
     }
 
     /**

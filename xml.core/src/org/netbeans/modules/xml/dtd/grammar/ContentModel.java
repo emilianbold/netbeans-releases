@@ -369,7 +369,7 @@ abstract class ContentModel {
                 if (accepted == false) {
                     return accept;
                 } else if (food.hasNext()) {
-                    if (++current >= max) {
+                    if (++current >= max && max > -1) {
                         return true;
                     };
                     peer.reset();
