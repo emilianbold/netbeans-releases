@@ -18,6 +18,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentConfigurationProvider;
+
+import javax.enterprise.deploy.spi.DeploymentConfiguration;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.model.DeployableObject;
 import org.openide.util.NbBundle;
@@ -40,6 +42,7 @@ public class InitialServerFileDistributor extends ServerProgress {
     ServerString serverString;
     DeploymentTarget dtarget;
     FileDeploymentLayout fileLayout;
+    DeploymentPlanSplitter splitter;
     Target target;
 
     /** Creates a new instance of InitialServerFileDistributor */
@@ -49,6 +52,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         this.dtarget = dtarget;
         this.target = target;
         fileLayout = serverString.getServerInstance().getFileDeploymentLayout();
+        splitter = serverString.getServerInstance().getServer().getDeploymentPlanSplitter();
     }
     
     public File distribute() {
@@ -60,7 +64,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         DeployableObject deployable = deployment.getDeployableObject(null);
         try {
             File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
-            _distribute(source.getArchiveContents(), dir);
+            _distribute(source.getArchiveContents(), dir, null);
 
             if (source instanceof J2eeModuleContainer) {
                 J2eeModule[] childModules = ((J2eeModuleContainer)source).getModules(null);
@@ -68,7 +72,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                     String uri = childModules[i].getUrl();
                     DeployableObject childModule = deployment.getDeployableObject(uri);
                     File subdir = fileLayout.getDirectoryForNewModule(dir, uri, childModule, deployment.getDeploymentConfiguration ());
-                    _distribute(childModules[i].getArchiveContents(), dir);
+                    _distribute(childModules[i].getArchiveContents(), subdir, uri);
                 }
             }
 
@@ -84,7 +88,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         return null;
     }
     
-    private void _distribute(Iterator rootedEntries, File dir) {
+    private void _distribute(Iterator rootedEntries, File dir, String childModuleUri) {
         LocalFileSystem lfs = null;
         FileLock lock = null;
 
@@ -107,6 +111,25 @@ public class InitialServerFileDistributor extends ServerProgress {
                     FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
                 }
             }
+            
+            // copying serverconfiguration files
+            DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
+            DeploymentConfiguration config = dcp.getDeploymentConfiguration();
+
+            //Pending use childModuleUri for getDeploymentPlanFileNames
+            DeployableObject deployable = dcp.getDeployableObject(childModuleUri);
+            //String[] rPaths = fileLayout.getDeploymentPlanFilenames(deployable.getModuleType());
+            String[] rPaths = fileLayout.getDeploymentPlanFilenames(null);
+            File configFile = dtarget.getConfigurationFile();
+            if (rPaths == null || rPaths.length == 0)
+                return;
+
+            File[] paths = new File[rPaths.length];
+            for (int n=0; n<rPaths.length; n++) {
+                paths[n] = new File(FileUtil.toFile(destRoot), rPaths[n]);
+            }
+            splitter.writeDeploymentPlanFiles(config, deployable, paths);
+            
         } catch (Exception e) {
             e.printStackTrace();
             String msg = NbBundle.getMessage(InitialServerFileDistributor.class, "MSG_IncrementalDeployFailed", e);
