@@ -43,7 +43,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
    <target name="standalone" depends="jars">
-     <copy file="base/run.sh" tofile="netbeans/standalone/run.sh" />
+     <copy file="base/run.sh" tofile="${target_dir}/run.sh" />
      <copy file="base/settings.properties" tofile="${target_dir}/settings.properties" />
 
      <mkdir dir="${target_dir}/ParserDB" />
