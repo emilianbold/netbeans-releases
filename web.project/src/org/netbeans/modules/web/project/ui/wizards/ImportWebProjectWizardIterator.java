@@ -467,7 +467,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         public void validate() throws WizardValidationException {
             File dirF = new File(panel.createdFolderTextField.getText());
             JButton ok = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
+            ok.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "ACS_IW_BuildFileDialog_OKButton_LabelMnemonic")); //NOI18N
+            ok.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildFileDialog_OK_LabelMnemonic").charAt(0)); //NOI18N
             JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
+            cancel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "ACS_IW_BuildFileDialog_CancelButton_LabelMnemonic")); //NOI18N
+            cancel.setMnemonic(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildFileDialog_Cancel_LabelMnemonic").charAt(0)); //NOI18N
+            
             final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
             if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
                 ActionListener actionListener = new ActionListener() {

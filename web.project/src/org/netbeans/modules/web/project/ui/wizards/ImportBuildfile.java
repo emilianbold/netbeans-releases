@@ -32,6 +32,8 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
     /** Creates new form ImportBuildfile */
     public ImportBuildfile(String filePath, JButton okButton) {
         initComponents();
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportBuildfile.class, "ACS_IW_BuildFileDialog_A11YDesc"));  // NOI18N
+        
         ok = okButton;
         this.filePath = filePath;
         ok.setEnabled(false);
@@ -62,17 +64,18 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(jLabelDesc, gridBagConstraints);
 
+        jLabelBuildName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_BuildFilename_LabelMnemonic").charAt(0));
         jLabelBuildName.setLabelFor(jTextFieldBuildName);
         jLabelBuildName.setText(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_BuildFilename_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jLabelBuildName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -83,16 +86,18 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldBuildName, gridBagConstraints);
+        jTextFieldBuildName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportBuildfile.class, "ACS_LBL_IW_BuildFilename_A11YDesc"));
 
+        jLabelCreatedFile.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_CreatedFile_LabelMnemonic").charAt(0));
         jLabelCreatedFile.setLabelFor(jTextFieldCreatedFile);
         jLabelCreatedFile.setText(NbBundle.getMessage(ImportBuildfile.class, "LBL_IW_CreatedFile_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
         add(jLabelCreatedFile, gridBagConstraints);
 
         jTextFieldCreatedFile.setEditable(false);
@@ -106,6 +111,7 @@ public class ImportBuildfile extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jTextFieldCreatedFile, gridBagConstraints);
+        jTextFieldCreatedFile.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportBuildfile.class, "ACS_LBL_IW_CreatedFile_A11YDesc"));
 
     }//GEN-END:initComponents
     

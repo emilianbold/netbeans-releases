@@ -40,7 +40,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     public ImportLocationVisual (ImportWebProjectWizardIterator.ThePanel panel) {
         this.panel = panel;
         initComponents ();
-        
+        this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ImportLocationVisual.class, "ACS_NWP1_NamePanel_A11YDesc"));  // NOI18N
+
         setName(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_IW_ImportTitle")); //NOI18N
         
         locationDocument = projectLocationTextField.getDocument ();
@@ -84,6 +85,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jLabelSrcLocationDesc, gridBagConstraints);
 
+        jLabelSrcLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_ImportLocation_LabelMnemonic").charAt(0));
         jLabelSrcLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelSrcLocation.setLabelFor(moduleLocationTextField);
         jLabelSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationSrc_Label"));
@@ -101,6 +103,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(moduleLocationTextField, gridBagConstraints);
+        moduleLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocation_A11YDesc"));
 
         jButtonSrcLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonSrcLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -114,6 +117,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonSrcLocation, gridBagConstraints);
+        jButtonSrcLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_IW_ImportLocationBrowse_A11YDesc"));
 
         jLabelPrjLocationDesc.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_LocationPrjDesc"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -124,6 +128,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 0);
         add(jLabelPrjLocationDesc, gridBagConstraints);
 
+        jLabelPrjName.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_LabelMnemonic").charAt(0));
         jLabelPrjName.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjName.setLabelFor(projectNameTextField);
         jLabelPrjName.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectName_Label"));
@@ -131,8 +136,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(jLabelPrjName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -141,7 +146,9 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(projectNameTextField, gridBagConstraints);
+        projectNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ProjectName_A11YDesc"));
 
+        jLabelPrjLocation.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_LabelMnemonic").charAt(0));
         jLabelPrjLocation.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabelPrjLocation.setLabelFor(projectLocationTextField);
         jLabelPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ProjectLocation_Label"));
@@ -158,6 +165,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(projectLocationTextField, gridBagConstraints);
+        projectLocationTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NPW1_ProjectLocation_A11YDesc"));
 
         jButtonPrjLocation.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_BrowseLocation_Button"));
         jButtonPrjLocation.addActionListener(new java.awt.event.ActionListener() {
@@ -171,15 +179,17 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jButtonPrjLocation, gridBagConstraints);
+        jButtonPrjLocation.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_BrowseLocation_A11YDesc"));
 
+        createdFolderLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_LablelMnemonic").charAt(0));
         createdFolderLabel.setLabelFor(createdFolderTextField);
         createdFolderLabel.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_CreatedProjectFolder_Lablel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(createdFolderLabel, gridBagConstraints);
 
         createdFolderTextField.setEditable(false);
@@ -191,7 +201,9 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
         add(createdFolderTextField, gridBagConstraints);
+        createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
+        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
         jLabelContextPath.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -199,8 +211,8 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         add(jLabelContextPath, gridBagConstraints);
 
         jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -218,6 +230,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
         add(jTextFieldContextPath, gridBagConstraints);
+        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
 
     }//GEN-END:initComponents
 
