@@ -26,8 +26,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true">
         <property name="javadoc.base" location="${basedir}"/>
-        <property name="javadoc.name" value="EditorAPI"/>
-        <property name="javadoc.title" value="Editor module API"/>
+        <property name="javadoc.name" value="EditorModuleAPI"/>
+        <property name="javadoc.title" value="Editor Module API"/>
 		<property name="javadoc.packages" value="org.netbeans.editor,org.netbeans.editor.ext,org.netbeans.modules.editor,org.netbeans.modules.editor.options"/>
         <property name="javadoc.classpath" refid="cp"/>
         <property name="javadoc.src" value="../../editor"/>
