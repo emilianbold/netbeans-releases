@@ -26,6 +26,8 @@ Microsystems, Inc. All Rights Reserved.
 
   
 
+  <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
+   
   
   <target name="prepare-nbjunit">
     <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
@@ -38,10 +40,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="compile" depends="init,prepare-nbjunit">
+    <echo message="Using ant jar ${ant.jar}"/>
     <path id="basecp">	
 	<pathelement location="src"/>
-        <fileset dir="external">
-          <include name="ant-1.*.jar"/>
+        <pathelement location="${ant.jar}"/>
+        <fileset dir="external">          
           <include name="junit*.jar"/>
         </fileset>
 	<pathelement location="lib/nbjunit.jar"/>
