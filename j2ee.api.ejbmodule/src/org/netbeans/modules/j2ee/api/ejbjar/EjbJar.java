@@ -87,4 +87,10 @@ public final class EjbJar {
     public FileObject getDeploymentDescriptor () {
         return impl.getDeploymentDescriptor();
     }
+    
+    /** Meta-inf
+     */
+    public FileObject getMetaInf() {
+        return impl.getMetaInf();
+    }
 }
