@@ -38,6 +38,7 @@ public class SimpleIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
             beanDescriptor = new BeanDescriptor(getBeanClass());
             beanDescriptor.setDisplayName(getString("LAB_SimpleIndentEngine"));
             beanDescriptor.setShortDescription(getString("HINT_SimpleIndentEngine"));
+            beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
         }
         return beanDescriptor;
     }

@@ -109,8 +109,6 @@ public class EditorModule extends ModuleInstall implements Runnable {
             );
         }
 
-        org.netbeans.modules.editor.options.ProjectHack.restored();
-        
         // Start listening on DataObject.Registry
         if (rl == null) {
             rl = new DORegistryListener();
@@ -140,8 +138,6 @@ public class EditorModule extends ModuleInstall implements Runnable {
 
     public void uninstalled() {
 
-        org.netbeans.modules.editor.options.ProjectHack.uninstalled();
-        
         // Options
         AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
         PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
