@@ -54,6 +54,20 @@ import org.openide.windows.CloneableOpenSupport;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
+import org.openide.util.LookupListener;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import javax.swing.AbstractAction;
+import java.awt.event.ActionEvent;
+import org.openide.util.WeakListener;
+import java.util.Iterator;
+import org.openide.text.Line;
+
+import org.openide.text.NbDocument;
+import org.openide.debugger.Debugger;
+import org.openide.debugger.Breakpoint;
+
+
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     
     private static final int AUTO_PARSING_DELAY = 2000;//ms
@@ -128,6 +142,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         });
         
         encoding = null;
+                
     }
     
     /** Restart the timer which starts the parser after the specified delay.
@@ -316,6 +331,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         
         /** Listener on caret movements */
         CaretListener caretListener;
+        //BaseJspEditorSupport support;
         
         public BaseJspEditor() {
             super();
@@ -324,6 +340,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         /** Creates new editor */
         public BaseJspEditor(BaseJspEditorSupport s) {
             super(s);
+            //this.support = s;
             initialize();
         }
         
@@ -349,7 +366,44 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                     ((BaseJspEditorSupport)cloneableEditorSupport()).restartTimer(true);
                 }
             };
+            getActionMap().put("org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction", new ToggleBreakpointAction()); // NOI18N  
         }
+        
+        /**
+         * Locally bound action to toggle breakpoint on the current line.
+         * @see "#29914"
+         */
+        private final class ToggleBreakpointAction extends AbstractAction implements LookupListener {
+            private final Lookup.Result debuggerR;
+            
+            public ToggleBreakpointAction() {
+                debuggerR = Lookup.getDefault().lookup(new Lookup.Template(Debugger.class));
+                debuggerR.addLookupListener((LookupListener)WeakListener.create(LookupListener.class, this, debuggerR));
+                resultChanged(null);
+            }
+            
+            public void actionPerformed(ActionEvent e) {
+                int lineNumber = NbDocument.findLineNumber (
+                ((BaseJspEditorSupport)cloneableEditorSupport()).getDocument(), 
+                    getEditorPane ().getCaret ().getDot ()
+                );
+                Line line = ((BaseJspEditorSupport)cloneableEditorSupport()).getLineSet ().getCurrent (lineNumber);
+                synchronized (this) {
+                    Iterator it = debuggerR.allInstances().iterator();
+                    if (it.hasNext()) {
+                        Debugger debugger = (Debugger)it.next();
+                        Breakpoint breakpoint = debugger.findBreakpoint (line);
+                        if (breakpoint == null)
+                            debugger.createBreakpoint (line);
+                        else
+                            breakpoint.remove ();
+                    }
+                }
+            }
+            public void resultChanged(LookupEvent e) {
+                setEnabled(!debuggerR.allInstances().isEmpty());
+            }
+        }        
         
         /** Returns Editor pane for private use.
          * @return Editor pane for private use.
