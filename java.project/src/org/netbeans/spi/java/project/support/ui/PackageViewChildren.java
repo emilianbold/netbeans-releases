@@ -448,12 +448,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                    new ProxyLookup(new Lookup[] {
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
-                        Lookups.singleton(SearchInfoFactory.createSearchInfo(
+                        Lookups.singleton(PackageRootNode.alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfo(
                                                   dataFolder.getPrimaryFile(),
                                                   false,      //not recursive
                                                   new FileObjectFilter[] {
                                                           SearchInfoFactory.VISIBILITY_FILTER,
-                                                          SearchInfoFactory.SHARABILITY_FILTER}))
+                                                          SearchInfoFactory.SHARABILITY_FILTER}))),
                    })
             );
             this.root = root;

@@ -22,6 +22,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import javax.swing.Action;
@@ -46,6 +47,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 
 
@@ -68,7 +70,7 @@ final class PackageRootNode extends AbstractNode {
         super( new PackageViewChildren( group.getRootFolder() ),
                new ProxyLookup( new Lookup[] { createLookup ( group ),
                                                new AbstractLookup( ic )} ) );
-        ic.add( SearchInfoFactory.createSearchInfoBySubnodes( this ) );
+        ic.add(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(this)));
         this.group = group;
         setName( group.getName() );
         setDisplayName( group.getDisplayName() );
@@ -306,6 +308,32 @@ final class PackageRootNode extends AbstractNode {
             return "PathFinder[" + group + "]"; // NOI18N
         }
                     
+    }
+    
+    /**
+     * Produce a {@link SearchInfo} variant that is always searchable, for speed.
+     * @see "#48685"
+     */
+    static SearchInfo alwaysSearchableSearchInfo(SearchInfo i) {
+        return new AlwaysSearchableSearchInfo(i);
+    }
+    
+    private static final class AlwaysSearchableSearchInfo implements SearchInfo {
+        
+        private final SearchInfo delegate;
+        
+        public AlwaysSearchableSearchInfo(SearchInfo delegate) {
+            this.delegate = delegate;
+        }
+
+        public boolean canSearch() {
+            return true;
+        }
+
+        public Iterator/*<DataObject>*/ objectsToSearch() {
+            return delegate.objectsToSearch();
+        }
+        
     }
     
 }

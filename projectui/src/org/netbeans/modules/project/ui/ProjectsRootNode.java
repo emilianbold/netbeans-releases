@@ -47,6 +47,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
+import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
 
 /** Root node for list of open projects
@@ -299,8 +300,9 @@ public class ProjectsRootNode extends AbstractNode {
                    addSearchInfo
                    ? new ProxyLookup( new Lookup[] {
                          n.getLookup(),
-                         Lookups.singleton( SearchInfoFactory
-                                            .createSearchInfoBySubnodes( n ))} )
+                         Lookups.singleton(alwaysSearchableSearchInfo(SearchInfoFactory
+                                            .createSearchInfoBySubnodes(n))),
+                    })
                    : n.getLookup() );
             OpenProjectList.getDefault().addPropertyChangeListener( WeakListeners.propertyChange( this, OpenProjectList.getDefault() ) );
         }
@@ -333,6 +335,32 @@ public class ProjectsRootNode extends AbstractNode {
         private boolean isMain() {
             Project p = (Project)getLookup().lookup( Project.class );
             return p != null && OpenProjectList.getDefault().isMainProject( p );
+        }
+        
+    }
+    
+    /**
+     * Produce a {@link SearchInfo} variant that is always searchable, for speed.
+     * @see "#48685"
+     */
+    static SearchInfo alwaysSearchableSearchInfo(SearchInfo i) {
+        return new AlwaysSearchableSearchInfo(i);
+    }
+    
+    private static final class AlwaysSearchableSearchInfo implements SearchInfo {
+        
+        private final SearchInfo delegate;
+        
+        public AlwaysSearchableSearchInfo(SearchInfo delegate) {
+            this.delegate = delegate;
+        }
+
+        public boolean canSearch() {
+            return true;
+        }
+
+        public Iterator/*<DataObject>*/ objectsToSearch() {
+            return delegate.objectsToSearch();
         }
         
     }
