@@ -371,6 +371,18 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
     
+    <!-- Scan Classpath test bag -->    
+    <testbag testattribs="measure_scan_40" prio="100"
+                 executor="ide_performance_scan" compiler="qa-performance-compiler-40" 
+                 name="Measure Classpath Scan and time to create new projects for NB4.0" >
+	<testset dir="qa-functional/src">
+	    <patternset>
+	    
+		<include name="gui/scanclasspath/ScanClasspath.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+    
     
     <!-- Temp -->    
     <testbag testattribs="temp" prio="16"
@@ -391,7 +403,7 @@ Microsystems, Inc. All Rights Reserved.
     <executor name="ide_performance_java" antfile="build-qa-functional.xml" target="runidetest_java"/>
     <executor name="ide_performance_scan" antfile="build-qa-functional.xml" target="runidetest_scan" />
     
-    
     <compiler name="qa-performance-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true"/>
+    <compiler name="qa-performance-compiler-40" antfile="build-qa-functional.xml" target="qa-functional-compiler-40"/>
     
 </mconfig>

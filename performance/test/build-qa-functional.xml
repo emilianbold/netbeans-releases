@@ -193,8 +193,48 @@ Microsystems, Inc. All Rights Reserved.
                 <path refid="performance.testutilities.path"/>
                 <pathelement path="${compile.destdir}"/>
                 <pathelement path="${junit.classpath}"/>
+                <pathelement location="../insanelib/dist/insanelib.jar"/>
             </classpath>
         </internalExecution>
+    </target>
+    
+    
+    <!-- ========================================================================== -->
+    <!-- Compiler and classpath definition for NB4.0 Classpath scanning measurement -->
+    <!-- ========================================================================== -->
+    
+    <!-- Compiler for testing classpath scan on NB4.0 -->
+    
+    <path id="compiletest.classpath.40">        
+        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+        <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
+        
+        <pathelement location="${java.dir}/${nb.modules.dir}/org-netbeans-modules-java.jar"/>
+        
+        <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>
+        <pathelement location="${nball.dir}/xtest/lib/nbjunit-ide.jar"/>
+<!-- 4.0 
+        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules.dir}/org-openide-execution.jar"/>
+            
+        <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
+        <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
+-->                
+    </path>
+    
+    
+    <target name="qa-functional-compiler-40">
+        <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
+            <classpath>
+                <path refid="compiletest.classpath.40"/>
+                <path refid="jemmy.and.jelly.path"/>
+                <path refid="performance.testutilities.path"/>
+            </classpath>
+        </buildTests>
     </target>
     
     
