@@ -343,15 +343,9 @@ public class EjbJarProjectProperties {
         projectProperties.setProperty( JAVAC_TEST_CLASSPATH, javac_test_cp );
         projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
         
-        //Handle platform selection
+        //Handle platform selection and javac.source javac.target properties
         SpecificationVersion sourceLevel = (SpecificationVersion) JAVAC_SOURCE_MODEL.getSelectedItem();
         PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem(), sourceLevel);
-        
-        //Save javac.source
-        if (JAVAC_SOURCE_MODEL.getSelectedItem()!=null) {
-            //Not broken platform
-            projectProperties.setProperty(JAVAC_SOURCE, JAVAC_SOURCE_MODEL.getSelectedItem().toString());
-        }
                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N
