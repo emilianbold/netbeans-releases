@@ -262,7 +262,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         xtestLabel.setDisplayedMnemonic('X');
         xtestLabel.setLabelFor(xtestField);
         xtestLabel.setText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "LBL_TestWorkspaceXTestHome"));
-        xtestLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
+        xtestLabel.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHome"));
         xtestLabel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -274,7 +274,7 @@ public class TestWorkspaceSettingsPanel extends JPanel implements WizardDescript
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         panel.add(xtestLabel, gridBagConstraints);
 
-        xtestField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_NetbeansHome"));
+        xtestField.setToolTipText(org.openide.util.NbBundle.getMessage(TestWorkspaceSettingsPanel.class, "TTT_XTestHome"));
         xtestField.setEnabled(false);
         xtestField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
