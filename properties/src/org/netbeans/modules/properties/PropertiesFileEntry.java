@@ -44,7 +44,7 @@ import org.openide.util.WeakListener;
 
 /** This entry represents one properties file which is part of bunlde of properties files with same basic name.
  * This entry has some dataobject attributes, has cookies, node delegate etc. */
-public class PropertiesFileEntry extends PresentableFileEntry {
+public class PropertiesFileEntry extends PresentableFileEntry implements CookieSet.Factory {
 
     /** Basic name of bundle .properties file. */
     private String basicName;
@@ -52,9 +52,6 @@ public class PropertiesFileEntry extends PresentableFileEntry {
     /** Structure handler for .properties file represented by this instance. */
     private transient StructHandler propStruct;
 
-    /** Helper variable for lazy cookie initialization. Flag if cookies were initialized. */
-    private transient boolean cookiesInitialized = false;
-    
     /** Generated serial version UID. */    
     static final long serialVersionUID =-3882240297814143015L;
     
@@ -68,49 +65,16 @@ public class PropertiesFileEntry extends PresentableFileEntry {
             basicName = getFile().getName();
         else
             basicName = fo.getName();
+        
+        getCookieSet().add(PropertiesEditorSupport.class, this);
     }
 
-    
-    /** Overrides superclass method. */
-    public CookieSet getCookieSet() {
-        synchronized(this) {
-            if (!cookiesInitialized) {
-                initCookieSet();
-            }
-        }
-        
-        return super.getCookieSet();
-    }
-    
-    /** 
-     * Overrides superclass method.
-     * Look for a cookie in the current cookie set matching the requested class.
-     *
-     * @param clazz the class to look for
-     * @return an instance of that class, or <code>null</code> if this class of cookie is not supported
-     */
-    public Node.Cookie getCookie(Class clazz) {
-        if(CompilerCookie.class.isAssignableFrom(clazz)) {
+    /** Implements <code>CookieSet.Factory</code> interface method. */
+    public Node.Cookie createCookie(Class clazz) {
+        if(clazz.isAssignableFrom(PropertiesEditorSupport.class)) {
+            return new PropertiesEditorSupport(this);
+        } else
             return null;
-        }
-        
-        synchronized(this) {
-            if(!cookiesInitialized) {
-                initCookieSet();
-            }
-        }
-        
-        return super.getCookie(clazz);
-    }
-
-    /** Helper method. Actually lazilly creates cookies when first asked. */
-    private synchronized void initCookieSet() {
-        // Necessary to set flag before add cookieSet method, cause
-        // it fires property event change and some Cookie action in its
-        // enable method could call initCookieSet again. 
-        cookiesInitialized = true;
-        
-        super.getCookieSet().add(new PropertiesEditorSupport(this));
     }
     
     /** Creates a node delegate for this entry. Implements superclass abstract method. */

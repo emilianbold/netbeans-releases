@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 
 import org.openide.actions.*;
 import org.openide.DialogDescriptor;
+import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.NotifyDescriptor;
@@ -44,7 +45,7 @@ import org.openide.util.NbBundle;
  * can be unfinaled if desired.
  * @author Ian Formanek
  */
-public final class PropertiesLocaleNode extends FileEntryNode {
+public final class PropertiesLocaleNode extends FileEntryNode implements CookieSet.Factory {
 
     /** Icon base for the <code>PropertiesDataNode</code> node. */
     private static final String LOCALE_ICON_BASE = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
@@ -58,9 +59,17 @@ public final class PropertiesLocaleNode extends FileEntryNode {
         setDefaultAction (SystemAction.get(OpenAction.class));
         setShortDescription(messageToolTip());
 
-        getCookieSet().add(((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport());
+        getCookieSet().add(PropertiesOpen.class, this);
     }
 
+    
+    /** Implements <code>CookieSet.Factory</code> interface method. */
+    public Node.Cookie createCookie(Class clazz) {
+        if(clazz.isAssignableFrom(PropertiesOpen.class))
+            return ((PropertiesDataObject)getFileEntry().getDataObject()).getOpenSupport();
+        else
+            return null;
+    }
     
     /** Lazily initialize set of node's actions.
      * Overrides superclass method.
