@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.mail.all" value=""/>
     <property name="xtest.mail.failed" value=""/>
     
-    <target name="init" depends="check" unless="tasks-defined">
+    <target name="init" depends="buildxtest,check" unless="tasks-defined">
         <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" 
                  classpath="lib/xtest.jar"/>
         <nbtaskdef classpath="lib/xtest.jar">
@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         <echo message="You should provide target to execute, see 'ant -projecthelp'"/>
     </target>
     
-    <target name="runtests" depends="configuration,buildxtest"
+    <target name="runtests" depends="configuration"
             description="Main target for running tests according to config and creating report.">
     
         <antcall target="executor">
