@@ -27,7 +27,7 @@ import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class TestCreatorTest extends NbTestCase {
+public class TestCreatorTest extends NbTestCase implements DataLoader.RecognizedFiles {
 
     public TestCreatorTest(java.lang.String testName) {
         super(testName);
@@ -58,7 +58,7 @@ public class TestCreatorTest extends NbTestCase {
         FileObject foTrg = fsData.findResource("trg");
         FileObject foPass = fsData.findResource("pass");
 
-        DataObject doTempl = new JavaDataObject(fsData.findResource(CLASS_TEMPLATE), jdl);
+        DataObject doTempl = jdl.findDataObject (fsData.findResource(CLASS_TEMPLATE), this);
         DataFolder doTrg = (DataFolder) DataFolder.find(foTrg);
    
         FileObject foList[] = foSrc.getChildren();
@@ -71,7 +71,7 @@ public class TestCreatorTest extends NbTestCase {
                 File        fTmp = new File(appendSlash(fsData.getRootDirectory().getPath()) + appendSlash(foTrg.getNameExt()) + name + ".java");
                 
                 fTmp.delete();
-                doSrcEntry = new JavaDataObject(foEntry, jdl);
+                doSrcEntry = jdl.findDataObject (foEntry, this);
                 doTrgEntry = doTempl.createFromTemplate(doTrg, name);
                 
                 ClassElement ceSrc = getClassElementFromDO(doSrcEntry);
@@ -160,7 +160,7 @@ public class TestCreatorTest extends NbTestCase {
         fsData.setRootDirectory(new File(appendSlash(m_pathData) + "CreateTestSuite"));
         
         FileObject foPass = fsData.findResource(TESTSUITE + ".java.pass");
-        DataObject doTempl = new JavaDataObject(fsData.findResource(CLASS_TEMPLATE), jdl);
+        DataObject doTempl = jdl.findDataObject (fsData.findResource(CLASS_TEMPLATE), this);
 
         File fTmp = new File(appendSlash(fsData.getRootDirectory().getPath()) + TESTSUITE + ".java");
 
@@ -200,29 +200,29 @@ public class TestCreatorTest extends NbTestCase {
         fsData.setRootDirectory(new File(appendSlash(m_pathData) + "IsClassTestable"));
         
         foClass = fsData.findResource("SimpleClass.java");
-        doClass = new JavaDataObject(foClass, jdl);
+        doClass = jdl.findDataObject (foClass, this);
         clazz = getClassElementFromDO(doClass);
         assertTrue(true == TestCreator.isClassTestable(clazz));
 
         foClass = fsData.findResource("NonPublicClass.java");
-        doClass = new JavaDataObject(foClass, jdl);
+        doClass = jdl.findDataObject (foClass, this);
         clazz = getClassElementFromDO(doClass);
         assertTrue(false == TestCreator.isClassTestable(clazz));
         
         foClass = fsData.findResource("AbstractClass.java");
-        doClass = new JavaDataObject(foClass, jdl);
+        doClass = jdl.findDataObject (foClass, this);
         clazz = getClassElementFromDO(doClass);
         assertTrue(true == TestCreator.isClassTestable(clazz));
         
         foClass = fsData.findResource("SimpleInterface.java");
-        doClass = new JavaDataObject(foClass, jdl);
+        doClass = jdl.findDataObject (foClass, this);
         clazz = getClassElementFromDO(doClass);
         assertTrue(false == TestCreator.isClassTestable(clazz));
 
         js.setGenerateExceptionClasses(false);
         assertTrue(false == js.isGenerateExceptionClasses());
         foClass = fsData.findResource("ExceptionClass.java");
-        doClass = new JavaDataObject(foClass, jdl);
+        doClass = jdl.findDataObject (foClass, this);
         clazz = getClassElementFromDO(doClass);
         assertTrue(false == TestCreator.isClassTestable(clazz));
         
@@ -305,4 +305,8 @@ public class TestCreatorTest extends NbTestCase {
         js.setBodyContent(flag); assertTrue(flag == js.isBodyContent());
         js.setJavaDoc(flag); assertTrue(flag == js.isJavaDoc());
     }
+    
+    public void markRecognized(FileObject fo) {
+    }
+    
 }
