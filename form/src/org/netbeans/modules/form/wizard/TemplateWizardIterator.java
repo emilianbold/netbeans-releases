@@ -23,75 +23,78 @@ import javax.swing.event.*;
 import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.src.*;
+import org.openide.cookies.SaveCookie;
 import org.openide.cookies.SourceCookie;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 
-import org.netbeans.modules.java.ui.wizard.JavaWizardIterator;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 
 /**
  * Special template wizard iterator for BeanForm template - requires to
  * specify superclass additionally.
- * [Unfortunately this class needs to extend JavaWizardIterator.]
  *
- * @author Tomas Pavek
+ * @author Tomas Pavek, Jan Stola
  */
 
-class TemplateWizardIterator extends JavaWizardIterator {
+class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
 
-    private transient WizardDescriptor.Panel[] panels;
+    private transient WizardDescriptor.Panel superclassPanel;
+    private transient boolean superclassPanelCurrent;
     private transient int panelIndex;
+    private transient WizardDescriptor.InstantiatingIterator delegateIterator;
 
-    private static JavaWizardIterator instance;
+    private static TemplateWizardIterator instance;
 
-    public static synchronized JavaWizardIterator singleton() {
+    public static synchronized TemplateWizardIterator singleton() {
         if (instance == null)
             instance = new TemplateWizardIterator();
         return instance;
     }
+    
+    public TemplateWizardIterator() {
+        delegateIterator = JavaTemplates.createJavaTemplateIterator();
+    }
 
-    public void initialize(TemplateWizard wizard) {
-        super.initialize(wizard);
-        if (panels == null) {
-            WizardDescriptor.Panel panel1 = wizard.targetChooser();
-            WizardDescriptor.Panel panel2 = new SuperclassWizardPanel();
-
+    public void initialize(WizardDescriptor wizard) {
+        delegateIterator.initialize(wizard);
+        superclassPanelCurrent = false;
+        if (superclassPanel == null) {
+            superclassPanel = new SuperclassWizardPanel();
+            
             ResourceBundle bundle = NbBundle.getBundle(TemplateWizardIterator.class);
-            String[] panelNames = new String[] {
-                bundle.getString("CTL_NewFormTitle"), // NOI18N
-                bundle.getString("CTL_SuperclassTitle") }; // NOI18N
-
-            Component comp1 = panel1.getComponent();
-            if (comp1 instanceof javax.swing.JComponent) {
-                comp1.setName(bundle.getString("CTL_NewFormTitle")); // NOI18N
-                ((javax.swing.JComponent)comp1).putClientProperty(
-                    "WizardPanel_contentData", panelNames); // NOI18N
-            }
-
-            panels = new WizardDescriptor.Panel[] { panel1, panel2 };
-        }
+            JComponent comp = (JComponent)delegateIterator.current().getComponent();
+            String[] contentData = (String[])comp.getClientProperty("WizardPanel_contentData"); // NOI18N
+            String[] newContentData = new String[contentData.length+1];
+            System.arraycopy(contentData, 0, newContentData, 0, contentData.length);
+            newContentData[contentData.length] = bundle.getString("CTL_SuperclassTitle"); // NOI18N
+            comp.putClientProperty("WizardPanel_contentData", newContentData); // NOI18N
+        }    
     }
 
-    public void uninitialize(TemplateWizard wiz) {
-        super.uninitialize(wiz);
-        panels = null;
-        panelIndex = 0;
+    public void uninitialize(WizardDescriptor wizard) {
+        delegateIterator.uninitialize(wizard);
+        superclassPanel = null;
     }
 
-    public Set instantiate(TemplateWizard wiz)
-        throws IOException, IllegalArgumentException
-    {
-        Set set = super.instantiate(wiz);
+    public Set instantiate() throws IOException, IllegalArgumentException {
+        Set set = delegateIterator.instantiate();
         
         try {
-            DataObject dobj = (DataObject) set.iterator().next();
+            FileObject template = (FileObject) set.iterator().next();
+            DataObject dobj = DataObject.find(template);
             SourceCookie src = (SourceCookie) dobj.getCookie(SourceCookie.class);
             if (src != null) {
                 ClassElement[] classes = src.getSource().getClasses();
                 if (classes != null && classes.length > 0) {
                     ClassElement formClass = classes[0];
                     String superclassName =
-                        ((SuperclassWizardPanel)panels[1]).getSuperclassName();
+                        ((SuperclassWizardPanel)superclassPanel).getSuperclassName();
                     formClass.setSuperclass(Identifier.create(superclassName));
+                    SaveCookie savec = (SaveCookie) dobj.getCookie(SaveCookie.class);
+                    if (savec != null) {
+                        savec.save();
+                    }
                 }
             }
         }
@@ -101,34 +104,52 @@ class TemplateWizardIterator extends JavaWizardIterator {
     }
 
     public WizardDescriptor.Panel current() {
-        return panels[panelIndex];
+        return superclassPanelCurrent ? superclassPanel : delegateIterator.current();
     }
 
     public boolean hasNext() {
-        return panelIndex < 1;
+        return !superclassPanelCurrent;
     }
     
     public boolean hasPrevious() {
-        return panelIndex > 0;
+        return superclassPanelCurrent ? true : delegateIterator.hasPrevious();
     }
     
     public void nextPanel() {
-        if (panelIndex < 1)
-            panelIndex++;
-        else
-            throw new NoSuchElementException();
+        if (delegateIterator.hasNext()) {
+            delegateIterator.nextPanel();
+        } else {
+            if (superclassPanelCurrent) {
+                throw new NoSuchElementException();
+            } else {
+                superclassPanelCurrent = true;
+            }
+        }
     }
     
     public void previousPanel() {
-        if (panelIndex > 0)
-            panelIndex--;
-        else
-            throw new NoSuchElementException();
+        if (superclassPanelCurrent) {
+            superclassPanelCurrent = false;
+        } else {
+            delegateIterator.previousPanel();
+        }
+    }
+    
+    public void addChangeListener(ChangeListener l) {
+        delegateIterator.addChangeListener(l);
+    }
+    
+    public String name() {
+        return superclassPanelCurrent ? "Ahoj" : delegateIterator.name();
+    }
+    
+    public void removeChangeListener(ChangeListener l) {
+        delegateIterator.removeChangeListener(l);
     }
 
     // ---------
 
-    static class SuperclassWizardPanel implements WizardDescriptor.FinishPanel {
+    static class SuperclassWizardPanel implements WizardDescriptor.FinishablePanel {
 
         private SuperclassPanel panelUI;
 
@@ -163,6 +184,11 @@ class TemplateWizardIterator extends JavaWizardIterator {
         public org.openide.util.HelpCtx getHelp () {
             return new org.openide.util.HelpCtx("gui.creatingforms"); // NOI18N
         }
+        
+        public boolean isFinishPanel() {
+            return true;
+        }
+        
     }
 
     // -------
@@ -225,4 +251,5 @@ class TemplateWizardIterator extends JavaWizardIterator {
     private Object readResolve() {
         return singleton();
     }
+    
 }
