@@ -325,6 +325,24 @@ public abstract class NbTopManager extends TopManager {
 	((NbBrowser)htmlViewer).showUrl (url);
     }
 
+    private static WindowManager wmgr = null;
+    /** @return a window manager impl or null */
+    private static synchronized WindowManager getDefaultWindowManager() {
+        if (wmgr == null) {
+            wmgr = (WindowManager)Lookup.getDefault().lookup(WindowManager.class);
+        }
+        return wmgr;
+    }
+    /** @return the main window from the window manager impl or null */
+    static Frame getMainWindow() {
+        WindowManager m = getDefaultWindowManager();
+        if (m != null) {
+            return m.getMainWindow();
+        } else {
+            return null;
+        }
+    }
+
 
     /** Adds new explorer manager that will rule the selection of current
     * nodes until the runnable is running.
@@ -333,7 +351,10 @@ public abstract class NbTopManager extends TopManager {
     * @param em explorer manager 
     */
     public void attachExplorer (Runnable run, ExplorerManager em) {
-        ((WindowManagerImpl)WindowManager.getDefault()).attachExplorer (run, em);
+        WindowManager m = getDefaultWindowManager();
+        if (m instanceof WindowManagerImpl) {
+            ((WindowManagerImpl)m).attachExplorer(run, em);
+        }
     }
 
     /** Creates new dialog.
@@ -347,7 +368,7 @@ public abstract class NbTopManager extends TopManager {
                     return new NbDialog(d, NbPresenter.currentModalDialog);
                 }
                 else {
-                    return new NbDialog(d, WindowManager.getDefault().getMainWindow());
+                    return new NbDialog(d, getMainWindow());
                 }
             }
         });
@@ -387,13 +408,13 @@ public abstract class NbTopManager extends TopManager {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbDialog((DialogDescriptor) descriptor, NbPresenter.currentModalDialog);
                         } else {
-                            presenter = new NbDialog((DialogDescriptor) descriptor, WindowManager.getDefault().getMainWindow());
+                            presenter = new NbDialog((DialogDescriptor) descriptor, getMainWindow());
                         }
                     } else {
                         if (NbPresenter.currentModalDialog != null) {
                             presenter = new NbPresenter(descriptor, NbPresenter.currentModalDialog, true);
                         } else {
-                            presenter = new NbPresenter(descriptor, WindowManager.getDefault().getMainWindow(), true);
+                            presenter = new NbPresenter(descriptor, getMainWindow(), true);
                         }
                     }
 
@@ -872,7 +893,13 @@ public abstract class NbTopManager extends TopManager {
                 Lkp lkp = (Lkp)lookup;
                 lkp.initializeLookup ();
                 // Wait for the lookup initialization to better measure module startups
-                lkp.initTask.waitFinished();
+                Task t;
+                synchronized (lkp) {
+                    t = lkp.initTask;
+                }
+                if (t != null) {
+                    t.waitFinished();
+                }
             }
         }
         
