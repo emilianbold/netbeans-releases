@@ -28,7 +28,14 @@ Microsystems, Inc. All Rights Reserved.
     <property name="useSystemLookAndFeel">False</property>  
   </xsl:template>
 
-  
+  <!-- Set explicitely background color for Unix/Metal LookAndFell -->
+  <xsl:template match="section[@name='Installer']/wizard[@name='Install']/interface[@name='swing']/property[@name='backgroundColor']">
+    <property name="backgroundColor">230,230,230</property>
+  </xsl:template>
+  <xsl:template match="section[@name='Uninstaller']/wizard[@name='Uninstall']/interface[@name='swing']/property[@name='backgroundColor']">
+    <property name="backgroundColor">230,230,230</property>
+  </xsl:template>
+                                                                                                                                                                               
   <!-- turn off generation of Win32 installer -->
   <xsl:template match="section/buildConfiguration/property/arrayItem/property/arrayItem[@type='com.installshield.wizard.platform.win32.Win32LauncherDistribution']/property[@name='enabled']">
     <property name="enabled">False</property>  
