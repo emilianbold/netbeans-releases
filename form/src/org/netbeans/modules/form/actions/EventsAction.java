@@ -256,8 +256,7 @@ public class EventsAction extends CookieAction {
 
                             if (event.getHandlers().size() == 0)
                                 event.createDefaultEventHandler();
-                            else
-                                event.gotoEventHandler();
+                            event.gotoEventHandler();
                         }
                     });
                 }
