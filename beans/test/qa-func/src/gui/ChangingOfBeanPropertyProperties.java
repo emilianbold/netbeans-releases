@@ -91,7 +91,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
     public void tearDown() {
         ((SaveAllAction) SaveAllAction.findObject(SaveAllAction.class, true)).performAction();
         
-        Utilities.delete(NAME_TEST_FILE + ".java");
+//        Utilities.delete(NAME_TEST_FILE + ".java");
     }
     
     /** - Create an empty class
@@ -421,6 +421,8 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         eo.insert("        return myProperty;\n", 39, 1);
         new EventTool().waitNoEvent(500);
         eo.insert("    }\n", 40, 1);
+        new EventTool().waitNoEvent(500);
+        eo.insert("\n", 41, 1);
         new EventTool().waitNoEvent(500);
         
         eo.insert("    public void setMyProperty(String value) {\n", 42, 1);
