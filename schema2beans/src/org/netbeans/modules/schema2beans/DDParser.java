@@ -432,7 +432,7 @@ public class DDParser implements Iterator {
 	}
 	
 	while (parse != null &&
-	(parse.startsWith("/") || parse.startsWith(".")))	// NOI18N
+           (parse.startsWith("/") || parse.startsWith(".")))	// NOI18N
 	    parse = parse.substring(1);
 	while (parse != null && parse.endsWith("/"))	// NOI18N
 	    parse = parse.substring(0, parse.length()-1);
@@ -524,7 +524,7 @@ public class DDParser implements Iterator {
 	    if (!found) {
             throw new NoSuchElementException(Common.getMessage(
                              "NotFoundInPropertyList_msg", name,
-                             root.dumpBeanNode()));
+                             root.toString()));
 	    }
 	    cur = cur.child;
 	} while (cur != null && bean != null);
