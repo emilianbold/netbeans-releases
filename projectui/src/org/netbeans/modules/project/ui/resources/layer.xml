@@ -91,8 +91,6 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         
         <folder name="Hidden">
-            <!-- Hide masterfs's JAR FS provider -->
-            <file name="JarFileSystemProvider.instance_hidden"/>
             <!-- Temporary VCS FS provider -->
             <file name="HackedVCSProvider.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.HackedVCSProvider" />
@@ -156,14 +154,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-project-ui-RecentProjectsAction.instance"/>            
                         
             <attr name="org-netbeans-modules-project-ui-RecentProjectsAction.instance/Separator3.instance" boolvalue="true" />
-                                    
-            <!-- Hide existing actions -->
-            <file name="org-netbeans-core-actions-NewTemplateCallableAction.instance_hidden"/>
-            <file name="org-netbeans-core-actions-NewFileSystemAction.instance_hidden"/> <!-- Mount FS -->
-            <file name="org-netbeans-core-actions-NewFileSystemAction.instance_hidden"/> <!-- Mount FS -->
-            <file name="org-netbeans-core-actions-UnmountFSAction.instance_hidden"/> <!-- Unmount FS -->
-            <!-- Do NOT hide org-netbeans-core-actions-RefreshAllFilesystemsAction.instance -->
-            <file name="Separator1.instance_hidden"/>
         </folder>
         
         <attr name="View/BuildProject" boolvalue="true" />
@@ -420,21 +410,6 @@ Microsystems, Inc. All Rights Reserved.
     
     </folder>
         
-    <folder name="Mount"> 
-        <!-- XXX Mounts all roots into explorer
-             Replace with masterFS in core/ui and remove hiding in core/ide -->
-<!--        <file name="PrjAllRoots.instance">
-            <attr name="instanceClass" stringvalue="[Lorg.openide.filesystems.FileSystem;" /> 
-            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UIUtils.allRoots" />
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
-        </file>  -->
-        
-        <!-- XXX Hide the sample from userguide
-             Replace the userguide sample with some real project later -->        
-        <file name="org-netbeans-modules-usersguide-sampledir.settings_hidden" url="sampledir.xml"/>
-        
-    </folder>
-
     <!-- Shortcuts for the new actions -->    
     
     <folder name="Shortcuts">

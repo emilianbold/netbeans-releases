@@ -8,11 +8,12 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+
     <folder name="Menu">
         <folder name="Help">
             <!-- Replace normal Contents item with our own which shows UG home page. -->
@@ -37,18 +38,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-usersguide-below-regular.txt"/>
         </folder>
     </folder>
-    <!-- #13860: mount the examples dir: -->
-    <folder name="Mount">
-        <file name="org-netbeans-modules-usersguide-sampledir.settings" url="sampledir.xml">
-            <!-- #14403: make it look better: -->
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
-        </file>
-        <file name="org-netbeans-modules-usersguide-timerbean.settings" url="timerbean.xml">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/localFS.gif"/>
-        </file>
-    </folder>
+
     <folder name="Palette">
         <folder name="Beans">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.usersguide.Bundle"/>
@@ -57,6 +47,5 @@ Microsystems, Inc. All Rights Reserved.
             </file>
         </folder>
     </folder>
-    
-<!--tips of the day have been removed from here (no longer used in welcome screen)-->
+
 </filesystem>
