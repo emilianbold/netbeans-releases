@@ -18,9 +18,7 @@ import java.beans.*;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.HashMap;
-import java.util.MissingResourceException;
 import java.lang.reflect.InvocationTargetException;
-import javax.swing.SwingUtilities;
 
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
@@ -92,8 +90,6 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
                                 //Need to recreate value here (because of equals(), then set!
                                 value = (HashMap)value.clone();
                                 value.put( names[actValueIndex], newColoring );
-                                // Bug #18539 Hack to prevent changing selected  index by firePropertyChange fired below
-                                actValueIndex = newValueIndex;
                                 support.firePropertyChange( "value", null, null ); // NOI18N
                             }
                         } catch( InvocationTargetException e ) {
@@ -254,18 +250,12 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         // Bug #18539 invoking List value change after property sheet changes the property value
         if( syntaxList.getSelectedIndex() < 0 )
             return;
-        if( actValueIndex != syntaxList.getSelectedIndex()) {
+        if( newValueIndex != syntaxList.getSelectedIndex()) {
             newValueIndex = syntaxList.getSelectedIndex();
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    actValueIndex = newValueIndex;
-                    setEditorValue( actValueIndex );
-                }
-            });
         }else{
             actValueIndex = syntaxList.getSelectedIndex();
-            setEditorValue( actValueIndex );
         }
+        setEditorValue(actValueIndex);
     }//GEN-LAST:event_syntaxListValueChanged
 
 
