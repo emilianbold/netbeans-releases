@@ -17,6 +17,8 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- unique key over all groups of apis -->
     <xsl:key match="//api" name="apiGroups" use="@group" />
+    <!-- unique key over all names of apis -->
+    <xsl:key match="//api" name="apiNames" use="@name" />
     
     <xsl:param name="arch.stylesheet"/>
     <xsl:param name="arch.overviewlink"/>
@@ -56,7 +58,8 @@ Microsystems, Inc. All Rights Reserved.
                         rather than the current <xsl:value-of select="$qver"/>.
                     </strong>
                 </xsl:if>
-            
+
+                <hr/>            
                 <h2>Interfaces table</h2>
 
                 <xsl:call-template name="for-each-group">
@@ -136,17 +139,6 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:if>
     </xsl:template>
 
-    <xsl:template name="api">
-        <xsl:call-template name="api-line" >
-            <xsl:with-param name="name" select="@name" />
-            <xsl:with-param name="type" select="@type" />
-            <xsl:with-param name="group">api</xsl:with-param>
-            <xsl:with-param name="category" select="@category" />
-            <xsl:with-param name="describe.url" select="@url" />
-            <xsl:with-param name="describe.node" select="./node()" />
-        </xsl:call-template>
-    </xsl:template>
-    
     <!-- Format random HTML elements as is: -->
     <xsl:template match="@*|node()">
         <xsl:copy>
@@ -208,7 +200,10 @@ Microsystems, Inc. All Rights Reserved.
             <h5>Group of <xsl:value-of select="$group"/> interfaces</h5>
         </a>
         
-        <xsl:variable name="all_interfaces" select="//api[@group=$group]" />
+        <xsl:variable 
+            name="all_interfaces" 
+            select="//api[@group=$group and generate-id() = generate-id(key('apiNames', @name))]" 
+        />
         <table cellpadding="1" cellspacing="0" border="0" class="tablebg" width="100%"><tr><td>
           <table border="0" cellpadding="3" cellspacing="1" width="100%">   
             <tr class="tablersh">
@@ -218,8 +213,13 @@ Microsystems, Inc. All Rights Reserved.
                 <td align="CENTER" ><span class="titlectable">Specified in What Document?</span></td>
             </tr>
 
-            <xsl:for-each select="$all_interfaces">
-                <xsl:call-template name="api" />
+            <xsl:for-each select="$all_interfaces ">
+                <xsl:call-template name="api-group-name" >
+                    <xsl:with-param name="name" select="@name" />
+                    <xsl:with-param name="group" select="$group" />
+                    <xsl:with-param name="category" select="@category" />
+                    <xsl:with-param name="type" select="@type" />
+                </xsl:call-template>
             </xsl:for-each>
           </table>
         </td></tr></table>
@@ -229,15 +229,12 @@ Microsystems, Inc. All Rights Reserved.
     <!-- the template to convert an instances of API into an HTML line in a table 
       describing the API -->
 
-    <xsl:template name="api-line" >
+    <xsl:template name="api-group-name" >
        <xsl:param name="name" />
        <xsl:param name="group" />
        <xsl:param name="category" />
-       <xsl:param name="type" /> <!-- can be left empty -->
+       <xsl:param name="type" />
        
-       <xsl:param name="describe.url" />
-       <xsl:param name="describe.node" />
-
         <tr class="tabler">
             <td>
                 <a>
@@ -286,33 +283,36 @@ Microsystems, Inc. All Rights Reserved.
             
             <td> <!-- description -->
                 <xsl:call-template name="describe">
-                  <xsl:with-param name="describe.url" select="$describe.url" />
-                  <xsl:with-param name="describe.node" select="$describe.node" />
+                  <xsl:with-param name="name" select="$name" />
+                  <xsl:with-param name="group" select="$group" />
                 </xsl:call-template>
             </td>
         </tr>
     </xsl:template>  
     <xsl:template name="describe">
-       <xsl:param name="describe.url" />
-       <xsl:param name="describe.node" />
-       
-       
-       <xsl:if test="$describe.url" >
-            <a>
-                <xsl:attribute name="href" >
-                    <xsl:value-of select="$describe.url" />
-                </xsl:attribute>
-                <xsl:value-of select="$describe.url" />
-            </a>
-           
-           <xsl:if test="$describe.node" >
-               <p/>
-           </xsl:if>
-       </xsl:if>
-       
-       <xsl:if test="$describe.node" >
-           <xsl:apply-templates select="$describe.node" />
-       </xsl:if>
+       <xsl:param name="name" />
+       <xsl:param name="group" />
+
+       <xsl:variable name="all_definitions" select="//api[@group=$group and @name=$name]" />
+       <xsl:for-each select="$all_definitions" >
+            <xsl:variable name="describe.node" select="./node()" />
+
+            <xsl:if test="@url" >
+                <a>
+                    <xsl:attribute name="href" >
+                        <xsl:value-of select="@url" />
+                    </xsl:attribute>
+                    <xsl:value-of select="@url" />
+                </a>
+                <p/>
+            </xsl:if>
+            
+            <xsl:if test="$describe.node" >
+                <p/>
+                <xsl:apply-templates select="$describe.node" />
+                <p/>
+            </xsl:if>
+       </xsl:for-each>
     </xsl:template>
         
 </xsl:stylesheet> 

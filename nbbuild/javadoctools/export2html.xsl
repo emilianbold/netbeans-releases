@@ -17,6 +17,8 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- unique key over all groups of apis -->
     <xsl:key match="//api[@type='export']" name="apiGroups" use="@group" />
+    <!-- unique key over all names of apis -->
+    <xsl:key match="//api" name="apiNames" use="@name" />
     
     <xsl:template match="/apis" >
         <html>
@@ -119,7 +121,7 @@ Microsystems, Inc. All Rights Reserved.
     </xsl:template>
 
     <xsl:template match="module">
-            <xsl:variable name="interfaces" select="api[@type='export']" />
+            <xsl:variable name="interfaces" select="api[@type='export' and generate-id() = generate-id(key('apiNames', @name))]" />
             <xsl:variable name="module.name" select="@name" />
             <xsl:variable name="arch.stylesheet" select="@stylesheet" />
             <xsl:variable name="arch.overviewlink" select="@overviewlink" />
@@ -171,7 +173,9 @@ Microsystems, Inc. All Rights Reserved.
 
                     <xsl:for-each select="$interfaces">
                         <xsl:if test="@group='java'" >
-                            <xsl:call-template name="api" />
+                            <xsl:call-template name="api" >
+                                <xsl:with-param name="arch.target" select="$arch.target" />
+                            </xsl:call-template>
                         </xsl:if>
                     </xsl:for-each>
 
@@ -208,10 +212,18 @@ Microsystems, Inc. All Rights Reserved.
         <xsl:variable name="type" select="@type" />
         <xsl:variable name="category" select="@category" />
         <xsl:variable name="url" select="@url" />
+        <xsl:param name="arch.target" />
 
         <tr class="tabler">
             <td>
-                <xsl:value-of select="$name"/>
+                <a>
+                    <xsl:attribute name="href" >
+                        <xsl:value-of select="$arch.target" />
+                        <xsl:text>#java-</xsl:text>
+                        <xsl:value-of select="$name"/>
+                    </xsl:attribute>
+                    <xsl:value-of select="$name" />
+                </a>
             </td>
             <!--
             <td>
