@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.examples.modules.openfile;
+package com.netbeans.developer.modules.openfile;
 
 import java.beans.*;
 import java.io.*;
@@ -358,7 +358,7 @@ class OpenFile extends Object {
         return panel;
       }
       public HelpCtx getHelp () {
-        return new HelpCtx (OpenFile.class.getName () + ".dialog"); // [PENDING] add to map
+        return new HelpCtx (OpenFile.class.getName () + ".dialog");
       }
       public boolean isValid () {
         return list.getSelectedIndex () != -1;

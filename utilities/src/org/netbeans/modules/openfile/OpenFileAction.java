@@ -11,7 +11,7 @@
  * Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
  */
 
-package com.netbeans.examples.modules.openfile;
+package com.netbeans.developer.modules.openfile;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,11 +29,11 @@ public class OpenFileAction extends CallableSystemAction {
   }
   
   public HelpCtx getHelpCtx () {
-    return new HelpCtx (OpenFileAction.class); // [PENDING] add to map when moved
+    return new HelpCtx (OpenFileAction.class);
   }
   
   protected String iconResource () {
-    return "/com/netbeans/examples/modules/openfile/openFile.gif";
+    return "/com/netbeans/developer/modules/openfile/openFile.gif";
   }
   
   /** Last-used directory. */
