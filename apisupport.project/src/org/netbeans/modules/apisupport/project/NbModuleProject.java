@@ -213,7 +213,8 @@ final class NbModuleProject implements Project {
         Iterator it = ml.getAllEntries().iterator();
         while (it.hasNext()) {
             ModuleList.Entry e = (ModuleList.Entry)it.next();
-            stock.put(e.getPath() + ".dir", e.getClusterDirectory().getAbsolutePath()); // NOI18N
+            // #48449: intern these; number is (size of modules.xml) * (# of loaded module projects)
+            stock.put((e.getPath() + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
         }
         stock.putAll(ml.getDirectoriesProperties());
         stock.put("netbeans.dest.dir", "${nb_all}/nbbuild/netbeans"); // NOI18N
@@ -396,7 +397,11 @@ final class NbModuleProject implements Project {
         return nbroot;
     }
     
-    public FileObject getNbrootFile(String path) {
+    public File getNbrootFile(String path) {
+        return getHelper().resolveFile(getNbrootRel() + '/' + path);
+    }
+    
+    public FileObject getNbrootFileObject(String path) {
         FileObject nbroot = getNbroot();
         if (nbroot != null) {
             return nbroot.getFileObject(path);
