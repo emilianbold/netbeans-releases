@@ -102,10 +102,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
     */
     protected String messageName () {
         if (! obj.isValid()) return ""; // NOI18N
-        
-        // XXX
-//        return addFlagsToName(obj.getNodeDelegate().getDisplayName());
-        return addFlagsToName(obj.getPrimaryFile().getName());
+
+        String name;
+        if(DataNode.getShowFileExtensions()) {
+            name = obj.getPrimaryFile().getNameExt();
+        } else {
+            name = obj.getPrimaryFile().getName();
+        }
+        return addFlagsToName(name);
     }
         
     /** Helper only. */
