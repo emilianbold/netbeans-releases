@@ -54,11 +54,11 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
         (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
       if (icon == null)
-        icon = loadImage("/com/netbeans/developer/modules/resources/imageObject.gif");
+        icon = loadImage("/com/netbeans/developer/modules/loaders/image/imageObject.gif");
       return icon;
     } else {
       if (icon32 == null)
-        icon32 = loadImage ("/com/netbeans/developer/modules/resources/imageObject32.gif");
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/image/imageObject32.gif");
       return icon32;
     }
   }
@@ -86,6 +86,8 @@ public class ImageDataLoaderBeanInfo extends SimpleBeanInfo {
 
 /*
 * Log
+*  4    Gandalf   1.3         3/22/99  Ian Formanek    Icons moved from 
+*       modules/resources to this package
 *  3    Gandalf   1.2         2/16/99  David Simonek   
 *  2    Gandalf   1.1         1/22/99  Ian Formanek    
 *  1    Gandalf   1.0         1/5/99   Ian Formanek    
