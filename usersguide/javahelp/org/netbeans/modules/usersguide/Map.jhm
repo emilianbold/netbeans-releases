@@ -62,8 +62,10 @@
 <mapID target="objects.refresh" url="objects/objects_refreshing.html" />
 <mapID target="objects.runtime" url="objects/objects_runtime.html" />
 <mapID target="objects.saving" url="objects/objects_saving.html" />
+<mapID target="objects.new" url="objects/objects_new.html" />
+<mapID target="objects.show-extensions" url="objects/objects_show-extensions.html" />
 
-<mapID target="search" url="objects/search.html" />
+<mapID target="search" url="objects/search/search.html" />
 <mapID target="search.combo" url="objects/search/search_combo.html" />
 <mapID target="search.date" url="objects/search/search_date.html" />
 <mapID target="search.filetype" url="objects/search/search_filetype.html" />
@@ -88,7 +90,6 @@
 <mapID target="gui.components.reordering" url="gui/components/reordering.html" />
 <mapID target="gui.components.selecting" url="gui/components/selecting.html" />
 <mapID target="gui.components.editing" url="gui/components/editing.html" />
-<mapID target="gui.components.connecting" url="gui/components/connecting.html" />
 <mapID target="gui.layouts.intro" url="gui/layouts/intro.html" />
 <mapID target="gui.layouts.setting" url="gui/layouts/setting.html" />
 <mapID target="gui.layouts.props" url="gui/layouts/props.html" />
@@ -105,13 +106,11 @@
 <mapID target="gui.layouts.managers.null" url="gui/layouts/managers/null.html" />
 <mapID target="gui.source.intro" url="gui/source/intro.html" />
 <mapID target="gui.source.guarded" url="gui/source/guarded.html" />
-<mapID target="gui.source.modifying" url="gui/source/modifying.html" />
-<mapID target="gui.source.options" url="gui/source/options.html" />
-<mapID target="gui.source.props" url="gui/source/props.html" />
+<mapID target="gui.source.modifying.intro" url="gui/source/modifying/intro.html" />
+<mapID target="gui.source.modifying.component" url="gui/source/modifying/component.html" />
+<mapID target="gui.source.modifying.container" url="gui/source/modifying/container.html" />
+<mapID target="gui.source.modifying.property" url="gui/source/modifying/property.html" />
 <mapID target="gui.source.external" url="gui/source/external.html" />
-<mapID target="gui.source.initializing.intro" url="gui/source/initializing/intro.html" />
-<mapID target="gui.source.initializing.formconnect" url="gui/source/initializing/formconnect.html" />
-<mapID target="gui.source.initializing.prepost" url="gui/source/initializing/prepost.html" />
 <mapID target="gui.events.intro" url="gui/events/intro.html" />
 <mapID target="gui.events.defining" url="gui/events/defining.html" />
 <mapID target="gui.events.removing" url="gui/events/removing.html" />
@@ -123,18 +122,18 @@
 <mapID target="gui.connecting.code" url="gui/connecting/code.html" />
 <mapID target="gui.menus.intro" url="gui/menus/intro.html" />
 <mapID target="gui.menus.menubar" url="gui/menus/menubar.html" />
+<mapID target="gui.menus.current" url="gui/menus/current.html" />
 <mapID target="gui.menus.menu" url="gui/menus/menu.html" />
 <mapID target="gui.menus.popup" url="gui/menus/popup.html" />
 <mapID target="gui.menus.item" url="gui/menus/item.html" />
 <mapID target="gui.menus.events" url="gui/menus/events.html" />
-<mapID target="gui.scrollbars" url="gui/scrollbars.html" />
-<mapID target="gui.tabbedpane" url="gui/tabbedpane.html" />
-<mapID target="gui.splitpane" url="gui/splitpane.html" />
-<mapID target="gui.tablelist" url="gui/tablelist.html" />
 <mapID target="gui.mdi" url="gui/mdi.html" />
 <mapID target="gui.configuring" url="gui/configuring.html" />
-<mapID target="gui.custompalette" url="gui/custompalette.html" />
-
+<mapID target="gui.custompalette.intro" url="gui/custompalette/intro.html" />
+<mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
+<mapID target="gui.custompalette.moving" url="gui/custompalette/moving.html" />
+<mapID target="gui.custompalette.reordering" url="gui/custompalette/reordering.html" />
+<mapID target="gui.custompalette.removing" url="gui/custompalette/removing.html" />
 
 <mapID target="beans.intro" url="beans/intro.html" />
 <mapID target="beans.creating" url="beans/creating/creating.html" />
@@ -152,15 +151,16 @@
 <mapID target="synchronizing.new-interface" url="synchronizing/new-interface.html" />
 <mapID target="synchronizing.update-interface" url="synchronizing/update-interface.html" />
 
-<mapID target="compile.jump" url="compile/compile.jump.html" />
+<mapID target="compile.jump" url="compile/compile_jump.html" />
+<mapID target="compile.menu" url="compile/menu.html" />
 <mapID target="compile.program" url="compile/compile.html" />
-<mapID target="compile.file" url="compile/compile.file.html" />
 <mapID target="compile.error" url="compile/error.html" />
 <mapID target="compile.stop" url="compile/stop.html" />
 <mapID target="compile.disable" url="compile/disable.html" />
 <mapID target="compile.delete" url="compile/delete.html" />
+<mapID target="compile.types" url="compile/types_jump.html" />
 <mapID target="compile.default" url="compile/default.html" />
-<mapID target="compile.default.file" url="compile/default.file.html" />
+<mapID target="compile.default.file" url="compile/default_file.html" />
 <mapID target="compile.external" url="compile/external.html" />
 <mapID target="compile.internal" url="compile/internal.html" />
 <mapID target="compile.fastjavac" url="compile/fastjavac.html" />
@@ -170,16 +170,14 @@
 <mapID target="compile.template" url="compile/template.html" />
 
 
-<mapID target="run.jump" url="run/run.jump.html" />
+<mapID target="run.jump" url="run/run_jump.html" />
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debug" url="run/debug.html" />
 <mapID target="run.arguments" url="run/arguments.html" />
-<mapID target="run.mainclass" url="run/mainclass.html" />
 <mapID target="run.disable" url="run/disable.html" />
 <mapID target="run.workspace" url="run/workspace.html" />
 <mapID target="run.options" url="run/options.html" />
 <mapID target="run.executors" url="run/executors.html" />
-<mapID target="run.project.jump" url="run/project.jump.html" />
 <mapID target="run.project" url="run/project.html" />
 <mapID target="run.file" url="run/file.html" />
 <mapID target="run.external" url="run/external.html" />
@@ -188,6 +186,8 @@
 <mapID target="run.new" url="run/new.html" />
 <mapID target="run.remove" url="run/remove.html" />
 <mapID target="run.explorer" url="run/explorer.html" />
+<mapID target="run.template" url="run/template.html" />
+<mapID target="run.mainclass" url="run/mainclass.html" />
 
 
 <mapID target="editing.intro" url="editing/intro.html" />
@@ -204,6 +204,7 @@
 <mapID target="editing.bookmarks" url="editing/navigating/bookmarks.html" />
 <mapID target="editing.codecompletion" url="editing/codecompletion/intro.html" />
 <mapID target="editing.completing-exp" url="editing/codecompletion/completing-exp.html" />
+<mapID target="editing.completing-tag" url="editing/codecompletion/completing-tag.html" />
 <mapID target="editing.parserdatabase" url="editing/codecompletion/parserdatabase.html" />
 <mapID target="editing.settingdelay" url="editing/codecompletion/settingdelay.html" />
 <mapID target="editing.disablingdelay" url="editing/codecompletion/disabling.html" />
@@ -211,45 +212,66 @@
 <mapID target="editing.setting-globalshorts" url="editing/configuring/setting-globalshorts.html" />
 <mapID target="editing.settingkeybdshorts" url="editing/configuring/settingkeybdshorts.html" />
 <mapID target="editing.javaeditor-props" url="editing/configuring/javaeditor-props.html" />
+<mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 
 <mapID target="debug.overview" url="debug/debug.html" />
 
-<mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint.set.html" />
-<mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint.line.html" />
-<mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint.method.html" />
-<mapID target="debug.breakpoint.thread" url="debug/breakpoint/breakpoint.thread.html" />
-<mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint.variable.html" />
-<mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint.exception.html" />
-<mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint.class.html" />
-<mapID target="debug.breakpoint.condition" url="debug/breakpoint/breakpoint.condition.html" />
-<mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint.source.html" />
-<mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint.enable.html" />
-<mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint.remove.html" />
-<mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint.window.html" />
+<mapID target="debug.workspace" url="debug/environment/workspace.html" />
+<mapID target="debug.options" url="debug/environment/options.html" />
+<mapID target="debug.menu" url="debug/environment/menu.html" />
 
-<mapID target="debug.running.jump" url="debug/running/running.jump.html" />
-<mapID target="debug.running.debugger" url="debug/running/running.debugger.html" />
-<mapID target="debug.running.first" url="debug/running/running.first.html" />
-<mapID target="debug.running.cursor" url="debug/running/running.cursor.html" />
-<mapID target="debug.running.resume" url="debug/running/running.resume.html" />
+<mapID target="debug.breakpoint" url="debug/breakpoint/breakpoint_set.html" />
+<mapID target="debug.breakpoint.line" url="debug/breakpoint/breakpoint_line.html" />
+<mapID target="debug.breakpoint.method" url="debug/breakpoint/breakpoint_method.html" />
+<mapID target="debug.breakpoint.thread" url="debug/breakpoint/breakpoint_thread.html" />
+<mapID target="debug.breakpoint.variable" url="debug/breakpoint/breakpoint_variable.html" />
+<mapID target="debug.breakpoint.exception" url="debug/breakpoint/breakpoint_exception.html" />
+<mapID target="debug.breakpoint.class" url="debug/breakpoint/breakpoint_class.html" />
+<mapID target="debug.breakpoint.condition" url="debug/breakpoint/breakpoint_condition.html" />
+<mapID target="debug.breakpoint.source" url="debug/breakpoint/breakpoint_source.html" />
+<mapID target="debug.breakpoint.enable" url="debug/breakpoint/breakpoint_enable.html" />
+<mapID target="debug.breakpoint.remove" url="debug/breakpoint/breakpoint_remove.html" />
+<mapID target="debug.add.breakpoint" url="debug/breakpoint/breakpoint_window.html" />
+
+<mapID target="debug.running.jump" url="debug/running/running_jump.html" />
+<mapID target="debug.running.debugger" url="debug/running/running_debugger.html" />
+<mapID target="debug.running.first" url="debug/running/running_first.html" />
+<mapID target="debug.running.cursor" url="debug/running/running_cursor.html" />
+<mapID target="debug.running.resume" url="debug/running/running_resume.html" />
+<mapID target="debug.running.disable" url="debug/running/disable.html" />
 <mapID target="debug.step" url="debug/running/stepping.html" />
-<mapID target="debug.running.end" url="debug/running/running.end.html" />
+<mapID target="debug.running.end" url="debug/running/running_end.html" />
+<mapID target="debug.attach" url="debug/running/attach.html" />
 
-<mapID target="debug.watches.jump" url="debug/watches/watch.jump.html" />
+<mapID target="debug.variables.jump" url="debug/variables/variables_jump.html" />
+<mapID target="debug.variables.value" url="debug/variables/value.html" />
+<mapID target="debug.variables.modify" url="debug/variables/modify.html" />
+
+<mapID target="debug.watches.jump" url="debug/watches/watch_jump.html" />
 <mapID target="debug.watch" url="debug/watches/watch.html" />
 <mapID target="debug.watch.fix" url="debug/watches/fix.html" />
+<mapID target="debug.watch.modify" url="debug/watches/modify.html" />
 <mapID target="debug.watch.delete" url="debug/watches/delete_watch.html" />
 
-<mapID target="debug.threads.jump" url="debug/threads/threads.jump.html" />
+<mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
 <mapID target="debug.threads.resume" url="debug/threads/resume.html" />
+<mapID target="debug.threads.change" url="debug/threads/change.html" />
+<mapID target="debug.threads.source" url="debug/threads/source.html" />
+<mapID target="debug.threads.variables" url="debug/threads/variables.html" />
+<mapID target="debug.threads.callstack" url="debug/threads/callstack.html" />
 
 <mapID target="debug.jpda" url="debug/jpda/jpda.html" />
 <mapID target="debug.jpda.install" url="debug/jpda/install.html" />
 
+<mapID target="debug.debugger.project_default" url="debug/debugger/project_default.html" />
+<mapID target="debug.debugger.file_default" url="debug/debugger/file_default.html" />
+<mapID target="debug.service.new" url="debug/debugger/new.html" />
+<mapID target="debug.service.remove" url="debug/debugger/remove.html" />
 
-<mapID target="javadoc.jump" url="javadoc/javadoc.jump.html" />
+
+<mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.generate" url="javadoc/generate.html" />
 <mapID target="javadoc.search" url="javadoc/search.html" />
 <mapID target="javadoc.search.path" url="javadoc/search_path.html" />
@@ -269,17 +291,24 @@
 <mapID target="cvs.settings" url="cvs-nb/cvs_settings.html" />
 
 
-<mapID target="workspace.jump" url="workspace/workspace.jump.html" />
+<mapID target="workspace.jump" url="workspace/workspace_jump.html" />
 <mapID target="workspace.defined" url="workspace/workspace.html" />
-<mapID target="workspace.create" url="workspace/workspace.create.html" />
-<mapID target="workspace.rename" url="workspace/workspace.rename.html" />
-<mapID target="workspace.auto" url="workspace/workspace.auto.html" />
-<mapID target="workspace.delete" url="workspace/workspace.delete.html" />
+<mapID target="workspace.create" url="workspace/workspace_create.html" />
+<mapID target="workspace.rename" url="workspace/workspace_rename.html" />
+<mapID target="workspace.auto" url="workspace/workspace_auto.html" />
+<mapID target="workspace.delete" url="workspace/workspace_delete.html" />
 <mapID target="workspace.dock" url="workspace/docking.html" />
 <mapID target="workspace.clone" url="workspace/clone.html" />
 
+<mapID target="propfiles.prop" url="propfiles/propfile.html" />
+<mapID target="propfiles.creating" url="propfiles/creatingprops.html" />
+<mapID target="propfiles.adding" url="propfiles/addingprops.html" />
+<mapID target="propfiles.removing" url="propfiles/removingprops.html" />
+<mapID target="propfiles.modifying" url="propfiles/modifyprops.html" />
+<mapID target="propfiles.addlocale" url="propfiles/addinglocale.html" />
+<mapID target="propfiles.editlocale" url="propfiles/editinglocale.html" />
+
 <mapID target="configure" url="configure/configure.html" />
-<mapID target="configure.compiler" url="configure/compiler.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
@@ -822,6 +851,9 @@
    <mapID target="org.netbeans.core.ServicesNode$MakeDefaultAction" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.DebuggerTypeEditor$NoDebugger" url="pending.html" />
    <mapID target="org.netbeans.beaninfo.editors.ExecutorEditor$NoExecutor" url="pending.html" />
-
+   <mapID target="org.netbeans.modules.vcs.cmdline.diff.DiffComponent" url="pending.html"/>
+   <mapID target="org.netbeans.core.ui.NewTemplateWizard1" url="pending.html" />
+   <mapID target="org.openide.text.CloneableEditor" url="pending.html" />
+   <mapID target="org.openide.actions.ClassNamePanel" url="pending.html" />
 </map>
 
