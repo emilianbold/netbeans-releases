@@ -293,8 +293,7 @@ public class ProjectUtilities {
             Iterator it = urls.iterator ();
             while (it.hasNext ()) {
                 fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
-                String xxx = (String)it.next ();
-                fileEl.appendChild (fileEl.getOwnerDocument ().createTextNode (xxx));
+                fileEl.appendChild (fileEl.getOwnerDocument ().createTextNode ((String)it.next ()));
                 openFiles.appendChild (fileEl);
             }
             
@@ -323,7 +322,6 @@ public class ProjectUtilities {
             return;
         }
 
-        // XXX should this be using getElementsByTagNameNS?
         NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
         if (list == null) {
             if (dolog) ERR.log("No " + FILE_ELEMENT + " in " + OPEN_FILES_ELEMENT);
