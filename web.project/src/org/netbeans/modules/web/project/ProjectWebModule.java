@@ -425,12 +425,13 @@ public final class ProjectWebModule extends J2eeModuleProvider
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         
         List roots = new LinkedList();
-        for (int i = 0; i < groups.length; i++) {
-            roots.add(groups[i].getRootFolder());
-        }
         FileObject documentBase = getDocumentBase();
         if (documentBase != null)
             roots.add(documentBase);
+        
+        for (int i = 0; i < groups.length; i++) {
+            roots.add(groups[i].getRootFolder());
+        }
         
         FileObject[] rootArray = new FileObject[roots.size()];
         return (FileObject[])roots.toArray(rootArray);        

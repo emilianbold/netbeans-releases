@@ -293,13 +293,13 @@ public final class EjbJarProvider extends J2eeModuleProvider implements EjbJarIm
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         List roots = new LinkedList();
-        for (int i = 0; i < groups.length; i++) {
-            roots.add(groups[i].getRootFolder());
-        }
         FileObject metaInf = getMetaInf();
         if (metaInf != null)
             roots.add(metaInf);
         
+        for (int i = 0; i < groups.length; i++) {
+            roots.add(groups[i].getRootFolder());
+        }
         FileObject[] rootArray = new FileObject[roots.size()];
         return (FileObject[])roots.toArray(rootArray);        
     }
