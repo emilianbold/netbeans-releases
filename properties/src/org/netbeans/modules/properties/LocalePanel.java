@@ -191,10 +191,13 @@ public class LocalePanel extends JPanel {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         languageLabel = new javax.swing.JLabel();
+        languageLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode_Mnem")).charAt(0));
         languageCombo = new JComboBox(Locale.getISOLanguages());
         countryLabel = new javax.swing.JLabel();
+        countryLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_CountryCode_Mnem")).charAt(0));
         countryCombo = new JComboBox(Locale.getISOCountries());
         variantLabel = new javax.swing.JLabel();
+        variantLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_Variant_Mnem")).charAt(0));
         variantCombo = new JComboBox(new String[] {
             "B", // Bokmal // NOI18N
             "EURO", // EURO // NOI18N
@@ -202,15 +205,17 @@ public class LocalePanel extends JPanel {
         });
         
         supportedLabel = new javax.swing.JLabel();
+        supportedLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString("CTL_SupportedLocales_Mnem")).charAt(0));
         jScrollPane1 = new javax.swing.JScrollPane();
         supportedList = new JList(supportedLocales);
         localeLabel = new javax.swing.JLabel();
         localeText = new javax.swing.JTextField();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
         
         languageLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_LanguageCode"));
-        
+        languageLabel.setLabelFor(languageCombo);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -218,7 +223,6 @@ public class LocalePanel extends JPanel {
         gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(languageLabel, gridBagConstraints1);
-        
         
         languageCombo.setEditable(true);
         languageCombo.setRenderer(new BasicComboBoxRenderer() {
@@ -246,28 +250,25 @@ public class LocalePanel extends JPanel {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 languageComboActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 1;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(11, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(languageCombo, gridBagConstraints1);
         
-        
         countryLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_CountryCode"));
-        
+        countryLabel.setLabelFor(countryCombo);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(countryLabel, gridBagConstraints1);
-        
         
         countryCombo.setEditable(true);
         countryCombo.setRenderer(new BasicComboBoxRenderer() {
@@ -295,28 +296,25 @@ public class LocalePanel extends JPanel {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 countryComboActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(countryCombo, gridBagConstraints1);
         
-        
         variantLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_Variant"));
-        
+        variantLabel.setLabelFor(variantCombo);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 3;
         gridBagConstraints1.gridwidth = 2;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 12, 0, 0);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 0);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(variantLabel, gridBagConstraints1);
-        
         
         variantCombo.setEditable(true);
         variantCombo.setRenderer(new BasicComboBoxRenderer() {
@@ -344,20 +342,18 @@ public class LocalePanel extends JPanel {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 variantComboActionPerformed(evt);
             }
-        }
-        );
+        });
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 2;
         gridBagConstraints1.gridy = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(11, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(variantCombo, gridBagConstraints1);
         
-        
         supportedLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_SupportedLocales"));
-        
+        supportedLabel.setLabelFor(supportedList);
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 4;
@@ -365,8 +361,6 @@ public class LocalePanel extends JPanel {
         gridBagConstraints1.insets = new java.awt.Insets(17, 12, 0, 11);
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(supportedLabel, gridBagConstraints1);
-        
-        
         
         supportedList.setCellRenderer(new DefaultListCellRenderer() {
             public Component getListCellRendererComponent(
@@ -394,24 +388,21 @@ public class LocalePanel extends JPanel {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 supportedListValueChanged(evt);
             }
-        }
-        );
-        jScrollPane1.setViewportView(supportedList);
+        });
         
+        jScrollPane1.setViewportView(supportedList);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 5;
         gridBagConstraints1.gridwidth = 3;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints1.insets = new java.awt.Insets(7, 7, 11, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(5, 12, 11, 11);
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
         
-        
         localeLabel.setText(NbBundle.getBundle(LocalePanel.class).getString("CTL_Locale"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 0;
@@ -419,16 +410,14 @@ public class LocalePanel extends JPanel {
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(localeLabel, gridBagConstraints1);
         
-        
         localeText.setEditable(false);
         localeText.setText("jTextField1");
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 0;
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints1.insets = new java.awt.Insets(12, 7, 0, 11);
+        gridBagConstraints1.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints1.weightx = 1.0;
         add(localeText, gridBagConstraints1);
         

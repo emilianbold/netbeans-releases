@@ -9,10 +9,17 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="languageLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_LanguageCode" replaceFormat="NbBundle.getBundle(LocalePanel.class).getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="languageCombo" type="code"/>
+        </Property>
       </Properties>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="languageLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_LanguageCode_Mnem&quot;)).charAt(0));"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="0" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
@@ -37,19 +44,26 @@
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="1" insetsBottom="0" insetsLeft="7" insetsRight="11" insetsTop="11" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="1" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="11" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="countryLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_CountryCode" replaceFormat="NbBundle.getBundle(LocalePanel.class).getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="countryCombo" type="code"/>
+        </Property>
       </Properties>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="countryLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_CountryCode_Mnem&quot;)).charAt(0)); "/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="0" gridY="2" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="7" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="0" gridY="2" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
@@ -71,19 +85,26 @@
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="2" insetsBottom="0" insetsLeft="7" insetsRight="11" insetsTop="7" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="2" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="11" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="variantLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_Variant" replaceFormat="NbBundle.getBundle(LocalePanel.class).getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="variantCombo" type="code"/>
+        </Property>
       </Properties>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="variantLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_Variant_Mnem&quot;)).charAt(0));"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="0" gridY="3" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="7" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+          <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="2" gridX="0" gridY="3" insetsBottom="0" insetsLeft="12" insetsRight="0" insetsTop="11" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
@@ -105,16 +126,23 @@
       </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="3" insetsBottom="0" insetsLeft="7" insetsRight="11" insetsTop="7" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="2" gridY="3" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="11" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
     <Component class="javax.swing.JLabel" name="supportedLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_SupportedLocales" replaceFormat="NbBundle.getBundle(LocalePanel.class).getString(&quot;{key}&quot;)"/>
         </Property>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="supportedList" type="code"/>
+        </Property>
       </Properties>
+
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="supportedLabel.setDisplayedMnemonic((NbBundle.getBundle(LocalePanel.class).getString(&quot;CTL_SupportedLocales_Mnem&quot;)).charAt(0));"/>
+      </AuxValues>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
           <GridBagConstraints anchor="17" fill="0" gridHeight="1" gridWidth="3" gridX="0" gridY="4" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="17" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
@@ -124,7 +152,7 @@
     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="3" gridX="0" gridY="5" insetsBottom="11" insetsLeft="7" insetsRight="11" insetsTop="7" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
+          <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="3" gridX="0" gridY="5" insetsBottom="11" insetsLeft="12" insetsRight="11" insetsTop="5" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
         </Constraint>
       </Constraints>
 
@@ -145,15 +173,12 @@
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JList(supportedLocales);"/>
           </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout$JScrollPaneConstraintsDescription"/>
-          </Constraints>
         </Component>
       </SubComponents>
     </Container>
     <Component class="javax.swing.JLabel" name="localeLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.ResourceBundleStringFormEditor">
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/properties/Bundle.properties" key="CTL_Locale" replaceFormat="NbBundle.getBundle(LocalePanel.class).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
@@ -170,7 +195,7 @@
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="2" gridX="1" gridY="0" insetsBottom="0" insetsLeft="7" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
+          <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="2" gridX="1" gridY="0" insetsBottom="0" insetsLeft="12" insetsRight="11" insetsTop="12" ipadX="0" ipadY="0" weightX="1.0" weightY="0.0"/>
         </Constraint>
       </Constraints>
     </Component>
