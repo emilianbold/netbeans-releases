@@ -400,27 +400,26 @@ public class RADConnectionPropertyEditor
                     } */
             switch (type) {
                 case TYPE_PROPERTY:
-                    return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
-                    /*            try {
-                                  Object value = property.getReadMethod().invoke(radComponent.getBeanInstance(), new Object[0]);
-                                  return value;
-                                  } catch (Exception e) {
-                                  // in case of failure do not provide the value during design time
-                                  return FormDesignValue.IGNORED_VALUE;
-                                  }*/ // [PENDING]
+                    try {
+                        Object value = getProperty().getReadMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
+                        return value;
+                    } catch (Exception e) {
+                        // in case of failure do not provide the value during design time
+                        return FormDesignValue.IGNORED_VALUE;
+                    }
                 case TYPE_METHOD:
-                    return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
-                    /*            try {
-                                  Object value = method.getMethod().invoke(radComponent.getBeanInstance(), new Object[0]);
-                                  return value;
-                                  } catch (Exception e) {
-                                  // in case of failure do not provide the value during design time
-                                  return FormDesignValue.IGNORED_VALUE;
-                                  } */ // [PENDING]
+                    try {
+                        Object value = getMethod().getMethod().invoke(getRADComponent().getBeanInstance(), new Object[0]);
+                        return value;
+                    } catch (Exception e) {
+                        // in case of failure do not provide the value during design time
+                        return FormDesignValue.IGNORED_VALUE;
+                    }
                 case TYPE_VALUE:
                     return parseValue(requiredTypeName, value);
                 case TYPE_BEAN:
-                    return FormDesignValue.IGNORED_VALUE; // [PENDING: use the value during design time]
+                    RADComponent comp = getRADComponent();
+                    return (comp == null) ? FormDesignValue.IGNORED_VALUE : comp.getBeanInstance();
                 case TYPE_CODE:
                     return FormDesignValue.IGNORED_VALUE;
                 default:
