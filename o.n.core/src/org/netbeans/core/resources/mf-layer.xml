@@ -117,6 +117,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
+            <file name="org-netbeans-core-actions-ConvertAction.instance"/>
         </folder>
     </folder>
 
@@ -310,6 +311,7 @@ Microsystems, Inc. All Rights Reserved.
           <file name="Separator3[javax-swing-JSeparator].instance"/>
           <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-core-actions-OpenedWindowsAction.instance" boolvalue="true" />
           <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
+          <file name="org-netbeans-core-actions-ConvertAction.instance"/>
        </folder>
        <attr name="Window/Help" boolvalue="true" />
        <folder name="Help">
