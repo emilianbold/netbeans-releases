@@ -22,8 +22,6 @@ import java.util.Iterator;
 * @author Ian Formanek
 */
 public abstract class PersistenceManager {
-  /** Magic header number for recognition of binary forms */
-  public static final long FORM_MAGIC=0x42424242l;
 
   private static ArrayList managers = new ArrayList (5);
 
@@ -65,6 +63,7 @@ public abstract class PersistenceManager {
 
 /*
  * Log
+ *  4    Gandalf   1.3         5/30/99  Ian Formanek    Removed obsoleted field
  *  3    Gandalf   1.2         5/15/99  Ian Formanek    
  *  2    Gandalf   1.1         5/4/99   Ian Formanek    Package change
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
