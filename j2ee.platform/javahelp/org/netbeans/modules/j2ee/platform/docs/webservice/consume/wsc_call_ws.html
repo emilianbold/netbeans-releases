@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2004 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+<title>Calling a Web Service Operation</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>Calling a Web Service Operation</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>A web service operation can be called from a web application, an EJB module, or
+ a MIDP client (MIDlet).</p>
+<b>To call a web service operation:</b>
+<ol><li><a href="../create/create_ws_from_scratch.html">Create a web service</a>.</li>
+<li><a href="../create/add_ws_operation">Add a web service operation</a>.</li>
+<li><a href="create_wsc.html">Create a web service client</a> or create an EJB module.</li>
+<li>If the web service client is deployed from a web application, <a href="../servlet/servlet_create.html">create a servlet</a>.</li>
+<li>Right-click anywhere in 
+a class in the Source Editor and choose Web Service Client Resources 
+<img src="../../images/arrow.gif" alt="and choose" >&nbsp;Call Web Service Operation.
+<table cellpadding="3" cellspacing="0" border="0">
+  <tbody><tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>This command is only enabled when you click within the body of the class (after the class declaration).</td>
+  </tr>
+</tbody></table>
+<li>Expand the nodes and select a web service operation.
+<table cellpadding="3" cellspacing="0" border="0">
+  <tbody><tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td>The OK button is only enabled when you select a valid web service operation.</td>
+  </tr>
+</tbody></table></li>
+<li>Click OK.
+<p>The IDE adds the following to the servlet:
+<ul>
+<li>A try-catch block containing the method invocation.</li>
+<li>A <tt>get<i>XXX</i></tt> method (where <i>XXX</i> is the name of the web service).</li>
+<li>A <tt>get<i>XXX</i>SEIPort</tt> method (where <i>XXX</i> is the name of the web service).</li>
+<li>Two instance variables to represent the service and the port.</li>
+<li>The necessary import statements.</li></ul>
+<table cellpadding="3" cellspacing="0" border="0">
+  <tbody><tr valign="top"> 
+    <td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+    <td> Note that the Source Editor underlines the generated code 
+	    as containing errors. This is because the IDE has not generated
+	    the classes imported by these methods. After the first time you
+	    build the project the error underlining disappears.</td>
+  </tr>
+</tbody></table>
+</li>
+</ol>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+<a href="../create/add_ws_soap_message.html">Adding a SOAP Message Handler</a><br>
+<a href="nbdocs:/org/netbeans/modules/usersguide/compile/comp_file.html">Compiling a Single File</a><br>
+<a href="../servlet/servlet_run.html">Running a Servlet</a><br>
+</td>
+</tr>
+</table>  
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

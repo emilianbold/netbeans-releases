@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2004 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+<title>About Web Service Clients</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>About Web Service Clients</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>A web service client is created to consume (i.e., interact with) a specific <a href="../about/about_ws.html">web service</a>.
+The way in which a web service client consumes a web service depends on the way in which the provider makes the web service available:
+<ul> <li>The provider distributes a URL to the <a href="../build/about_wsdl.html">WSDL file</a>
+       	of a running web service.</li>
+	<li>The provider distributes a WSDL file, which is available to you on your local filesystem.</li>
+</ul>
+<p>There are two types of web service clients, JSR-109 and JAX-RPC:</p>
+<ul><li><b>JSR-109 (Enterprise Web Services).</b> Enhances JSR-101 by defining the packaging
+of web services into standard J2EE modules, including a new deployment descriptor,
+and defining web services that are implemented as session beans.</li>
+<li><b>JSR-101 (JAX-RPC).</b> Defines the mapping of WSDL to Java and vice versa.
+It also defines a client API to invoke a remote web service and a runtime environment 
+on the server to host a web service.</li></ul>
+<p>For detailed information, refer to the full specifications:</p>
+<ul>
+<li>The JSR-101 Specification at 
+    <p>
+<object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://java.sun.com/xml/jaxrpc">
+    <param name="text" value="<html><u>http://java.sun.com/xml/jaxrpc</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></li>
+<li>The JSR-109 Specification at 
+    <p>
+<object CLASSID="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://jcp.org/en/jsr/detail?id=109">
+    <param name="text" value="<html><u>http://jcp.org/en/jsr/detail?id=109</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object></li>
+</ul>
+ <h3>Web Service Clients in the IDE</h3>
+<p>In the IDE, when you <a href="create_wsc.html">create a web service client</a>, deployment information
+is generated in the deployment descriptor (the <tt>web.xml</tt> file) and a compilation target is generated in
+the Ant build script (the <tt>build.xml</tt> file). After you finish developing the web service client,
+you can use the Web Service Clients panel in the Project 
+Properties dialog box to specify how you want to <a href="../consume/wsc_build.html">build it</a>.
+  Then, when you
+  build the web service client, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is called
+  to compile it.</p>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>For tips on designing a web service client,
+go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;BluePrints Solutions Catalog.
+Select the "Client Access to a Web Service" item from the drop down.</td>
+</tr>
+</table>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+	<a href="../about/about_ws.html">About Web Services</a><br>
+</td>
+</tr>
+</table>  
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

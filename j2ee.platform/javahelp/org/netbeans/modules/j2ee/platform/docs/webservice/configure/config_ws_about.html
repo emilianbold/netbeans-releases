@@ -1,0 +1,93 @@
+ 
+<html>
+
+<!--
+  *     Copyright © 2004 Sun Microsystems, Inc. All rights reserved.
+  *     Use is subject to license terms.
+-->
+<head>
+
+
+<title>About Configuring Web Services</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+
+</head>
+<body>
+
+<h2>About Configuring Web Services</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
+<p>You configure your web services at several different levels.</p>
+<h3>Project Contents and Classpath</h3>
+<p>Basic project settings like the web application or EJB module's source roots and classpath are 
+  set in the module's Project Properties dialog box. You open this dialog box 
+  by right-clicking the project node and choosing Properties.</p>
+<p>For standard projects, you can add source roots in the Sources page of the 
+  Project Properties dialog box. You can quickly add to the compilation and test 
+  classpath by right-clicking the Libraries or Test Libraries node in the Projects 
+  window. To further configure the classpath, or to specify which items should 
+  be included in deployment, use the Libraries page of the Project Properties 
+  dialog box.</p>
+<p>For free-form projects, there are no Libraries or Test Libraries nodes. The 
+  classpath and source roots are managed completely by your project's Ant script. 
+  In the Sources and Classpath pages of the Project Properties dialog, you just 
+  configure the project to match the settings that already exist in your Ant script. 
+  This tells the IDE which classes to offer for debugging, code completion, and 
+  so forth.</p>
+<h3>Deployment Settings</h3>
+<p>There are several key steps to configuring deployment settings:</p>
+<ul>
+  <li><b>Setting the target server.</b> Although the IDE only supports the Sun 
+    Java Systems Application Server, you can have several instances of the server 
+    registered. You can set the target server instance for a project by doing 
+    any of the following: 
+    <ul>
+      <li>Specifying the server in the New Project wizard when creating the project.</li>
+      <li>Going to a project's Project Properties dialog box and setting the 
+        target server in the Run page.</li>
+      <li>Adding the module that contains the web service to an enterprise application. The module is then 
+        deployed to the same server instance as the enterprise application.</li>
+    </ul>
+  </li>
+  <li><b>Adding the project module to a J2EE application.</b> You can add a web application or EJB module 
+    to an enterprise project by doing any of the following: 
+    <ul>
+      <li>Specifying the enterprise application in the New Project wizard when 
+        creating the project.</li>
+      <li>Right-clicking the J2EE Modules node for any enterprise application 
+        project and choosing Add J2EE Module.</li>
+    </ul>
+  </li>
+  <li><b>Configuring deployment descriptors.</b> The IDE automatically updates 
+  your deployment descriptors as you code your web service. Whenever you insert 
+    a call to an enterprise bean or create select or finder methods, the IDE automatically 
+    enters the necessary information in your deployment descriptors. You can manually 
+    configure your deployment descriptors by expanding the EJB module's Configuration 
+    Files node and double-clicking <tt>webservices.xml</tt> or the deployment descriptors applicable to the project.</li>
+</ul>
+<table border="0">
+  <tr><th colspan="2" align="left" ><a name="seealso">See Also</a></th>
+    </tr>
+    
+  <tr valign="top"> 
+    <td width="23px" nowrap>&nbsp;</td><!--
+      
+    <td nowrap><a href="add_ejbql.html">Enterprise JavaBeans Query Language</a><br>
+      <a href="">EJBQL Property Editor</a><br>
+      <a href="define_finder_method.html">Defining a Finder Method</a><br>
+      <a href="define_select_method.html">Defining a Select Method</a><br>
+      <a href="add_ejbql.html">Creating an Enterprise Bean</a><br>
+      <a href="add_ejbql.html">Working With Enterprise Beans</a></td>
+    --></tr>
+  </table>
+ 
+<hr>
+<small> <a href="../../credits.html">Legal Notices</a></small> 
+<table cellpadding="150" border="0"> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   <tr><td>&nbsp;</td></tr> 
+   </table> 
+</body>
+
+</html>

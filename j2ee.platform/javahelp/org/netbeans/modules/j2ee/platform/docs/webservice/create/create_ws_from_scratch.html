@@ -1,0 +1,86 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2004 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+<title>Creating a Web Service from Scratch</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>Creating a Web Service from Scratch</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<ol>
+<li>Do one of the following:
+<ul><li><a href="../../web/create/create_webapps_proj.html">Create a web application project</a>.</li>
+<li><a href="../../ejb/editing/create_ejb_project.html">Create an EJB module project</a>.</li></ul></li>
+<li>In the Projects window or Files window, right-click the project node
+ and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Service.</li>
+<p>The New Web Service wizard opens.</li>
+<li>Type the web service name and specify a package to house the web service.</li>
+<li>Click From scratch.</li>
+<li>Click Finish.
+<p>The IDE creates the following:
+<ul>
+<li>The Service Endpoint Interface (the "interface"), which declares the web service's operations. 
+In the IDE, the interface is identified by the suffix "SEI". For example, if you named your 
+web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
+The IDE automatically populates the interface with a declaration for each web service operation
+ added by means of the <a href="add_ws_operation.html">Add Operation dialog box</a>.</li>
+<li>The class for the implementation of the interface. The IDE creates a skeleton
+ operation to the implementation class when you use the Add Operation dialog box. For example,
+if you are creating a web service that adds two integers, the skeleton operation that the IDE creates
+ in the implementation class
+is as follows:
+<pre>
+<tt>    public int add(int a, int b) throws java.rmi.RemoteException {
+       
+    }
+</tt></pre>
+<p>In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
+ or "Bean" (for EJB modules). For example, if your 
+ web service is named <tt>CalculatorWS</tt>, its implementation class is named <tt>CalculatorWSImpl</tt>
+ or <tt>CalculatorWSBean</tt>.</li></ul>
+By default, both files are housed in a package within your project's <tt>src</tt> folder (in the Files window)
+and you can access it in the Source Packages node (in the Projects window).
+</ul>
+</li>
+<li>Use the <a href="nbdocs:/org/netbeans/modules/usersguide/editing/editing_about.html">Source Editor</a> to develop the
+       web service. When you right-click in the Source Editor, you can use the IDE to generate skeleton code for
+       one or more of the following:
+       <ul>
+	       <li><a href="add_ws_operation.html">Add a web service operation</a></li>
+	       <li><a href="add_soap_message.html">Add a SOAP message handler</a></li>
+	       <li><a href="../../ejb/editing/call_ejb.html">Call an EJB</a></li>
+	       <li><a href="../../tbd.html">Use a database</a></li>
+               <li><a href="../../tbd.html">Send a JMS message</a></li>
+       </ul>
+
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>For help on designing and developing your web services,
+go to Help <img src="../../images/arrow.gif" alt="and choose" >&nbsp;BluePrints Solutions Catalog.
+Select topics under the "Service Oriented Architectures with Web Services" item.</td>
+</tr>
+</table>
+</li>
+<li>Generate the WSDL file by <a href="../build/compile_doc.html">building the web service as a 
+	document-style web service</a> or by <a href="../build/compile_rpc.html">building the web service as a 
+	RPC-style web service</a> .</li>
+<li>Optionally, <a href="tweak_wsdl.html">tweak the WSDL file by hand</a>.</li>
+</ul>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+	<a href="../about/about_ws.html">About Web Services</a><br>
+</td>
+</tr>
+</table>  
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

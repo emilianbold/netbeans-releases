@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2004 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+<title>Creating a Web Service Client</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>Creating a  Web Service Client</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<ol>
+<li>From the Projects window or Files window, right-click a node
+in a web application project or EJB module project and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Service Client. </li>
+<li>Depending on what the provider has distributed, do the following:<ul>
+<li>To generate a client from a running web service, type the web service's URL and 
+specify a package where the client is to be generated.</li>
+<li>To generate a client from a WSDL file
+	 on your local filesystem, browse to the WSDL file and 
+ specify a package where the client is to be generated.</li></ul>
+
+<li>Click Finish.</li>
+
+ 
+<p>The IDE does the following:
+<ul><li>Creates a folder, if not already present, named <tt>wsdl</tt> under <tt>web/WEB-INF</tt> to contain the WSDL file.</li>
+<li>Adds a <tt>service-ref</tt> element to the deployment descriptor (the <tt>web.xml</tt> file) for this service.</li>
+<li>Adds a <tt>wscompile</tt> target for this service to the Ant build script (the <tt>build.xml</tt> file).</li>
+<li>Registers the service into the Web Service registry in the Runtime tab, if not already present.</li>
+<li>Creates a node for this service under Web Service References node in the Projects window.</li></ul>
+</ol>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+<a href="../consume/wsc_test.html">Testing a Web Service on the Client Side</a><br>
+<a href="call_ws_operation.html">Calling a Web Service Operation</a>
+</td>
+</tr>
+</table>  
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>

@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- * Copyright 2004 Sun Microsystems,
+Inc.  All rights reserved.  
+Use is subject to license terms.  *--> 
+<html> 
+<head> 
+<title>Adding a Web Service Operation</title>
+<link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
+</head> 
+<body bgcolor="#FFFFFF">
+<h2>Adding a Web Service Operation</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+<p>After you create a web service, you implement its operations in the implementation class. You can add operations
+ manually in the Source Editor or by using the Add Operation dialog box. In the latter case, the IDE automatically
+ declares the operation in the Service Endpoint Interface (the "interface").</p>
+
+<b>To add a web service operation:</b>
+<ol>
+	<li>Open the Add Operation dialog box in one of two ways from the Projects window:
+	 <ul><li>Expand the Web Services node, right-click the web service
+		 instance node, and choose Add Operation.</li>
+             <li>Expand the Source Packages node, expand the package that
+	     contains the web service, and double-click the web service's
+	     implementation class so that it opens in the Source Editor.
+	     Right-click anywhere in the body of a class and choose 
+	     Web Service <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Add Operation.
+	     This command is only enabled when you click within the body of the class (after the class declaration).</li>
+	 </ul>
+	 <li>Define the name, return type, parameters, and exceptions of the web service
+	 operation. For example, do the following if you want to create this operation:
+<pre>
+<tt>    public int add(int a, int b) throws java.rmi.RemoteException {
+        return a + b;
+    }
+</tt></pre>
+	  <ol>
+		  <li>Type <tt>add</tt> in the Name text box
+		   and choose <tt>int</tt> from the Return Type drop-down.</li>
+		  <li>Click Add.</li>
+		  <li>Choose <tt>int</tt> from the Type drop-down
+		  and type <tt>a</tt> in the Name text box. Click OK.</li>
+		  <li>Click Add.</li>
+		  <li>Choose <tt>int</tt> from the Type drop-down
+		  and type <tt>b</tt> in the Name text box. Click OK.</li>
+		  <li>Click the Exceptions tab and click Add.</li>
+		  <li>Type <tt>java.rmi.RemoteException</tt>. Click OK.</li>
+		  <li>Click OK to create the operation.
+		  <p>The IDE adds the skeleton of the operation to the implementation class and 
+	 declares it in the interface.</p></li>
+	 <li>In the Source Editor, implement the web service operation by adding
+	 <tt>return a + b;</tt> between the braces. Do this in the implementation class, not
+	  in the SEI. If your web service is named <tt>CalculatorWS</tt>, the implementation class
+	  is named <tt>CalculatorWSImpl</tt> or <tt>CalculatorWSBean</tt> and the interface is named <tt>CalculatorWSSEI</tt>.</li>
+	  </ol></li>
+  </ol>
+<table>
+<tr>
+<th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+<td width="23"></td>
+<td> 
+<a href="../about/about_ws.html">About Web Services</a><br>
+<a href="add_soap_message.html">Adding a SOAP Message Handler</a><br>
+<a href="select_wscompile_ws.html">Building a Web Service</a><br>
+<a href="test_ws.html">Testing a Web Service</a><br>
+</td>
+</tr>
+</table>  
+<hr>
+<small><a href="../../credits.html">Legal Notices</a></small>
+</body></html>
