@@ -45,6 +45,7 @@ import org.openide.util.WeakListener;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
 import org.openide.windows.Workspace;
+import org.openide.util.Utilities;
 
 
 /**
@@ -56,9 +57,6 @@ public class ImageViewer extends CloneableTopComponent {
 
     /** Serialized version UID. */
     static final long serialVersionUID =6960127954234034486L;
-    
-    /** Icon of top component. */
-    private static Image icon = null;
     
     /** <code>ImageDataObject</code> which image is viewed. */
     private ImageDataObject storedObject;
@@ -292,9 +290,7 @@ public class ImageViewer extends CloneableTopComponent {
     
     /** Overrides superclass method. Gets <code>Icon</code>. */
     public Image getIcon () {
-        if (icon == null)
-            icon = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/image/imageObject.gif")); // NOI18N
-        return icon;
+        return Utilities.loadImage("/org/netbeans/modules/image/imageObject.gif"); // NOI18N
     }
     
     /** Draws zoom in scaled image. */

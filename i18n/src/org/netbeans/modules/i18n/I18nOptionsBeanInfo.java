@@ -22,6 +22,7 @@ import java.beans.IntrospectionException;
 import java.beans.SimpleBeanInfo;
 import java.beans.PropertyDescriptor;
 
+import org.openide.util.Utilities;
 
 /**
  * Bean info for <code>I18nOptions</code> class.
@@ -30,13 +31,6 @@ import java.beans.PropertyDescriptor;
  */
 public class I18nOptionsBeanInfo extends SimpleBeanInfo {
 
-    /** Icon 16x16. */
-    private static Image icon;
-    
-    /** Icon 32x32. */
-    private static Image icon32;
-
-    
     /** Overrides superclass method. */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
@@ -82,17 +76,9 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     /** Overrides superclass method. */
     public Image getIcon(int type) {
         if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            if(icon == null) {
-                icon   = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/i18n/i18nAction.gif")); // NOI18N
-            }
-            
-            return icon;
+	    return Utilities.loadImage("org/netbeans/modules/i18n/i18nAction.gif"); // NOI18N
         } else { // 32
-            if(icon32 == null) {
-                icon32 = Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/netbeans/modules/properties/propertiesKey32.gif")); // NOI18N
-            }
-            
-            return icon32;
+            return Utilities.loadImage("org/netbeans/modules/properties/propertiesKey32.gif"); // NOI18N
         }
     }
     
