@@ -55,7 +55,7 @@ class TabsComponent extends JPanel {
         bar.setBorder(b);
 //        setBorder (BorderFactory.createEmptyBorder(0,0,0,0));
 //        setLayout (new AdaptiveGridLayout());
-//        bar.setLayout (new OneLineGridLayout());
+        bar.setLayout (new OneLineGridLayout());
         bar.setFloatable(false);
         bar.setFocusable(true);
         bar.setPreferredSize(new Dimension(10, 26));
@@ -74,9 +74,6 @@ class TabsComponent extends JPanel {
         this.model = model;
         
         componentPanel = new JPanel();
-        // client property for cloneableeditor. if defined cloneable editor should not 
-        // add the customtoolbar to itself.
-        componentPanel.putClientProperty("HasEditorToolbar", Boolean.TRUE);
         cardLayout = new CardLayout();
         componentPanel.setLayout(cardLayout);
         add(componentPanel, BorderLayout.CENTER);
