@@ -128,7 +128,13 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
     }
 
     public boolean supportsCustomEditor () {
-        return true;
+        //Don't show custom editor if it's just going to show
+        //an empty component
+        if (!editable && (strings==null || strings.length==0)) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     public Component getCustomEditor () {
@@ -225,5 +231,4 @@ public class StringArrayEditor implements XMLPropertyEditor, StringArrayCustomiz
             editable = true;
         }
     }
-    
 }

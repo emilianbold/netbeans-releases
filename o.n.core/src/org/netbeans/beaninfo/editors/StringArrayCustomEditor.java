@@ -13,6 +13,12 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.Vector;
 import java.util.ResourceBundle;
 
@@ -28,15 +34,8 @@ import org.openide.util.NbBundle;
 * @version 1.00, Sep 21, 1998
 */
 public class StringArrayCustomEditor extends javax.swing.JPanel {
-
-    // the bundle to use
-    static ResourceBundle bundle = NbBundle.getBundle (
-                                       StringArrayCustomEditor.class);
-
     private Vector itemsVector;
     private StringArrayCustomizable editor;
-
-    private final static int DEFAULT_WIDTH = 400;
 
     static final long serialVersionUID =-4347656479280614636L;
 
@@ -56,41 +55,110 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(16, 8, 8, 0)));
         buttonsPanel.setBorder (new javax.swing.border.EmptyBorder (new java.awt.Insets(0, 5, 5, 5)));
 
-        itemLabel.setText (bundle.getString ("CTL_Item"));
-        itemListLabel.setText(bundle.getString ("CTL_ItemList"));
-        addButton.setText (bundle.getString ("CTL_Add_StringArrayCustomEditor"));
-        changeButton.setText (bundle.getString ("CTL_Change_StringArrayCustomEditor"));
-        removeButton.setText (bundle.getString ("CTL_Remove"));
-        moveUpButton.setText (bundle.getString ("CTL_MoveUp"));
-        moveDownButton.setText (bundle.getString ("CTL_MoveDown"));
+        itemLabel.setText (NbBundle.getMessage(
+            StringArrayCustomEditor.class, "CTL_Item")); //NOI18N
+        itemListLabel.setText(NbBundle.getMessage(
+            StringArrayCustomEditor.class, "CTL_ItemList")); //NOI18N
+        addButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "CTL_Add_StringArrayCustomEditor")); //NOI18N
+        changeButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+            "CTL_Change_StringArrayCustomEditor")); //NOI18N
+        removeButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+            "CTL_Remove")); //NOI18N
+        moveUpButton.setText (NbBundle.getMessage(StringArrayCustomEditor.class,
+            "CTL_MoveUp")); //NOI18N
+        moveDownButton.setText (NbBundle.getMessage(
+            StringArrayCustomEditor.class, "CTL_MoveDown")); //NOI18N
 
-        itemLabel.setDisplayedMnemonic(bundle.getString("CTL_Item_Mnemonic").charAt(0));
-        itemListLabel.setDisplayedMnemonic(bundle.getString("CTL_ItemList_Mnemonic").charAt(0));
-        addButton.setMnemonic(bundle.getString("CTL_Add_StringArrayCustomEditor_Mnemonic").charAt(0));
-        changeButton.setMnemonic(bundle.getString("CTL_Change_StringArrayCustomEditor_Mnemonic").charAt(0));
-        removeButton.setMnemonic(bundle.getString("CTL_Remove_Mnemonic").charAt(0));
-        moveUpButton.setMnemonic(bundle.getString("CTL_MoveUp_Mnemonic").charAt(0));
-        moveDownButton.setMnemonic(bundle.getString("CTL_MoveDown_Mnemonic").charAt(0));
+        itemLabel.setDisplayedMnemonic(NbBundle.getMessage(
+            StringArrayCustomEditor.class, "CTL_Item_Mnemonic").charAt(0)); //NOI18N
+        itemListLabel.setDisplayedMnemonic(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "CTL_ItemList_Mnemonic").charAt(0)); //NOI18N
+        addButton.setMnemonic(NbBundle.getMessage(
+            StringArrayCustomEditor.class, 
+            "CTL_Add_StringArrayCustomEditor_Mnemonic").charAt(0)); //NOI18N
+        changeButton.setMnemonic(NbBundle.getMessage(
+            StringArrayCustomEditor.class, 
+            "CTL_Change_StringArrayCustomEditor_Mnemonic").charAt(0)); //NOI18N
+        removeButton.setMnemonic(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "CTL_Remove_Mnemonic").charAt(0)); //NOI18N
+        moveUpButton.setMnemonic(NbBundle.getMessage(
+            StringArrayCustomEditor.class, 
+            "CTL_MoveUp_Mnemonic").charAt(0)); //NOI18N
+        moveDownButton.setMnemonic(NbBundle.getMessage(
+            StringArrayCustomEditor.class, 
+            "CTL_MoveDown_Mnemonic").charAt(0)); //NOI18N
 
-        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_StringArrayCustomEditor"));
-        itemField.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Item"));
-        itemList.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_ItemList"));
-        addButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Add_StringArrayCustomEditor"));
-        changeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Change_StringArrayCustomEditor"));
-        removeButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_Remove"));
-        moveUpButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_MoveUp"));
-        moveDownButton.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_MoveDown"));
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+            StringArrayCustomEditor.class, "ACSD_StringArrayCustomEditor")); //NOI18N
+        itemField.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(
+            StringArrayCustomEditor.class, "ACSD_CTL_Item")); //NOI18N
+        itemList.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(
+            StringArrayCustomEditor.class, "ACSD_CTL_ItemList")); //NOI18N
+        addButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "ACSD_CTL_Add_StringArrayCustomEditor")); //NOI18N
+        changeButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "ACSD_CTL_Change_StringArrayCustomEditor")); //NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "ACSD_CTL_Remove")); //NOI18N
+        moveUpButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "ACSD_CTL_MoveUp")); //NOI18N
+        moveDownButton.getAccessibleContext().setAccessibleDescription(
+            NbBundle.getMessage(StringArrayCustomEditor.class, 
+            "ACSD_CTL_MoveDown")); //NOI18N
 
         updateButtons ();
-
+        itemField.addKeyListener(new KeyAdapter() {
+           public void keyReleased(KeyEvent event) {
+                boolean containsCurrent = containsCurrent();
+                String txt = itemField.getText().trim();
+                boolean en = itemField.isEnabled() &&
+                    txt.length() > 0 &&
+                    !containsCurrent;
+                addButton.setEnabled(en);
+                changeButton.setEnabled(en && itemList.getSelectedIndex() != -1);
+                if (containsCurrent) {
+                    itemList.setSelectedIndex(idxOfCurrent());
+                }
+           }
+        });
+        itemField.addActionListener(new ActionListener() {
+            public void actionPerformed (ActionEvent ae) {
+                if (addButton.isEnabled()) {
+                    addButtonActionPerformed(ae);
+                }
+            }
+        }); 
+        addButton.setEnabled(false);
+        changeButton.setEnabled(false);
 //        HelpCtx.setHelpIDString (this, StringArrayCustomEditor.class.getName ());
+        setMinimumSize(new Dimension (200, 400));
     }
-
-    public java.awt.Dimension getPreferredSize () {
-        // ensure minimum width
-        java.awt.Dimension sup = super.getPreferredSize ();
-        return new java.awt.Dimension (Math.max (sup.width, DEFAULT_WIDTH), sup.height);
+    
+    /** Determine if the text of the text field matches an item in the 
+     * list */
+    private boolean containsCurrent() {
+        return idxOfCurrent() != -1;
     }
+    
+    private int idxOfCurrent() {
+        String txt = itemField.getText().trim();
+        if (txt.length() > 0) {
+            int max = itemList.getModel().getSize();
+            for (int i=0; i < max; i++) {
+                if (txt.equals(itemList.getModel().getElementAt(i))) return i;
+            }
+        }
+        return -1;
+    }    
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -312,19 +380,37 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         updateValue ();
     }//GEN-LAST:event_addButtonActionPerformed
 
+    public void setEnabled (boolean val) {
+        Component[] c = getComponents();
+        super.setEnabled(val);
+        setChildrenEnabled (this, val);
+    }
+    
+    private void setChildrenEnabled(JPanel parent, boolean val) {
+        Component[] c = parent.getComponents();
+        for (int i=0; i < c.length; i++) {
+            c[i].setEnabled(val);
+            if (c[i] instanceof JPanel) {
+                setChildrenEnabled((JPanel) c[i], val);
+            }
+        }
+    }
+    
     private void updateButtons () {
         int sel = itemList.getSelectedIndex ();
+        boolean enVal = isEnabled();
         if (sel == -1) {
             removeButton.setEnabled (false);
             moveUpButton.setEnabled (false);
             moveDownButton.setEnabled (false);
             changeButton.setEnabled (false);
         } else {
-            removeButton.setEnabled (true);
-            moveUpButton.setEnabled (sel != 0);
-            moveDownButton.setEnabled (sel != itemsVector.size () - 1);
-            changeButton.setEnabled (true);
+            removeButton.setEnabled (enVal && true);
+            moveUpButton.setEnabled (enVal && (sel != 0));
+            moveDownButton.setEnabled (enVal && (sel != itemsVector.size () - 1));
+            changeButton.setEnabled (enVal && true);
         }
+        itemField.setEnabled(enVal);
     }
 
     private void updateValue () {
@@ -379,7 +465,7 @@ public class StringArrayCustomEditor extends javax.swing.JPanel {
         {
             if (!(value instanceof String)) return this;
             String text = (String)value;
-            if ("".equals (text)) text = bundle.getString ("CTL_Empty");
+            if ("".equals (text)) text = NbBundle.getMessage(StringArrayCustomEditor.class, "CTL_Empty");
 
             setText(text);
             if (isSelected){
