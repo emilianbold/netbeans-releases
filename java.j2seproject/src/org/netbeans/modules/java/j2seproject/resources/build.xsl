@@ -74,7 +74,8 @@ Microsystems, Inc. All Rights Reserved.
 
       init-macrodef-javac:    defines macro for javac compilation
       init-macrodef-junit:    defines macro for junit execution
-      init-macrodef-debug:    defines macro for debugging class
+      init-macrodef-debug:    defines macro for class debugging
+      init-macrodef-java:     defines macro for class execution
       do-jar:                 jar archive building
       run:                    execution of project 
       javadoc-build:          javadoc generation 

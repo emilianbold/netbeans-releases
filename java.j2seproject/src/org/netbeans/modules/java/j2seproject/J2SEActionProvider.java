@@ -38,6 +38,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -56,7 +57,9 @@ class J2SEActionProvider implements ActionProvider {
     private static final String COMMAND_COMPILE_SINGLE = "compile.single"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_COMPILE_TEST_SINGLE = "compile.test.single"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_RUN = "run"; /*XXX define somewhere*/ // NOI18N
+    private static final String COMMAND_RUN_SINGLE = "run.single"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_DEBUG = "debug"; /*XXX define somewhere*/ // NOI18N
+    private static final String COMMAND_DEBUG_SINGLE = "debug.single"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_JAVADOC = "javadoc"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_TEST = "test"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_TEST_SINGLE = "test.single"; /*XXX define somewhere*/ // NOI18N
@@ -70,7 +73,9 @@ class J2SEActionProvider implements ActionProvider {
         COMMAND_REBUILD, 
         COMMAND_COMPILE_SINGLE, 
         COMMAND_RUN, 
+        COMMAND_RUN_SINGLE, 
         COMMAND_DEBUG, 
+        COMMAND_DEBUG_SINGLE,
         COMMAND_JAVADOC, 
         COMMAND_TEST, 
         COMMAND_TEST_SINGLE, 
@@ -97,7 +102,9 @@ class J2SEActionProvider implements ActionProvider {
             commands.put(COMMAND_COMPILE_SINGLE, new String[] {"compile-single"}); // NOI18N
             commands.put(COMMAND_COMPILE_TEST_SINGLE, new String[] {"compile-test-single"}); // NOI18N
             commands.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
+            commands.put(COMMAND_RUN_SINGLE, new String[] {"run-single"}); // NOI18N
             commands.put(COMMAND_DEBUG, new String[] {"debug"}); // NOI18N
+            commands.put(COMMAND_DEBUG_SINGLE, new String[] {"debug-single"}); // NOI18N
             commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(COMMAND_TEST, new String[] {"test"}); // NOI18N
             commands.put(COMMAND_TEST_SINGLE, new String[] {"test-single"}); // NOI18N
@@ -187,8 +194,28 @@ class J2SEActionProvider implements ActionProvider {
             if (targetNames == null) {
                 throw new IllegalArgumentException(COMMAND_RUN);
             }
-        }
-        else {
+        } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
+            FileObject file = findSources(context)[0];
+            String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
+            // Convert foo/FooTest.java -> foo.FooTest
+            if (clazz.endsWith(".java")) { // NOI18N
+                clazz = clazz.substring(0, clazz.length() - 5);
+            }
+            clazz = clazz.replace('/','.');
+            if (!MainClassChooser.hasMainMethod(file)) {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(J2SEActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
+                DialogDisplayer.getDefault().notify(nd);
+                return;
+            }
+            p = new Properties();
+            if (command.equals (COMMAND_RUN_SINGLE)) {
+                p.setProperty("run.class", clazz); // NOI18N
+                targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
+            } else {
+                p.setProperty("debug.class", clazz); // NOI18N
+                targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
+            }
+        } else {
             p = null;
             targetNames = (String[])commands.get(command);
             if (targetNames == null) {
@@ -224,8 +251,14 @@ class J2SEActionProvider implements ActionProvider {
         }
         else if ( command.equals( COMMAND_DEBUG_FIX ) ) {
             return findSources( context ) != null || findTestSources( context, false ) != null;
-        }
-        else {
+        } else if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE)) {
+            FileObject fos[] = findSources(context);
+            if (fos != null && fos.length == 1) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
             // other actions are global
             return true;
         }

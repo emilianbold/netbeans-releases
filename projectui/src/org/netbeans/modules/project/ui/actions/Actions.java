@@ -134,6 +134,14 @@ public class Actions implements ActionsFactory {
             null);
     }
     
+    public static Action debugSingle() {
+        return new FileCommandAction (
+            "debug.single", // XXX Define standard
+            NbBundle.getMessage(Actions.class, "LBL_DebugSingleAction_Name"), // NOI18N
+            "org/netbeans/modules/project/ui/resources/debugSingle.gif", // NOI18N
+            null);
+    }
+    
     public static Action testSingle() {
         return new FileCommandAction (
             "test.single", // XXX Define standard

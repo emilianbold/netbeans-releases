@@ -270,7 +270,7 @@ is divided into following sections:
                     <xsl:attribute name="name">debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <attribute>
-                        <xsl:attribute name="name">mainclass</xsl:attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
                         <xsl:attribute name="default">${main.class}</xsl:attribute>
                     </attribute>
                     <attribute>
@@ -282,7 +282,7 @@ is divided into following sections:
                         <xsl:attribute name="default">${application.args}</xsl:attribute>
                     </attribute>
                     <sequential>
-                        <java fork="true" classname="@{{mainclass}}">
+                        <java fork="true" classname="@{{classname}}">
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                                 <bootclasspath>
@@ -301,9 +301,35 @@ is divided into following sections:
                     </sequential>
                 </macrodef>
             </target>
+            
+            <target name="init-macrodef-java">
+                <macrodef>
+                    <xsl:attribute name="name">java</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">classname</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <element>
+                        <xsl:attribute name="name">customize</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </element>
+                    <sequential>
+                        <java fork="true" classname="@{{classname}}">
+                            <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
+                                <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
+                            </xsl:if>
+                            <classpath>
+                                <path path="${{run.classpath}}"/>
+                            </classpath>
+                            <customize/>
+                        </java>
+                    </sequential>
+                </macrodef>
+            </target>
 
             <target name="init">
-                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug</xsl:attribute>
+                <xsl:attribute name="depends">pre-init,init-private,init-userdir,init-user,init-project,do-init,post-init,init-check,init-macrodef-javac,init-macrodef-junit,init-macrodef-nbjpda,init-macrodef-debug,init-macrodef-java</xsl:attribute>
             </target>
 
             <xsl:comment>
@@ -416,15 +442,17 @@ is divided into following sections:
             <target name="run">
                 <xsl:attribute name="depends">init,compile</xsl:attribute>
                 <xsl:attribute name="description">Run a main class.</xsl:attribute>
-                <java fork="true" classname="${{main.class}}">
-                    <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
-                        <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
-                    </xsl:if>
-                    <classpath>
-                        <path path="${{run.classpath}}"/>
-                    </classpath>
-                    <arg line="${{application.args}}"/>
-                </java>
+                <j2seproject:java xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1">
+                    <customize>
+                        <arg line="${{application.args}}"/>
+                    </customize>
+                </j2seproject:java>
+            </target>
+
+            <target name="run-single">
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <fail unless="run.class">Must select one file in the IDE or set run.class</fail>
+                <j2seproject:java xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="${{run.class}}"/>
             </target>
 
             <xsl:comment>
@@ -448,6 +476,18 @@ is divided into following sections:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,compile,debug-start-debugger,debug-start-debuggee</xsl:attribute>
                 <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+            </target>
+
+            <target name="debug-start-debuggee-single">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile</xsl:attribute>
+                <fail unless="debug.class">Must select one file in the IDE or set debug.class</fail>
+                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="${{debug.class}}"/>
+            </target>
+
+            <target name="debug-single">
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,debug-start-debugger,debug-start-debuggee-single</xsl:attribute>
             </target>
 
             <target name="pre-debug-fix">
@@ -649,7 +689,7 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" mainclass="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
+                <j2seproject:debug xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1" classname="junit.textui.TestRunner" classpath="${{debug.test.classpath}}" args="${{test.class}}"/>
             </target>
 
             <target name="debug-start-debugger-test">
