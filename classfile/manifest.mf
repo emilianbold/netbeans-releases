@@ -1,0 +1,6 @@
+OpenIDE-Module: org.netbeans.modules.classfile/1
+OpenIDE-Module-Name: Classfile Reading Support
+OpenIDE-Module-Display-Category: Infrastructure
+OpenIDE-Module-Specification-Version: 0.1
+OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
+Class-Path: ext/classfile.jar
