@@ -80,6 +80,15 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 	 compress="true"/>
   </target>
 
+  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
+    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets" classpath="../nbbuild/nbantext.jar:${binroot}/core/release/lib/ext/regexp.jar:${binroot}/nbbuild/lib/jhall.jar"/>
+    <checkhelpsets>
+      <fileset dir="javahelp">
+        <include name="org/apache/tools/ant/module/docs/HelpSet.hs"/>
+      </fileset>
+    </checkhelpsets>
+  </target>
+
   <target name="netbeans" depends="jars,release,javahelp">
     <genlist targetname="nbm" outputfiledir="../openide/netbeans"/>
   </target>
@@ -134,6 +143,131 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
   <target name="real-clean" depends="clean">
     <delete dir="test"/>
+  </target>
+
+  <!-- For use when making new releases: -->
+  <target name="ensure-def-release-sourcepath" unless="release-sourcepath">
+    <fail message="You must define the variable release-sourcepath: should be root of jakarta-ant checkout"/>
+  </target>
+  <target name="ensure-def-release-version" unless="release-version">
+    <fail message="You must define the variable release-version: e.g. 1.4"/>
+  </target>
+  <target name="release-helper" depends="ensure-def-release-sourcepath,ensure-def-release-version" description="Help do some things useful when bundling a new Ant release.">
+    <property name="release-source-root" location="${release-sourcepath}/src/main"/>
+    <echo>1.  Will create a snapshot of "useful" Java sources from ${release-source-root}...</echo>
+    <property name="useful-sources" location="release-work/useful-sources"/>
+    <delete dir="${useful-sources}"/>
+    <mkdir dir="${useful-sources}"/>
+    <copy todir="${useful-sources}">
+      <fileset dir="${release-source-root}">
+        <!-- Necessarily chosen according to personal judgement; there is no official guide here: -->
+        <include name="org/apache/tools/ant/*.java"/>
+        <exclude name="org/apache/tools/ant/Launcher.java"/>
+        <exclude name="org/apache/tools/ant/Main.java"/>
+        <include name="org/apache/tools/ant/listener/*.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Ant.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Definer.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Execute.java"/>
+        <include name="org/apache/tools/ant/taskdefs/ExecuteJava.java"/>
+        <include name="org/apache/tools/ant/taskdefs/ExecuteStreamHandler.java"/>
+        <include name="org/apache/tools/ant/taskdefs/ExecuteWatchdog.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Javac.java"/>
+        <include name="org/apache/tools/ant/taskdefs/MatchingTask.java"/>
+        <include name="org/apache/tools/ant/taskdefs/Rmic.java"/>
+        <include name="org/apache/tools/ant/taskdefs/compilers/CompilerAdapter.java"/>
+        <include name="org/apache/tools/ant/taskdefs/compilers/DefaultCompilerAdapter.java"/>
+        <include name="org/apache/tools/ant/taskdefs/rmic/DefaultRmicAdapter.java"/>
+        <include name="org/apache/tools/ant/taskdefs/rmic/RmicAdapter.java"/>
+        <include name="org/apache/tools/ant/types/*.java"/>
+        <include name="org/apache/tools/ant/util/*.java"/>
+        <include name="org/apache/tools/ant/util/regexp/RegexpMatcher.java"/>
+        <!-- Do not forget about the package list for Javadoc below... -->
+      </fileset>
+    </copy>
+    <property name="ant-api.zip" location="release/docs/ant-api.zip"/>
+    <echo>2.  Will produce Javadoc for these at ${ant-api.zip}...</echo>
+    <property name="javadoc-out" location="release-work/javadoc-out"/>
+    <delete dir="${javadoc-out}"/>
+    <mkdir dir="${javadoc-out}"/>
+    <javadoc
+      packagenames="org.apache.tools.ant.*,org.apache.tools.ant.listener.*,org.apache.tools.ant.taskdefs.*,org.apache.tools.ant.taskdefs.compilers.*,org.apache.tools.ant.taskdefs.rmic.*,org.apache.tools.ant.types.*,org.apache.tools.ant.util.*,org.apache.tools.ant.util.regexp.*"
+      destdir="${javadoc-out}"
+      protected="true"
+      windowtitle="Ant ${release-version} Javadoc - Essential Classes"
+      doctitle="Ant ${release-version} Javadoc - Essential Classes"
+      version="false"
+      use="false"
+      author="false"
+      splitindex="false"
+      nodeprecatedlist="true"
+      notree="true"
+      nohelp="true"
+      failonerror="true"
+      bottom="&lt;font size=&quot;-2&quot; color=&quot;gray&quot;&gt;Includes only those classes commonly used by task writers. The Ant ${release-version} distribution includes complete Javadoc for all classes included in Ant, though in most cases these are not intended as APIs.&lt;/font&gt;"
+      >
+      <sourcepath>
+        <pathelement location="${useful-sources}"/>
+      </sourcepath>
+      <classpath>
+        <pathelement location="${binroot}/core/release/lib/ext/xerces.jar"/>
+      </classpath>
+    </javadoc>
+    <delete file="${ant-api.zip}"/>
+    <zip zipfile="${ant-api.zip}">
+      <fileset dir="${javadoc-out}"/>
+    </zip>
+    <property name="orig-manual" location="${release-sourcepath}/docs/manual"/>
+    <echo>3.  Doing some preparation of the Ant manual, taken from ${orig-manual}...</echo>
+    <property name="online-manual" location="release-work/online-manual"/>
+    <delete dir="${online-manual}"/>
+    <mkdir dir="${online-manual}"/>
+    <copy todir="${online-manual}">
+      <fileset dir="${orig-manual}" excludesfile="../nbbuild/standard-jar-excludes.txt">
+        <!-- These are obviated by JavaHelp: -->
+        <exclude name="coretasklist.html"/>
+        <exclude name="optionaltasklist.html"/>
+        <exclude name="index.html"/>
+        <exclude name="toc.html"/>
+        <!-- Presumably you do not care about other IDE integrations at this point: -->
+        <exclude name="ide.html"/>
+        <exclude name="Integration/"/>
+        <!-- Does not apply inside NetBeans: -->
+        <exclude name="running.html"/>
+        <!-- Included as a separate Javadoc mount: -->
+        <exclude name="api/"/>
+      </fileset>
+    </copy>
+    <move file="${online-manual}/install.html" tofile="${online-manual}/libdeps.html"/>
+    <property name="libdeps.html" location="${online-manual}/libdeps.html"/>
+    <property name="ant-docs.zip" location="${binroot}/ant/ant-docs.zip"/>
+    <property name="here" location="."/>
+    <property name="ParserDB" location="release/system/ParserDB"/>
+    <property name="features.xml" location="www/plans/features.xml"/>
+    <property name="ant.jar" location="${binroot}/ant/release/modules/ext/ant.jar"/>
+    <property name="ant-optional.jar" location="${binroot}/ant/release/modules/ext/ant-optional.jar"/>
+    <echo>Now some (currently) manual steps for you:
+4.  Edit ${libdeps.html}:
+    - remove everything but Library Dependencies
+    - libraries are needed not in classpath, but NBINSTALL/modules/patches/org-apache-tools-ant-module/
+    - Jakarta regexp is already available in the IDE by default
+5.  Recreate ${ant-docs.zip} from the contents of ${online-manual}
+6.  Ensure these files in ${here} match the actual contents of ${online-manual}:
+    - javahelp/org/apache/tools/ant/module/docs/TOC.toc
+    - javahelp/org/apache/tools/ant/module/docs/Map.jhm
+7.  Mention that the Ant version is ${release-version} in these files in ${here}:
+    - javahelp/org/apache/tools/ant/module/docs/HelpSet.hs
+    - javahelp/org/apache/tools/ant/module/docs/TOC.toc
+    - src/org/apache/tools/ant/module/resources/Bundle.properties
+    - src/org/apache/tools/ant/module/resources/SampleProject.xml_
+8.  Update ${ParserDB} with sources from ${useful-sources}
+9.  Update ${features.xml}
+10. Refresh these files with the prebuilt binaries from an Ant download:
+    - ${ant.jar}
+    - ${ant-optional.jar}
+11. Test everything
+
+After that you should be done!
+</echo>
   </target>
 
 </project>
