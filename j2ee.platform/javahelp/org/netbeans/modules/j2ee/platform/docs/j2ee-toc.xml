@@ -59,7 +59,7 @@
           <tocitem text="Creating a JSP File" target="jsp_create" />
           <tocitem text="Editing a JSP File" target="jsp_edit" />
           <tocitem text="Using a Tag Library in a JSP File" target="jsp_usetaglib"/>
-          <tocitem text="Connection Pooling from a JSP Page" target="use_dbcp_in_jsp"/>
+	  <tocitem text="Tomcat Connection Pooling from a JSP Page" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
           <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />
           <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
@@ -143,7 +143,7 @@
             <tocitem text="About Deploying Web Applications" target="about_deploy" />
 	    <tocitem text="Deploying Tasks: Quick Reference" target="deploy_quickref" />
             <tocitem text="Passing Request Parameters" target="jsp_queryparams"/>
-            <tocitem text="Setting a Username and Password for the Tomcat Manager" target="password_tomcat_manager" />
+            <tocitem text="Setting a Username and Password for the Tomcat Manager" target="deploy_tomcat_manager" />
             <tocitem text="Deploying a Web Application" target="deploy_webapp" />
             <tocitem text="Changing Web Servers" target="deploy_changeserver" />
             <tocitem text="Changing Web Browsers" target="deploy_changebrowser" />
