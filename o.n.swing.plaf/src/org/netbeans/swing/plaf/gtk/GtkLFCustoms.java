@@ -10,11 +10,6 @@
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-/*
- * GtkLfCustoms.java
- *
- * Created on March 14, 2004, 1:13 AM
- */
 
 package org.netbeans.swing.plaf.gtk;
 
@@ -43,7 +38,7 @@ public class GtkLFCustoms extends LFCustoms {
 
     public Object[] createApplicationSpecificKeysAndValues () {
         
-        Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 4);
+        Border lowerBorder = new AdaptiveMatteBorder (false, true, true, true, 3);
         boolean blueprint = UIUtils.isBlueprintTheme();
 
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations

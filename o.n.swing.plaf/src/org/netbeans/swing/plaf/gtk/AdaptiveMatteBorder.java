@@ -1,15 +1,20 @@
 /*
- * AdaptiveMatteBorder.java
- *
- * Created on April 7, 2004, 5:54 PM
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.swing.plaf.gtk;
 
 import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import org.netbeans.swing.plaf.util.UIUtils;
 
 /**
  * A matte border with a few twists - can do drop shadow; also, for toolbars,
@@ -81,63 +86,37 @@ public class AdaptiveMatteBorder implements Border {
             }
         }
         if (ins.top > 0) {
-            g.drawLine (x, y, x + w, y);
+            g.fillRect(x, y, w, 1);
         }
         if (ins.left > 0) {
-            g.drawLine (x, y, x, y + h);
+            g.fillRect(x, y, 1, h);
         }
         if (ins.right > 0) {
-            g.drawLine (x + w, y, x + w, y + h);
+            g.fillRect(x + w - 1, y, 1, h);
         }
         if (ins.bottom > 0) {
-            g.drawLine (x, y + h, x + w, y + h);
+            g.fillRect(x, y + h - 1, w, 1);
         }
         
         if (shadowDepth > 1) {
-            Color ctrl = UIManager.getColor ("control"); //NOI18N
-            Color base = UIManager.getColor("controlShadow");
-        /*
-            ctrl = new Color (ctrl.getRed(), ctrl.getGreen(), ctrl.getBlue(), 255);
+            Rectangle clip = g.getClipBounds();
+            boolean clipTouchesRight = ((clip.x + clip.width) >= (x + w));
+            boolean clipTouchesBottom = ((clip.y + clip.height) >= (y + h));
+
+            if (clipTouchesBottom || clipTouchesRight) {
+                Color ctrl = UIManager.getColor ("control"); //NOI18N
+                Color base = UIManager.getColor("controlShadow");
             
-            xpoints[0] = x+1;
-            ypoints[0] = y + h;
-            
-            xpoints[1] = x + 1 + shadowDepth;
-            ypoints[1] = y + h + 1 + shadowDepth;
-            
-            xpoints[2] = x + shadowDepth + w;
-            ypoints[2] = ypoints[1];
-            
-            xpoints[3] = x + w;
-            ypoints[3] = y + h + 1;
-            
-            GradientPaint gp = UIUtils.getGradientPaint (xpoints[0], ypoints[0], base,
-                xpoints[0], ypoints[1], ctrl, false);
-            ((Graphics2D) g).setPaint (gp);
-            g.fillPolygon(xpoints, ypoints, 4);
-            
-            xpoints[0] = x + w + 1;
-            ypoints[0] = y;
-            
-            xpoints[1] = x + w + shadowDepth;
-            ypoints[1] = y + shadowDepth;
-            
-            gp = UIUtils.getGradientPaint (xpoints[0], ypoints[0], base,
-                xpoints[0], ypoints[1], ctrl, false);
-            ((Graphics2D) g).setPaint (gp);
-            g.fillPolygon(xpoints, ypoints, 4);
-         */
-            
-            
-            Color curr;
-            for (int i = 1; i < shadowDepth; i++) {
-                curr = colorTowards (base, ctrl, shadowDepth, i + 1);
-                g.setColor (curr);
-                if (ins.right > 0) {
-                    g.drawLine (x + w + i, y, x + w + i, y + h + i - 1);
-                }
-                if (ins.bottom > 0) {
-                    g.drawLine (x + i, y + h + i, x + w + i, y + h + i);
+                Color curr;
+                for (int i = 1; i < shadowDepth; i++) {
+                    curr = colorTowards (base, ctrl, shadowDepth, i);
+                    g.setColor (curr);
+                    if (clipTouchesRight && ins.right > 0) {
+                        g.fillRect(x + w - 1 + i, y + i, 1, h);
+                    }
+                    if (clipTouchesBottom && ins.bottom > 0) {
+                        g.fillRect(x + i, y + h - 1 + i, w - 1, 1);
+                    }
                 }
             }
         }
@@ -147,58 +126,7 @@ public class AdaptiveMatteBorder implements Border {
 //    private static int[] xpoints = new int[4];
 //    private static int[] ypoints = new int[4];
     
-/*    
-    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
-        Color color = g.getColor();
-        Insets ins = getBorderInsets(c);
-        Point p = c.getLocation();
-        
-        //This will always really come from the theme on GTK
-        g.setColor (UIManager.getColor("controlShadow"));  //NOI18N
-        w -= shadowDepth;
-        h -= shadowDepth;
-        if (topLeftInsets) {
-            if (p.y <= 10) {
-                y += shadowDepth;
-                h -= shadowDepth;
-            }
-            if (p.x <= 10) {
-                x += shadowDepth;
-                w -= shadowDepth;
-            }
-        }
-        if (ins.top > 0) {
-            g.drawLine (x, y, x + w, y);
-        }
-        if (ins.left > 0) {
-            g.drawLine (x, y, x, y + h);
-        }
-        if (ins.right > 0) {
-            g.drawLine (x + w, y, x + w, y + h);
-        }
-        if (ins.bottom > 0) {
-            g.drawLine (x, y + h, x + w, y + h);
-        }
-        if (shadowDepth > 1) {
-            Color ctrl = UIManager.getColor ("control"); //NOI18N
-            Color base = UIManager.getColor("controlShadow");
-            
-            Color curr;
-            for (int i = 1; i < shadowDepth; i++) {
-                curr = colorTowards (base, ctrl, shadowDepth, i + 1);
-                g.setColor (curr);
-                if (ins.right > 0) {
-                    g.drawLine (x + w + i, y, x + w + i, y + h + i - 1);
-                }
-                if (ins.bottom > 0) {
-                    g.drawLine (x + i, y + h + i, x + w + i, y + h + i);
-                }
-            }
-        }
-        g.setColor (color);
-    }
- */
-    
+
     private static final float[] comps = new float[4];
     static final Color colorTowards (Color base, Color target, float steps, float step) {
         base.getColorComponents(comps);
@@ -207,3 +135,4 @@ public class AdaptiveMatteBorder implements Border {
     }
     
 }
+
