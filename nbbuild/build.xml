@@ -1841,16 +1841,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <ant dir="../libs/commons_logging" target="netbeans"/>
   </target>
 
-  <target name="all-libs/jaxp" depends="init">
-      <echo message="Building module libs/jaxp..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-      <ant dir="../libs/jaxp" target="netbeans"/>
-  </target>
-
   <target name="all-libs/xerces" depends="init">
       <echo message="Building module libs/xerces..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
