@@ -444,7 +444,7 @@ public class MonitorData extends BaseBean {
         try {
             this.write(writer, "UTF-8"); // NOI18N
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
         }
     }
     
