@@ -32,6 +32,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.netbeans.modules.j2ee.dd.api.webservices.*;
 
 /** A web module implementation on top of project.
  *
@@ -252,6 +253,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
             //PENDING find a better way to get the BB from WApp and remove the HACK from DDProvider!!
             return DDProvider.getDefault ().getBaseBean (webApp);
         }
+        else if(J2eeModule.WEBSERVICES_XML.equals(location)){
+            Webservices webServices = getWebservices();
+            if(webServices != null){
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault().getBaseBean(webServices);
+            }
+        }
         return null;
     }
 
@@ -270,6 +277,20 @@ public final class ProjectWebModule extends J2eeModuleProvider
         } catch (java.io.IOException e) {
             org.openide.ErrorManager.getDefault ().log (e.getLocalizedMessage ());
         }
+        return null;
+    }
+    
+    private Webservices getWebservices() {
+        FileObject wsdd = getDD();
+        if(wsdd != null) {
+            try {
+                return org.netbeans.modules.j2ee.dd.api.webservices.DDProvider.getDefault()
+                .getDDRoot(getDD());
+            } catch (java.io.IOException e) {
+                org.openide.ErrorManager.getDefault().log(e.getLocalizedMessage());
+            }
+        }
+        
         return null;
     }
     
@@ -348,6 +369,17 @@ public final class ProjectWebModule extends J2eeModuleProvider
     public String getJ2eePlatformVersion () {
         return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
     }
+    
+    public FileObject getDD() {
+       FileObject webInfFo = getWebInf();
+       if (webInfFo==null) {
+           DialogDisplayer.getDefault().notify(
+           new NotifyDescriptor.Message(NbBundle.getMessage(ProjectWebModule.class,"MSG_WebInfCorrupted"),
+           NotifyDescriptor.ERROR_MESSAGE));
+           return null;
+       }
+       return getWebInf().getFileObject(WebProjectWebServicesSupport.WEBSERVICES_DD, "xml");
+   }
     
 //    private Set versionListeners() {
 //        if (versionListeners == null) {

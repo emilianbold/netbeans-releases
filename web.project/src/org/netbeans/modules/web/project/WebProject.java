@@ -84,6 +84,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+
 
 /**
  * Represents one plain Web project.
@@ -102,6 +106,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     private FileObject libFolder = null;
     private CopyOnSaveSupport css;
     private WebModule apiWebModule;
+    private WebProjectWebServicesSupport webProjectWebServicesSupport;
+    private WebServicesSupport apiWebServicesSupport;
+    private WebServicesClientSupport apiWebServicesClientSupport;
+    private WebContainerImpl enterpriseResourceSupport;
     private FileWatch webPagesFileWatch;
     private FileWatch javaSourceFileWatch;
 
@@ -215,7 +223,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
     };
-
+    
     WebProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
@@ -224,6 +232,10 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
+        webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper);
+        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
+        apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
+        enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
         css = new CopyOnSaveSupport();
@@ -282,7 +294,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             helper.createCacheDirectoryProvider(),
             spp,
             new ProjectWebModuleProvider (),
+			new ProjectWebServicesSupportProvider(),
             webModule, //implements J2eeModuleProvider
+            enterpriseResourceSupport,
             new WebActionProvider( this, helper, refHelper ),
             new WebPhysicalViewProvider(this, helper, evaluator (), spp, refHelper),
             new WebCustomizerProvider( this, helper, refHelper ),
@@ -329,11 +343,19 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
     ProjectWebModule getWebModule () {
         return webModule;
     }
-    
+
     WebModule getAPIWebModule () {
         return apiWebModule;
     }
     
+	WebServicesSupport getAPIWebServicesSupport () {
+		return apiWebServicesSupport;
+	}	
+    
+	WebServicesClientSupport getAPIWebServicesClientSupport () {
+		return apiWebServicesClientSupport;
+	}	
+
     FileObject getSourceDirectory() {
         String srcDir = helper.getStandardPropertyEvaluator ().getProperty ("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
@@ -653,9 +675,6 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
             
-            // Make sure DD graph removed from caching
-            getWebModule().uncacheDescriptors();
-            
             // unregister project's classpaths to GlobalPathRegistry
             ClassPathProviderImpl cpProvider = (ClassPathProviderImpl)lookup.lookup(ClassPathProviderImpl.class);
             GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
@@ -673,7 +692,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
 
         public AntArtifact[] getBuildArtifacts() {
             return new AntArtifact[] {
-                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "war", "clean"), // NOI18N
+                helper.createSimpleAntArtifact(WebProjectConstants.ARTIFACT_TYPE_WAR, "dist.war", evaluator(), "dist", "clean"), // NOI18N
             };
         }
 
@@ -702,7 +721,9 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             "Templates/JSP_Servlet/Html.html",
             "Templates/JSP_Servlet/Servlet.java",
             "Templates/Classes/Class.java",
-            "Templates/Other/Folder"
+            "Templates/Other/Folder",
+            "Templates/JSP_Servlet/WebService",
+            "Templates/JSP_Servlet/WebServiceClient"
         };
         
         public String[] getRecommendedTypes() {

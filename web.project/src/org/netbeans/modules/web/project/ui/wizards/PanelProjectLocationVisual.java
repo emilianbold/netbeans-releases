@@ -31,6 +31,7 @@ import org.openide.WizardValidationException;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     

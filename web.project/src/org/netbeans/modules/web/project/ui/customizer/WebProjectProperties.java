@@ -72,6 +72,7 @@ public class WebProjectProperties {
     public static final String DIST_WAR = "dist.war"; //NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
     public static final String DEBUG_CLASSPATH = "debug.classpath";     //NOI18N
+    public static final String JSPCOMPILATION_CLASSPATH = "jspcompilation.classpath";     //NOI18N
 
     public static final String WAR_NAME = "war.name"; //NOI18N
     public static final String WAR_COMPRESS = "jar.compress"; //NOI18N
@@ -148,6 +149,7 @@ public class WebProjectProperties {
         new PropertyDescriptor( COMPILE_JSPS, PROJECT, BOOLEAN_PARSER ),
         //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( JSPCOMPILATION_CLASSPATH, PROJECT, PATH_PARSER ),
 
         new PropertyDescriptor( WAR_NAME, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
@@ -918,7 +920,7 @@ public class WebProjectProperties {
         }
         return null;
     }
-
+    
     private static class PlatformParser extends PropertyParser {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {

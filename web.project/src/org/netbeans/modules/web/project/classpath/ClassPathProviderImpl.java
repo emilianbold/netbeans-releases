@@ -123,7 +123,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if ( cp == null) {
             if (type == 0) {    
                 cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, "javac.classpath", evaluator));      //NOI18N
+                new ProjectClassPathImplementation(helper, "${javac.classpath}:${build.classes.dir}", evaluator, false));      //NOI18N
             }
             cache[3+type] = cp;
         }

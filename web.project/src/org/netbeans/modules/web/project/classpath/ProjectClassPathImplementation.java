@@ -37,10 +37,31 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private AntProjectHelper helper;
-    private String propertyName;
+    private String expression;
+    private boolean isProperty;
+    private String resolved;
     private List resources;
     private final PropertyEvaluator evaluator;
 
+    /**
+     * Construct the implementation.
+     * @param helper an Ant project, used to resolve file paths
+     * @param propertyName the name of an Ant property or an expression which will supply the classpath
+     * @param evaluator a property evaluator used to find the value of the classpath
+     */
+    public ProjectClassPathImplementation(AntProjectHelper helper, String expression, PropertyEvaluator evaluator, boolean isProperty) {
+        assert helper != null && expression != null;
+        this.helper = helper;
+        this.evaluator = evaluator;
+        this.expression = expression;
+        this.isProperty = isProperty;
+        if (isProperty) {
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        } else {
+            resolved = evaluator.evaluate (expression);
+        }
+    }
+        
     /**
      * Construct the implementation.
      * @param helper an Ant project, used to resolve file paths
@@ -48,11 +69,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
      * @param evaluator a property evaluator used to find the value of the classpath
      */
     public ProjectClassPathImplementation(AntProjectHelper helper, String propertyName, PropertyEvaluator evaluator) {
-        assert helper != null && propertyName != null;
-        this.helper = helper;
-        this.evaluator = evaluator;
-        this.propertyName = propertyName;
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        this (helper, propertyName, evaluator, true);
     }
 
     public synchronized List /*<PathResourceImplementation>*/ getResources() {
@@ -72,10 +89,19 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
 
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (!evt.getPropertyName().equals(propertyName)) {
+        if (isProperty && !evt.getPropertyName().equals(expression)) {
             // Not interesting to us.
             return;
         }
+        if (!isProperty) {
+            String eval = evaluator.evaluate (expression);
+            if (eval == resolved) {
+                return;
+            } else {
+                resolved = eval;
+            }
+        }
+        
         List newRoots = getPath ();
         boolean fire = false;
         synchronized (this) {
@@ -91,7 +117,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     
     private List getPath() {
         List result = new ArrayList ();
-        String prop = evaluator.getProperty(propertyName);
+        String prop = isProperty ? evaluator.getProperty(expression) : resolved;
         if (prop != null) {
             String[] pieces = PropertyUtils.tokenizePath(prop);
             for (int i = 0; i < pieces.length; i++) {

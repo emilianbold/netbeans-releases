@@ -16,12 +16,14 @@ import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import java.util.ArrayList;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -41,8 +43,8 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         if (res != null) {
             return res;
         }
-        if (hasSources(binaryRoot, "build.classes.dir") || hasSources (binaryRoot,"dist.jar")) {      //NOI18N
-            res = new Result (this.helper, "src.dir");                      //NOI18N
+        if (hasSources(binaryRoot, "build.classes.dir") || hasSources (binaryRoot, WebProjectProperties.DIST_WAR)) {      //NOI18N
+            res = new Result (this.helper, new String [] { "src.dir", "websvc.generated.dir" } );  //NOI18N
             this.cache.put (binaryRoot, res);
             return res;
         }
@@ -85,26 +87,26 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         
         FileObject[] cache;
         AntProjectHelper helper;
-        String propertyName;
-        
-        public Result (AntProjectHelper helper, String propertyName) {
+        String [] propertyNames;
+          
+        public Result (AntProjectHelper helper, String [] propertyNames) {
             this.helper = helper;
-            this.propertyName = propertyName;
+            this.propertyNames = propertyNames;
         }
         
         public synchronized FileObject[] getRoots () {
             if (this.cache == null) {
-                String srcDir = this.helper.getStandardPropertyEvaluator ().getProperty (propertyName);
-                FileObject fo = null;
-                if (srcDir != null) {                
-                    fo = helper.resolveFileObject(srcDir);                    
-                }
-                if (fo != null) {
-                    this.cache = new FileObject[] {fo};
-                }
-                else {
-                    this.cache = new FileObject[0];
-                }
+				ArrayList/*FileObject*/ rootList = new ArrayList();
+				for(int i = 0; i < propertyNames.length; i++) {
+					String srcDir = this.helper.getStandardPropertyEvaluator().getProperty (propertyNames[i]);
+					if (srcDir != null) {                
+						FileObject fo = helper.resolveFileObject(srcDir);                    
+						if(fo != null) {
+							rootList.add(fo);
+						}
+					}
+				}
+				this.cache = (FileObject []) rootList.toArray(new FileObject [rootList.size()]);
             }
             return this.cache;
         }
