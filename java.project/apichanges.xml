@@ -76,6 +76,8 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
+    <changes>
+    
         <change>
             <api name="ui"/>
             <summary>The functionality of PackageListView was moved into PackageView support SPI.</summary>
