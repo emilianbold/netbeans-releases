@@ -90,6 +90,8 @@ public abstract class WrappersEditor implements PropertyEditor {
      * the single char or by creating unicode escape.
      */
     public String getAsText () {
+        if ( pe.getValue() == null )
+            return "null";              // NOI18N
         return pe.getAsText();
     }
     /**
