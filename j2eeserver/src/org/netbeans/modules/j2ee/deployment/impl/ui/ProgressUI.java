@@ -207,9 +207,9 @@ public class ProgressUI extends JPanel {
                     frame.getAccessibleContext().setAccessibleDescription(
                         desc != null ? desc 
                                      : NbBundle.getMessage(ProgressUI.class, "ACSD_Progress_Monitor"));
-                    frame.setBounds(Utilities.findCenterBounds(frame.getSize()));
                     frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
                     frame.pack();
+                    frame.setBounds(Utilities.findCenterBounds(frame.getSize()));
                     frame.setVisible(true);
                 }
             });
