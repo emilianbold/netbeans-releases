@@ -96,7 +96,12 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
                                            }
                                        }
                                       );
-        updateSaveButton ();
+        // bugfix 37941, select first item in list
+        if (!listModel.isEmpty ()) {
+            list.setSelectedIndex (0);
+        } else {                              
+            updateSaveButton ();
+        }
         JScrollPane scroll = new JScrollPane (list);
         scroll.setBorder (new CompoundBorder (new EmptyBorder (12, 12, 11, 0), scroll.getBorder ()));
         add(scroll, java.awt.BorderLayout.CENTER);
