@@ -211,7 +211,9 @@ class AntGrammar implements GrammarQuery {
             if (kind == KIND_TYPE) {
                 possibleAttributes.add("id");
             }
-            possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
+            if (getAntGrammar().isKnown(clazz)) {
+                possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
+            }
             if (kind == KIND_TASK) {
                 // Can have an ID too, but less important; leave at end.
                 possibleAttributes.add("id");
@@ -282,7 +284,11 @@ class AntGrammar implements GrammarQuery {
             return EmptyEnumeration.EMPTY;
         } else {
             // some introspectable class
-            elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
+            if (getAntGrammar().isKnown(clazz)) {
+                elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
+            } else {
+                elements = Collections.EMPTY_LIST;
+            }
         }
                 
         String prefix = ctx.getCurrentPrefix();
