@@ -360,7 +360,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggerjpda/ui ..."/>
     <ant dir="../debuggerjpda/ui" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda/ant" depends="all-debuggercore/api,all-debuggerjpda/api,all-openide,all-openide/loaders,all-java/api,all-java/srcmodel">
+  <target name="all-debuggerjpda/ant" depends="all-debuggercore/api,all-debuggerjpda/api,all-openide,all-openide/loaders,all-java/api,all-java/srcmodel,all-projects/projectapi,all-projects/projectuiapi">
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
