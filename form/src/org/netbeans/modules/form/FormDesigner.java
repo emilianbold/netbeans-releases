@@ -825,7 +825,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     public void componentClosed() {
         super.componentClosed();
+        formEditorSupport.closeForm();
     }
+
+//    protected boolean closeLast() {
+//        formEditorSupport.closeForm();
+//        return true;
+//    }
 
     public void componentShowing() {
         super.componentShowing();
@@ -853,7 +859,7 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             "ID_FORM_CLOSING", // dummy ID // NOI18N
             MultiViewFactory.NOOP_CLOSE_ACTION,
             MultiViewFactory.NOOP_CLOSE_ACTION);
-    }    
+    }
 
     // -----------
     // innerclasses

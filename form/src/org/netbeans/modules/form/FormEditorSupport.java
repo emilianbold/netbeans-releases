@@ -50,7 +50,9 @@ public class FormEditorSupport extends JavaEditor
     private static final int SAVING = 2;
 
     /** ID of the form designer (in the multiview) */
-    private static final String FORM_ID = "form"; //NOI18N
+    private static final String MV_FORM_ID = "form"; //NOI18N
+    /** ID of the java editor (in the multiview) */
+    private static final String MV_JAVA_ID = "java"; // NOI18N
 
     /** Icon for the form editor multiview window */
     private static final String iconURL =
@@ -704,10 +706,14 @@ public class FormEditorSupport extends JavaEditor
         return docLoadTask;
     }
 
-    /** Closes the form (the designer part). Used when closing or reloading
-     * the document.
-     */
-    synchronized private void closeForm() {
+    protected void notifyClosed() {
+        super.notifyClosed(); // java editor closed
+        multiviewTC = null;
+    }
+
+    /** Closes the form. Used when closing the form editor or reloading
+     * the form. */
+    void closeForm() {
         formModel.fireFormToBeClosed();
 
         openForms.remove(formModel);
@@ -751,13 +757,11 @@ public class FormEditorSupport extends JavaEditor
         }
 
         // close the designer
-        if (formDesigner != null) {
-            formDesigner.close();
+        if (formDesigner != null)
             formDesigner = null;
-        }
-        multiviewTC = null;
 
         // reset references
+        multiviewTC = null;
         formRootNode = null;
         formDesigner = null;
         persistenceManager = null;
@@ -976,11 +980,11 @@ public class FormEditorSupport extends JavaEditor
             Mode mode = (Mode) it.next();
             TopComponent selected = mode.getSelectedTopComponent();
             MultiViewHandler handler = MultiViews.findMultiViewHandler(selected);
-            if (handler != null) {
-                if (FORM_ID.equals(handler.getSelectedPerspective().preferredID() )) {
-                    designerSelected = true;
-                    break;
-                }
+            if (handler != null
+                && MV_FORM_ID.equals(handler.getSelectedPerspective().preferredID()))
+            {
+                designerSelected = true;
+                break;
             }
         }
 
@@ -1042,10 +1046,10 @@ public class FormEditorSupport extends JavaEditor
 
     private CloneableTopComponent createMultiViewTC(boolean formDefault) {
         MultiViewDescription[] descs = new MultiViewDescription[] {
-            new FormDesc(formDataObject), new JavaDesc(formDataObject) };
+            new JavaDesc(formDataObject), new FormDesc(formDataObject) };
 
         return MultiViewFactory.createCloneableMultiView(
-            descs, descs[formDefault ? 0:1], new CloseHandler(formDataObject));
+            descs, descs[formDefault ? 1:0], new CloseHandler(formDataObject));
     }
 
    /* Calls superclass.
@@ -1122,7 +1126,7 @@ public class FormEditorSupport extends JavaEditor
         }
 
         public String preferredID() {
-            return FORM_ID;
+            return MV_FORM_ID;
         }
 
         public void writeExternal(ObjectOutput out) throws IOException {
@@ -1185,7 +1189,7 @@ public class FormEditorSupport extends JavaEditor
         }
 
         public String preferredID() {
-            return "java"; // NOI18N
+            return MV_JAVA_ID;
         }
 
         public void writeExternal(ObjectOutput out) throws IOException {
@@ -1254,13 +1258,11 @@ public class FormEditorSupport extends JavaEditor
             multiViewObserver = callback;
 
             // needed for deserialization...
-            if (obj != null) { // [obj is from EditorSupport.Editor]
-                FormEditorSupport fes = ((FormDataObject)obj).getFormEditor();
-                if (fes != null) {
-                    // this is used (or misused?) to obtain the deserialized
-                    // multiview topcomponent and set it to FormEditorSupport
-                    fes.setTopComponent(callback.getTopComponent());
-                }
+            if (obj instanceof FormDataObject) { // [obj is from EditorSupport.Editor]
+                // this is used (or misused?) to obtain the deserialized
+                // multiview topcomponent and set it to FormEditorSupport
+                ((FormDataObject)obj).getFormEditor().setTopComponent(
+                                                   callback.getTopComponent());
             }
         }
 
@@ -1303,14 +1305,12 @@ public class FormEditorSupport extends JavaEditor
             }
         }
 
-//        public void open() {
-//            if (multiViewObserver != null) {
-//                multiViewObserver.requestVisible();
-//            } else {
-//                super.open();
-//            }
-////            super.open();
-//        }        
+        protected boolean closeLast() {
+            // don't call canClose() - this is done already in the CloseHandler
+            if (obj instanceof FormDataObject)
+                ((FormDataObject)obj).getFormEditor().notifyClosed();
+            return true;
+        }
 
         public CloseOperationState canCloseElement() {
             // return a placeholder state - to be sure our CloseHandler is called
@@ -1325,6 +1325,23 @@ public class FormEditorSupport extends JavaEditor
             // constructs actions : NbEditorKit.NbBuildPopupMenuAction
             return multiViewObserver != null ?
                 multiViewObserver.createDefaultActions() : super.getActions();
+        }
+
+        protected boolean isActiveTC() {
+            TopComponent selected = getRegistry().getActivated();
+
+            if (selected == null)
+                return false;
+            if (selected == this)
+                return true;
+
+            MultiViewHandler handler = MultiViews.findMultiViewHandler(selected);
+            if (handler != null
+                    && MV_JAVA_ID.equals(handler.getSelectedPerspective()
+                                                          .preferredID()))
+                return true;
+
+            return false;
         }
     }
 
@@ -1356,15 +1373,7 @@ public class FormEditorSupport extends JavaEditor
 
         public boolean resolveCloseOperation(CloseOperationState[] elements) {
             FormEditorSupport formEditor = getFormEditor();
-            if (formEditor == null)
-                return true;
-
-            if (formEditor.formLoaded && formEditor.canClose()) {
-                formEditor.closeForm();
-                formEditor.close();
-            }
-
-            return !formEditor.formLoaded;
+            return formEditor != null ? formEditor.canClose() : true;
         }
     }
 }
