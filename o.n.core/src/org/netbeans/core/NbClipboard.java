@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,6 +19,7 @@ import java.awt.event.AWTEventListener;
 import java.awt.event.WindowEvent;
 import java.awt.datatransfer.*;
 import java.util.Collection;
+import org.openide.ErrorManager;
 
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.util.Lookup;
@@ -163,6 +164,7 @@ public final class NbClipboard extends ExClipboard
         } catch (ThreadDeath ex) {
             throw ex;
         } catch (Throwable ex) {
+            org.openide.ErrorManager.getDefault ().notify (ex);
             return null;
         }
     }
