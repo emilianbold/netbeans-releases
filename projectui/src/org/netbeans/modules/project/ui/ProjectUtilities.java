@@ -82,7 +82,6 @@ public class ProjectUtilities {
                 Node root = ptLogial.getExplorerManager ().getRootContext ();
                 // Node projNode = root.getChildren ().findChild( p.getProjectDirectory().getName () );
                 Node projNode = root.getChildren ().findChild( ProjectUtils.getInformation( p ).getName() );
-                System.out.println("Proj node" + projNode );
                 if ( projNode != null ) {
                     try {                            
                         ptLogial.getExplorerManager ().setSelectedNodes( new Node[] { projNode } );
