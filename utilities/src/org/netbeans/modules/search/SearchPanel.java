@@ -310,11 +310,13 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
         dialog.addComponentListener(new ComponentAdapter() {
             public void componentShown(ComponentEvent evt) {
                 int selectedIndex = tabbedPane.getSelectedIndex();
-                if(selectedIndex < 0) selectedIndex = 0;
-                
+                if (selectedIndex < 0) {
+                    selectedIndex = 0;
+                }
                 Component component = getTypeCustomizer(selectedIndex);
-                if (component != null)
+                if (component != null) {
                     component.requestFocus();
+                }
                 dialog.removeComponentListener(this);
             }
         });
