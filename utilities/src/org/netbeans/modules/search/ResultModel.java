@@ -26,6 +26,7 @@ import javax.swing.event.ChangeListener;
 
 import org.openide.actions.DeleteAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -738,7 +739,7 @@ public class ResultModel implements TaskListener {
         public String getHtmlDisplayName() {
             FileObject fileFolder = originalDataObject.getPrimaryFile().getParent();
             if(fileFolder != null) {
-                String hint = fileFolder.getPath();
+                String hint = FileUtil.getFileDisplayName(fileFolder);
                 String orig = getOriginal().getDisplayName();
                 try {
                     return "<html>" + orig + " <font color='!controlShadow'>" + XMLUtil.toElementContent(hint);  // NOI18N
