@@ -26,6 +26,7 @@ import java.io.NotActiveException;
 
 import org.openide.*;
 import org.openide.filesystems.*;
+import org.openide.cookies.OpenCookie;
 import org.openide.loaders.*;
 import org.openide.windows.*;
 import org.openide.actions.OpenAction;
@@ -52,9 +53,6 @@ public final class PropertiesDataObject extends MultiDataObject {
   /** Structural view of the dataobject */
   protected transient BundleStructure bundleStructure;
 
-  /** JTable-based editor */
-  protected transient PropertiesOpen opener;
-  
   /** Icon base for the PropertiesNode node */
   static final String PROPERTIES_ICON_BASE =
     "com/netbeans/developer/modules/loaders/properties/propertiesObject";
@@ -67,26 +65,25 @@ public final class PropertiesDataObject extends MultiDataObject {
     super(obj, loader);
     // use editor support
     init();
-    getCookieSet().add(opener);
-    getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
   }
   
   /** Initializes the object after it is created or deserialized */
   private void init() {
-    opener = new PropertiesOpen((PropertiesFileEntry)getPrimaryEntry());
     bundleStructure = null;
+    getCookieSet().add(new PropertiesOpen((PropertiesFileEntry)getPrimaryEntry()));
+    getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
   }
                                          
   /** Returns the support object for JTable-editing. Should be used by all subentries as well */                                       
   public PropertiesOpen getOpenSupport () {
-    return opener;
+    return (PropertiesOpen)getCookie(OpenCookie.class);
   }                               
                                           
   /** Setter for modification status. Mod.status is handled by events from entries, 
   * so this method does nothing. */
   public void setModified(boolean modif) {
     // do nothing, modification status is handled in other ways
-  }             
+  }
   
               
   /** Updates modification status of this dataobject from its entries. */            
@@ -238,6 +235,7 @@ public final class PropertiesDataObject extends MultiDataObject {
 
 /*
  * <<Log>>
+ *  21   Gandalf   1.20        10/12/99 Petr Jiricka    
  *  20   Gandalf   1.19        9/13/99  Petr Jiricka    MIME type changed to a 
  *       constant
  *  19   Gandalf   1.18        9/10/99  Petr Jiricka    Comparator change

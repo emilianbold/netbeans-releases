@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import javax.swing.table.*;
 import javax.swing.event.TableModelEvent;
+import javax.swing.JTable;
 
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
@@ -91,21 +92,54 @@ public class PropertiesTableModel extends AbstractTableModel {
     public void bundleChanged(PropertyBundleEvent evt) {
       // PENDING - should be maybe even finer
       switch (evt.getChangeType()) {
+        // structure changed
         case PropertyBundleEvent.CHANGE_STRUCT:
-          fireTableStructureChanged();                                        
+          cancelEditingInTables(getDefaultCancelSelector());
+          fireTableStructureChanged();
+//System.out.println(PropertiesTableModel.this.toString());
           break;
+        // all items changed (keyset)  
         case PropertyBundleEvent.CHANGE_ALL:
+          cancelEditingInTables(getDefaultCancelSelector());
           fireTableDataChanged();                                        
+//System.out.println(PropertiesTableModel.this.toString());
           break;
+        // file changed  
         case PropertyBundleEvent.CHANGE_FILE: 
-          int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
-          if (index != -1)
-            fireTableColumnChanged(index + 1);
+          final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+          if (index == -1) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions"))
+              (new Exception("Changed file not found")).printStackTrace();
+            break;
+          }
+          cancelEditingInTables(new CancelSelector() {
+            public boolean doCancelEditing(int row, int column) {
+              if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                return false;
+              return (column == index + 1);
+            }
+          });
+          fireTableColumnChanged(index + 1);
+//System.out.println(PropertiesTableModel.this.toString());
           break;
+        // one item changed  
         case PropertyBundleEvent.CHANGE_ITEM:
-          index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
-          int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
-          fireTableCellUpdated(keyIndex, index + 1);
+          final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+          final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
+          if (index2 == -1 || keyIndex == -1) {
+            if (Boolean.getBoolean("netbeans.debug.exceptions"))
+              (new Exception("Changed file not found")).printStackTrace();
+            break;
+          }
+          cancelEditingInTables(new CancelSelector() {
+            public boolean doCancelEditing(int row, int column) {
+              if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                return false;
+              return (column == index2 + 1 && row == keyIndex);
+            }
+          });
+          fireTableCellUpdated(keyIndex, index2 + 1);
+//System.out.println(PropertiesTableModel.this.toString());
           break;
       }
     }
@@ -255,6 +289,60 @@ public class PropertiesTableModel extends AbstractTableModel {
   public void fireTableColumnChanged(int column) {
     fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, column));
   }
+  
+  public String toString() {
+    StringBuffer result = new StringBuffer();
+    result.append("------------------------------ TABLE MODEL DUMP -----------------------\n");
+    for (int row = 0; row < getRowCount(); row ++) {
+      for (int column = 0; column < getColumnCount(); column ++) {
+        StringPair sp = (StringPair)getValueAt(row, column);
+        result.append("[" /*+ sp.getComment() + "," */+ sp.getValue() + "]");
+        if (column == 0)
+          result.append(" : ");
+        else 
+          if (column == getColumnCount() - 1)
+            result.append("\n");
+          else
+            result.append(",");
+      }
+    }
+    result.append("---------------------------- END TABLE MODEL DUMP ---------------------\n");
+    return result.toString();
+  }
+  
+  /** Cancels editing in all listening JTables if appropriate */
+  private void cancelEditingInTables(CancelSelector can) {
+    Object list[] = listenerList.getListenerList();
+    for (int i = 0; i < list.length; i++) {
+      if (list[i] instanceof JTable) {
+        JTable jt = (JTable)list[i];
+        if (can.doCancelEditing(jt.getEditingRow(), jt.getEditingColumn())) {
+          TableCellEditor ed = jt.getCellEditor();
+          if (ed != null) {
+            ed.cancelCellEditing();
+System.out.println("canceling edit in " + jt);          
+          }  
+        }
+      }
+    }
+  }
+  
+   
+  /** Interface which finds out whether editing should be canceled if given cell is edited. */
+  private static interface CancelSelector {
+    /** Returns whether editing should be canceled for given row and column. */
+    public boolean doCancelEditing(int row, int column);
+  }  
+  
+  private CancelSelector getDefaultCancelSelector() {
+    return new CancelSelector() {
+      /** Returns whether editing should be canceled for given row and column. */
+      public boolean doCancelEditing(int row, int column) {
+        return (row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount());
+      }
+    };  
+  }  
+    
 
   /** Object for the value for one cell. 
   * Encapsulates up to two values. 

@@ -45,6 +45,7 @@ import javax.swing.event.ChangeEvent;
 
 import org.openide.loaders.*;
 import org.openide.*;
+import org.openide.cookies.EditCookie;
 import org.openide.util.datatransfer.*;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -61,7 +62,6 @@ import org.openide.nodes.*;
 public class PropertiesFileEntry extends PresentableFileEntry {
            
   protected String basicName;
-  transient protected PropertiesEditorSupport editorSupport;
   transient protected StructHandler propStruct;
            
   /** Creates new PropertiesFileEntry */
@@ -78,6 +78,8 @@ public class PropertiesFileEntry extends PresentableFileEntry {
                                               
   /** Initializes the object after creation and deserialization */
   private void init() {
+    // edit as a viewcookie
+    getCookieSet().add (new PropertiesEditorSupport(this));
   }                      
                                   
   /** Creates a node delegate for this entry. */
@@ -105,10 +107,7 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   
   /** Returns editor support for properties */                       
   protected PropertiesEditorSupport getPropertiesEditor() {
-    if (editorSupport == null) {
-      editorSupport = new PropertiesEditorSupport(this);
-    }  
-    return editorSupport;
+    return (PropertiesEditorSupport)getCookieSet().getCookie(EditCookie.class);
   }
   
   /* Renames underlying fileobject. This implementation returns the

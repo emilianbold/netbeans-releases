@@ -156,12 +156,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
         try {
           TopComponent editor = (TopComponent)allEditors.getAnyComponent ();
           editor.requestFocus ();
+System.out.println("opening existing properties edit for " + entry.getFile().getPackageNameExt('/','.'));
         } catch (java.util.NoSuchElementException ex) {
           // no opened editor
           CloneableTopComponent editor = createCloneableTopComponent ();
           allEditors = editor.getReference ();
           editor.open ();
           editor.requestFocus();
+System.out.println("opening new properties edit for " + entry.getFile().getPackageNameExt('/','.'));
         }
       }  
     } finally {
@@ -627,28 +629,14 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
         myEntry.getCookieSet().add(this);
       }
       ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
-      RequestProcessor.postRequest(new Runnable() {
-        public void run() {
-          myEntry.getPropertiesEditor().open();
-        }
-      });
-      
-      
-      /*if (hasOpenComponent()) {
-        // add Save cookie to the entry       
-        if (myEntry.getCookie(SaveCookie.class) == null) {
-          myEntry.getCookieSet().add(this);
-        }
-        ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
-      }
-      else
-        try {
-          save();
-        }
-        catch (IOException e) {
-          // PENDING
-        }  
-      */  
+      if (!hasOpenComponent()) {
+        RequestProcessor.postRequest(new Runnable() {
+          public void run() {
+            myEntry.getPropertiesEditor().open();
+          }
+        });
+      }  
+        
     }
     /** Removes save cookie from the DO.
     */
