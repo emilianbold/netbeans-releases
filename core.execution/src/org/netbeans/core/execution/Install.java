@@ -268,7 +268,7 @@ public class Install extends ModuleInstall {
     private static Collection getPendingTasks() {
         
         ArrayList pendingTasks = new ArrayList( 10 );
-        pendingTasks.addAll(ModuleActions.getDefault().getRunningActions());
+        pendingTasks.addAll(ModuleActions.getDefaultInstance().getRunningActions());
         
         if ( !Boolean.getBoolean( "netbeans.full.hack" ) ) { // NOI18N
             // Avoid showing the tasks in the dialog when running internal tests
@@ -292,7 +292,7 @@ public class Install extends ModuleInstall {
         // ans implement ModuleActions.killRunningActions, but be aware
         // for some specialities, e.g. not to stop task with 
         // unmounting FS action when actually doing the unmounting.
-        ModuleActions.getDefault().killRunningActions();
+        ModuleActions.getDefaultInstance().killRunningActions();
         killRunningExecutors();
         
         // [PENDING] When it'll be added another types of tasks (locks etc.)

@@ -58,8 +58,8 @@ public class ModuleActions extends ActionManager
         module = PROP_RUNNING_ACTIONS;
     }
     
-    public static ModuleActions getDefault () {
-        return (ModuleActions)org.openide.util.Lookup.getDefault ().lookup (ActionManager.class);
+    public static ModuleActions getDefaultInstance() {
+        return (ModuleActions)ActionManager.getDefault();
     }
 
     /** Array with all activated actions.
@@ -188,7 +188,7 @@ public class ModuleActions extends ActionManager
         //a.addPropertyChangeListener (INSTANCE);
 
         array = null;
-        getDefault().fireChange (); // PENDING this is too often
+        getDefaultInstance().fireChange (); // PENDING this is too often
     }
 
     /** Removes new action from the list.
@@ -206,7 +206,7 @@ public class ModuleActions extends ActionManager
         }
 
         array = null;
-        getDefault().fireChange (); // PENDING this is too often
+        getDefaultInstance().fireChange (); // PENDING this is too often
     }
 
     /** Creates the actions.
