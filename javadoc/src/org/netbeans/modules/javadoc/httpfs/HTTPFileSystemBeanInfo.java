@@ -8,7 +8,7 @@
  *
  * The Original Code is the HTTP Javadoc Filesystem.
  * The Initial Developer of the Original Code is Jeffrey A. Keyser.
- * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2001.
+ * Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2002.
  * All Rights Reserved.
  *
  * Contributor(s): Jeffrey A. Keyser.
@@ -46,12 +46,31 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
         
         if( propertyDescriptors == null ){
             try {            
-                propertyDescriptors = new PropertyDescriptor[ 1 ];
+
+                propertyDescriptors = new PropertyDescriptor[ 3 ];
+
+                // URL property
                 propertyDescriptors[ 0 ] = new PropertyDescriptor( HTTPFileSystem.PROP_URL, HTTPFileSystem.class, "getURL", "setURL" );	// NOI18N
                 propertyDescriptors[ 0 ].setDisplayName( ResourceUtils.getBundledString( "PROP_URLPropertyName" ) ); //NOI18N
                 propertyDescriptors[ 0 ].setShortDescription( ResourceUtils.getBundledString( "HINT_URLPropertyName" ) ); //NOI18N
                 propertyDescriptors[ 0 ].setBound( true );
                 propertyDescriptors[ 0 ].setConstrained( true );
+                propertyDescriptors[ 0 ].setPreferred( true );
+
+                // RefreshRate property
+                propertyDescriptors[ 1 ] = new PropertyDescriptor( HTTPFileSystem.PROP_REFRESH_RATE, HTTPFileSystem.class, "getRefreshRate", "setRefreshRate" );	// NOI18N
+                propertyDescriptors[ 1 ].setDisplayName( ResourceUtils.getBundledString( "PROP_RefreshRatePropertyName" ) ); //NOI18N
+                propertyDescriptors[ 1 ].setShortDescription( ResourceUtils.getBundledString( "HINT_RefreshRatePropertyName" ) ); //NOI18N
+                propertyDescriptors[ 1 ].setBound( true );
+                propertyDescriptors[ 1 ].setConstrained( true );
+                propertyDescriptors[ 1 ].setExpert( true );
+
+                // State property
+                propertyDescriptors[ 2 ] = new PropertyDescriptor( HTTPFileSystem.PROP_STATE, HTTPFileSystem.class, "getState", null );	// NOI18N
+                propertyDescriptors[ 2 ].setBound( true );
+                propertyDescriptors[ 2 ].setConstrained( false );
+                propertyDescriptors[ 2 ].setHidden( true );
+
             }
             catch( IntrospectionException e ) {            
                 if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N

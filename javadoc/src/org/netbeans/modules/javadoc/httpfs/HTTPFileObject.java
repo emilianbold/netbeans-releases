@@ -8,7 +8,7 @@
 *
 * The Original Code is the HTTP Javadoc Filesystem.
 * The Initial Developer of the Original Code is Jeffrey A. Keyser.
-* Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2001.
+* Portions created by Jeffrey A. Keyser are Copyright (C) 2000-2002.
 * All Rights Reserved.
 *
 * Contributor(s): Jeffrey A. Keyser.
@@ -33,20 +33,20 @@ import org.openide.filesystems.*;
  *
  *	@since 1.0
  */
-class HTTPFileObject extends FileObject implements Runnable {
+class HTTPFileObject extends FileObject {
     
     private static final long serialVersionUID = 200104;
 
     // File system that owns this file
-    transient private HTTPFileSystem    parentFileSystem;
+    transient HTTPFileSystem            parentFileSystem;
     // Path of this file under the URL of the file system.
-    private String                      uriStem;
+    String                              uriStem;
     // Directory object that contains this file
     transient private HTTPFileObject    parentFileObject;
     // Child file objects of this file if it is a directory
     transient private Hashtable         childFileObjects;
     // URL to this file
-    transient private URL               fileURL;
+    transient URL                       fileURL;
     // The file name part of this file
     transient private String            fullFileName;
     // The first part of this file's file name
@@ -80,6 +80,7 @@ class HTTPFileObject extends FileObject implements Runnable {
     HTTPFileObject( String uriStem, HTTPFileSystem parentFileSystem ) {
 
         initialize( uriStem, parentFileSystem );
+
     }
     
     
@@ -119,56 +120,44 @@ class HTTPFileObject extends FileObject implements Runnable {
             this.fileAttributes = new Hashtable( 0 );
             this.areFolderContentsKnown = true;
             this.listeners = new Vector( );
+            this.fullFileName = "";     //NOI18N
+            this.fileName = "";         //NOI18N
+            this.fileExtension = "";    //NOI18N
 
-            // If this is not a root file object,
-            if( !isRoot( ) ) {
 
-                // If this is a directory,
-                if( isFolder( ) ) {
+            // If this is a directory,
+            if( isFolder( ) ) {
 
-                    // Flag the header as read (there is no header for this file)
-                    this.wasFileHeaderRead = true;
+                // Flag the header as read (there is no header for this file)
+                this.wasFileHeaderRead = true;
 
-                    // Trim the trailing slash from the file name
-                    this.fullFileName = uriStem.substring( 0, uriStem.length( ) - 1 );
+                // Trim the trailing slash from the file name
+                this.fullFileName = uriStem.substring( 0, uriStem.length( ) - 1 );
 
-                // If this is a file object (not a directory),
-                } else {
-
-                    // Create default values for items read from the header
-                    this.wasFileHeaderRead = false;
-                    this.fileSize = -1;
-                    this.fileMIMEType = ""; //NOI18N
-                    this.fileDate = new Date( );
-                    this.fullFileName = uriStem;
-
-                }
-                // Trim everything after the last slash as the file name
-                this.fullFileName = this.fullFileName.substring( this.fullFileName.lastIndexOf( '/' ) + 1 );
-
-                // If the full file name contains a period,
-                if( this.fullFileName.lastIndexOf( '.' ) != -1 ) {
-
-                    // Split the file name into its two parts
-                    this.fileName = this.fullFileName.substring( 0, this.fullFileName.lastIndexOf( '.' ) );
-                    this.fileExtension = this.fullFileName.substring( this.fullFileName.lastIndexOf( '.' ) + 1 );
-
-                } else {
-
-                    this.fileName = this.fullFileName;
-                    this.fileExtension = "";    //NOI18N
-
-                }
-
-            // If this is the root file object,
+            // If this is a file object (not a directory),
             } else {
 
-                this.fullFileName = "";     //NOI18N
-                this.fileName = "";         //NOI18N
-                this.fileExtension = "";    //NOI18N
+                // Create default values for items read from the header
+                this.wasFileHeaderRead = false;
+                this.fileSize = -1;
+                this.fileMIMEType = ""; //NOI18N
+                this.fileDate = new Date( );
+                this.fullFileName = uriStem;
 
-                // Start reading the items in the root directory in the background
-                new Thread( this ).start( );
+            }
+            // Trim everything after the last slash as the file name
+            this.fullFileName = this.fullFileName.substring( this.fullFileName.lastIndexOf( '/' ) + 1 );
+
+            // If the full file name contains a period,
+            if( this.fullFileName.lastIndexOf( '.' ) != -1 ) {
+
+                // Split the file name into its two parts
+                this.fileName = this.fullFileName.substring( 0, this.fullFileName.lastIndexOf( '.' ) );
+                this.fileExtension = this.fullFileName.substring( this.fullFileName.lastIndexOf( '.' ) + 1 );
+
+            } else {
+
+                this.fileName = this.fullFileName;
 
             }
 
@@ -752,7 +741,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@since 1.0
      */
-    private synchronized void addChild( HTTPFileObject newChildFileObject ) {        
+    synchronized void addChild( HTTPFileObject newChildFileObject ) {        
 
         childFileObjects.put( newChildFileObject.getNameExt( ), newChildFileObject );
         newChildFileObject.parentFileObject = this;
@@ -773,8 +762,41 @@ class HTTPFileObject extends FileObject implements Runnable {
         }
 
     }
-    
-    
+
+
+    /**
+     *	Removes all child file objects from this directory object.
+     *
+     *	@since 3.4
+     */
+    synchronized void removeAllChildren(
+    ) {
+
+        // Iterator through list of chlildren
+        Iterator        childIterator;
+        // Next file to remove
+        HTTPFileObject  childFile;
+
+
+        childIterator = childFileObjects.values( ).iterator( );
+        while( childIterator.hasNext( ) ) {
+
+            childFile = (HTTPFileObject)childIterator.next( );
+            childIterator.remove( );
+            childFile.parentFileObject = null;
+
+            // Notify any listeners that this file has been removed
+            if( !listeners.isEmpty( ) ) {
+
+                fireFileDeletedEvent( listeners.elements( ), new FileEvent( this, childFile, true ) );
+
+            }
+
+        }
+
+    }
+
+
     /**
      *	Adds a file object with the passed name to the list of files of this directory
      *	object.
@@ -783,7 +805,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@since 1.0
      */
-    private void addChild( String newChildFileName ) {        
+    void addChild( String newChildFileName ) {        
         addChild( new HTTPFileObject( newChildFileName, parentFileSystem ) );        
     }
     
@@ -799,7 +821,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *  @since 1.0
      */
-    private boolean addOptionalChild( String newChildFileName ) {        
+    boolean addOptionalChild( String newChildFileName ) {        
         // Connection to the web server for this file
         HttpURLConnection   fileConnection;
         // New file object
@@ -874,7 +896,7 @@ class HTTPFileObject extends FileObject implements Runnable {
      *
      *	@since 1.0
      */
-    private HTTPFileObject child( String fullFileName, boolean readPackageContents ) {
+    HTTPFileObject child( String fullFileName, boolean readPackageContents ) {
         
         return (HTTPFileObject)getChildFileObjects( readPackageContents ).get( fullFileName );
 
@@ -905,150 +927,14 @@ class HTTPFileObject extends FileObject implements Runnable {
         return childFileObjects;
 
     }
-    
-    
-    /**
-     *  Called to initialize the root file object in the background.
-     *
-     *  @since 1.0
-     */
-    public void run( ) {
-        
-        readRootContents( );
-        
-    }
-    
-    
-    /**
-     *	Reads the base files available at the URL to build the directory tree.
-     *
-     *	@since 1.0
-     */
-    private void readRootContents() {
-        
-        // File object for /package-list
-        HTTPFileObject	packageFile;
-        // File object for /index-files/ directory
-        HTTPFileObject	indexDirectory;
-        // Reader of package names in /package-list
-        BufferedReader packageReader;
-        // Package name read from /package-list
-        String packageName;
-        // File number for the next split index file
-        int indexFileNumber;
-        
-        
-        // Add the standard files for a Javadoc directory structre
-        if( addOptionalChild( "/package-list" ) ) { //NO I18N
 
-            packageFile = child( "package-list", false );       //NO I18N
-            addChild( "/allclasses-frame.html" );        //NO I18N
-            addOptionalChild( "/deprecated-list.html" ); //NO I18N
-            addOptionalChild( "/help-doc.html" );        //NO I18N
-            addOptionalChild( "/index.html" );           //NO I18N
-            addChild( "/overview-frame.html" );          //NO I18N
-            addChild( "/overview-summary.html" );        //NO I18N
-            addOptionalChild( "/overview-tree.html" );   //NO I18N
-            addChild( "/packages.html" );                //NO I18N
-            addChild( "/serialized-form.html" );         //NO I18N
-            addChild( "/stylesheet.css" );               //NO I18N
 
-            // Add the full index file
-            if( !addOptionalChild( "/index-all.html" ) ) {   //NO I18N
-
-                // If there was no full index, search for split index files
-                indexFileNumber = 1;
-                while( addOptionalChild( "/index-" + indexFileNumber + ".html" ) ) { //NO I18N
-
-                    indexFileNumber++;                    
-                }
-
-                // If no index were found in the root,
-                if( indexFileNumber == 1 ) {
-                    // Look in /index-files/
-                    indexDirectory = new HTTPFileObject( "/index-files/", parentFileSystem );   //NO I18N
-                    // Add the full index file
-                    if( !indexDirectory.addOptionalChild( "/index-files/index-all.html" ) ) {   //NO I18N
-                        // If there was no full index, search for split index files
-                        indexFileNumber = 1;
-                        while( indexDirectory.addOptionalChild( "/index-files/index-" + indexFileNumber + ".html" ) ) { //NO I18N
-                            indexFileNumber++;
-                        }
-                        // If index file were found in this directory,
-                        if( indexFileNumber != 1 ) {
-                            addChild( indexDirectory );
-                        }
-
-                        // If there was an index file found in this directory,
-                    } else {
-                        addChild( indexDirectory );
-                    }
-                }
-            }
-            try {
-                // Read all of the package names from the /package-list file
-                packageReader = new BufferedReader( new InputStreamReader( packageFile.getInputStream( ) ) );
-                packageName = packageReader.readLine( );
-                while( packageName != null ) {
-                    // Add each package to this file system
-                    addPackage( packageName );
-                    packageName = packageReader.readLine( );
-                }
-                packageReader.close( );
-
-            } catch( IOException e ) {
-                // Ignore packages
-            }
-
-        }
-
-    }
-    
-    
-    /**
-     *	Adds the named package to this file sytem.
-     *
-     *	@param packageName Package name to add to this file system.
-     *
-     *	@since 1.0
-     */
-    private void addPackage( String packageName ) {
-        
-        // Parser to break up the package heirarchy
-        StringTokenizer packageParser;
-        // One level of this package heirarchy
-        String          packagePart;
-        // The diretory that belongs to the selected package
-        HTTPFileObject  packageDirectory;
-        
-        
-        // Pull apart the package heirarchy
-        packageParser = new StringTokenizer( packageName, "." );    //NOI18N
-        packageDirectory = this;
-        
-        // With each level of the package,
-        while( packageParser.hasMoreElements( ) ) {
-            
-            packagePart = (String)packageParser.nextElement( );
-            
-            // Find its directory object
-            if( packageDirectory.child( packagePart, false ) == null ) {
-                
-                packageDirectory.addChild( packageDirectory.uriStem + packagePart + "/" );  //NOI18N
-            }
-            packageDirectory = packageDirectory.child( packagePart, false );            
-        }
-        // flag this directory as containing class files
-        packageDirectory.makePackage( );
-    }
-    
-    
     /**
      *	Called to mark this directory as one that contains package files.
      *
      *	@since 1.0
      */
-    private void makePackage() {        
+    void makePackage() {        
         areFolderContentsKnown = false;        
     }
     
@@ -1135,4 +1021,5 @@ class HTTPFileObject extends FileObject implements Runnable {
             areFolderContentsKnown = true;            
         }        
     }    
+
 }
