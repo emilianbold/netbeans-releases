@@ -43,7 +43,7 @@ public class RootNode extends DatabaseNode {
 
     public static DatabaseOption getOption() {
         if (option == null)
-            option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, false);
+            option = (DatabaseOption)SystemOption.findObject(DatabaseOption.class, true);
 
         return option;
     }
@@ -67,13 +67,17 @@ public class RootNode extends DatabaseNode {
     public boolean canRename() {
         return true;
     }
+    
+    boolean ok = false;
+    
     /**
      * Connects the debug property in sfactory and debugMode property in DBExplorer module's option.
      */
-    private void initDebugListening() {
+    void initDebugListening() {
         if ( (getOption() == null) || (sfactory == null) ) {
-            return;
+            initDebugListening();
         }
+        
         option.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
                 if (e.getPropertyName() == null) {
