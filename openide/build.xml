@@ -648,15 +648,15 @@ Included in JDK 1.3, else you may need to download it separately."/>
         </fileset>
       </classpath>
     </javac>
-    <mkdir dir="examplemodules/minicomposer-test"/>
-    <jar jarfile="examplemodules/minicomposer-test/minicomposer.jar"
+    <mkdir dir="examplemodulereload/minicomposer-test"/>
+    <jar jarfile="examplemodulereload/minicomposer-test/minicomposer.jar"
          manifest="api/examples/org/netbeans/examples/modules/minicomposer.mf"
 	 basedir="api/examples"
 	 includes="org/netbeans/examples/modules/minicomposer/"
 	 compress="false"/>
   </target>
   <target name="example-minicomposer-test" depends="example-minicomposer-test-build" description="Try installing minicomposer into running IDE.">
-    <nbinstaller action="reinstall" module="examplemodules/minicomposer-test/minicomposer.jar"/>
+    <nbinstaller action="reinstall" module="examplemodulereload/minicomposer-test/minicomposer.jar"/>
   </target>
 
   <target name="example-globalactions-test-build" description="Build globalactions for testing purposes.">
@@ -668,15 +668,15 @@ Included in JDK 1.3, else you may need to download it separately."/>
         </fileset>
       </classpath>
     </javac>
-    <mkdir dir="examplemodules/globalactions-test"/>
-    <jar jarfile="examplemodules/globalactions-test/globalactions.jar"
+    <mkdir dir="examplemodulereload/globalactions-test"/>
+    <jar jarfile="examplemodulereload/globalactions-test/globalactions.jar"
          manifest="api/examples/org/netbeans/examples/modules/globalactions.mf"
 	 basedir="api/examples"
 	 includes="org/netbeans/examples/modules/globalactions/"
 	 compress="false"/>
   </target>
   <target name="example-globalactions-test" depends="example-globalactions-test-build" description="Try installing globalactions into running IDE.">
-    <nbinstaller action="reinstall" module="examplemodules/globalactions-test/globalactions.jar"/>
+    <nbinstaller action="reinstall" module="examplemodulereload/globalactions-test/globalactions.jar"/>
   </target>
 
   <target name="openidex-all" depends="netbeans">
@@ -729,7 +729,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
   <target name="apiexamples" depends="netbeans,examplemodules"
           description="Build all API code examples.">
     <ant dir="../sysprops"/>
-    <ant dir="../serialversion"/>
     <mkdir dir="examplemodules/apiexamples"/>
     <copy todir="examplemodules/apiexamples">
       <fileset dir="api/examples">
@@ -739,7 +738,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
         <include name="org/netbeans/examples/scripts/"/>
       </fileset>
       <fileset dir="../sysprops/src"/>
-      <fileset dir="../serialversion/src"/>
     </copy>
     <mkdir dir="examplemodules/apiexamples/manifests"/>
     <filter token="BUILD_NUMBER_SUBST" value="(demo module)"/>
@@ -751,9 +749,6 @@ Set jmf.home to the location of your JMF installation to continue."/>
           tofile="examplemodules/apiexamples/manifests/globalactions.mf"/>
     <copy file="../sysprops/manifest.mf"
           tofile="examplemodules/apiexamples/manifests/sysprops.mf"
-	  filtering="true"/>
-    <copy file="../serialversion/manifest.mf"
-          tofile="examplemodules/apiexamples/manifests/serialversion.mf"
 	  filtering="true"/>
     <zip zipfile="examplemodules/apiexamples.zip"
          basedir="examplemodules/apiexamples"
@@ -780,6 +775,9 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="OpenAPIs.tar.bz2"/>
     <delete dir="examplemodules"/>
     <delete dir="compatkit-work"/>
+  </target>
+  <target name="real-clean" depends="clean" description="As for clean, but also remove example module reload area.">
+    <delete dir="examplemodulereload"/>
   </target>
 
     <target  name="standalone-fs" depends="standalone-fs-prepare" description="Creates zip file suitable for download. Zip file contains all jars necessary + xerces.jar for using standalone filesystems.">
