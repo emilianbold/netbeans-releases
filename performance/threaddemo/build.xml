@@ -8,10 +8,14 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="run" name="performance/threaddemo" xmlns:nbj="antlib:org.netbeans.modules.debugger.jpda.ant" xmlns:nbb="antlib:org.netbeans.modules.ant.browsetask">
+<!-- REQUIRES ANT 1.6.1+ -->
+<project basedir="." default="run" name="performance/threaddemo"
+         xmlns="antlib:org.apache.tools.ant"
+         xmlns:nbj="antlib:org.netbeans.modules.debugger.jpda.ant"
+         xmlns:nbb="antlib:org.netbeans.modules.ant.browsetask">
 
     <!-- Put any overrides here (check for "???" below): -->
     <property file="user.build.properties"/>
@@ -140,7 +144,11 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="debug-nb" depends="build">
-        <nbj:nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="threaddemo"/>
+        <nbj:nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="threaddemo">
+            <!-- XXX when buildsys is merged, add:
+            <nbj:classpath refid="run.cp"/>
+            -->
+        </nbj:nbjpdastart>
         <antcall target="do-debug"/>
     </target>
     
