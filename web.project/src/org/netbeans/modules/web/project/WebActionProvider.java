@@ -269,7 +269,7 @@ class WebActionProvider implements ActionProvider {
                                         } else return;
                                     } else {
                                         String mes = java.text.MessageFormat.format (
-                                                NbBundle.getMessage (SetExecutionUriAction.class, "TXT_missingServletMappings"),
+                                                NbBundle.getMessage (WebActionProvider.class, "TXT_noExecutableClass"),
                                                 new Object [] {javaFile.getName()});
                                         NotifyDescriptor desc = new NotifyDescriptor.Message(mes,NotifyDescriptor.Message.ERROR_MESSAGE);
                                         DialogDisplayer.getDefault().notify(desc);
