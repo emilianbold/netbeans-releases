@@ -21,6 +21,7 @@ import org.openide.awt.Actions;
 import org.openide.loaders.DataLoader;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.Utilities;
 
 /** BeanInfo for {@link DataLoader}. */
 public class DataLoaderBeanInfo extends SimpleBeanInfo {
@@ -44,16 +45,14 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    private static Image icon;
-    private static Image icon32;
-    public Image getIcon (int type) {
-        if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null) icon = loadImage ("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
-            return icon;
-        } else {
-            if (icon32 == null) icon32 = loadImage ("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
-            return icon32;
-        }
+    /**
+    * Return the icon
+    */
+    public Image getIcon(int type) {
+        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
+            return Utilities.loadImage("/org/netbeans/core/resources/objectTypes.gif"); // NOI18N
+        else
+            return Utilities.loadImage("/org/netbeans/core/resources/objectTypes32.gif"); // NOI18N
     }
 
     public static class ActionsEditor extends PropertyEditorSupport {

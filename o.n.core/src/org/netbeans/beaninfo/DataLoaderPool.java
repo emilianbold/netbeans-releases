@@ -18,17 +18,9 @@ import java.beans.*;
 
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.UniFileLoader;
+import org.openide.util.Utilities;
 
 public class DataLoaderPool {
-
-    private static Image folderIcon;
-    private static Image folderIcon32;
-    private static Image shadowIcon;
-    private static Image shadowIcon32;
-    private static Image instanceIcon;
-    private static Image instanceIcon32;
-    private static Image defaultIcon;
-    private static Image defaultIcon32;
 
     public static class FolderLoaderBeanInfo extends SimpleBeanInfo {
 
@@ -44,11 +36,9 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                if (folderIcon == null) folderIcon = loadImage ("/org/openide/resources/defaultFolder.gif"); // NOI18N
-                return folderIcon;
+                return Utilities.loadImage("/org/openide/resources/defaultFolder.gif"); // NOI18N
             } else {
-                if (folderIcon32 == null) folderIcon32 = loadImage ("/org/openide/resources/defaultFolder32.gif"); // NOI18N
-                return folderIcon32;
+                return Utilities.loadImage("/org/openide/resources/defaultFolder32.gif"); // NOI18N
             }
         }
 
@@ -68,11 +58,9 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                if (instanceIcon == null) instanceIcon = loadImage ("/org/netbeans/core/resources/action.gif"); // NOI18N
-                return instanceIcon;
+                return Utilities.loadImage("/org/netbeans/core/resources/action.gif"); // NOI18N
             } else {
-                if (instanceIcon32 == null) instanceIcon32 = loadImage ("/org/netbeans/core/resources/action32.gif"); // NOI18N
-                return instanceIcon32;
+                return Utilities.loadImage ("/org/netbeans/core/resources/action32.gif"); // NOI18N
             }
         }
 
@@ -92,11 +80,9 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                if (defaultIcon == null) defaultIcon = loadImage ("/org/openide/resources/pending.gif"); // NOI18N
-                return defaultIcon;
+                return Utilities.loadImage ("/org/openide/resources/pending.gif"); // NOI18N
             } else {
-                if (defaultIcon32 == null) defaultIcon32 = loadImage ("/org/openide/resources/pending32.gif"); // NOI18N
-                return defaultIcon32;
+                return Utilities.loadImage ("/org/openide/resources/pending32.gif"); // NOI18N
             }
         }
 
@@ -133,22 +119,14 @@ public class DataLoaderPool {
 
         public Image getIcon (int type) {
             if ((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
-                if (shadowIcon == null) shadowIcon = loadImage ("/org/openide/resources/actions/copy.gif"); // NOI18N
-                return shadowIcon;
+                return Utilities.loadImage("/org/openide/resources/actions/copy.gif"); // NOI18N
             } else {
                 // [PENDING]
-                //if (shadowIcon32 == null) shadowIcon32 = loadImage ("/org/openide/resources/actions/copy32.gif"); // NOI18N
-                return shadowIcon32;
+                //return Utilities.loadImage ("/org/openide/resources/actions/copy32.gif"); // NOI18N
+                return null;
             }
         }
 
     }
 
 }
-
-/*
- * Log
- *  2    Gandalf   1.1         1/13/00  Jaroslav Tulach I18N
- *  1    Gandalf   1.0         1/13/00  Jesse Glick     
- * $
- */
