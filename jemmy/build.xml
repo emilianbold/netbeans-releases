@@ -1,9 +1,25 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <project name="Jemmy" default="compile" basedir=".">
 
   <property name="src" value="src"/>
+  <property name="modulesrc" value="modulesrc"/>
   <property name="build" value="classes"/>
-  <property name="javadoc" value="javadoc"/>
+  <property name="javadoc" value="javadoc/jemmy-api"/>
   <property name="package" value="org.netbeans.jemmy"/>
+
+
   <property name="jar" value="jemmy.jar"/>
   <property name="zip" value="jemmy.zip"/>
   <property name="util" value="util"/>
@@ -21,10 +37,18 @@
   <property name="shortcut" value="off"/>
   <property name="dispatch" value="off"/>
 
-  <target name="compile">
+  <property name="nbext" value="../nbbuild"/>
+  <property name="homepage.base" value="netbeans.org"/>
+  <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
+  <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+
+  <target name="timestamp" unless="buildnumber">
     <tstamp>
-      <format property="buildnumber" pattern="yyyyMMdd"/>
+        <format property="buildnumber" pattern="yyyyMMdd"/>
     </tstamp>
+  </target>
+
+  <target name="compile" depends="timestamp">
     <filter token="BUILD_NUMBER" value="${buildnumber}"/>
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}" excludesfile="${excludes}"/>
@@ -32,14 +56,37 @@
     <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info" filtering="on"/>
   </target>
 
-  <target name="api" depends="compile">
+  <target name="api">
     <mkdir dir="${javadoc}"/>
     <javadoc packagenames="${package},${package}.util,${package}.explorer,${package}.operators,${package}.demo,${package}.drivers,${package}.drivers.buttons,${package}.drivers.input,${package}.drivers.lists,${package}.drivers.scrolling,${package}.drivers.tables,${package}.drivers.text,${package}.drivers.trees,${package}.image" 
      sourcepath="${src}" destdir="${javadoc}" Protected="yes" Windowtitle="Jemmy API"/>
   </target>
 
+  <target name="javadoc" depends="api">
+    <zip zipfile="${javadoc}.zip" basedir="${javadoc}"/>
+  </target>
+
   <target name="jar" depends="compile">
     <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
+  </target>
+
+  <target name="parser-db">
+      <taskdef name="makeparserdb" classname="org.netbeans.nbbuild.MakeParserDB" classpath="../nbbuild/nbantext.jar"/>
+      <mkdir dir="netbeans/system/ParserDB"/>
+      <makeparserdb db="netbeans/system/ParserDB/Jemmy" sources="${src}" nbroot=".."/>
+  </target>
+
+
+  <target name="jars" depends="jar,javadoc,parser-db">
+    <mkdir dir="netbeans/docs"/>
+    <copy file="${javadoc}.zip" todir="netbeans/docs" filtering="off"/>
+    <mkdir dir="netbeans/modules/ext"/>
+    <copy file="${jar}" todir="netbeans/modules/ext" filtering="off"/>
+    <property file="${build}/org/netbeans/jemmy/version_info"/>
+    <filter token="VERSION_SUBST" value="${Jemmy-MajorVersion}.${Jemmy-MinorVersion}"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <jar jarfile="netbeans/modules/jemmy-module.jar" manifest="manifest-subst.mf" basedir="${modulesrc}"/>
   </target>
 
   <target name="jarsrc" depends="compile,jar">
@@ -69,11 +116,15 @@
   </target>
 
   <target name="clean">
-    <delete dir="${build}"/>
-    <delete dir="${javadoc}"/>
+    <delete dir="${build}/org"/>
+    <delete dir="javadoc"/>
+    <delete dir="netbeans"/>
+    <delete dir="Info"/>
     <delete dir="${testbuild}"/>
     <delete file="${jar}"/>
     <delete file="${zip}"/>
+    <delete file="manifest-subst.mf"/>
+    <delete file="jemmy.nbm"/>
   </target>
 
   <target name="test" depends="compiletest">
@@ -105,7 +156,17 @@
     </javac>
   </target>
 
-  <target name="nbm"/>
-  <target name="netbeans"/>
+  <target name="nbm" depends="jars">
+    <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
+    <makenbm file="jemmy.nbm" topdir="." module="netbeans/modules/jemmy-module.jar"
+     homepage="http://jemmy.${homepage.base}" distribution="http://${dist.base}/jemmy.nbm">
+    <license file="${license.file}"/>
+<!--      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/> -->
+    </makenbm>
+  </target>
+
+  <target name="netbeans" depends="jars">
+  </target>
+
   <target name="release"/>
 </project>
