@@ -195,14 +195,14 @@ public class ExitDialog extends JPanel implements java.awt.event.ActionListener 
      * for unmount and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
-    static boolean showDialog(Node[] activatedNodes) {
+    public static boolean showDialog(Node[] activatedNodes) {
         return innerShowDialog(activatedNodes);
     }
     
     /** Opens the ExitDialog and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
-    static boolean showDialog() {
+    public static boolean showDialog() {
         return innerShowDialog(null);        
     }
 
