@@ -99,10 +99,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         init();
     }
 
-    public boolean isRenameAllowed() {
-        return false;
-    }
-
     private void init() {
         // added ValidateXMLCookie
         InputSource in = DataObjectAdapters.inputSource(this);
@@ -510,13 +506,6 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
         }
         return out.toString();
-    }
-
-    /**
-     * Display Name for MultiView editor
-     */
-    protected String getDisplayName() {
-        return "ejb-jar.xml"; //NOI18N
     }
 
     /**
