@@ -99,7 +99,7 @@ public class RootNode extends DatabaseNode {
         }
         option.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent e) {
-                if (e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
+                if (e.getPropertyName() != null && e.getPropertyName().equals(DatabaseOption.PROP_AUTO_CONNECTION))
                     if(((Boolean)e.getNewValue()).booleanValue())
                         try {
                             PointbasePlus.addOrConnectAccordingToOption();
