@@ -99,10 +99,12 @@ final class PhadhailEditorSupport extends CloneableEditorSupport implements Open
         }
         
         public InputStream inputStream() throws IOException {
+            // XXX does this need to take a lock?
             return ph.getInputStream();
         }
         
         public OutputStream outputStream() throws IOException {
+            // XXX ditto?
             return ph.getOutputStream();
         }
         
