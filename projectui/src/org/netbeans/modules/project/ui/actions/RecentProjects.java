@@ -25,6 +25,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.project.ui.ProjectTab;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
@@ -124,6 +126,16 @@ public class RecentProjects extends AbstractAction implements Presenter.Menu, Pr
                 Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
                 if ( project != null ) {
                     OpenProjectList.getDefault().open( project );
+                    ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
+                    Node root = ptLogial.getExplorerManager ().getRootContext ();
+                    Node projNode = root.getChildren ().findChild ( project.getProjectDirectory().getName ());
+                    try {
+                        ptLogial.getExplorerManager ().setSelectedNodes (new Node[] {projNode});
+                        ptLogial.open ();
+                        ptLogial.requestActive ();
+                    } catch (Exception ignore) {
+                        // may ignore it
+                    }
                 }
                 
             }
