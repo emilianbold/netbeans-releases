@@ -40,6 +40,7 @@ import org.netbeans.modules.i18n.HardCodedString;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.I18nUtil;
 import org.netbeans.modules.properties.PropertiesDataObject; // PENDING
+import org.netbeans.modules.properties.UtilConvert; // PENDING
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataFilter;
@@ -490,7 +491,7 @@ public class ResourceWizardPanel extends JPanel {
 
                 // Put hard coded string - i18n pairs into map.
                 for(int j=0; j<foundStrings.length; j++) {
-                    if(testWizard && support.getResourceHolder().getValueForKey(foundStrings[j].getText()) != null)
+                    if(testWizard && support.getResourceHolder().getValueForKey(UtilConvert.escapePropertiesSpecialChars(foundStrings[j].getText())) != null)
                         continue;
                         
                     map.put(foundStrings[j], support.getDefaultI18nString(foundStrings[j]));
