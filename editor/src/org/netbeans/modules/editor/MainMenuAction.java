@@ -98,7 +98,6 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
     /** Returns the action by given name */
     private static Action getActionByName(String actionName){
         BaseKit bKit = getKit();
-        if (bKit==null) bKit = BaseKit.getKit(NbEditorKit.class);
         if (bKit!=null){
             Action action = bKit.getActionByName(actionName);
             return action;
@@ -122,7 +121,7 @@ public abstract class MainMenuAction extends DelegateAction implements Presenter
     /** Gets the editor kit */
     private static BaseKit getKit(){
         JTextComponent component = getComponent();
-        return (component == null) ? BaseKit.getKit(NbEditorKit.class) : Utilities.getKit(component);
+        return (component == null) ? null : Utilities.getKit(component);
     }
 
     /** Returns true if focused component is open in editor */

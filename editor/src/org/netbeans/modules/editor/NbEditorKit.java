@@ -162,9 +162,20 @@ public class NbEditorKit extends ExtKit {
         addSystemActionMapping(gotoAction, org.openide.actions.GotoAction.class);
     }
 
+    private boolean isInheritorOfNbEditorKit(){
+        Class clz = this.getClass();
+        while(clz.getSuperclass() != null){
+            clz = clz.getSuperclass();
+            if (NbEditorKit.class == clz) return true;
+        }
+        return false;
+    }
+    
     public String getContentType() {
-        ErrorManager.getDefault().log(ErrorManager.WARNING, 
-            "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
+        if (isInheritorOfNbEditorKit()){
+            ErrorManager.getDefault().log(ErrorManager.WARNING, 
+                "Warning: KitClass "+this.getClass().getName()+" doesn't override the method getContentType."); //NOI18N
+        }
         return (contentTypeTable.containsKey(this.getClass().getName())) ? 
             (String)contentTypeTable.get(this.getClass().getName()) : "text/"+this.getClass().getName().replace('.','_'); //NOI18N
     }
