@@ -94,9 +94,9 @@ public class DTDGrammar implements GrammarQuery {
         
         Element el = null;
         // Support two versions of GrammarQuery contract
-        if (ctx instanceof Attr) {
+        if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             el = ((Attr)ctx).getOwnerElement();
-        } else if (ctx instanceof Element) {
+        } else if (ctx.getNodeType() == Node.ELEMENT_NODE) {
             el = (Element) ctx;
         }
         if (el == null) return EmptyEnumeration.EMPTY;
