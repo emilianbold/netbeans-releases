@@ -562,7 +562,7 @@ public class BaseOptions extends OptionSupport {
         }
     }
     
-    public List getKeyBindingList() {
+    private List getKBList(){
         loadDefaultKeyBindings();
         loadSettings(KeyBindingsMIMEProcessor.class);
         
@@ -587,11 +587,12 @@ public class BaseOptions extends OptionSupport {
                 kbList.set(i, new MultiKeyBinding(b.key, b.actionName));
             }
         }
-        
-        
-        List kb2 = new ArrayList( kbList );
-        kb2.add( 0, kitClass.getName() ); //insert kit class name
-        
+        return new ArrayList( kbList );
+    }
+    
+    public List getKeyBindingList() {
+        List kb2 = new ArrayList( getKBList() );
+        kb2.add( 0, getKitClass().getName() ); //insert kit class name
         return kb2;
     }
     
@@ -608,6 +609,7 @@ public class BaseOptions extends OptionSupport {
             updateSettings(KeyBindingsMIMEProcessor.class, diffMap);
         }
     }
+    
     
     /** Sets new keybindings list to initializer map and if saveToXML is true,
      *  then new settings will be saved to XML file. */
@@ -763,12 +765,62 @@ public class BaseOptions extends OptionSupport {
             defaultMacrosMap = new HashMap(file.getAllProperties());
         }
     }
+
+    /** removes keybindings from deleted macros, or if macro deletion was cancelled
+     *  it restores old keybinding value */
+    private void processMacroKeyBindings(Map diff, List oldKB){
+        List deletedKB = new ArrayList();
+        List addedKB = new ArrayList();
+        List newKB = getKBList();        
+
+        for( Iterator i = diff.keySet().iterator(); i.hasNext(); ) {
+            String key = (String)i.next();
+            if (!(diff.get(key) instanceof String)) continue;
+            String action = (String) diff.get(key);
+            String kbActionName = new String(BaseKit.macroActionPrefix+key);
+
+            if (action.length()!=0){
+                // process restored macros
+                for (int j = 0; j < oldKB.size(); j++){
+                    if(oldKB.get(j) instanceof MultiKeyBinding){
+                        MultiKeyBinding mkb = (MultiKeyBinding) oldKB.get(j);
+                        if (!kbActionName.equals(mkb.actionName)) continue;
+                        addedKB.add(mkb);
+                        break;
+                    }
+                }
+                continue;
+            }
+            
+            for (int j = 0; j < newKB.size(); j++){
+                // process deleted macros
+                if(newKB.get(j) instanceof MultiKeyBinding){
+                    MultiKeyBinding mkb = (MultiKeyBinding) newKB.get(j);
+                    if (!kbActionName.equals(mkb.actionName)) continue;
+                    deletedKB.add(mkb);
+                    break;
+                }
+            }
+        }
+        
+        if ((deletedKB.size()>0) || (addedKB.size()>0)){
+            newKB.removeAll(deletedKB);
+            newKB.addAll(addedKB);
+            // save changed keybindings to XML file
+            setKeyBindingsDiffMap(OptionUtilities.getMapDiff(OptionUtilities.makeKeyBindingsMap(getKBList()), 
+                OptionUtilities.makeKeyBindingsMap(newKB), true));
+            // set new keybindings
+            Settings.setValue( getKitClass(), SettingsNames.KEY_BINDING_LIST, newKB);
+        }
+    }
     
     /** Gets Macro Map */
     public Map getMacroMap() {
         loadDefaultMacros();
         loadSettings(MacrosMIMEProcessor.class);
-        return new HashMap( (Map)super.getSettingValue(SettingsNames.MACRO_MAP) );
+        Map ret = new HashMap( (Map)super.getSettingValue(SettingsNames.MACRO_MAP) );
+        ret.put(null, getKBList());
+        return ret;
     }
     
     /** Saves macro settings to XML file. 
@@ -783,13 +835,20 @@ public class BaseOptions extends OptionSupport {
      *  then new settings will be saved to XML file. */
     public void setMacroMap(Map map, boolean saveToXML) {
         Map diffMap = null;
+        List kb = new ArrayList();
+        if (map.containsKey(null)){
+            kb.addAll((List)map.get(null));
+            map.remove(null);
+        }
         if (saveToXML){
             // we are going to save the diff-ed changes to XML, all default
             // properties have to be available
             loadDefaultMacros();
             diffMap = OptionUtilities.getMapDiff(getMacroMap(),map,true);
+            if (diffMap.containsKey(null)) diffMap.remove(null);
             if (diffMap.size()>0){
                 // settings has changed, write changed settings to XML file
+                processMacroKeyBindings(diffMap,kb);
                 updateSettings(MacrosMIMEProcessor.class, diffMap);
             }
         }

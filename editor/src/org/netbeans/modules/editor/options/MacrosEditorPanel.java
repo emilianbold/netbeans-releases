@@ -53,8 +53,12 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
      * Fill in editor with initial values
      */
     public void setValue( Map m ) {
+        HashMap hm = new HashMap(m);
+        if (hm.containsKey(null)) {
+            hm.remove(null);
+        }
         // Our model is the one and only holding data
-        model.setData( new TreeMap( m ) );
+        model.setData( new TreeMap( hm ) );
         // select first item, just to have something selected
         if( model.getRowCount() > 0 ) macrosTable.setRowSelectionInterval( 0, 0 );
     }
