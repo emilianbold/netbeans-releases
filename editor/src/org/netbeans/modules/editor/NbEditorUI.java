@@ -186,7 +186,7 @@ public class NbEditorUI extends ExtEditorUI {
         }
 
         /** Perform the callback action */
-        public synchronized void performAction(SystemAction action) {
+        public void performAction(SystemAction action) {
             JTextComponent component = getComponent();
             Action ea = getEditorAction();
             if (component != null && ea != null) {
@@ -218,7 +218,7 @@ public class NbEditorUI extends ExtEditorUI {
             }
         }
 
-        private Action getEditorAction() {
+        private synchronized Action getEditorAction() {
             if (editorAction == null) {
                 BaseKit kit = Utilities.getKit(getComponent());
                 if (kit != null) {
