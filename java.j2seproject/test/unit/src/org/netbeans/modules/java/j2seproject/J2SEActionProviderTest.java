@@ -30,6 +30,7 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -53,6 +54,10 @@ public class J2SEActionProviderTest extends NbTestCase {
     private ProjectManager pm;
     private Project pp;
     private J2SEActionProvider actionProvider;
+    private DataFolder sourcePkg1;
+    private DataFolder sourcePkg2;
+    private DataFolder testPkg1;
+    private DataFolder testPkg2;
     private DataObject someSource1;
     private DataObject someSource2;
     private DataObject someSource3;
@@ -83,14 +88,22 @@ public class J2SEActionProviderTest extends NbTestCase {
         projdir.createData("build.xml");
         build = projdir.createFolder("build");
         build.createFolder("classes");
-        FileObject fo = sources.createFolder("foo").createData("Bar.java");
+        FileObject pkg = sources.createFolder("foo");        
+        FileObject fo = pkg.createData("Bar.java");
+        sourcePkg1 = DataFolder.findFolder (pkg);
+        pkg = sources.createFolder("foo2");
+        sourcePkg2 = DataFolder.findFolder (pkg);
         someSource1 = DataObject.find(fo);
         fo = sources.getFileObject("foo").createData("Main.java");
         createMain(fo);
         someSource2 = DataObject.find(fo);
         fo = sources.getFileObject("foo").createData("Third.java");
         someSource3 = DataObject.find(fo);
-        fo = tests.createFolder("foo").createData("BarTest.java");
+        pkg = tests.createFolder("foo");
+        fo = pkg.createData("BarTest.java");
+        testPkg1 = DataFolder.findFolder (pkg);
+        pkg = tests.createFolder("foo2");
+        testPkg2 = DataFolder.findFolder (pkg);
         someTest1 = DataObject.find(fo);
         fo = tests.getFileObject("foo").createData("MainTest.java");
         someTest2 = DataObject.find(fo);
@@ -140,7 +153,23 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "compile-test-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java,foo/MainTest.java", p.getProperty("javac.includes"));                
+        p = new Properties();
+        context = Lookups.fixed(new DataObject[] {sourcePkg1});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/", p.getProperty("javac.includes"));
+        p = new Properties();
+        context = Lookups.fixed(new DataObject[] {sourcePkg1, sourcePkg2});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/,foo2/", p.getProperty("javac.includes"));
         
         // test COMMAND_TEST_SINGLE
         
@@ -367,6 +396,40 @@ public class J2SEActionProviderTest extends NbTestCase {
         context = Lookups.fixed(new DataObject[] {someSource1, someTest1});
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
         assertFalse("COMMAND_COMPILE_SINGLE must be disabled on mixed files", enabled);
+        
+        context = Lookups.fixed(new DataObject[] {sourcePkg1});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one src package", enabled);
+        
+        context = Lookups.fixed(new DataObject[] {sourcePkg1, sourcePkg2});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple src packages", enabled);
+                
+        context = Lookups.fixed(new DataObject[] {sourcePkg1, someSource1});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed src packages/files", enabled);
+        
+        
+        context = Lookups.fixed(new DataObject[] {testPkg1});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on one test package", enabled);
+        
+        context = Lookups.fixed(new DataObject[] {testPkg1, testPkg2});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on multiple test packages", enabled);
+        
+        context = Lookups.fixed(new DataObject[] {testPkg1, someTest1});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertTrue ("COMMAND_COMPILE_SINGLE must be enabled on mixed test packages/files", enabled);
+        
+        context = Lookups.fixed(new DataObject[] {DataFolder.findFolder(projdir)});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertFalse ("COMMAND_COMPILE_SINGLE must not be enabled on non source folder", enabled);
+        
+        
+        context = Lookups.fixed(new DataObject[] {sourcePkg1, testPkg1});
+        enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);
+        assertFalse ("COMMAND_COMPILE_SINGLE must not be enabled on non mixed packages", enabled);
         
         // test COMMAND_TEST_SINGLE
         
