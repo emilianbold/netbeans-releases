@@ -329,7 +329,7 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
                 } else {
                     el2.setAttribute ("id", NbBundle.getMessage (AntProjectNode.class, "MSG_id_changeme"));
                 }
-                el.appendChild (el2);
+                ElementNode.appendWithIndent (el, el2);
             } catch (DOMException dome) {
                 IOException ioe = new IOException ();
                 AntModule.err.annotate (ioe, dome);

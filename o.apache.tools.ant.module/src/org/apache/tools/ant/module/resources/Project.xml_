@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <project name="changeme" basedir="." default="all">
-  <target name="all">
-    <!-- WRITEME -->
-  </target>
+    <target name="all">
+        <!-- WRITEME -->
+    </target>
 </project>

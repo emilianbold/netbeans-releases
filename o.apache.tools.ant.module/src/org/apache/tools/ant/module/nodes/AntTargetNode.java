@@ -278,7 +278,7 @@ public class AntTargetNode extends ElementNode {
             String name = (String) combo.getSelectedItem ();
             try {
                 Element el2 = el.getOwnerDocument ().createElement (name);
-                el.appendChild (el2);
+                ElementNode.appendWithIndent (el, el2);
             } catch (DOMException dome) {
                 IOException ioe = new IOException ();
                 AntModule.err.annotate (ioe, dome);
