@@ -372,6 +372,28 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
+    /** performance related, TCs get GCed anyway, but the strings were kept in the maps.
+     * make sure you call this only on TCs that are NOT TC.PERSISTENT_ALWAYS
+     */
+    public void removeGlobalTopComponentID(String id) {
+        System.out.println("removing id=" + id);
+        globalIDSet.remove(id);
+        WeakReference result = (WeakReference)id2TopComponentMap.remove(id);
+        if (result != null) {
+            TopComponent tc = (TopComponent)result.get();
+            if (tc != null) {
+                topComponent2IDMap.remove(tc);
+            }
+        }
+        result = (WeakReference)id2TopComponentNonPersistentMap.remove(id);
+        if (result != null) {
+            TopComponent tc = (TopComponent)result.get();
+            if (tc != null) {
+                topComponentNonPersistent2IDMap.remove(tc);
+            }
+        }
+    }
+    
     /** @return Searches for top component with given string id and returns
      * found lookup item.
      */

@@ -19,15 +19,13 @@ import org.netbeans.core.windows.model.ModelElement;
 import org.netbeans.core.windows.model.ModelFactory;
 import org.netbeans.core.windows.view.ControllerHandler;
 import org.netbeans.core.windows.view.View;
-import org.netbeans.core.windows.view.ui.slides.SlideOperation;
-
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import org.netbeans.core.windows.persistence.PersistenceManager;
 
 
 /**
@@ -396,6 +394,8 @@ final class Central implements ControllerHandler {
             } else {
                 //mkleint since one cannot close the sliding mode just like that, we don't need to check the previous mode of the tc.
                 model.removeModeTopComponent(mode, tc);
+                String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
+                PersistenceManager.getDefault().removeGlobalTopComponentID(id);
             }
         }
         
@@ -689,6 +689,8 @@ final class Central implements ControllerHandler {
         }
         
         model.removeModeTopComponent(mode, tc);
+        String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
+        PersistenceManager.getDefault().removeGlobalTopComponentID(id);
 
         ModeImpl oldActive = getActiveMode();
         ModeImpl newActive;
@@ -896,6 +898,8 @@ final class Central implements ControllerHandler {
                         model.addModeClosedTopComponent(mode, tc);
                     } else {
                         model.removeModeTopComponent(mode, tc);
+                        String id = WindowManagerImpl.getInstance().findTopComponentID(tc);
+                        PersistenceManager.getDefault().removeGlobalTopComponentID(id);
                     }
                     closedTcs.add(tc);
                 }
