@@ -9,7 +9,7 @@
 
 <head>
 
-<title>Connecting or Disconnecting from a Database</title>
+<title>Connecting to a Database</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
@@ -19,8 +19,8 @@
 
 <body>
 
-<h2>Connecting or Disconnecting from a Database</h2>
-
+<h2>Connecting to a Database</h2>
+<p><small><a href="#seealso">See Also</a></small></p>
 <p>You can use the Database Explorer to:</p>
 
 <ul>
@@ -39,10 +39,8 @@
 
 <ol>
 
-  <li>In the contextual menu for a driver, choose Connect Using to preselect 
-        the driver.
-  </li>
-
+  <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
+  <li>Right-click your driver's instance node and choose Connect Using.</li>
   <li>In the New Database Connection dialog box, ensure the correct driver is 
 
     selected in the Driver field. </li>
@@ -57,7 +55,11 @@
 
       a host and port; alternatively, the name of a database file might suffice, 
 
-      or an ODBC DSN. To help you get started, existing drivers are provided with 
+      or an ODBC DSN. For MySQL, the Database URL might look as follows:
+      
+      <pre>jdbc:mysql://localhost:3306/mydatabase</pre>
+      
+      To help you get started, existing drivers are provided with 
 
       templates for the correct URL format. If in doubt, refer to the documentation 
 
@@ -73,7 +75,9 @@
 
       the IDE, you must type the password again. This feature can be turned on 
 
-      or off in the properties of each connected database in the Runtime window. </p>
+      or off by right-clicking a connected database in the Runtime window and
+      
+      selecting or deselecting Remember password in the Properties dialog box. </p>
 
   </li>
 
@@ -95,7 +99,11 @@
 
 <ol>
 
-  <li>Choose the Advanced tab on the New Database Connection panel.</li>
+  <li>In the Runtime window, expand the Databases node and the Drivers node.</li>
+  
+  <li>Right-click your driver's instance node and choose Connect Using.</li>
+	
+  <li>In the New Database Connection panel, choose the Advanced tab.</li>
 
   <li>Select the schema to use with the database object by choosing it from the 
 
@@ -109,7 +117,7 @@
 
     the Databases folder. The IDE displays child folders of this connection node. 
 
-    These Folders represent lists of tables, views and procedures.</p></li>
+    These folders represent lists of tables, views and procedures.</p></li>
 
 </ol>
 

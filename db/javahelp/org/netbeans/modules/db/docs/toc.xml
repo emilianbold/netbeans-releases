@@ -16,36 +16,26 @@ Microsystems, Inc. All Rights Reserved.
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 2.0//EN"
          "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 <toc version="2.0">
-<tocitem text="Core IDE Help">
-
-<tocitem text="Database Explorer" target="dbexpovew">
-
+<tocitem text="IDE Configuration">
+<tocitem text="About the Database Explorer" target="dbexpovew" />
+	
+<tocitem text="Setting Up a Database Connection">
 <tocitem text="Adding a Driver" target="adddriver" />
-
 <tocitem text="Connecting to a Database" target="connectdb" />
-
-<tocitem text="Adding Database Columns" target="addcopycols" />
-
+<tocitem text="Defining Database Explorer Debug Mode" target="manipsql" />
+<tocitem text="Defining Database Explorer Fetch Limitations" target="db.explorer.misc" />
+<tocitem text="Defining Database Explorer Properties" target="dbconfig" />
+</tocitem>
+<tocitem text="Using a Database Connection">
 <tocitem text="Creating Tables" target="createtables" />
-
 <tocitem text="Creating Views" target="createviews" />
-
-<tocitem text="Deleting an Object" target="delobj" />
-
-<tocitem text="Enabling and Disabling Debug Mode to Monitor SQL Commands" target="manipsql" />
-
-<tocitem text="Limiting the Number of Database Rows Fetched" target="db.explorer.misc" />
-
-<tocitem text="Configuring Database Explorer Properties" target="dbconfig" />
-
+<tocitem text="Adding Columns" target="addcopycols" />
+<tocitem text="Deleting Objects" target="delobj" />
 <tocitem text="Browsing Structures" target="browstruct" />
-
 <tocitem text="Viewing Data" target="viewdata" />
-
-<tocitem text="Executing SQL Commands Using the Database Explorer" target="dbmod" />
-
+<tocitem text="Executing SQL Commands" target="dbmod" />
 </tocitem>
 
-</tocitem>
 
+</tocitem>
 </toc>

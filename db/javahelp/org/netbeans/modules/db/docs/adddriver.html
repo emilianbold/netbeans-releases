@@ -21,11 +21,6 @@
 
 <h2>Adding a New Driver</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p> You can add any one of the predefined drivers by choosing Databases 
-<img src="images/arrow.gif" width="5" height="11" alt="and choose">Drivers 
-  in the Runtime window. 
-<p> <b>To add your own driver:</b></p>
-
 <ol>
 
   <li>In the Runtime window, expand the Databases node. </li>
@@ -41,10 +36,12 @@ the Name fields should be filled in by IDE.</p>
 
   </li>
 
-  <li>If the Driver Class field is empty or incorrect, type in the fully qualified driver class name.
-For example: <tt>COM.pointbase.jdbc.jdbcUniversalDriver</tt>. 
-If you click the Find button, the IDE will try to find the appropriate class for
-you. 
+  <li>If the Driver Class field is empty or incorrect, click Find.
+  The IDE will search the archive files that you selected in the 
+  previous step and find all classes that implement the JDBC
+  API interface (<tt>java.sql.interface</tt>). The Driver 
+  Class combo box lists the classes that the IDE finds. Use the 
+  combo box to select the driver class that you need.
 
   </li>
 
