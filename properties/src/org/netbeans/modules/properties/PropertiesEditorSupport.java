@@ -842,17 +842,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * @return <code>true</code> if close succeeded
          */
         protected boolean closeLast () {
-            boolean canClose = super.closeLast();
-            if (!canClose)
-                return false;
-            // #21850. Don't reparse invalid or virtual file.
-            if(entry.getFile().isValid() && !entry.getFile().isVirtual()) {
-                if(!((PropertiesEditorSupport)cloneableEditorSupport()).hasOpenedTableComponent()) {
-                    //!!! performed on IDE shutdown, what is the purpose?
-                    entry.getHandler().reparseNowBlocking();
-                }
-            }
-            return true;
+            return super.closeLast();
         }
 
         /** Overrides superclass method. Gets <code>Icon</code>. */

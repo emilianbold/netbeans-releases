@@ -108,8 +108,15 @@ public class StructHandler extends Object {
         return propFileEntry;
     }
 
-    /** Starts parsing task. Tries to cancel previous parsing task if it is not running yet. */
+    /**
+     * Starts parsing task. Tries to cancel previous parsing task if
+     * it is not running yet. Never create new structure if it does not
+     * exist.
+     */
     void autoParse() {
+
+        if (false == isStructureLoaded()) return;
+
         Task previousTask = (Task)parsingTaskWRef.get();
         if(previousTask != null) {
             // There was previous task already, reschedule it 500 ms later.
@@ -168,4 +175,10 @@ public class StructHandler extends Object {
         return reparseNowBlocking(false); 
     }
 
+    /**
+     * Determine wheteher somebody have already asked for the model.
+     */
+    private boolean isStructureLoaded() {
+        return null != propStructureSRef.get();
+    }
 }
