@@ -1022,7 +1022,7 @@
 
    <mapID target="org.openide.actions.StartDebuggerAction" url="pending.html" />
    <mapID target="org.openide.explorer.propertysheet.editors.FileEditor" url="pending.html" />
-   <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="pending.html" />
+   <mapID target="org.netbeans.core.NbAuthenticator.getPasswordAuthentication" url="web/webmod/tomcat_edit_tomcatuser.html" />
 
    <mapID target="org.openide.windows.TopComponent" url="pending.html" /> 
    <mapID target="org.openide.text.NbDocument$Colors" url="pending.html" />
