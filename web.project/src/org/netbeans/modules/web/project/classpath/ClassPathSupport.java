@@ -277,7 +277,6 @@ public class ClassPathSupport {
     // Private static methods --------------------------------------------------
 
     private static final String TAG_PATH_IN_WAR = "path-in-war"; //NOI18N
-    private static final String TAG_PATH_IN_WAR_CLASSES = "path-in-war-classes"; //NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
     private static final String TAG_LIBRARY = "library"; //NOI18N
     private static final String ATTR_FILES = "files"; //NOI18N
@@ -353,13 +352,6 @@ public class ClassPathSupport {
         if (item.getPathInWAR() != null) {
             Element pathInWar = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_PATH_IN_WAR);
             pathInWar.appendChild(doc.createTextNode(item.getPathInWAR()));
-            //add an additional element specifying where folders from libraries should be put in WAR file
-            if(item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && dirs.size() > 0) {
-                Element pathInWarClasses = doc.createElementNS(WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, TAG_PATH_IN_WAR_CLASSES);
-                pathInWarClasses.appendChild(doc.createTextNode(ClassPathSupport.Item.PATH_IN_WAR_DIR));
-                libraryElement.appendChild(pathInWarClasses);
-            }
             libraryElement.appendChild(pathInWar);
         }
         return libraryElement;
