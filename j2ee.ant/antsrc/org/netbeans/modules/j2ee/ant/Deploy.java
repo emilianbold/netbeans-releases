@@ -16,15 +16,10 @@ package org.netbeans.modules.j2ee.ant;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
-import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
-import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
-import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.openide.filesystems.*;
 import org.apache.tools.ant.Project;
-import javax.enterprise.deploy.spi.Target;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 
