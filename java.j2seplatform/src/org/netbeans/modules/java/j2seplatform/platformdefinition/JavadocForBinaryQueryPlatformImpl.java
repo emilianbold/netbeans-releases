@@ -43,8 +43,18 @@ import org.openide.util.WeakListeners;
  * Implementation of Javadoc query for the platform.
  */
 public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryImplementation {
-    
-    private static int MAX_DEPTH = 4;   // Japanese Javadoc has subfolders /docs/ja/api
+
+    private static final int STATE_ERROR = -1;
+    private static final int STATE_START = 0;
+    private static final int STATE_DOCS = 1;
+    private static final int STATE_LAN = 2;
+    private static final int STATE_API = 3;
+    private static final int STATE_INDEX = 4;
+
+    private static final String NAME_DOCS = "docs"; //NOI18N
+    private static final String NAME_JA = "ja";     //NOI18N
+    private static final String NAME_API = "api";   //NOI18N
+    private static final String NAME_IDNEX ="index-files";  //NOI18N
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryPlatformImpl() {
@@ -146,7 +156,7 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
         if (root == null) {
             return rootURL;
         }
-        FileObject result = findIndexFolder (root,1);
+        FileObject result = findIndexFolder (root);
         try {
             return result == null ? rootURL : result.getURL();        
         } catch (FileStateInvalidException e) {
@@ -155,23 +165,79 @@ public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryI
         }
     }
     
-    private static FileObject findIndexFolder (FileObject fo, int depth) {
-        if (depth > MAX_DEPTH) {
-            return null;
-        }
-        if (fo.getFileObject("index-files",null)!=null || fo.getFileObject("index-all.html",null)!=null) {  //NOI18N
-            return fo;
-        }
-        FileObject[] children = fo.getChildren();
-        for (int i=0; i< children.length; i++) {
-            if (children[i].isFolder()) {
-                FileObject result = findIndexFolder(children[i], depth+1);
-                if (result != null) {
-                    return result;
-                }
+    private static FileObject findIndexFolder (FileObject fo) {
+        int state = STATE_START;
+        while (state != STATE_ERROR && state != STATE_INDEX) {
+            switch (state) {
+                case STATE_START:
+                    {
+                        FileObject tmpFo = fo.getFileObject(NAME_DOCS);    //NOI18N
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_DOCS;
+                            break;
+                        }
+                        tmpFo = fo.getFileObject(NAME_JA);     //NOI18N
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_LAN;
+                            break;
+
+                        }
+                        tmpFo = fo.getFileObject(NAME_API);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_API;
+                            break;
+                        }
+                        fo = null;
+                        state = STATE_ERROR;
+                        break;
+                    }
+                case STATE_DOCS:
+                    {
+                        FileObject tmpFo = fo.getFileObject(NAME_JA);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_LAN;
+                            break;
+                        }
+                        tmpFo = fo.getFileObject(NAME_API);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_API;
+                            break;
+                        }
+                        fo = null;
+                        state = STATE_ERROR;
+                        break;
+                    }
+                case STATE_LAN:
+                    {
+                        FileObject tmpFo = fo.getFileObject(NAME_API);
+                        if (tmpFo != null) {
+                            fo = tmpFo;
+                            state = STATE_API;
+                            break;
+                        }
+                        fo = null;
+                        state = STATE_ERROR;
+                        break;
+                    }
+                case STATE_API:
+                    {
+                        FileObject tmpFo = fo.getFileObject(NAME_IDNEX);
+                        if (tmpFo !=null) {
+                            state = STATE_INDEX;
+                            break;
+                        }
+                        fo = null;
+                        state = STATE_ERROR;
+                        break;
+                    }
             }
         }
-        return null;
+        return fo;
     }
     
 }
