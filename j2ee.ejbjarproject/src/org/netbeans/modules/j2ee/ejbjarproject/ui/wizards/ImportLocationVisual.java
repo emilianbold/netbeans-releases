@@ -73,8 +73,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         jButtonPrjLocation = new javax.swing.JButton();
         createdFolderLabel = new javax.swing.JLabel();
         createdFolderTextField = new javax.swing.JTextField();
-        jLabelContextPath = new javax.swing.JLabel();
-        jTextFieldContextPath = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -203,40 +201,7 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
         add(createdFolderTextField, gridBagConstraints);
         createdFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_CreatedProjectFolder_A11YDesc"));
 
-        jLabelContextPath.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_CheckBoxMnemonic").charAt(0));
-        jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(ImportLocationVisual.class, "LBL_NWP1_ContextPath_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
-        add(jLabelContextPath, gridBagConstraints);
-
-        jTextFieldContextPath.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                jTextFieldContextPathKeyReleased(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 11);
-        add(jTextFieldContextPath, gridBagConstraints);
-        jTextFieldContextPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "ACS_LBL_NWP1_ContextPath_A11YDesc"));
-
     }//GEN-END:initComponents
-
-    private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
-        contextModified = true;
-    }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jButtonPrjLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonPrjLocationActionPerformed
         JFileChooser chooser = createChooser();    
@@ -259,13 +224,11 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
     public javax.swing.JTextField createdFolderTextField;
     private javax.swing.JButton jButtonPrjLocation;
     private javax.swing.JButton jButtonSrcLocation;
-    private javax.swing.JLabel jLabelContextPath;
     private javax.swing.JLabel jLabelPrjLocation;
     private javax.swing.JLabel jLabelPrjLocationDesc;
     private javax.swing.JLabel jLabelPrjName;
     private javax.swing.JLabel jLabelSrcLocation;
     private javax.swing.JLabel jLabelSrcLocationDesc;
-    protected javax.swing.JTextField jTextFieldContextPath;
     public javax.swing.JTextField moduleLocationTextField;
     public javax.swing.JTextField projectLocationTextField;
     public javax.swing.JTextField projectNameTextField;
@@ -314,10 +277,6 @@ public class ImportLocationVisual extends javax.swing.JPanel implements Document
                 folder.append(File.separatorChar);
             folder.append(projectNameTextField.getText().trim());
             createdFolderTextField.setText (folder.toString());
-        }
-
-        if (e.getDocument() == nameDocument && !contextModified) {
-            jTextFieldContextPath.setText("/" + projectNameTextField.getText());
         }
 
         panel.fireChangeEvent ();

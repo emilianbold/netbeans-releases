@@ -50,14 +50,13 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
                     <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/emptyProject.html"/>
                 </file>
-                <!-- 
                 <file name="importEjbJar.xml">
                    <attr name="template" boolvalue="true"/>
                    <attr name="templateWizardIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.ImportEjbJarProjectWizardIterator"/>
                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle"/>
                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ejbjarProjectIcon.gif"/>
                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/importProject.html"/>
-                </file> -->
+                </file>
             </folder>
         </folder>
     </folder>

@@ -92,7 +92,7 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
         File dirSrcF = (File) wiz.getProperty (WizardProperties.SOURCE_ROOT);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
 //        String contextPath = (String) wiz.getProperty(WizardProperties.CONTEXT_PATH);
-        String docBaseName = (String) wiz.getProperty(WizardProperties.DOC_BASE);
+        String configFilesFolderName = (String) wiz.getProperty(WizardProperties.CONFIG_FILES_FOLDER);
         String javaRootName = (String) wiz.getProperty(WizardProperties.JAVA_ROOT);
         String libName = (String) wiz.getProperty(WizardProperties.LIB_FOLDER);
         
@@ -101,12 +101,12 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
         assert wmFO.isFolder() : "Not really a dir: " + dirSrcF;
         
         FileObject javaRoot;
-        FileObject docBase;
-        if (docBaseName == null || docBaseName.equals("")) //NOI18N
-            docBase = guessDocBase(wmFO);
+        FileObject configFilesFolder;
+        if (configFilesFolderName == null || configFilesFolderName.equals("")) //NOI18N
+            configFilesFolder = guessConfigFilesPath(wmFO);
         else {
-            File f = new File(docBaseName);
-            docBase = FileUtil.toFileObject(f);
+            File f = new File(configFilesFolderName);
+            configFilesFolder = FileUtil.toFileObject(f);
         }
         if (javaRootName == null || javaRootName.equals("")) //NOI18N
             javaRoot = guessJavaRoot(wmFO);
@@ -117,7 +117,7 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
         
         String buildfile = getBuildfile();
         
-        EjbJarProjectGenerator.importProject (dirF, name, wmFO, javaRoot, docBase, EjbJarProjectProperties.J2EE_1_4, buildfile); //PENDING detect spec level
+        EjbJarProjectGenerator.importProject (dirF, name, wmFO, javaRoot, configFilesFolder, EjbJarProjectProperties.J2EE_1_4, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         
@@ -235,23 +235,25 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
     }
      */
 
-    private FileObject guessDocBase (FileObject dir) {
+    private FileObject guessConfigFilesPath (FileObject dir) {
         Enumeration ch = dir.getChildren (true);
-        while (ch.hasMoreElements ()) {
-            FileObject f = (FileObject) ch.nextElement ();
-            if (f.isFolder () && f.getName ().equals ("META-INF")) {
-                if (f.getFileObject ("ejb-jar.xml").isData ()) {
-                    return f.getParent ();
+        try {
+            while (ch.hasMoreElements ()) {
+                FileObject f = (FileObject) ch.nextElement ();
+                if (f.getNameExt().equals ("ejb-jar.xml")) { //NOI18N
+                    String rootName = f.getParent ().getPath ();
+                    return f.getFileSystem ().findResource (rootName);
                 }
             }
+        } catch (FileStateInvalidException fsie) {
+            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, fsie);
         }
         return null;
     }
     
     private FileObject guessLibrariesFolder (FileObject dir) {
-        FileObject docBase = guessDocBase (dir);
-        if (docBase != null) {
-            FileObject lib = docBase.getFileObject ("WEB-INF/lib"); //NOI18N
+        if (dir != null) {
+            FileObject lib = dir.getFileObject ("lib"); //NOI18N
             if (lib != null) {
                 return lib;
             }
@@ -285,7 +287,7 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
         }
         return null;
     }
-    
+
     private String guessPackageName (FileObject f) {
         java.io.Reader r = null;
         try {
@@ -354,9 +356,9 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
 //                return false; //Project folder not specified
 //            }
 
-            if (!isWebModule(FileUtil.toFileObject(f))) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoWebModule")); //NOI18N
-                return false; //No web module location
+            if (!isEjbJarModule(FileUtil.toFileObject(f))) {
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(ImportEjbJarProjectWizardIterator.class,"MSG_NoEjbJarModule")); //NOI18N
+                return false; //No ejb jar module location
             }
             
             if (prjName == null || prjName.length() == 0) {
@@ -421,35 +423,35 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
             }
         }
         
-        private boolean isWebModule (FileObject dir) {
-            return guessDocBase (dir) != null && guessJavaRoot (dir) != null;
+        private boolean isEjbJarModule (FileObject dir) {
+            return guessConfigFilesPath (dir) != null && guessJavaRoot (dir) != null;
         }
     
         //use it as a project root iff it is not sources or document root
         public boolean isSuitableProjectRoot (FileObject dir) {
-            FileObject docRoot = guessDocBase (dir);
             FileObject srcRoot = guessJavaRoot (dir);
-            return (docRoot == null || FileUtil.isParentOf (dir, docRoot))
+            FileObject configFilesRoot = guessConfigFilesPath(dir);
+            return (configFilesRoot == null || FileUtil.isParentOf (dir, configFilesRoot))
                 && (srcRoot == null || FileUtil.isParentOf (dir, srcRoot));
         }
     
         private void presetSecondPanel(FileObject fo) {
             FileObject guessFO;
-            String webPages = ""; //NOI18N
             String javaSources = ""; //NOI18N
             String libraries = ""; //NOI18N
+            String configFiles = ""; //NOI18N
             
-            guessFO = guessDocBase(fo);
-            if (guessFO != null)
-                webPages = FileUtil.toFile(guessFO).getPath();
             guessFO = guessJavaRoot(fo);
             if (guessFO != null)
                 javaSources = FileUtil.toFile(guessFO).getPath();
+            guessFO = guessConfigFilesPath(fo);
+            if (guessFO != null)
+                configFiles = FileUtil.toFile(guessFO).getPath();
             guessFO = guessLibrariesFolder(fo);
             if (guessFO != null)
                 libraries = FileUtil.toFile(guessFO).getPath();
             
-            ((ImportEjbJarLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
+            ((ImportEjbJarLocationsVisual) panels[1].getComponent()).initValues(configFiles, javaSources, libraries);
         }
         
         //extra finish dialog        
@@ -535,8 +537,8 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
             boolean res2 = true;
             boolean res3 = true;
             
-            if (!panel.jTextFieldWebPages.getText().trim().equals(""))
-                res1 = relativePath(panel.jTextFieldWebPages.getText().trim());
+            if (!panel.jTextFieldConfigFiles.getText().trim().equals(""))
+                res1 = relativePath(panel.jTextFieldConfigFiles.getText().trim());
             if (!panel.jTextFieldJavaSources.getText().trim().equals(""))
                 res2 = relativePath(panel.jTextFieldJavaSources.getText().trim());
             if (!panel.jTextFieldLibraries.getText().trim().equals(""))
@@ -597,7 +599,7 @@ public class ImportEjbJarProjectWizardIterator implements TemplateWizard.Iterato
         public void storeSettings (Object settings) {
             WizardDescriptor d = (WizardDescriptor) settings;
             
-            d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
+            d.putProperty(WizardProperties.CONFIG_FILES_FOLDER, panel.jTextFieldConfigFiles.getText().trim());
             d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
             d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
         }
