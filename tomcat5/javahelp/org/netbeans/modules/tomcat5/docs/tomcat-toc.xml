@@ -4,7 +4,7 @@
 
   PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
 
-         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+         "http://java.sun.com/products/javahelp/toc_2_0.dtd">
 
 <toc version="1.0">
 
@@ -26,18 +26,16 @@
 
     </tocitem>
     <tocitem text="Web Modules">
-      <tocitem text="Working With Web Servers"> 
-	    <tocitem text="Tomcat Context Descriptor Node" target="webmod_contextxml" />
-      </tocitem> 	
-      <tocitem text="Running and Testing Web Modules" > 
-        <tocitem text="Tomcat-Specific Directions" >
+      <tocitem text="Working With Tomcat" >
+        <tocitem text="Running and Testing Web Modules Using Tomcat" > 
           <tocitem text="Targeting Tomcat for Running Web Modules" target="tomcat_default" />       
 	  <tocitem text="Setting a Web Module Context for the Tomcat Server" target="tomcat_context_add" />
           <tocitem text="Running a Web Module Using Tomcat" target="webmod_singletest" />    
 	  <tocitem text="Running JSP Files Using Tomcat" target="jsp_run" />
 	  <tocitem text="Running Servlets Using Tomcat" target="servlet_run" />
 	  <tocitem text="Removing a Web Module from the Tomcat Server" target="tomcat_context_delete" />   
-        </tocitem>    
+        </tocitem>  
+        <tocitem text="Tomcat Context Descriptor Node" target="webmod_contextxml" />
      </tocitem>
    </tocitem>  
 </tocitem>
