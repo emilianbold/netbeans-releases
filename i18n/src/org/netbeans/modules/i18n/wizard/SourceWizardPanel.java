@@ -254,17 +254,19 @@ final class SourceWizardPanel extends JPanel {
 
                         for(int i=0; i<nodes.length; i++) {
                             // Has to be data object.
-                            DataObject dataObject = (DataObject)nodes[i].getCookie(DataObject.class);
-                            if(dataObject == null)
+                            Object dataObject = nodes[i].getCookie(DataObject.class);
+                            if (dataObject == null) {
                                 return false;
-
+                            }
                             // if it is folder and constains some our data object.
-                            if(dataObject instanceof DataFolder && I18nUtil.containsAcceptedDataObject((DataFolder)dataObject))
+                            if (dataObject instanceof DataFolder) {
+                                if (I18nUtil.containsAcceptedDataObject((DataFolder) dataObject)) {
+                                    return true;
+                                }
+                            } else if (FactoryRegistry.hasFactory(dataObject.getClass())) {
+                                // Has to have registered i18n factory for that data object class name.
                                 return true;
-                            
-                            // Has to have registered i18n factory for that data object class name.
-                            if(FactoryRegistry.hasFactory(dataObject.getClass()))
-                                return true;
+                            }
                         }
                         
                         return false;

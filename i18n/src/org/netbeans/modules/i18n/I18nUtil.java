@@ -208,17 +208,21 @@ public final class I18nUtil {
      */
     public static boolean containsAcceptedDataObject(DataFolder folder) {
         DataObject[] children = folder.getChildren();
+        DataObject[] folders = new DataObject[children.length];
+        int i, foldersCount = 0;
 
-        for(int i = 0; i < children.length; i++) {
-            if(children[i] instanceof DataFolder) {  
-                if(containsAcceptedDataObject((DataFolder)children[i]))
-                    return true;
-            } else {
-                if(FactoryRegistry.hasFactory(children[i].getClass()))
-                    return true;
+        for (i = 0; i < children.length; i++) {
+            if (children[i] instanceof DataFolder) {  
+                folders[foldersCount++] = children[i];
+            } else if (FactoryRegistry.hasFactory(children[i].getClass())) {
+                return true;
             }
         }
-
+        for (i = 0; i < foldersCount; i++) {
+            if (containsAcceptedDataObject((DataFolder) children[i])) {
+                return true;
+            }
+        }
         return false;
     }
     
