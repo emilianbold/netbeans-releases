@@ -57,6 +57,8 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/nodes/FilterNodeTest.class/testEquals"/>
                 <include name="org/openide/options/*Test.class"/>
                 <include name="org/openide/util/*.class"/>
+                <!-- excluded, needs an ide executor -->
+                <exclude name="org/openide/util/UtilProgressCursorTest.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
                 <include name="org/openide/xml/*.class"/>
                 <!-- following test was excluded because of issue #22629 
@@ -76,6 +78,7 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/openide/explorer/propertysheet/PropertyPanelTest.class"/>
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
+                <include name="org/openide/util/UtilProgressCursorTest.class"/>
             </patternset>
         </testset>        
     </testbag>
