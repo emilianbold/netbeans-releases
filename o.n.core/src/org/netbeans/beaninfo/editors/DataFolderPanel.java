@@ -287,6 +287,10 @@ class DataFolderPanel extends TopComponent implements
     public void propertyChange (PropertyChangeEvent ev) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals (ev.getPropertyName ())) {
             Node[] arr = packagesPanel.getExplorerManager ().getSelectedNodes ();
+            if (!isVisible()) {
+                // in the case we are not shown don't update the panel's state
+                return;
+            }
             if (arr.length == 1) {
                 DataFolder df = (DataFolder)arr[0].getCookie (DataFolder.class);
                 if (df != null) {
@@ -344,7 +348,7 @@ class DataFolderPanel extends TopComponent implements
                                                        setTargetFolder (df);
                                                        packageName.selectAll ();
                                                    }
-                                               }
+                                              }
                                                 String text = packageName.getText ();
                                                 if (text != null) {
                                                     if (isValid()) {
@@ -471,6 +475,7 @@ class DataFolderPanel extends TopComponent implements
         boolean exact;
         Node n;
         String name;
+        boolean defaultPackageNameUsed = false;
 
         df = f;
         
@@ -483,7 +488,9 @@ class DataFolderPanel extends TopComponent implements
                 FileSystem fs = fo.getFileSystem ();
 
                 if (fo.isRoot ()) {
-                    name = defaultPackageName (fs);
+                   // name = defaultPackageName (fs);
+                    name = ""; // NOI18N
+                    defaultPackageNameUsed = true;
                 }
 
                 system = new WeakReference (fs);
@@ -532,6 +539,10 @@ class DataFolderPanel extends TopComponent implements
 
         packageName.setText (name);
         updateDirectory ();
+//        if (defaultPackageNameUsed) {
+//            packageName.selectAll();
+//            packageName.requestFocus();
+//        }
 
         packageName.getDocument ().addDocumentListener (this);
         em.addPropertyChangeListener (this);
