@@ -12,10 +12,10 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
-    <xsl:output method="xml" omit-xml-declaration="yes"/>
-
     <xsl:import href="apichanges.xsl" />
     
+    <xsl:output method="xml" omit-xml-declaration="yes"/>
+
     <!-- Sep 1, 1997 is the start of the NetBeans epoch  -->
     <xsl:param name="changes-since-year" select="'1997'" />
     <xsl:param name="changes-since-month" select="'09'" />
