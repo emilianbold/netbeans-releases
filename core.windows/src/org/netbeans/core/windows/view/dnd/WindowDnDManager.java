@@ -233,7 +233,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 }
             }
         }
-        
         for(Iterator it = viewAccessor.getSeparateModeFrames().iterator(); it.hasNext(); ) {
             Frame frame = (Frame)it.next();
             if(frame != null) {
@@ -373,7 +372,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         
         return false;
     }
-    
+
 
     // XXX
     public boolean isCopyOperationPossible() {
@@ -468,6 +467,7 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         for(Iterator it = floatingFrames.iterator(); it.hasNext(); ) {
             Component comp = (Component)it.next();
             Rectangle bounds = comp.getBounds();
+            
             if(bounds.contains(location)) {
                 TopComponentDroppable droppable = findDroppable(comp,
                         new Point(location.x - bounds.x, location.y - bounds.y),
@@ -506,7 +506,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         Component deepest = SwingUtilities.getDeepestComponentAt(
                 contentPane, location.x, location.y);
 
-        //
         if(deepest instanceof TopComponentDroppable) {
             TopComponentDroppable droppable = (TopComponentDroppable)deepest;
             if(droppable.supportsKind(kind, transfer)) {
@@ -759,7 +758,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
         /** Implements <code>DragSourceMotionListener</code>. */
         public void dragMouseMoved(DragSourceDragEvent evt) {
             if(DEBUG) {
-                debugLog(""); // NOI18N
                 debugLog("dragMouseMoved evt=" + evt); // NOI18N
             }
             
@@ -782,11 +780,12 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 TopComponentDroppable droppable 
                         = findDroppableFromScreen(windowDnDManager.getFloatingFrames(), location, kind, windowDnDManager.startingTransfer);
                 
-                // PENDING how to manage better this block?
-                if(isAroundCenterPanel) {
-                    windowDnDManager.setLastDropTarget(getMainDropTargetGlassPane());
-                }
-
+                    // was probably forgotten to set the lastdrop target, was causing strange repaint side effects when 2 frames overlapped.
+                    JComponent cp = (JComponent)droppable.getDropComponent();
+                    Component glass = cp.getRootPane().getGlassPane();
+                    if (glass instanceof DropTargetGlassPane) {
+                        windowDnDManager.setLastDropTarget((DropTargetGlassPane)glass);
+                    }
                 Point p = new Point(location);
                 SwingUtilities.convertPointFromScreen(p, droppable.getDropComponent());
                 if(droppable.canDrop(windowDnDManager.startingTransfer, p)) {
@@ -794,9 +793,6 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                     dragOverDropTarget(location, droppable);
                 } else {
                     topComponentDragSupport.setUnsuccessCursor();
-                    // XXX PENDING Simulates drag over the starting point.
-                    // It should just show the starting tab.
-                    dragOverDropTarget(windowDnDManager.startingPoint, windowDnDManager.startingDroppable);
                 }
             } else if(!isInMainWindow(location)
             && windowDnDManager.isInFloatingFrame(location)) {

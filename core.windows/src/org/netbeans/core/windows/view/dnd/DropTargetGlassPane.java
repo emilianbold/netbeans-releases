@@ -429,7 +429,7 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             } else if ((old == null) != (s == null)) {
                 shape = s;
                 shapeChange (old, s, c);
-            }
+            } 
         }
         
         public void paintCurrentIndication (Graphics2D g) {
@@ -478,12 +478,12 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
                 } else {
                     toPaint = (JComponent) lastDropComponent;
                 }
-                Shape clip = getClipForIndication (s, true, lastDropComponent);
-                
-                g.setClip (clip);
                 if (erasing) {
                     toPaint.paint (g);
                 } else {
+                    // only set the clip when really want to paint it, not when erasing..
+                    Shape clip = getClipForIndication (s, true, lastDropComponent);
+                    g.setClip (clip);
                     paintShape (s, g);
                 }
 
