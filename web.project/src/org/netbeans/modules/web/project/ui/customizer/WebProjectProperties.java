@@ -548,6 +548,10 @@ public class WebProjectProperties {
     private static class PathParser extends PropertyParser {
         public Object decode(String raw, AntProjectHelper antProjectHelper, ReferenceHelper refHelper ) {
             
+            if (raw == null) {
+                return new ArrayList ();
+            }
+            
             String pe[] = PropertyUtils.tokenizePath( raw );
             List cpItems = new ArrayList( pe.length );
             for( int i = 0; i < pe.length; i++ ) {
