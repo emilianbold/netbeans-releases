@@ -126,4 +126,22 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Shortcuts">
         <file name="C-O[org.netbeans.modules.openfile.OpenFileAction].instance" />
     </folder>
+
+    <folder name="Services">
+        <folder name="Hidden">
+          <attr name="hidden" boolvalue="true" />
+            <!-- Register entity catalog for pdf link xml, see org.netbeans.modules.pdf.LinkProcessor javadoc -->
+            <file name="org-netbeans-modules-pdf-catalog.xml" >
+                <![CDATA[
+                <!DOCTYPE catalog PUBLIC "-//NetBeans//Entity Mapping Registration 1.0//EN" "http://www.netbeans.org/dtds/EntityCatalog-1_0.dtd">
+                <catalog>
+                    <!-- public ID for pdf link xml -->
+                    <public publicId="-//NetBeans//DTD PDF Document Menu Link 1.0//EN" uri="nbrescurr:/org/netbeans/modules/pdf/pdf_link.dtd"/>
+                </catalog>    
+                ]]>
+            </file>    
+        </folder>
+    </folder>
+
+
 </filesystem>
