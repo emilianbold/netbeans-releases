@@ -78,6 +78,7 @@ import java.awt.Dimension;
 import java.awt.RenderingHints;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Utilities;
 
 
 
@@ -389,7 +390,7 @@ public class BaseOptions extends OptionSupport {
                 settingsMap.put(SettingsNames.RENDERING_HINTS,
                     new Settings.Evaluator() {
                         public Object getValue(Class kitClass2, String settingName) {
-                            return getSettingBoolean(TEXT_ANTIALIASING_PROP)
+                            return isTextAntialiasing()
                                 ? textAntialiasingHintsMap
                                 : java.util.Collections.EMPTY_MAP;
                         }
@@ -1144,8 +1145,19 @@ public class BaseOptions extends OptionSupport {
     }
     
     public boolean isTextAntialiasing() {
-         // artificial setting -> evaluator used (at begining of this class)
-        return getSettingBoolean(TEXT_ANTIALIASING_PROP);
+        // artificial setting -> evaluator used (at begining of this class)
+        Boolean val = (Boolean)getSettingValue(TEXT_ANTIALIASING_PROP);
+        if (val != null) {
+            return val.booleanValue();
+        } else {
+            // fix of #31758
+            if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                // On OSX, default to true
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
     
     public void setTextAntialiasing(boolean textAntialiasing) {
