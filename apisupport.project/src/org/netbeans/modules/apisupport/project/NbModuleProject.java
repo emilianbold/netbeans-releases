@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -41,6 +43,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -50,6 +53,8 @@ import org.w3c.dom.NodeList;
  * @author Jesse Glick
  */
 final class NbModuleProject implements Project {
+    
+    private static final Icon NB_PROJECT_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ) ); // NOI18N
     
     private static final URL BUILD_XSL = NbModuleProject.class.getResource("resources/build.xsl");
     private static final URL BUILD_IMPL_XSL = NbModuleProject.class.getResource("resources/build-impl.xsl");
@@ -153,6 +158,10 @@ final class NbModuleProject implements Project {
             displayName = getName();
         }
         return displayName;
+    }
+    
+    public Icon getIcon() {
+        return NB_PROJECT_ICON;
     }
     
     public String toString() {
