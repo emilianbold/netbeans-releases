@@ -498,6 +498,21 @@ public final class NbMainExplorer extends CloneableTopComponent
             initializeWithRootContext(rc);
         }
 
+        // #16375. Not to try to serialize explored nodes which aren't
+        // serializable (getHandle returns null).
+        /** Adjusts this component persistence according
+         * root context node persistence ability. */
+        void adjustComponentPersistence() {
+            Node.Handle handle = getExplorerManager().getRootContext().getHandle();
+            if(handle == null) {
+                // Not persistent.
+                putClientProperty("PersistenceType", "Never"); // NOI18N
+            } else {
+                // Persistent.
+                putClientProperty("PersistenceType", "OnlyOpened"); // NOI18N
+            }
+        }
+
         public Node getRootContext () {
             return getExplorerManager().getRootContext();
         }
