@@ -59,6 +59,15 @@ public class I18nPanel extends JPanel {
 
     private Project project;
     
+    static final long ALL_BUTTONS = 0xffffff;
+    static final long NO_BUTTONS = 0x0;
+    static final long REPLACE_BUTTON = 0xf0000;
+    static final long SKIP_BUTTON    = 0x0f000;
+    static final long INFO_BUTTON    = 0x00f00;
+    static final long CANCEL_BUTTON   = 0x000f0;
+    static final long HELP_BUTTON    = 0x0000f;
+
+
     
     /** Creates new I18nPanel. */
     public I18nPanel(PropertyPanel propertyPanel, Project project) {
@@ -82,8 +91,42 @@ public class I18nPanel extends JPanel {
         if(!withButtons)
             remove(buttonsPanel);
         
+        // create empty panel
+        emptyPanel = new EmptyPropertyPanel();
+        propertyPanelShown = true;
+
+        showBundleMessage("TXT_SearchingForStrings");
     }
 
+
+    private boolean propertyPanelShown;
+
+    public void showBundleMessage(String bundleKey) {
+
+        emptyPanel.setBundleText(bundleKey);
+        if (propertyPanelShown) {
+            propertyPanelPlaceholder.remove(propertyPanel);
+            propertyPanelPlaceholder.add(emptyPanel);
+            propertyPanelPlaceholder.validate();
+            propertyPanelPlaceholder.repaint();
+            propertyPanelShown = false;
+        }
+    }
+
+    public void showPropertyPanel() {
+        if (!propertyPanelShown) {
+            propertyPanelPlaceholder.remove(emptyPanel);
+            propertyPanelPlaceholder.add(propertyPanel);
+            propertyPanelPlaceholder.validate();
+            propertyPanelPlaceholder.repaint();
+            propertyPanelShown = true;
+        }
+    }
+
+
+    
+ 
+    
     
     /** Overrides superclass method to set default button. */
     public void addNotify() {
@@ -119,6 +162,8 @@ public class I18nPanel extends JPanel {
         ));
 
         replaceButton.setEnabled(i18nString.getSupport().getResourceHolder().getResource() != null);
+        
+        showPropertyPanel();
     }
 
     /** Replace button accessor. */
@@ -197,7 +242,7 @@ public class I18nPanel extends JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         resourcePanel = createResourcePanel();
-        propertyPanel = propertyPanel; // Ugly trick to cheat form.
+        propertyPanelPlaceholder = new javax.swing.JPanel();
         fillPanel = new javax.swing.JPanel();
         buttonsPanel = new javax.swing.JPanel();
         replaceButton = new javax.swing.JButton();
@@ -220,7 +265,7 @@ public class I18nPanel extends JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(propertyPanel, gridBagConstraints);
+        add(propertyPanelPlaceholder, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -277,16 +322,28 @@ public class I18nPanel extends JPanel {
       helpSystem.showHelp(help);
   }//GEN-LAST:event_helpButtonActionPerformed
 
+    public void enableButtons(long buttonMask) {
+        replaceButton.setEnabled((buttonMask & REPLACE_BUTTON) != 0);
+        skipButton.setEnabled((buttonMask & SKIP_BUTTON) != 0);
+        infoButton.setEnabled((buttonMask & INFO_BUTTON) != 0);
+        cancelButton.setEnabled((buttonMask & CANCEL_BUTTON) != 0);
+        helpButton.setEnabled((buttonMask & HELP_BUTTON) != 0);
+    }
+
+        
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton infoButton;
-    private javax.swing.JButton skipButton;
     private javax.swing.JPanel buttonsPanel;
-    private javax.swing.JButton replaceButton;
-    private javax.swing.JPanel propertyPanel;
-    private javax.swing.JPanel resourcePanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel fillPanel;
     private javax.swing.JButton helpButton;
+    private javax.swing.JButton infoButton;
+    private javax.swing.JPanel propertyPanelPlaceholder;
+    private javax.swing.JButton replaceButton;
+    private javax.swing.JPanel resourcePanel;
+    private javax.swing.JButton skipButton;
     // End of variables declaration//GEN-END:variables
-
+    private PropertyPanel propertyPanel;
+    private EmptyPropertyPanel emptyPanel;
 }

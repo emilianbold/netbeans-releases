@@ -41,6 +41,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.netbeans.api.project.Project;
+import org.openide.util.RequestProcessor;
 
 
 /**
@@ -114,20 +115,33 @@ public class I18nManager {
         if(ec == null)
             return;
 
-        // do the search
-        if (find()) {
-            initCaret(ec);
-            highlightHCString();
+        // Add i18n panel to top component.
+        getDialog(sourceDataObject.getName(), Util.getProjectFor(sourceDataObject));
+        final I18nPanel i18nPanel = ((I18nPanel)i18nPanelWRef.get());
+        i18nPanel.showBundleMessage("TXT_SearchingForStrings");
+        i18nPanel.enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
+        i18nPanel.getCancelButton().requestFocusInWindow();
 
-            // Add i18n panel to top component.
-            getDialog(sourceDataObject.getName(), Util.getProjectFor(sourceDataObject));
+        // do the search on background
+        RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    if (find()) {
+                        initCaret(ec);
+                        highlightHCString();
+                        fillDialogValues();
+                        i18nPanel.enableButtons(I18nPanel.ALL_BUTTONS);
+                        i18nPanel.getReplaceButton().requestFocusInWindow();
+                    } else {
+                        i18nPanel.showBundleMessage("TXT_NoHardcodedString");
+                        i18nPanel.enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
+                        i18nPanel.getCancelButton().requestFocusInWindow();
 
-            fillDialogValues();
-        } else {
-            NotifyDescriptor.Message message = new NotifyDescriptor.Message(
-                I18nUtil.getBundle().getString("MSG_NoInternationalizableString"), NotifyDescriptor.INFORMATION_MESSAGE); // to info message
-            DialogDisplayer.getDefault().notify(message);
-        }
+                    }
+                }
+            });
+
+
+        
     }
 
     /** Initializes caret. */
@@ -220,10 +234,12 @@ public class I18nManager {
     private void skip() {
         if(find()) {
             highlightHCString();
-            
             fillDialogValues();
+            ((I18nPanel)i18nPanelWRef.get()).enableButtons(I18nPanel.ALL_BUTTONS);
         } else {
-            cancel();
+            ((I18nPanel)i18nPanelWRef.get()).showBundleMessage("TXT_NoMoreStrings");
+            ((I18nPanel)i18nPanelWRef.get()).enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
+            ((I18nPanel)i18nPanelWRef.get()).getCancelButton().requestFocusInWindow();
         }
     }
     
@@ -289,6 +305,7 @@ public class I18nManager {
             
             // Reset weak reference.
             i18nPanelWRef = new WeakReference(i18nPanel);
+
         }
 
         // Set default i18n string.
