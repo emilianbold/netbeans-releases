@@ -222,8 +222,8 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
                 return;
             }
             try {
-                logViewer = new LogViewer(catalinaDir, catalinaWork, className, dir, prefix, 
-                        suffix, isTimestamped, false);
+                logViewer = new LogViewer(catalinaDir, catalinaWork, tomcatModule.getPath(), 
+                        className, dir, prefix, suffix, isTimestamped, false);
                 logViewer.start();
                 return;
             } catch (UnsupportedLoggerException e) {

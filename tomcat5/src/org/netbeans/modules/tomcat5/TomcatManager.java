@@ -516,7 +516,7 @@ public class TomcatManager implements DeploymentManager {
             return ip.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
         }
         return null;
-    }    
+    }
     
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
     throws InvalidModuleException {
@@ -1330,7 +1330,7 @@ public class TomcatManager implements DeploymentManager {
                 return;
             }
             try {
-                logViewer = new LogViewer(catalinaDir, catalinaWork, className, 
+                logViewer = new LogViewer(catalinaDir, catalinaWork, null, className, 
                         dir, prefix, suffix, isTimestamped, false);
                 logViewer.start();
                 return;

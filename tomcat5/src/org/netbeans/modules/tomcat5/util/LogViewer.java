@@ -52,7 +52,7 @@ public class LogViewer extends Thread {
     private boolean isTimestamped;
     private boolean takeFocus;    
     
-    private ContextLogSupport logSupport;    
+    private ContextLogSupport logSupport;
     
     /**
      * Create a new LogViewer thread.
@@ -60,6 +60,9 @@ public class LogViewer extends Thread {
      * @param catalinaDir catalina directory (CATALINA_BASE or CATALINA_HOME).
      * @param catalinaWorkDir work directory where Tomcat stores generated classes
      *        and sources from JSPs (e.g. $CATALINA_BASE/work/Catalina/localhost).
+     * @param webAppContext web application's context this logger is declared for,
+     *        may be <code>null</code> for shared context log. It is used to look
+     *        up sources of servlets generated from JSPs.
      * @param className class name of logger implementation
      * @param directory absolute or relative pathname of a directory in which log 
      *        files reside, if null catalina default is used.
@@ -72,9 +75,9 @@ public class LogViewer extends Thread {
      * @throws UnsupportedLoggerException logger specified by the className parameter
      *         is not supported.
      */
-    public LogViewer(File catalinaDir, String catalinaWorkDir, String className, 
-            String directory, String prefix, String suffix, boolean isTimestamped, 
-            boolean takeFocus) throws UnsupportedLoggerException {
+    public LogViewer(File catalinaDir, String catalinaWorkDir, String webAppContext, 
+            String className, String directory, String prefix, String suffix, 
+            boolean isTimestamped, boolean takeFocus) throws UnsupportedLoggerException {
         super("LogViewer - Thread"); // NOI18N
         if (catalinaDir == null) throw new NullPointerException();
         if (!"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
@@ -119,7 +122,7 @@ public class LogViewer extends Thread {
         inOut.select();
         writer = inOut.getOut();
         errorWriter = inOut.getErr();
-        logSupport = new ContextLogSupport(catalinaWorkDir);
+        logSupport = new ContextLogSupport(catalinaWorkDir, webAppContext);
     }
     
     /**
@@ -239,15 +242,16 @@ public class LogViewer extends Thread {
      */
     private static class ContextLogSupport extends LogSupport {
         private final String CATALINA_WORK_DIR;
-        String context = null;
-        String prevMessage = null;
-        static final String STANDARD_CONTEXT = "StandardContext["; // NOI18N
-        static final int STANDARD_CONTEXT_LENGTH = STANDARD_CONTEXT.length();
+        private String context = null;
+        private String prevMessage = null;
+        private static final String STANDARD_CONTEXT = "StandardContext["; // NOI18N
+        private static final int STANDARD_CONTEXT_LENGTH = STANDARD_CONTEXT.length();
         private GlobalPathRegistry globalPathReg = GlobalPathRegistry.getDefault();
         
 
-        public ContextLogSupport(String catalinaWork) {
+        public ContextLogSupport(String catalinaWork, String webAppContext) {
             CATALINA_WORK_DIR = catalinaWork;
+            context = webAppContext;
         }
         
         public LineInfo analyzeLine(String logLine) {
