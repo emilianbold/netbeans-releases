@@ -1079,10 +1079,11 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         File installDirFile = new File(instDirPath);
         logEvent(this, Log.DBG, "createInstallScript installDirFile: " + installDirFile);
         File [] children = installDirFile.listFiles();
+        String installerPrefix = resolveString("$L(org.netbeans.installer.Bundle,AS.installerPrefix)");
         if (Util.isWindowsOS()) {
             //Try to locate Windows AS installer
             for (int i = 0; i < children.length; i++) {
-                if (children[i].getName().startsWith("sjsas_pe-8_1") && (children[i].getName().indexOf("windows") != -1) &&
+                if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("windows") != -1) &&
                     children[i].getName().endsWith(".exe")) {
                     installerName = children[i].getName();
                     break;
@@ -1091,7 +1092,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
         } else if (Util.isLinuxOS()) {
             //Try to locate Linux AS installer
             for (int i = 0; i < children.length; i++) {
-                if (children[i].getName().startsWith("sjsas_pe-8_1") && (children[i].getName().indexOf("linux") != -1) &&
+                if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("linux") != -1) &&
                     children[i].getName().endsWith(".bin")) {
                     installerName = children[i].getName();
                     break;
@@ -1101,7 +1102,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	    if (arch.startsWith("sparc")) {
                 //Try to locate Solaris Sparc JDK installer
                 for (int i = 0; i < children.length; i++) {
-                    if (children[i].getName().startsWith("sjsas_pe-8_1") && (children[i].getName().indexOf("solaris-sparc") != -1) && 
+                    if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("solaris-sparc") != -1) && 
                         children[i].getName().endsWith(".bin")) {
                         installerName = children[i].getName();
                         break;
@@ -1110,7 +1111,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
 	    } else {
                 //Try to locate Solaris X86 JDK installer
                 for (int i = 0; i < children.length; i++) {
-                    if (children[i].getName().startsWith("sjsas_pe-8_1") && (children[i].getName().indexOf("solaris-i586") != -1) && 
+                    if (children[i].getName().startsWith(installerPrefix) && (children[i].getName().indexOf("solaris-i586") != -1) && 
                         children[i].getName().endsWith(".bin")) {
                         installerName = children[i].getName();
                         break;
