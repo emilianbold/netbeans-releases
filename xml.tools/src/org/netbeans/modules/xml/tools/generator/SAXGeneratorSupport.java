@@ -351,6 +351,11 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             FileObject previous = folder.getFileObject(model.getBindings(), "xml"); // NOI18N
             if (previous == null) return;
 
+            if ( previous.isVirtual() ) {
+                // file is virtual -- not available
+                return;
+            }
+
             in = previous.getInputStream();
             InputSource input = new InputSource(previous.getURL().toExternalForm());
             input.setByteStream(in);
@@ -396,6 +401,26 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             file = folder.createData(name, ext);
             return DataObject.find(file);
             
+        } else if ( file.isVirtual() ) {
+            // FileObject represents virtual file (not available),
+            
+            FileSystem fs = folder.getFileSystem();
+            final FileObject virtFile = file;
+
+            fs.runAtomicAction (new FileSystem.AtomicAction () {
+                    
+                public void run () throws IOException {
+                    // so it is important to delete such virtual file
+                    // and create real one.
+                    virtFile.delete();
+                    folder.createData (name, ext);
+                }
+            });
+
+            file = folder.getFileObject (name, ext);
+
+            return DataObject.find (file);            
+
         } else if (overwrite) {  // backup it
             
             FileLock lock = null;
