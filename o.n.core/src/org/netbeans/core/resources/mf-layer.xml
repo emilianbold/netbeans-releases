@@ -526,8 +526,12 @@ Microsystems, Inc. All Rights Reserved.
   
   <folder name="Services">
 
+    <!-- folder for HTML browsers and very simple browser -->
     <folder name="Browsers">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
+      <file name="SwingBrowser.ser" url="SwingBrowser.ser">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.ui.Bundle"/>
+      </file>
     </folder>
 
     <folder name="Hidden">
