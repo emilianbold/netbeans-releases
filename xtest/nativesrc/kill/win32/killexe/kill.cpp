@@ -14,7 +14,7 @@
 // killexe.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <Windows.h>
@@ -66,7 +66,10 @@ int main(int argc, char* argv[])
 		return KILL_ERROR;
 	}
 	/*printf("Killing process with pid = %d\n",pid);*/
-	if (argc == 3 && strcmp(argv[2], "-3")) return dump_process(pid);
-	else return KillProcessEx(pid, TRUE);
+	if (argc == 3 && (strcmp(argv[1], "-3")==0)) {
+		return dump_process(pid);
+	} else {
+		return KillProcessEx(pid, TRUE);
+	}
 }
 

@@ -5,7 +5,6 @@
 // $Id$
 //
 
-#include "stdafx.h"
 #include <windows.h>
 #include <crtdbg.h>
 #include <tchar.h>
