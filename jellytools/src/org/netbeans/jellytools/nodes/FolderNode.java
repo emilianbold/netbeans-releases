@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -23,7 +23,6 @@ public class FolderNode extends Node {
     
     static final ExploreFromHereAction exploreFromHereAction = new ExploreFromHereAction();
     static final FindAction findAction = new FindAction();
-    static final RefreshFolderAction refreshFolderAction = new RefreshFolderAction();
     // Compile Package
     static final Action compileAction = new Action(null, 
                 Bundle.getString("org.netbeans.spi.java.project.support.ui.Bundle", 
@@ -66,7 +65,6 @@ public class FolderNode extends Node {
         verifyPopup(new Action[]{
             exploreFromHereAction,
             findAction,
-            refreshFolderAction,
             copyAction,
             cutAction,
             deleteAction,
@@ -87,11 +85,6 @@ public class FolderNode extends Node {
     /** performs FindAction with this node */    
     public void find() {
         findAction.perform(this);
-    }
-    
-    /** performs RefreshFolderAction with this node */    
-    public void refreshFolder() {
-        refreshFolderAction.perform(this);
     }
     
     /** performs CompileAction with this node */    
