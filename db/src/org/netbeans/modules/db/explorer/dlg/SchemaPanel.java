@@ -234,6 +234,7 @@ public class SchemaPanel extends javax.swing.JPanel {
     }
 
     private void stopProgress(boolean connected) {
+        connectProgressBar.setIndeterminate(false);
         if (connected) {
             connectProgressBar.setValue(connectProgressBar.getMaximum());
             connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
@@ -241,7 +242,6 @@ public class SchemaPanel extends javax.swing.JPanel {
             connectProgressBar.setValue(connectProgressBar.getMinimum());
             connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
         }
-        connectProgressBar.setIndeterminate(false);
     }
 
     public void resetProgress() {

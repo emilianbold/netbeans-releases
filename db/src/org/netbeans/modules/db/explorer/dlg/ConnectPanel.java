@@ -190,6 +190,7 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
     }
 
     private void stopProgress(boolean connected) {
+        connectProgressBar.setIndeterminate(false);
         if (connected) {
             connectProgressBar.setValue(connectProgressBar.getMaximum());
             connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Established")); //NOI18N
@@ -197,7 +198,6 @@ public class ConnectPanel extends javax.swing.JPanel implements DocumentListener
             connectProgressBar.setValue(connectProgressBar.getMinimum());
             connectProgressBar.setString(NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ConnectionProgress_Failed")); //NOI18N
         }
-        connectProgressBar.setIndeterminate(false);
     }
 
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
