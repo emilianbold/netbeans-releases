@@ -34,9 +34,7 @@ public class OpenURLAction extends NodeAction {
     
     protected void performAction (Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getCookie(TomcatWebModuleCookie.class);
-            if (!(o instanceof TomcatWebModuleCookie)) continue;
-            TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)o;
+            TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);
             if (cookie instanceof TomcatWebModule) {
                 TomcatWebModule tomcatWebMod = (TomcatWebModule)cookie;
                 TomcatModule tomcatMod = tomcatWebMod.getTomcatModule();
@@ -51,10 +49,8 @@ public class OpenURLAction extends NodeAction {
 
     protected boolean enable (Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getCookie(TomcatWebModuleCookie.class);
-            if (!(o instanceof TomcatWebModuleCookie)) return false;
-            TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)o;
-            if (!(cookie.isRunning())) return false;
+            TomcatWebModuleCookie cookie = (TomcatWebModuleCookie)nodes[i].getCookie(TomcatWebModuleCookie.class);
+            if (cookie == null || !(cookie.isRunning())) return false;
         }
         return true;
     }

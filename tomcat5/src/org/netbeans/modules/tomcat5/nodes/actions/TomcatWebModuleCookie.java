@@ -14,24 +14,47 @@
 package org.netbeans.modules.tomcat5.nodes.actions;
 
 import org.openide.nodes.Node;
-import java.io.File;
 
 /** 
-*
-* @author Petr Pisl
-*/
+ * Tomcat web module cookie
+ * @author Petr Pisl
+ */
 public interface TomcatWebModuleCookie extends Node.Cookie {
 
+    /**
+     * Undeploys the web module from the server.
+     */    
     public void undeploy();
-    
+
+    /**
+     * Starts the web module.
+     */    
     public void start ();
     
+    /**
+     * Stops the web module.
+     */
     public void stop ();
     
+    /**
+     * Returns <code>true</code> if the web module is started, <code>false</code>
+     * otherwise.
+     * @return <code>true</code> if the web module is started, <code>false</code>
+     * otherwise
+     */
     public boolean isRunning();
     
+    /**
+     * Opens web module's log file in the output window.
+     */
     public void openLog();
     
+    /**
+     * Returns <code>true</code> if the web module has a logger defined, 
+     * <code>false</code> otherwise.
+     * @return <code>true</code> if the web module has a logger defined, 
+     * <code>false</code> otherwise
+     */
     public boolean hasLogger();
 
 }

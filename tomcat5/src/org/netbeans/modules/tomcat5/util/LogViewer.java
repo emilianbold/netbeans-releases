@@ -80,7 +80,7 @@ public class LogViewer extends Thread {
             boolean takeFocus) throws UnsupportedLoggerException {        
         super("LogViewer - Thread"); // NOI18N
         if (catalinaDir == null) throw new NullPointerException();        
-        if (className == null || !className.equals("org.apache.catalina.logger.FileLogger")) { // NOI18N
+        if (!"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
         }
         setDaemon(true);

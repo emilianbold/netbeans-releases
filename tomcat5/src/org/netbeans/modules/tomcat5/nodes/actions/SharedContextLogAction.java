@@ -30,9 +30,8 @@ public class SharedContextLogAction extends NodeAction {
 
     protected void performAction(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getCookie(TomcatInstanceNode.class);
-            if (!(o instanceof TomcatInstanceNode)) continue;
-            TomcatInstanceNode cookie = (TomcatInstanceNode)o;            
+            TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
+            if (cookie == null) continue;
             TomcatManager tm = cookie.getTomcatManager();
             if (tm != null) tm.openLog();
         }
@@ -40,9 +39,8 @@ public class SharedContextLogAction extends NodeAction {
 
     protected boolean enable(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            Object o = nodes[i].getCookie(TomcatInstanceNode.class);
-            if (!(o instanceof TomcatInstanceNode)) return false;
-            TomcatInstanceNode cookie = (TomcatInstanceNode)o;
+            TomcatInstanceNode cookie = (TomcatInstanceNode)nodes[i].getCookie(TomcatInstanceNode.class);
+            if (cookie == null) return false;
             TomcatManager tm = cookie.getTomcatManager();
             if (tm == null || !tm.hasLogger()) return false;
         }
