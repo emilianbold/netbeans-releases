@@ -360,11 +360,6 @@
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2sestand_wiz.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexist_wiz.html" />
 
-<!-- New web project and web project from existing sources -->
-<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="project/csh/proj_webstand_wiz.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="project/csh/proj_webexist_wiz1.html" />
-<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="project/csh/proj_webexist_wiz2.html" />
-
 <!-- Freeform J2SE and Web Project wizards -->
 <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
@@ -381,12 +376,10 @@
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props6.html" />
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRunTest" url="project/csh/proj_j2sestand_props7.html" />
 
-<!-- Standard Web Project Properties dialog-->
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerGeneral" url="web/overvw/WebCustomizerGeneral.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="web/overvw/WebCustomizerCompile.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="web/overvw/WebCustomizerWar.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="web/overvw/WebCustomizerJavadoc.html" />
-<mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="web/overvw/WebCustomizerRun.html" />
+<!-- New web project and web project from existing sources -->
+<mapID target="org.netbeans.modules.web.project.ui.wizards.PanelConfigureProject" url="project/csh/proj_webstand_wiz.html" />
+<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$ThePanel" url="project/csh/proj_webexist_wiz1.html" />
+<mapID target="org.netbeans.modules.web.project.ui.wizards.ImportWebProjectWizardIterator$SecondPanel" url="project/csh/proj_webexist_wiz2.html" />
 
 <!-- Freeform J2SE and Web Project Properties dialog-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.GeneralPanel" url="project/csh/proj_j2sefree_props1.html" />
@@ -413,8 +406,7 @@
 <mapID target="org.netbeans.modules.web.dd.wizards.DeployDataExtraPanel" url="web/servlet/filter_create.html" />
 <mapID target="org.netbeans.modules.web.dd.wizards.DeployDataPanel_servlet" url="web/servlet/servlet_create.html" />
 
-<!-- Library Manager -->
-<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/taglibUI/ctx_repaddto.html" />
+
 
 <mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 
