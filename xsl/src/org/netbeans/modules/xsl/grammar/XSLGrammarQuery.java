@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.Icon;
+import org.apache.xpath.XPathAPI;
 
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.modules.xml.api.model.*;
@@ -35,6 +36,7 @@ import org.netbeans.modules.xsl.scenario.XSLScenario;
 import org.openide.loaders.DataObject;
 
 import org.w3c.dom.*;
+import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -69,7 +71,7 @@ public class XSLGrammarQuery implements GrammarQuery{
     private static Set resultElementAttr;
     
     /** An object which indicates that result element should be allowed in a element Set */
-    private static Object resultElements;
+    private static String resultElements = "RESULT_ELEMENTS_DUMMY_STRING"; // NOI18N
         
     /** A Set of elements which should be allowed at template level in XSL stylesheet */ 
     private static Set template;
@@ -138,7 +140,7 @@ public class XSLGrammarQuery implements GrammarQuery{
             Set charTemplate = charInstructions; // We don't care about PCDATA
 
             template = new TreeSet(instructions);
-            template.add(getResultElements());
+            template.add(resultElements);
 
             Set topLevel = new TreeSet(Arrays.asList(new String[]{"import","include","strip-space", // NOI18N
                 "preserve-space","output","key","decimal-format","attribute-set", // NOI18N
@@ -200,7 +202,7 @@ public class XSLGrammarQuery implements GrammarQuery{
 
             // xsl:template
             tmpSet = new TreeSet(instructions);
-            tmpSet.add(getResultElements());
+            tmpSet.add(resultElements);
             tmpSet.add("param");
             elementDecls.put("template", tmpSet);
             attrDecls.put("template", new TreeSet(Arrays.asList(new String[]{
@@ -233,7 +235,7 @@ public class XSLGrammarQuery implements GrammarQuery{
 
             // xsl:for-each
             tmpSet = new TreeSet(instructions);
-            tmpSet.add(getResultElements());
+            tmpSet.add(resultElements);
             tmpSet.add("sort");
             elementDecls.put("for-each", tmpSet);
             attrDecls.put("for-each", new TreeSet(Arrays.asList(new String[]{
@@ -348,17 +350,6 @@ public class XSLGrammarQuery implements GrammarQuery{
         return template;
     }
     
-    private static Object getResultElements() {
-        if (resultElements == null) {
-            resultElements = new Comparable() {
-                public int compareTo(Object o) {
-                    return -1;
-                }
-            };
-        }
-        return resultElements;
-    }
-    
     private static Set getXslFunctions() {
         if (xslFunctions == null) {
             xslFunctions = new TreeSet(Arrays.asList(new String[]{
@@ -429,7 +420,11 @@ public class XSLGrammarQuery implements GrammarQuery{
             }
             
             // First we add the Result elements
-            if (elements != null && elements.contains(getResultElements()) && resultGrammarQuery != null) {
+            System.out.println("resultGrammarQuery: " + resultGrammarQuery);
+            System.out.println("elements: " + elements);
+            System.out.println("contains: " + elements.contains(resultElements));
+            if (elements != null && elements.contains(resultElements) && resultGrammarQuery != null) {
+            System.out.println("Add result elements");
                 ResultHintContext resultHintContext = new ResultHintContext(ctx, firstXslPrefixWithColon, null);
                 Enumeration resultEnum = resultGrammarQuery.queryElements(resultHintContext);
                 while (resultEnum.hasMoreElements()) {
@@ -532,77 +527,129 @@ public class XSLGrammarQuery implements GrammarQuery{
 //        System.out.println("context: " + ctx);
         if (ctx.getNodeType() == Node.ATTRIBUTE_NODE) {
             if (prefixList.size() == 0) return EmptyEnumeration.EMPTY;
-                        
+            String xslNamespacePrefix = prefixList.get(0) + ":";
+            
             String prefix = ctx.getCurrentPrefix();
             if (prefix.length() == 0) {
                 return EmptyEnumeration.EMPTY; // This should never happen
             }            
+//            char quoteChar = prefix.charAt(0);
             prefix = prefix.substring(1); // Get rid of the " or ' at the beginning
+            
             
             Attr attr = (Attr)ctx;
 
             
             String elName = attr.getOwnerElement().getNodeName();
-            if (elName.startsWith(prefixList.get(0) + ":")) {
+            if (elName.startsWith(xslNamespacePrefix)) {
                 String xpathAttrName = (String)getExprAttributes().get(elName.substring(4));
-                System.out.println("xpathAttrName: " + xpathAttrName);
                 if (xpathAttrName != null && xpathAttrName.equals(attr.getNodeName())) {
                     // This is an XPath expression
                     QueueEnumeration list = new QueueEnumeration();
-                    addItemsToEnum(list, getXslFunctions(), prefix);
-                    addItemsToEnum(list, getXPathAxes(), prefix);
+                                        
+                    int curIndex = prefix.length();
+                    while (curIndex > 0) {
+                        curIndex--;
+                        char curChar = prefix.charAt(curIndex);
+                        if (curChar == '(' || curChar == ',' || curChar == ' ') {
+                            curIndex++;
+                            break;
+                        }
+                    }
                     
+                    String preExpression = prefix.substring(0, curIndex);
+                    String subExpression = prefix.substring(curIndex);
+                    
+                    int lastDiv = subExpression.lastIndexOf('/');
+                    String subPre = "";
+                    String subRest = "";
+                    if (lastDiv != -1) {
+                        subPre = subExpression.substring(0, lastDiv + 1);
+                        subRest = subExpression.substring(lastDiv + 1);
+                    } else {
+                        subRest = subExpression;
+                    }
+
+                    System.out.println("subExpression=" + subExpression);
+                    System.out.println("subPre=" + subPre);
+                    System.out.println("subRest=" + subRest);
+                    
+                    Object selScenarioObj = scenarioCookie.getModel().getSelectedItem();
+                    if (selScenarioObj instanceof XSLScenario) {
+                        XSLScenario scenario = (XSLScenario)selScenarioObj;
+                        Document doc = null;
+                        try {
+                            doc = scenario.getSourceDocument(dataObject);
+                        } catch(Exception e) {
+                            // We don't care, ignore
+                        }
+                        
+                        if (doc != null) {
+                            Element docElement = doc.getDocumentElement();
+
+                            Set childNodeNames = new TreeSet();
+                                
+                            String combinedXPath;
+                            if (subPre.startsWith("/")) {
+                                // This is an absolute XPath
+                                combinedXPath = subPre;
+                            } else {
+                                // This is a relative XPath 
+                                
+                                // Traverse up the documents tree looking for xsl:for-each
+                                String xslForEachName = xslNamespacePrefix + "for-each"; // NOI18N
+                                List selectAttrs = new LinkedList();
+                                Node curNode = attr.getOwnerElement();
+                                if (curNode != null) {
+                                    // We don't want to add select of our selfs
+                                    curNode = curNode.getParentNode();
+                                }
+                                
+                                while (curNode != null && !(curNode instanceof Document)) {
+                                    if (curNode.getNodeName().equals(xslForEachName)) {
+                                        selectAttrs.add(0, ((Element)curNode).getAttribute("select"));        
+                                    }
+
+                                    curNode = curNode.getParentNode();
+                                }
+
+                                combinedXPath = "";
+                                for (int ind = 0; ind < selectAttrs.size(); ind++) {
+                                    combinedXPath += selectAttrs.get(ind) + "/";
+                                }
+                                combinedXPath += subPre;
+                            }
+                            
+                            System.out.println("combinedXPath: " + combinedXPath);
+                            
+                            try {
+                                NodeList nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "child::*");
+                                for (int ind = 0; ind < nodeList.getLength(); ind++) {
+                                    Node curResNode = nodeList.item(ind);
+                                    childNodeNames.add(curResNode.getNodeName());
+                                }
+                                
+                                nodeList = XPathAPI.selectNodeList(doc, combinedXPath + "@*");
+                                for (int ind = 0; ind < nodeList.getLength(); ind++) {
+                                    Node curResNode = nodeList.item(ind);
+                                    childNodeNames.add("@" + curResNode.getNodeName());
+                                }
+                            } catch (Exception e) {
+                               // We don't care, ignore
+                            }
+                            
+                            addItemsToEnum(list, childNodeNames, subRest, preExpression + subPre);
+                        }
+                    }
+                    
+                    addItemsToEnum(list, getXPathAxes(), subRest, preExpression + subPre);                
+                    addItemsToEnum(list, getXslFunctions(), subExpression, preExpression);
+                
                     return list;
                 }
             }
         }
-/*        
-        System.out.println("queryValues: type=" + ctx.getNodeType() + ", prefix=" + ctx.getCurrentPrefix());
-        if (ctx.getCurrentPrefix().startsWith("\"") || ctx.getCurrentPrefix().startsWith("'")) {
-            
-            NamedNodeMap attibutes = ctx.getAttributes();
-            for(int ind = 0; ind < attibutes.getLength(); ind++) {
-                System.out.println("attribute: " + attibutes.item(ind));
-            }
-            
-//            System.out.println("context: name=" + ctx.getNodeName() + ", value=" + ctx.getNodeValue());
-            Node parNode = ctx.getParentNode();
-            
-            System.out.println("parNode: name=" + parNode.getNodeName() + ", value=" + parNode.getNodeValue());
-            
-            Node sibling = ctx.getPreviousSibling();
-            while (sibling != null) {
-                System.out.println("sibling: " + sibling);
-     //           System.out.println("sibling: name=" + sibling.getNodeName() + ", value=" + sibling.getNodeValue());
-                sibling = sibling.getPreviousSibling();
-            }
 
-            Node nextSib = ctx.getNextSibling();
-            System.out.println("nextSib: " + nextSib);            
-            
-            if (!(parNode instanceof Element)) {
-                return EmptyEnumeration.EMPTY;
-            }
-            
-            
-            Element parent = (Element)parNode;
-            String attrValue = (String)exprAttributes.get(parent.getNodeName());
-            
-            
-            Object selItem = scenarioCookie.getModel().getSelectedItem();
-            if (selItem instanceof XSLScenario) {
-                XSLScenario scenario = (XSLScenario)selItem;
-                try {
-                    Document doc = scenario.getSourceDocument(dataObject);
-                    QueueEnumeration list = new QueueEnumeration();
-                    list.put(new MyElement("Customize XPath"));
-                    return list;
-                } catch (Exception e) {
-                   System.out.println("Exception: " + e.getMessage());
-                }
-            
-       }
-*/        
        return EmptyEnumeration.EMPTY;
     }
 
@@ -639,16 +686,30 @@ public class XSLGrammarQuery implements GrammarQuery{
         }
     }
     
-    private void addItemsToEnum(QueueEnumeration enum, Set set, String prefix) {
+    private void addItemsToEnum(QueueEnumeration enum, Set set, String startWith, String prefix) {
         Iterator it = set.iterator();
         while ( it.hasNext()) {
             String nextText = (String)it.next();
-            if (nextText.startsWith(prefix)) {
-                enum.put(new MyElement(nextText));
+            if (nextText.startsWith(startWith)) {
+                enum.put(new MyElement(prefix + nextText));
             }
         }
     }
-    
+/*    
+    private List findXslValueOfSelects(Node curNode, String namespacePrefix) {
+        // Traverse up the documents tree looking for xsl:for-each
+        String xslForEachName = namespacePrefix + ":" + "for-each"; // NOI18N
+        List selectAttrs = new LinkedList();
+        while (curNode != null && !(curNode instanceof Document)) {
+            
+            if (curNode.getNodeName().equals(xslForEachName)) {
+                selectAttrs.add(((Element)curNode).getAttribute("select"));        
+            }
+            
+            curNode = curNode.getParentNode();
+        }
+    }
+*/    
     /**
      * This method traverses up the document tree, investigates it and updates 
      * prefixList, resultGrammarQuery, lastDoctypeSystem or lastDoctypePublic
