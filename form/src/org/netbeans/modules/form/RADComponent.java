@@ -270,6 +270,21 @@ public class RADComponent {
       getNodeReference ().updateName ();
     }
   }
+
+  /** Restore name of component. If stored name is already in use or is null create new name. */
+  void useStoredName () {
+    String oldName = componentName;
+    componentName = storedName;
+    if (storedName == null || getFormManager ().getVariablesPool ().isReserved (storedName)) {
+      componentName = getFormManager ().getVariablesPool ().getNewName (beanClass);
+    }
+    getFormManager ().getVariablesPool ().createVariable (componentName, beanClass);
+
+    getFormManager ().fireComponentChanged (this, PROP_NAME, oldName, componentName);
+    if (getNodeReference () != null) {
+      getNodeReference ().updateName ();
+    }
+  }
   
   /** @return component name preserved between Cut and Paste */
   String getStoredName () {
@@ -1464,6 +1479,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  75   Gandalf   1.74        1/17/00  Pavel Buzek     cut/paste - store and 
+ *       reuse names, assign new names on paste (not on copy)
  *  74   Gandalf   1.73        1/15/00  Pavel Buzek     
  *  73   Gandalf   1.72        1/13/00  Pavel Buzek     enable EventEditor only 
  *       for forms that support advanced features
