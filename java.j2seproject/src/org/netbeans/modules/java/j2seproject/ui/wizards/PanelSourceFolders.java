@@ -148,7 +148,10 @@ public class PanelSourceFolders extends javax.swing.JPanel {
         settings.putProperty ("displayName",this.projectName.getText());
         settings.putProperty ("codename",NewJ2SEProjectWizardIterator.getSystemName(this.projectName.getText()));
         settings.putProperty ("projdir",new File (this.projectFolder.getText()));
-        ProjectChooser.setProjectsFolder (new File(this.projectLocation.getText()));
+        File projectsDir = new File(this.projectLocation.getText());
+        if (projectsDir.isDirectory()) {
+            ProjectChooser.setProjectsFolder (projectsDir);
+        }
     }
     
     private boolean valid () {

@@ -203,7 +203,10 @@ public class PanelProjectLocationVisual extends javax.swing.JPanel implements Do
         d.putProperty( /*XXX Define somewhere */ "projdir", new File( folder )); // NOI18N
         d.putProperty( /*XXX Define somewhere */ "displayName", name ); // NOI18N      
         d.putProperty( /*XXX Define somewhere */ "codename", NewJ2SEProjectWizardIterator.getSystemName(name)); // NOI18N
-        ProjectChooser.setProjectsFolder (new File(this.projectLocationTextField.getText()));
+        File projectsDir = new File(this.projectLocationTextField.getText());
+        if (projectsDir.isDirectory()) {
+            ProjectChooser.setProjectsFolder (projectsDir);
+        }
     }
     
     void read (WizardDescriptor settings) {
