@@ -18,6 +18,7 @@ package org.netbeans.modules.db.explorer;
  * @author  Administrator
  */
 public interface OpenConnectionInterface {
+    public boolean isFor(String driverName);
     public void enable();
     public void disable();
 }

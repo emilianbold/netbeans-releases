@@ -20,12 +20,17 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+import org.openide.ErrorManager;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -91,28 +96,27 @@ public class DatabaseConnection implements DBConnection {
     public static final String PROP_DRIVERNAME = "drivername"; //NOI18N
     public static final String PROP_NAME = "name"; //NOI18N
 
-    OpenConnectionInterface openConnection;
+    private OpenConnectionInterface openConnection;
+
+    static private final Lookup.Result openConnectionLookupResult;
+    static private Collection openConnectionServices = null;
+    static {
+        openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template(OpenConnectionInterface.class));
+        openConnectionLookupResult.addLookupListener(new LookupListener() {
+            public void resultChanged(LookupEvent ev) {
+                synchronized (DatabaseConnection.class) {
+                    openConnectionServices = null;
+                }
+            }
+        });            
+    }
 
     /** Default constructor */
     public DatabaseConnection() {
         propertySupport = new PropertyChangeSupport(this);
-        
-        // For Java Studio Enterprise. Create instanceof OpenConnection
-        try {
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            try {
-                openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection"), true, cl).newInstance();
-            } catch(ClassNotFoundException cnfe) {
-                org.openide.ErrorManager.getDefault().log(cnfe.getMessage());
-            }
-            if (openConnection == null) {
-                openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection")).newInstance();
-            }
-        } catch(Exception ex) {
-            org.openide.ErrorManager.getDefault().notify(ex);
-        }
+        openConnection = new OpenConnection();
     }
-
+    
     /** Advanced constructor
      * Allows to specify all needed information.
      * @param driver Driver URL
@@ -128,7 +132,28 @@ public class DatabaseConnection implements DBConnection {
         pwd = password;
         name = null;
         name = getName();
+         
+         // For Java Studio Enterprise. Create instanceof OpenConnection
+         try {
+             Collection c = getOpenConnections();
+             for (Iterator i=c.iterator(); driver != null && i.hasNext();) {
+                 OpenConnectionInterface oci = (OpenConnectionInterface) i.next();
+                 if (oci.isFor(driver)) {
+                     openConnection = oci;
+                     break;
+                 }
+             }
+         } catch(Exception ex) {
+             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+         }
     }
+
+     private Collection getOpenConnections() {
+         if (openConnectionServices == null) {
+             openConnectionServices = openConnectionLookupResult.allInstances();
+         }
+         return openConnectionServices;
+     }
 
     /** Returns driver URL */
     public String getDriver() {

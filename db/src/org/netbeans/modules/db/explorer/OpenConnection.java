@@ -22,6 +22,10 @@ public class OpenConnection implements OpenConnectionInterface {
     /** Creates a new instance of OpenConnection */
     public OpenConnection() {
     }
+
+    public boolean isFor(String driverName) {
+        return true;
+    }
     
     public void enable() {
         // No implementation in open source.
