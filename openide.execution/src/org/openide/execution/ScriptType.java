@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,9 +15,8 @@ package org.openide.execution;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
-
-import org.openide.filesystems.*;
-import org.openide.*;
+import org.openide.ServiceType;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -71,7 +70,6 @@ public abstract class ScriptType extends org.openide.ServiceType {
      * Execute the script given in the form of a Reader.
      * @param r the contents of the script
      * @param context the context in which to evaluate it
-     * @return whatever is the result of the script. It can be null.
      */
     public abstract void exec(java.io.Reader r, Context context) throws InvocationTargetException;
     

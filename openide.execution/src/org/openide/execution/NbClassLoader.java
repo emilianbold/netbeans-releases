@@ -17,17 +17,18 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.security.PermissionCollection;
+import java.security.AllPermission;
 import java.security.CodeSource;
+import java.security.Permission;
+import java.security.PermissionCollection;
 import java.util.Enumeration;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.jar.Manifest;
-
 import org.openide.ErrorManager;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.windows.InputOutput;
 
@@ -56,7 +57,6 @@ public class NbClassLoader extends URLClassLoader {
     */
     public NbClassLoader () {
         super(new URL[0], systemClassLoader());
-        Thread.dumpStack();
     }
 
     /** Create a new class loader retrieving classes from the core IDE as well as the Repository,
@@ -68,7 +68,6 @@ public class NbClassLoader extends URLClassLoader {
     public NbClassLoader(InputOutput io) {
         super(new URL[0], systemClassLoader());
         inout = io;
-        Thread.dumpStack();//XXX
     }
     
     /**
@@ -205,7 +204,7 @@ public class NbClassLoader extends URLClassLoader {
             if (defaultPermissions != null) {
                 addAllPermissions(pc, defaultPermissions);
             } else {
-                pc.add(new java.security.AllPermission());
+                pc.add(new AllPermission());
             }
         }
         if (permissionCollections == null) {
@@ -222,10 +221,10 @@ public class NbClassLoader extends URLClassLoader {
      * @param src From where take paermissions
      */
     private static void addAllPermissions(PermissionCollection target, PermissionCollection src) {
-        Enumeration enum = src.elements();
+        Enumeration e = src.elements();
         
-        while (enum.hasMoreElements()) {
-            target.add((java.security.Permission) enum.nextElement());
+        while (e.hasMoreElements()) {
+            target.add((Permission) e.nextElement());
         }
     }
 
