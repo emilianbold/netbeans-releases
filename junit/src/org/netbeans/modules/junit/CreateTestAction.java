@@ -348,7 +348,7 @@ public class CreateTestAction extends CookieAction {
             FileObject foSource = TestUtil.getFileObjectFromNode(node);                
             if (foSource.isFolder()) {
                 // create test for all direct subnodes of the folder
-                Node  childs[] = node.getChildren().getNodes();
+                Node  childs[] = node.getChildren().getNodes(true);
                 CreationResults results = new CreationResults();                            
 
                 LinkedList  mySuite = new LinkedList(); // List<String>
