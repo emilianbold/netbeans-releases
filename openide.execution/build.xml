@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -67,14 +67,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
   
     <target name="javadoc" description="Build Javadoc.">
-        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-        <property name="_cp" refid="cp"/>
         <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="ExecutionAPI"/>
             <property name="javadoc.title" value="Execution API"/>
             <property name="javadoc.packages" value="org.openide.actions,org.openide.cookies,org.openide.execution,org.openide.loaders"/>
-            <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.main.page" value="org/openide/execution/doc-files/api.html"/>
             <property name="javadoc.arch" location="../arch/arch-openide-execution.xml"/>
             <property name="javadoc.docfiles" location="api/doc"/>

@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -78,16 +78,14 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javadoc" description="Build Javadoc.">
-      <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-      <property name="_cp" refid="cp"/>
       <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
           <property name="javadoc.base" location="."/>
           <property name="javadoc.name" value="LexerAPI"/>
           <property name="javadoc.title" value="Lexer API"/>
           <property name="javadoc.packages" value="org.netbeans.api.lexer,org.netbeans.spi.lexer"/>
-          <property name="javadoc.classpath" value="${_cp}"/>
+          <property name="javadoc.classpath" refid="cp"/>
           <property name="javadoc.main.page" value="org/netbeans/api/lexer/doc-files/api.html"/>
-<!--          <property name="javadoc.arch" location="../arch/arch-openide-datasystems.xml"/> -->
+<!--          <property name="javadoc.arch" location="arch/arch-something.xml"/> -->
           <property name="javadoc.docfiles" location="api/doc"/>
           <property name="javadoc.apichanges" location="api/apichanges.xml"/>
       </ant>
@@ -106,10 +104,4 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
   </target>
 
-  <!-- api changes check -->
-  <target name="apichanges-check" description="Check syntax of API changes list. Requires Ant 1.4!">
-      <xmlvalidate file="api/apichanges.xml" failonerror="true"/>
-  </target>
-
 </project>
-

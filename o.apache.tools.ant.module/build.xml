@@ -244,14 +244,12 @@ After that you should be done!
   </target>
 
     <target name="javadoc" description="Build Javadoc.">
-        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-        <property name="_cp" refid="cp"/>
         <ant dir="../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="AntModuleAPI"/>
             <property name="javadoc.title" value="Ant Module API"/>
             <property name="javadoc.packages" value="org.apache.tools.ant.module.api,org.apache.tools.ant.module.spi"/>
-            <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
             <!-- XXX: <property name="javadoc.arch" location="arch/arch-ant.xml"/>-->
         </ant>

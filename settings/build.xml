@@ -86,14 +86,12 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="javadoc/SettingsAPI/org/netbeans/spi/settings/doc-files"/>
         <copy file="src/org/netbeans/modules/settings/resources/properties-1_0.dtd"
               tofile="javadoc/SettingsAPI/org/netbeans/spi/settings/doc-files/properties-1_0.dtd"/>
-        <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
-        <property name="_cp" refid="cp"/>
         <ant dir="../../nbbuild/javadoctools" antfile="template.xml" target="javadoc">
             <property name="javadoc.base" location="."/>
             <property name="javadoc.name" value="SettingsAPI"/>
             <property name="javadoc.title" value="Settings API"/>
             <property name="javadoc.packages" value="org.netbeans.spi.settings"/>
-            <property name="javadoc.classpath" value="${_cp}"/>
+            <property name="javadoc.classpath" refid="cp"/>
             <property name="javadoc.main.page" value="org/netbeans/spi/settings/doc-files/api.html"/>
             <property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>
             <property name="javadoc.arch" location="../../openide/arch/arch-openide-settings.xml"/>

@@ -65,7 +65,8 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <target name="compile" depends="clean,init-module-list">
         <javac debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" srcdir="src" destdir="src">
             <classpath>
-                <pathelement location="../external/ant-1.4.1.jar"/>
+                <pathelement location="${ant.home}/lib/ant.jar"/>
+                <pathelement path="${netbeans.library.path}"/>
                 <pathelement location="../../javacvs/netbeans/modules/ext/cvslib.jar"/>
             </classpath>
             <include name="org/netbeans/nbbuild/changelog/CvsChangelog.java"/>
