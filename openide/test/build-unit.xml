@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." default="all" name="build-unit">
+    
+    <path id="compiletest.classpath">   
+        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <!-- XXX -->
+        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+        <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+    </path>
+    
+    <path id="codetest.classpath">
+        <pathelement location="${core.dir}/${nb.lib.dir}/core.jar"/>
+        <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
+        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
+        <pathelement location="${core/windows.dir}/${nb.modules.dir}/core-windows.jar"/>
+        <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
+        <pathelement location="${openide/compiler.dir}/${nb.modules/autoload.dir}/openide-compiler.jar"/>
+        <pathelement location="${openide/execution.dir}/${nb.modules/autoload.dir}/openide-execution.jar"/>
+        <pathelement location="${openide/io.dir}/${nb.modules/autoload.dir}/openide-io.jar"/> 
+        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        <pathelement location="${core.dir}/${nb.modules/autoload.dir}/terminalemulator.jar"/>
+        <pathelement location="${core/settings.dir}/${nb.modules/autoload.dir}/core-settings.jar"/>
+        <fileset dir="${libs/xerces.dir}/${nb.modules/autoload.dir}/ext">
+            <include name="xerces-*.jar"/>
+            <include name="xml-commons-dom-ranges-*.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- ========= -->
+    <!-- Compilers -->
+    <!-- ========= -->
+    
+    <target name="unit-compiler">
+        <buildTests srcDir="unit/src">
+            <classpath refid="compiletest.classpath"/>
+        </buildTests>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <target name="runidetest">
+        <executeTests pluginName="ide">
+            <classpath/>
+        </executeTests>
+    </target>
+    
+    <target name="runcodetest">
+        <executeTests pluginName="jvm">
+            <classpath refid="codetest.classpath"/>
+        </executeTests>
+    </target>
+    
+</project>
