@@ -17,7 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JFileChooser;
 
-import org.openide.TopManager;
+import org.openide.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
 
@@ -45,10 +45,19 @@ public class OpenFileAction extends CallableSystemAction {
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled (true);
         if (currDir != null) chooser.setCurrentDirectory (currDir);
-        if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
+        while (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles ();
+
+            if (files.length == 0) { // selected file doesn't exist
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(
+                    SettingsBeanInfo.getString("MSG_noFileSelected"),NotifyDescriptor.WARNING_MESSAGE));
+                continue;
+            }
+
             for (int i = 0; i < files.length; i++)
                 OpenFile.open (files[i], false, null, 0, -1);
+
+            break;
         }
         currDir = chooser.getCurrentDirectory ();
     }
