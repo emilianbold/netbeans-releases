@@ -44,6 +44,7 @@ Microsystems, Inc. All Rights Reserved.
                 
                 <!-- run also window system tests -->
                 <include name="org/openide/windows/*Test.class"/>
+                <exclude name="org/openide/windows/TopComponentGetLookupOverridenTest.class"/>
             </patternset>
         </testset>      
     </testbag>
