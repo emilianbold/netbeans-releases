@@ -119,6 +119,8 @@ public class DefaultTablePanel extends javax.swing.JPanel {
         setLayout(new java.awt.BorderLayout());
 
         setOpaque(false);
+        buttonPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
         buttonPanel.setOpaque(false);
         addButton.setMnemonic(org.openide.util.NbBundle.getMessage(DefaultTablePanel.class, "LBL_Add_mnem").charAt(0));
         addButton.setText(org.openide.util.NbBundle.getBundle(DefaultTablePanel.class).getString("LBL_Add"));
