@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.net.URL;
+import org.openide.filesystems.FileUtil;
 
 class VolumeContentModel extends AbstractListModel {
 
@@ -52,6 +53,9 @@ class VolumeContentModel extends AbstractListModel {
 
 
     public void addResource (URL resource) {
+        if (FileUtil.isArchiveFile(resource)) {
+            resource = FileUtil.getArchiveRoot(resource);
+        }
         this.content.add (resource);
         int index = this.content.size()-1;
         this.impl.setContent (this.volumeType, content);
