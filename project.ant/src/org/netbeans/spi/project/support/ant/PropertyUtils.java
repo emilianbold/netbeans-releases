@@ -629,11 +629,11 @@ public class PropertyUtils {
             return defs;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
             listeners.add(listener);
         }
         
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
             listeners.add(listener);
         }
         
@@ -660,12 +660,14 @@ public class PropertyUtils {
                 }
                 assert !events.isEmpty();
                 defs = newdefs;
-                Iterator it2 = listeners.iterator();
-                while (it2.hasNext()) {
-                    PropertyChangeListener l = (PropertyChangeListener)it2.next();
+                PropertyChangeListener[] _listeners;
+                synchronized (listeners) {
+                    _listeners = (PropertyChangeListener[])listeners.toArray(new PropertyChangeListener[listeners.size()]);
+                }
+                for (int i = 0; i < _listeners.length; i++) {
                     Iterator it3 = events.iterator();
                     while (it3.hasNext()) {
-                        l.propertyChange((PropertyChangeEvent)it3.next());
+                        _listeners[i].propertyChange((PropertyChangeEvent)it3.next());
                     }
                 }
             }
