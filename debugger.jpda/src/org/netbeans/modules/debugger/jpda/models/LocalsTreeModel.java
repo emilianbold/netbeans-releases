@@ -268,6 +268,7 @@ public class LocalsTreeModel implements TreeModel {
         if ( (v == null) || !(v instanceof ObjectReference)) return new FieldVariable [0];
         ObjectReference or = (ObjectReference) v;
         ReferenceType rt = or.referenceType ();
+        if (rt instanceof ArrayType) return new FieldVariable [0];
         List l = rt.allFields ();
         ArrayList ch = new ArrayList ();
         //String className = rt.name ();
