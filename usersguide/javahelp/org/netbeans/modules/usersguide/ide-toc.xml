@@ -127,8 +127,8 @@
     <tocitem text="Opening a Java File With 'Go To Class'" target="editing.fastopen"/>
     <tocitem text="Adding a Java Import Statement With Fast Import" target="editing.fastimport"/>
   </tocitem>
-  <tocitem text="Updating the Parser Database" target="editing.parserdatabase"/>
-  <tocitem text="Deleting Parser Database Files" target="editing.deleting-pdb"/>
+  <tocitem text="Updating the Code Completion Database" target="editing.parserdatabase"/>
+  <tocitem text="Deleting Code Completion Database Files" target="editing.deleting-pdb"/>
   <tocitem text="Sharing Source Editor Settings" target="editing.xmlsettings"/>
   <tocitem text="Configuring the Source Editor" target="editing.configuring">    
     <tocitem text="Source Editor Properties" target="editing.editor-props"/>
