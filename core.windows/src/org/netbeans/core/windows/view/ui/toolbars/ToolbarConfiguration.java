@@ -18,6 +18,7 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.MenuListener;
@@ -93,7 +94,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     protected static final String ATT_TOOLBAR_VISIBLE       = "visible"; // NOI18N
 
     /** standard panel for all configurations */
-    private static ToolbarPanel  toolbarPanel;
+    private static JPanel  toolbarPanel;
     /** mapping from configuration instances to their names */
     private static WeakHashMap confs2Names = new WeakHashMap(10);
     
@@ -929,9 +930,10 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
     }
 
     /** lazy init of toolbar panel */
-    private static final synchronized ToolbarPanel toolbarPanel () {
+    private static final synchronized JPanel toolbarPanel () {
         if (toolbarPanel == null) {
-            toolbarPanel = new ToolbarPanel();
+            toolbarPanel = new JPanel();
+            toolbarPanel.setLayout(new FlowLayout (FlowLayout.LEFT));
         }
         return toolbarPanel;
     }
