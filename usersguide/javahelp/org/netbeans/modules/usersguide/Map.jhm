@@ -62,6 +62,7 @@
 <mapID target="filesystems.diff" url="filesystems/filesystems_diff.html" />
 <mapID target="filesystems.jdk" url="filesystems/filesystems_jdk.html" />
 <mapID target="filesystems.ignore-files" url="filesystems/filesystems_ignore-files.html" />
+<mapID target="filesystems.hiding" url="filesystems/filesystems_hiding.html" />
 
 <mapID target="objects.clipboard-ops" url="objects/objects_clipboard-ops.html" />
 <mapID target="objects.file-extensions" url="objects/objects_file-extensions.html" />
