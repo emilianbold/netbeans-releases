@@ -62,6 +62,7 @@ public final class MultiViewPeer  {
     TopComponent peer;
     private ActionRequestObserverFactory factory;
     private PropertyChangeListener activatedListener;
+    private MultiViewActionMap delegatingMap;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
@@ -69,6 +70,8 @@ public final class MultiViewPeer  {
         factory = fact;
         activatedListener = new MultiViewPeer.ActivatedNodesListener();
     }
+    
+ 
     
     
     public void setMultiViewDescriptions(MultiViewDescription[] descriptions, MultiViewDescription defaultDesc) {
@@ -95,7 +98,7 @@ public final class MultiViewPeer  {
     }
     
     /**
-     * @deprecated - for use in tests only!!!!!
+     * for use in tests only!!!!!
      */
     MultiViewModel getModel() {
         return model;
@@ -103,6 +106,7 @@ public final class MultiViewPeer  {
     
     
     void initComponents() {
+        initActionMap();
         peer.setLayout(new BorderLayout());
         tabs = new TabsComponent();
 //debug borders        tabs.setBackground(java.awt.Color.MAGENTA);
@@ -115,8 +119,29 @@ public final class MultiViewPeer  {
         input.put(stroke, "accesstoggles"); //NOI18N
         input = peer.getInputMap(JComponent.WHEN_FOCUSED);
         input.put(stroke, "accesstoggles"); //NOI18N
-           
     }
+    
+  // It is necessary so the old actions (clone and close from org.openide.actions package) remain working.
+    // cannot use the
+    private void initActionMap() {
+        delegatingMap = new MultiViewActionMap(peer, new ActionMap ());
+        if(peer instanceof TopComponent.Cloneable) {
+            delegatingMap.put("cloneWindow", new javax.swing.AbstractAction() { // NOI18N
+                public void actionPerformed(ActionEvent evt) {
+                    TopComponent cloned = ((TopComponent.Cloneable)
+                        peer).cloneComponent();
+                    cloned.open();
+                    cloned.requestActive();
+                }
+            });
+        }
+        delegatingMap.put("closeWindow", new javax.swing.AbstractAction() { // NOI18N
+           public void actionPerformed(ActionEvent evt) {
+               peer.close();
+           }
+        });
+        peer.setActionMap(delegatingMap);
+    }        
     
     void peerComponentClosed() {
         Iterator it = model.getCreatedElements().iterator();
@@ -179,7 +204,8 @@ public final class MultiViewPeer  {
     private void showCurrentElement(boolean calledFromComponentOpened) {
         MultiViewElement el = model.getActiveElement();
         MultiViewDescription desc = model.getActiveDescription();
-        
+
+        delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
         ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
         setActivatedNodesAccordingToElement(true);
         // TODO display name is not a good unique id..
@@ -443,9 +469,9 @@ public final class MultiViewPeer  {
         //TODO
     }
     
-    public Lookup getLookup(Lookup superLookup) {
+    public Lookup getLookup() {
         if (lookup == null) {
-            lookup = new MultiViewTopComponentLookup(superLookup);
+            lookup = new MultiViewTopComponentLookup(new Object[] {delegatingMap});
         }
         return lookup;
     }

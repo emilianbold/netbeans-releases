@@ -66,11 +66,13 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     public MultiViewCloneableTopComponent() {
         super();
         peer = new MultiViewPeer(this, this);
-        associateLookup(peer.getLookup(Lookups.fixed(new Object[] {getActionMap()})));
         // initializes the multiview component.
         peer.initComponents();
         setFocusCycleRoot(false);
         setName("");
+        // assocuate lookup needs to come after the init.. initComponents() initializes actionMap        
+        associateLookup(peer.getLookup());
+        
 //        setFocusable(false);
     }
     
@@ -260,9 +262,6 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         }
     }
     
-    public Lookup getLookup() {
-        return peer.getLookup(super.getLookup());
-    }
     
     /**
      * implementation of the MultiViewElement.ActionRequestObserver, manages activatation of the elements

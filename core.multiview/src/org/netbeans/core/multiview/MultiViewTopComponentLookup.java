@@ -6,7 +6,7 @@
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
  *
- * The Original Code is NetBeans. The Initial Developer of the Original
+ * The Original Code is NetBeans. The Initial Developer of the OriginalM
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
@@ -29,23 +29,24 @@ import org.openide.util.lookup.ProxyLookup;
 class MultiViewTopComponentLookup extends Lookup {
     
     private MyProxyLookup proxy;
-    private Lookup initial;
+    private InitialProxyLookup initial;
     
-    public MultiViewTopComponentLookup(Lookup init) {
+    public MultiViewTopComponentLookup(Object[] initialObjects) {
         super();
-        initial = init;
+        // need to delegate in order to get the correct Lookup.Templates that refresh..
+        initial = new InitialProxyLookup(initialObjects);
         proxy = new MyProxyLookup(initial);
     }
     
     
     public void setElementLookup(Lookup look) {
         proxy.setElementLookup(look);
+        initial.refreshLookup();
     }
     
     public Lookup.Item lookupItem(Lookup.Template template) {
-
         Lookup.Item retValue;
-        if (template.getType() == ActionMap.class) {
+        if (template.getType() == ActionMap.class || (template.getId() != null && template.getId().equals("javax.swing.ActionMap"))) {
             return initial.lookupItem(template);
         }
         // do something here??
@@ -65,7 +66,8 @@ class MultiViewTopComponentLookup extends Lookup {
     }
     
     public Lookup.Result lookup(Lookup.Template template) {
-        if (template.getType() == ActionMap.class) {
+        
+        if (template.getType() == ActionMap.class || (template.getId() != null && template.getId().equals("javax.swing.ActionMap"))) {
             return initial.lookup(template);
         }
         Lookup.Result retValue;
@@ -168,6 +170,19 @@ class MultiViewTopComponentLookup extends Lookup {
         public void setElementLookup(Lookup look) {
             setLookups(new Lookup[] {initialLookup, look});
         }
+    }
+    
+    private static class InitialProxyLookup extends ProxyLookup {
+        private Object[] initObjects;
+        public InitialProxyLookup(Object[] objs) {
+            super(new Lookup[] {Lookups.fixed(objs)});
+            initObjects = objs;
+        }
+
+        public void refreshLookup() {
+            setLookups(new Lookup[] {Lookups.fixed(initObjects)});
+        }
+        
     }
     
 }

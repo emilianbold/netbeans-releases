@@ -67,9 +67,10 @@ public final class MultiViewTopComponent
     public MultiViewTopComponent() {
         super();
         peer = new MultiViewPeer(this, this);
-        associateLookup(peer.getLookup(Lookups.fixed(new Object[] {getActionMap()})));
         // initializes the multiview component.
         peer.initComponents();
+        // assocuate lookup needs to come after the init.. initComponents() initializes actionMap
+        associateLookup(peer.getLookup());
         setName("");
         setFocusCycleRoot(false);
     }
