@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
   <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
 
   <target name="precompile">
-    <javac srcdir="libsrc" destdir="libsrc">
+    <javac srcdir="libsrc" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
         <!--<pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>-->
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="precompile">
-    <javac srcdir="src" destdir="src">
+    <javac srcdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement path="libsrc"/>
 	<pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
