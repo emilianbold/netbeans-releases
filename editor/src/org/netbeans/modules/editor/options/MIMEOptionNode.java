@@ -16,7 +16,9 @@ package org.netbeans.modules.editor.options;
 import java.beans.IntrospectionException;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.nodes.BeanNode;
-
+import org.openide.nodes.Node;
+import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 /** MIME Option Node Representation.
  *  Each subClass of BaseOptions is represented via MIMEOptionNode.
@@ -42,6 +44,16 @@ public class MIMEOptionNode extends BeanNode {
     // #7925
     public boolean canDestroy() {
         return false;
+    }    
+
+    // #18678
+    public Node cloneNode() {
+        try {
+            return new MIMEOptionNode((BaseOptions)getBean());
+        } catch (IntrospectionException ie) {
+            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ie);
+            return super.cloneNode();
+        }
     }    
     
 }

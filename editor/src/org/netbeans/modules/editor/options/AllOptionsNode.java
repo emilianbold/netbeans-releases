@@ -117,7 +117,7 @@ public class AllOptionsNode extends FilterNode {
             
             if (baseOptions == null) return null;
             
-            return new Node[] {baseOptions.getMimeNode()};                
+            return new Node[] {baseOptions.getMimeNode()/* #18678 */.cloneNode()};
         }
         
     }
