@@ -265,6 +265,10 @@ Microsystems, Inc. All Rights Reserved.
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>
   </config> 
+
+  <config name="test">
+      <module name="vcsgeneric"	testtypes="qa-functional"   attributes="validation"/>      
+  </config> 
   
   
   <!-- validation suites for Release Engineering -->
