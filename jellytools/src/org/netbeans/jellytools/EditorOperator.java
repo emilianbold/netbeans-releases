@@ -562,7 +562,9 @@ public class EditorOperator extends TopComponentOperator {
             Method getLineAnnotationsMethod = annotationsClass.getDeclaredMethod("getLineAnnotations", new Class[] {int.class});
             getLineAnnotationsMethod.setAccessible(true);
             Object lineAnnotations = getLineAnnotationsMethod.invoke(getAnnotationsInstance(), new Object[] {new Integer(lineNumber-1)});
-            result = getAnnotations(lineAnnotations);
+            if(lineAnnotations != null) {
+                result = getAnnotations(lineAnnotations);
+            }
         } catch (Exception e) {
             throw new JemmyException("getAnnotations failed.", e);
         }
