@@ -305,6 +305,9 @@ Microsystems, Inc. All Rights Reserved.
         <file name="S-F10.instance">
 	    <attr name="instanceClass" stringvalue="org.openide.actions.PopupAction"/>
 	</file>
+        <file name="C-S-7.instance">
+	    <attr name="instanceClass" stringvalue="org.netbeans.core.actions.GlobalPropertiesAction"/>
+	</file>
     </folder>
     
     <folder name="Templates">
