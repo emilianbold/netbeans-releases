@@ -54,6 +54,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
     <copy file="Ant_License" tofile="javahelp/org/apache/tools/ant/module/docs/LICENSE"/>
     <mkdir dir="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
     <unzip src="ant-docs.zip" dest="javahelp/org/apache/tools/ant/module/docs/ant-docs"/>
+    <mkdir dir="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"/>
     <jhindexer basedir="javahelp/org/apache/tools/ant/module/docs"
                db="javahelp/org/apache/tools/ant/module/docs/JavaHelpSearch2"
                jhall="${binroot}/nbbuild/lib/jhall.jar">
