@@ -66,6 +66,8 @@ final class ResultView extends TopComponent
     /** */
     private volatile boolean hasResults = false;
     /** */
+    private volatile boolean hasDetails = false;
+    /** */
     private volatile boolean searchInProgress = false;
                            
     /** unique ID of <code>TopComponent</code> (singleton) */
@@ -486,6 +488,8 @@ final class ResultView extends TopComponent
         setFinalRootNodeText();
         
         searchInProgress = false;
+        hasDetails = (children != null) ? children.hasDetails()
+                                        : false;
         updateShowAllDetailsBtn();
         updateSortUnsortBtns();
         setStateFromAWT(btnStop, false);
@@ -543,7 +547,11 @@ final class ResultView extends TopComponent
     /**
      */
     private void updateShowAllDetailsBtn() {
-        setStateFromAWT(btnShowDetails, hasResults && !searchInProgress);
+        setStateFromAWT(btnShowDetails, hasResults
+                                        &&
+                                        !searchInProgress
+                                        &&
+                                        hasDetails);
     }
     
     /**
@@ -582,9 +590,12 @@ final class ResultView extends TopComponent
         this.resultModel = resultModel;
         if (resultModel != null) {
             setChildren(children = new ResultTreeChildren(resultModel));
+            hasResults = !children.isEmpty();
+            hasDetails = hasResults && children.hasDetails();
             this.resultModel.addObserver(this);
         } else {
             hasResults = false;
+            hasDetails = false;
             setChildren(Children.LEAF);
         }
         
