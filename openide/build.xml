@@ -343,7 +343,6 @@ Microsystems, Inc. All Rights Reserved.
 	     compress="false">
              <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt" >
              	  <include name="org/openide/util/io/*"/>
-             	  <include name="org/openide/util/enum/*"/>
              	  <include name="org/openide/util/datatransfer/*"/>
                   <include name="org/openide/util/actions/*"/>
                   <include name="org/openide/xml/"/>
@@ -369,6 +368,7 @@ Microsystems, Inc. All Rights Reserved.
                   <exclude name="org/openide/util/lookup/"/>
                   <exclude name="org/openide/util/*Lookup*"/>
                   <exclude name="org/openide/util/WeakSet*"/>
+                  <exclude name="org/openide/util/enum/"/>
                   
                   <!-- exlude localized resources, they are part of openide.jar -->
                   <exclude name="org/openide/util/*_*" />
@@ -487,6 +487,7 @@ Microsystems, Inc. All Rights Reserved.
                   <include name="org/openide/util/lookup/*"/>
                   <include name="org/openide/util/*Lookup*"/>
                   <include name="org/openide/util/WeakSet*"/>
+                  <include name="org/openide/util/enum/*"/>
                   
                   <!-- exlude localized resources, they are part of openide.jar -->
                   <exclude name="org/openide/**/*_*" />
@@ -503,6 +504,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="org/openide/util/lookup/*"/>
             <include name="org/openide/util/*Lookup*"/>
             <include name="org/openide/util/WeakSet.java"/>
+            <include name="org/openide/util/enum/*"/>
             
             <exclude name="org/openide/**/*_*" />
             <exclude name="org/openide/util/*_*" />
