@@ -19,6 +19,7 @@ import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.modules.ModuleInstall;
@@ -36,6 +37,9 @@ import java.io.File;
  * @author Ian Formanek
  */
 public class FormEditorModule extends ModuleInstall {
+
+    private transient Node lastProjectDesktop;
+    private transient PropertyChangeListener projectListener = null;
 
     static final long serialVersionUID =1573432625099425394L;
     
@@ -103,6 +107,12 @@ public class FormEditorModule extends ModuleInstall {
         
         BeanInstaller.autoLoadBeans();
 
+        lastProjectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
+        if (projectListener == null) {
+            projectListener = new ProjectChangeListener();
+            TopManager.getDefault().addPropertyChangeListener(projectListener);
+        }
+
         // register standard persistence managers
         PersistenceManager.registerManager(new TuborgPersistenceManager());
         PersistenceManager.registerManager(new GandalfPersistenceManager());
@@ -130,12 +140,30 @@ public class FormEditorModule extends ModuleInstall {
 
     /** Module was uninstalled. */
     public void uninstalled() {
-        // ---------------------------------------------------------------------------
-        // 1. remove FormEditor actions
         uninstallActions();
+
+        if (projectListener != null) {
+            TopManager.getDefault().removePropertyChangeListener(projectListener);
+            projectListener = null;
+        }
 
         // [PENDING - ask and delete ComponentPalette]
         // [PENDING - ask and delete Form templates]
+    }
+
+    // -------------------------------------------------------------------------
+    // Listener class responding to project changes and updating Component Palette.
+
+    private class ProjectChangeListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (TopManager.PROP_PLACES.equals(ev.getPropertyName())) {
+                Node projectDesktop = TopManager.getDefault().getPlaces().nodes().projectDesktop();
+                if (projectDesktop != lastProjectDesktop) {
+                    lastProjectDesktop = projectDesktop;
+                    ComponentPalette.getDefault().updatePalette();
+                }
+            }
+        }
     }
 
     // -----------------------------------------------------------------------------
