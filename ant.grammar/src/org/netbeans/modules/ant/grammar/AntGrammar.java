@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,7 +28,7 @@ import org.netbeans.modules.xml.spi.dom.*;
  * Rather simple query implemetation based on static Ant introspection info.
  * Hints given by this grammar cannot guarantee that valid XML document is created.
  *
- * @author  Petr Kuzel
+ * @author Petr Kuzel, Jesse Glick
  */
 class AntGrammar implements GrammarQuery {
         
@@ -63,6 +63,106 @@ class AntGrammar implements GrammarQuery {
     private static IntrospectedInfo getAntGrammar() {
         return IntrospectedInfo.getKnownInfo();
     }
+    
+    /** this element is a special thing, like the root project element */
+    private static final String KIND_SPECIAL = "special"; // NOI18N
+    /** this element is a task */
+    private static final String KIND_TASK = "task"; // NOI18N
+    /** this element is a data type */
+    private static final String KIND_TYPE = "type"; // NOI18N
+    /** this element is part of some other structure (task or type) */
+    private static final String KIND_DATA = "data"; // NOI18N
+    /** tag for root project element */
+    private static final String SPECIAL_PROJECT = "project"; // NOI18N
+    /** tag for a target element */
+    private static final String SPECIAL_TARGET = "target"; // NOI18N
+    /** tag for a project description element */
+    private static final String SPECIAL_DESCRIPTION = "description"; // NOI18N
+    
+    /**
+     * Determine what a particular element in a build script represents,
+     * based on its name and the names of all of its parents.
+     * Returns a pair of the kind of the element (one of the KIND_* constants)
+     * and the details (a class name suitable for {@link IntrospectedInfo}, or
+     * in the case of {@link KIND_SPECIAL}, one of the SPECIAL_* constants).
+     * @param e an element
+     * @return a two-element string (kind and details), or null if this element is anomalous
+     */
+    private static final String[] typeOf(Element e) {
+        String name = e.getNodeName();
+        Node p = e.getParentNode();
+        if (p == null) {
+            throw new IllegalArgumentException("Detached node: " + e); // NOI18N
+        }
+        if (p.getNodeType() == Node.DOCUMENT_NODE) {
+            if (name.equals("project")) { // NOI18N
+                return new String[] {KIND_SPECIAL, SPECIAL_PROJECT};
+            } else {
+                // Weird root element? Ignore.
+                return null;
+            }
+        } else if (p.getNodeType() == Node.ELEMENT_NODE) {
+            // Find ourselves in context.
+            String[] ptype = typeOf((Element)p);
+            if (ptype == null) {
+                // Unknown parent, therefore this is unknown too.
+                return null;
+            }
+            if (ptype[0] == KIND_SPECIAL) {
+                if (ptype[1] == SPECIAL_PROJECT) {
+                    // <project> may have <description>, or types, or targets, or tasks
+                    if (name.equals("description")) { // NOI18N
+                        return new String[] {KIND_SPECIAL, SPECIAL_DESCRIPTION};
+                    } else if (name.equals("target")) { // NOI18N
+                        return new String[] {KIND_SPECIAL, SPECIAL_TARGET};
+                    } else {
+                        String taskClazz = (String)getAntGrammar().getDefs("task").get(name); // NOI18N
+                        if (taskClazz != null) {
+                            return new String[] {KIND_TASK, taskClazz};
+                        } else {
+                            String typeClazz = (String)getAntGrammar().getDefs("type").get(name); // NOI18N
+                            if (typeClazz != null) {
+                                return new String[] {KIND_TYPE, typeClazz};
+                            } else {
+                                return null;
+                            }
+                        }
+                    }
+                } else if (ptype[1] == SPECIAL_TARGET) {
+                    // <target> may have tasks and types
+                    String taskClazz = (String)getAntGrammar().getDefs("task").get(name); // NOI18N
+                    if (taskClazz != null) {
+                        return new String[] {KIND_TASK, taskClazz};
+                    } else {
+                        String typeClazz = (String)getAntGrammar().getDefs("type").get(name); // NOI18N
+                        if (typeClazz != null) {
+                            return new String[] {KIND_TYPE, typeClazz};
+                        } else {
+                            return null;
+                        }
+                    }
+                } else if (ptype[1] == SPECIAL_DESCRIPTION) {
+                    // <description> should have no children!
+                    return null;
+                } else {
+                    throw new IllegalStateException(ptype[1]);
+                }
+            } else {
+                // We must be data.
+                String pclazz = ptype[1];
+                String clazz = (String)getAntGrammar().getElements(pclazz).get(name);
+                if (clazz != null) {
+                    return new String[] {KIND_DATA, clazz};
+                } else {
+                    // Unknown data.
+                    return null;
+                }
+            }
+        } else {
+            throw new IllegalArgumentException("Bad parent for " + e.toString() + ": " + p); // NOI18N
+        }
+    }
+    
     /**
      * @stereotype query
      * @output list of results that can be queried on name, and attributes
@@ -83,53 +183,47 @@ class AntGrammar implements GrammarQuery {
         if (ownerElement == null) return EmptyEnumeration.EMPTY;
         
         NamedNodeMap existingAttributes = ownerElement.getAttributes();        
-        List possibleAttributes = null;
-        // XXX This is wrong. Should be based on parents up to document list,
-        // not solely on element name. That would permit it to correctly handle
-        // nested elements, etc.
-        String elementName = ownerElement.getTagName();
+        List possibleAttributes;
+        String[] typePair = typeOf(ownerElement);
+        if (typePair == null) {
+            return EmptyEnumeration.EMPTY;
+        }
+        String kind = typePair[0];
+        String clazz = typePair[1];
         
-        if ("project".equals(elementName)) {
+        if (kind == KIND_SPECIAL && clazz == SPECIAL_PROJECT) {
             possibleAttributes = new LinkedList();
             possibleAttributes.add("default");
             possibleAttributes.add("name");
             possibleAttributes.add("basedir");
-        } else if ("target".equals(elementName)) {
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
             possibleAttributes = new LinkedList();
             possibleAttributes.add("name");
             possibleAttributes.add("depends");
             possibleAttributes.add("description");
             possibleAttributes.add("if");
             possibleAttributes.add("unless");
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
+            return EmptyEnumeration.EMPTY;
         } else {
-            boolean type = false;
-            String clazz = getTaskClassFor(elementName);
-            if (clazz == null) {
-                clazz = getTypeClassFor(elementName);
-                type = true;
-            }                        
-            if (clazz != null) {
-                possibleAttributes = new LinkedList();
-                if (type) {
-                    possibleAttributes.add("id");
-                }
-                possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
-                if (!type) {
-                    possibleAttributes.add("id");
-                }
-                if (!type) {
-                    // Currently IntrospectedInfo includes this in the props for a type,
-                    // though it excludes it for tasks. So for now add it explicitly
-                    // only to tasks.
-                    possibleAttributes.add("description");
-                }
-                if (!type) {
-                    possibleAttributes.add("taskname");
-                }
+            // task, type, or data; anyway, we have the defining class
+            possibleAttributes = new LinkedList();
+            if (kind == KIND_TYPE) {
+                possibleAttributes.add("id");
+            }
+            possibleAttributes.addAll(new TreeSet(getAntGrammar().getAttributes(clazz).keySet()));
+            if (kind == KIND_TASK) {
+                // Can have an ID too, but less important; leave at end.
+                possibleAttributes.add("id");
+                // Currently IntrospectedInfo includes this in the props for a type,
+                // though it excludes it for tasks. So for now add it explicitly
+                // only to tasks.
+                possibleAttributes.add("description");
+                // Also useful sometimes:
+                possibleAttributes.add("taskname");
             }
         }
         
-        if (possibleAttributes == null) return EmptyEnumeration.EMPTY;        
         String prefix = ctx.getCurrentPrefix();
         
         QueueEnumeration list = new QueueEnumeration();
@@ -159,34 +253,38 @@ class AntGrammar implements GrammarQuery {
         
         Node parent = ((Node)ctx).getParentNode();
         if (parent == null) return EmptyEnumeration.EMPTY;
+        if (parent.getNodeType() != Node.ELEMENT_NODE) {
+            return EmptyEnumeration.EMPTY;
+        }
         
-        List elements = null;
+        List elements;
+        String[] typePair = typeOf((Element)parent);
+        if (typePair == null) {
+            return EmptyEnumeration.EMPTY;
+        }
+        String kind = typePair[0];
+        String clazz = typePair[1];
         
-        if (parent.getNodeType() == ctx.ELEMENT_NODE) {
-            String parentName = ((Element) parent).getTagName();
-
-            if ("project".equals(parentName)) {
-                elements = new LinkedList();
-                elements.add("target");
-                elements.add("property");
-                elements.add("taskdef");
-                elements.add("typedef");
-                elements.add("description");
-                elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet()));
-            } else if ("target".equals(parentName)) {
-                elements = new ArrayList(new TreeSet(getAntGrammar().getDefs("task").keySet()));
-            } else {
-                String clazz = getTaskClassFor(parentName);
-                if (clazz == null) {
-                    clazz = getTypeClassFor(parentName);
-                }                                
-                if (clazz != null) {
-                    elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
-                }
-            }
+        if (kind == KIND_SPECIAL && clazz == SPECIAL_PROJECT) {
+            elements = new LinkedList();
+            elements.add("target");
+            elements.add("property");
+            elements.add("taskdef");
+            elements.add("typedef");
+            // Ant 1.6 permits any task here...
+            elements.add("description");
+            elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet()));
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_TARGET) {
+            elements = new ArrayList(new TreeSet(getAntGrammar().getDefs("task").keySet()));
+            // targets can have embedded types too, though less common:
+            elements.addAll(new TreeSet(getAntGrammar().getDefs("type").keySet())); // NOI18N
+        } else if (kind == KIND_SPECIAL && clazz == SPECIAL_DESCRIPTION) {
+            return EmptyEnumeration.EMPTY;
+        } else {
+            // some introspectable class
+            elements = new ArrayList(new TreeSet(getAntGrammar().getElements(clazz).keySet()));
         }
                 
-        if (elements == null) return EmptyEnumeration.EMPTY;;
         String prefix = ctx.getCurrentPrefix();
         
         QueueEnumeration list = new QueueEnumeration();
