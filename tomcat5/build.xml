@@ -64,7 +64,12 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="dd2beans_gen" depends="s2binit">
-      <echo message="generating bean graph for Tomcat 5 configuration file" />
+      <echo message="generating bean graph for Tomcat 5 Server configuration file" />
+	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_server.dtd"
+	  mddFile="tomcat5_server.mdd"
+	  package="org.netbeans.modules.tomcat5.config"
+	  rootDir="src"/>
+      <echo message="generating bean graph for Tomcat 5 Context configuration file" />
 	<schema2beans schema="${tomcat5_dir}/resources/tomcat5_context.dtd"
 	  mddFile="tomcat5.mdd"
 	  package="org.netbeans.modules.tomcat5.config"
