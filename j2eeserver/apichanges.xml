@@ -69,7 +69,12 @@ is the proper place.
     <!-- First, a list of API names you may use: -->
     <apidefs>
         <apidef name="j2eeserver">J2EE Server API</apidef>
-        <!-- etc. -->
+        <!-- org.netbeans.modules.j2ee.deployment.plugins -->
+        <apidef name="plugins">Server Integration Plugin API</apidef>
+        <!-- org.netbeans.modules.j2ee.deployment.devmodules -->
+        <apidef name="devmodules">J2EE Module Development API</apidef>
+        <!-- org.netbeans.modules.j2ee.deployment.common -->
+        <apidef name="common">J2EE Server Common API</apidef>
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
@@ -113,6 +118,81 @@ is the proper place.
 	<issue number="52167"/>
 	</change>
 
+        <change id="CMP-Mapping-and-Auto-Resources.devmodules">
+            <api name="devmodules"/>
+            <summary>Added directory access methods</summary>
+            <version major="1" minor="5"/>
+            <date day="5" month="12" year="2004"/>
+            <author login="nnguyen"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added methods on <code>J2eeModuleProvider</code> for dev modules to
+                    expose some its project directory structure part to
+                    integration plugin.  The added methods are: <code>File
+                    getEnterpriseResourceDirectory()</code> and
+                    <code>FileObject[] getSourceRoots()</code>
+                </p>
+                <p>
+                    Added methods on
+                    <code>J2eeModuleProvider.ConfigSupport</code> for dev
+                    modules to push configuration data to plugin or request
+                    plugin to ensure resources are defined on creation of
+                    EJBs.  The added methods are: <code>void
+                    setCMPMappingInfo(String ejbname, OriginalCMPMapping
+                    mapping)</code> and <code>void
+                    ensureResourceDefinedForEjb(String ejbname, String
+                    ejbtype)</code>
+                </p>
+                <p>
+                    See Javadoc for details.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2eeserver.devmodules.spi" name="J2eeModuleProvider"/>
+            <class package="org.netbeans.modules.j2eeserver.devmodules.spi" name="J2eeModuleProvider.ConfigSupport"/>
+        </change>
+        <change id="CMP-Mapping-and-Auto-Resources.common">
+            <api name="common"/>
+            <summary>Added SourceFileMap access methods</summary>
+            <version major="1" minor="5"/>
+            <date day="5" month="12" year="2004"/>
+            <author login="nnguyen"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Expand usage of <code>SourceFileMap</code> by a set of methods
+                    to allow plugin access source, descriptor files.  Also added
+                    static lookup methods to locate the right
+                    <code>SourceFileMap</code> object.
+                </p>
+                <p>
+                    See Javadoc for details.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2eeserver.common.api" name="SourceFileMap"/>
+        </change>
+        <change id="CMP-Mapping-and-Auto-Resources.plugins">
+            <api name="plugins"/>
+            <summary>Added configuration support services</summary>
+            <version major="1" minor="5"/>
+            <date day="5" month="12" year="2004"/>
+            <author login="nnguyen"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added Integration plugin SPI <code>ConfigurationSupport</code>
+                    for plugin to provide services like create CMP/CMR mapping
+                    from generic mapping info acquired by devmodule
+                    wizards. This SPI also allow development modules to notify
+                    plugin on making sure default resources might needs to be
+                    generated for new components.
+                </p>
+                <p>
+                    See Javadoc for details.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2eeserver.plugins.api" name="ConfigurationSupport"/>
+        </change>
     </changes>
 
     <!-- Now the surrounding HTML text and document structure: -->
