@@ -319,11 +319,11 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
 
                 // XXX PENDING see TopComponent.requestFocus (it's wrongly overriden).
                 hierarchy.updateDesktop(wsa);
-                // XXX if the selection is changed in the active mode reactivate it.
-                ModeAccessor ma = wsa.getActiveModeAccessor();
-                if(ma == wsa.getActiveModeAccessor()) {
-                    hierarchy.activateMode(ma);
-                }
+//                // XXX if the selection is changed in the active mode reactivate it.
+//                ModeAccessor ma = wsa.getActiveModeAccessor();
+//                if(ma == wsa.getActiveModeAccessor()) {
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
+//                }
             } else if(changeType == CHANGE_MODE_TOPCOMPONENT_ADDED) {
                 if(DEBUG) {
                     debugLog("TopComponent added"); // NOI18N
