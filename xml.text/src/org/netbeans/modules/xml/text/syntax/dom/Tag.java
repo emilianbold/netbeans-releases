@@ -64,44 +64,44 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         Map map = new HashMap(3);
         
         SCAN_LOOP:
-        for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
-            TokenID id = next.getTokenID();
-            String name;
-            String value;
-            if (id == ARGUMENT) {
-                TokenItem attributeStart = next;
-                name = next.getImage();
-                while (next.getTokenID() != VALUE) {
-                    next = next.getNext();
-                    if (next == null) break SCAN_LOOP;
-                }
-
-                // fuzziness to relax minor tokenization changes
-                String image = next.getImage();
-                char test = image.charAt(0);
-                if (image.length() == 1) {
-                    if (test == '"' || test == '\'') {
+            for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+                TokenID id = next.getTokenID();
+                String name;
+                String value;
+                if (id == ARGUMENT) {
+                    TokenItem attributeStart = next;
+                    name = next.getImage();
+                    while (next.getTokenID() != VALUE) {
                         next = next.getNext();
+                        if (next == null) break SCAN_LOOP;
                     }
+                    
+                    // fuzziness to relax minor tokenization changes
+                    String image = next.getImage();
+                    char test = image.charAt(0);
+                    if (image.length() == 1) {
+                        if (test == '"' || test == '\'') {
+                            next = next.getNext();
+                        }
+                    }
+                    
+                    if (next == null) break SCAN_LOOP;
+                    value = next.getImage();
+                    
+                    Object key = NamedNodeMapImpl.createKey(name);
+                    map.put(key, new AttrImpl(support, attributeStart, this));
+                    
+                    next = Util.skipAttributeValue(next, test);
+                    if (next == null) break SCAN_LOOP;
+                } else if (id == WS) {
+                    // just skip
+                } else {
+                    break; // end of element markup
                 }
-
-                if (next == null) break SCAN_LOOP;
-                value = next.getImage();
-
-                Object key = NamedNodeMapImpl.createKey(name);
-                map.put(key, new AttrImpl(support, attributeStart, this));
-
-                next = Util.skipAttributeValue(next, test);
-                if (next == null) break SCAN_LOOP;
-            } else if (id == WS) {
-                // just skip
-            } else {
-                break; // end of element markup
             }
-        }
-
-        // domAttributes = new NamedNodeMapImpl(map);
-        return new NamedNodeMapImpl(map);
+            
+            // domAttributes = new NamedNodeMapImpl(map);
+            return new NamedNodeMapImpl(map);
     }
     
     public String getAttribute(String name) {
@@ -111,105 +111,79 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
     }
     
     public final void setAttribute(String name, String value) {
-        // Holds the position in the document where the attribute name-value string should be inserted
-        int insertStart = -1;
-        
-        // Holds the lenght of an old name-value string which should be removed before the new one will be inserted
-        int removeCount = 0;
-        
-        // Check if an attribute with this name already exists for the element
-        SCAN_LOOP:
-        for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
-            TokenID id = next.getTokenID();
-            String curName;
-            String curValue;
-            if (id == ARGUMENT) {
-                TokenItem attributeStart = next;
-                curName = next.getImage();
-
-                if (name.equals(curName)) {
-                    // Found attribute to replace
-                    insertStart = attributeStart.getOffset();
-                }
-
-                while (next.getTokenID() != VALUE) {
-                    next = next.getNext();
-                    if (next == null) break SCAN_LOOP;
-                }
-
-                // fuzziness to relax minor tokenization changes
-                String image = next.getImage();
-                char test = image.charAt(0);
-                if (image.length() == 1) {
-                    if (test == '"' || test == '\'') {
-                        next = next.getNext();
-                    }
-                }
-
-                if (next == null) break SCAN_LOOP;
-                curValue = next.getImage();
-
-                if (insertStart != -1) {
-                    // Found the attribute, let's calculate removeCount
-                    removeCount = next.getOffset() + curValue.length() - insertStart;
-                    break SCAN_LOOP;
-                }
-
-                next = Util.skipAttributeValue(next, test);
-                if (next == null) break SCAN_LOOP;
-            } else if (id == WS) {
-                // just skip
-            } else {
-                break; // end of element markup
-            }
-        }
-
-        // Construct a new attribute name-value string to insert
-        String quoteCharString = value.indexOf('"') == -1 ? "\"" : "'";
-        String stringToInsert = name + "=" + quoteCharString + value + quoteCharString;
-        
-        // Get the document and lock it
-        BaseDocument doc = (BaseDocument)support.getDocument();
-        doc.atomicLock();
-
-        if (insertStart == -1) {
+        NamedNodeMap attributes = getAttributes();
+        Node attr = attributes.getNamedItem(name);
+        if (attr != null) {
+            attr.setNodeValue(value);
+        } else {
+            String stringToInsert = " " + name + "=" + '"' + value + '"';
+            
+            // Get the document and lock it
+            BaseDocument doc = (BaseDocument)support.getDocument();
+            doc.atomicLock();
+            
             // An attribute with the name was not found for the element
             // Let's add it to the end
-            insertStart = offset + length - 1;
+            int insertStart = offset + length - 1;
             
-            // Decrese if it is closed element of the form <blu/> 
-            try {
-               if (doc.getText(insertStart - 1, 1).equals("/")) {
-                    insertStart--;
+            SCAN_LOOP:
+                for (TokenItem next = first.getNext(); next != null; next = next.getNext()) {
+                    TokenID id = next.getTokenID();
+                    if (id == ARGUMENT) {
+                        while (next.getTokenID() != VALUE) {
+                            next = next.getNext();
+                            if (next == null) break SCAN_LOOP;
+                        }
+                        
+                        if (next == null) break SCAN_LOOP;
+                        
+                        String image = next.getImage();
+                        char test = image.charAt(0);
+                        
+                        while (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER) {
+                            String actualValue = Util.actualAttributeValue(image);
+                            if (!actualValue.equals(image)) {
+                                insertStart = next.getOffset() + actualValue.length();
+                                break SCAN_LOOP;
+                            }
+                            next = next.getNext();
+                            if (next == null) break SCAN_LOOP;
+                            
+                            // Check if this is the last token in the element and set the
+                            // insertStart if it is
+                            image = next.getImage();
+                            insertStart = next.getOffset();
+                            if (image.length() > 0 && image.charAt(image.length() - 1) == '>') {
+                                // The element is closing
+                                insertStart += image.length() - 1;
+                                if (image.length() > 1 && image.charAt(image.length() - 2) == '/') {
+                                    // We have a closed element at the form <blu/>
+                                    insertStart--;
+                                }
+                            }
+                        }
+                        
+                        if (next == null) break SCAN_LOOP;
+                    } else if (id == WS) {
+                        // just skip
+                    } else {
+                        break; // end of element markup
+                    }
                 }
-            } catch( BadLocationException e) {} // Will never been thrown
-            stringToInsert = " " + stringToInsert;
+                
+                // Update the document
+                try {
+                    doc.insertString(insertStart, stringToInsert, null);
+                    doc.invalidateSyntaxMarks();
+                } catch( BadLocationException e ) {
+                    throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+                } finally {
+                    doc.atomicUnlock();
+                }
         }
-
-        // Update the document
-        try {
-            if (removeCount != 0) {
-                doc.remove(insertStart, removeCount);
-            }
-            doc.insertString(insertStart, stringToInsert, null);
-            doc.invalidateSyntaxMarks();
-        } catch( BadLocationException e ) {
-            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
-        } finally {
-            doc.atomicUnlock();
-        }
-
+        
         // Update this object's member variables
-        try {
-            length += stringToInsert.length() - removeCount;
-            int endOffset = offset + length;
-            if (endOffset > doc.getLength()) {
-                endOffset = doc.getLength();
-            }
-            first = support.getTokenChain(offset, endOffset);
-        } catch (BadLocationException e) {
-            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
-        }
+        retokenizeObject();
     }
     
     public final void removeAttribute(String name) {
@@ -317,5 +291,13 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         throw new UOException();
     }
     
+    public void retokenizeObject() {
+        // Update this object's member variables
+        try {
+            first = support.getTokenChain(offset, support.getDocument().getLength());
+        } catch (BadLocationException e) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+        }
+    }
 }
 

@@ -1,11 +1,11 @@
 /*
  *                 Sun Public License Notice
- * 
+ *
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- * 
+ *
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -32,7 +32,7 @@ import org.netbeans.editor.*;
  * @author asgeir@dimonsoftware.com
  */
 public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
-        
+    
     private TokenItem first;
     
     private Element parent;
@@ -48,7 +48,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     public TokenItem getFirstToken() {
         return first;
     }
-
+    
     /**
      * @return list of child nodes (Text or EntityReference), never <code>null</code>
      */
@@ -92,7 +92,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     public Node getPreviousSibling() {
         return null;  //according to DOM-1 spec
     }
- 
+    
     public Node getFirstChild() {
         TokenItem next = first;
         for (; next != null; next = next.getNext()) {
@@ -106,9 +106,9 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
                     }
                 }
                 break;  // we are after opening "'"
-            }            
+            }
         }
-        if (next == null) return null;                
+        if (next == null) return null;
         if (next.getTokenID() == VALUE) {
             return new TextImpl(syntax, next, this);  //!!! strip out ending "'", return standalone "'" token
         } else {
@@ -133,40 +133,78 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     }
     
     public void setValue(String value) {
+        // Initialize oldValueStartPos and oldValueLength parameters
+        int oldValueStartPos = -1;
+        int oldValueLength = 0;
+        boolean notClosed = false;
+        char firstChar = '"';
+        char lastChar = '\0';
         TokenItem next = first;
         for (; next != null; next = next.getNext()) {
-            if (next.getTokenID() == VALUE) {
-                // fuzziness to relax minor tokenization changes
-                String image = next.getImage();
-                if (image.length() == 1) {
-                    char test = image.charAt(0);
-                    if (test == '"' || test == '\'') {
-                        next = next.getNext();
-                    }
+            TokenID nextId = next.getTokenID();
+            
+            if (oldValueStartPos != -1 && nextId != VALUE  && nextId != CHARACTER) {
+                break;
+            }
+            
+            String nextImage = next.getImage();
+            
+            String actualImage = Util.actualAttributeValue(nextImage);
+            if (!nextImage.equals(actualImage)) {
+                notClosed = true;
+                nextImage = actualImage;
+            }
+            
+            if (nextId == VALUE && oldValueStartPos == -1 && nextImage.length() > 0) {
+                oldValueStartPos = next.getOffset();
+                if (nextImage.charAt(0) == '"' || nextImage.charAt(0) == '\'') {
+                    firstChar = nextImage.charAt(0);
+                    oldValueStartPos++;
+                    oldValueLength--;
                 }
-                break;  // we are after opening "'"
-            }            
-        }
-        if (next == null) return;                
-        BaseDocument doc = (BaseDocument)syntax.getDocument();
-        if (next.getTokenID() == VALUE) {
-            doc.atomicLock();
-            try {
-                doc.remove( next.getOffset() + 1, next.getImage().length() - 2 );
-                doc.insertString( next.getOffset() + 1, value, null);
-                doc.invalidateSyntaxMarks();
-            } catch( BadLocationException e ) {
-                throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
-            } finally {
-                doc.atomicUnlock();
+            }
+            
+            if (oldValueStartPos != -1 && nextImage.length() > 0) {
+                oldValueLength += nextImage.length();
+                lastChar = nextImage.charAt(nextImage.length()-1);
+            }
+            
+            if (notClosed) {
+                break;
             }
         }
         
+        if (lastChar == firstChar) {
+            oldValueLength--;
+        }
+        
+        // Replace known entities
+        value = Util.replaceCharsWithEntityStrings(value);
+        
+        // Close the attribute if it was non-closed
+        if (notClosed) {
+            value += firstChar;
+        }
+        
+        // Replace the text in the document
+        BaseDocument doc = (BaseDocument)syntax.getDocument();
+        doc.atomicLock();
         try {
-        	int endOffset = next.getOffset() + next.getImage().length();
-        	if (endOffset > doc.getLength()) {
-        		endOffset = doc.getLength();
-        	}
+            doc.remove(oldValueStartPos, oldValueLength);
+            doc.insertString(oldValueStartPos, value, null);
+            doc.invalidateSyntaxMarks();
+        } catch( BadLocationException e ) {
+            throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
+        } finally {
+            doc.atomicUnlock();
+        }
+        
+        // Update the status of this object
+        try {
+            int endOffset = oldValueStartPos + oldValueLength;
+            if (endOffset > doc.getLength()) {
+                endOffset = doc.getLength();
+            }
             first = syntax.getTokenChain(first.getOffset(), endOffset);
         } catch (BadLocationException e) {
             throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
@@ -184,17 +222,31 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     public String getNodeValue() {
         return getValue();
     }
-
-    // NOTE:  This method doesn't resolve entities.  If the attirbute value 
-    // contains entities, the attribute value if chopped at the entity location.
+    
     public String getValue() {
-        NodeList nodes = getChildNodes();
-        StringBuffer buf = new StringBuffer();
-        for (int i = 0; i<nodes.getLength(); i++) {
-            buf.append(nodes.item(i).getNodeValue());  //!!! entity reference handling
+        // Find the first value token.  Should be after "name="
+        TokenItem next = first;
+        for (; next != null; next = next.getNext()) {
+            if (next.getTokenID() == VALUE) {
+                break;
+            }
         }
         
-        // Remove " and ' around the attribute value, because getChildNodes returns it
+        // Add values of all value and character entity
+        StringBuffer buf = new StringBuffer();
+        while (next.getTokenID() == VALUE || next.getTokenID() == CHARACTER) {
+            String image = next.getImage();
+            String actual = Util.actualAttributeValue(image);
+            if (!image.equals(actual)) {
+                buf.append(actual);
+                break;
+            } else {
+                buf.append(image);
+            }
+            next = next.getNext();
+        }
+        
+        // Remove " and ' around the attribute value
         if (buf.length() > 0) {
             char firstChar = buf.charAt(0);
             if (firstChar == '"' ||  firstChar == '\'') {
@@ -205,7 +257,7 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
             }
         }
         
-        return buf.toString();        
+        return Util.replaceEntityStringsWithChars(buf.toString());
     }
     
     public short getNodeType() {
@@ -215,11 +267,12 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     public Node getParentNode() {
         return null;  //accordnig to DOM-1 specs
     }
-
+    
     public Element getOwnerElement() {
+        ((Tag)parent).retokenizeObject();
         return parent;
     }
-
+    
     /**
      * Get owner document or <code>null</code>
      */
@@ -235,5 +288,5 @@ public class AttrImpl extends AbstractNode implements Attr, XMLTokenIDs {
     public String toString() {
         return "Attr(" + getName() + "='" + getValue() + "')";
     }
-        
+    
 }
