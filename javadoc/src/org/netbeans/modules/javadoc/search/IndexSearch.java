@@ -194,6 +194,8 @@ public class IndexSearch
         quickBrowser = new HtmlBrowser( true, false );//.BrowserComponent( true, false );
         quickBrowser.setEnableLocation( false );
         quickBrowser.setEnableHome( false );
+        //browser buttons without border are too top
+        quickBrowser.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 0, 0, 0)));
         splitPanel.add( quickBrowser, org.openide.awt.SplittedPanel.ADD_SECOND );
 
         DefaultListModel listModel = new DefaultListModel(); // PENDING: Change to SortedArrayList
