@@ -34,6 +34,7 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.util.DefaultVisualizer;
 import org.netbeans.jemmy.util.MouseVisualizer;
 
 import java.awt.Component;
@@ -228,7 +229,18 @@ public abstract class Operator extends Object
     }
 
     static {
-        setDefaultComponentVisualizer(new MouseVisualizer());
+        //init visualizer depending on OS:
+        //Linux - new MouseVisualizer(MouseVisualizer.TOP, 0.5, 10, false)
+        //solaris - new MouseVisualizer()
+        //others - new DefaultVisualizer()
+        String os = System.getProperty("os.name").toUpperCase();
+        if       (os.startsWith("LINUX")) {
+            setDefaultComponentVisualizer(new MouseVisualizer(MouseVisualizer.TOP, 0.5, 10, false));
+        } else if(os.startsWith("SUNOS")) {
+            setDefaultComponentVisualizer(new MouseVisualizer());
+        } else {
+            setDefaultComponentVisualizer(new DefaultVisualizer());
+        }
 	operatorPkgs = new Vector ();
 	setDefaultStringComparator(new DefaultStringComparator(false, false));
 	addOperatorPackage("org.netbeans.jemmy.operators");

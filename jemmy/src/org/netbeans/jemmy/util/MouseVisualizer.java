@@ -51,11 +51,15 @@ import javax.swing.JTabbedPane;
  * @see org.netbeans.jemmy.operators.Operator#setVisualizer(Operator.ComponentVisualizer)
  * @see org.netbeans.jemmy.operators.Operator.ComponentVisualizer
  *
+ * <BR><BR>Timeouts used: <BR>
+ * MouseVisualiser.BeforeClickTimeout - time to let a window manager to move a window as it wants<BR>
+ * 
  * @author Alexandre Iline (alexandre.iline@sun.com)
  * 
  */
 public class MouseVisualizer extends DefaultVisualizer {
 
+    private static final long BEFORE_CLICK = 100;
 
     public static int TOP = 0;
     public static int BOTTOM = 1;
@@ -89,30 +93,27 @@ public class MouseVisualizer extends DefaultVisualizer {
 	this.checkMouse = checkMouse;
     }
 
-    /**
-     * Activates window by mouse click.
-     */
-    protected void activate(WindowOperator winOper) 
-	throws TimeoutExpiredException {
-        boolean needToBeActivated = false;
-        if(winOper.getSource() instanceof Frame ||
-           winOper.getSource() instanceof Dialog) {
-            if(System.getProperty("java.version").startsWith("1.4")) {
-                needToBeActivated = !winOper.isFocused(); 
-            } else {
-                needToBeActivated = (winOper.getFocusOwner() == null);
-            }
-        }
-        if(needToBeActivated) {
-            winOper.activate();
-            if(!System.getProperty("java.version").startsWith("1.2")) {
-                Point p = getClickPoint(winOper);
-                new MouseRobotDriver(winOper.getTimeouts().create("EventDispatcher.RobotAutoDelay")).
-                    clickMouse(winOper, p.x, p.y,
-                               1, winOper.getDefaultMouseButton(),
-                               0, 
-                               winOper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
-            }
+    static {
+	Timeouts.initDefault("MouseVisualiser.BeforeClickTimeout", BEFORE_CLICK);
+    }
+
+    protected boolean isWindowActive(WindowOperator winOper) {
+        return(super.isWindowActive(winOper) &&
+               (winOper.getSource() instanceof Frame ||
+                winOper.getSource() instanceof Dialog));
+    }
+
+    protected void makeWindowActive(WindowOperator winOper) {
+        JemmyProperties.getCurrentTimeouts().
+            create("MouseVisualiser.BeforeClickTimeout").sleep();
+        super.makeWindowActive(winOper);
+        if(!System.getProperty("java.version").startsWith("1.2")) {
+            Point p = getClickPoint(winOper);
+            new MouseRobotDriver(winOper.getTimeouts().create("EventDispatcher.RobotAutoDelay")).
+                clickMouse(winOper, p.x, p.y,
+                           1, winOper.getDefaultMouseButton(),
+                           0, 
+                           winOper.getTimeouts().create("ComponentOperator.MouseClickTimeout"));
         }
     }
 

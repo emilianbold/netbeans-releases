@@ -256,7 +256,7 @@ public class JProgressBarOperator extends JComponentOperator
 		    return("\"" + chooser.getDescription() + "\" value");
 		}
 	    });
-	wt.setTimeouts(timeouts);
+	wt.setTimeouts(timeouts.cloneThis());
 	wt.getTimeouts().setTimeout("Waiter.WaitingTime",
 				    getTimeouts().getTimeout("JProgressBarOperator.WaitValueTimeout"));
 	wt.setOutput(output.createErrorOutput());

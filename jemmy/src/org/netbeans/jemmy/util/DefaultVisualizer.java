@@ -100,11 +100,20 @@ public class DefaultVisualizer implements ComponentVisualizer {
 	switchTab = yesOrNo;
     }
 
+    protected boolean isWindowActive(WindowOperator winOper) {
+        return(winOper.isFocused() && winOper.isActive());
+    }
+
+    protected void makeWindowActive(WindowOperator winOper) {
+        winOper.activate();
+    }
+
     protected void activate(WindowOperator winOper) 
 	throws TimeoutExpiredException {
+        boolean active = isWindowActive(winOper);
 	winOper.toFront();
-        if(winOper.getFocusOwner() == null) {
-            winOper.activate();
+        if(!active) {
+            makeWindowActive(winOper);
         }
     }
 

@@ -608,3 +608,29 @@ DefaultWindowDriver.java
         int findColumn(String)
 
         new classes JTableHeaderOperator, OrderedListDriver
+
+#VERSION 2.0.3
+
+27140 fixed partially: one file (QueueJMenuDriver) is on queue-branch only.
+Files:
+src/org/netbeans/jemmy/operators/ContainerOperator.java
+src/org/netbeans/jemmy/operators/JProgressBarOperator.java
+
+25018 fix:
+src/org/netbeans/jemmy/operators/Operator.java
+	init visualizer depending on OS:
+	Linux - new MouseVisualizer(MouseVisualizer.TOP, 0.5, 10, false)
+	solaris - new MouseVisualizer()
+	others - new DefaultVisualizer()
+src/org/netbeans/jemmy/util/DefaultVisualizer.java
+        now uses isFocused() method
+src/org/netbeans/jemmy/util/MouseVisualizer.java
+
+Samples up-to-dating:
+www/samples/ActionsSample.java
+www/samples/FindComponentsSample.java
+www/samples/TableActionsSample.java
+www/samples/TreeActionsSample.java
+www/samples/QueueUsingSample.java
+www/samples/MyTest.java
+www/samples/RunnerTest.java

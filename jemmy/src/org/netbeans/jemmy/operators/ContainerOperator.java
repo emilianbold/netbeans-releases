@@ -277,6 +277,7 @@ public class ContainerOperator extends ComponentOperator
 			   "\" subcomponent to be displayed");
 		}
 	    });
+        waiter.setTimeouts(getTimeouts().cloneThis());
 	waiter.getTimeouts().setTimeout("Waiter.WaitingTime",
 					getTimeouts().
 					getTimeout("ComponentOperator.WaitComponentTimeout"));
