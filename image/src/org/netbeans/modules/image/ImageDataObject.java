@@ -45,13 +45,16 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
 
     /** Base for image resource. */
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject"; // NOI18N
+    
+    /** Open support for this image data object. */
+    private transient ImageOpenSupport openSupport;
 
     
     /** Constructor.
-    * @param pf primary file object for this data object
-    * @param loader the data loader creating it
-    * @exception DataObjectExistsException if there was already a data object for it 
-    */
+     * @param pf primary file object for this data object
+     * @param loader the data loader creating it
+     * @exception DataObjectExistsException if there was already a data object for it 
+     */
     public ImageDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         
@@ -62,21 +65,33 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     /** Implements <code>CookieSet.Factory</code> interface. */
     public Node.Cookie createCookie(Class clazz) {
         if(clazz.isAssignableFrom(ImageOpenSupport.class))
-            return new ImageOpenSupport(getPrimaryEntry());
+            return getOpenSupport();
         else
             return null;
     }
     
+    /** Gets image open support. */
+    private ImageOpenSupport getOpenSupport() {
+        if(openSupport == null) {
+            synchronized(this) {
+                if(openSupport == null)
+                    openSupport = new ImageOpenSupport(getPrimaryEntry());
+            }
+        }
+        
+        return openSupport;
+    }
+    
     /** Help context for this object.
-    * @return the help context
-    */
+     * @return the help context
+     */
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ImageDataObject.class);
     }
 
     /** Get a URL for the image.
-    * @return the image url
-    */
+     * @return the image url
+     */
     URL getImageURL() {
         try {
             return getPrimaryFile().getURL();
@@ -86,8 +101,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
     }
 
     /** Get image data for the image.
-    * @return the image data
-    */
+     * @return the image data
+     */
     public byte[] getImageData() {
         try {
             FileObject fo = getPrimaryFile();
@@ -103,8 +118,8 @@ public class ImageDataObject extends MultiDataObject implements CookieSet.Factor
 
 
     /** Create a node to represent the image.
-    * @return the node
-    */
+     * @return the node
+     */
     protected Node createNodeDelegate () {
         DataNode node = new DataNode (this, Children.LEAF);
         node.setIconBase(IMAGE_ICON_BASE);
