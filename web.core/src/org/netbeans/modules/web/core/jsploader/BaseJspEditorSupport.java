@@ -354,7 +354,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
                 SystemAction.get(ValidateAction.class),
                 SystemAction.get(EditServletAction.class),
                 null,
-                SystemAction.get(ExecuteAction.class),
+                SystemAction.get(ExecuteAction.class)
             };
             List acs = new ArrayList(Arrays.asList(sa));
             acs.addAll(Arrays.asList(jspServletActions));
