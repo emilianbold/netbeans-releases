@@ -774,10 +774,17 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <target name="all-xtest" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/execution,all-core/term,all-core/output">
+      <echo message="Building module xtest..."/>
       <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
 
+  <target name="all-contrib/archiver" depends="all-openide,all-openide/loaders,all-openide/io,all-java/api">
+    <echo message="Building module contrib/archiver..."/>
+    <ant dir="../contrib/archiver" target="netbeans"/>
+  </target>
+
   <target name="all-jasm" depends="all-openide,all-openide/loaders,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/execution,all-openide/compiler,all-clazz">
+      <echo message="Building module jasm..."/>
       <ant dir="../jasm" target="netbeans"/>
   </target>
 
