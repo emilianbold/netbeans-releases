@@ -23,6 +23,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.xml.sax.SAXException;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -135,4 +136,12 @@ public class EjbJarMultiViewDataNode extends DataNode {
         setShortDescription(newDesc == null ? "Enterprise Bean deployment descriptor" : newDesc); //NOI18N
     }
 
+    public String getShortDescription() {
+        SAXException saxError = dataObject.getSaxError();
+        if (saxError==null) {
+            return Utils.getBundleMessage("HINT_ejb_dd");
+        } else {
+            return saxError.getMessage();
+        }
+    }
 }
