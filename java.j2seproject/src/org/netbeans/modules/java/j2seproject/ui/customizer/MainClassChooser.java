@@ -135,7 +135,7 @@ public class MainClassChooser extends JPanel {
     }
     
     private boolean isValidMainClassName (String name) {
-        return possibleMainClasses.contains (name);
+        return (possibleMainClasses != null) && (possibleMainClasses.contains (name));
     }
 
 
