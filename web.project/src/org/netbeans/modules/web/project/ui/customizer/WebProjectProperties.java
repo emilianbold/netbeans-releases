@@ -100,6 +100,7 @@ public class WebProjectProperties {
     
     // Properties stored in the PRIVATE.PROPERTIES
     public static final String APPLICATION_ARGS = "application.args";
+    public static final String JSPC_CLASSPATH = "jspc.classpath";
     
     
     // Shortcuts 
@@ -122,6 +123,8 @@ public class WebProjectProperties {
         new PropertyDescriptor( DIST_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( JSPC_CLASSPATH, PRIVATE, PATH_PARSER ),
+        //new PropertyDescriptor( JSP_COMPILER_CLASSPATH, PRIVATE, PATH_PARSER ),
         new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),

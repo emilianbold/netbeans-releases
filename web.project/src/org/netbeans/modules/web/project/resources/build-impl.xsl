@@ -112,6 +112,19 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:for-each>
     </target>
 
+    <target name="compile-jsps" depends="compile"> 
+
+      <taskdef classname="org.apache.jasper.JspC" name="jasper2" > 
+        <classpath path="${{jspc.classpath}}"/> 
+      </taskdef> 
+
+      <jasper2
+             validateXml="false" 
+             uriroot="${{build.dir}}" 
+             outputDir="${{build.dir}}/WEB-INF/src" /> 
+    </target> 
+
+
     <target name="validate-single" depends="init">
         <fail unless="jsp.includes">Must select some files in the IDE or set jsp.includes</fail>
         <nbjspvalidate webmodule="${{web.docbase.dir}}">

@@ -56,6 +56,7 @@ class WebActionProvider implements ActionProvider {
     private static final String COMMAND_JAVADOC = "javadoc"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_DEBUG_FIX = "debug.fix"; /*XXX define somewhere*/ // NOI18N
     private static final String COMMAND_COMPILE = "compile"; //NOI18N
+    private static final String COMMAND_COMPILE_JSPS = "compile-jsps"; //NOI18N
         
     // Commands available from Web project
     private static final String[] supportedActions = {
@@ -68,6 +69,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_JAVADOC, 
         COMMAND_DEBUG_FIX,
         COMMAND_COMPILE,
+        COMMAND_COMPILE_JSPS,
     };
     
     // Project
@@ -91,6 +93,7 @@ class WebActionProvider implements ActionProvider {
             commands.put(COMMAND_JAVADOC, new String[] {"javadoc"}); // NOI18N
             commands.put(COMMAND_DEBUG_FIX, new String[] {"debug-fix"}); // NOI18N
             commands.put(COMMAND_COMPILE, new String[] {"compile"}); // NOI18N
+            commands.put(COMMAND_COMPILE_JSPS, new String[] {"compile-jsps"}); // NOI18N
         
         this.antProjectHelper = antProjectHelper;
         this.project = project;

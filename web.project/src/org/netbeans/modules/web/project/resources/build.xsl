@@ -54,6 +54,12 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:attribute name="target">compile</xsl:attribute>
         </ant>
     </target>
+    <target name="compile-jsps">
+        <xsl:attribute name="description">Compile JavaServer Pages into a temporary area.</xsl:attribute>
+        <ant antfile="nbproject/build-impl.xml">
+            <xsl:attribute name="target">compile-jsps</xsl:attribute>
+        </ant>
+    </target>
     <target name="compile-single">
         <ant antfile="nbproject/build-impl.xml">
             <xsl:attribute name="target">compile-single</xsl:attribute>
