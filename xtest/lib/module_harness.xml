@@ -358,7 +358,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="copy-jar">
-         <copy file="${xtest.ide.onejar}" todir="${netbeans.home}/lib/ext"/>
+         <copy file="${xtest.ide.onejar}" todir="${netbeans.home}/lib"/>
     </target>
     
     <target name="delete-user-jars" depends="init" if="xtest.extra.jars.ide">
@@ -368,7 +368,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="delete-jar">
-         <delete file="${netbeans.home}/lib/ext/${xtest.ide.onejar}"/>
+         <delete file="${netbeans.home}/lib/${xtest.ide.onejar}"/>
     </target>
 
     <target name="ide-extra-jars" if="xtest.extra.jars.ide">
