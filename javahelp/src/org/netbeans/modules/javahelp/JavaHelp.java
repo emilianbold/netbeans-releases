@@ -133,7 +133,14 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     
     private Dialog currentModalDialog() {
         if (currentModalDialogs.empty()) {
-            return null;
+            Window w = HelpAction.WindowActivatedDetector.getCurrentActivatedWindow();
+            if (w instanceof Dialog && ((Dialog)w).isModal()) {
+                // #21286. A modal dialog was opened before JavaHelp was even created.
+                Installer.err.log("Early-opened modal dialog: " + ((Dialog)w).getTitle());
+                return (Dialog)w;
+            } else {
+                return null;
+            }
         } else {
             return (Dialog)currentModalDialogs.peek();
         }
