@@ -163,10 +163,12 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
             
             <folder name="IDEConfiguration">
+              <folder name="LookAndFeel">
                 <file name="ServletSettingsNode.instance">
                      <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.core.ServletSettingsNode.getConfigurationNode"/>
                      <attr name="instanceClass" stringvalue="org.openide.nodes.Node"/>
                 </file>
+              </folder>
             </folder>
         </folder>
     </folder>

@@ -47,6 +47,7 @@ public class CompileData {
     private String servletEncoding;
     private Vector additionalClassPath;
     private String servletClassName;
+    private String realServletClassName;
     private String servletFileName;
     private String servletFileNameWithoutPackage;
     
@@ -70,6 +71,12 @@ public class CompileData {
             outDated = dev.isOutDated();
             servletEncoding = dev.getServletEncoding();
             servletClassName = comp.getServletClassName(jspData);
+            if (comp instanceof ExCompileContext) {
+                realServletClassName = ((ExCompileContext)comp).getRealClassName(jspData);
+            }
+            else {
+                realServletClassName = servletClassName;
+            }
             servletFileName = dev.getServletFileName();
             additionalClassPath = computeAdditionalClassPath(dev.getAdditionalClassPath());
             if (servletFileName != null) {
@@ -113,6 +120,10 @@ public class CompileData {
     
     public String getCurrentServletClassName() {
         return servletClassName;
+    }
+    
+    public String getRealServletClassName() {
+        return realServletClassName;
     }
     
     /** Returns encoding for the servlet generated from the JSP. */
@@ -189,6 +200,8 @@ public class CompileData {
             ((servletFileName == null) ? "false" : "" + new File(servletFileName).exists()));
         sb.append("\n");
         sb.append("servletClass    : " + servletClassName);
+        sb.append("\n");
+        sb.append("realServletClass: " + realServletClassName);
         sb.append("\n");
         sb.append("encoding        : " + servletEncoding);
         sb.append("\n");

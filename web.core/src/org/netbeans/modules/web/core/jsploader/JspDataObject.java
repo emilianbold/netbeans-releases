@@ -379,10 +379,10 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     job.add(ren);
                     // refresh the folder
                     // PENDING this part is specific for Tomcat, it should be more general
-                    Compiler refr = new RefreshCompiler(JspCompileUtil.suggestContextOutputRoot(getPrimaryFile(),
+                    /*Compiler refr = new RefreshCompiler(JspCompileUtil.suggestContextOutputRoot(getPrimaryFile(),
                         JspCompileUtil.getCurrentServerInstance(this).getServer()));
                     refr.dependsOn(ren);
-                    job.add(refr);
+                    job.add(refr);*/
                 }
 
                 // add compilers for referenced pages - jsp:include and jsp:forward
@@ -782,6 +782,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         // dataobject
         try {
             FileObject servletFileObject = updateServletFileObject();
+            if(debug) System.out.println("refreshing servlet, new servletFile = " + servletFileObject);
             if (servletFileObject != null) {
                 // if the file has not changed, just return
                 if ((oldServlet != null) && 

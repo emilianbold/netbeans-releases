@@ -31,6 +31,9 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import org.openide.TopManager;
+import org.openide.ErrorManager;
+
 import org.netbeans.modules.web.core.jsploader.ContextDescriptor;
 
 /**
@@ -347,6 +350,8 @@ public class ParserServletContext implements ServletContext {
      * @deprecated Use log(String,Throwable) instead
      */
     public void log(Exception exception, String message) {
+        
+        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, exception);
 
         if (myLogWriter == null)
             return;
@@ -363,6 +368,8 @@ public class ParserServletContext implements ServletContext {
      * @param exception The exception to be logged
      */
     public void log(String message, Throwable exception) {
+
+        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, exception);
 
         if (myLogWriter == null)
             return;

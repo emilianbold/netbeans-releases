@@ -96,7 +96,7 @@ public class JspServletDataLoader extends JavaDataLoader {
     */
     protected FileObject findPrimaryFile (FileObject fo) {
 
-        // detects  *_jsp_*.java
+        // detects  *_jsp*.java
         FileObject javaPrim = super.findPrimaryFile(fo);
         if (javaPrim == null)
             return null;
@@ -107,8 +107,8 @@ public class JspServletDataLoader extends JavaDataLoader {
         }
 
         // PENDING: old way of recognition was by name, need to remove this later
-        if (javaPrim.getName().lastIndexOf(JSP_MARK) != -1)
-            return javaPrim;
+        //if (javaPrim.getName().lastIndexOf(JSP_MARK) != -1)
+        //    return javaPrim;
             
         return null;
     }

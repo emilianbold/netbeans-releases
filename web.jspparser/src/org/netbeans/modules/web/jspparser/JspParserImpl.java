@@ -31,6 +31,8 @@ import org.apache.jasper.compiler.ParseException;
 import org.apache.jasper.compiler.CompileException;
 import org.apache.jasper.compiler.ParseEventListener;
 import org.apache.jasper.JasperException;
+import org.apache.jasper.logging.Logger;
+import org.apache.jasper.logging.DefaultLogger;
 
 import org.openide.TopManager;
 import org.openide.ErrorManager;
@@ -48,6 +50,18 @@ public class JspParserImpl implements JspParserAPI {
     /** Constructs a new Parser API implementation.
      */
     private JspParserImpl() {
+        initializeLogger();
+    }
+    
+    private static boolean loggerInitialized = false;
+    
+    private static synchronized void initializeLogger() {
+        if (!loggerInitialized) {
+            Logger l = new DefaultLogger(new ParserServletContext(null, null));
+            l.setName("JASPER_LOG");
+            //Logger.putLogger();
+            loggerInitialized = true;
+        }
     }
 
     // from JspCompileUtil
@@ -107,7 +121,7 @@ public class JspParserImpl implements JspParserAPI {
 
             // Generate the servlet
             ParseEventListener listener = parserCtl.getParseEventListener();
-System.out.println("listener is " + listener);            
+            //System.out.println("listener is " + listener);            
             listener.beginPageProcessing();
             listener.endPageProcessing();
             // An XML input stream has been produced and can be validated
