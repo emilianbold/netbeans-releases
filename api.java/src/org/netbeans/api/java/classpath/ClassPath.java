@@ -756,19 +756,24 @@ public final class ClassPath {
             String path = getPath (fe.getFile());
             if (path == null)
                 return;
-            for (Iterator it = this.roots.iterator(); it.hasNext();) {
-                String rootPath = (String) it.next ();
-                if (rootPath.startsWith (path)) {
-                    ClassPath cp = (ClassPath) get ();
-                    if (cp != null) {
-                        synchronized (cp) {
-                            cp.rootsCache = null;
-                            this.removeAllRoots();  //No need to listen
-                        }
-                        cp.firePropertyChange(PROP_ROOTS,null,null);
+            ClassPath cp = (ClassPath) get ();
+            if (cp == null) {
+                return;
+            }
+            boolean fire = false;
+            synchronized (cp) {
+                for (Iterator it = this.roots.iterator(); it.hasNext();) {
+                    String rootPath = (String) it.next ();
+                    if (rootPath.startsWith (path)) {
+                        cp.rootsCache = null;
+                        this.removeAllRoots();  //No need to listen
+                        fire = true;
+                        break;
                     }
-                    return;
-                }
+                }            
+            }
+            if (fire) {
+                cp.firePropertyChange(PROP_ROOTS,null,null);
             }
         }
 
