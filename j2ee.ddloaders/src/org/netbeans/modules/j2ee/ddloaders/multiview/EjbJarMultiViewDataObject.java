@@ -72,6 +72,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 
     private EjbJar ejbJar;
     private FileObject srcRoots[];
+    private boolean parseable;
     protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
 
     private static final long serialVersionUID = 8857563089355069362L;
@@ -420,11 +421,11 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         ejbJar = createEjbJar();
         if (ejbJar != null) {
             setSaxError(ejbJar.getError());
-            parsable = ejbJar.getStatus() != EjbJar.STATE_INVALID_UNPARSABLE;
+            parseable = ejbJar.getStatus() != EjbJar.STATE_INVALID_UNPARSABLE;
         } else {
-            parsable = false;
+            parseable = false;
         }
-        return parsable;
+        return parseable;
     }
 
     /**
@@ -445,7 +446,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     }
 
     private boolean parse(InputSource is) throws IOException {
-        parsable = false;
+        parseable = false;
         if (is != null) { // merging model with the document
             org.xml.sax.SAXParseException error = null;
             SAXException oldError = getSaxError();
@@ -470,7 +471,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     oldEjbJar.setError(null);
                     ((EjbJarMultiViewDataNode) getNodeDelegate()).descriptionChanged(
                             oldError == null ? null : oldError.getMessage(), null);
-                    parsable = true;
+                    parseable = true;
                 }
                 System.out.println("version:" + ejbJar.getVersion() + " Status:" + ejbJar.getStatus() + " Error:" + //NOI18N
                         ejbJar.getError());
@@ -490,7 +491,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                 setSaxError(ex);
             }
         }
-        return parsable;
+        return parseable;
     }
 
     /**
@@ -521,22 +522,24 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     /**
      * Icon Base for MultiView editor
      */
-    protected String getIconBase() {
-        return Utils.ICON_BASE_EJB_MODULE_NODE;
-    }
-
-    /**
-     * Icon Base for MultiView editor
-     */
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{
             new DDView(this, OVERVIEW),
             new DDView(this, CMP_RELATIONSHIPS),
         };
     }
+    /** Returns true if xml file is parseable(data model can be created),
+     *  Method is called before switching to the design view from XML view when the document isn't parseable.
+     */
+    public boolean isDocumentParseable() {
+        return parseable;
+    }
 
-    public Object getOriginal() {
-        return ((EjbJarProxy) ejbJar).getOriginal();
+    /** Used to detect if data model has already been created or not.
+     * Method is called before switching to the design view from XML view when the document isn't parseable.
+     */
+    protected boolean isModelCreated() {
+        return (ejbJar!=null && ((EjbJarProxy)ejbJar).getOriginal()!=null);
     }
 
     /**

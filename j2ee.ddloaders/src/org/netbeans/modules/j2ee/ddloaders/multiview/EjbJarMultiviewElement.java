@@ -60,7 +60,7 @@ public abstract class EjbJarMultiviewElement extends ToolBarMultiViewElement {
             node = sectionNodeView.getRootNode();
         }
         sectionNodeView.openPanel(node);
-        dataObject.checkParsable();
+        dataObject.checkParseable();
     }
 
     protected abstract PanelView createView();

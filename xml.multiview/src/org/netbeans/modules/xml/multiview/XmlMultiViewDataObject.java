@@ -41,8 +41,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
     private boolean modelUpdated;
-    //private HashMap webSupportMap,customDataMap;
-    protected boolean parsable;
 
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -254,21 +252,25 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         getEditorSupport().setLastOpenView(index);
     }
 
-    public boolean isParsable(){
-        return parsable;
-    }
+    /** Returns true if xml file is parseable(data model can be created),
+     *  Method is called before switching to the design view from XML view when the document isn't parseable.
+     */
+    public abstract boolean isDocumentParseable();
+    
+    /** Used to detect if data model has already been created or not.
+     * Method is called before switching to the design view from XML view when the document isn't parseable.
+     */
+    protected abstract boolean isModelCreated();
 
-    public void checkParsable() {
-        if (!isParsable()) {
+    public void checkParseable() {
+        if (!isDocumentParseable()) {
             NotifyDescriptor desc = new org.openide.NotifyDescriptor.Message(
                     NbBundle.getMessage(XmlMultiViewDataObject.class, "TXT_DocumentUnparsable",
                             getPrimaryFile().getNameExt()), NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
-            if (getOriginal() == null) {
+            if (!isModelCreated()) {
                 goToXmlView();
             }
         }
     }
-
-    public abstract Object getOriginal();
 }
