@@ -303,11 +303,15 @@ public class AntProjectNode extends DataNode implements ChangeListener {
     }
 
     public void stateChanged (ChangeEvent ev) {
-        fireIconChange();
-        fireOpenedIconChange();
-        fireShortDescriptionChange(null, null);
-        fireCookieChange();
-        firePropertyChange (null, null, null);
+        Mutex.EVENT.writeAccess(new Runnable() {
+            public void run() {
+                fireIconChange();
+                fireOpenedIconChange();
+                fireShortDescriptionChange(null, null);
+                fireCookieChange();
+                firePropertyChange(null, null, null);
+            }
+        });
     }
 
     public HelpCtx getHelpCtx () {
