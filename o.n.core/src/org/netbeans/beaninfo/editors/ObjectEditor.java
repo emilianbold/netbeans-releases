@@ -121,7 +121,9 @@ implements ExPropertyEditor, PropertyChangeListener {
      */
     protected synchronized Node root () {
         if (root == null) {
-            root = new org.netbeans.core.ui.LookupNode ();
+            root = new org.netbeans.core.ui.LookupNode (
+                org.netbeans.core.NbPlaces.findSessionFolder ("/Services") // NOI18N
+            ); 
         }
         return root;
     }

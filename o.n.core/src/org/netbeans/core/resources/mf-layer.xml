@@ -443,6 +443,40 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Templates">
     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle"/>
     <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
+
+      <!-- templates for services in Lookup, should have the same subdirectory as objects under the -->
+
+      <folder name="Services">
+      </folder>
+
+      <!-- folder for all registered filesystem templates -->
+      <folder name="Mount">
+          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+          <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
+          <file name="org-netbeans-core-ExLocalFileSystem.settings">
+<![CDATA[
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <instanceof class="org.openide.filesystems.FileSystem"/>
+    <instance class="org.netbeans.core.ExLocalFileSystem"/>
+</settings>
+]]>
+              <attr name="template" boolvalue="true" />
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+          </file>
+          <file name="org-netbeans-core-ExJarFileSystem.settings">
+<![CDATA[
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <instanceof class="org.openide.filesystems.FileSystem"/>
+    <instance class="org.netbeans.core.ExJarFileSystem"/>
+</settings>
+]]>
+              <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+              <attr name="template" boolvalue="true" />
+          </file>
+      </folder>
+
   </folder>
 
   <folder name="Wizards">
@@ -492,6 +526,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <!-- nodes for default objects in the IDE -->
+
+    <file name="FileSystems.instance">
+        <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createFileSystems" />
+        <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+    </file>
 
     <file name="Templates.instance">
         <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.UINodes.createTemplate" />
@@ -640,10 +679,20 @@ Microsystems, Inc. All Rights Reserved.
   <folder name="Workplace">
   </folder>
 
-  <!-- tempaltes for services in Lookup, should have the same subdirectory as objects under the -->
-  
-  <folder name="ServiceTemplates">    
+  <!-- mounted filesystems in the IDE-->
+  <folder name="Mount">
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
+        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
+
+        <file name="SystemFileSystem.instance">
+            <attr name="instanceClass" stringvalue="org.openide.nodes.Node" />
+            <attr name="instanceCreate" methodvalue="org.netbeans.core.ui.MountNode.createSystemNode" />
+        </file>
+        
+        <!-- SystemFileSystem should be the first one -->
+        <attr name="OpenIDE-Folder-Order" stringvalue="SystemFileSystem" />
   </folder>
+
 
   <!-- For debugging only, comment out if desired: -->
   <file name="debug-sfs-structure[org-netbeans-core-projects-SystemFileSystem$StructureNode].instance"/>

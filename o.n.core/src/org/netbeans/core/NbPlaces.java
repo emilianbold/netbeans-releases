@@ -37,7 +37,7 @@ import org.netbeans.core.modules.ManifestSection;
 *
 * @author Jaroslav Tulach
 */
-final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
+public final class NbPlaces extends Object implements Places, Places.Nodes, Places.Folders {
     /** default */
     private static NbPlaces places;
     
@@ -125,7 +125,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
     /** Repository settings */
     public Node repositorySettings () {
-        return FSPoolNode.getFSPoolNode ();
+        return new org.netbeans.core.ui.MountNode ();
     }
 
     /** Active project's node, this node can change when active project changes.
@@ -204,7 +204,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
      * folders go first (sorted by name) followed by the rest of objects sorted
      * by name.
      */
-     static synchronized DataFolder findSessionFolder (String name) {
+     public static synchronized DataFolder findSessionFolder (String name) {
         try {
             FileSystem fs = NbTopManager.get ().getRepository().getDefaultFileSystem ();
             FileObject fo = fs.findResource(name);
@@ -312,7 +312,9 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
         private Node[] defaultNodesForType (String section) {
             if (defaultNode == null) {
                 if (ManifestSection.NodeSection.TYPE_SESSION.equals (section)) {
-                    defaultNode = new org.netbeans.core.ui.LookupNode ();
+                    defaultNode = new org.netbeans.core.ui.LookupNode (
+                        findSessionFolder ("Services") // NOI18N
+                    );
                 } else {
                     defaultNode = Node.EMPTY;
                 }

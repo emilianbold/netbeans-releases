@@ -21,6 +21,7 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 import org.openide.TopManager;
+import org.openide.actions.NewTemplateAction;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataObject;
@@ -36,7 +37,8 @@ import org.openide.util.actions.SystemAction;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
-final class DataSystem extends AbstractNode implements RepositoryListener {
+final class DataSystem extends AbstractNode 
+implements RepositoryListener, NewTemplateAction.Cookie {
     /** default instance */
     private static DataSystem def;
 
@@ -58,7 +60,8 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         setIconBase ("/org/netbeans/core/resources/repository"); // NOI18N
         setName (NbBundle.getBundle (DataSystem.class).getString ("dataSystemName"));
         setShortDescription (NbBundle.getBundle (DataSystem.class).getString ("CTL_Repository_Hint"));
-        getCookieSet().add(new InstanceSupport.Instance (fsp));
+        getCookieSet ().add (new InstanceSupport.Instance (fsp));
+        getCookieSet ().add (this);
     }
 
     /** Constructor. Uses default file system pool.
@@ -73,20 +76,19 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     }
 
     /** Factory for DataSystem instances */
-    public static DataSystem getDataSystem(DataFilter filter) {
+    public static Node getDataSystem(DataFilter filter) {
         if (filter == null) {
             if (def != null) {
                 return def;
             }
             return def = new DataSystem(new DSMap (), DataFilter.ALL);
         } else {
-            DataSystem ds = new DataSystem(new DSMap (), filter);
-            return ds;
+            return new DataSystem(new DSMap (), filter);
         }
     }
 
     /** Gets a DataSystem */
-    public static DataSystem getDataSystem() {
+    public static Node getDataSystem() {
         return getDataSystem(null);
     }
 
@@ -115,11 +117,6 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         return DataFolder.findFolder (fs.getRoot());
     }
 
-    /** @return available new types */
-    public NewType[] getNewTypes () {
-        return ModuleFSSection.listOfNewTypes(false);
-    }
-
     /** Getter for set of actions that should be present in the
     * popup menu of this node. This set is used in construction of
     * menu returned from getContextMenu and specially when a menu for
@@ -131,9 +128,11 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         return new SystemAction[] {
                    SystemAction.get (org.openide.actions.FindAction.class),
                    null,
+/*
                    SystemAction.get (org.netbeans.core.actions.AddFSAction.class),
                    SystemAction.get (org.netbeans.core.actions.AddJarAction.class),
                    null,
+*/
                    SystemAction.get (org.netbeans.core.actions.MountAction.class),
                    null,
                    SystemAction.get (org.openide.actions.ToolsAction.class),
@@ -190,6 +189,12 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         return nb;
     }
 
+    /** Getter for the wizard that should be used for this cookie.
+     */
+    public org.openide.loaders.TemplateWizard getTemplateWizard() {
+        return org.netbeans.core.ui.MountNode.wizard();
+    }
+
     /** Children that listens to changes in filesystem pool.
     */
     static class DSMap extends Children.Keys implements PropertyChangeListener {
@@ -215,8 +220,11 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
         }
 
         protected Node[] createNodes (Object key) {
-            DataFolder df = createRoot ((FileSystem)key);
-            return new Node[] { new RootFolderNode (df, df.createNodeChildren (getDS ().filter)) };
+            FileSystem fs = (FileSystem)key;
+            DataFolder df = createRoot (fs);
+            Node n = new RootFolderNode (df, df.createNodeChildren (getDS ().filter));
+            n = org.netbeans.core.ui.MountNode.customize (n, fs);
+            return new Node[] { n };
         }
 
         /** Refreshes the pool.
@@ -252,3 +260,5 @@ final class DataSystem extends AbstractNode implements RepositoryListener {
     }
 
 }
+
+

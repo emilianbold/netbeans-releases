@@ -34,36 +34,25 @@ import org.openide.util.NbBundle;
 *
 * @author Jaroslav Tulach
 */
-public final class LookupNode extends DataFolder.FolderNode implements NewTemplateAction.Cookie {
+public class LookupNode extends DataFolder.FolderNode implements NewTemplateAction.Cookie {
     /** extended attribute that signals that this object should not be visible to the user */
     private static final String EA_HIDDEN = "hidden"; // NOI18N
 
-//    private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
-    public LookupNode () {
-        this ("Services"); // NOI18N
-    }
-
-    /** Constructor to be used with different directories.
-    */
-    private LookupNode (String root) {
-        this (findFolder (root, "", false), root); // NOI18N
-    }
-
     /** Constructs this node with given node to filter.
     */
-    LookupNode (DataFolder folder, String root) {
-        folder.super(new Ch(folder, root));
+    public LookupNode (DataFolder folder) {
+        folder.super(new Ch(folder));
 //        setShortDescription(bundle.getString("CTL_Lookup_hint"));
 //        super.setIconBase ("/org/netbeans/modules/url/Lookup"); // NOI18N
         getCookieSet ().add (this);
     }
 
-    public HelpCtx getHelpCtx () {
+    public final HelpCtx getHelpCtx () {
         return new HelpCtx (LookupNode.class);
     }
 
 
-    public SystemAction[] createActions () {
+    public final SystemAction[] createActions () {
         return new SystemAction[] {
             SystemAction.get(FileSystemAction.class),
             null,
@@ -92,7 +81,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     * @return instance of that class or null if this class of cookie
     *    is not supported
     */
-    public Node.Cookie getCookie (Class type) {
+    public final Node.Cookie getCookie (Class type) {
         // no index for reordering toolbars, just for toolbar items
         if (type.isAssignableFrom(DataFolder.Index.class)) {
             // search for data object
@@ -107,18 +96,39 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
     /** NewTemplateAction.Cookie method implementation to create the desired
      * template wizard for this node.
      */
-    public TemplateWizard getTemplateWizard () {
-        TemplateWizard templateWizard = new TemplateWizard ();
+    public final TemplateWizard getTemplateWizard () {
+        TemplateWizard templateWizard = createWizard ();
         
         templateWizard.setTemplatesFolder (findFolder (root (), findName (), true));
         templateWizard.setTargetFolder (findFolder (root (), findName (), false));
         return templateWizard;
     }
+    
+    /** Allows subclasses to create special wizard.
+     */
+    protected TemplateWizard createWizard () {
+        return new TemplateWizard ();
+    }
 
-    /** Gets the root from children.
+    /** A method to allow subclasses to create different child for folder.
+    * @param folder the folder to create child for
     */
-    private String root () {
-        return ((Ch)getChildren ()).root;
+    protected LookupNode createChild (DataFolder folder) {
+        return new LookupNode (folder);
+    }
+
+    /** A method to allow subclasses to create different child for any other node then folder.
+    * @param node to create child for
+    */
+    protected Node createChild (Node node) {
+        return node.cloneNode ();
+    }
+
+    /** Gets the root from children on system filesystem and in 
+    * templates folder.
+    */
+    protected String root () {
+        return "Services";
     }
 
     /** Finds a prefix for templates.
@@ -151,7 +161,7 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
      * @param template folder for templates or for instances?
      * @return the folder
      */
-    private static DataFolder findFolder (String root, String name, boolean template) {
+    static DataFolder findFolder (String root, String name, boolean template) {
         try {
             FileSystem fs = TopManager.getDefault ().getRepository ().getDefaultFileSystem ();
             if (template) {
@@ -180,20 +190,26 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
         }
     }
 
+    /** Refreshes the node for given key.
+    * @param node the original node
+    */
+    public final void refreshKey (Node node) {
+        ((Ch)getChildren ()).refreshKey (node);
+    }
     
 
     /** Children for the LookupNode. Creates LookupNodes or
     * LookupItemNodes as filter subnodes...
     */
-    static final class Ch extends FilterNode.Children {
-        /** the directory to use as a root of objects to display
-        */
-        final String root;
-
+    private static final class Ch extends FilterNode.Children {
         /** @param or original node to take children from */
-        public Ch (DataFolder folder, String root) {
+        public Ch (DataFolder folder) {
             super(folder.getNodeDelegate ());
-            this.root = root;
+        }
+
+        /** Refreshes a key */
+        protected void refreshKey (Node node) {
+            super.refreshKey (node);
         }
 
         /** Overriden, returns LookupNode filters of original nodes.
@@ -204,7 +220,6 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
         protected Node[] createNodes (Object n) {
             Node node = (Node)n;
             
-            
             DataObject obj = (DataObject)node.getCookie(DataObject.class);
             //System.err.println("obj="+obj+" node="+node+" hidden="+(obj==null?null:obj.getPrimaryFile ().getAttribute (EA_HIDDEN)));
             
@@ -214,11 +229,14 @@ public final class LookupNode extends DataFolder.FolderNode implements NewTempla
                 return new Node[0];
             }
             
+            LookupNode parent = (LookupNode)getNode ();
             if (obj instanceof DataFolder && n.equals (obj.getNodeDelegate ())) {
-                return new Node[] { new LookupNode((DataFolder)obj, root) };
+                node = parent.createChild ((DataFolder)obj);
+            } else {
+                node = parent.createChild (node);
             }
 
-            return new Node[] { node.cloneNode () }; 
+            return node == null ? null : new Node[] { node };
         }
 
     }

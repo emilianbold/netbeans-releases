@@ -81,6 +81,15 @@ public final class UINodes extends Object {
         return sessionNode;
     }
 
+   /** Getter for filesystem pool node.
+    * @return a node
+    */
+    public static Node createFileSystems () {
+        return new MountNode (
+            org.netbeans.core.NbPlaces.findSessionFolder ("Mount") // NOI18N
+        );
+    }
+
 /*
     static Node getProjectSettingsNode () {
         return ControlPianelNode.getProjectSettings ();
