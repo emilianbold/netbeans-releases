@@ -50,59 +50,59 @@ public class DebuggerActionsTest extends DebuggerApiTestBase {
         TestLazyActionsManagerListener laml = (TestLazyActionsManagerListener) debugger.lookupFirst(null, LazyActionsManagerListener.class);
         assertNotNull("Lazy actions manager listener not loaded", laml);
 
-        am.doAction(DebuggerManager.ACTION_CONTINUE);
-        am.doAction(DebuggerManager.ACTION_FIX);
-        am.doAction(DebuggerManager.ACTION_MAKE_CALLEE_CURRENT);
-        am.doAction(DebuggerManager.ACTION_MAKE_CALLER_CURRENT);
-        am.doAction(DebuggerManager.ACTION_PAUSE);
-        am.doAction(DebuggerManager.ACTION_POP_TOPMOST_CALL);
-        am.doAction(DebuggerManager.ACTION_RESTART);
-        am.doAction(DebuggerManager.ACTION_RUN_INTO_METHOD);
-        am.doAction(DebuggerManager.ACTION_RUN_TO_CURSOR);
-        am.doAction(DebuggerManager.ACTION_STEP_INTO);
-        am.doAction(DebuggerManager.ACTION_STEP_OUT);
-        am.doAction(DebuggerManager.ACTION_STEP_OVER);
-        am.doAction(DebuggerManager.ACTION_TOGGLE_BREAKPOINT);
+        am.doAction(ActionsManager.ACTION_CONTINUE);
+        am.doAction(ActionsManager.ACTION_FIX);
+        am.doAction(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
+        am.doAction(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
+        am.doAction(ActionsManager.ACTION_PAUSE);
+        am.doAction(ActionsManager.ACTION_POP_TOPMOST_CALL);
+        am.doAction(ActionsManager.ACTION_RESTART);
+        am.doAction(ActionsManager.ACTION_RUN_INTO_METHOD);
+        am.doAction(ActionsManager.ACTION_RUN_TO_CURSOR);
+        am.doAction(ActionsManager.ACTION_STEP_INTO);
+        am.doAction(ActionsManager.ACTION_STEP_OUT);
+        am.doAction(ActionsManager.ACTION_STEP_OVER);
+        am.doAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         dm.getCurrentSession().kill();
 
         am.removeActionsManagerListener(tam);
 
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_START));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_CONTINUE));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_FIX));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_MAKE_CALLEE_CURRENT));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_MAKE_CALLER_CURRENT));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_PAUSE));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_POP_TOPMOST_CALL));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_RESTART));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_RUN_INTO_METHOD));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_RUN_TO_CURSOR));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_STEP_INTO));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_STEP_OUT));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_STEP_OVER));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_TOGGLE_BREAKPOINT));
-        assertTrue("Action was not performed", tdi.hasInfo(DebuggerManager.ACTION_KILL));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_START));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_CONTINUE));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_FIX));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_MAKE_CALLEE_CURRENT));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_MAKE_CALLER_CURRENT));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_PAUSE));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_POP_TOPMOST_CALL));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_RESTART));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_RUN_INTO_METHOD));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_RUN_TO_CURSOR));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_STEP_INTO));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_STEP_OUT));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_STEP_OVER));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_TOGGLE_BREAKPOINT));
+        assertTrue("Action was not performed", tdi.hasInfo(ActionsManager.ACTION_KILL));
 
         testReceivedEvents(tam.getPerformedActions(), false);
         testReceivedEvents(laml.getPerformedActions(), true);
     }
 
     private void testReceivedEvents(List eventActions, boolean expectStartAction) {
-        if (expectStartAction) assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_START));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_CONTINUE));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_FIX));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_MAKE_CALLEE_CURRENT));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_MAKE_CALLER_CURRENT));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_PAUSE));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_POP_TOPMOST_CALL));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_RESTART));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_RUN_INTO_METHOD));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_RUN_TO_CURSOR));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_STEP_INTO));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_STEP_OUT));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_STEP_OVER));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_TOGGLE_BREAKPOINT));
-        assertTrue("ActionListener was not notified", eventActions.remove(DebuggerManager.ACTION_KILL));
+        if (expectStartAction) assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_START));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_CONTINUE));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_FIX));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_MAKE_CALLEE_CURRENT));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_MAKE_CALLER_CURRENT));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_PAUSE));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_POP_TOPMOST_CALL));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_RESTART));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_RUN_INTO_METHOD));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_RUN_TO_CURSOR));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_STEP_INTO));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_STEP_OUT));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_STEP_OVER));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_TOGGLE_BREAKPOINT));
+        assertTrue("ActionListener was not notified", eventActions.remove(ActionsManager.ACTION_KILL));
         assertEquals("ActionListener notification failed", eventActions.size(), 0);
     }
 }

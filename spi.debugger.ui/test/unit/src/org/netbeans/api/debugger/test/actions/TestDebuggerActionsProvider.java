@@ -16,7 +16,7 @@ package org.netbeans.api.debugger.test.actions;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderListener;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.test.TestDebugger;
 import org.netbeans.api.debugger.test.TestDICookie;
 
@@ -37,19 +37,19 @@ public class TestDebuggerActionsProvider extends ActionsProvider {
         debuggerImpl = (TestDebugger) lookupProvider.lookupFirst(null, TestDebugger.class);
         this.lookupProvider = lookupProvider;
         supportedActions = new HashSet();
-        supportedActions.add(DebuggerManager.ACTION_CONTINUE);
-        supportedActions.add(DebuggerManager.ACTION_FIX);
-        supportedActions.add(DebuggerManager.ACTION_MAKE_CALLEE_CURRENT);
-        supportedActions.add(DebuggerManager.ACTION_MAKE_CALLER_CURRENT);
-        supportedActions.add(DebuggerManager.ACTION_PAUSE);
-        supportedActions.add(DebuggerManager.ACTION_POP_TOPMOST_CALL);
-        supportedActions.add(DebuggerManager.ACTION_RESTART);
-        supportedActions.add(DebuggerManager.ACTION_RUN_INTO_METHOD);
-        supportedActions.add(DebuggerManager.ACTION_RUN_TO_CURSOR);
-        supportedActions.add(DebuggerManager.ACTION_STEP_INTO);
-        supportedActions.add(DebuggerManager.ACTION_STEP_OUT);
-        supportedActions.add(DebuggerManager.ACTION_STEP_OVER);
-        supportedActions.add(DebuggerManager.ACTION_TOGGLE_BREAKPOINT);
+        supportedActions.add(ActionsManager.ACTION_CONTINUE);
+        supportedActions.add(ActionsManager.ACTION_FIX);
+        supportedActions.add(ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
+        supportedActions.add(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
+        supportedActions.add(ActionsManager.ACTION_PAUSE);
+        supportedActions.add(ActionsManager.ACTION_POP_TOPMOST_CALL);
+        supportedActions.add(ActionsManager.ACTION_RESTART);
+        supportedActions.add(ActionsManager.ACTION_RUN_INTO_METHOD);
+        supportedActions.add(ActionsManager.ACTION_RUN_TO_CURSOR);
+        supportedActions.add(ActionsManager.ACTION_STEP_INTO);
+        supportedActions.add(ActionsManager.ACTION_STEP_OUT);
+        supportedActions.add(ActionsManager.ACTION_STEP_OVER);
+        supportedActions.add(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
 
     public Set getActions () {

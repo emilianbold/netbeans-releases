@@ -16,7 +16,7 @@ package org.netbeans.api.debugger.test.actions;
 import java.util.Collections;
 import java.util.Set;
 
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.test.TestDICookie;
@@ -49,7 +49,7 @@ public class KillActionProvider extends ActionsProvider {
     public void removeActionsProviderListener(ActionsProviderListener l) {}
 
     public Set getActions() {
-        return Collections.singleton (DebuggerManager.ACTION_KILL);
+        return Collections.singleton (ActionsManager.ACTION_KILL);
     }
         
     public void doAction (Object action) {
@@ -57,6 +57,6 @@ public class KillActionProvider extends ActionsProvider {
         DebuggerInfo di = (DebuggerInfo) lookupProvider.lookupFirst
             (null, DebuggerInfo.class);
         TestDICookie tic = (TestDICookie) di.lookupFirst(null, TestDICookie.class);
-        tic.addInfo(DebuggerManager.ACTION_KILL);
+        tic.addInfo(ActionsManager.ACTION_KILL);
     }
 }

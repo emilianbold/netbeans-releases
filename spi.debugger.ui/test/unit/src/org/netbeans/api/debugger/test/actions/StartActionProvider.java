@@ -16,7 +16,7 @@ package org.netbeans.api.debugger.test.actions;
 import java.util.Collections;
 import java.util.Set;
 
-import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.test.TestDebugger;
 import org.netbeans.api.debugger.test.TestDICookie;
@@ -42,14 +42,14 @@ public class StartActionProvider extends ActionsProvider {
     }
     
     public Set getActions () {
-        return Collections.singleton (DebuggerManager.ACTION_START);
+        return Collections.singleton (ActionsManager.ACTION_START);
     }
     
     public void doAction (Object action) {
         if (debuggerImpl == null) return;
         final TestDICookie cookie = (TestDICookie) lookupProvider.lookupFirst
             (null, TestDICookie.class);
-        cookie.addInfo(DebuggerManager.ACTION_START);
+        cookie.addInfo(ActionsManager.ACTION_START);
     }
 
     public boolean isEnabled (Object action) {
