@@ -119,6 +119,8 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
     jPanel2.setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints1;
 
+      topLabel.setLabelFor (topField);
+      topLabel.setText (bundle.getString( "SICE_Top" ));
   
       gridBagConstraints1 = new java.awt.GridBagConstraints ();
       gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -138,6 +140,8 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
       gridBagConstraints1.weightx = 1.0;
       jPanel2.add (topField, gridBagConstraints1);
   
+      leftLabel.setLabelFor (leftField);
+      leftLabel.setText (bundle.getString( "SICE_Left" ));
   
       gridBagConstraints1 = new java.awt.GridBagConstraints ();
       gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -157,6 +161,8 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
       gridBagConstraints1.weightx = 1.0;
       jPanel2.add (leftField, gridBagConstraints1);
   
+      bottomLabel.setLabelFor (bottomField);
+      bottomLabel.setText (bundle.getString( "SICE_Bottom" ));
   
       gridBagConstraints1 = new java.awt.GridBagConstraints ();
       gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -176,6 +182,8 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
       gridBagConstraints1.weightx = 1.0;
       jPanel2.add (bottomField, gridBagConstraints1);
   
+      rightLabel.setLabelFor (rightField);
+      rightLabel.setText (bundle.getString( "SICE_Right" ));
   
       gridBagConstraints1 = new java.awt.GridBagConstraints ();
       gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
@@ -227,6 +235,7 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
 
 /*
  * Log
+ *  2    Gandalf-post-FCS1.1         3/23/00  Petr Nejedly    Added mising labels
  *  1    Gandalf-post-FCS1.0         3/10/00  Petr Nejedly    initial revision
  * $
  */
