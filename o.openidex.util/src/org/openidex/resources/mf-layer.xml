@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -17,36 +17,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-  <!-- DTD PROCESSORS ====================================================== -->
-
-   <folder name="xml">
-        <folder name="entities">
-            <folder name="NetBeans_IDE" >
-                <!-- public ID defined by LookXMLProcessor -->
-                <file name="DTD_Looks" url="nbresloc:/org/openidex/nodes/looks/resources/look.dtd" />
-            </folder>    
-        </folder>
-        <folder name="lookups">
-            <folder name="NetBeans_IDE">               
-                <file name="DTD_Looks.instance">
-                    <attr name="instanceClass" stringvalue="org.openide.loaders.Environment$Provider" />
-                    <attr name="instanceCreate" newvalue="org.openidex.nodes.looks.LookEnvironmentProvider" />
-                </file>
-            </folder>
-        </folder>
-    </folder>   
-
   <!-- SERVICES ============================================================ -->
 
    <folder name="Services">	
-    <folder name="Looks">
-		<attr name="hidden" boolvalue="true" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openidex/nodes/looks/resources/LookFolder.gif"/>
-
-		<!-- Folder which should contain the look pool -->
-
-	</folder>
-
         <folder name="SearchType">
             <attr name="hidden" boolvalue="true"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.openidex.search.Bundle"/>

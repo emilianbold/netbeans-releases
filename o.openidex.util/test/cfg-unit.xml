@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -28,9 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="ide" name="testbag_1" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openidex/nodes/looks/*.class"/>
-                <exclude name="org/openidex/nodes/looks/LookNodeTest.class/testGetActions"/>
-                <exclude name="org/openidex/nodes/looks/LookNodeTest.class/testGetPropertySets"/>
             </patternset>
         </testset>
     </testbag>
@@ -38,8 +35,6 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="failing" executor="ide" name="testbag_2" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/openidex/nodes/looks/LookNodeTest.class/testGetActions"/>
-                <include name="org/openidex/nodes/looks/LookNodeTest.class/testGetPropertySets"/>
             </patternset>
         </testset>
     </testbag>

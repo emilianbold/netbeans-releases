@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="Build openidex module API documentation..."/>
     <mkdir dir="javadoc"/>
     <javadoc destdir="javadoc"
-             packagenames="org.netbeans.api.looks,org.netbeans.modules.looks,org.netbeans.spi.looks,org.openidex.nodes.looks,org.openidex.search"
+             packagenames="org.openidex.search"
              doctitle="NetBeans openidex module APIs"
              windowtitle="NetBeans openidex module APIs"
              bottom="${apis-footer}"
