@@ -579,14 +579,40 @@ public class EditorOperator extends TopComponentOperator {
      */
     public Object[] getAnnotations() {
         Document doc = txtEditorPane().getDocument();
-        DataObject od = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
-        Set set = ((LineCookie)od.getCookie(LineCookie.class)).getLineSet();
+        DataObject dob = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+        
+        // get line annotations
+        Set set = ((LineCookie)dob.getCookie(LineCookie.class)).getLineSet();
         Iterator iter = set.getLines().iterator();
-        List result = new ArrayList();
+        ArrayList result = new ArrayList();
         while(iter.hasNext()) {
             result.addAll(getAnnotations((Line)iter.next()));
         }
-        return result.toArray(new Annotation[0]);
+
+        // get parser annotations
+        Class javaEditorClass = null;
+        try {
+            javaEditorClass = Class.forName("org.netbeans.modules.java.JavaEditor");
+        } catch (ClassNotFoundException e) {
+            // print only warning. Class JavaEditor don't need to be present when 
+            // java module is uninstalled.
+            getOutput().printLine("WARNING: Class org.netbeans.modules.java.JavaEditor not found.");
+        }
+        Object javaEditorInstance = dob.getCookie(javaEditorClass);
+        if(javaEditorInstance != null) {
+            ArrayList parserAnnotations;
+            try {
+                java.lang.reflect.Field annot = javaEditorClass.getDeclaredField("annotations");
+                annot.setAccessible(true);
+                parserAnnotations = (ArrayList)annot.get(javaEditorInstance);
+            } catch (Exception e) {
+                throw new JemmyException("Get annotations field failed.", e);
+            }
+            result.addAll(parserAnnotations);
+        }
+       
+        // return all line and parser annotations together
+        return result.toArray(new Annotation[result.size()]);
     }
     
     /** Returns a string uniquely identifying annotation. For editor bookmark
