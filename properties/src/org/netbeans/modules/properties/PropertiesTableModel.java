@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -31,14 +33,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.datatransfer.*;
 import org.openide.actions.InstantiateAction;
 import org.openide.util.HelpCtx;
-import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.*;
+
 
 /** Model for the properties edit table
 *
@@ -47,17 +48,14 @@ import org.openide.*;
 public class PropertiesTableModel extends AbstractTableModel {
 
     /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -7882925922830244768L;
+    static final long serialVersionUID = -7882925922830244768L;
 
     /** Main dataobject */
     PropertiesDataObject obj;
 
-    /** Listens to changes on the underlying dataobject */
-    private PropertyChangeListener pcl;
     /** Listens to changes on the bundle structure */
     private PropertyBundleListener pbl;
 
-    static final long serialVersionUID =23879742006423050L;
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.
     * @param obj object to work with
@@ -66,19 +64,6 @@ public class PropertiesTableModel extends AbstractTableModel {
     public PropertiesTableModel (PropertiesDataObject obj) {
         super ();
         this.obj = obj;
-
-        // listener for the DataObject
-        pcl = new PropertyChangeListener () {
-
-                  public void propertyChange(PropertyChangeEvent evt) {
-                      // PENDING - should be finer
-                      if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
-                          fireTableStructureChanged();
-                      }
-                  }
-
-              };
-        obj.getBundleStructure().addPropertyChangeListener(new WeakListener.PropertyChange(pcl));
 
         // listener for the BundleStructure
         pbl = new TablePropertyBundleListener();
@@ -93,19 +78,18 @@ public class PropertiesTableModel extends AbstractTableModel {
         public void bundleChanged(PropertyBundleEvent evt) {
             // PENDING - should be maybe even finer
             switch (evt.getChangeType()) {
-                // structure changed
+            // structure changed
             case PropertyBundleEvent.CHANGE_STRUCT:
                 cancelEditingInTables(getDefaultCancelSelector());
-                fireTableStructureChanged();
-                //System.out.println(PropertiesTableModel.this.toString());
+                fireTableStructureChanged(); 
                 break;
-                // all items changed (keyset)
+            // all items changed (keyset)
             case PropertyBundleEvent.CHANGE_ALL:
                 cancelEditingInTables(getDefaultCancelSelector());
                 fireTableDataChanged();
                 //System.out.println(PropertiesTableModel.this.toString());
                 break;
-                // file changed
+            // file changed
             case PropertyBundleEvent.CHANGE_FILE:
                 final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
                 if (index == -1) {
@@ -123,7 +107,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 fireTableColumnChanged(index + 1);
                 //System.out.println(PropertiesTableModel.this.toString());
                 break;
-                // one item changed
+            // one item changed
             case PropertyBundleEvent.CHANGE_ITEM:
                 final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
                 final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
@@ -273,8 +257,9 @@ public class PropertiesTableModel extends AbstractTableModel {
                         item.setComment(((StringPair)aValue).getComment());
                     }
                     else {
-                        if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))
+                        if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
                             ps.addItem(key, UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
+                        }
                     }
                 }
             }
@@ -419,7 +404,3 @@ public class PropertiesTableModel extends AbstractTableModel {
     } // end of inner class
 
 }
-
-/*
- * <<Log>>
- */
