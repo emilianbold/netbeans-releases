@@ -35,8 +35,8 @@ Microsystems, Inc. All Rights Reserved.
             <!--Setting java and javac default location -->
             <property name="platforms.${{platform.active}}.javac" value="${{platform.home}}/bin/javac"/>
             <property name="platforms.${{platform.active}}.java" value="${{platform.home}}/bin/java"/>
-            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->            
-            <property name="file.tmp" location="${{java.io.tmpdir}}/platform.properties"/>
+            <!-- XXX Ugly but Ant does not yet support recursive property evaluation: -->
+            <tempfile property="file.tmp" prefix="platform" suffix=".properties"/>
             <echo file="${{file.tmp}}">
                 platform.home=$${platforms.${platform.active}.home}
                 platform.bootcp=$${platforms.${platform.active}.bootclasspath}                
