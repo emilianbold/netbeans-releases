@@ -31,6 +31,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
   static ResourceBundle bundle = NbBundle.getBundle (
     RectangleCustomEditor.class);
 
+static final long serialVersionUID =-9015667991684634296L;
   /** Initializes the Form */
   public RectangleCustomEditor(RectangleEditor editor) {
     initComponents ();
@@ -210,6 +211,8 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
 
 /*
  * Log
+ *  9    Gandalf   1.8         8/18/99  Ian Formanek    Generated serial version
+ *       UID
  *  8    Gandalf   1.7         8/18/99  Ian Formanek    Fixed bug 2322 - Some PE
  *       couldn't be initialized - en exception is issued
  *  7    Gandalf   1.6         7/8/99   Jesse Glick     Context help.
