@@ -27,7 +27,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
 /**
- * Let Swing's Document looks like InputSource.
+ * Integrate NetBeans widely used Swing's {@link Document} with SAX API's.
+ * Let it look like {@link InputSource}.
  *
  * @author  Petr Kuzel
  * @deprecated XML tools API candidate
@@ -37,23 +38,40 @@ public final class DocumentInputSource extends InputSource {
     private final Document doc;
      
     /** 
-     * Creates a new instance of DocumentInputSource. Callie should
-     * set system ID if avalable otherwise default one is derived.
+     * Creates new instance of <code>DocumentInputSource</code>. Client should
+     * set system ID if available otherwise default one is derived.
      * @param doc Swing document used to be wrapped
+     * @see   #getSystemId()
      */
     public DocumentInputSource(Document doc) {
         this.doc = doc;
     }
 
+    // inherit JavaDoc
     public Reader getCharacterStream() {
         String text = documentToString(doc);
         return new StringReader(text);
     }
-    
-    public void setCharacterStream(Reader reader) {
+
+    /**
+     * This <code>InputSource</code> is backended by Swing's <code>Document</code>.
+     * Consequently its character stream is read-only, it
+     * always reads content of associted <code>Document</cpde>.
+     */
+    public final void setCharacterStream(Reader reader) {
         // do nothing
     }
-    
+
+    /**
+     * Get InputSource system ID. Use ordered logic:
+     * <ul>
+     *  <li>use client's <code>setSystemId()</code>, or
+     *  <li>try to derive it from <code>Document</code>
+     *      <p>e.g. look at <code>Document.StreamDescriptionProperty</code> for
+     *      {@link DataObject} and use URL of its primary file.
+     * </ul>
+     * @return entity system Id or <code>null</code>
+     */
     public String getSystemId() {
         
         String system = super.getSystemId();;
@@ -107,6 +125,9 @@ public final class DocumentInputSource extends InputSource {
         
     }
     
+    /**
+     * For debugging purposes only.
+     */
     public String toString() {
         return "DocumentInputSource SID:" + getSystemId();
     }

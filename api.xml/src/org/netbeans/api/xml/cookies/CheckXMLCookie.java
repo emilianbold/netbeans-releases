@@ -18,10 +18,13 @@ import org.openide.nodes.Node;
 import org.netbeans.api.xml.parsers.ProcessorNotifier;
 
 /**
- * Fast XML parsed entity syntax checker.
+ * Fast (and preferably standalone mode) XML parsed entity syntax checker.
  * <p>Implemenmtation should follow XML specification for non-validating
- * processors. It is allowed to extend the contract to support parsed entities.
+ * processors. Implementation is allowed to support any XML parsed entities.
  * It must not change UI state.
+ * <p>
+ * It should be gracefully served by all data objects and explorer nodes
+ * representing non-validateable XML resources.
  *
  * @author      Petr Kuzel
  * @deprecated  XML tools API candidate

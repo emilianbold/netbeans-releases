@@ -25,6 +25,9 @@ import org.netbeans.api.xml.parsers.ProcessorNotifier;
 
 /**
  * Transform this object by XSL Transformation.
+ * <p>
+ * It should be gracefully served by all data objects and explorer nodes
+ * representing XML documents.
  *
  * @author Libor Kramolis
  * @deprecated XML tools API candidate

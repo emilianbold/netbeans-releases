@@ -20,7 +20,7 @@ import org.netbeans.modules.xml.catalog.spi.*;
 import org.netbeans.modules.xml.catalog.lib.*;
 import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 
-import org.netbeans.api.xml.services.SourceResolver;
+import org.netbeans.spi.xml.services.*;
 
 /**
  * An entity resolver that can resolve all registrations
@@ -34,12 +34,16 @@ import org.netbeans.api.xml.services.SourceResolver;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntityResolver extends SourceResolver {
+public class CatalogEntityResolver extends UsersCatalogProvider implements EntityResolver {
 
     /** Creates new CatalogEntityResolver */
     public CatalogEntityResolver() {
     }
 
+    public EntityResolver getEntityResolver() {
+        return this;
+    }
+    
     // SAX interface method implementation
     public InputSource resolveEntity(String publicId,String systemId) 
         throws SAXException, IOException {
@@ -99,5 +103,5 @@ public class CatalogEntityResolver extends SourceResolver {
         
         return ret;
     }    
-    
+
 }

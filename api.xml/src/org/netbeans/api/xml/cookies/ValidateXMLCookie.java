@@ -23,6 +23,9 @@ import org.netbeans.api.xml.parsers.ProcessorNotifier;
  * conformance. It is allowed to extend the contract to support domain
  * specifics semantics checks. It must not change UI state.
  * <p>
+ * It should be gracefully served by all data objects and explorer nodes
+ * representing validateable XML resources.
+ * <p>
  * <h3>Use Cases</h3>
  * <ul>
  * <li><b>Provider</b> needs to define domain specifics semantics checks such as

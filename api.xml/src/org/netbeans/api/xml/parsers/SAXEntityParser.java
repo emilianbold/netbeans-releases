@@ -19,7 +19,7 @@ import org.xml.sax.*;
 
 /**
  * SAX parser wrapper allowing to parse parsed XML entities (including DTDs) for 
- * wellformedness.
+ * wellformedness. 
  * <p>
  * Default implementation cannot be used for parsing of XML document entities!
  * It wraps client's parser that it actually used for performing the parsing task.
@@ -65,7 +65,8 @@ public class SAXEntityParser implements XMLReader {
 
     /** 
      * Creates a new instance of general entity parser.
-     * @param peer parser that will be used for parsing
+     * @param peer parser that will be used for parsing. Wrapped parser is 
+     * exclusively owned by this class no other clients can share it.
      */
     public SAXEntityParser(XMLReader peer) {
         this( peer, true);
@@ -84,7 +85,8 @@ public class SAXEntityParser implements XMLReader {
     }
 
     /**
-     * Start entity parsing using peer parser.
+     * Start entity parsing using peer parser. Staring from this moment
+     * all other methods calls are not supported.
      * @param entity entity input source
      */
     public void parse( InputSource entity) throws IOException, SAXException {     
