@@ -54,7 +54,7 @@ public class TreeElementBeanInfo extends SimpleBeanInfo {
             properties[PROPERTY_attributes].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_attributes" ) );
             properties[PROPERTY_attributes].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_attributes" ) );
             properties[PROPERTY_attributes].setPropertyEditorClass ( TreeElementAttributeListEditor.class );
-            properties[PROPERTY_QName] = new PropertyDescriptor ( "QName", TreeElement.class, "getQName", "setQName" ); // NOI18N
+            properties[PROPERTY_QName] = new PropertyDescriptor ( "tagName", TreeElement.class, "getQName", "setQName" ); // NOI18N
             properties[PROPERTY_QName].setDisplayName ( Util.getString ( "PROP_TreeElementBeanInfo_QName" ) );
             properties[PROPERTY_QName].setShortDescription ( Util.getString ( "HINT_TreeElementBeanInfo_QName" ) );
 
