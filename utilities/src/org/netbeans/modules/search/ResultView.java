@@ -236,9 +236,9 @@ final class ResultView extends TopComponent
     }
     
     /** Overriden to explicitely set persistence type of ResultView
-     * to PERSISTENCE_ALWAYS */
+     * to PERSISTENCE_NEVER */
     public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;
+        return TopComponent.PERSISTENCE_NEVER;
     }
     
     /**
