@@ -417,7 +417,11 @@ final class J2SESourceRootsUi {
             else {
                 displayName = srPath;
             }
-            return super.getTableCellRendererComponent(table, displayName, isSelected, hasFocus, row, column);
+            Component c = super.getTableCellRendererComponent(table, displayName, isSelected, hasFocus, row, column);
+            if (c instanceof JComponent) {
+                ((JComponent) c).setToolTipText (displayName);
+            }
+            return c;
         }                        
         
     }
