@@ -138,8 +138,8 @@ class JavaCodeGenerator extends CodeGenerator {
             this.formModel = formModel;
             formEditorSupport = FormEditorSupport.getSupport(formModel);
 
-            if (!formEditorSupport.getFormDataObject().getPrimaryFile()
-                  .isReadOnly())
+            if (formEditorSupport.getFormDataObject().getPrimaryFile()
+                  .canWrite())
             {
                 canGenerate = true;
                 formModel.addFormModelListener(new FormListener());
