@@ -252,8 +252,8 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
             if (o instanceof PoolTcpConnector) {
                 org.apache.tomcat.core.ServerConnector conn = (PoolTcpConnector)o;
                 conn.setAttribute (PoolTcpConnector.MIN_SPARE_THREADS, "0");
-                conn.setAttribute (PoolTcpConnector.MAX_SPARE_THREADS, "0");
-                conn.setAttribute (PoolTcpConnector.MAX_THREADS, "2");
+                conn.setAttribute (PoolTcpConnector.MAX_SPARE_THREADS, "1");
+                conn.setAttribute (PoolTcpConnector.MAX_THREADS, "3");
             }
         }
         

@@ -109,6 +109,7 @@ public class WrapperServlet extends NbBaseServlet {
 
             while ((len = in.read (buff)) != -1) {
                 out.print (new String (buff, 0, len));
+                out.flush();
             }
             in.close ();
 
