@@ -23,6 +23,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.Action;
@@ -70,12 +71,15 @@ import org.openidex.search.SearchInfoFactory;
 final class PackageViewChildren extends Children.Keys/*<String>*/ implements FileChangeListener, ChangeListener, Runnable {
     
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
+    private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
+    
     private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
+        
     static final String PRIMARY_TYPE = "application";   //NOI18N
     static final String SUBTYPE = "x-java-org-netbeans-modules-java-project-packagenodednd";    //NOI18N
     static final String MASK = "mask";  //NOI18N
 
-    private java.util.Map/*<String,NODE_NOT_CREATED|PackageNode>*/ names2nodes;
+    private java.util.Map/*<String,NODE_NOT_CREATED|NODE_NOT_CREATED_EMPTY|PackageNode>*/ names2nodes;
     private final FileObject root;
     private FileChangeListener wfcl;    // Weak listener on the system filesystem
     private ChangeListener wvqcl;       // Weak listener on the VisibilityQuery
@@ -85,6 +89,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
      * @param root the folder where sources start (must be a package root)
      */    
     public PackageViewChildren(FileObject root) {
+        
+        // Sem mas dat cache a bude to uplne nejrychlejsi na svete
+        
         if (root == null) {
             throw new NullPointerException();
         }
@@ -98,7 +105,17 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     protected Node[] createNodes( Object obj ) {
         FileObject fo = root.getFileObject( (String)obj );
         if ( fo != null ) {
-            PackageNode n = new PackageNode( root, DataFolder.findFolder( fo ) );
+            Object o = names2nodes.get( obj );
+            PackageNode n;
+            if ( o == NODE_NOT_CREATED ) {
+                n = new PackageNode( root, DataFolder.findFolder( fo ), false );
+            }
+            else if ( o ==  NODE_NOT_CREATED_EMPTY ) {
+                n = new PackageNode( root, DataFolder.findFolder( fo ), true );
+            }
+            else {
+                n = new PackageNode( root, DataFolder.findFolder( fo ) );
+            }            
             names2nodes.put( obj, n );
             return new Node[] {n};
         }
@@ -159,7 +176,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     }
     
     // Private methods ---------------------------------------------------------
-    
+        
     private void refreshKeys() {
         setKeys( names2nodes.keySet() );
     }
@@ -175,33 +192,11 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     /**
      * Collect all recursive subfolders, except those which have subfolders
      * but no files.
-     */
+     */    
     private void findNonExcludedPackages( FileObject fo ) {
-        assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
-        
-        if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
-            return; // Don't show hidden packages
-        }
-        
-        FileObject[] kids = fo.getChildren();
-        boolean hasSubfolders = false;
-        boolean hasFiles = false;
-        for (int i = 0; i < kids.length; i++) {            
-            // XXX could use PackageDisplayUtils.isSignificant here
-            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
-                if (kids[i].isFolder() ) {
-                    findNonExcludedPackages( kids[i] );
-                    hasSubfolders = true;
-                } 
-                else {
-                    hasFiles = true;
-                }
-            }
-        }
-        if (hasFiles || !hasSubfolders) {
-            add( fo );
-        }
+        PackageView.findNonExcludedPackages( this, fo );
     }
+    
     
     /** Finds all empty parents of given package and deletes them
      */
@@ -229,12 +224,13 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }
     }
     
-    
-    private void add( FileObject fo ) {
+    // Non private only to be able to have the findNonExcludedPackages impl
+    // in on place (PackageView) 
+    void add( FileObject fo, boolean empty ) {
         String path = FileUtil.getRelativePath( root, fo );
         assert path != null : "Adding wrong folder " + fo;
         if ( get( fo ) == null ) { 
-            names2nodes.put( path, NODE_NOT_CREATED );
+            names2nodes.put( path, empty ? NODE_NOT_CREATED_EMPTY : NODE_NOT_CREATED );
         }
     }
 
@@ -262,7 +258,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         String path = FileUtil.getRelativePath( root, fo );        
         assert path != null : "Asking for wrong folder" + fo;
         Object o = names2nodes.get( path );
-        return o == NODE_NOT_CREATED ? null : (PackageNode)o;
+        return !isNodeCreated( o ) ? null : (PackageNode)o;
     }
     
     private boolean contains( FileObject fo ) {
@@ -277,6 +273,10 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         return names2nodes.get( path ) != null;
     }
     
+    private boolean isNodeCreated( Object o ) {
+        return o instanceof Node;
+    }
+    
     private PackageNode updatePath( String oldPath, String newPath ) {
         Object o = names2nodes.get( oldPath );
         if ( o == null ) {
@@ -284,7 +284,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         }        
         names2nodes.remove( oldPath );
         names2nodes.put( newPath, o );
-        return o == NODE_NOT_CREATED ? null : (PackageNode)o;
+        return !isNodeCreated( o ) ? null : (PackageNode)o;
     }
     
     // Implementation of FileChangeListener ------------------------------------
@@ -297,7 +297,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         FileObject fo = fe.getFile();        
         if ( FileUtil.isParentOf( root, fo ) && VisibilityQuery.getDefault().isVisible( fo ) ) {
             cleanEmptyKeys( fo );                
-            //add( fo );
+            add( fo, false );
             findNonExcludedPackages( fo );
             refreshKeys();
         }
@@ -312,7 +312,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
             }
             PackageNode n = get( parent );
             if ( n == null && !contains( parent ) ) {                
-                add( parent );
+                add( parent, false );
                 refreshKeys();
             }
             else if ( n != null ) {
@@ -339,7 +339,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     // Candidate for adding
                     if ( !toBeRemoved( parent ) ) {
                         // System.out.println("ADDING PARENT " + parent );
-                        add( parent );
+                        add( parent, true );
                     }
                 }
                 refreshKeys();
@@ -481,8 +481,12 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
         private static Action actions[];
         
         public PackageNode( FileObject root, DataFolder dataFolder ) {
+            this( root, dataFolder, isEmpty( dataFolder ) );
+        }
+        
+        public PackageNode( FileObject root, DataFolder dataFolder, boolean empty ) {    
             super( dataFolder.getNodeDelegate(), 
-                   isEmpty( dataFolder ) ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
+                   empty ? Children.LEAF : dataFolder.createNodeChildren( NO_FOLDERS_FILTER ),
                    new ProxyLookup(new Lookup[] {
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
@@ -730,7 +734,7 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                 // ???
                 return "";
             }
-            return PackageDisplayUtils.getDisplayLabel(folder, path.replace('/', '.'));
+            return PackageDisplayUtils.getDisplayLabel( path.replace('/', '.'));
         }
         
         public String getShortDescription() {

@@ -46,7 +46,7 @@ public final class PackageDisplayUtils {
      * @param pkgname the dot-separated package name (<code>""</code> for default package)
      * @return an appropriate display label for it
      */
-    public static String getDisplayLabel(FileObject pkg, String pkgname) {
+    public static String getDisplayLabel(String pkgname) {
         return computePackageName(pkgname, TRUNCATE_PACKAGE_NAMES);
     }
     
@@ -133,7 +133,7 @@ public final class PackageDisplayUtils {
      * Check whether a package is empty (devoid of files except for subpackages).
      * @param recurse specifies whether to check if subpackages are empty too.
      */
-    public static boolean isEmpty( FileObject fo, boolean recurse ) {    
+    public static boolean isEmpty( FileObject fo, boolean recurse ) {            
         FileObject[] kids = fo.getChildren();
         for( int i = 0; i < kids.length; i++ ) {
             if ( !kids[i].isFolder() && VisibilityQuery.getDefault().isVisible( kids[i] ) ) {

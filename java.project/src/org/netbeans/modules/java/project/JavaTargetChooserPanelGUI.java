@@ -20,10 +20,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
@@ -37,6 +40,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Permits user to select a package to place a Java class (or other resource) into.
@@ -57,6 +61,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     private final List/*<ChangeListener>*/ listeners = new ArrayList();
     private boolean isPackage;
     private SourceGroup groups[];
+    private boolean ignoreRootCombo;
     
     /** Creates new form SimpleTargetChooserGUI */
     public JavaTargetChooserPanelGUI( Project p, SourceGroup[] groups, Component bottomPanel, boolean isPackage ) {
@@ -65,6 +70,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         this.groups = groups;
         
         initComponents();        
+                
         if ( isPackage ) {
             packageComboBox.setVisible( false );
             packageLabel.setVisible( false );
@@ -92,7 +98,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             packageComboBox.addActionListener( this );
         }
         
-        rootComboBox.setRenderer(new GroupListCellRenderer());
+        rootComboBox.setRenderer(new GroupListCellRenderer());        
         packageComboBox.setRenderer(PackageView.listRenderer());
         rootComboBox.addActionListener( this );
         
@@ -102,7 +108,6 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     public void initValues( FileObject template, FileObject preselectedFolder ) {
         assert project != null : "Project must be specified."; // NOI18N
-        
         // Show name of the project
         projectTextField.setText( ProjectUtils.getInformation(project).getDisplayName() );
         assert template != null;
@@ -119,8 +124,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         // Setup comboboxes 
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
         SourceGroup preselectedGroup = getPreselectedGroup( preselectedFolder );
-        rootComboBox.setSelectedItem( preselectedGroup );
-        updatePackages();                
+        ignoreRootCombo = true;
+        rootComboBox.setSelectedItem( preselectedGroup );                       
+        ignoreRootCombo = false;
         Object preselectedPackage = getPreselectedPackage(preselectedGroup, preselectedFolder, packageComboBox.getModel());
         if ( isPackage ) {
             String docName = preselectedPackage == null || preselectedPackage.toString().length() == 0 ? 
@@ -135,7 +141,8 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             documentNameTextField.setSelectionStart( docNameLen - defPackageNameLen );                
         } else {
             if (preselectedPackage != null) {
-                packageComboBox.setSelectedItem( preselectedPackage );
+                // packageComboBox.setSelectedItem( preselectedPackage );
+                packageComboBox.getEditor().setItem( preselectedPackage );
             }
             if (template != null) {
             	if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
@@ -143,6 +150,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     documentNameTextField.selectAll ();
                 }
             }
+        }
+        if ( !isPackage ) {
+            updatePackages( false );
         }
         // Determine the extension
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -362,7 +372,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
         
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( rootComboBox == e.getSource() ) {            
-            updatePackages();
+            if ( !ignoreRootCombo && !isPackage ) {
+                updatePackages( true );
+            }
             updateText();
         }
         else if ( packageComboBox == e.getSource() ) {
@@ -377,7 +389,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // DocumentListener implementation -----------------------------------------
     
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {                
+    public void changedUpdate(javax.swing.event.DocumentEvent e) {
         updateText();
         fireChange();        
     }    
@@ -392,10 +404,44 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
     
     // Private methods ---------------------------------------------------------
         
-    private void updatePackages() {
-        packageComboBox.setModel(PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem()));
-    }
+    private RequestProcessor.Task updatePackagesTask = null;
     
+    private static final ComboBoxModel WAIT_MODEL = new DefaultComboBoxModel( 
+        new String[] {
+            NbBundle.getMessage( JavaTargetChooserPanelGUI.class, "LBL_JavaTargetChooserPanelGUI_PackageName_PleaseWait" ) // NOI18N
+        } 
+    ); 
+    
+    private void updatePackages( final boolean clean ) {
+        WAIT_MODEL.setSelectedItem( packageComboBox.getEditor().getItem() );
+        packageComboBox.setModel( WAIT_MODEL );
+        
+        if ( updatePackagesTask != null ) {
+            updatePackagesTask.cancel();
+        }
+        
+        updatePackagesTask = new RequestProcessor( "ComboUpdatePackages" ).post(
+            new Runnable() {
+            
+                private ComboBoxModel model;
+            
+                public void run() {
+                    if ( !SwingUtilities.isEventDispatchThread() ) {
+                        model = PackageView.createListView((SourceGroup) rootComboBox.getSelectedItem());                        
+                        SwingUtilities.invokeLater( this );
+                    }
+                    else {
+                        if ( !clean ) {
+                            model.setSelectedItem( packageComboBox.getEditor().getItem() );
+                        }
+                        packageComboBox.setModel( model );
+                    }
+                }
+            }
+        );
+                
+    }
+        
     private File getFolder() {
         FileObject rootFo = getRootFolder();
         File rootFile = FileUtil.toFile( rootFo );
@@ -457,8 +503,9 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
             return null; 
         }        
         else {
-            // Find the right item.
+            // Find the right item.            
             String name = relPath.replace('/', '.');
+            /*
             int max = model.getSize();
             for (int i = 0; i < max; i++) {
                 Object item = model.getElementAt(i);
@@ -466,6 +513,7 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                     return item;
                 }
             }
+             */
             // Didn't find it.
             // #49954: should nonetheless show something in the combo box.
             return name;

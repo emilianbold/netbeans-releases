@@ -14,11 +14,18 @@
 package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
+import java.awt.Image;
+import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -28,6 +35,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.PackageDisplayUtils;
 import org.netbeans.modules.java.project.PackageViewSettings;
 import org.openide.filesystems.FileObject;
@@ -97,22 +105,78 @@ public class PackageView {
      * @return a model of its packages
      * @since org.netbeans.modules.java.project/1 1.3 
      */
-    public static ComboBoxModel createListView(SourceGroup group) {
-        DefaultListModel model = new DefaultListModel();
-        SortedSet/*<PackageItem>*/ items = new TreeSet();
-        FileObject root = group.getRootFolder();
-        if (PackageDisplayUtils.isSignificant(root)) {
-            items.add(new PackageItem(group, root));
+    
+    public static ComboBoxModel createListView(SourceGroup group) {        
+        TreeSet data = new TreeSet();        
+        findNonExcludedPackages( data, group.getRootFolder(), group );
+        return new DefaultComboBoxModel( new Vector( data) );        
+    }
+    
+    /** Fills given collection with flatened packages under given folder
+     *@param target The collection to be filled
+     *@param fo The folder to be scanned
+     *@param group if null the collection will be filled with file objects if 
+     *       non null PackageItems will be created.
+     */    
+    static void findNonExcludedPackages( PackageViewChildren children, FileObject fo ) {
+        findNonExcludedPackages( children, null, fo, null );
+    }
+    
+    static void findNonExcludedPackages( Collection target, FileObject fo, SourceGroup group ) {
+        findNonExcludedPackages( null, target, fo, group );
+    }
+     
+    
+    private static void findNonExcludedPackages( PackageViewChildren children, Collection target, FileObject fo, SourceGroup group ) {
+        
+        assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
+               
+        if ( !VisibilityQuery.getDefault().isVisible( fo ) ) {
+            return; // Don't show hidden packages
         }
-        Enumeration/*<FileObject>*/ files = root.getChildren(true);
-        while (files.hasMoreElements()) {
-            FileObject f = (FileObject) files.nextElement();
-            if (f.isFolder() && PackageDisplayUtils.isSignificant(f)) {
-                items.add(new PackageItem(group, f));
+        
+        FileObject[] kids = fo.getChildren();
+        boolean hasSubfolders = false;
+        boolean hasFiles = false;
+        for (int i = 0; i < kids.length; i++) {            
+            // XXX could use PackageDisplayUtils.isSignificant here
+            if ( VisibilityQuery.getDefault().isVisible( kids[i] ) ) {
+                if (kids[i].isFolder() ) {
+                    findNonExcludedPackages( children, target, kids[i], group );
+                    hasSubfolders = true;
+                } 
+                else {
+                    hasFiles = true;
+                }
             }
         }
-        return new DefaultComboBoxModel(items.toArray(new PackageItem[items.size()]));
+        if (hasFiles || !hasSubfolders) {
+            if ( group != null ) {
+                target.add( new PackageItem(group, fo, !hasFiles ) );
+            }
+            else {
+                children.add( fo, !hasFiles );
+            }
+        }
     }
+         
+//    public static ComboBoxModel createListView(SourceGroup group) {
+//        DefaultListModel model = new DefaultListModel();
+//        SortedSet/*<PackageItem>*/ items = new TreeSet();
+//        FileObject root = group.getRootFolder();
+//        if (PackageDisplayUtils.isSignificant(root)) {
+//            items.add(new PackageItem(group, root));
+//        }
+//        Enumeration/*<FileObject>*/ files = root.getChildren(true);
+//        while (files.hasMoreElements()) {
+//            FileObject f = (FileObject) files.nextElement();
+//            if (f.isFolder() && PackageDisplayUtils.isSignificant(f)) {
+//                items.add(new PackageItem(group, f));
+//            }
+//        }
+//        return new DefaultComboBoxModel(items.toArray(new PackageItem[items.size()]));
+//    }
+    
     
     /**
      * Create a renderer suited to rendering models created using {@link #createListView}.
@@ -165,13 +229,18 @@ public class PackageView {
     /**
      * Model item representing one package.
      */
-    private static final class PackageItem implements Comparable {
+    static final class PackageItem implements Comparable {
         
+        private static IdentityHashMap/*<Image,Icon>*/ image2icon = new IdentityHashMap();
+        
+        private final boolean empty;
         private final FileObject pkg;
         private final String pkgname;
+        private Icon icon;
         
-        public PackageItem(SourceGroup group, FileObject pkg) {
+        public PackageItem(SourceGroup group, FileObject pkg, boolean empty) {
             this.pkg = pkg;
+            this.empty = empty;
             String path = FileUtil.getRelativePath(group.getRootFolder(), pkg);
             assert path != null : "No " + pkg + " in " + group;
             pkgname = path.replace('/', '.');
@@ -182,11 +251,19 @@ public class PackageView {
         }
         
         public String getLabel() {
-            return PackageDisplayUtils.getDisplayLabel(pkg, pkgname);
+            return PackageDisplayUtils.getDisplayLabel(pkgname);
         }
         
         public Icon getIcon() {
-            return new ImageIcon(PackageDisplayUtils.getIcon(pkg, pkgname));
+            if ( icon == null ) {
+                Image image = PackageDisplayUtils.getIcon(pkg, pkgname, empty);                
+                icon = (Icon)image2icon.get( image );
+                if ( icon == null ) {            
+                    icon = new ImageIcon( image );
+                    image2icon.put( image, icon );
+                }
+            }
+            return icon;
         }
 
         public int compareTo(Object obj) {
