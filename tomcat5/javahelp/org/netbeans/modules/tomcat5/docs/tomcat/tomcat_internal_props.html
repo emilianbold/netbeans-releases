@@ -20,20 +20,19 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p><b>To customize a Tomcat Server:</b></p>
 <ol><li>Choose Window <img src="../images/arrow.gif" alt="and choose">&nbsp;Runtime (Ctrl+5)
 from the main menu. The Runtime window appears.</li>
 <li>Expand the Server Registry node in the tree view to view the Tomcat Server nodes.</li>
 <li>Right-click a Tomcat Server's instance and select Properties from the contextual menu.</li></ol>
-<p>A Tomcat Server's instance node has two sections:</p>
+<p>A Tomcat Server's instance property sheet has two sections:</p>
 <h3>Properties Section</h3>
 <ul>
-  <li><b>Server Port.</b> The number of the TCP/IP port that the server listens 
+	<li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
     on. The URL for a web application that is deployed on the server is derived from 
     the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
-  <li><b>Admin Port.</b> The number of the TCP/IP port that the server's administrative 
+  <li><b>Admin Port.</b> Specifies the number of the TCP/IP port that the server's administrative 
     server listens to.</li>
-  <li><b>User.</b> The user name that the IDE uses to log into the server's manager 
+    <li><b>User.</b> Specifies the user name that the IDE uses to log into the server's manager 
     application. The user must be associated with the manager role. The first 
     time the IDE starts the bundled Tomcat server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
@@ -43,19 +42,19 @@ from the main menu. The Runtime window appears.</li>
     The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
   </li>
-  <li><b>Password.</b> The user's password. See the "User" explanation above for details.</li>
-  <li><b>Home Directory.</b> The home directory for the server on your local system. 
+  <li><b>Password.</b> Specifies the user's password. See the explanation for the User property above for details.</li>
+  <li><b>Home Directory.</b> Specifies the home directory for the server on your local system. 
     This property is set when you add a Tomcat server to the Server Registry. 
     This location is where Tomcat expects to find its own binaries and any libraries 
     that are used by web applications but which are not part of Tomcat itself.</li>
-  <li><b>Base Directory.</b> The base directory for the Tomcat server. You can 
+  <li><b>Base Directory.</b> Specifies the base directory for the Tomcat server. You can 
     set this property when you add a Tomcat server to the Server Registry. If 
     you set a base directory, then that is where the Tomcat configuration files 
-    will reside. One reason for specifying a separate base directory is to allow 
+     reside. One reason for specifying a separate base directory is to allow 
     more than one user to use the same server. If no base directory is specified, 
     then the configuration files reside in the home directory.</li>
-  <li><b>Enable HTTP Monitor.</b> Select this checkbox to enable the HTTP Monitor 
-    for web applications executing on the server. When enabling the monitor, you must 
+  <li><b>Enable HTTP Monitor.</b> If selected, this checkbox enables the HTTP Monitor 
+    for web applications executing on the Tomcat Server. When enabling the monitor, you must 
     restart the server in order for the change to take affect. The HTTP Monitor 
     is useful for debugging web applications. If you are using the server for production 
     purposes only, you may want to clear the checkbox to reduce its impact on 
@@ -64,7 +63,7 @@ from the main menu. The Runtime window appears.</li>
     remain deployed to the server.<br> 
     When you disable the HTTP Monitor, you do not need to restart the server for 
     the change to take affect.
-  <li><b>Open Context Log on Run.</b> Select this checkbox to enable the context
+    <li><b>Open Context Log on Run.</b> If selected, this checkbox enables the context
     log to be opened while the web application is being deployed. You can watch
     the stack trace as it builds.</li>
   </li>
@@ -73,16 +72,17 @@ from the main menu. The Runtime window appears.</li>
 <ul>
   <li><b>Debugger Port.</b> Specifies the port number that the server uses for 
     debugging.</li>
-  <li><b>Classic.</b> Select the checkbox to use the &quot;classic&quot; JDK 1.1 
+  <li><b>Classic.</b> If selected, uses the &quot;classic&quot; JDK 1.1 
     JVM for debugging. Clear the box to use HotSpot JVM<b>.</b></li>
-  <li><b>Debugging Type.</b> Choose one of the following types to specify how 
-    the IDE should connect to the server being debugged: 
+  <li><b>Debugging Type.</b> Specifies how 
+  the IDE connects to the server being debugged. You can choose from the
+  following: 
     <ul>
       <li>Socket </li>
       <li>(Windows only) Shared memory</li>
     </ul>
   </li>
-  <li><b>(Windows only) Name.</b> Use this property to specify the identification 
+  <li><b>(Windows only) Name.</b> Specifies the identification 
     string for shared memory access. To change the string, click the ellipsis 
     button (...) to display the Name property editor. In the property editor, 
     type a name, and click OK.</li>

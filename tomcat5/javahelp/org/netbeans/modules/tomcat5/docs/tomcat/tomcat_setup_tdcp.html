@@ -19,8 +19,13 @@
 <p><small> 
 <a href="#seealso">See Also</a> 
 </small></p> 
-<p>Instead of opening a new and separate connection each time you access a database,
-you can pool database connections between an application's current users. For detailed information
+<p>A JDBC connection pool is a group of reusable connections that a
+web server or application server maintains for a particular database.  Applications requesting
+a connection to a database obtain that connection from the pool. 
+When an application closes a connection, the connection is returned to the pool.
+Connection pool properties may vary with different database vendors. Some common 
+properties are the URL for the database name, user name, and password.</p>
+<p> For detailed information
  on Tomcat's database connection pooling functionality, see:
 <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://jakarta.apache.org/commons/dbcp/">
@@ -28,9 +33,12 @@ you can pool database connections between an application's current users. For de
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
 </object></p>
-The first step in creating a Tomcat database connection pool is to create a data source. You
- can do this manually in your <tt>server.xml</tt> or you can use Tomcat's Admin tool to do so.</p>
-<p><b>To add a data source using the Tomcat Admin tool:</b>
+The first step in creating a Tomcat database connection pool is to create JDBC resource (also called a data source). 
+A JDBC resource provides applications with a connection to a database. Typically, there is at least one
+JDBC resource for each database accessed by an application deployed in a domain. It is possible to
+have more than one JDBC resource for a database. You
+can create a JDBC resource manually in your <tt>server.xml</tt> or you can use Tomcat's Admin tool to do so.</p>
+<p><b>To add a JDBC resource using the Tomcat Admin tool:</b>
 <ol><li>Access the Tomcat Admin tool as described in <a href="tomcat_edit_config.html">Reconfiguring a Tomcat Server</a>.</li>	<li>In the Admin tool, click Data Sources.</li>
 <li>Choose Create New Data Source from the Data Source Actions drop down on the right.</li>
 <li>Type values such as the following to define your data source:
@@ -44,7 +52,7 @@ The first step in creating a Tomcat database connection pool is to create a data
 </li>
 <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
 </ol>
-<p><b>To reference a data source from a web application:</b>
+<p><b>To reference a JDBC resource from a web application:</b>
 <ol><li>Expand the project node in the Projects window. Then expand the
 Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
 Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
@@ -71,7 +79,7 @@ if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web ap
 	<pre>    	  &lt;Context path="/Employees"&gt;<br>              &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" <br>               global="jdbc/poolDB"/&gt;<br>              &lt;Logger className="org.apache.catalina.logger.FileLogger" <br>               prefix="Employees" suffix=".log" timestamp="true"/&gt;<br>    	  &lt;/Context&gt;</pre>
 
 		</blockquote></li>
-<li>Finally, <a href="tomcat_use_tdcp.html">use the data source</a> in your web application.</li></ol>
+<li>Finally, <a href="tomcat_use_tdcp.html">use the JDBC resource</a> in your web application.</li></ol>
 
 
 <table>
