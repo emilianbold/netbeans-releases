@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee web-app_2_4.xsd"
+    version="2.4">
+
+    <display-name>JSTL Examples</display-name>
+    <description>
+        Examples for the 'standard' taglib (JSTL)
+    </description>
+
+    <listener>
+      <listener-class>org.apache.taglibs.standard.examples.startup.Init</listener-class>
+    </listener>
+
+    <welcome-file-list>
+      <welcome-file>index.jsp</welcome-file>
+      <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
+
+<!--  FIXME
+    <taglib>
+        <taglib-uri>/jstl-examples-taglib</taglib-uri>
+        <taglib-location>/WEB-INF/jstl-examples.tld</taglib-location>
+    </taglib>
+
+    <taglib>
+        <taglib-uri>http://jakarta.apache.org/taglibs/standard/scriptfree</taglib-uri>
+        <taglib-location>/WEB-INF/scriptfree.tld</taglib-location>
+    </taglib>
+
+    <taglib>
+        <taglib-uri>http://jakarta.apache.org/taglibs/standard/permittedTaglibs</taglib-uri>
+        <taglib-location>/WEB-INF/permittedTaglibs.tld</taglib-location>
+    </taglib>
+-->
+
+</web-app>
