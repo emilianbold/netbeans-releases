@@ -1,4 +1,16 @@
 <?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 
 <filesystem>
@@ -17,9 +29,11 @@
         <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.WinWebBrowser.isHidden"/>
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
       </file>
-      <attr name="IceBrowser.ser/SimpleExtBrowser.ser" boolvalue="true"/>
-      <attr name="IceBrowser.ser/UnixWebBrowser.ser" boolvalue="true"/>
-      <attr name="IceBrowser.ser/WinWebBrowser.ser" boolvalue="true"/>
+      <attr name="SimpleExtBrowser.ser/SwingBrowser.ser" boolvalue="true"/>
+      <attr name="SimpleExtBrowser.ser/IceBrowser.ser" boolvalue="true"/>
+      <attr name="UnixWebBrowser.ser/SimpleExtBrowser.ser" boolvalue="true"/>
+      <attr name="WinWebBrowser.ser/SimpleExtBrowser.ser" boolvalue="true"/>
+      <attr name="UnixWebBrowser.ser/WinWebBrowser.ser" methodvalue="org.netbeans.modules.extbrowser.ExtHtmlBrowser.isUnixFirst"/>
     </folder>
   </folder>
 
