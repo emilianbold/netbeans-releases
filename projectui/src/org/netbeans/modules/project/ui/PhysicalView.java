@@ -318,7 +318,17 @@ public class PhysicalView {
                 while( strtok.hasMoreTokens() ) {
                    path.add( strtok.nextToken() );
                 }
-                path.set( path.size() - 1, fo.getName() );
+                
+                String name = fo.getName();
+                
+                try { 
+                    DataObject dobj = DataObject.find( fo );
+                    name = dobj.getNodeDelegate().getName();
+                }
+                catch( DataObjectNotFoundException e ) {
+                }
+                
+                path.set( path.size() - 1, name );
                                  
                 try {
                     return NodeOp.findPath( root, Collections.enumeration( path ) );
