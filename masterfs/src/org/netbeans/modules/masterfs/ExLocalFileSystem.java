@@ -41,14 +41,15 @@ public class ExLocalFileSystem extends LocalFileSystem {
         return (DefaultAttributes)attr;
     }
     
-    private static class OneFileAttributeAttachedToRoot extends DefaultAttributes {
-        
+    private static class OneFileAttributeAttachedToRoot extends DefaultAttributes {        
+
         public OneFileAttributeAttachedToRoot(
                 AbstractFileSystem.Info info,
                 AbstractFileSystem.Change change,
-                AbstractFileSystem.List list                
+                AbstractFileSystem.List list
                 ) {
-            super(info, change, list, "attributes.xml"); //NOI18N
+            
+            super(info, change, list, Attributes.ATTRNAME); //NOI18N
         }
         
         

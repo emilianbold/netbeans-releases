@@ -36,6 +36,7 @@ import java.util.Enumeration;
  *  
  */
 public class Attributes extends DefaultAttributes {
+    public static String ATTRNAME = "attributes.xml";
     private static final String USERDIR = "netbeans.user";//NOI18N
     private static final String LOCATION = "var";//NOI18N
 
@@ -63,7 +64,19 @@ public class Attributes extends DefaultAttributes {
         synchronized (ExLocalFileSystem.class) {
             if (rootForAttributes == null) {
                 String userDir = System.getProperty(USERDIR);
-                rootForAttributes = new File(userDir, LOCATION);
+                                 
+                if (userDir != null) {
+                    rootForAttributes = new File(userDir, LOCATION);
+                } else {
+                    rootForAttributes = new File(System.getProperty("java.io.tmpdir"));//NOI18N
+                    File tmpAttrs = new File (rootForAttributes, ATTRNAME);
+                    if (tmpAttrs.exists()) {
+                        tmpAttrs.delete();   
+                    }
+                    tmpAttrs.deleteOnExit();
+                }
+                
+                
                 if (!rootForAttributes.exists()) {
                     rootForAttributes.mkdirs();
                 }
@@ -174,7 +187,7 @@ public class Attributes extends DefaultAttributes {
             if (sharedUserAttributes == null) {
                 ExLocalFileSystem exLFs = null;
                 try {
-                    exLFs = ExLocalFileSystem.getInstance(getRootForAttributes());
+                    exLFs = ExLocalFileSystem.getInstance(getRootForAttributes());                    
                 } catch (PropertyVetoException e) {
                     ErrorManager.getDefault().notify(e);
                 } catch (IOException e) {
