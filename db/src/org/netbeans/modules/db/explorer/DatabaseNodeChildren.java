@@ -48,6 +48,7 @@ public class DatabaseNodeChildren extends Children.Array
 		return children;
 	}
 
+/* JST: I do not understand => please correct it yourself, Slavek         
 	protected Node[] createNodes()
 	{
 		Node[] nodeorg = super.createNodes();
@@ -56,6 +57,7 @@ public class DatabaseNodeChildren extends Children.Array
 		if (nodeord != null) Arrays.sort(nodeorg, new NodeComparator(nodeord));
 		return nodeorg;
 	}
+ */        
 
 	class NodeComparator implements Comparator 
 	{
