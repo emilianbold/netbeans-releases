@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.web.project.classpath;
@@ -144,7 +144,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             // Not a source file.
             return null;
         }
-        if (type == 2)
+        if (type == 2 || type == 5)
             type = 0;
         
         ClassPath cp = cache[3+type];
@@ -163,8 +163,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             }
             cache[3+type] = cp;
         }
-        
         return cp;
+        
     }
     
     private ClassPath getRunTimeClasspath(FileObject file) {
@@ -206,7 +206,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
     
     private ClassPath getSourcepath(int type) {
-        if (type < 0 || type > 2) {
+        if ((type < 0 || type > 2) && type != 5) {
             // Unknown.
             return null;
         }
@@ -214,14 +214,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (cp == null) {
             switch (type) {
                 case 0:
+                case 2:    
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots));
                     break;
                 case 1:
                     cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
                     break;
-                case 2:
-                    // TODO We need in the classpath the src.dir as well. 
-                    cp = ClassPathFactory.createClassPath(new JspClassPathImplementation(helper, evaluator));
+                case 5:
+                    cp = ClassPathFactory.createClassPath(new JspSourcePathImplementation(getDocumentBaseDir(), this.sourceRoots));
                     break;
             }
             cache[type] = cp;
