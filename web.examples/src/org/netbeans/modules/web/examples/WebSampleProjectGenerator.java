@@ -64,8 +64,8 @@ public class WebSampleProjectGenerator {
                         Element e = (Element)n;
                         
                         replaceText(e, name);
-                        saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
                     }
+                    saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
                 }
             } catch (Exception e) {
                 throw new IOException(e.toString());
