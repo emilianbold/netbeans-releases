@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -428,6 +428,8 @@ public final class OpenProjectList {
             if ( !openProjects.contains( sp ) ) {
                 openProjects.add( sp );
                 recentProjectsChanged |= recentProjects.remove( sp );
+                // bugfix #56454: open saved files also in subprojects
+                ProjectUtilities.openProjectFiles (sp);
                 notifyOpened(sp);
             }
             recentProjectsChanged |= openSubprojects( sp );            
