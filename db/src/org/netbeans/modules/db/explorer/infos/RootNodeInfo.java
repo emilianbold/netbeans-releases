@@ -106,25 +106,20 @@ public class RootNodeInfo extends DatabaseNodeInfo implements ConnectionOwnerOpe
         if (cons.contains(cinfo))
             throw new DatabaseException(bundle.getString("EXC_ConnectionAlreadyExists"));
 
-        try {
-            DatabaseNode node = getNode();
-            DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
-            ConnectionNodeInfo ninfo = (ConnectionNodeInfo) createNodeInfo(this, DatabaseNode.CONNECTION);
-            ninfo.setName(cinfo.getName());
-            ninfo.setUser(cinfo.getUser());
-            ninfo.setDatabase(cinfo.getDatabase());
-            ninfo.setSchema(cinfo.getSchema());
-            ninfo.setDatabaseConnection(cinfo);
-            cons.add(cinfo);
-            DatabaseNode cnode = children.createSubnode(ninfo, true);
-            if (((DatabaseConnection) cinfo).getConnection() == null)
-                ((ConnectionNodeInfo) cnode.getInfo()).connect();
-            else
-                ((ConnectionNodeInfo) cnode.getInfo()).connect(cinfo);
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            throw new DatabaseException(e.getMessage());
-        }
+        DatabaseNode node = getNode();
+        DatabaseNodeChildren children = (DatabaseNodeChildren) node.getChildren();
+        ConnectionNodeInfo ninfo = (ConnectionNodeInfo) createNodeInfo(this, DatabaseNode.CONNECTION);
+        ninfo.setName(cinfo.getName());
+        ninfo.setUser(cinfo.getUser());
+        ninfo.setDatabase(cinfo.getDatabase());
+        ninfo.setSchema(cinfo.getSchema());
+        ninfo.setDatabaseConnection(cinfo);
+        cons.add(cinfo);
+        DatabaseNode cnode = children.createSubnode(ninfo, true);
+        if (((DatabaseConnection) cinfo).getConnection() == null)
+            ((ConnectionNodeInfo) cnode.getInfo()).connect();
+        else
+            ((ConnectionNodeInfo) cnode.getInfo()).connect(cinfo);
     }
 
     public void addOrConnectConnection(DBConnection conn) throws DatabaseException {

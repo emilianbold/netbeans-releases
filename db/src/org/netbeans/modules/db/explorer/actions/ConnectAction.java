@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.db.DatabaseException;
@@ -153,6 +154,7 @@ public class ConnectAction extends DatabaseAction {
                         try {
                             nfo.finishConnect(null, dbcon, dbcon.getConnection());
                         } catch (DatabaseException exc) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                             String message = MessageFormat.format(bundle.getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                             return;
@@ -189,6 +191,7 @@ public class ConnectAction extends DatabaseAction {
                                 try {
                                     nfo.finishConnect(null, dbcon, dbcon.getConnection());
                                 } catch (DatabaseException exc) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                     String message = MessageFormat.format(bundle.getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                     return;
@@ -228,6 +231,7 @@ public class ConnectAction extends DatabaseAction {
                             try {
                                 nfo.finishConnect(null, dbcon, dbcon.getConnection());
                             } catch (DatabaseException exc) {
+                                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
                                 String message = MessageFormat.format(bundle.getString("ERR_UnableToInitializeConnection"), new String[] {exc.getMessage()}); //NOI18N
                                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                                 return;

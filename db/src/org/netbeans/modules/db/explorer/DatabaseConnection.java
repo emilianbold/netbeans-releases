@@ -372,7 +372,10 @@ public class DatabaseConnection implements DBConnection {
             // For Java Studio Enterprise.
             openConnection.disable();
 
-            throw new DDLException(message);
+            initSQLException(e);
+            DDLException ddle = new DDLException(message);
+            ddle.initCause(e);
+            throw ddle;
         } catch (Exception exc) {
             String message = MessageFormat.format(bundle.getString("EXC_CannotEstablishConnection"), new String[] {db, drv, exc.getMessage()}); // NOI18N
 
@@ -381,7 +384,9 @@ public class DatabaseConnection implements DBConnection {
             // For Java Studio Enterprise.
             openConnection.disable();
 
-            throw new DDLException(message);
+            DDLException ddle = new DDLException(message);
+            ddle.initCause(exc);
+            throw ddle;
         }
     }
 
@@ -447,7 +452,10 @@ public class DatabaseConnection implements DBConnection {
                     // For Java Studio Enterprise.
                     openConnection.disable();
 
-                    sendException(new DDLException(message));
+                    initSQLException(e);
+                    DDLException ddle = new DDLException(message);
+                    ddle.initCause(e);
+                    sendException(ddle);
                 } catch (Exception exc) {
                     propertySupport.firePropertyChange("failed", null, null);
 
@@ -459,6 +467,25 @@ public class DatabaseConnection implements DBConnection {
             }
         }, 0);
     }
+    
+    /** Calls the initCause() for SQLException with the value
+      * of getNextException() so this exception's stack trace contains 
+      * the complete data.
+      */
+    private void initSQLException(SQLException e) {
+        SQLException next = e.getNextException();
+        while (next != null) {
+            try {
+                e.initCause(next);
+            }
+            catch (IllegalStateException e2) {
+                // do nothing, already initialized
+            }
+            e = next;
+            next = e.getNextException();
+        }
+    }
+
 
     private void checkRuntime() {
         DatabaseRuntime runtime = DatabaseRuntimeManager.getDefault().getRuntime(drv);
