@@ -66,10 +66,11 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
       <exclude name="credits.html"/>
       <exclude name="ant-docs/LICENSE"/>
     </jhindexer>
-    <mkdir dir="netbeans"/>
-    <copy todir="netbeans/docs" includeEmptyDirs="false">
-      <fileset dir="javahelp"/>
-    </copy>
+    <mkdir dir="netbeans/modules/docs"/>
+    <zip zipfile="netbeans/modules/docs/ant-manual.zip"
+         basedir="javahelp"
+	 excludesfile="../nbbuild/standard-jar-excludes.txt"
+	 compress="true"/>
   </target>
 
   <target name="netbeans" depends="jars,release,javahelp"/>
