@@ -13,12 +13,15 @@
 
 package com.netbeans.developer.modules.loaders.properties;
 
+import java.util.StringTokenizer;
+import java.io.IOException;
+
 import com.netbeans.ide.actions.*;
 import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.loaders.UniFileLoader;
-import com.netbeans.ide.loaders.ExtensionList;
+import com.netbeans.ide.loaders.MultiFileLoader;
 import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.loaders.MultiDataObject;
+import com.netbeans.ide.loaders.FileEntry;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.util.NbBundle;
 
@@ -28,7 +31,12 @@ import com.netbeans.ide.util.NbBundle;
 *
 * @author Ian Formanek
 */
-public final class PropertiesDataLoader extends UniFileLoader {
+public final class PropertiesDataLoader extends MultiFileLoader {
+                                        
+  static final String PROPERTIES_EXTENSION = "properties";
+                                        
+  /** Character used to separate parts of bundle properties file name */                                                                                     
+  public static final char PRB_SEPARATOR_CHAR = '_';
 
   /** Creates new PropertiesDataLoader */
   public PropertiesDataLoader() {
@@ -41,12 +49,13 @@ public final class PropertiesDataLoader extends UniFileLoader {
   private void initialize () {
     setDisplayName(NbBundle.getBundle(PropertiesDataLoader.class).
                    getString("PROP_PropertiesLoader_Name"));
-    ExtensionList ext = new ExtensionList();
-    ext.addExtension("properties");
-    setExtensions(ext);
+//    ExtensionList ext = new ExtensionList();
+//    ext.addExtension("properties");
+//    setExtensions(ext);
 
     setActions(new SystemAction[] {
       SystemAction.get(OpenAction.class),
+      SystemAction.get(ViewAction.class),
       null,
       SystemAction.get(CutAction.class),
       SystemAction.get(CopyAction.class),
@@ -55,6 +64,7 @@ public final class PropertiesDataLoader extends UniFileLoader {
       SystemAction.get(DeleteAction.class),
       SystemAction.get(RenameAction.class),
       null,
+      SystemAction.get(NewAction.class),
       SystemAction.get(SaveAsTemplateAction.class),
       null,
       SystemAction.get(PropertiesAction.class)
@@ -70,10 +80,57 @@ public final class PropertiesDataLoader extends UniFileLoader {
     return new PropertiesDataObject(fo, this);
   }
 
+  /** For a given file finds a primary file.
+  * @param fo the file to find primary file for
+  *
+  * @return the primary file for the file or null if the file is not
+  *   recognized by this loader
+  */
+  protected FileObject findPrimaryFile (FileObject fo) {
+    if (fo.getExt().equalsIgnoreCase(PROPERTIES_EXTENSION)) {
+      // returns a file whose name is the shortest valid prefix corresponding to an existing file
+      String fName = fo.getName();
+      int index = fName.indexOf(PRB_SEPARATOR_CHAR);
+      while (index != -1) {
+        FileObject candidate = fo.getParent().getFileObject(fName.substring(0, index), fo.getExt());
+        if (candidate != null) {
+          return candidate;     
+        }  
+        index = fName.indexOf(PRB_SEPARATOR_CHAR, index + 1);
+      }
+      return fo;                              
+    }
+
+    else 
+      return null;
+  }
+
+  /** Creates the right primary entry for given primary file.
+  *
+  * @param primaryFile primary file recognized by this loader
+  * @return primary entry for that file
+  */
+  protected MultiDataObject.Entry createPrimaryEntry (MultiDataObject obj, FileObject primaryFile) {
+    return new PropertiesFileEntry(obj, primaryFile);
+  }
+
+  /** Creates right secondary entry for given file. The file is said to
+  * belong to an object created by this loader.
+  *
+  * @param secondaryFile secondary file for which we want to create entry
+  * @return the entry
+  */
+  protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
+    PropertiesFileEntry pfe = new PropertiesFileEntry(obj, secondaryFile);
+    //((PropertiesDataObject)obj).registerEntryListener (pfe);
+    return pfe;
+  }
+
 }
 
 /*
 * <<Log>>
+*  6    Gandalf   1.5         5/12/99  Petr Jiricka    
 *  5    Gandalf   1.4         5/11/99  Ian Formanek    Undone last change to 
 *       compile
 *  4    Gandalf   1.3         5/11/99  Petr Jiricka    
