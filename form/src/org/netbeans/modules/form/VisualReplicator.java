@@ -224,6 +224,12 @@ public class VisualReplicator {
         if (targetComp == null)
             return;
 
+        java.lang.reflect.Method writeMethod =
+            property.getPropertyDescriptor().getWriteMethod();
+        if (writeMethod == null || !writeMethod.getDeclaringClass()
+                                    .isAssignableFrom(targetComp.getClass()))
+            return;
+            
         try {
             Object value = property.getRealValue();
             if (value == FormDesignValue.IGNORED_VALUE)
@@ -241,10 +247,7 @@ public class VisualReplicator {
             else
                 value = FormUtils.cloneObject(value);
 
-            java.lang.reflect.Method writeMethod =
-                property.getPropertyDescriptor().getWriteMethod();
-            if (writeMethod != null)
-                writeMethod.invoke(targetComp, new Object[] { value });
+            writeMethod.invoke(targetComp, new Object[] { value });
         }
         catch (Exception ex) {
             if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
