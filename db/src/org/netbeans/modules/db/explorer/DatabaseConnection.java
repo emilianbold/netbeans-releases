@@ -289,7 +289,13 @@ public class DatabaseConnection implements DBConnection {
                 Class.forName(drv);
                 connection = DriverManager.getConnection(db, dbprops);
             } else {
-                DbURLClassLoader l = new DbURLClassLoader(drvs[0].getURLs());
+                int drvIndex = 0;
+                for (int i = 0; i < drvs.length; i++)
+                    if (drvs[i].getName().equals(getDriverName())) {
+                        drvIndex = i;
+                        break;
+                    }
+                DbURLClassLoader l = new DbURLClassLoader(drvs[drvIndex].getURLs());
                 Class c = Class.forName(drv, true, l);
                 Driver d = (Driver) c.newInstance();
                 connection = d.connect(db, dbprops);
@@ -334,7 +340,13 @@ public class DatabaseConnection implements DBConnection {
                         Class.forName(drv);
                         connection = DriverManager.getConnection(db, dbprops);
                     } else {
-                        DbURLClassLoader l = new DbURLClassLoader(drvs[0].getURLs());
+                        int drvIndex = 0;
+                        for (int i = 0; i < drvs.length; i++)
+                            if (drvs[i].getName().equals(getDriverName())) {
+                                drvIndex = i;
+                                break;
+                            }
+                        DbURLClassLoader l = new DbURLClassLoader(drvs[drvIndex].getURLs());
                         Class c = Class.forName(drv, true, l);
                         Driver d = (Driver) c.newInstance();
                         connection = d.connect(db, dbprops);
@@ -428,6 +440,12 @@ public class DatabaseConnection implements DBConnection {
         rpwd = Boolean.FALSE;
         name = (String) in.readObject();
 
+        try {
+            drvname = (String) in.readObject();
+        } catch (Exception exc) {
+            //IGNORE - not stored in 3.6 and earlier
+        }
+        
         // boston setting/pilsen setting?
         if ((name != null) && (name.equals(DatabaseConnection.SUPPORT))) {
             // pilsen
@@ -445,7 +463,8 @@ public class DatabaseConnection implements DBConnection {
         out.writeObject(db);
         out.writeObject(usr);
         out.writeObject(schema);
-        out.writeObject(DatabaseConnection.SUPPORT);
+        out.writeObject(DatabaseConnection.SUPPORT);        
+        out.writeObject(drvname);
     }
 
     public String toString() {

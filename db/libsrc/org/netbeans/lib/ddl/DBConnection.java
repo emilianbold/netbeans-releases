@@ -13,11 +13,7 @@
 
 package org.netbeans.lib.ddl;
 
-import java.sql.*;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyChangeListener;
-import java.lang.String;
-import java.util.Properties;
+import java.sql.Connection;
 
 /**
 * Connection information.
@@ -27,7 +23,7 @@ import java.util.Properties;
 * Instances of this class uses explorer option to store information about
 * open connection.
 *
-* @author Slavek Psenicka
+* @author Slavek Psenicka, Radko Najman
 */
 
 public interface DBConnection extends java.io.Serializable
@@ -73,9 +69,18 @@ public interface DBConnection extends java.io.Serializable
 
     /** Sets connection name
     * Fires propertychange event.
-    * @param schema Schema name
+    * @param name Connection name
     */
     public void setName(String name);
+    
+    /** Returns driver name */
+    public String getDriverName();
+
+    /** Sets driver name
+    * Fires propertychange event.
+    * @param name Driver name
+    */
+    public void setDriverName(String name);
 
     /** Returns if password should be remembered */
     public boolean rememberPassword();
@@ -101,16 +106,3 @@ public interface DBConnection extends java.io.Serializable
     */
     public Connection createJDBCConnection() throws DDLException;
 }
-
-
-/*
- * <<Log>>
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         6/8/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  3    Gandalf   1.2         5/14/99  Slavek Psenicka new version
- *  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
- *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
- * $
- */
