@@ -95,7 +95,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
   * @return <code>false</code>
   */
   public boolean canRename () {
-    return !(component instanceof FormContainer);
+    return false; // !(component instanceof FormContainer); // [PENDING]
   }
 
   /** Can this node be destroyed?
@@ -145,6 +145,7 @@ public class RADComponentNode extends AbstractNode implements FormNodeCookie {
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/16/99  Ian Formanek    No canRename
  *  7    Gandalf   1.6         5/16/99  Ian Formanek    
  *  6    Gandalf   1.5         5/15/99  Ian Formanek    
  *  5    Gandalf   1.4         5/14/99  Ian Formanek    
