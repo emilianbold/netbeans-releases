@@ -1355,8 +1355,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                     if((item != null) && (item.getTokenContextPath().contains(ELTokenContext.contextPath))) {
                         //go over all EL tokens and add them to the attribute value
                         while(item.getTokenContextPath().contains(ELTokenContext.contextPath)) {
-                            if(item == null) break;
                             item = item.getNext();
+                            if(item == null) break;
                             value.append(item.getImage());
                         }
                     }
