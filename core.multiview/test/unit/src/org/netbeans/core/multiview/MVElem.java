@@ -33,6 +33,7 @@ public class MVElem implements MultiViewElement {
     private StringBuffer log;
     private Action[] actions;
     public MultiViewElementCallback observer;
+    private JPanel visualRepre;
     private transient UndoRedo undoredo;
     
     MVElem() {
@@ -42,6 +43,7 @@ public class MVElem implements MultiViewElement {
     MVElem(Action[] actions) {
         log = new StringBuffer();
         this.actions = actions;
+        visualRepre = new JPanel();
     }
     
     public String getLog() {
@@ -90,7 +92,7 @@ public class MVElem implements MultiViewElement {
     }
     
     public javax.swing.JComponent getVisualRepresentation() {
-        return new JPanel();
+        return visualRepre;
     }
     
     public String preferredID() {

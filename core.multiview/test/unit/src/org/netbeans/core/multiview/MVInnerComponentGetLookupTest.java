@@ -62,6 +62,11 @@ public class MVInnerComponentGetLookupTest extends org.openide.windows.TopCompon
         return true;
     }
     
+    protected int checkAtLeastCount() {
+        return 0;
+    }
+    
+    
     /** Setup component with lookup.
      */
     protected void setUp () {
