@@ -62,7 +62,7 @@ implements PropertyChangeListener {
         // XXX Show dialog only if the action was invoked by shortcut (not from menu).
             Object accelerator = getValue(ACCELERATOR_KEY);
             KeyStroke keyStroke = accelerator instanceof KeyStroke ? (KeyStroke)accelerator : null;
-
+            
             if(keyStroke != null) {
                 int triggerKey = keyStroke.getKeyCode();
                 int reverseKey = KeyEvent.VK_SHIFT;
@@ -76,7 +76,7 @@ implements PropertyChangeListener {
                 } else if((InputEvent.META_MASK & modifiers) != 0) {
                     releaseKey = KeyEvent.META_MASK;
                 }
-
+                
                 if(releaseKey != 0) {
                     if (!RecentViewListDlg.isShown()) {
                         Frame owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
@@ -92,7 +92,15 @@ implements PropertyChangeListener {
         }
 
         if(tcs.length > 1) {
-            tcs[1].requestActive();
+            TopComponent tc = tcs[1];
+            // #37226 Unmaximized the other mode if needed.
+            WindowManagerImpl wm = WindowManagerImpl.getInstance();
+            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            if(mode != null && mode != wm.getMaximizedMode()) {
+                wm.setMaximizedMode(null);
+            }
+
+            tc.requestActive();
         }
     }
 

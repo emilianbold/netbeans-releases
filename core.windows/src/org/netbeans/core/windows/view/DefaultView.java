@@ -179,6 +179,7 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                 hierarchy.setMaximizedModeView(hierarchy.getModeViewForAccessor(wsa.getMaximizedModeAccessor()));
                 hierarchy.updateDesktop(wsa);
                 hierarchy.updateSplits();
+                hierarchy.activateMode(wsa.getActiveModeAccessor());
             } else if(changeType == CHANGE_MODE_ADDED) {
                 debugLog("Mode added"); // NOI18N
 
