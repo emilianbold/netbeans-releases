@@ -113,6 +113,7 @@ public class FormModel
     public List getMetaComponents() {
         ArrayList list = new ArrayList();
 
+        list.add(topRADComponent);
         if (topRADComponent instanceof ComponentContainer)
             collectMetaComponents((ComponentContainer)topRADComponent, list);
 
@@ -128,6 +129,7 @@ public class FormModel
 
     public RADComponent[] getVisualComponents() {
         ArrayList list = new ArrayList();
+        list.add(topRADComponent);
         if (topRADComponent instanceof ComponentContainer)
             collectMetaComponents((ComponentContainer) topRADComponent, list);
         return (RADComponent[]) list.toArray(new RADComponent[list.size()]);
