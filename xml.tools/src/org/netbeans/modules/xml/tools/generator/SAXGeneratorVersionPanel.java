@@ -45,6 +45,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
+        descTextArea = new javax.swing.JTextArea();
         jaxpLabel = new javax.swing.JLabel();
         jaxpVersionComboBox = new javax.swing.JComboBox();
         versionLabel = new javax.swing.JLabel();
@@ -55,34 +56,48 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
 
         setPreferredSize(new java.awt.Dimension(480, 350));
         setName(Util.getString ("SAXGeneratorVersionPanel.Form.name"));
+        descTextArea.setWrapStyleWord(true);
+        descTextArea.setLineWrap(true);
+        descTextArea.setEditable(false);
+        descTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle").getString("DESC_saxw_versions"));
+        descTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        add(descTextArea, gridBagConstraints);
+
         jaxpLabel.setText(Util.getString ("SAXGeneratorVersionPanel.jaxpLabel.text"));
+        jaxpLabel.setForeground(java.awt.Color.black);
         jaxpLabel.setLabelFor(jaxpVersionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jaxpLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(jaxpVersionComboBox, gridBagConstraints);
 
         versionLabel.setText(Util.getString ("SAXGeneratorCustomizer.versionLabel.text"));
+        versionLabel.setForeground(java.awt.Color.black);
         versionLabel.setLabelFor(versionComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(versionLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.weightx = 1.0;
         add(versionComboBox, gridBagConstraints);
 
         propagateSAXCheckBox.setText(Util.getString ("SAXGeneratorVersionPanel.propagateSAXCheckBox.text"));
@@ -90,10 +105,10 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(propagateSAXCheckBox, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -135,6 +150,7 @@ public final class SAXGeneratorVersionPanel extends SAXGeneratorAbstractPanel im
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox jaxpVersionComboBox;
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JLabel versionLabel;
     private javax.swing.JCheckBox propagateSAXCheckBox;
     private javax.swing.JLabel jaxpLabel;

@@ -94,6 +94,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
+        descTextArea = new javax.swing.JTextArea();
         tableScrollPane = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
 
@@ -101,18 +102,29 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
 
         setPreferredSize(new java.awt.Dimension(480, 350));
         setName(Util.getString ("SAXGeneratorParsletPanel.Form.name"));
+        descTextArea.setWrapStyleWord(true);
+        descTextArea.setLineWrap(true);
+        descTextArea.setEditable(false);
+        descTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/xml/tools/generator/Bundle").getString("DESC_saxw_convertors"));
+        descTextArea.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        add(descTextArea, gridBagConstraints);
+
         table.setModel(tableModel);
         tableScrollPane.setViewportView(table);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
         add(tableScrollPane, gridBagConstraints);
 
     }//GEN-END:initComponents
@@ -334,6 +346,7 @@ public final class SAXGeneratorParsletPanel extends SAXGeneratorAbstractPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable table;
+    private javax.swing.JTextArea descTextArea;
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 
