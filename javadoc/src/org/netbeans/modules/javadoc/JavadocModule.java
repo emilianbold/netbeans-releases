@@ -41,12 +41,13 @@ import org.netbeans.modules.javadoc.comments.AutoCommentAction;
 import org.netbeans.modules.javadoc.search.SearchDocAction;
 import org.netbeans.modules.javadoc.search.DocFileSystem;
 
+import org.netbeans.modules.javadoc.search.environment.JavadocFolder;
 
 /** Class for initializing Javadoc module on IDE startup.
 
  @author Petr Hrebejk
 */
-public class JavadocModule extends ModuleInstall {
+public class JavadocModule extends ModuleInstall implements java.beans.PropertyChangeListener {
 
     /** serialVersionUID */
     private static final long serialVersionUID = 984124010415492146L;
@@ -54,6 +55,11 @@ public class JavadocModule extends ModuleInstall {
     private static final String PROP_INSTALL_COUNT = "installCount"; // NOI18N
     
     public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
+
+    /**
+     * Special library folder.
+     */
+    org.netbeans.modules.javadoc.search.environment.JavadocFolder  javadocFolder;
 
     /** By first install of module in the IDE, check whether standard documentation folder
     * exists. If not creates it.
@@ -66,6 +72,7 @@ public class JavadocModule extends ModuleInstall {
     /** By uninstalling module from the IDE do nothing.
     */
     public void uninstalled () {
+        TopManager.getDefault().removePropertyChangeListener(this);
         // Unmount docs (AutoUpdate should handle actually removing the file):
         Repository repo = TopManager.getDefault ().getRepository ();
         Enumeration e = repo.fileSystems ();
@@ -90,9 +97,28 @@ public class JavadocModule extends ModuleInstall {
         // 3: next restore (project settings incl. Repository loaded)
         notify ("JavadocModule: numberOfStarts=" + icount); // NOI18N
         if (icount <= 2) {
-            installJavadocDirectories();
+            installJavadocDirectories();    //std directories
         }
 
+        TopManager.getDefault().addPropertyChangeListener(this);
+        
+        org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            findResource("Mount/Javadoc");
+	//System.err.println("Library folder = " + f);
+        if (f != null) {
+            try {
+                DataObject d = DataObject.find(f);
+		DataFolder df = (DataFolder)d.getCookie(DataFolder.class);
+		if (df == null) {
+		    //System.err.println(f + " is not a folder");
+		} else {
+		    javadocFolder = new org.netbeans.modules.javadoc.search.environment.JavadocFolder(df);
+		}
+            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                //System.err.println("Cannot initialize shared library list");
+            }
+        }
+        
         // Install the factory for adding JavaDoc property to nodes
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                        "addExplorerFilterFactory", // NOI18N
@@ -112,6 +138,12 @@ public class JavadocModule extends ModuleInstall {
           e.printStackTrace();
     }
         */
+    }
+
+    /** Invoked on update */
+    public void updated(int release, String specVersion) {
+        restored();
+        afterUpdate = true;
     }
 
     // UTILITY METHODS ----------------------------------------------------------------------
@@ -353,6 +385,25 @@ public class JavadocModule extends ModuleInstall {
             } catch (IntrospectionException ie) {
                 err.notify (ie);
                 return null;
+            }
+        }
+    }
+
+    /** Old project node. */
+    private transient org.openide.nodes.Node oldProjectNode;
+    transient boolean afterUpdate = false;
+
+    /** Listens on project change.
+    */
+    public void propertyChange(final java.beans.PropertyChangeEvent p1) {
+        if (p1.getPropertyName().equals(TopManager.PROP_PLACES)) {
+            org.openide.nodes.Node projectNode = TopManager.getDefault().getPlaces().nodes().projectDesktop();
+            if (!projectNode.equals(oldProjectNode)) {                
+                afterUpdate = false;
+                oldProjectNode = projectNode;
+		if (javadocFolder != null) {
+		    javadocFolder.remount();
+		}
             }
         }
     }
