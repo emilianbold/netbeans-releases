@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- *** GENERATED FROM project.xml - DO NOT EDIT *** -->
+<project basedir=".." default="build" name="cp-prj-1-impl">
+    <target name="init">
+        <property file="nbproject/private/private.properties"/>
+        <property location="${netbeans.user}/build.properties" name="user.properties.file"/>
+        <property file="${user.properties.file}"/>
+        <property file="nbproject/project.properties"/>
+        <fail unless="src.dir">Must set src.dir</fail>
+        <fail unless="test.src.dir">Must set test.src.dir</fail>
+        <fail unless="build.dir">Must set build.dir</fail>
+        <fail unless="dist.dir">Must set dist.dir</fail>
+        <fail unless="build.classes.dir">Must set build.classes.dir</fail>
+        <fail unless="dist.javadoc.dir">Must set dist.javadoc.dir</fail>
+        <fail unless="build.test.classes.dir">Must set build.test.classes.dir</fail>
+        <fail unless="build.test.results.dir">Must set build.test.results.dir</fail>
+        <fail unless="build.classes.excludes">Must set build.classes.excludes</fail>
+        <fail unless="dist.jar">Must set dist.jar</fail>
+        <available file="${test.src.dir}" property="have.tests"/>
+        <condition property="netbeans.home+have.tests">
+            <and>
+                <isset property="netbeans.home"/>
+                <isset property="have.tests"/>
+            </and>
+        </condition>
+        <condition property="no.deps">
+            <istrue value="${no.dependencies}"/>
+        </condition>
+        <condition property="no.javadoc.preview">
+            <isfalse value="${javadoc.preview}"/>
+        </condition>
+    </target>
+    <target unless="no.deps" depends="init" name="deps-jar"/>
+    <target depends="init,deps-jar" name="compile">
+        <mkdir dir="${build.classes.dir}"/>
+        <javac includeantruntime="false" source="${javac.source}" deprecation="${javac.deprecation}" debug="${javac.debug}" destdir="${build.classes.dir}" srcdir="${src.dir}">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+        </javac>
+        <copy todir="${build.classes.dir}">
+            <fileset excludes="${build.classes.excludes}" dir="${src.dir}"/>
+        </copy>
+    </target>
+    <target depends="init,deps-jar" name="compile-single">
+        <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
+        <condition value="${test.src.dir}" property="task-tmp.src.dir">
+            <istrue value="${is.test}"/>
+        </condition>
+        <property value="${src.dir}" name="task-tmp.src.dir"/>
+        <condition value="${build.test.classes.dir}" property="task-tmp.out.dir">
+            <istrue value="${is.test}"/>
+        </condition>
+        <property value="${build.classes.dir}" name="task-tmp.out.dir"/>
+        <condition value="${javac.test.classpath}" property="task-tmp.classpath">
+            <istrue value="${is.test}"/>
+        </condition>
+        <property value="${javac.classpath}" name="task-tmp.classpath"/>
+        <condition value="true" property="task-tmp.debug">
+            <istrue value="${is.test}"/>
+        </condition>
+        <property value="${javac.debug}" name="task-tmp.debug"/>
+        <property name="tmp-task.src.dir.absolute" location="${task-tmp.src.dir}"/>
+        <mkdir dir="${task-tmp.out.dir}"/>
+        <javac includeantruntime="false" includes="${javac.includes}" source="${javac.source}" deprecation="${javac.deprecation}" debug="${task-tmp.debug}" destdir="${task-tmp.out.dir}" srcdir="${task-tmp.src.dir}">
+            <classpath>
+                <path path="${task-tmp.classpath}"/>
+            </classpath>
+        </javac>
+    </target>
+    <target depends="init,compile" name="jar">
+        <dirname file="${dist.jar}" property="dist.jar.dir"/>
+        <mkdir dir="${dist.jar.dir}"/>
+        <jar compress="${jar.compress}" jarfile="${dist.jar}">
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
+    <target depends="init,compile" name="run">
+        <java classname="${main.class}" fork="true">
+            <classpath>
+                <path path="${run.classpath}"/>
+            </classpath>
+            <arg line="${application.args}"/>
+        </java>
+    </target>
+    <target depends="init" name="do-debug">
+        <java classname="${main.class}" fork="true">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+            <arg line="${application.args}"/>
+        </java>
+    </target>
+    <target depends="init,compile,do-debug" name="debug"/>
+    <target if="netbeans.home" depends="init,compile" name="debug-nb">
+        <nbjpdastart name="${main.class}" addressproperty="jpda.address" transport="dt_socket">
+            <classpath>
+                <path path="${debug.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+        <antcall target="do-debug"/>
+    </target>
+    <target if="netbeans.home" depends="init" name="debug-fix-nb">
+        <fail unless="fix.includes">Must set fix.includes</fail>
+        <property value="${fix.includes}.java" name="javac.includes"/>
+        <antcall target="compile-single"/>
+        <condition value="${build.test.classes.dir}" property="task-tmp.out.dir">
+            <istrue value="${is.test}"/>
+        </condition>
+        <property value="${build.classes.dir}" name="task-tmp.out.dir"/>
+        <nbjpdareload>
+            <fileset dir="${task-tmp.out.dir}" includes="${fix.includes}*.class"/>
+        </nbjpdareload>
+    </target>
+    <target depends="init" name="javadoc">
+        <mkdir dir="${dist.javadoc.dir}"/>
+        <javadoc private="${javadoc.private}" windowtitle="${javadoc.windowtitle}" version="${javadoc.version}" author="${javadoc.author}" splitindex="${javadoc.splitindex}" noindex="${javadoc.noindex}" nonavbar="${javadoc.nonavbar}" use="${javadoc.use}" notree="${javadoc.notree}" source="${javac.source}" destdir="${dist.javadoc.dir}">
+            <classpath>
+                <path path="${javac.classpath}"/>
+            </classpath>
+            <sourcepath>
+                <pathelement location="${src.dir}"/>
+            </sourcepath>
+            <fileset dir="${src.dir}"/>
+        </javadoc>
+    </target>
+    <target unless="no.javadoc.preview" if="netbeans.home" depends="init,javadoc" name="javadoc-nb">
+        <nbbrowse file="${dist.javadoc.dir}/index.html"/>
+    </target>
+    <target if="have.tests" depends="init,compile" name="test-build">
+        <mkdir dir="${build.test.classes.dir}"/>
+        <javac includeantruntime="false" source="${javac.source}" deprecation="${javac.deprecation}" debug="true" destdir="${build.test.classes.dir}" srcdir="${test.src.dir}">
+            <classpath>
+                <path path="${javac.test.classpath}"/>
+            </classpath>
+        </javac>
+        <copy todir="${build.test.classes.dir}">
+            <fileset dir="${test.src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target if="have.tests" depends="init,test-build" name="test">
+        <mkdir dir="${build.test.results.dir}"/>
+        <junit errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true">
+            <batchtest todir="${build.test.results.dir}">
+                <fileset dir="${test.src.dir}">
+                    <include name="**/*Test.java"/>
+                </fileset>
+            </batchtest>
+            <classpath>
+                <path path="${run.test.classpath}"/>
+            </classpath>
+            <formatter usefile="false" type="brief"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    <target if="netbeans.home+have.tests" depends="init,test" name="test-nb"/>
+    <target if="have.tests" depends="init,test-build" name="test-single">
+        <fail unless="test.includes">Must select some files in the IDE or set test.includes</fail>
+        <mkdir dir="${build.test.results.dir}"/>
+        <junit errorproperty="tests.failed" failureproperty="tests.failed" fork="true" showoutput="true">
+            <batchtest todir="${build.test.results.dir}">
+                <fileset includes="${test.includes}" dir="${test.src.dir}"/>
+            </batchtest>
+            <classpath>
+                <path path="${run.test.classpath}"/>
+            </classpath>
+            <formatter usefile="false" type="brief"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    <target if="netbeans.home+have.tests" depends="init,test-single" name="test-single-nb"/>
+    <target if="have.tests" depends="init" name="do-debug-test-single">
+        <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
+        <java classname="junit.textui.TestRunner" fork="true">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <classpath>
+                <path path="${debug.test.classpath}"/>
+            </classpath>
+            <arg line="${test.class}"/>
+            <arg line="${application.args}"/>
+        </java>
+    </target>
+    <target if="have.tests" depends="init,test-build,do-debug-test-single" name="debug-test-single"/>
+    <target if="netbeans.home+have.tests" depends="init,test-build" name="debug-test-single-nb">
+        <nbjpdastart name="${test.class}" addressproperty="jpda.address" transport="dt_socket">
+            <classpath>
+                <path path="${debug.test.classpath}"/>
+            </classpath>
+        </nbjpdastart>
+        <antcall target="do-debug-test-single"/>
+    </target>
+    <target unless="no.deps" depends="init" name="deps-clean"/>
+    <target depends="init,deps-clean" name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+</project>

@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
         
     <!-- Code completion Validation tests: -->
-    <testbag testattribs="all,validation,full" name="Completion-Validation">
+    <testbag testattribs="all,validation,full,completion" name="Completion-Validation">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
@@ -130,7 +130,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Experimental tests (not to be runned automaticaly): -->
         
-    <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
