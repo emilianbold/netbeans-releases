@@ -14,6 +14,9 @@
 package org.netbeans.modules.web.project.ui.wizards;
 
 import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +28,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import javax.swing.JButton;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -46,6 +50,9 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.WizardValidationException;
 
 /**
  * Wizard to create a new Web project for an existing web module.
@@ -54,6 +61,7 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 1L;
+    private String buildfileName = GeneratedFilesHelper.BUILD_XML_PATH;
     
     /** Create a new wizard iterator. */
     public ImportWebProjectWizardIterator () {}
@@ -71,7 +79,6 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString("LBL_IW_Step2") //NOI18N
         };
     }
-    
     
     public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
@@ -109,10 +116,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             libFolder = FileUtil.toFileObject(f);
         }       
         
-        String buildfile = GeneratedFilesHelper.BUILD_XML_PATH;
-        if (new File (dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists ()) {
-            buildfile = "nbbuild.xml";
-        }
+        String buildfile = getBuildfile();
+        
         WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
@@ -124,6 +129,14 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         // Returning set of DataObject of project diretory. 
         // Project will be open and set as main
         return Collections.singleton(DataObject.find(dir));
+    }
+    
+    private String getBuildfile() {
+        return buildfileName;
+    }
+    
+    private void setBuildfile(String name) {
+        buildfileName = name;
     }
     
     private transient int index;
@@ -295,7 +308,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         return null;
     }
     
-    public final class ThePanel implements WizardDescriptor.FinishablePanel {
+    public final class ThePanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
 
         private ImportLocationVisual panel;
         
@@ -409,6 +422,74 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
                 libraries = FileUtil.toFile(guessFO).getPath();
             
             ((ImportWebLocationsVisual) panels[1].getComponent()).initValues(webPages, javaSources, libraries);
+        }
+        
+        //extra finish dialog
+        
+        private Dialog dialog;
+        private boolean cont;
+            
+        public void validate() throws WizardValidationException {
+            File dirF = new File(panel.createdFolderTextField.getText());
+            JButton ok = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK")); //NOI18N
+            final ImportBuildfile ibf = new ImportBuildfile(dirF.getAbsolutePath(), ok);
+            if ((new File(dirF, GeneratedFilesHelper.BUILD_XML_PATH)).exists()) {
+                ActionListener actionListener = new ActionListener() {
+                    public void actionPerformed(ActionEvent event) {
+                        Object src = event.getSource();
+                        if (src instanceof JButton) {
+                            String name = ((JButton) src).getText();
+                            if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_OK"))) { //NOI18N
+                                setBuildfile(ibf.getBuildName());
+                                setContinue(true);
+                                closeDialog();
+                            } else if (name.equals(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel"))) { //NOI18N
+                                setContinue(false);
+                                closeDialog();
+                            }
+                        }
+                    }
+                };
+
+                ok.addActionListener(actionListener);
+//                ok.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewNextFetchButtonA11yDesc")); //NOI18N
+//                ok.setMnemonic(bundle.getString("FetchNextFetchButton_Mnemonic").charAt(0)); //NOI18N
+
+                JButton cancel = new JButton(NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_Buildfile_Cancel")); //NOI18N
+                cancel.addActionListener(actionListener);
+//                cancel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_DataViewAllFetchButtonA11yDesc")); //NOI18N
+//                cancel.setMnemonic(bundle.getString("FetchAllFetchButton_Mnemonic").charAt(0)); //NOI18N
+
+                DialogDescriptor descriptor = new DialogDescriptor(
+                    ibf,
+                    NbBundle.getMessage(ImportWebProjectWizardIterator.class, "LBL_IW_BuildfileTitle"), //NOI18N
+                    true,
+                    new Object[] {ok, cancel},
+                    DialogDescriptor.OK_OPTION, 
+                    DialogDescriptor.DEFAULT_ALIGN,
+                    null,
+                    actionListener
+                );
+                
+                dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+                dialog.show();
+            } else
+                return;
+            
+            if (!isContinue())
+                throw new WizardValidationException(ibf, "", ""); //NOI18N
+        }
+        
+        private boolean isContinue() {
+            return cont;
+        }
+        
+        private void setContinue(boolean cont) {
+            this.cont = cont;
+        }
+        
+        private void closeDialog() {
+            dialog.dispose();
         }
     }
     
