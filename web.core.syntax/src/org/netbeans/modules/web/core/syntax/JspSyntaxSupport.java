@@ -129,6 +129,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return result;
     }
     
+    /** Returns a map of prefix -> URI that maps tag libraries on prefixes.
+     * For the XML syntax this mapping may only be approximate.
+     */
     private Map getJspPrefixMapper() {
         // PENDING - must also take xmlPrefixMapper into account
         JspParserAPI.ParseResult result = getParseResult();
