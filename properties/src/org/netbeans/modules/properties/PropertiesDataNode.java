@@ -36,6 +36,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
+import org.openide.actions.OpenAction;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.*;
@@ -58,6 +59,18 @@ public class PropertiesDataNode extends DataNode {
   */
   public PropertiesDataNode (DataObject obj, Children ch) {
     super (obj, ch);
+    initialize();
+  }
+
+  private void initialize () {
+    setIconBase(PropertiesDataObject.PROPERTIES_ICON_BASE);
+    setDefaultAction (SystemAction.get(OpenAction.class));
+  }
+
+
+  private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
+    is.defaultReadObject();
+    initialize();
   }
 
   /* List new types that can be created in this node.
