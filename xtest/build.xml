@@ -16,22 +16,18 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Properties -->
     <property name="buildnumber" value="000"/>
-
-    <!-- Relative to the test's ant file -->
-<!--
-    <property name="netbeans.home" value="../nbbuild/netbeans"/>
+    <property name="netbeans.home" location="../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
--->
-    <property name="xtest.mode" value="ide"/>
-    <property name="xtest.file" value="test.jar"/>
-    <property name="xtest.results" value="results"/>
+
+    <property name="xtest.home" location="."/>
+    <property name="xtest.mode" value="code"/>
 
     <property name="xtest.config" value="default"/>
-    <property name="xtest.uploaddir" value="results"/>
-    <property name="xtest.distdir" value="dist"/>
-    <property name="xtest.basedir" value=".."/>
-    <property name="xtest.mail.all" value="vitezslav.stejskal@czech.sun.com"/>
-    <property name="xtest.mail.failed" value="vitezslav.stejskal@czech.sun.com"/>
+    <property name="xtest.uploaddir" location="results"/>
+    <property name="xtest.distdir" location="dist"/>
+    <property name="xtest.basedir" location=".."/>
+    <property name="xtest.mail.all" value=""/>
+    <property name="xtest.mail.failed" value=""/>
 
     <property name="build.compiler.deprecation" value="off"/>
     <property name="build.compiler.debug" value="off"/>
@@ -43,65 +39,67 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="init" depends="bootstrap">
-        <taskdef name="xtestconfig" classname="org.netbeans.xtest.NbTestConfig" classpath="lib/xtest.jar"/>
-        <taskdef name="xtestconfig-print" classname="org.netbeans.xtest.NbTestConfigPrint" classpath="lib/xtest.jar"/>
-        <taskdef name="xtest" classname="org.netbeans.xtest.NbExecutor" classpath="lib/xtest.jar"/>
-        <taskdef name="xreport" classname="org.netbeans.xtest.NbReport" classpath="lib/xtest.jar"/>
-        <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher" classpath="lib/xtest.jar"/>
+        <taskdef name="nbtaskdef" classname="org.netbeans.xtest.NbMultiTaskDef" classpath="lib/xtest.jar"/>
 
-        <xtestconfig   config="${xtest.config}" 
-                        modulesproperty="xtest.modules" 
-                        testsproperty="xtest.testypes" 
-                        prefix="xtest.">
-            <config name="default" modules="core,openide" testtypes="unit"/>
+        <nbtaskdef classpath="lib/xtest.jar">
+            <taskdef name="xtestconfig" classname="org.netbeans.xtest.NbTestConfig"/>
+            <taskdef name="xtestconfig-print" classname="org.netbeans.xtest.NbTestConfigPrint"/>
+            <taskdef name="xtest" classname="org.netbeans.xtest.NbExecutor"/>
+        </nbtaskdef>
+
+        <nbtaskdef classpath="lib/xtest.jar;lib/xerces.jar;lib/xalan.jar">
+            <taskdef name="xreport" classname="org.netbeans.xtest.NbReport"/>
+            <taskdef name="xalan" classname="org.netbeans.xtest.XalanLauncher"/>
+        </nbtaskdef>
+
+        <xtestconfig config="${xtest.config}">
+            <config name="default" modules="openide,core" testtypes="unit"/>
+            <config name="openide" modules="openide" testtypes="unit"/>
+            <config name="core" modules="core" testtypes="unit"/>
         </xtestconfig>
+    </target>
+
+    <!-- build test distribution helper -->
+    <target name="build-test-distribution">
+        <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
+
+        <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
+        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="build">
+            <property name="xtest.build" 
+                      value="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
+        </ant>
+
+        <copy   file="../${xtest.module}/test/${xtest.testtype}/build.xml" 
+                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
     </target>
 
     <!-- build test helper -->
     <target name="build-test">
         <echo message="Building ${xtest.testtype} test of ${xtest.module}..."/>
-        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="jars">
-            <property name="buildnumber" value="${buildnumber}"/>
-<!--
-            <property name="netbeans.home" value="${netbeans.home}"/>
-            <property name="netbeans.test.home" value="${netbeans.test.home}"/>
--->
-            <property name="xtest.file" value="${xtest.file}"/>
-            <property name="build.compiler.deprecation" value="${build.compiler.deprecation}"/>
-            <property name="build.compiler.debug" value="${build.compiler.debug}"/>
-        </ant>
-
-        <mkdir dir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}/lib"/>
-        <copy   file="../${xtest.module}/test/${xtest.testtype}/lib/${xtest.file}" 
-                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}/lib"/>
-        <copy   file="../${xtest.module}/test/${xtest.testtype}/build.xml" 
-                toDir="${xtest.distdir}/${xtest.module}/test/${xtest.testtype}"/>
+        <ant dir="../${xtest.module}/test/${xtest.testtype}" target="build"/>
     </target>
 
     <!-- run test helper -->
     <target name="run-test">
         <echo message="Running ${xtest.testtype} test of ${xtest.module}..."/>
         <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="test">
-<!--
-            <property name="netbeans.home" value="${netbeans.home}"/>
-            <property name="netbeans.test.home" value="${netbeans.test.home}"/>
--->
-            <property name="xtest.mode" value="${xtest.mode}"/>
-            <property name="xtest.home" value="${basedir}"/>
-            <property name="xtest.file" value="${xtest.file}"/>
-            <property name="xtest.results" value="${xtest.results}"/>
+            <property name="xtest.results" 
+                      value="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
         </ant>
 
         <mkdir dir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}"/>
-        <copy toDir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
-            <fileset dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/${xtest.results}"/>
+        <copy todir="${xtest.uploaddir}/${xtest.module}/${xtest.testtype}">
+            <fileset dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
         </copy>
     </target>
 
     <!-- clean test results helper -->
     <target name="clean-test-results">
         <echo message="Cleaning results of ${xtest.module} ${xtest.testtype} test..."/>
-        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_results"/>
+        <ant dir="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}" target="clean_results">
+            <property name="xtest.results" 
+                      value="${xtest.basedir}/${xtest.module}/test/${xtest.testtype}/results"/>
+        </ant>
     </target>
 
     <!-- clean test build helper -->
@@ -113,16 +111,22 @@ Microsystems, Inc. All Rights Reserved.
     <!-- main executor -->
     <target name="executor">
         <xtest  targetname="${target.name}"
-                modules="${xtest.modules}" 
-                prefix="xtest."
-                keyparam="xtest.module"
-                valueparam="xtest.testtype">
+                targetParamModule="xtest.module"
+                targetParamTesttype="xtest.testtype"
+                targetParamIncludes="xtest.includes"
+                targetParamExcludes="xtest.excludes">
         </xtest>
     </target>
 
-    <target name="jars" depends="init">
+    <target name="build" depends="init">
         <antcall target="executor">
             <param name="target.name" value="build-test"/>
+        </antcall>
+    </target>
+
+    <target name="build-distribution" depends="init">
+        <antcall target="executor">
+            <param name="target.name" value="build-test-distribution"/>
         </antcall>
         <zip zipfile="Test-${buildnumber}.zip" basedir="${xtest.distdir}"/>
     </target>
@@ -142,11 +146,15 @@ Microsystems, Inc. All Rights Reserved.
         <!-- format HTML & plain summary  -->
         <xalan srcfile="${xtest.uploaddir}/summary.xml" trgfile="${xtest.uploaddir}/summary.txt" xslt="xslt/summary-txt.xsl"/>
         <xalan srcfile="${xtest.uploaddir}/summary.xml" trgfile="${xtest.uploaddir}/summary.html" xslt="xslt/summary-html.xsl"/>
+        <copy file="xslt/stylesheet.css" todir="${xtest.uploaddir}"/>
     </target>
 
     <target name="test" depends="test-runner, mail"/>
 
-    <target name="mail" depends="mail-all, mail-failed" if="send-mails" />
+    <target name="mail" if="xtest.mail">
+        <antcall target="mail-all"/>
+        <antcall target="mail-failed"/>
+    </target>
 
     <target name="mail-all">
         <echo message="Mailing test results..."/>
@@ -162,15 +170,15 @@ Microsystems, Inc. All Rights Reserved.
               files="${xtest.uploaddir}/summary.txt" mailhost="sunpraha.czech.sun.com"/>
     </target>
 
-    <target name="netbeans" depends="jars,test"/>
+    <target name="netbeans" depends="build, test"/>
 
     <!-- Cleaning targets -->
-    <target name="localclean">
+    <target name="clean-distribution">
         <echo message="Cleaning tests distribution..."/>
         <delete dir="${xtest.distdir}"/>
     </target>
 
-    <target name="real-clean" depends="clean"
+    <target name="real-clean" depends="clean, clean-distribution"
             description="Clean up built tests, distribution and XTest framework">
         <!-- Add clean up code here (if neccessary) -->
         <echo message="Cleaning old tests..."/>
@@ -204,12 +212,10 @@ Microsystems, Inc. All Rights Reserved.
         </antcall>
     </target>
 
-    <target name="clean" depends="clean-build, clean-results, localclean" 
+    <target name="clean" depends="clean-build, clean-results" 
             description="Clean up built tests, test results and distribution"/>
 
     <target name="print-test-config" depends="init">
-        <xtestconfig-print modulesproperty="xtest.modules" 
-                            testsproperty="xtest.testypes" 
-                            prefix="xtest."/>
+        <xtestconfig-print/>
     </target>
 </project>
