@@ -28,9 +28,10 @@ import org.openide.options.*;
 import org.openide.nodes.*;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.actions.*;
-import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.datatransfer.NewType;
 
 /** Set of basic nodes for the visualization of IDE state (originally org.netbeans.core.DesktopNode)
 *
@@ -176,9 +177,11 @@ public final class UINodes extends Object {
         static final long serialVersionUID = -8202001968004798680L;
 
         private static SystemAction[] staticActions;
+        private DataFolder root;
 
         public TemplatesNode () {
             this (NbPlaces.getDefault().templates ().getNodeDelegate ());
+            root = NbPlaces.getDefault().templates ();
         }
 
         public TemplatesNode(Node ref) {
@@ -190,15 +193,45 @@ public final class UINodes extends Object {
         public HelpCtx getHelpCtx () {
             return new HelpCtx (TemplatesNode.class);
         }
-
+        
+        public NewType[] getNewTypes () {
+            NewType type = new NewType () {
+                public String getName () {
+                    return NbBundle.getMessage (UINodes.class, "MSG_ActionName"); // NOI18N
+                }
+                
+                public void create () throws IOException {
+                    NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine (
+                            NbBundle.getMessage (UINodes.class, "MSG_FolderName"), // NOI18N
+                            NbBundle.getMessage (UINodes.class, "MSG_InputNameDialogTitle"), // NOI18N
+                            NotifyDescriptor.OK_CANCEL_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE);
+                    
+                    if (!NotifyDescriptor.OK_OPTION.equals (DialogDisplayer.getDefault ().notify (input))) {
+                        return;
+                    }
+                    String newFolderName = input.getInputText ();
+                    if (newFolderName.length () == 0) {
+                        // same as cancel
+                        return ;
+                    }
+                    if (root.getPrimaryFile ().getFileObject (newFolderName) != null) {
+                        DialogDisplayer.getDefault ().notify (new NotifyDescriptor.Message (
+                                    NbBundle.getMessage (UINodes.class, "MSG_FolderExists", newFolderName))); // NOI18N
+                        return ;
+                    }
+                    DataFolder.create (root, newFolderName);
+                }
+            };
+            return new NewType[] {type};
+        }
+        
         public SystemAction[] getActions () {
             if (staticActions == null) {
                 staticActions = new SystemAction[] {
-                                    // #17707: NewAction is now useless (no NewType's)
-                                    SystemAction.get(NewTemplateAction.class),
+                                    SystemAction.get(NewAction.class),
                                     null,
-                                    SystemAction.get(ToolsAction.class),
-                                    SystemAction.get(PropertiesAction.class)
+                                    SystemAction.get(PasteAction.class),
                                 };
             }
             return staticActions;

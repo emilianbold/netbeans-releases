@@ -212,18 +212,21 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             for (int i = 0; i < kids.length; i++) {
                 DataObject d = kids[i];
                 FileObject prim = d.getPrimaryFile();
-                if ( acceptTemplate( d, prim ) ) { 
-                    if ( recommendedTypes != null) {
-                        // XXX assert recommendedTypes != null;
-                        boolean ok = false;
-                        for (int j = 0; j < recommendedTypes.length; j++) {
-                            if (Boolean.TRUE.equals(prim.getAttribute(recommendedTypes[j]))) {
-                                ok = true;
-                                break;
+                if ( acceptTemplate( d, prim ) ) {
+                    // issue 43958, if attr 'templateCategorized' is not set => all is ok
+                    if (isCategorized (prim)) {
+                        if ( recommendedTypes != null) {
+                            // XXX assert recommendedTypes != null;
+                            boolean ok = false;
+                            for (int j = 0; j < recommendedTypes.length; j++) {
+                                if (Boolean.TRUE.equals(prim.getAttribute(recommendedTypes[j]))) {
+                                    ok = true;
+                                    break;
+                                }
                             }
-                        }
-                        if (!ok) {
-                            continue;
+                            if (!ok) {
+                                continue;
+                            }
                         }
                     }
                     l.add(d);
@@ -286,6 +289,17 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
             }
             return false;
         }
+        
+        private boolean isCategorized (FileObject primaryFile) {
+            Object o = primaryFile.getAttribute ("templateCategorized"); // NOI18N
+            if (o != null) {
+                assert o instanceof Boolean;
+                return ((Boolean)o).booleanValue ();
+            } else {
+                return false;
+            }
+        }
+        
     }
     
     

@@ -255,10 +255,22 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
             }
             
             if ( result != null ) {
+                
+                // handle new template in SystemFileSystem
+                DataObject rootDO = findTemplate ("/Templates"); // NOI18N
+                if (rootDO != null && dObj != null) {
+                    if (FileUtil.isParentOf (rootDO.getPrimaryFile (), dObj.getPrimaryFile ())) {
+                        try {
+                            dObj.setTemplate (true);
+                        } catch (IOException e) {
+                            // can ignore
+                        }
+                    }
+                }
+                
                 ProjectUtilities.openAndSelectNewObject( dObj );
             }
         }        
     }
-        
     
 }
