@@ -93,7 +93,8 @@ public class TreeModelRoot implements TreeModelListener {
     }
 
     public void destroy () {
-        model.removeTreeModelListener (this);
+        if (model != null)
+            model.removeTreeModelListener (this);
         model = null;
         objectToNode = new WeakHashMap ();
     }
