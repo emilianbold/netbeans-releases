@@ -1,0 +1,106 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.core.projects;
+
+import java.io.InputStream;
+import junit.framework.*;
+import org.netbeans.junit.*;
+
+import org.openide.filesystems.*;
+
+/** Checks the consistence of System File System content.
+ *
+ * @author Jaroslav Tulach
+ */
+public class ValidateLayerConsistencyTest extends NbTestCase {
+    
+    /** Creates a new instance of SFSTest */
+    public ValidateLayerConsistencyTest(String name) {
+        super (name);
+    }
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(java.lang.String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
+    
+    public static Test suite() {
+        TestSuite suite = new NbTestSuite(ValidateLayerConsistencyTest.class);
+        
+        return suite;
+    }
+    
+    public void testAreAttributesFine () {
+        java.util.ArrayList errors = new java.util.ArrayList ();
+        
+        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        while (files.hasMoreElements()) {
+            FileObject fo = (FileObject)files.nextElement();
+            
+            java.util.Enumeration attrs = fo.getAttributes();
+            while (attrs.hasMoreElements()) {
+                String name = (String)attrs.nextElement();
+                
+                if (fo.getAttribute(name) == null) {
+                    errors.add ("\n    File " + fo + " attribute name " + name);
+                }
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            fail ("Some attributes in files are unreadable" + errors);
+        }
+    }
+    
+    
+    public void testContentCanBeRead () {
+        java.util.ArrayList errors = new java.util.ArrayList ();
+        byte[] buffer = new byte[4096];
+        
+        java.util.Enumeration files = Repository.getDefault().getDefaultFileSystem().getRoot ().getChildren(true);
+        while (files.hasMoreElements()) {
+            FileObject fo = (FileObject)files.nextElement();
+            
+            if (!fo.isData ()) {
+                continue;
+            }
+            long size = fo.getSize();
+            
+            try {
+                InputStream is = fo.getInputStream();
+                long read = 0;
+                for (;;) {
+                    int len = is.read (buffer);
+                    if (len == -1) break;
+                    read += len;
+                }
+                is.close ();
+                
+                if (size != -1) {
+                    assertEquals ("The amount of data in stream is the same as the length", size, read);
+                }
+                
+            } catch (java.io.IOException ex) {
+                errors.add ("\n    File " + fo + " cannot be read " + ex);
+            }
+        }
+        
+        if (!errors.isEmpty()) {
+            fail ("Some files are unreadable" + errors);
+        }
+    }
+    
+}
