@@ -230,7 +230,7 @@ public class MakeUpdateDesc extends MatchingTask {
                                             String docType = "<!DOCTYPE module";
                                             idx = line.indexOf(docType);
                                             if (idx != -1) 
-                                                ; //Do nothing, it shouldn't be included
+                                                continue; //Do nothing, it shouldn't be included
                                             String licenseMarker = "<license name=\"";
                                             idx = line.indexOf (licenseMarker);
                                             if (idx != -1) {
