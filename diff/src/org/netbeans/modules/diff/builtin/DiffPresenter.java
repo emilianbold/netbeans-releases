@@ -153,6 +153,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffProvider.class);
+            pd.setValue ("suppressCustomEditor", Boolean.TRUE);
             FileObject providersFO = services.getFileObject("DiffProviders");
             try {
                 DataObject providersDO = DataObject.find(providersFO);
@@ -162,7 +163,6 @@ public class DiffPresenter extends javax.swing.JPanel {
             pd.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.diff.DiffPresenter.providers");
             model = new DefaultPropertyModel (this, pd);
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
-            panel.setChangeImmediate(false);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
@@ -184,6 +184,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             pd.setPropertyEditorClass (editor.getClass());
             // special attributes to the property editor
             pd.setValue ("superClass", DiffVisualizer.class);
+            pd.setValue ("suppressCustomEditor", Boolean.TRUE);
             FileObject visualizersFO = services.getFileObject("DiffVisualizers");
             try {
                 DataObject visualizersDO = DataObject.find(visualizersFO);
@@ -193,7 +194,6 @@ public class DiffPresenter extends javax.swing.JPanel {
             pd.setValue(ExPropertyEditor.PROPERTY_HELP_ID, "org.netbeans.modules.diff.DiffPresenter.visualizers");
             model = new DefaultPropertyModel (this, pd);
             panel = new PropertyPanel (model, PropertyPanel.PREF_INPUT_STATE);
-            panel.setChangeImmediate(false);
             panel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerPropertyPanelA11yName"));  // NOI18N
             panel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "ACS_VisualizerPropertyPanelA11yDesc"));  // NOI18N
 
