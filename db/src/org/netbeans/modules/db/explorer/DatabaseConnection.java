@@ -213,7 +213,6 @@ public class DatabaseConnection extends Object implements DBConnection
 	{
 		if (obj instanceof DBConnection) {
 			DBConnection con = (DBConnection)obj;
-			System.out.println("comparing "+this+" with "+obj);
 			return (drv.equals(con.getDriver()) && db.equals(con.getDatabase()) && usr.equals(con.getUser()));	
 		}
 		
@@ -229,14 +228,12 @@ public class DatabaseConnection extends Object implements DBConnection
 		usr = (String)in.readObject();
 		pwd = (String)in.readObject();
 		rpwd = (Boolean)in.readObject();
-		System.out.println("Reading connection: "+this);
 	}
 
 	/** Writes object to stream */
 	private void writeObject(java.io.ObjectOutputStream out)
 	throws java.io.IOException 
 	{
-		System.out.println("Writing connection: "+this);
 		out.writeObject(drv);
 		out.writeObject(db);
 		out.writeObject(usr);

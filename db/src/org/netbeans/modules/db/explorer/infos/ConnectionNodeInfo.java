@@ -34,7 +34,10 @@ implements ConnectionOperations, DeleteOperations
 		String dburl = getDatabase();
 		Properties dbprops = getConnectionProperties();
 		try {
-			Class.forName(drvurl);
+			Class xxx = Class.forName(drvurl);
+			Driver xxxdrv = (Driver)xxx.newInstance();
+			DriverManager.registerDriver(xxxdrv);
+			xxxdrv.connect(dburl, dbprops);
 	    	Connection connection = DriverManager.getConnection(dburl, dbprops);
 			SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
 			Specification spec;
@@ -47,7 +50,7 @@ implements ConnectionOperations, DeleteOperations
 		} catch (DatabaseProductNotFoundException e) {
 			throw new DatabaseException("database "+e.getDatabaseProductName()+" is not supported by system");	
 		} catch (Exception e) {
-			throw new DatabaseException("unable to connect; "+e.getMessage());	
+			throw new DatabaseException(e.getMessage());	
 		}
 	}
 

@@ -450,7 +450,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		
 		if (actions.size() == 0) return actions;
-		if (actions.elementAt(0) instanceof DatabaseAction) return actions;
+		Object xaction = actions.elementAt(0);
+		if (xaction != null && xaction instanceof DatabaseAction) return actions;
 		for (int i=0; i<actions.size();i++) {
 			
 			Object e_act = actions.elementAt(i);
@@ -484,5 +485,19 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		
 		return result;
+	}
+	
+	public boolean isDebugMode()
+	{
+		DBSpecFactory fac = (DBSpecFactory)get(SPECIFICATION_FACTORY);
+		return fac.isDebugMode();
+	}
+	
+	public void setDebugMode(boolean mode)
+	{
+		DBSpecFactory fac = (DBSpecFactory)get(SPECIFICATION_FACTORY);
+		fac.setDebugMode(mode);
+		if (!mode) System.out.println("Debugging is off, commands will be executed!");
+		else System.out.println("Debugging is on, commands will be NOT executed");
 	}
 }

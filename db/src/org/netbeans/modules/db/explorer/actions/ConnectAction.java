@@ -75,7 +75,7 @@ public class ConnectAction extends DatabaseAction
 							con.setPassword(null);
 							con.setRememberPassword(false);
 						}
-					} else System.out.println("unable to find connection for "+con);
+					}
 				} else return;
 			}
 
