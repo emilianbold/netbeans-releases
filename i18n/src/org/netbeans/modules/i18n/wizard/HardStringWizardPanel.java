@@ -78,11 +78,21 @@ public class HardStringWizardPanel extends JPanel {
     private HardStringWizardPanel() {
         initComponents();
         
+        postInitComponents();
+        
         initTable();
 
         sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
     }
 
+    
+    /** Adds additional init of components. */
+    private void postInitComponents() {
+        sourceLabel.setLabelFor(sourceCombo);
+        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source").charAt(0));
+        hardStringLabel.setLabelFor(hardStringTable);
+        hardStringLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_FoundStrings_Mnem").charAt(0));
+    }
 
     /** Getter for <code>resources</code> property. */
     public Map getSourceMap() {

@@ -20,9 +20,13 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
@@ -30,13 +34,15 @@ import org.openide.TopManager;
 import org.openide.util.HelpCtx; 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListener;
 import org.openide.WizardDescriptor;
 
 
 /**
- * Wizard descriptor of i18n wizard.
+ * Wizard descriptor of i18n wizard and i18n test wizard.
  *
  * @author  Peter Zavadsky
+ * @see org.openide.WizardDescriptor
  */
 public class I18nWizardDescriptor extends WizardDescriptor {
 
@@ -58,6 +64,10 @@ public class I18nWizardDescriptor extends WizardDescriptor {
     /** Cancel button. */
     private final JButton cancelButton = new JButton();
 
+    /** Hack. Listener on root pane. In case not our button was set as default
+     * (the one from superclass) our one is set as default. */
+    private PropertyChangeListener rootListener;
+
     
     /** Creates new I18nWizardDescriptor */
     public I18nWizardDescriptor(WizardDescriptor.Iterator panels, Object settings) {
@@ -70,16 +80,14 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         previousButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Previous"));
         finishButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Finish"));
         cancelButton.setText(NbBundle.getBundle(getClass()).getString("CTL_Cancel"));
-
-        finishButton.setDefaultCapable(true);
-        nextButton.setDefaultCapable(true);
-        previousButton.setDefaultCapable(false);
-        cancelButton.setDefaultCapable(false);
         
         nextButton.addActionListener(listener);
         previousButton.addActionListener(listener);
         finishButton.addActionListener(listener);
         cancelButton.addActionListener(listener);
+        
+        nextButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_Next_Mnem").charAt(0));
+        previousButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_Previous_Mnem").charAt(0));
 
         setOptions(new Object[] { previousButton, nextButton, finishButton, cancelButton });
         setClosingOptions(new Object[] { cancelButton });
@@ -89,7 +97,7 @@ public class I18nWizardDescriptor extends WizardDescriptor {
     }
     
     /** Overrides superclass method. */
-    protected synchronized void updateState () {
+    protected synchronized void updateState() {
         // Do superclass typical job.
         super.updateState();
 
@@ -110,6 +118,50 @@ public class I18nWizardDescriptor extends WizardDescriptor {
             setValue(finishButton);
 
         setHelpCtx(current.getHelp());
+        
+        updateDefaultButton();
+    }
+    
+    /** Updates default button. */
+    private void updateDefaultButton() {
+        JRootPane root = getRootPane();
+
+        if(root == null)
+            return;
+        
+        if(panels.current() instanceof WizardDescriptor.FinishPanel) {
+            root.setDefaultButton(finishButton);
+        } else {
+            root.setDefaultButton(nextButton);
+        }
+    }
+
+    /** Gets root pane. It's retrieved from current panel if possible. 
+     * @return root pane or null of not available */
+    private JRootPane getRootPane() {
+        JRootPane rootPane = null;
+        
+        Component comp = panels.current().getComponent();
+        if(comp instanceof JComponent)
+            rootPane = ((JComponent)comp).getRootPane();
+        
+        if(rootPane != null && rootListener == null)
+            // Set listener on root for cases some needless button
+            // would like to become default one (the ones from superclass).
+            rootPane.addPropertyChangeListener(WeakListener.propertyChange(
+                rootListener = new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if("defaultButton".equals(evt.getPropertyName())) { // NOI18N
+                            Object newValue = evt.getNewValue();
+                            if(newValue != nextButton && newValue != finishButton)
+                                updateDefaultButton();
+                        }
+                    }
+                },
+                rootPane
+            ));
+        
+        return rootPane;
     }
 
     
@@ -131,7 +183,6 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                 } else { 
                     handleNextButton();
                 }
-                
             } else if(ev.getSource () == previousButton) {
                 panels.previousPanel ();
                 updateState ();
@@ -159,10 +210,11 @@ public class I18nWizardDescriptor extends WizardDescriptor {
         
         /** Helper method. It's actually next button event handler. */
         private void handleNextButton() {
-            panels.nextPanel ();
+            panels.nextPanel();
+            
             try {
                 updateState ();
-            } catch (IllegalStateException ise) {
+            } catch(IllegalStateException ise) {
                 panels.previousPanel();
                 TopManager.getDefault().notify(new NotifyDescriptor.Message(ise.getMessage()));
                 updateState();
@@ -197,6 +249,7 @@ public class I18nWizardDescriptor extends WizardDescriptor {
                 handleAction();
             } finally {
                 progressMonitor.reset();
+                cancelButton.setEnabled(true);
             }
         }
         
@@ -220,7 +273,6 @@ public class I18nWizardDescriptor extends WizardDescriptor {
      * Kind of abstract "adapter" implementing <code>WizardDescriptor.Panel interface</code>.
      * Used by i18n wizard.
      *
-     * @author  Peter Zavadsky
      * @see org.openide.WizardDescriptor.Panel
      */
     public static abstract class Panel extends Object implements WizardDescriptor.Panel {

@@ -68,6 +68,8 @@ public class SourceWizardPanel extends JPanel {
         this.descPanel = descPanel;
         
         initComponents();
+
+        postInitComponents();
         
         setPreferredSize(I18nWizardDescriptor.PREFERRED_DIMENSION);
         
@@ -90,6 +92,14 @@ public class SourceWizardPanel extends JPanel {
         sourcesList.setListData(sourceMap.keySet().toArray());
         
         descPanel.fireStateChanged();
+    }
+
+    /** Does additional init work. Sets mnemonics. */
+    private void postInitComponents() {
+        sourcesLabel.setLabelFor(sourcesList);
+        sourcesLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_SelectedSources_Mnem").charAt(0));
+        addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_AddSource_Mnem").charAt(0));
+        removeButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_RemoveSource_Mnem").charAt(0));
     }
     
     /** Init list componnet. */
@@ -116,18 +126,13 @@ public class SourceWizardPanel extends JPanel {
         removeButton = new javax.swing.JButton();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        
         sourcesLabel.setText(NbBundle.getBundle(SourceWizardPanel.class).getString("LBL_SelectedSources"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
         add(sourcesLabel, gridBagConstraints1);
         
-        
-        
         sourcesList.setCellRenderer(new DataObjectListCellRenderer());
         jScrollPane1.setViewportView(sourcesList);
-        
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -139,8 +144,8 @@ public class SourceWizardPanel extends JPanel {
         gridBagConstraints1.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints1);
         
-        
         addButton.setText(NbBundle.getBundle(SourceWizardPanel.class).getString("CTL_AddSource"));
+        
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
@@ -155,8 +160,8 @@ public class SourceWizardPanel extends JPanel {
         gridBagConstraints1.insets = new java.awt.Insets(5, 11, 0, 0);
         add(addButton, gridBagConstraints1);
         
-        
         removeButton.setText(NbBundle.getBundle(SourceWizardPanel.class).getString("CTL_RemoveSource"));
+        
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);

@@ -66,12 +66,20 @@ public class AdditionalWizardPanel extends JPanel {
     /** Creates new form HardCodedStringsPanel */
     private AdditionalWizardPanel() {
         initComponents();
+        
+        postInitComponents();
 
         addAdditionalComponent();
 
         sourceCombo.setModel(new DefaultComboBoxModel(sourceMap.keySet().toArray()));
     }
 
+
+    /** Does additional init of components. */
+    private void postInitComponents() {
+        sourceLabel.setLabelFor(sourceCombo);
+        sourceLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_Source_Mnem").charAt(0));
+    }
     
     /** Getter for <code>sourceMap</code> property. */
     public Map getSourceMap() {

@@ -81,6 +81,8 @@ public class ResourceWizardPanel extends JPanel {
         this.descPanel = descPanel;
         
         initComponents();
+        
+        postInitComponents();
 
         initTable();
     }
@@ -101,6 +103,14 @@ public class ResourceWizardPanel extends JPanel {
         descPanel.fireStateChanged();
     }
 
+    /** Does additional components initialization. Sets mnemonics. */
+    private void postInitComponents() {
+        resourcesLabel.setLabelFor(resourcesTable);
+        resourcesLabel.setDisplayedMnemonic(NbBundle.getBundle(getClass()).getString("LBL_SelectedSources_Mnem").charAt(0));
+        addAllButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_SelectResourceAll_Mnem").charAt(0));
+        addButton.setMnemonic(NbBundle.getBundle(getClass()).getString("CTL_SelectResource_Mnem").charAt(0));
+    }
+    
     /** Inits table component. */
     private void initTable() {
         resourcesTable.setDefaultRenderer(DataObject.class, new DefaultTableCellRenderer() {
