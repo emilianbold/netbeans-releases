@@ -14,7 +14,7 @@ fi
 
 echo "Executing the following command:" >> $LOGFILE
 echo "./uninstall -silent -javahome $JAVAHOME" >> $LOGFILE
-./uninstall -silent -javahome $JAVAHOME >> $LOGFILE
+./uninstall -silent -javahome $JAVAHOME >> $LOGFILE 2>&1
 status=$?
 echo "(`date`) Finished uninstalling Appserver8..." >> $LOGFILE
 

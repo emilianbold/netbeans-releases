@@ -33,7 +33,7 @@ fi
 
 echo "Executing the following command:" >> $LOGFILE
 echo "$EXECNAME -javahome $JAVAHOME -tmpdir $TMPDIR -silent $STATEFILE" >> $LOGFILE
-$EXECNAME -javahome $JAVAHOME -tmpdir $TMPDIR -silent $STATEFILE >> $LOGFILE
+$EXECNAME -javahome $JAVAHOME -tmpdir $TMPDIR -silent $STATEFILE >> $LOGFILE 2>&1
 status=$?
 echo "exitcode = $status" >> $LOGFILE
 
