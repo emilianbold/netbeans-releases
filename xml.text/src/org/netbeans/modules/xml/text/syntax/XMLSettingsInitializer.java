@@ -21,12 +21,11 @@ import java.util.*;
 import javax.swing.KeyStroke;
 
 import org.openide.actions.ToolsAction;
-// import org.openide.actions.OpenAction;
-// import org.openide.actions.ViewAction;
-// import org.openide.actions.CustomizeAction;
-// import org.openide.actions.PropertiesAction;
-// import org.openide.actions.NewAction;
 import org.openide.windows.TopComponent;
+import org.openide.util.HelpCtx;
+import org.openide.actions.OpenAction;
+import org.openide.actions.ViewAction;
+import org.openide.util.actions.SystemAction;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsUtil;
@@ -42,6 +41,8 @@ import org.netbeans.editor.TokenContext;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
+
+import org.netbeans.modules.xml.core.actions.CollectSystemAction;
 
 /**
  *
@@ -105,10 +106,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List dtdActionNames = new ArrayList
                 (Arrays.asList (new String[] {
-                    "org.netbeans.modules.xml.core.actions.WeakAction$Open", // NOI18N
-                    null,
+                    "org.openide.actions.OpenAction", // NOI18N
                     "org.netbeans.modules.xml.core.actions.CollectDTDAction", // NOI18N
-                    null,
                 }));
             dtdActionNames.addAll (commonActionNames);
             settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, dtdActionNames);
@@ -126,13 +125,8 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List xmlActionNames = new ArrayList
                 (Arrays.asList (new String[] {
-                    "org.netbeans.modules.xml.core.actions.WeakAction$Open", // NOI18N
-                    "org.netbeans.modules.xml.core.actions.WeakAction$View", // NOI18N
-//                     OpenAction.class.getName(),
-//                     ViewAction.class.getName(),
-                    null,
+                    "org.netbeans.modules.xml.text.syntax.XMLSettingsInitializer$WeakXMLActions", // NOI18N
                     "org.netbeans.modules.xml.core.actions.CollectXMLAction", // NOI18N
-                    null,
                 }));
             xmlActionNames.addAll (commonActionNames);
             settingsMap.put (ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, xmlActionNames);
@@ -386,7 +380,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
     /** DTD colorings */
     static class DTDTokenColoringInitializer
-    extends SettingsUtil.TokenColoringInitializer {
+        extends SettingsUtil.TokenColoringInitializer {
 
         Font boldFont = SettingsDefaults.defaultFont.deriveFont(Font.BOLD);
         Font italicFont = SettingsDefaults.defaultFont.deriveFont(Font.ITALIC);
@@ -449,6 +443,53 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
         }
 
-    }
+    } // static class DTDTokenColoringInitializer
 
-} // end of inner class XMLSettingsInitializer
+
+
+    //
+    // class WeakXMLActions
+    //
+
+    private static final class WeakXMLActions extends CollectSystemAction {
+        /** Serial Version UID */
+        private static final long serialVersionUID = 8223872687291078210L;
+
+        /**
+         */
+        protected final Class getActionLookClass () {
+            // will not be called because rewritten getPossibleActions by subclasses
+            return null;
+        }
+
+        protected Collection getPossibleActions () {
+            Collection actions = new Vector();
+            actions.add (SystemAction.get (OpenAction.class));
+            actions.add (SystemAction.get (ViewAction.class));
+            return actions;
+        }
+
+
+        /* Do nothing.
+         * This action itself does nothing, it only presents other actions.
+         * @param ev ignored
+         */
+        public void actionPerformed (java.awt.event.ActionEvent e) {
+        }
+
+
+        /* Getter for name
+         */
+        public String getName () {
+            return Util.THIS.getString ("NAME_WeakXMLActions");
+        }
+    
+        /* Getter for help.
+         */
+        public HelpCtx getHelpCtx () {
+            return new HelpCtx (WeakXMLActions.class);
+        }
+        
+    } // class WeakXMLActions
+
+}
