@@ -764,7 +764,7 @@ public final class TestCreator {
                          "\n", // body text
                          Collections.EMPTY_LIST, // type parameters
                          Collections.EMPTY_LIST, // parameters
-                         Collections.singletonList(pkg.getMultipartId().createMultipartId("java.lang.Exception", null, Collections.EMPTY_LIST)), // exception names
+                         Collections.singletonList(pkg.getMultipartId().createMultipartId("Exception", null, Collections.EMPTY_LIST)), // exception names
                          pkg.getMultipartId().createMultipartId("void", null, Collections.EMPTY_LIST), // typeName
                          0 // dimCount
                          );
