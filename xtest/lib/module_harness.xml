@@ -138,15 +138,21 @@ Microsystems, Inc. All Rights Reserved.
     
     <target name="config" depends="init, cleanworkdir">
         <property name="xtest.executors" value=""/>
+        <property name="xtest.testbags" value=""/>
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" 
                            testattributes="${xtest.attribs}"
-                           testexecutors="${xtest.executors}"/>
+                           testexecutors="${xtest.executors}"
+                           testbags="${xtest.testbags}"/>
     </target>
     
     <target name="runtests" depends="config">
-        <echo message="Running ${xtest.module} tests, test type: ${xtest.testtype}, test attributes: ${xtest.attribs}"/>
+        <condition property="xtest.runmessage" value="attributes: ${xtest.attribs}">
+           <equals arg1="${xtest.testbags}" arg2=""/>
+        </condition>
+        <property name="xtest.runmessage" value="testbags: ${xtest.testbags}"/>
+        <echo message="Running ${xtest.module} tests, testtype: ${xtest.testtype}, ${xtest.runmessage}"/>
 
         <property name="test.propertyfile" location="${xtest.workdir}/sys/userdata.properties"/>
    	<write-property propertyPrefix="xtest.userdata" attribs="${xtest.attribs}" file="${test.propertyfile}"/>
