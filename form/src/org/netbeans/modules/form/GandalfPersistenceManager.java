@@ -156,8 +156,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
     loadNonVisuals (mainElement, formManager2);
     loadContainer (mainElement, formManager2, topComp, null);
 
-    FormEditor.displayErrorLog ();
-
     return formManager2;
   }
 
@@ -1284,6 +1282,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  30   Gandalf   1.29        9/7/99   Ian Formanek    Errors notification 
+ *       during form load changed
  *  29   Gandalf   1.28        9/2/99   Ian Formanek    Fixed bug 3696 - When 
  *       connection is copied and pasted into form, the initialization code of 
  *       the ConnectionSource component is not correctly generated. and 3695 - 
