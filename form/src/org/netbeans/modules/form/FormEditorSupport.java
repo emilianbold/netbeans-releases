@@ -792,7 +792,7 @@ public class FormEditorSupport extends JavaEditor
 
     // called by FormDesigner when it is about to close
     void designerToBeClosed(Workspace ws) {
-        if (!formLoaded || formDesigner == null)
+        if (formDesigner == null)
             return;
 
         if (ws == null)
