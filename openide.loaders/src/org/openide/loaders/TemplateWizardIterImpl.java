@@ -7,12 +7,14 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.openide.loaders;
 
+import java.io.IOException;
+import java.util.Set;
 import javax.swing.event.*;
 
 import org.openide.WizardDescriptor;
@@ -23,7 +25,7 @@ import org.openide.WizardDescriptor;
 * @author  Jaroslav Tulach
 */
 final class TemplateWizardIterImpl extends Object
-    implements WizardDescriptor.Iterator, ChangeListener {
+    implements WizardDescriptor.InstantiatingIterator, ChangeListener {
     /** iterator to delegate to */
     private TemplateWizard.Iterator iterator;
 
@@ -174,23 +176,33 @@ final class TemplateWizardIterImpl extends Object
         }        
     }
     
-    public void initialize(TemplateWizard wiz) {
-        this.wizardInstance = wiz;
+    public void initialize (WizardDescriptor wiz) {
+        if (!(wiz instanceof TemplateWizard)) {
+            throw new IllegalArgumentException ("WizardDescriptor must be instance of TemplateWizard, but is " + wiz); // NOI18N
+        }
+        this.wizardInstance = (TemplateWizard)wiz;
         TemplateWizard.Iterator it = iterator;
 	if ((it != null)&&(!iteratorInitialized)) {
 	    it.initialize(wizardInstance);
             iteratorInitialized = true;
 	}
-        // (jrojcek) Fix of bug 9136. Maybe better place is TemplateWizard.initialize().
-        //showingPanel = true;
     }
     
     public void uninitialize() {
-	if (iterator != null) { 
+	if (iterator != null && wizardInstance != null) { 
 	    iterator.uninitialize(wizardInstance);            
             iteratorInitialized = false;
 	}
         showingPanel = true;
+    }
+    
+    public void uninitialize (WizardDescriptor wiz) {
+        uninitialize ();
+    }
+    
+    public Set/*<DataObject>*/ instantiate () throws IOException {
+        assert wizardInstance != null : "wizardInstance cannot be null when instantiate() called."; // NOI18N
+        return wizardInstance.instantiateNewObjects ();
     }
     
     /** Notifies all registered listeners about the event.

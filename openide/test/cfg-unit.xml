@@ -143,8 +143,6 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/InstantiatingIteratorTest.class/testCleanChangeListenerAfterFinish"/>
                 <exclude name="org/openide/InstantiatingIteratorTest.class/testCleanChangeListenerAfterCancel"/>
 
-                <!-- #49332: Allow back to wizard if WD.I fails -->
-                <exclude name="org/openide/InstantiatingIteratorTest.class/testFinishOptionWhenInstantiateFails"/>
                 <!-- #49333: Call WD.II.instantiate() outside AWT queue -->
                 <exclude name="org/openide/InstantiatingIteratorTest.class/testInstantiateOutsideAWTQueue"/>
                 

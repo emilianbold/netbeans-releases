@@ -18,6 +18,7 @@ import java.io.*;
 import java.lang.ref.*;
 import java.net.*;
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -104,6 +105,8 @@ public class TemplateWizard extends WizardDescriptor {
     /** Component which we are listening on for changes of steps */
     private Component lastComp;
     
+    private Set newObjects = null;
+    
     /** Creates new TemplateWizard */
     public TemplateWizard () {
         this (new TemplateWizardIterImpl ());
@@ -141,6 +144,7 @@ public class TemplateWizard extends WizardDescriptor {
     protected void initialize () {
         if (iterator != null) {
             iterator.initialize(this);
+            newObjects = null;
         }
         super.initialize ();
     }
@@ -378,6 +382,39 @@ public class TemplateWizard extends WizardDescriptor {
         showTargetChooser = false;
         return instantiateImpl (template, targetFolder);
     }
+    
+    Set instantiateNewObjects () throws IOException {
+        try {
+            // #17341. The problem is handling ESC -> value is not
+            // set to CANCEL_OPTION for such cases.
+            Object option = getValue();
+            if(option == FINISH_OPTION || option == YES_OPTION
+                || option == OK_OPTION) {
+
+                // show wait cursor when handling instantiate
+                showWaitCursor (); 
+
+                newObjects = handleInstantiate ();
+                if (lastComp != null) {
+                    lastComp.removePropertyChangeListener(propL());
+                    lastComp = null;
+                }
+            } else {
+                if (lastComp != null) {
+                    lastComp.removePropertyChangeListener(propL());
+                    lastComp = null;
+                }
+                newObjects = null;
+            }
+
+        } finally {
+            
+            // set normal cursor back
+            showNormalCursor ();
+        }
+            
+        return newObjects;
+    }
 
     /** Chooses the template and instantiates it.
     * @param template predefined template or nothing
@@ -397,87 +434,59 @@ public class TemplateWizard extends WizardDescriptor {
         // template
         Throwable   thrownMessage = null;
         
-        try {
-            while (true) {
-                // it should loop only in case of IllegalStateException
-
-                // Bugfix #15458: Target folder should be set before readSettings of 
-                // template wizard first panel is called.
-                if (targetFolder != null) {
-                    setTargetFolder (targetFolder);
-                }
-
-                if (template != null) {
-                    // force new template selection 
-                    this.template = null;
-                    setTemplate (template);
-
-                    // make sure that iterator is initialized
-                    if (iterator != null) {
-                        iterator.initialize(this);
-                    }
-                } else if (iterator != null) {
-                    iterator.initialize(this);
-                    iterator.first();
-                }
-
-                try {
-                    updateState();
-                    // bugfix #40876, set null as initial value before show wizard
-                    setValue (null);
-                    final java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
-                    // Bugfix #16161: if there was a message to the user, notify it
-                    // after the dialog has been shown on screen:
-                    if (thrownMessage != null) {
-                        final Throwable t = thrownMessage;
-                        thrownMessage = null;
-                        d.addComponentListener(new java.awt.event.ComponentAdapter() {
-                            public void componentShown(java.awt.event.ComponentEvent e) {
-                                if (t.getMessage() != null) {
-                                    // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
-                                    ErrorManager.getDefault ().notify (ErrorManager.USER, t);
-                                } else {
-                                    // this should be used (it checks for exception
-                                    // annotations and severity)
-                                    ErrorManager.getDefault().notify(t);
-                                }
-                                d.removeComponentListener(this);
-                            }
-                        });
-                    }
-                    d.show ();
-                    d.dispose();
-
-                    if (lastComp != null) {
-                        lastComp.removePropertyChangeListener(propL());
-                        lastComp = null;
-                    }
-
-                    // #17341. The problem is handling ESC -> value is not
-                    // set to CANCEL_OPTION for such cases.
-                    Object option = getValue();
-                    if(option == FINISH_OPTION || option == YES_OPTION
-                        || option == OK_OPTION) {
-                            
-                        // show wait cursor when handling instantiate
-                        showWaitCursor (); 
-                        
-                        return handleInstantiate();
-                    } else {
-                        return null;
-                    }
-
-                } catch (IllegalStateException ise) {
-                    thrownMessage = ise;
-                }
-            }
-        } finally {
-            if (iterator != null) {
-                iterator.uninitialize();
-            }
-            // set normal cursor back
-            showNormalCursor ();
+        // Bugfix #15458: Target folder should be set before readSettings of 
+        // template wizard first panel is called.
+        if (targetFolder != null) {
+            setTargetFolder (targetFolder);
         }
+
+        if (template != null) {
+            // force new template selection 
+            this.template = null;
+            setTemplate (template);
+
+            // make sure that iterator is initialized
+            if (iterator != null) {
+                iterator.initialize(this);
+            }
+        } else if (iterator != null) {
+            iterator.initialize(this);
+            iterator.first();
+        }
+
+        try {
+            updateState();
+            // bugfix #40876, set null as initial value before show wizard
+            setValue (null);
+
+            final java.awt.Dialog d = DialogDisplayer.getDefault().createDialog(this);
+            // Bugfix #16161: if there was a message to the user, notify it
+            // after the dialog has been shown on screen:
+            if (thrownMessage != null) {
+                final Throwable t = thrownMessage;
+                thrownMessage = null;
+                d.addComponentListener(new java.awt.event.ComponentAdapter() {
+                    public void componentShown(java.awt.event.ComponentEvent e) {
+                        if (t.getMessage() != null) {
+                            // this is only for backward compatitility (plus bugfix #15618, using errMan to log stack trace)
+                            ErrorManager.getDefault ().notify (ErrorManager.USER, t);
+                        } else {
+                            // this should be used (it checks for exception
+                            // annotations and severity)
+                            ErrorManager.getDefault().notify(t);
+                        }
+                        d.removeComponentListener(this);
+                    }
+                });
+            }
+            d.show ();
+        } catch (IllegalStateException ise) {
+            thrownMessage = ise;
+        }
+        
+        // here can return newObjects because instantiateNewObjects() was called
+        // from WizardDescriptor before close dialog (on Finish)
+        return newObjects;
     }
     
     private void showWaitCursor () {
@@ -787,7 +796,7 @@ public class TemplateWizard extends WizardDescriptor {
     public interface Iterator extends WizardDescriptor.Iterator,
     java.io.Serializable, org.openide.nodes.Node.Cookie {
         /** Instantiates the template using information provided by
-         * the wizard.
+         * the wizard. If instantiation fails then wizard remains open to enable correct values.
          *
          * @return set of data objects that have been created (should contain
          *   at least one)
@@ -956,7 +965,7 @@ public class TemplateWizard extends WizardDescriptor {
             instantiatingIterator.initialize (wiz);
         }
         
-        public Set/*DataObject*/ instantiate (TemplateWizard wiz) throws IOException {
+        public Set/*<DataObject>*/ instantiate (TemplateWizard wiz) throws IOException {
             // iterate Set and replace unexpected object with dataobjects
             Set workSet = instantiatingIterator.instantiate ();
             java.util.Iterator it = workSet.iterator ();
