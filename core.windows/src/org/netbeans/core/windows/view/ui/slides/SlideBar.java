@@ -90,6 +90,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     private List buttons;
     /** operation handler */
     private CommandManager commandMgr;
+    /** true when this slide bar is active in winsys, false otherwise */
+    private boolean active = false;
     
     /** Creates a new instance of SlideBarContainer with specified orientation.
      * See SlideBarDataModel for possible orientation values.
@@ -131,7 +133,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         SlidingButton curButton;
         for (int i = first; i <= last; i++) {
             curButton = new SlidingButton(data.getTab(i), data.getOrientation());
-            attachListeners(curButton);
+            gestureRecognizer.attachButton(curButton);
             buttons.add(i, curButton);
             add(curButton, i * 2);
             add(createStrut(), i * 2 + 1);
@@ -146,7 +148,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         SlideBarDataModel data = (SlideBarDataModel)e.getSource();
         SlidingButton curButton = null;
         for (int i = last; i >= first; i--) {
-            detachListeners((SlidingButton)buttons.get(i));
+            gestureRecognizer.detachButton((SlidingButton)buttons.get(i));
             buttons.remove(i);
             // have to remove also strut (space) component
             remove(i * 2 + 1);
@@ -189,54 +191,6 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return -1;
     }
     
-    private Component createStrut () {
-        return dataModel.getOrientation() == SlideBarDataModel.SOUTH
-            ? createHorizontalStrut(5) : createVerticalStrut(5);
-    }
-    
-    private void syncWithModel () {
-        assert SwingUtilities.isEventDispatchThread();
-        
-        for (Iterator iter = buttons.iterator(); iter.hasNext(); ) {
-            detachListeners((SlidingButton)iter.next());
-        }
-        removeAll();
-        buttons.clear();
-        
-        List dataList = dataModel.getTabs();
-        SlidingButton curButton;
-        for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
-            curButton = new SlidingButton((TabData)iter.next(), dataModel.getOrientation());
-            attachListeners(curButton);
-            buttons.add(curButton);
-            add(curButton);
-            add(createStrut());
-        }
-
-        commandMgr.syncWithModel();
-    }
-    
-    /** Builds empty border around slide bar. Computes its correct size
-     * based on given orientation
-     */
-    private static Border computeBorder(int orientation) {
-        int bottom = 0, left = 0, right = 0, top = 0;
-        switch (orientation) {
-            case SlideBarDataModel.WEST:
-                top = 1; left = 1; bottom = 5; right = 1; 
-                break;
-                // DesktopImpl.redefineBorderForSouthBar() is the place to set dynamic border for south component.
-//            case SlideBarDataModel.SOUTH:
-//                // XXX - left and right should be width of appropriate slidebar + 5
-//                top = 1; left = 26; bottom = 2; right = 26; 
-//                break;
-            case SlideBarDataModel.EAST:
-                top = 1; left = 1; bottom = 5; right = 1; 
-                break;
-        }
-        return new EmptyBorder(top, left, bottom, right);
-    }
-    
     /** Implementation of ChangeListener, reacts to selection changes
      * and assures that currently selected component is slided in
      */
@@ -272,7 +226,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     public void userClickedSlidingButton(Component clickedButton) {
         int index = getButtonIndex(clickedButton);
         
-        if (index != selModel.getSelectedIndex()) {
+        if (index != selModel.getSelectedIndex() || !isActive()) {
             TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
             if (tc != null) {
                 tc.requestActive();
@@ -280,6 +234,22 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         } else {
             selModel.setSelectedIndex(-1);
         }
+    }
+
+    /** Request for automatic slide in from gesture recognizer */
+    public void userTriggeredAutoSlideIn(Component sourceButton) {
+        int index = getButtonIndex(sourceButton);
+        
+        TopComponent tc = (TopComponent)dataModel.getTab(index).getComponent();
+        if (tc != null) {
+            tc.requestVisible();
+        }
+        
+    }    
+    
+    /** Request for automatic slide out from gesture recognizer */
+    public void userTriggeredAutoSlideOut() {
+        selModel.setSelectedIndex(-1);
     }
     
     public Rectangle getTabBounds(int tabIndex) {
@@ -307,23 +277,37 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return new Rectangle(leftTop, button.getPreferredSize());
     }
     
+    /********* implementation of Tabbed.Accessor **************/
+    
+    public Tabbed getTabbed () {
+        return tabbed;
+    }
+    
+    /********* implementation of LocationInformer **************/
+    
+    public Object getOrientation(Component comp) {
+        return TabDisplayer.ORIENTATION_CENTER;
+    }
+    
     /*************** non public stuff **************************/
     
+    /* #return Component that is slided into desktop or null if no component is
+     * slided currently.
+     */
+    Component getSlidedComp() {
+        return commandMgr.getSlidedComp();
+    }
+    
     void setActive(boolean active) {
+        this.active = active;
         commandMgr.setActive(active);
     }
     
-    private void attachListeners (SlidingButton button) {
-        button.addActionListener(gestureRecognizer);
-        button.addMouseListener(gestureRecognizer);
+    boolean isActive() {
+        return active;
     }
     
-    private void detachListeners (SlidingButton button) {
-        button.removeActionListener(gestureRecognizer);
-        button.removeMouseListener(gestureRecognizer);
-    }
-    
-    private int getButtonIndex(Component button) {
+    int getButtonIndex(Component button) {
         return buttons.indexOf(button);
     }
     
@@ -344,18 +328,54 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         return false;
     }
     
-    
-    /********* implementation of Tabbed.Accessor **************/
-    
-    public Tabbed getTabbed () {
-        return tabbed;
+    private Component createStrut () {
+        return dataModel.getOrientation() == SlideBarDataModel.SOUTH
+            ? createHorizontalStrut(5) : createVerticalStrut(5);
     }
     
-    /********* implementation of LocationInformer **************/
-    
-    public Object getOrientation(Component comp) {
-        return TabDisplayer.ORIENTATION_CENTER;
+    private void syncWithModel () {
+        assert SwingUtilities.isEventDispatchThread();
+        
+        for (Iterator iter = buttons.iterator(); iter.hasNext(); ) {
+            gestureRecognizer.detachButton((SlidingButton)iter.next());
+        }
+        removeAll();
+        buttons.clear();
+        
+        List dataList = dataModel.getTabs();
+        SlidingButton curButton;
+        for (Iterator iter = dataList.iterator(); iter.hasNext(); ) {
+            curButton = new SlidingButton((TabData)iter.next(), dataModel.getOrientation());
+            gestureRecognizer.attachButton(curButton);
+            buttons.add(curButton);
+            add(curButton);
+            add(createStrut());
+        }
+
+        commandMgr.syncWithModel();
     }
+    
+    /** Builds empty border around slide bar. Computes its correct size
+     * based on given orientation
+     */
+    private static Border computeBorder(int orientation) {
+        int bottom = 0, left = 0, right = 0, top = 0;
+        switch (orientation) {
+            case SlideBarDataModel.WEST:
+                top = 1; left = 1; bottom = 5; right = 1; 
+                break;
+                // DesktopImpl.redefineBorderForSouthBar() is the place to set dynamic border for south component.
+//            case SlideBarDataModel.SOUTH:
+//                // XXX - left and right should be width of appropriate slidebar + 5
+//                top = 1; left = 26; bottom = 2; right = 26; 
+//                break;
+            case SlideBarDataModel.EAST:
+                top = 1; left = 1; bottom = 5; right = 1; 
+                break;
+        }
+        return new EmptyBorder(top, left, bottom, right);
+    }
+    
     
 }
 

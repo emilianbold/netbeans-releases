@@ -42,8 +42,6 @@ final class CommandManager implements ActionListener {
     private final SlideBar slideBar;
     /** Local tabbed container used to display slided component */
     private TabbedContainer slidedTabContainer;
-    /** slide in effect */
-    private ScaleFx slideInFx, slideOutFx, slideIntoEdgeFx, slideIntoDesktopFx;
 
     /** Data of slide operation in progress */
     private Component curSlidedComp;
@@ -58,11 +56,7 @@ final class CommandManager implements ActionListener {
     public void slideIn(int tabIndex) {
         SlideBarDataModel model = slideBar.getModel();
         if (isCompSlided()) {
-            if (curSlidedComp == model.getTab(tabIndex).getComponent()) {
-                // same button clicked again, treat as slide out only
-                slideOut(true, true);
-                return;
-            } else {
+            if (curSlidedComp != model.getTab(tabIndex).getComponent()) {
                 // another component requests slide in, so slide out current first
                 slideOut(false, false);
             }
@@ -193,7 +187,7 @@ final class CommandManager implements ActionListener {
         SwingUtilities.convertPointFromScreen (p, comp);
         popup.show(comp, p.x, p.y);
     }    
-    
+
     
     private TabbedContainer getSlidedTabContainer () {
         if (slidedTabContainer == null) {
@@ -268,6 +262,16 @@ final class CommandManager implements ActionListener {
      */
     boolean isCompSlided() {
         return curSlidedComp != null;
+    }
+    
+    /* #return Component that is slided into desktop or null if no component is
+     * slided currently.
+     */
+    Component getSlidedComp() {
+        if (!isCompSlided()) {
+            return null;
+        }
+        return slidedTabContainer;
     }
 
     /** Synchronizes its state with current state of data model. 

@@ -446,8 +446,12 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
             }
 
             if (comp instanceof ModeComponent) {
-                ModeView modeView = ((ModeComponent)comp).getModeView();
-                modeView.getController().userActivatedModeView(modeView);
+                ModeComponent modeComp = (ModeComponent)comp;
+                // don't activate sliding views, they will activate themselves correctly
+                if (modeComp.getKind() != Constants.MODE_KIND_SLIDING) {
+                    ModeView modeView = modeComp.getModeView();
+                    modeView.getController().userActivatedModeView(modeView);
+                }
             }
         }
         
