@@ -411,7 +411,7 @@ final class HardStringWizardPanel extends JPanel {
             else if(column == COLUMN_INDEX_VALUE)
                 return NbBundle.getBundle(HardStringWizardPanel.class).getString("LBL_Value");
             else 
-                return ""; // NOI18N
+                return " "; // NOI18N
         }
     } // End of ResourceTableModel nested class.
 
