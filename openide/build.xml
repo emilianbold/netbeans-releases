@@ -615,7 +615,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
              author="false"
              version="false"
              maxmemory="64m"
-             stylesheetfile="api/doc/javadoc.css"
+             stylesheetfile="api/doc/open-apis.css" 
     >
       <sourcepath>
         <pathelement location="api/doc"/>
