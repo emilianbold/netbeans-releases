@@ -14,7 +14,6 @@
 package org.netbeans.core;
 
 import java.io.*;
-import java.text.MessageFormat;
 import java.util.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -765,7 +764,6 @@ public final class LoaderPoolNode extends AbstractNode {
         /** Creates new node for the loader.
         */
         protected Node[] createNodes (Object loader) {
-            Node n;
             try {
                 return new Node[] { new LoaderPoolItemNode ((DataLoader)loader) };
             } catch (IntrospectionException e) {
@@ -858,6 +856,9 @@ public final class LoaderPoolNode extends AbstractNode {
     /** Index support for reordering of file system pool.
     */
     private final class Index extends org.openide.nodes.Index.Support {
+        
+        Index() {}
+        
         /** Get the nodes; should be overridden if needed.
         * @return the nodes
         * @throws NotImplementedException always

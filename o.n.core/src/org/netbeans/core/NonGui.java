@@ -285,6 +285,7 @@ public class NonGui extends NbTopManager implements Runnable {
                 doExit(0);
             }
             else {
+                // XXX should use a format
                 System.out.println(getString("ERR_UnknownOption")+": "+args[i]);
                 showHelp();
                 doExit(0);
@@ -451,7 +452,6 @@ public class NonGui extends NbTopManager implements Runnable {
         {
     	    StartLog.logStart ("Modules initialization"); // NOI18N
 
-            FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
             getUserDir();
             File moduleDirHome = new File(homeDir, DIR_MODULES);
             File moduleDirUser;
@@ -591,7 +591,7 @@ public class NonGui extends NbTopManager implements Runnable {
     * @return string with resource
     */
     static String getString (String resName) {
-        return NbBundle.getBundle (Main.class).getString (resName);
+        return NbBundle.getMessage(NonGui.class, resName);
     }
 
     /** Getter for a text from resource with one argument.
@@ -600,8 +600,7 @@ public class NonGui extends NbTopManager implements Runnable {
     * @param arg the argument
     */
     static String getString (String resName, Object arg) {
-        MessageFormat mf = new MessageFormat (getString (resName));
-        return mf.format (new Object[] { arg });
+        return NbBundle.getMessage(NonGui.class, resName, arg);
     }
 
     /** Getter for a text from resource with one argument.
@@ -611,8 +610,7 @@ public class NonGui extends NbTopManager implements Runnable {
     * @param arg2 the argument
     */
     static String getString (String resName, Object arg1, Object arg2) {
-        MessageFormat mf = new MessageFormat (getString (resName));
-        return mf.format (new Object[] { arg1, arg2 });
+        return NbBundle.getMessage(NonGui.class, resName, arg1, arg2);
     }
 
     /** Exits from the VM.

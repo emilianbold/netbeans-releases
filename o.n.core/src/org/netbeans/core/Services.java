@@ -195,7 +195,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
         }
         
         try{
-            java.beans.BeanInfo info = org.openide.util.Utilities.getBeanInfo(stype);
             String folder = org.openide.util.Utilities.getShortClassName(stype);
 
             DataFolder dfServices = NbPlaces.getDefault().findSessionFolder("Services"); // NOI18N
@@ -229,7 +228,6 @@ public final class Services extends ServiceType.Registry implements LookupListen
     /** search all data objects containing service type instance. */
     private void searchServices(FileObject folder, Map services) {
         FileObject[] fobjs = folder.getChildren();
-        ArrayList subfolders = null;
         for (int i = 0; i < fobjs.length; i++) {
             if (!fobjs[i].isValid()) continue;
             if (fobjs[i].isFolder()) {
@@ -242,7 +240,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
                     
                     if (instanceOf(inst, ServiceType.class)) {
                         ServiceType ser = (ServiceType) inst.instanceCreate();
-                        Object oldSt = services.put(ser, dobj);
+                        services.put(ser, dobj);
                     }
                 } catch (org.openide.loaders.DataObjectNotFoundException ex) {
                 } catch (Exception ex) {

@@ -47,8 +47,8 @@ public class DataObjectTreeView extends DataObjectPanel {
         super(my);
         initComponent();
         
-        reposTree.getAccessibleContext().setAccessibleName( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSN_DataObjectPanel" ) );
-        setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
+        reposTree.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DataObjectTreeView.class, "ACSN_DataObjectPanel"));
+        setDescription( NbBundle.getMessage(DataObjectTreeView.class, "ACSD_DataObjectPanel"));
     }
     
     public void addNotify() {

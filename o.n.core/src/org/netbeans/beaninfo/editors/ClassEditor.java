@@ -63,7 +63,7 @@ public class ClassEditor extends java.beans.PropertyEditorSupport {
             ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
             setValue (loader.loadClass (text));
         } catch (ClassNotFoundException e) {
-            // ignore
+            throw new IllegalArgumentException(e.toString());
         }
     }
 }

@@ -355,7 +355,7 @@ public final class NbProcessDescriptor extends Object implements java.io.Seriali
                 //
                 if ( (args[i].charAt(0) == '@') &&  
                       processName.endsWith( javacCmd ) ) {
-                     atFileName = new String(args[i]);
+                     atFileName = args[i];
                      continue;
                 }
                 pWriter.println( args[i] );

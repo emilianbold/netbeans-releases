@@ -715,7 +715,6 @@ class DataFolderPanel extends TopComponent implements
     /** Updates directory name
     */
     private void updateDirectory () {
-        StringBuffer sb = new StringBuffer ();
         FileSystem fs = (FileSystem)system.get ();
         if (fs == null) {
             // No known directory?? Leave it blank.
@@ -794,7 +793,6 @@ class DataFolderPanel extends TopComponent implements
      */
     public Object getPropertyValue() throws IllegalStateException {
         if (isValid()) {
-            DataFolder old = df;
             try {
                 df = getTargetFolder(true);
                 return df;

@@ -513,6 +513,9 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Listensm on the changes in IDESettings about the mini status bar.
          */
         private class MiniStatusBarStateListener implements PropertyChangeListener {
+            
+            MiniStatusBarStateListener() {}
+            
             public void propertyChange(PropertyChangeEvent evt) {
                 if (IDESettings.PROP_MINI_STATUS_BAR_STATE.equals (evt.getPropertyName ())) {
                     if (evt.getNewValue ().equals(evt.getOldValue ()))
@@ -701,8 +704,10 @@ public final class NbMainExplorer extends CloneableTopComponent
         /** Multi - purpose listener, listens to: <br>
         * 1) Changes of name, icon, short description of root context.
         * 2) Changes of IDE settings, namely delete confirmation settings */
-        private final class RootContextListener extends Object
-            implements NodeListener {
+        private final class RootContextListener extends Object implements NodeListener {
+            
+            RootContextListener() {}
+            
             public void propertyChange (PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 Object source = evt.getSource();
@@ -1110,8 +1115,10 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
 
     /** Listener on roots, listens to changes of roots content */
-    private final class RootsListener extends Object
-        implements ChangeListener {
+    private final class RootsListener extends Object implements ChangeListener {
+        
+        RootsListener() {}
+        
         public void stateChanged(ChangeEvent e) {
 
                 // possible change in list of roots

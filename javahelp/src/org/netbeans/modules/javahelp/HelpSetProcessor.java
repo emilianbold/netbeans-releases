@@ -117,7 +117,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 boolean merge = (mergeS == null) || mergeS.equals("") || // NOI18N
                 Boolean.valueOf(mergeS).booleanValue();
                 // Make sure nbdocs: protocol is ready:
-                Object ignore = NbDocsStreamHandler.class;
+                Object ignore = NbDocsStreamHandler.class; // DO NOT DELETE THIS LINE
                 hs = new HelpSet(((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)), new URL(url));
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, merge ? Boolean.TRUE : Boolean.FALSE);
                 BPMChanger.invoke(BPMChanger.INC_VALUE);

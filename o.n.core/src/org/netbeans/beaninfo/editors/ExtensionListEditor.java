@@ -132,6 +132,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor,
     */
     public void setAsText (String text) throws java.lang.IllegalArgumentException {
         if ( NbBundle.getMessage ( org.openide.explorer.propertysheet.PropertyPanel.class, "CTL_Different_Values").equals( text ) ) {
+            // XXX huh?!
             setValue( new String[] { text } );
         }
         else {

@@ -139,7 +139,7 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
             setDescription(description);
         } else {
             //Set default value
-            setDescription( NbBundle.getBundle (DataObjectPanel.class).getString ( "ACSD_DataObjectPanel" ) );
+            setDescription(NbBundle.getMessage(DataObjectListView.class, "ACSD_DataObjectPanel"));
         }
         
         chooser.setFileView(new NodeFileView());
@@ -810,46 +810,6 @@ public class DataObjectListView extends DataObjectPanel implements PropertyChang
         
         public String getSystemDisplayName (File f) {
             return f.getName();
-        }
-        
-    }
-    
-    private class NodeL implements NodeListener {
-        
-        /** Fired when a set of new children is added.
-         * @param ev event describing the action
-         *
-         */
-        public void childrenAdded(NodeMemberEvent ev) {
-        }
-        
-        /** Fired when a set of children is removed.
-         * @param ev event describing the action
-         *
-         */
-        public void childrenRemoved(NodeMemberEvent ev) {
-        }
-        
-        /** Fired when the order of children is changed.
-         * @param ev event describing the change
-         *
-         */
-        public void childrenReordered(NodeReorderEvent ev) {
-        }
-        
-        /** Fired when the node is deleted.
-         * @param ev event describing the node
-         *
-         */
-        public void nodeDestroyed(NodeEvent ev) {
-        }
-        
-        /** This method gets called when a bound property is changed.
-         * @param evt A PropertyChangeEvent object describing the event source
-         *   	and the property that has changed.
-         *
-         */
-        public void propertyChange(PropertyChangeEvent evt) {
         }
         
     }

@@ -264,6 +264,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         lastJH = jh;
     }
+    /*
     private void closeFrameViewer() {
         if (frameViewer == null || !frameViewer.isVisible()) throw new IllegalStateException();
         Installer.err.log("Closing frame viewer");
@@ -278,6 +279,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         dialogViewer.dispose();
         dialogViewer = null;
     }
+     */
     
     /** Show some help.
      *This is the basic call which should be used externally
@@ -575,13 +577,13 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         private Runnable run;
         public ProgressDialog(Runnable run, Dialog parent) {
             super(parent, NbBundle.getMessage(JavaHelp.class, "TITLE_loading_help_sets"), true);
-            init(run, parent);
+            init(run);
         }
         public ProgressDialog(Runnable run, Frame parent) {
             super(parent, NbBundle.getMessage(JavaHelp.class, "TITLE_loading_help_sets"), true);
-            init(run, parent);
+            init(run);
         }
-        private void init(Runnable run, Window parent) {
+        private void init(Runnable run) {
             this.run = run;
             // XXX poor UI appearance, could use borders, better layout, ...
             getContentPane().setLayout(new GridLayout(2, 2));

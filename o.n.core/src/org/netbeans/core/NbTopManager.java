@@ -88,10 +88,9 @@ public abstract class NbTopManager /*extends TopManager*/ {
 
     /** initializes properties about builds etc. */
     static {
-        org.openide.filesystems.FileObject fo = null;
         // Set up module-versioning properties, which logger prints.
         // The package here must be one which exists only in openide.jar, not openide-deprecated.jar:
-        Object ignoreme = FileSystem.class;
+        Object ignoreme = FileSystem.class; // DO NOT DELETE UNUSED VAR
         Package p = Package.getPackage ("org.openide.filesystems"); // NOI18N
         
         // Normally the defaults here should not be used. openide.jar, not just openide/src/,
