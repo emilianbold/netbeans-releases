@@ -576,10 +576,8 @@ public class IndexSearch
             */
 
             indexSearch.setName( ResourceUtils.getBundledString ("CTL_SEARCH_WindowTitle") );
-            indexSearch.setIcon( windowIcon );
-
         }
-
+        indexSearch.setIcon( windowIcon );
         return indexSearch;
     }
 
@@ -610,6 +608,7 @@ public class IndexSearch
         super.readExternal( in );
         indexSearch = this;
         resolveButtonState();
+        indexSearch = getDefault(); //test for null
     }
 
     public void writeExternal(final ObjectOutput out)
