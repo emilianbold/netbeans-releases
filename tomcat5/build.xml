@@ -39,6 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/jmxri.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/javax77.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/ext/jsr88javax.jar"/>
+        <pathelement location="${nb_root}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
         <!--<pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>-->
         <fileset dir="${nb_root}/openide/netbeans/lib">
           <include name="openide*.jar" />

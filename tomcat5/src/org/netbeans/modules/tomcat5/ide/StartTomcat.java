@@ -44,6 +44,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.netbeans.api.debugger.DebuggerInfo;
 
 /** Extension to JSR88 that enables starting of Tomcat.
  *
@@ -100,6 +101,48 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
         return this;
     }
+    
+    /**
+     * Returns true if the admin server is also a target server (share the same vm).
+     * Start/stopping/debug apply to both servers.
+     * @return true when admin is also target server
+     */
+    public boolean isAlsoTargetServer(Target target) { return false; }
+
+    /**
+     * Returns true if the admin server should be started before configure.
+     */
+    public boolean needsStartForConfigure() { return false; } //PENDING
+
+    /**
+     * Returns true if this admin server is running.
+     */
+    public boolean isRunning() { return true; } //PENDING
+
+    /**
+     * Returns true if this target is in debug mode.
+     */
+    public boolean isDebuggable(Target target) { return false; //PENDING 
+    }
+
+    /**
+     * Stops the admin server. The DeploymentManager object will be disconnected.
+     * All diagnostic should be communicated through ServerProgres with no 
+     * exceptions thrown.
+     * @return ServerProgress object used to monitor start server progress
+     */
+    public ProgressObject stopDeploymentManager() { return null; }//PENDING
+
+    /**
+     * Start or restart the target in debug mode.
+     * If target is also domain admin, the amdin is restarted in debug mode.
+     * All diagnostic should be communicated through ServerProgres with no exceptions thrown.
+     * @param target the target server
+     * @return ServerProgress object to monitor progress on start operation
+     */
+    public ProgressObject startDebugging(Target target){ return null; }//PENDING
+
+    public DebuggerInfo getDebugInfo(Target target) { return null; }//PENDING
     
     public synchronized void run () {
         // PENDING check whether is runs or not
