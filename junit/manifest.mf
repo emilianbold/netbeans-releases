@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.junit/2
-OpenIDE-Module-Name: Unit tests
+OpenIDE-Module-Name: JUnit tests
 OpenIDE-Module-Display-Category: Tools
 OpenIDE-Module-Description: org.netbeans.modules.junit.docs.JUnitHelpSet
 OpenIDE-Module-Short-Description: Creates and executes tests suitable for JUnit framework.
