@@ -97,6 +97,13 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         ((CatalogChildren)getChildren()).reload();  // may be double reload
     }
 
+    /** This node cannot be destroyed, just unmount.
+     * @return always <CODE>false</CODE>
+     */
+    public boolean canDestroy () {
+        return false;
+    }
+
     /**
      * Remove itseld from CatalogSettings,
      */
