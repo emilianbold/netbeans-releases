@@ -37,6 +37,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <center>
             <h1>NetBeans API List</h1>
+            <h3>Version 4.0</h3>
             <xsl:if test="$date" >
                 <xsl:value-of select="$date" />
                 <p/>
