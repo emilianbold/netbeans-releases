@@ -298,7 +298,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             Installer.err.log("showHelp later...");
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    showHelp(ctx2);
+                    showHelp(ctx2, showmaster);
                 }
             });
             return;
