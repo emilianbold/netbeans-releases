@@ -92,7 +92,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put (SettingsNames.ABBREV_MAP, getXMLAbbrevMap());
 
             SettingsUtil.updateListSetting (settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
-                    new TokenContext[] { XMLTokenContext.context }
+                    new TokenContext[] { XMLDefaultTokenContext.context }
             );
 
             List xmlActionNames = new ArrayList (Arrays.asList
@@ -167,17 +167,29 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
      */
     MultiKeyBinding[] getXMLKeyBindings() {
         return new MultiKeyBinding[] {
-                   new MultiKeyBinding(
-                       new KeyStroke[] {
-                           KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK),
-                       },
-                       "macro-put-end-tag" // NOI18N
-                   ),
+                    
+                    new MultiKeyBinding(
+                        new KeyStroke[] {
+                            KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK),
+                        },
+                        "macro-put-end-tag" // NOI18N
+                    ),
+                    
+                    new MultiKeyBinding(
+                        KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK),
+                        XMLKit.xmlCommentAction
+                    ),
+
+                    new MultiKeyBinding(
+                         KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK),
+                         XMLKit.xmlUncommentAction
+                    ),                   
 
                };
     }
 
-    
+
+    // just a temporary macro emulating put-end-tag
     Map getXMLMacroMap() {
         Map xmlMacroMap = new HashMap();
         
@@ -233,55 +245,88 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
         Coloring numbersColoring = new Coloring(null, Color.red, null);
 
         public XMLTokenColoringInitializer() {
-            super(XMLTokenContext.context);
+            super(XMLDefaultTokenContext.context);
         }
 
-        public Object getTokenColoring(TokenContextPath tokenContextPath,
-        TokenCategory tokenIDOrCategory, boolean printingSet) {
+        public Object getTokenColoring(TokenContextPath tokenContextPath, TokenCategory tokenIDOrCategory, boolean printingSet) {
             if (!printingSet) {
+
                 switch (tokenIDOrCategory.getNumericID()) {
-                    case XMLTokenContext.TAG_ID:
+                    case XMLDefaultTokenContext.TEXT_ID:
+                    case XMLDefaultTokenContext.WS_ID:
+                        return SettingsDefaults.emptyColoring;
+                        
+                    case XMLDefaultTokenContext.ERROR_ID:
+                        return new Coloring(null, Color.white, Color.red);
+                        
+                    case XMLDefaultTokenContext.TAG_ID:
+                        return new Coloring(null, Color.blue, null);
+                        
+                    case XMLDefaultTokenContext.ARGUMENT_ID:
+                        return new Coloring(null, Color.green.darker().darker(), null);
+                        
+                    case XMLDefaultTokenContext.OPERATOR_ID:
+                        return new Coloring(null, Color.green.darker().darker(), null);
+                        
+                    case XMLDefaultTokenContext.VALUE_ID:
+                        return new Coloring(null, Color.magenta, null);
+                        
+                    case XMLDefaultTokenContext.BLOCK_COMMENT_ID:
+                        return new Coloring(italicFont, Coloring.FONT_MODE_APPLY_STYLE,
+                        Color.gray, null);
+                                                
+                    case XMLDefaultTokenContext.DECLARATION_ID:
+                        return new Coloring(boldFont, Color.blue.darker().darker(), null);
+                        
+                    case XMLDefaultTokenContext.CHARACTER_ID:
+                        return new Coloring(null, Color.red.darker(), null);
+                }
+                
+                                
+/*                
+                switch (tokenIDOrCategory.getNumericID()) {
+                    case XMLDefaultTokenContext.TAG_ID:
                         return new Coloring (null, Coloring.FONT_MODE_APPLY_STYLE,
                                        Color.blue, null);
 
-                    case XMLTokenContext.PLAIN_ID:
+                    case XMLDefaultTokenContext.PLAIN_ID:
                         return new Coloring (null, Color.black, null);
 
-                    case XMLTokenContext.STRING_ID:
+                    case XMLDefaultTokenContext.STRING_ID:
                         return new Coloring (null, Color.magenta, null);
 
-                    case XMLTokenContext.SYMBOL_ID:
+                    case XMLDefaultTokenContext.SYMBOL_ID:
                         return new Coloring (boldFont, Color.black, null);
 
-                    case XMLTokenContext.TARGET_ID:
+                    case XMLDefaultTokenContext.TARGET_ID:
                         return new Coloring (boldFont, Coloring.FONT_MODE_APPLY_STYLE,
                                        Color.red.darker(), null);
 
-                    case XMLTokenContext.KW_ID:
+                    case XMLDefaultTokenContext.KW_ID:
                         return new Coloring (boldFont, Color.blue.darker().darker(), null);
 
-                    case XMLTokenContext.COMMENT_ID:
+                    case XMLDefaultTokenContext.COMMENT_ID:
                         return new Coloring (italicFont, Coloring.FONT_MODE_APPLY_STYLE,
                                        Color.lightGray, null);
 
-                    case XMLTokenContext.ATT_ID:
+                    case XMLDefaultTokenContext.ATT_ID:
                         return new Coloring (boldFont, Coloring.FONT_MODE_APPLY_STYLE,
                                        Color.green.darker().darker(), null);
 
-                    case XMLTokenContext.REF_ID:
+                    case XMLDefaultTokenContext.REF_ID:
                         return new Coloring (null, Color.blue.brighter().brighter(), null);
 
-                    case XMLTokenContext.CDATA_ID:
+                    case XMLDefaultTokenContext.CDATA_ID:
                         return new Coloring (null, Color.yellow.darker(), null);
 
-                    case XMLTokenContext.ERROR_ID:
+                    case XMLDefaultTokenContext.ERROR_ID:
                         return new Coloring (null, Color.red, null);
                         
-                    case XMLTokenContext.CDATA_MARKUP_ID:
+                    case XMLDefaultTokenContext.CDATA_MARKUP_ID:
                         return new Coloring (null, Color.green.darker(), null);
 
                 }
-
+*/
             } else { // printing set
                 switch (tokenIDOrCategory.getNumericID()) {
 

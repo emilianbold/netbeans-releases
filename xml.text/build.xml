@@ -54,6 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
                 <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
+        	<pathelement location="${bin_root}/core/release/lib/ext/xerces.jar"/>  <!-- DOM -->
                 <pathelement location="${tax_root}/libsrc/"/>
                 <pathelement location="${core_root}/src/"/>
             </classpath>
@@ -133,5 +134,4 @@ Microsystems, Inc. All Rights Reserved.
     <target name="test">
         <ant dir="testbase" target="run"/>
     </target>
-
 </project>

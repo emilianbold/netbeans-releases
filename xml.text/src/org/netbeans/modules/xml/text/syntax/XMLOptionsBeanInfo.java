@@ -18,7 +18,7 @@ import java.awt.Image;
 
 /** BeanInfo for plain options
  *
- * @author Libor Karmolis
+ * @author Libor Kramolis
  */
 public class XMLOptionsBeanInfo extends org.netbeans.modules.editor.options.PlainOptionsBeanInfo {
 

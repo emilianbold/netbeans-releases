@@ -130,7 +130,7 @@ public class DTDSyntaxTokenMapper implements JJMapperInterface, JJConstants, DTD
         switch (state) {
             case IN_COMMENT:
                 if (!("--".equals(token) || "-".equals(token))) { // NOI18N
-                    return XMLTokenContext.COMMENT;
+                    return DTDTokenContext.COMMENT;
                 } else {
                     return cannotGuess(lastBuffer);
                 }
