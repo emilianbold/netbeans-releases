@@ -7,13 +7,13 @@
   <folder name="Welcome">
 
     <file name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance"/>
-    <attribute name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
+    <attr name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true"/>
     <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
-    <attribute name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance" boolvalue="true"/>
+    <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance" boolvalue="true"/>
     <file name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance"/>
-    <attribute name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true"/>
+    <attr name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true"/>
     <file name="org-netbeans-modules-autoupdate-UpdateAction.instance"/>
-    <attribute name="org-netbeans-modules-autoupdate-UpdateAction.instance/javax-swing-JLabel.instance" boolvalue="true"/>
+    <attr name="org-netbeans-modules-autoupdate-UpdateAction.instance/javax-swing-JLabel.instance" boolvalue="true"/>
     <file name="javax-swing-JLabel.instance"/>
 
   </folder>
@@ -90,12 +90,12 @@
 
 
   <folder name="Startup">
-    <attribute name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
+    <attr name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
   </folder>
 
   <folder name="Templates">
-    <attribute name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
-    <attribute name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
+    <attr name="SystemFileSystem.localizingBundle" value="org.netbeans.core.Bundle"/>
+    <attr name="templateWizardURL" urlvalue="nbresbootloc:/org/netbeans/core/resources/templatesRootDescription.html"/>
   </folder>
 
 </filesystem>
