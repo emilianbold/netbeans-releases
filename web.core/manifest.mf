@@ -35,9 +35,6 @@ Name: org/netbeans/modules/web/taglib/TLDLoader.class
 OpenIDE-Module-Class: Loader
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 
-Name: org/netbeans/modules/web/core/EditQueryStringAction.class
-OpenIDE-Module-Class: Action
-
 Name: org/netbeans/modules/web/core/jsploader/JspLoader.class
 OpenIDE-Module-Class: Loader
 
