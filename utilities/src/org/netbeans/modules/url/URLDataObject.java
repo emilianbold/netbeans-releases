@@ -16,6 +16,7 @@ package org.netbeans.modules.url;
 
 
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -40,12 +41,15 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.NotifyDescriptor;
+import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
 
@@ -92,40 +96,17 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         try {
             urlString = new BufferedReader (new InputStreamReader(is = urlFile.getInputStream ())).readLine ();
         } catch (FileNotFoundException fne) {
-            TopManager.getDefault ().notify (
-                new NotifyDescriptor.Message (
-                    MessageFormat.format (
-                        NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_FileNotFoundError"),
-                        new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.') }
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE
-                )
-            );
-                    
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                fne.printStackTrace ();
-                    
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, fne);
             return null;
         } catch (IOException ioe) {
-            TopManager.getDefault().notify (
-                new NotifyDescriptor.Message (
-                    MessageFormat.format (
-                        NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_IOError"),
-                        new Object[] { urlFile.getPackageNameExt (File.separatorChar, '.'), ioe.getMessage () }
-                    ),
-                    NotifyDescriptor.ERROR_MESSAGE
-                )
-            );
-                    
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace ();
-                    
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
             return null;
         } finally {
             if(is != null)
                 try {
                     is.close ();
                 } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
         }
         
@@ -150,8 +131,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             os.write (newUrlString.getBytes ());
             os.close ();
         } catch(IOException ioe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace ();
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
         } finally {
             if (lock != null)
                 lock.releaseLock ();
@@ -201,7 +181,7 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
         // hack for finding default browser set in global IDE settings
         HtmlBrowser.Factory fact = null;
         try {
-            FileObject fo = TopManager.getDefault ().getRepository ()
+            FileObject fo = Repository.getDefault ()
                 .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
@@ -215,10 +195,8 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
                 }
             }
         } catch (Exception ex) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) {
-                // not a big problem: HtmlBrowser will create some browser
-                ex.printStackTrace ();
-            }
+            // not a big problem: HtmlBrowser will create some browser
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent(fact, true, true);
@@ -357,9 +335,6 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
     /** Bridge which binds a URLNode to a menu item or toolbar button. */
     private static class SimpleNodeButtonBridge extends Object implements ActionListener, PropertyChangeListener {
 
-        /** Icon. */
-        private static ImageIcon defaultIcon;
-        
         /** Node to bind with. */
         private final DataObject dataObject;
         
@@ -374,19 +349,17 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
             
             updateText();
 
-            if(defaultIcon == null) {
-                defaultIcon = new ImageIcon(URLDataObject.class.getResource("/org/netbeans/modules/url/urlObject.gif")); // NOI18N
-            }
+            Image defaultImage = Utilities.loadImage("org/netbeans/modules/url/urlObject.gif"); // NOI18N
 
             try { 
                 this.button.setIcon(new ImageIcon(this.dataObject.getPrimaryFile().getFileSystem().getStatus().annotateIcon(
-                    defaultIcon.getImage(), 
+                    defaultImage,
                     BeanInfo.ICON_COLOR_16x16, 
                     dataObject.files()))
                 );
             } catch(FileStateInvalidException fsie) {
                 // No filesystem, set defaultIcon.
-                this.button.setIcon(defaultIcon);
+                this.button.setIcon(new ImageIcon(defaultImage));
             }
             
             HelpCtx.setHelpIDString(button, dataObject.getHelpCtx().getHelpID());
