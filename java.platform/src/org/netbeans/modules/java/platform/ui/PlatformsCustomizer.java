@@ -17,6 +17,7 @@ import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author  tom
  */
-public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, ExplorerManager.Provider {
+public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyChangeListener, VetoableChangeListener, ExplorerManager.Provider {
 
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
     private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
@@ -72,11 +73,23 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
             Node[] nodes = (Node[]) evt.getNewValue();
-            if (nodes.length==0) {
+            if (nodes.length!=1) {
                 selectPlatform (null);
             }
             else {
                 selectPlatform (nodes[0]);
+            }
+        }
+    }
+    
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+        if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
+            Node[] nodes = (Node[]) evt.getNewValue();
+            if (nodes.length>1) {
+                throw new PropertyVetoException ("Invalid length",evt);   //NOI18N
+            }
+            if (nodes.length == 1 && nodes[0].getLookup().lookup(JavaPlatform.class) == null) {
+                throw new PropertyVetoException ("Invalid node",evt);   //NOI18N
             }
         }
     }
@@ -91,6 +104,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.manager = new ExplorerManager ();
             this.manager.setRootContext(new AbstractNode (getChildren()));
             this.manager.addPropertyChangeListener (this);
+            this.manager.addVetoableChangeListener(this);
         }
         return manager;
     }
@@ -238,7 +252,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
         DataObject dobj = (DataObject) nodes[0].getLookup().lookup (DataObject.class);
         if (dobj == null) {
-            assert false : "Can not find platform definition.";      //NOI18N
+            assert false : "Can not find platform definition for node: "+ nodes[0].getDisplayName();      //NOI18N
             return;
         }
         try {
