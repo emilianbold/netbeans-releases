@@ -1181,6 +1181,7 @@ public class Evaluator implements JavaParserVisitor {
         }
         switch (token.kind) {
         case JavaParserConstants.IDENTIFIER:
+            data = resolveVariable(data); // data may be an Identifier, object.field.anotherfield
             Assert.assertAssignable(data, ObjectReference.class, node, "identifierNotAReference", data);
             return new Identifier(false, (ObjectReference)data, token.image);
 
