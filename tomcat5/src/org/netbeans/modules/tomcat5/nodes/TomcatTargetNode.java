@@ -52,7 +52,7 @@ public class TomcatTargetNode extends AbstractNode {
         
         public WebModuleHolderNode (Lookup lookup){
             super(new TomcatWebModuleChildren(lookup));
-            setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebModules"));  // NOI18N
+            setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
             getCookieSet().add(new RefreshWebModuleChildren ((TomcatWebModuleChildren)getChildren()));
             setIconBase(ICON_BASE);
         }
