@@ -15,8 +15,8 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <code-name-base>org.netbeans.libs.commons_logging</code-name-base>
-            <path>libs/commons_logging</path>
+            <code-name-base>org.netbeans.libs.jini.jini_core</code-name-base>
+            <path>jini/libs/jini_core</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
@@ -26,9 +26,9 @@ Microsystems, Inc. All Rights Reserved.
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages>
-                <subpackages>org.apache.commons.logging</subpackages>
-            </public-packages>
+           <public-packages>
+                <subpackages>net.jini.core</subpackages>
+           </public-packages>
         </data>
     </configuration>
 </project>
