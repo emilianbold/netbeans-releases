@@ -497,9 +497,8 @@
     </tocitem> <!-- Packaging Web Applications -->
     
     <tocitem text="Deploying Web Applications"> 
-        <tocitem text="About Deploying Web Applications" target="webmod_deploy"/>
-        <tocitem text="About Running Web Applications" target="webmod_servconfig" />
-        <tocitem text="Changing Web Browsers for Running Web Applications" target="webmod_browser" />
+	<tocitem text="About Deploying Web Applications" target="webmod_servconfig" />
+	<tocitem text="Changing Web Browsers" target="webmod_browser" />
         <tocitem text="Changing Web Servers" target="webmod_server_set" />
         <tocitem text="Passing Parameters to a JSP Page" target="jsp_queryparams"/>
         <tocitem text="Deploying an Applet" target="webmod_runapplet"/>
