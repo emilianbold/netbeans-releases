@@ -40,9 +40,10 @@ import org.openide.explorer.propertysheet.PropertySheetView;
 import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.explorer.view.NodeTableModel;
-import org.openide.windows.WindowManager;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.openide.windows.Workspace;
 import org.openide.cookies.InstanceCookie;
 
@@ -151,7 +152,12 @@ public class OptionsAction extends CallableSystemAction {
             getExplorerManager().addPropertyChangeListener(this);
         }
         
-
+        /** Overriden to explicitely set persistence type of OptionsPanel
+         * to PERSISTENCE_ALWAYS */
+        public int getPersistenceType() {
+            return TopComponent.PERSISTENCE_ALWAYS;
+        }
+        
         // #37673 It was requested to update helpCtx according to node selection in explorer.
         public void propertyChange(PropertyChangeEvent evt) {
             if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
