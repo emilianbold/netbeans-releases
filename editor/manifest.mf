@@ -11,3 +11,6 @@ OpenIDE-Module-Class: Option
 Name: org/netbeans/modules/editor/java/JCUpdateAction.class
 OpenIDE-Module-Class: Action
 
+Name: org/netbeans/modules/editor/java/JavaIndentEngine.class
+OpenIDE-Module-Class: Service
+
