@@ -478,7 +478,9 @@ public class DataViewWindow extends TopComponent
 	            	String nextset = bundle.getString("DataViewNextFetchButton");
 	            	String allset = bundle.getString("DataViewAllFetchButton");
 	            	String message = MessageFormat.format(bundle.getString("DataViewMessage"), arr);
-	            	NotifyDescriptor ndesc = new NotifyDescriptor(message, "Fetch data", NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION);
+	            	NotifyDescriptor ndesc = new NotifyDescriptor(
+                          message, "Fetch data", NotifyDescriptor.YES_NO_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE, new Object[] {nextset, allset, cancel}, NotifyDescriptor.CANCEL_OPTION
+                        );
 	            	String retv = (String)TopManager.getDefault().notify(ndesc);	
 	            	if (retv.equals(allset)) limit = Integer.MAX_VALUE;
 	            	else if (retv.equals(nextset)) limit = limit + step;
@@ -617,6 +619,8 @@ public class DataViewWindow extends TopComponent
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         1/5/00   Jaroslav Tulach Change in notify 
+ *       descriptor.
  *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
