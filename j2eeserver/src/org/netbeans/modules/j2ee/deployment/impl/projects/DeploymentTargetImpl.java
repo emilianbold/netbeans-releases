@@ -25,14 +25,15 @@ import org.openide.awt.StatusDisplayer;
 import java.util.*;
 import java.io.File;
 import java.net.URL;
-
+import java.lang.ref.WeakReference;
 /** 
  *
  * @author  George FinKlang
  */
 public final class DeploymentTargetImpl implements DeploymentTarget {
     
-    J2eeProfileSettings settings;
+    //PENDING workaround for #32794
+    WeakReference settings;
     J2eeDeploymentLookup deployment;
     TargetModule[] targetModules;
     
@@ -40,12 +41,12 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
      * @param target build target that provides J2eeModule
      */
     public DeploymentTargetImpl(J2eeProfileSettings settings, J2eeDeploymentLookup deployment) {
-        this.settings = settings;
+        this.settings = new WeakReference (settings);
         this.deployment = deployment;
     }
     
     public boolean dontDeploy() {
-        return settings.DEPLOY_NONE.equals (settings.getDeployment());
+        return J2eeProfileSettings.DEPLOY_NONE.equals (getSettings ().getDeployment());
     }
     
     //PENDING: UI
@@ -72,14 +73,14 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
     
     public void startClient(String partUrl) {
-        if (! settings.getShowClient().booleanValue())
+        if (! getSettings ().getShowClient().booleanValue())
             return;
         
         // determine client module
         J2eeModule clientModule = getModule();
         String url = null;
         if (clientModule instanceof J2eeModuleContainer) {
-            String clientName = settings.getClientModule();
+            String clientName = getSettings ().getClientModule();
             J2eeModuleContainer ear = (J2eeModuleContainer)clientModule;
             J2eeModule[] children = ear.getModules(null);
             clientModule = null;
@@ -162,7 +163,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         return urlString;
     }
     private void startWebClient(String urlString) {
-        String defaultURL = settings.getDefaultUrl();
+        String defaultURL = getSettings ().getDefaultUrl();
         if (defaultURL != null && ! defaultURL.trim().equals("") ){
             urlString += "/" + defaultURL;
         }
@@ -183,18 +184,18 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     }
     
     public ServerString getServer() {
-        return settings.getServerString();
+        return getSettings ().getServerString();
     }
     
     public TargetModule[] getTargetModules() {
         if (targetModules == null)
-            targetModules = settings.getTargetModules();
+            targetModules = getSettings ().getTargetModules();
         return targetModules;
     }
     
     public void setTargetModules(TargetModule[] targetModules) {
         this.targetModules = targetModules;
-        settings.setTargetModules(targetModules);
+        getSettings ().setTargetModules(targetModules);
     }
     
     public DeploymentConfigurationProvider getDeploymentConfigurationProvider() {
@@ -203,5 +204,13 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     
     public J2eeModuleProvider.ConfigSupport getConfigSupport() {
         return deployment.getConfigSupport();
+    }
+    
+    private J2eeProfileSettings getSettings () {
+        J2eeProfileSettings s = (J2eeProfileSettings) settings.get ();
+        if (s == null) {
+            org.openide.ErrorManager.getDefault ().log ("j2eeserver is probably working with an already unmounted module, see #32794"); //NOI18N
+        }
+        return s;
     }
 }
