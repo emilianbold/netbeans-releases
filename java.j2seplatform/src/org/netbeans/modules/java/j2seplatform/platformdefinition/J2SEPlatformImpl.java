@@ -17,6 +17,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.net.URL;
+import java.io.File;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -41,6 +42,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String PLAT_PROP_ANT_NAME="platform.ant.name";             //NOI18N
     protected static final String SYSPROP_BOOT_CLASSPATH = "sun.boot.class.path";     // NOI18N
     protected static final String SYSPROP_JAVA_CLASS_PATH = "java.class.path";        // NOI18N
+    protected static final String SYSPROP_JAVA_EXT_PATH = "java.ext.dirs";            //NOI18N
 
     /**
      * Holds the display name of the platform
@@ -136,6 +138,10 @@ public class J2SEPlatformImpl extends JavaPlatform {
             if (cp != null)
                 return cp;
             String pathSpec = (String)getSystemProperties().get(SYSPROP_BOOT_CLASSPATH);
+            String extPathSpec = Util.getExtensions((String)getSystemProperties().get(SYSPROP_JAVA_EXT_PATH));
+            if (extPathSpec != null) {
+                pathSpec = pathSpec + File.pathSeparator + extPathSpec;
+            }
             cp = Util.createClassPath (pathSpec);
             bootstrap = new WeakReference(cp);
             return cp;

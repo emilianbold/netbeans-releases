@@ -136,6 +136,25 @@ public class Util {
         return null;
     }
 
+    public static String getExtensions (String extPath) {
+        if (extPath == null) {
+            return null;
+        }
+        StringBuffer sb = new StringBuffer();
+        StringTokenizer tk = new StringTokenizer (extPath, File.pathSeparator);
+        while (tk.hasMoreTokens()) {
+            File extFolder = new File(tk.nextToken());
+            File[] files = extFolder.listFiles();
+            if (files != null) {
+                for (int i = 0; i < files.length; i++) {
+                    sb.append(File.pathSeparator);
+                    sb.append(files[i].getAbsolutePath());
+                }
+            }
+        }
+        return sb.substring(File.pathSeparator.length());
+    }
+
     // copy pasted from org.openide.modules.Dependency:
     /** Try to make a specification version from a string.
      * Deal with errors gracefully and try to recover something from it.
