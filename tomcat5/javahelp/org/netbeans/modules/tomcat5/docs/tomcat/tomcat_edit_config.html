@@ -24,17 +24,56 @@
   information for the server. For simple web applications, editing the <code>server.xml</code> 
   file is not necessary because the IDE makes the necessary changes automatically. 
   Most edits to the server configuration file can be achieved by editing the properties 
-  for the Tomcat server node and for the <tt>WEB-INF</tt> nodes, or by using menu 
+  for the Tomcat Server node, or by using menu 
   commands in the Projects window, Files window, and Runtime window. </p>
 <p>Editing is usually necessary only for advanced configuration, such as setting 
   up authentication based on JNDI or database lookups. For more information about 
-  configuring Tomcat, see <code>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/index.html</code>. 
+  configuring Tomcat, see:
+<p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/index.html">
+        <param name="text" value="<html><u>http://jakarta.apache.org/tomcat/tomcat-5.0-doc/config/index.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+</object>. 
 </p>
 <p>The <tt>server.xml</tt> file can be in one of two places. Typically, you edit 
   the <tt>server.xml</tt> file that is in the <i>tomcat-installation-dir</i><tt>/conf 
   </tt>directory. However, if the server node's property sheet shows a base directory 
   path that is different from the home directory path, then you must edit the 
-  <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory.</p><br>
+  <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory.</p>
+<p>You can edit the <tt>server.xml</tt> file that is in the <i>base-dir</i><tt>/conf</tt> directory
+   by using the Tomcat Manager or the Source Editor. It is recommended that only advanced users
+   edit the <tt>server.xml</tt> file in the Source Editor.</p>
+<p><b>To edit the server.xml file in the Tomcat Manager:</b>
+<ol><li>In the Runtime window, expand the Server Registry node and the Tomcat 5 Servers node.</li>
+<li>If the text to the right of the Tomcat instance node does not end with "[running]",
+start the server by right-clicking the Tomcat instance node and choosing Start/Stop Server.
+Click Start Server.</li>
+<li>Expand the Web Modules node. Right-click the node for the <tt>/admin</tt> context and choose
+Open in Browser. The Tomcat
+Server Administration Tool opens in the IDE's default web browser.</li>
+<li>Type a User Name and Password for a Tomcat user to whom the "admin" role has been assigned. Click login.
+The "Tomcat Web Server Administration Tool" (the Admin tool) should open
+in the IDE's default web browser.
+<p><b>Note:</b> If the Admin tool does not
+open, or if you don't have a user name or password, check the <tt>tomcat-users.xml</tt> file
+in your <tt>$CATALINA_BASE/conf</tt> folder. By default
+the <tt>$CATALINA_BASE/conf</tt> folder is the
+<tt>\.netbeans\dev\jakarta-tomcat-5.0.28_base\conf</tt> folder in your NetBeans user directory.
+In the <tt>tomcat-users.xml</tt> file, check that a role called "admin" exists and that the role is assigned
+to a user. If necessary, define the "admin" role, assign the "admin" role to a user, save the file,
+and, using the Runtime tab, stop and restart the Tomcat instance.</li></ol>
+
+<p><b>To edit the server.xml file in the Source Editor:</b>
+<ol>
+<li>In the Runtime window, expand the Server Registry node and the Tomcat 5 Servers node.</li>
+<li>If the text to the right of the Tomcat instance node ends with "[running]",
+stop the server by right-clicking the Tomcat instance node and choosing Start/Stop Server.
+Click Stop Server.</li>
+<li>Right-click the Tomcat instance node and 
+choose Edit server.xml from the contextual menu to open the <tt>server.xml</tt>
+file in the Source Editor.</li>
+</ol>	
 <table>
   <tr> 
     <td valign="top"><img src="../images/warn.gif" width="16" height="16"></td>
