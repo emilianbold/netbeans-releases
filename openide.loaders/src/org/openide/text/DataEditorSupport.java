@@ -130,6 +130,11 @@ public class DataEditorSupport extends CloneableEditorSupport {
 		new Integer (version), name );
     }
     
+    protected String documentID() {
+        if (! obj.isValid()) return ""; // NOI18N
+        return obj.getPrimaryFile().getName();
+    }
+
     /** Text to use as tooltip for component.
     *
     * @return text to show to the user
