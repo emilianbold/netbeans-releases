@@ -42,7 +42,7 @@ public class ConfigureShortcutsAction extends org.openide.util.actions.CallableS
         );
         TopManager.getDefault ().createDialog (dd).show ();
 //        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-//            se.flushChanges();
+            se.flushChanges();
 //        } else {
 //            se.resetChanges();
 //        }
