@@ -62,8 +62,8 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
                 gui.setSelectedTemplateByName(selectedTemplate);
             }
         }
-
-
+        // bugfix #44792: project wizard title always changes
+        ((WizardDescriptor)settings).putProperty ("NewProjectWizard_Title", null); // NOI18N
     }
     
     public void storeSettings (Object settings) {
