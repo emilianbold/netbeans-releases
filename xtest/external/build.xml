@@ -16,8 +16,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unscramble">
         <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
         <unscramble logfile="${extnl}/unscrambling.log">
-            <!-- LFI #111324 for Xalan 2.2: -->
-            <binary clear="xalan-2.3.1.jar" scrambled="xalan-2.3.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #111159 for Xerces 2.0.2-1: -->
             <binary clear="xerces-2.0.1.jar" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <!-- LFI #1078: -->
@@ -30,7 +28,6 @@ Microsystems, Inc. All Rights Reserved.
     <target name="scramble">
         <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
         <scramble>
-            <binary clear="xalan-2.3.1.jar.master" scrambled="xalan-2.3.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="xerces-2.0.1.jar.master" scrambled="xerces-2.0.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
             <binary clear="xml-apis-1.0b2.jar.master" scrambled="xml-apis-1.0b2.jar.scrambled" license="../../core/external/xml-apis-license.txt"/>
             <binary clear="ant-1.4.1.jar.master" scrambled="ant-1.4.1.jar.scrambled" license="${extnl}/apache-license.txt"/>
