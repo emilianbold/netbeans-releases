@@ -516,6 +516,9 @@ public class XMLDefaultSyntax extends Syntax {
                         state = ISI_TEXT;           //It s allowed only in content
                         offset++;
                         return XMLTokenIDs.CDATA_SECTION;
+                    } else if (actChar == ']') {
+                        // stay in the same state
+                        break;
                     } else {
                         state = ISI_CDATA;
                         break;
