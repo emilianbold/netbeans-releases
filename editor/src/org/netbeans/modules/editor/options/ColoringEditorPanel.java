@@ -29,6 +29,8 @@ import org.netbeans.editor.SettingsDefaults;
 import org.netbeans.beaninfo.editors.FontEditor;
 import org.netbeans.beaninfo.editors.ColorEditor;
 import java.awt.Dimension;
+import java.beans.FeatureDescriptor;
+import org.openide.explorer.propertysheet.ExPropertyModel;
 
 /**
  * ColoringEditorPanel is custom property editor operating
@@ -289,7 +291,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             setBorder( new CompoundBorder( new TitledBorder( title ),
                                            new EmptyBorder( new Insets( 8, 12, 6, 11) ) ) );
 
-            model = new PropertyModelSupport( propertyClass, propertyEditorClass );
+            model = new PropertyModelSupport( propertyClass, propertyEditorClass, title );
             model.addPropertyChangeListener( new PropertyChangeListener() {
                                                  public void propertyChange( PropertyChangeEvent evt ) {
                                                      if( PropertyModelSupport.PROP_MOD_VALUE.equals( evt.getPropertyName() ) ) {
@@ -380,7 +382,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             repaint(); // XXX - hack for updating PropertyPanel
         }
 
-        private class PropertyModelSupport implements PropertyModel {
+        private class PropertyModelSupport implements ExPropertyModel {
 
             public static final String PROP_MOD_VALUE = "value";
 
@@ -390,11 +392,13 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             Class type;
             Class editor;
             Object value;
+            String displayName;
 
-            public PropertyModelSupport( Class propertyType, Class propertyEditor ) {
+            public PropertyModelSupport( Class propertyType, Class propertyEditor, String displayName ) {
                 support = new PropertyChangeSupport(this);
                 this.type = propertyType;
                 this.editor = propertyEditor;
+                this.displayName = displayName;
             }
 
             public Class getPropertyType() {
@@ -430,6 +434,17 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
             public void removePropertyChangeListener(PropertyChangeListener l) {
                 support.removePropertyChangeListener(l);
             }
+            
+            public Object[] getBeans() {
+                return new Object[0];
+            }
+            
+            public FeatureDescriptor getFeatureDescriptor() {
+                FeatureDescriptor desc = new FeatureDescriptor();
+                desc.setDisplayName(displayName);
+                return desc;
+            }
+            
         }
 
     }
