@@ -887,7 +887,7 @@
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;
       java.sql.Types.BINARY = BINARY;
-      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.BIT = BIT;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.DATE = DATE;
       java.sql.Types.DECIMAL = DECIMAL;
@@ -903,7 +903,7 @@
       java.sql.Types.TINYINT = TINYINT;
       java.sql.Types.VARCHAR = VARCHAR;
     };
-    SizelessTypes = (BIGINT,BINARY,BOOLEAN,DATE,DOUBLE,INTEGER,LONGVARBINARY,LONGVARCHAR,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT);
+    SizelessTypes = (BIGINT,BINARY,BIT,DATE,DOUBLE,INTEGER,LONGVARBINARY,LONGVARCHAR,REAL,SMALLINT,TIME,TIMESTAMP,TINYINT);
     DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 

@@ -88,16 +88,18 @@ public class AbstractCommand
     }
 
     /** Returns name of modified object */
-    public String getObjectOwner()
-    {
+    public String getObjectOwner() {
+        if (owner != null)
+            if (owner.trim().equals(""))
+                setObjectOwner(null);
+        
         return owner;
     }
 
     /** Sets name to be used in command
     * @param objectowner New owner.
     */
-    public void setObjectOwner(String objectowner)
-    {
+    public void setObjectOwner(String objectowner) {
         owner = objectowner;
     }
 
@@ -120,15 +122,17 @@ public class AbstractCommand
     * object.owner	Name of the object; use setObjectOwner() 
     * Throws DDLException if object name is not specified.
     */
-    public Map getCommandProperties()
-    throws DDLException
-    {
+    public Map getCommandProperties() throws DDLException {
         HashMap args = new HashMap();
-        if (addprops != null) args.putAll(addprops);
+        if (addprops != null)
+            args.putAll(addprops);
         String oname = getObjectName();
-        if (oname != null) args.put("object.name", getObjectName()); // NOI18N
-        else throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
+        if (oname != null)
+            args.put("object.name", getObjectName()); // NOI18N
+        else
+            throw new DDLException(bundle.getString("EXC_Unknown")); // NOI18N
         args.put("object.owner", getObjectOwner()); // NOI18N
+        
         return args;
     }
 
@@ -236,28 +240,3 @@ public class AbstractCommand
         out.writeObject(addprops);
     }
 }
-
-/*
-* <<Log>>
-*  14   Gandalf   1.13        2/16/00  Radko Najman    
-*  13   Gandalf   1.12        10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  12   Gandalf   1.11        10/12/99 Radko Najman    debug messages removed
-*  11   Gandalf   1.10        9/15/99  Slavek Psenicka 
-*  10   Gandalf   1.9         9/13/99  Slavek Psenicka 
-*  9    Gandalf   1.8         9/10/99  Slavek Psenicka 
-*  8    Gandalf   1.7         8/17/99  Ian Formanek    Generated serial version 
-*       UID
-*  7    Gandalf   1.6         6/8/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  6    Gandalf   1.5         5/21/99  Slavek Psenicka System.out changed to 
-*       Output window for debug prints.
-*  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
-*  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
-*       ConnectAs
-*  3    Gandalf   1.2         4/23/99  Slavek Psenicka Opravy v souvislosti se 
-*       spravnym throwovanim :) CommandNotImplementedException
-*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
-*  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
-* $
-*/
