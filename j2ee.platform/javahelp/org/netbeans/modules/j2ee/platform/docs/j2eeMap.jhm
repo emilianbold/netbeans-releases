@@ -83,6 +83,7 @@
 	<mapID target="about_web_service_rpc" url="web/webservice/about_jwsd_rpc.html" />
 	<mapID target="about_web_service_message" url="web/webservice/about_jwsd_message.html" />
 	<mapID target="about_wsdl" url="web/webservice/about_wsdl.html" />
+	<mapID target="tweak_wsdl" url="web/webservice/tweak_wsdl.html" />
 	<mapID target="about_wscompile" url="web/webservice/about_wscompile.html" />
 	<mapID target="select_wscompile_ws" url="web/webservice/select_wscompile_ws.html" />
         <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
