@@ -25,6 +25,7 @@ public abstract class TwoWayEvent extends EventObject {
     
     private TwoWayEvent(TwoWaySupport s) {
         super(s);
+        assert s != null;
     }
     
     /**
@@ -45,6 +46,7 @@ public abstract class TwoWayEvent extends EventObject {
         Derived(TwoWaySupport s, Object oldValue, Object newValue, Object underlyingDelta) {
             super(s);
             this.oldValue = oldValue;
+            assert newValue != null;
             this.newValue = newValue;
             this.underlyingDelta = underlyingDelta;
         }
@@ -87,7 +89,9 @@ public abstract class TwoWayEvent extends EventObject {
         
         Invalidated(TwoWaySupport s, Object oldValue, Object underlyingDelta) {
             super(s);
+            assert oldValue != null;
             this.oldValue = oldValue;
+            assert underlyingDelta != null;
             this.underlyingDelta = underlyingDelta;
         }
         
@@ -118,8 +122,11 @@ public abstract class TwoWayEvent extends EventObject {
         
         Recreated(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
             super(s);
+            assert oldValue != null;
             this.oldValue = oldValue;
+            assert newValue != null;
             this.newValue = newValue;
+            assert derivedDelta != null;
             this.derivedDelta = derivedDelta;
         }
         
@@ -161,7 +168,9 @@ public abstract class TwoWayEvent extends EventObject {
         Clobbered(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta) {
             super(s);
             this.oldValue = oldValue;
+            assert newValue != null;
             this.newValue = newValue;
+            assert derivedDelta != null;
             this.derivedDelta = derivedDelta;
         }
         
@@ -217,6 +226,7 @@ public abstract class TwoWayEvent extends EventObject {
             super(s);
             this.oldValue = oldValue;
             this.underlyingDelta = underlyingDelta;
+            assert exception != null;
             this.exception = exception;
         }
         

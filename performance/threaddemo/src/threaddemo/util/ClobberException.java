@@ -27,8 +27,10 @@ public final class ClobberException extends RuntimeException {
     private final Object oldValue, derivedDelta;
     
     ClobberException(TwoWaySupport s, Object oldValue, Object derivedDelta) {
+        assert s != null;
         this.s = s;
         this.oldValue = oldValue;
+        assert derivedDelta != null;
         this.derivedDelta = derivedDelta;
     }
     

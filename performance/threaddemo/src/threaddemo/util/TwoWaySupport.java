@@ -398,30 +398,70 @@ public abstract class TwoWaySupport {
     public final Object mutate(Object derivedDelta) throws ClobberException, InvocationTargetException {
         if (derivedDelta == null) throw new NullPointerException();
         assert mutex.canWrite();
+        Object oldValue;
         synchronized (LOCK) {
             assert stateConsistent();
             assert !mutating;
             assert !deriving;
-            // XXX
-            // XXX set & clear mutating
+            oldValue = (model != null) ? model.get() : null;
+            if (!fresh && !permitsClobbering()) {
+                throw new ClobberException(this, oldValue, derivedDelta);
+            }
+            mutating = true;
         }
-        // XXX
-        return null;
+        try {
+            // XXX should also dequeue if necessary to avoid sequence:
+            // invalidate -> initiate -> [pause] -> mutate -> [pause] -> invalidate -> [pause] -> derive
+            // where the final derivation was not really appropriate (or was it?)
+            Object result = doRecreate(oldValue, derivedDelta);
+            model = createEnqueuedReference(result);
+            if (fresh) {
+                fireChange(new TwoWayEvent.Recreated(this, oldValue, result, derivedDelta));
+            } else {
+                fireChange(new TwoWayEvent.Clobbered(this, oldValue, result, derivedDelta));
+            }
+            return result;
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InvocationTargetException(e);
+        } finally {
+            synchronized (LOCK) {
+                mutating = false;
+            }
+        }
     }
     
     /**
      * Indicate that any current value of the derived model is invalid and
      * should no longer be used if exact results are desired.
-     * <p>This method requires the read mutex but does not block otherwise.
+     * <p>This method requires the read mutex but does not block otherwise,
+     * except to call {@link #composeUnderlyingDeltas}.
      * @param underlyingDelta a change to the underlying model
      */
     public final void invalidate(Object underlyingDelta) {
         if (underlyingDelta == null) throw new NullPointerException();
         assert mutex.canRead();
+        boolean oldFresh;
+        Object oldValue;
         synchronized (LOCK) {
             assert stateConsistent();
             assert !mutating;
-            // XXX
+            if (this.underlyingDelta != null) {
+                // XXX don't call this with LOCK held
+                // may then need to have an 'invalidating' flag (?)
+                this.underlyingDelta = composeUnderlyingDeltas(this.underlyingDelta, underlyingDelta);
+            } else {
+                this.underlyingDelta = underlyingDelta;
+            }
+            oldFresh = fresh;
+            if (fresh) {
+                fresh = false;
+            }
+            oldValue = (model != null) ? model.get() : null;
+        }
+        if (oldFresh && oldValue != null) {
+            fireChange(new TwoWayEvent.Invalidated(this, oldValue, underlyingDelta));
         }
     }
 
