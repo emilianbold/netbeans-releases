@@ -96,6 +96,29 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         
         return ret;
     }
+
+    /** Creates and finishes registration of MultiDataObject.
+     */
+    public static MultiDataObject createMultiObject (MultiFileLoader loader, FileObject fo)
+    throws java.io.IOException {
+        MultiDataObject ret;
+        
+        Object prev = FIND.get ();
+        try {
+            FIND.set (loader);
+            
+            ret = loader.createMultiObject (fo);
+        } finally {
+            FIND.set (prev);
+        }
+        
+        // notify it
+        if (ret != null) {
+            DataObjectPool.getPOOL().notifyCreation (ret);
+        }
+        
+        return ret;
+     }
     
     /** Calls into FolderLoader. Setups security condition to allow DataObject constructor
      * to succeed.
@@ -285,8 +308,6 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     */
     public DataObject find (FileObject fo) {
         synchronized (this) {
-            enterRecognition(fo);
-            
             Item doh = (Item)map.get (fo);
             if (doh == null) {
                 return null;
