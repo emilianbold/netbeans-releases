@@ -104,13 +104,33 @@ public class SpecificationFactory implements DBSpecFactory {
 	public DBSpec createSpec(DBConnection dbcon) 
 	throws DatabaseProductNotFoundException, DDLException
 	{
+		Connection con = dbcon.createJDBCConnection();
+		DBSpec spec = createSpec(dbcon, con);
+		try {
+			con.close();
+		} catch (SQLException ex) {
+			throw new DDLException(ex.getMessage());
+		}
+		return spec;
+	}
+
+	/** Creates instance of DBSpec class; a database-specification
+	* class. This object knows about used database and can be used as
+	* factory for db-manipulating commands. It connects to the database 
+	* and reads database metadata. Throws DatabaseProductNotFoundException if database
+	* (obtained from database metadata) is not supported. Uses given Connection
+	*/
+	public DBSpec createSpec(DBConnection dbcon, Connection jdbccon) 
+	throws DatabaseProductNotFoundException, DDLException
+	{
 		String pn = null;
 		try {
-			Connection con = dbcon.createJDBCConnection();
+			boolean close = (jdbccon != null ? false : true);
+			Connection con = (jdbccon != null ? jdbccon : dbcon.createJDBCConnection());
 			DatabaseMetaData dmd = con.getMetaData();	
 			pn = dmd.getDatabaseProductName();
 			DBSpec spec = createSpec(dbcon, pn);
-			con.close();
+			if (close) con.close();
 			return spec;
 		} catch (SQLException e) {
 			throw new DDLException("unable to connect to server");
@@ -219,6 +239,8 @@ public class SpecificationFactory implements DBSpecFactory {
 
 /*
 * <<Log>>
+*  6    Gandalf   1.5         6/15/99  Slavek Psenicka adding support for live 
+*       connection
 *  5    Gandalf   1.4         5/14/99  Slavek Psenicka new version
 *  4    Gandalf   1.3         4/23/99  Slavek Psenicka Chyba v createSpec pri 
 *       ConnectAs
