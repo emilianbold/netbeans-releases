@@ -64,7 +64,8 @@ public class SectionNodePanel extends SectionPanel {
 
         setBorder(new CompoundBorder(emptyBorder, new CompoundBorder(lineBorder, emptyBorder)));
         openInnerPanel();
-        getFiller().setVisible(false);
+        getFillerLine().setVisible(false);
+        getFillerEnd().setVisible(false);
     }
 
     /**
@@ -76,7 +77,8 @@ public class SectionNodePanel extends SectionPanel {
         getFoldButton().setVisible(false);
         getSeparator().setVisible(false);
         openInnerPanel();
-        getFiller().setVisible(false);
+        getFillerLine().setVisible(false);
+        getFillerEnd().setVisible(false);
     }
 
     /**

@@ -50,9 +50,11 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         this.foldable=foldable;
         initComponents();
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        jSeparator1.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
         titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        filler.setBackground(SectionVisualTheme.getFillerColor());
+        fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
+        fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
         titleButton.setText(title);
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
@@ -64,7 +66,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         if (foldable) {
             foldButton.setSelected(true);
         } else {
-            remove(filler);
+            remove(fillerLine);
+            remove(fillerEnd);
             remove(foldButton);
         }
         setIcon(true);
@@ -84,7 +87,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         if (foldable) {
             foldButton.setSelected(true);
             contentPanel.setVisible(true);
-            filler.setVisible(true);
+            fillerLine.setVisible(true);
+            fillerEnd.setVisible(true);
             setIcon(true);
         }
     }
@@ -198,17 +202,18 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         titleButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         contentPanel = new javax.swing.JPanel();
-        filler = new javax.swing.JPanel();
         actionPanel = new javax.swing.JPanel();
+        fillerLine = new javax.swing.JSeparator();
+        fillerEnd = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
-        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
+        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/plus.gif")));
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
-        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
+        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/minus.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foldButtonActionPerformed(evt);
@@ -218,9 +223,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 4);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 2);
         add(foldButton, gridBagConstraints);
 
         titleButton.setFont(new java.awt.Font("Dialog", 1, 14));
@@ -262,13 +266,6 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(contentPanel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 4);
-        add(filler, gridBagConstraints);
-
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -276,6 +273,24 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(actionPanel, gridBagConstraints);
+
+        fillerLine.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(fillerLine, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 2);
+        add(fillerEnd, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -289,7 +304,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
                 if (isActive()) {
                     foldButton.setSelected(false);
                     contentPanel.setVisible(false);
-                    filler.setVisible(false);
+                    fillerLine.setVisible(false);
+                    fillerEnd.setVisible(false);
                     setIcon(false);
                 }
             }
@@ -300,7 +316,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         // TODO add your handling code here:
         contentPanel.setVisible(foldButton.isSelected());
-        filler.setVisible(foldButton.isSelected());
+        fillerLine.setVisible(foldButton.isSelected());
+        fillerEnd.setVisible(foldButton.isSelected());
         setIcon(foldButton.isSelected());
     }//GEN-LAST:event_foldButtonActionPerformed
     
@@ -308,7 +325,8 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel actionPanel;
     private javax.swing.JPanel contentPanel;
-    private javax.swing.JPanel filler;
+    private javax.swing.JSeparator fillerEnd;
+    private javax.swing.JSeparator fillerLine;
     private javax.swing.JToggleButton foldButton;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton titleButton;
@@ -330,6 +348,7 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         headerButtons = new javax.swing.JButton[actions.length];
         for (int i=0;i<actions.length;i++) {
             headerButtons[i] = new javax.swing.JButton(actions[i]);
+            headerButtons[i].setMargin(new java.awt.Insets(0,14,0,14));
             actionPanel.add(headerButtons[i]);
         }
     }

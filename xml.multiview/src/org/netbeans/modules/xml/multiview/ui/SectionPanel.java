@@ -65,8 +65,11 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         this.key = key;
 
         initComponents();
-        filler.setBackground(SectionVisualTheme.getFillerColor());
-        filler.setVisible(false);
+        jSeparator1.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
+        fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
+        fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
+        fillerLine.setVisible(false);
+        fillerEnd.setVisible(false);
         setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -105,7 +108,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        filler.setVisible(true);
+        fillerLine.setVisible(true);
+        fillerEnd.setVisible(true);
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
         Utils.scrollToVisible(this);
@@ -121,7 +125,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
             remove(innerPanel);
             innerPanel = null;
         }
-        filler.setVisible(false);
+        fillerLine.setVisible(false);
+        fillerEnd.setVisible(false);
     }
 
     public String getTitle() {
@@ -193,17 +198,18 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         foldButton = new javax.swing.JToggleButton();
         titleButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
-        filler = new javax.swing.JPanel();
         actionPanel = new javax.swing.JPanel();
+        fillerLine = new javax.swing.JSeparator();
+        fillerEnd = new javax.swing.JSeparator();
 
         setLayout(new java.awt.GridBagLayout());
 
-        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowright.gif")));
+        foldButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/plus.gif")));
         foldButton.setBorder(null);
         foldButton.setBorderPainted(false);
         foldButton.setContentAreaFilled(false);
         foldButton.setFocusPainted(false);
-        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/arrowbottom.gif")));
+        foldButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/xml/multiview/resources/minus.gif")));
         foldButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 foldButtonActionPerformed(evt);
@@ -213,9 +219,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 2);
         add(foldButton, gridBagConstraints);
 
         titleButton.setFont(new java.awt.Font("Dialog", 1, 14));
@@ -246,13 +251,6 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
-        add(filler, gridBagConstraints);
-
         actionPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 2, 0));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -260,6 +258,24 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         gridBagConstraints.gridy = 0;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(actionPanel, gridBagConstraints);
+
+        fillerLine.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        add(fillerLine, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 2);
+        add(fillerEnd, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -280,18 +296,16 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
         if (foldButton.isSelected()) {
             openInnerPanel();
-            //setActive(true);
         } else {
             closeInnerPanel();
         }
-        //contentPanel.setVisible(!foldButton.isSelected());
-        //filler.setVisible(!foldButton.isSelected());
     }//GEN-LAST:event_foldButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel actionPanel;
-    private javax.swing.JPanel filler;
+    private javax.swing.JSeparator fillerEnd;
+    private javax.swing.JSeparator fillerLine;
     private javax.swing.JToggleButton foldButton;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton titleButton;
@@ -337,20 +351,24 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     public HeaderButton[] getHeaderButtons(){
         return headerButtons;
     }
-
-    public JPanel getFiller() {
-        return filler;
+    
+    protected JComponent getFillerLine() {
+        return fillerLine;
     }
-
-    public JToggleButton getFoldButton() {
+    
+    protected JComponent getFillerEnd() {
+        return fillerEnd;
+    }
+    
+    protected JToggleButton getFoldButton() {
         return foldButton;
     }
 
-    public JSeparator getSeparator() {
+    protected JSeparator getSeparator() {
         return jSeparator1;
     }
 
-    public JButton getTitleButton() {
+    protected JButton getTitleButton() {
         return titleButton;
     }
 
