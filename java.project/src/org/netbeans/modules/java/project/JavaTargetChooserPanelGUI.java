@@ -138,8 +138,10 @@ public class JavaTargetChooserPanelGUI extends javax.swing.JPanel implements Act
                 packageComboBox.setSelectedItem( preselectedPackage );
             }
             if (template != null) {
-                documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
-                documentNameTextField.selectAll ();
+            	if ( documentNameTextField.getText().trim().length() == 0 ) { // To preserve the class name on back in the wiazard
+                    documentNameTextField.setText (NEW_CLASS_PREFIX + template.getName ());
+                    documentNameTextField.selectAll ();
+                }
             }
         }
         // Determine the extension
