@@ -464,9 +464,9 @@
     <tocitem text="Deploying Web Modules" target="webmod_deploy"> 
         <tocitem text="About Deploying Web Modules" target="webmod_deploy"/>
 	<tocitem text="Deploying a Tag Library"  target="taglib_packlib"/>
-	<tocitem text="Deployment Descriptors" target="concepts_deploydes"> 
-	   <tocitem text="About Deployment Descriptors" target="concepts_deploydes" />  
-	   <tocitem text="Editing Deployment Descriptors" target="webmod_editdd" />  
+	<tocitem text="Deployment Descriptors" target="webmod_editdd"> 
+	   <tocitem text="About Deployment Descriptors" target="webmod_editdd" />  
+	   <tocitem text="Editing Deployment Descriptors" target="concepts_deploydes" />  
 	   <tocitem text="Registering a Filter" target="filter_addtodd"/>
            <tocitem text="Registering a Web Module Listener" target="listen_addtodd"/>
         </tocitem> <!-- Deploying Web Modules-->
