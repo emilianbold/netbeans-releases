@@ -43,7 +43,6 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
 import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
-import org.netbeans.modules.web.core.FeatureFactory;
 
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.BaseKit;
