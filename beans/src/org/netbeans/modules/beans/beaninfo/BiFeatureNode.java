@@ -46,9 +46,6 @@ class BiFeatureNode extends AbstractNode implements Node.Cookie {
 
     // static variables ...........................................................................
 
-    private static final String ICON_BASE =
-        "/org/netbeans/modules/beans/resources/dvoj"; // NOI18N
-
     /** Property display name constant */
     public static final String PROP_DISPLAY_NAME = "displayName"; // NOI18N
     /** Property expert constant */

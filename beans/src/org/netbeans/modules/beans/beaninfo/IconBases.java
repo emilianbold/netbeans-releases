@@ -23,33 +23,33 @@ interface IconBases {
     // and N for non selected features at the end of the string.
 
     public static final String BIF_DESCRIPTOR =
-        "/org/netbeans/modules/beans/resources/bifDescriptor"; // NOI18N !!! MUST BE CHANGED, BAD ICON
+        "org/netbeans/modules/beans/resources/bifDescriptor"; // NOI18N !!! MUST BE CHANGED, BAD ICON
 
     public static final String BIF_PROPERTY_RW =
-        "/org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifPropertyRW_"; // NOI18N
 
     public static final String BIF_PROPERTY_RO =
-        "/org/netbeans/modules/beans/resources/bifPropertyRO_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifPropertyRO_"; // NOI18N
 
     public static final String BIF_PROPERTY_WO =
-        "/org/netbeans/modules/beans/resources/bifPropertyWO_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifPropertyWO_"; // NOI18N
 
     public static final String BIF_IDXPROPERTY_RW =
-        "/org/netbeans/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifIndexedPropertyRW_"; // NOI18N
 
     public static final String BIF_IDXPROPERTY_RO =
-        "/org/netbeans/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifIndexedPropertyRO_"; // NOI18N
 
     public static final String BIF_IDXPROPERTY_WO =
-        "/org/netbeans/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifIndexedPropertyWO_"; // NOI18N
 
     public static final String BIF_EVENTSET_MULTICAST =
-        "/org/netbeans/modules/beans/resources/bifEventSetMC_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifEventSetMC_"; // NOI18N
 
     public static final String BIF_EVENTSET_UNICAST =
-        "/org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifEventSetUC_"; // NOI18N
 
     public static final String BIF_METHOD =
-        "/org/netbeans/modules/beans/resources/bifMethod_"; // NOI18N
+        "org/netbeans/modules/beans/resources/bifMethod_"; // NOI18N
 
 }

@@ -88,7 +88,7 @@ public class  PatternGroupNode extends AbstractNode {
 
 
     public static final String ICON_BASE =
-        "/org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
+        "org/netbeans/modules/beans/resources/patternGroup"; // NOI18N
 
     public PatternGroupNode( PatternChildren children ) {
         super( (Children)children );
