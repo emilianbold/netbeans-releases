@@ -14,16 +14,9 @@
 
 package org.netbeans.core;
 
-import org.openide.util.WeakListeners;
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -36,31 +29,19 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-
-//import org.netbeans.core.windows.ModeImpl; // TEMP
-//import org.netbeans.core.windows.WellKnownModeNames; // TEMP
-//import org.netbeans.core.windows.WindowManagerImpl; // TEMP
-
-import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerPanel;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeOp;
-import org.openide.nodes.NodeOperation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Mutex;
-import org.openide.util.SharedClassObject;
-import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.SafeException;
@@ -69,6 +50,9 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
+//import org.netbeans.core.windows.ModeImpl; // TEMP
+//import org.netbeans.core.windows.WellKnownModeNames; // TEMP
+//import org.netbeans.core.windows.WindowManagerImpl; // TEMP
 
 // XXX Before as org.netbeans.core.NbNodeOperation.Sheet.
 
@@ -124,7 +108,7 @@ public final class NbSheet extends TopComponent {
         setLayout (new BorderLayout ());
         add(propertySheet, BorderLayout.CENTER);
 
-        setIcon (Utilities.loadImage("org/netbeans/core/resources/frames/properties.gif")); // NOI18N
+        setIcon (Utilities.loadImage("org/netbeans/core/resources/frames/properties.gif", true)); // NOI18N
 
         // #36738 Component has to have a name from begining.
         updateTitle();
