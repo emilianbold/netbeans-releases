@@ -97,6 +97,8 @@ public final class XPLFCustoms extends LFCustoms {
             WORKPLACE_FILL, new Color(226, 223, 214),
 
             DESKTOP_SPLITPANE_BORDER, BorderFactory.createEmptyBorder(6, 5, 4, 6),
+            SLIDING_BUTTON_UI, "org.netbeans.core.windows.view.ui.slides.WindowsSlidingButtonUI",
+
 
         }; //NOI18N
         return uiDefaults;

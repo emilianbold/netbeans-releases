@@ -71,6 +71,7 @@ public final class WindowsLFCustoms extends LFCustoms {
 
             //UI Delegates for the tab control
             EDITOR_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicEditorTabDisplayerUI",
+            SLIDING_BUTTON_UI, "org.netbeans.core.windows.view.ui.slides.WindowsSlidingButtonUI",
             VIEW_TAB_DISPLAYER_UI, "org.netbeans.swing.tabcontrol.plaf.WinClassicTabDisplayerUI",
         }; //NOI18N
 
