@@ -274,9 +274,10 @@ public class NbEditorKit extends ExtKit {
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu, Action a){
 
-            if (a instanceof ContextAwareAction){
+            Lookup lookup = getContextLookup(target);
+            if (a instanceof ContextAwareAction && lookup!=null){
                 a = ((org.openide.util.ContextAwareAction)a)
-                        .createContextAwareInstance(getContextLookup(target));
+                        .createContextAwareInstance(lookup);
             }
             
             String itemText = (String) a.getValue(Action.NAME);
@@ -369,9 +370,10 @@ public class NbEditorKit extends ExtKit {
                     
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
                         Action a = SystemAction.get(saClass);
-                        if (a instanceof ContextAwareAction){
+                        Lookup lookup = getContextLookup(target);
+                        if (a instanceof ContextAwareAction && lookup!=null){
                             a = ((ContextAwareAction)a).createContextAwareInstance(
-                                getContextLookup(target)
+                                lookup
                             );
                         }
                         
