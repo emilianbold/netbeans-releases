@@ -14,14 +14,11 @@
 package org.netbeans.modules.debugger.jpda.ui.models;
 
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -29,12 +26,10 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
-import org.netbeans.spi.debugger.ui.BreakpointType;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.TreeModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.spi.viewmodel.Models;
-import org.netbeans.spi.viewmodel.TreeModel;
 
 import org.netbeans.modules.debugger.jpda.ui.Context;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.*;
@@ -53,7 +48,7 @@ import org.openide.util.NbBundle;
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (
-        "Go to Source", 
+        loc("CTL_Breakpoint_GoToSource_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -65,7 +60,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
     private static final Action CUSTOMIZE_ACTION = Models.createAction (
-        "Customize", 
+        loc("CTL_Breakpoint_Customize_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -77,7 +72,10 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
         
-        
+    private static String loc(String key) {
+        return NbBundle.getBundle(BreakpointsActionsProvider.class).getString(key);
+    }
+
     public Action[] getActions (NodeActionsProvider original, Object node) 
     throws UnknownTypeException {
         if (!(node instanceof JPDABreakpoint)) 

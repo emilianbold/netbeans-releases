@@ -16,6 +16,7 @@ package org.netbeans.modules.debugger.jpda.ui;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.api.debugger.LookupProvider;
 import org.netbeans.api.debugger.jpda.*;
+import org.openide.util.NbBundle;
 
 import javax.swing.*;
 import java.util.*;
@@ -30,7 +31,7 @@ public class FixedWatchesManager implements TreeModelFilter,
 NodeActionsProvider, NodeActionsProviderFilter {
             
     private final Action DELETE_ACTION = Models.createAction (
-        "Delete", 
+        loc("CTL_DeleteFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -45,7 +46,7 @@ NodeActionsProvider, NodeActionsProviderFilter {
         Models.MULTISELECTION_TYPE_ANY
     );
     private final Action CREATE_FIXED_WATCH_ACTION = Models.createAction (
-        "Create Fixed Watch", 
+        loc("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return true;
@@ -67,6 +68,10 @@ NodeActionsProvider, NodeActionsProviderFilter {
     
     public FixedWatchesManager (LookupProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
+    }
+
+    private static String loc(String key) {
+        return NbBundle.getBundle(FixedWatchesManager.class).getString(key);
     }
 
     public void performDefaultAction (Object node) throws UnknownTypeException {
