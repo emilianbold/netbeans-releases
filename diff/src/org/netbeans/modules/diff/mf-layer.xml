@@ -15,7 +15,9 @@ Microsystems, Inc. All Rights Reserved.
 <filesystem>
   <folder name="Services">
     <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings"/>
+    <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings"/>
     <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings"/>
+    <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings"/>
 
     <!--
     <folder name="Hidden"> 
@@ -40,6 +42,18 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
       <folder name="IDEConfiguration">
         <folder name="ServerAndExternalToolSettings">
+          <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
+          </file>
+        </folder>
+      </folder>
+    </folder>
+  </folder>
+
+  <!--
+  <folder name="UI"> 
+    <folder name="Services">
+      <folder name="IDEConfiguration">
+        <folder name="ServerAndExternalToolSettings">
           <folder name="DiffProviders">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
             <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.shadow">
@@ -52,6 +66,12 @@ SystemFileSystem
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
             <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.shadow">
 <![CDATA[Services/org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings
+SystemFileSystem
+]]>
+              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
+            </file>
+            <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.shadow">
+<![CDATA[Services/org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings
 SystemFileSystem
 ]]>
               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
