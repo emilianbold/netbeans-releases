@@ -92,12 +92,22 @@ public class ClassPathSupport {
             } 
             else if ( isAntArtifact( pe[i] ) ) {
                 // Ant artifact from another project
-                Object[] ret = referenceHelper.findArtifactAndLocation(pe[i]);
+                Object[] ret = referenceHelper.findArtifactAndLocation(pe[i]);                
                 if ( ret[0] == null || ret[1] == null ) {
                     item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i] );
                 }
                 else {
-                    item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i] );
+                    //fix of issue #55316
+                    AntArtifact artifact = (AntArtifact)ret[0];
+                    URI uri = (URI)ret[1];
+                    File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
+                    File artifactFile = new File (artifact.getScriptLocation().toURI().resolve(uri).normalize());
+                    if (usedFile.equals(artifactFile)) {
+                        item = Item.create( artifact, uri, pe[i] );
+                    }
+                    else {
+                        item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i] );
+                    }
                 }
             } else {
                 // Standalone jar or property
