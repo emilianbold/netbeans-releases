@@ -131,7 +131,10 @@ class BookmarksXMLHandler {
             Element bookmarksElem = xmlDoc.createElementNS(
                     EDITOR_BOOKMARKS_NAMESPACE_URI, EDITOR_BOOKMARKS_ELEM);
             for (Iterator it = fileBookmarksMap.all().iterator(); it.hasNext();) {
-                saveFileBookmarks((FileBookmarks)it.next(), xmlDoc, bookmarksElem, baseURI);
+                FileBookmarks bookmarks = (FileBookmarks)it.next();
+                if (bookmarks.getBookmarkCount() > 0) {
+                    saveFileBookmarks(bookmarks, xmlDoc, bookmarksElem, baseURI);
+                }
             }
             return bookmarksElem;
 

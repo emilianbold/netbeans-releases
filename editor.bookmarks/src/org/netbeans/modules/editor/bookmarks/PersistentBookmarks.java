@@ -89,23 +89,21 @@ class PersistentBookmarks {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
         if (fo != null) {
             int[] bookmarkLineIndexes = getLineIndexes(doc);
-            if (bookmarkLineIndexes.length > 0) { // bookmarks found
-                URL url;
-                try {
-                    url = fo.getURL();
-                } catch (FileStateInvalidException e) {
-                    // Ignore this file - could be deleted etc.
-                    url = null;
-                }
-                
-                if (url != null) {
-                    FileBookmarks bookmarks = new FileBookmarks(
-                            url, bookmarkLineIndexes);
-                    Project owner = FileOwnerQuery.getOwner(fo);
-                    FileBookmarksMap fileBookmarksMap = findBookmarksMap(owner);
-                    if (fileBookmarksMap != null) {
-                        fileBookmarksMap.put(bookmarks);
-                    }
+            URL url;
+            try {
+                url = fo.getURL();
+            } catch (FileStateInvalidException e) {
+                // Ignore this file - could be deleted etc.
+                url = null;
+            }
+
+            if (url != null) {
+                FileBookmarks bookmarks = new FileBookmarks(
+                        url, bookmarkLineIndexes);
+                Project owner = FileOwnerQuery.getOwner(fo);
+                FileBookmarksMap fileBookmarksMap = findBookmarksMap(owner);
+                if (fileBookmarksMap != null) {
+                    fileBookmarksMap.put(bookmarks);
                 }
             }
         }
