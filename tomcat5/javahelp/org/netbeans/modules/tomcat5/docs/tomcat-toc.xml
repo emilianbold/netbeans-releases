@@ -20,9 +20,9 @@
    <tocitem text="Tomcat Web Server">
 	<tocitem text="About the Tomcat Web Server" target="tomcat_plugin" />
 	<tocitem text="Setting Up the Tomcat Web Server">
-	<tocitem text="Registering an External Tomcat Web Server" target="tomcat_addinstall" />
 	<tocitem text="Viewing the Tomcat Web Server in the IDE" target="tomcat_top_node" />
 	<tocitem text="Customizing the Tomcat Web Server" target="tomcat_internal_props"/>
+	<tocitem text="Registering an External Tomcat Web Server" target="tomcat_addinstall" />
         </tocitem>
 	<tocitem text="Modifying the Tomcat Configuration File">
 	<tocitem text="About Modifying the Tomcat Configuration File" target="tomcat_edit_config" />
