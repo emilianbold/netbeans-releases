@@ -717,7 +717,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         }
     }
 
-    private static final Set warnedAboutBrackets = new WeakSet(100); // Set<FileObject>
+    private static final Set warnedAboutBrackets = new WeakSet(); // Set<FileObject>
     /** Make sure people stop using this syntax eventually.
      * It is better to use the file attribute, not least because some VMs
      * do not much like [] in file names (OpenVMS had problems at one point, e.g.).
