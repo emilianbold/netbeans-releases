@@ -108,6 +108,7 @@ class OutWriter extends OutputWriter implements Runnable {
 
     private boolean unused = true;
     protected synchronized void init() {
+        knownCharCounts = null;
         storage = null;
         lineStartList = new IntList(100);
         linesToListeners = new IntMap();
@@ -681,13 +682,82 @@ class OutWriter extends OutputWriter implements Runnable {
         return toCharIndex(longestLine);
     }
     
+    /**
+     * Get the number of logical lines if character wrapped at the specified
+     * width.  Calculates on the fly below 100000 characters, above that builds
+     * a cache on the first call and uses that.
+     */
+    public int getLogicalLineCountAbove (int line, int charCount) {
+        if (getStorage().size() < 100000 || !storage.isClosed()) {
+            return dynLogicalLineCountAbove(line, charCount);
+        } else {
+            return cachedLogicalLineCountAbove (line, charCount);
+        }
+    }
+    
+    /**
+     * Get the number of logical lines above a given physical line if character 
+     * wrapped at the specified
+     * width.  Calculates on the fly below 100000 characters, above that builds
+     * a cache on the first call and uses that.
+     */
+    public int getLogicalLineCountIfWrappedAt (int charCount) {
+        if (getStorage().size() < 100000 || !storage.isClosed()) {
+            return dynLogicalLineCountIfWrappedAt(charCount);
+        } else {
+            return cachedLogicalLineCountIfWrappedAt(charCount);
+        }
+    }
+    
+    int knownCharCount = -1;
+    private int cachedLogicalLineCountAbove (int line, int charCount) {
+        if (charCount != knownCharCount) {
+            knownCharCount = charCount;
+            calcCharCounts(charCount);
+        }
+        return line == 0 ? 0 : knownCharCounts.get(line-1);
+    }
+    
+    private int cachedLogicalLineCountIfWrappedAt (int charCount) {
+        if (charCount != knownCharCount ) {
+            knownCharCount = charCount;
+            calcCharCounts(charCount);
+        }
+        int lineCount = lineCount();
+        return knownCharCounts.get(lineCount-1);
+    }
+    
+    private void calcCharCounts(int width) {
+        int max = lineStartList.size();
+        knownCharCounts = new IntList(max);
+        knownCharCounts.add(0);
+        
+        int bcount = toByteIndex(width);
+        
+        int prev = 0;
+        int ct = 1;
+        for (int i=1; i < max; i++) {
+            int curr = lineStartList.get(i);
+            if (curr - prev > bcount) {
+                ct += ((curr - prev) / bcount) + 1;
+            } else {
+                ct++;
+            }
+            prev = curr;
+            knownCharCounts.add(ct);
+        }        
+    }
+    
+    private IntList knownCharCounts = null;
+    
+    
     private int lastCharCountForWrapCalculation = -1;
     private int lastWrappedLineCount = -1;
     /**
      * Gets the number of lines the document will require if line wrapped at the
      * specified character index.
      */
-    public int getLogicalLineCountIfWrappedAt (int charCount) {
+    private int dynLogicalLineCountIfWrappedAt (int charCount) {
         int bcount = toByteIndex(charCount);
         if (longestLine <= bcount) {
             return lineStartList.size();
@@ -725,7 +795,7 @@ class OutWriter extends OutputWriter implements Runnable {
      * @param charCount The number of characters at which to wrap
      * @return The number of logical wrapped lines above the passed line
      */
-    public int getLogicalLineCountAbove (int line, int charCount) {
+    private int dynLogicalLineCountAbove (int line, int charCount) {
         //XXX this will need a lookup table above a threshold size - at about 200Mb of output,
         //the IDE becomes unusable when word wrapped
         int lineCount = lineCount();
@@ -787,6 +857,7 @@ class OutWriter extends OutputWriter implements Runnable {
         if (storage != null) {
             storage.dispose();
         }
+        knownCharCounts = null;
         trouble = true;
         listener = null;
         if (Controller.log) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
@@ -889,6 +960,8 @@ class OutWriter extends OutputWriter implements Runnable {
         clearListeners();
         int oldSize;
         cleared = false;
+        knownCharCounts = null;
+        
         if (storage != null) {
             closesRequired = err != null ? 2 : 1;
             oldSize = storage.size();

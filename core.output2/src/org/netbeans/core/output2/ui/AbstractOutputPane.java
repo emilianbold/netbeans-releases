@@ -609,13 +609,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
 
     public void mouseMoved(MouseEvent e) {
-        if (isWrapped() && getLength() > 100000) {
-            //Getting the position iterates the entire line count
-            //in wrapped mode, at least for now.  Just don't adjust
-            //cursor for links at the end of huge files, it's too
-            //expensive
-            return;
-        }
         Point p = e.getPoint();
         int pos = textView.viewToModel(p);
         if (pos < getLength()) {
