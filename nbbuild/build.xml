@@ -3089,17 +3089,17 @@ PKGINST=${pkg.svr4.pkginst}</echo>
     <!-- Timeout is ten minutes; should be enough for valid start, while preventing -->
     <!-- a deadlock from hanging an automated build: -->
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes" timeout="600000">
-      <arg value="-jdkhome"/>
+      <arg value="--jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
+      <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
     </exec>
     <exec os="Linux SunOS Solaris Mac OS X" dir="." executable="sh" failonerror="yes" timeout="600000">
       <arg value="${netbeans.dest.abs}/bin/netbeans"/>
-      <arg value="-jdkhome"/>
+      <arg value="--jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
+      <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${sanitystart.args}"/>
     </exec>
@@ -3144,27 +3144,27 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <property name="tryme.debug.args" value="" />
   
     <exec os="Windows NT Windows 95 Windows 98 Windows 2000 Windows XP" executable="${netbeans.dest.abs}/bin/nb.exe" failonerror="yes">
-      <arg value="-jdkhome"/>
+      <arg value="--jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
+      <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
     </exec>
     <exec os="Linux SunOS Solaris" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
-      <arg value="-jdkhome"/>
+      <arg value="--jdkhome"/>
       <arg file="${jdkhome}"/>
-      <arg value="-userdir"/>
+      <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
     </exec>
     <exec os="Mac OS X" dir="." executable="sh" failonerror="yes">
       <arg value="${netbeans.dest}/bin/netbeans"/>
-      <arg value="-jdkhome"/>
+      <arg value="--jdkhome"/>
       <arg file="/Library/Java/Home"/>
-      <arg value="-userdir"/>
+      <arg value="--userdir"/>
       <arg file="${test.user.dir}"/>
       <arg line="${tryme.args}"/>
       <arg line="${tryme.debug.args}" />
