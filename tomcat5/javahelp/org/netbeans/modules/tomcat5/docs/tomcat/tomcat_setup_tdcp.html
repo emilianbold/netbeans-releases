@@ -35,9 +35,9 @@
 </li>
 <li>Click Save. Then click Commit Changes. Then click Log Out.</li>
 </ol>
-<p><b>To create a link from your web application's web.xml file 
-(the deployment descriptor) and context.xml file to the data 
-source that you created in the server.xml file:</b>
+<p><b>To create a link from your web.xml file 
+ and your context.xml file to the data 
+source in your server.xml file:</b>
 <ul><li><p>Expand the project node in the Projects window. Then expand the
 Web Pages node and the WEB-INF node. Double-click the web.xml node and use the
 Source Editor to add your resource reference to the <tt>web.xml</tt> file as follows:
@@ -65,28 +65,6 @@ if the <tt>context.xml</tt> file is opened in the Context Editor. <p>Your web ap
 	<pre>    	  &lt;Context path="/Employees"&gt;<br>              &lt;ResourceLink name="jdbc/poolDB" type="javax.sql.DataSource" <br>               global="jdbc/poolDB"/&gt;<br>              &lt;Logger className="org.apache.catalina.logger.FileLogger" <br>               prefix="Employees" suffix=".log" timestamp="true"/&gt;<br>    	  &lt;/Context&gt;</pre>
 
 		</blockquote></li></ul>
-<p><b>To use the data source in a web application:</b>
-<p>There are many ways of using a data source in a web application. The simplest 
-way is to access your data source directly from a JSP file. You are recommended
- to use this method for
- testing purposes and in small web applications only.
- <ol>
-	<li>
-Modify the JSP file to enable the selection of database records. 
-Make sure to specify the same JNDI name as specified in the data source above. 
-To do so, paste or type code similar to the following below the taglib directives in a JSP file:
-
-    <pre>    	       &lt;sql:query var="queryresults" dataSource="jdbc/poolDB"&gt;<br>                   SELECT * FROM employee_data ORDER BY upper(f_name)<br>    	       &lt;/sql:query&gt;</pre>
-
-</li>
-<li><p>Make the database driver available to Tomcat connection pooling 
-by copying the database driver's JAR file
-into Tomcat's <tt>common/lib</tt> folder. By default, this 
-folder is within the <tt>C:\Program Files\netbeans-4.0\nb4.0 folder</tt>.</p>
-<p>If you have already started the Tomcat Server, make sure that you restart it after you copy the database
-driver's JAR file to Tomcat's <tt>common/lib</tt> folder, so that the Tomcat Server can load the JAR file.</p></li>
-</li>
-</ol>
 
 
 <table>
