@@ -66,10 +66,6 @@ public class NonGui extends NbTopManager implements Runnable {
     /** directory for modules */
     static final String DIR_MODULES = "modules"; // NOI18N
     
-    /** name of system folder to be located in the USER_DIR and HOME_DIR */
-    private static final String SYSTEM_FOLDER = "system"; // NOI18N
-
-
     /* The class of the UIManager to be used for netbeans - can be set by command-line argument -ui <class name> */
     protected static Class uiClass;
 
@@ -112,10 +108,6 @@ public class NonGui extends NbTopManager implements Runnable {
     protected static String getHomeDir () {
         if (homeDir == null) {
             homeDir = System.getProperty ("netbeans.home");
-            if (homeDir == null) {
-                System.err.println(NbBundle.getBundle("org.netbeans.core.Bundle",java.util.Locale.getDefault(),Main.class.getClassLoader()).getString("CTL_Netbeanshome_property"));
-                doExit (1);
-            }
         }
         return homeDir;
     }
@@ -144,7 +136,7 @@ public class NonGui extends NbTopManager implements Runnable {
             }
             System.setProperty("netbeans.user", userDir); // NOI18N
             
-            File systemDirFile = new File (userDir, SYSTEM_FOLDER);
+            File systemDirFile = new File (userDir, NbRepository.SYSTEM_FOLDER);
             if (!systemDirFile.isDirectory ()) {
                 // try to create it
                 makedir (systemDirFile);
@@ -198,65 +190,6 @@ public class NonGui extends NbTopManager implements Runnable {
     protected static String getSystemDir () {
         getUserDir ();
         return systemDir;
-    }
-
-    //
-    // Protected methods that are provided for subclasses (Main)
-    // to plug-in better implementation
-    //
-    protected FileSystem createDefaultFileSystem () {
-        if (systemFileSystem != null) {
-            return systemFileSystem;
-        }
-
-        // -----------------------------------------------------------------------------------------------------
-        // 1. Initialization and checking of netbeans.home and netbeans.user directories
-
-        File homeDirFile = new File (getHomeDir ());
-        File userDirFile = new File (getUserDir ());
-        if (!homeDirFile.exists ()) {
-            System.err.println (getString("CTL_Netbeanshome_notexists"));
-            doExit (2);
-        }
-        if (!homeDirFile.isDirectory ()) {
-            System.err.println (getString("CTL_Netbeanshome1"));
-            doExit (3);
-        }
-        if (!userDirFile.exists ()) {
-            System.err.println (getString("CTL_Netbeanshome2"));
-            doExit (4);
-        }
-        if (!userDirFile.isDirectory ()) {
-            System.err.println (getString("CTL_Netbeanshome3"));
-            doExit (5);
-        }
-
-        // -----------------------------------------------------------------------------------------------------
-        // 7. Initialize FileSystems
-
-        setStatusText (getString("MSG_FSInit"));
-        // system FS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        {
-            Exception exc = null;
-            try {
-                File u = new File (userDirFile, SYSTEM_FOLDER);
-                File h = new File (homeDirFile, SYSTEM_FOLDER);
-                systemFileSystem = org.netbeans.core.projects.SessionManager.getDefault().create(u, h);
-            } catch (IOException ex) {
-                exc = ex;
-            } catch (java.beans.PropertyVetoException ex) {
-                exc = ex;
-            }
-
-            if (exc != null) {
-                exc.printStackTrace ();
-                Object[] arg = new Object[] {systemDir};
-                System.err.println (new MessageFormat(getString("CTL_Cannot_mount_systemfs")).format(arg));
-                doExit (3);
-            }
-        }
-
-        return systemFileSystem;
     }
 
     /** Subclasses will do better. */

@@ -42,23 +42,6 @@ public class Plain extends NbTopManager implements Runnable {
   
     private ModuleSystem moduleSystem;
   
-    /** Creates defalt file system.
-    */
-    protected FileSystem createDefaultFileSystem () {
-        String systemDir = System.getProperty("system.dir"); // NOI18N
-
-        try {
-            File f = systemDir == null ? null : new File (systemDir);
-            return org.netbeans.core.projects.SessionManager.getDefault().create(f, f);
-        } catch (java.io.IOException ex) {
-            ex.printStackTrace();
-            throw new InternalError ();
-        } catch (java.beans.PropertyVetoException ex) {
-            ex.printStackTrace();
-            throw new InternalError ();
-        }
-    }
-
 
     /** Test method to check whether some level of interactivity is enabled.
     * @param il mask composed of the constants of IL_XXXX

@@ -224,12 +224,6 @@ public abstract class NbTopManager extends TopManager {
         return (NbTopManager)TopManager.getDefault ();
     }
 
-    //
-    // Protected methods that are provided for subclasses (Main)
-    // to plug-in better implementation
-    //
-    protected abstract FileSystem createDefaultFileSystem ();
-
     /** Test method to check whether some level of interactivity is enabled.
     * @param il mask composed of the constants of IL_XXXX
     * @return true if such level is enabled
