@@ -99,7 +99,16 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
             assertNotNull("Wrote to disk; expecting: " + new File(new File(new File(systemDir, "Services"), "Misc"), "inst-2.settings"),
                 saved);
             twiddle(m2, TWIDDLE_DISABLE);
+            // Just in case it is needed:
             Thread.sleep(1000);
+
+            // Yarda's patch:
+            InstanceCookie.Of notExists = (InstanceCookie.Of)obj1.getCookie (InstanceCookie.class);
+            if (notExists != null && notExists.instanceOf(Action.class)) {
+                fail ("Module is disabled, so " + obj1 + " should have no instance cookie " + notExists + " with " + notExists.instanceClass());
+            }
+            // it is OK for there to be an instance of BrokenSettings...
+
             twiddle(m2, TWIDDLE_ENABLE);
             // Make sure there is time for changes to take effect:
             Thread.sleep(2000);
@@ -113,7 +122,9 @@ public class InstanceDataObjectModuleTest7 extends InstanceDataObjectModuleTestH
             assertTrue("Correct action", "SomeAction".equals(a2.getValue(Action.NAME)));
             assertTrue("New version of action", !a2.isEnabled());
         } finally {
-            twiddle(m2, TWIDDLE_DISABLE);
+            if (m2.isEnabled()) {
+                twiddle(m2, TWIDDLE_DISABLE);
+            }
         }
         // Now make sure it has no cookie.
         Thread.sleep(1000);
