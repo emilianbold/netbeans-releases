@@ -66,7 +66,6 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
                 BaseOptions.HIGHLIGHT_CARET_ROW_PROP,
                 BaseOptions.HIGHLIGHT_MATCHING_BRACKET_PROP,
                 BaseOptions.LINE_HEIGHT_CORRECTION_PROP,
-                BaseOptions.LINE_NUMBER_MARGIN_PROP_2,
                 BaseOptions.MARGIN_PROP,
                 BaseOptions.SCROLL_JUMP_INSETS_PROP,
                 BaseOptions.SCROLL_FIND_INSETS_PROP,

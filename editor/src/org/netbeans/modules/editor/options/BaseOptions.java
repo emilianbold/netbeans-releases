@@ -125,7 +125,6 @@ public class BaseOptions extends OptionSupport {
     public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
-    public static final String LINE_NUMBER_MARGIN_PROP_2 = "lineNumberMargin2"; // NOI18N    
     public static final String LINE_NUMBER_VISIBLE_PROP = "lineNumberVisible"; // NOI18N
     public static final String MACRO_MAP_PROP = "macroMap"; // NOI18N
     public static final String MARGIN_PROP = "margin"; // NOI18N
@@ -159,7 +158,6 @@ public class BaseOptions extends OptionSupport {
         INDENT_ENGINE_PROP,
         KEY_BINDING_LIST_PROP,
         LINE_HEIGHT_CORRECTION_PROP,
-        LINE_NUMBER_MARGIN_PROP_2,
         LINE_NUMBER_VISIBLE_PROP,
         MACRO_MAP_PROP,
         MARGIN_PROP,
