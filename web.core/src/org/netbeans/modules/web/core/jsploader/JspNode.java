@@ -253,7 +253,7 @@ public class JspNode extends DataNode {
     }
 
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("jsp_edit");//NOI18N
+        return new HelpCtx("org.netbeans.modules.web.core.jsploader.JspNode");//NOI18N
     }
 }
 
