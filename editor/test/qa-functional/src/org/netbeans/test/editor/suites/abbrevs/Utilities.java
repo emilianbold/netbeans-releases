@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.netbeans.modules.editor.options.AllOptions;
+import org.netbeans.modules.editor.options.HTMLOptions;
+import org.netbeans.modules.editor.options.JavaOptions;
+import org.netbeans.modules.editor.options.PlainOptions;
 import org.openide.options.SystemOption;
 
 /**
@@ -30,6 +33,7 @@ import org.openide.options.SystemOption;
  * @author  Jan Lahoda
  */
 public class Utilities {
+    
     
     /** Creates a new instance of Utilities */
     public Utilities() {
@@ -44,17 +48,18 @@ public class Utilities {
      * returned Object and pass it unchanged to restoreAbbreviationsState();
      */
     public static Object saveAbbreviationsState() {
-        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class, true)).getOptions();
+        //        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class, true)).getOptions();  -- //return null
+        SystemOption[] options = new SystemOption[] {(JavaOptions)SystemOption.findObject(JavaOptions.class),
+        (PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
+        
         Map            result  = new HashMap();
         
         for (int cntr = 0; cntr < options.length; cntr++) {
             if (options[cntr] instanceof BaseOptions) {
                 BaseOptions baseOptions      = (BaseOptions) options[cntr];
-                
                 result.put(baseOptions.getClass(), baseOptions.getAbbrevMap());
             }
         }
-        
         return result;
     }
     
@@ -74,9 +79,11 @@ public class Utilities {
         
         /*The main functionality:
          */
+        SystemOption[] options = new SystemOption[] {(JavaOptions)SystemOption.findObject(JavaOptions.class),
+        (PlainOptions)SystemOption.findObject(PlainOptions.class),(HTMLOptions)SystemOption.findObject(HTMLOptions.class)};
         
-        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();
-
+        //        SystemOption[] options = ((AllOptions) AllOptions.findObject(AllOptions.class)).getOptions();   --- //return null
+        
         for (int cntr = 0; cntr < options.length; cntr++) {
             if (options[cntr] instanceof BaseOptions) {
                 BaseOptions baseOptions      = (BaseOptions) options[cntr];
@@ -89,5 +96,9 @@ public class Utilities {
         }
         
     }
-        
+    
+    public static void main(String[] argv) {
+        Utilities.saveAbbreviationsState();
+    }
+    
 }

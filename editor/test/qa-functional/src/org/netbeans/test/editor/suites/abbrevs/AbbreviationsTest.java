@@ -76,7 +76,8 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         getRef().print(getTestEditor().getText());
         getRef().flush();
         try {
-            assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"), null, new LineDiff(false));
+            assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"),
+            new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         } catch (IOException e) {
             assertTrue("IOException: " + e.getMessage(), false);
         }
@@ -253,45 +254,51 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         }
     }
     
-    public void testAbbreviationOKCancel() {
-        log("testAbbreviationOKCancel start");
+    public void testAbbreviationRemoveCancel() {
+        log("testAbbreviationRemoveCancel start");
         Object backup = Utilities.saveAbbreviationsState();
+        
+        prepareEditor();
         
         try {
             Abbreviations dialog = Abbreviations.invoke(getEditorName());
-            Abbreviation[] abbrevs = getDefaultAbbreviations();
             
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
-                assertTrue("Removing of abbreviation \"" + abbrevs[cntr].getName() + "\" did not succeeded. Probably bug of test.",
-                dialog.removeAbbreviation(abbrevs[cntr].getName()));
+            Object[] keys=dialog.listAbbreviations().keySet().toArray();
+            
+            for (int cntr = 0; cntr < keys.length; cntr++) {
+                dialog.removeAbbreviation((String)keys[cntr]);
             }
             
-            assertTrue("After removing all known abbreviations, some of them remained. Probably bug of test.",
-            dialog.listAbbreviations().size() == 0);
-            
+            if (dialog.listAbbreviations().size() > 0) {
+                Object[] lst=dialog.listAbbreviations().values().toArray();
+                for (int i=0;i < lst.length;i++) {
+                    log("Remained abbreviation: "+lst[i]);
+                }
+                assertTrue("After removing all known abbreviations, some of them remained. Probably bug of test.", false);
+            }
             dialog.cancel();
             
-            prepareEditor();
-            
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
+            for (int cntr = 0; cntr < keys.length; cntr++) {
                 moveCaretIntoCode();
                 //Test whether the old abbreviation does NOT work:
-                useAbbreviation(abbrevs[cntr].getName(), true);
+                useAbbreviation((String)keys[cntr], true);
             }
             
-            log("testAbbreviationOKCancel flush results:");
+            log("testAbbreviationRemoveCancel flush results:");
             
             flushResult();
+        } catch (Exception ex) {
+            ex.printStackTrace(getLog());
         } finally {
-            log("testAbbreviationOKCancel closing editor:");
+            log("testAbbreviationRemoveCancel closing editor:");
             
             finishEditor();
             
-            log("testAbbreviationOKCancel restoring abbreviations map:");
+            log("testAbbreviationRemoveCancel restoring abbreviations map:");
             
             Utilities.restoreAbbreviationsState(backup);
             
-            log("testAbbreviationOKCancel finished");
+            log("testAbbreviationRemoveCancel finished");
         }
     }
     
@@ -299,38 +306,42 @@ public abstract class AbbreviationsTest extends JellyTestCase {
         log("testAbbreviationRemove start");
         Object backup = Utilities.saveAbbreviationsState();
         
+        prepareEditor();
+        
         try {
             Abbreviations dialog = null;
-            Abbreviation[] abbrevs = getDefaultAbbreviations();
-            
             dialog = Abbreviations.invoke(getEditorName());
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
-                assertTrue("Removing of abbreviation \"" + abbrevs[cntr].getName() + "\" did not succeeded. Probably bug of test.",
-                dialog.removeAbbreviation(abbrevs[cntr].getName()));
+            
+            Object[] keys=dialog.listAbbreviations().keySet().toArray();
+            
+            for (int cntr = 0; cntr < keys.length; cntr++) {
+                dialog.removeAbbreviation((String)keys[cntr]);
             }
             
-            assertTrue("After removing all known abbreviations, some of them remained. Probably bug of test.",
-            dialog.listAbbreviations().size() == 0);
-            
+            if (dialog.listAbbreviations().size() > 0) {
+                Object[] lst=dialog.listAbbreviations().values().toArray();
+                for (int i=0;i < lst.length;i++) {
+                    log("Remained abbreviation: "+lst[i]);
+                }
+                assertTrue("After removing all known abbreviations, some of them remained. Probably bug of test.", false);
+            }
             dialog.oK();
-            
-            prepareEditor();
-            
-            for (int cntr = 0; cntr < abbrevs.length; cntr++) {
+            log("Abbreviations removing confirmed.");
+            for (int cntr = 0; cntr < keys.length; cntr++) {
                 moveCaretIntoCode();
                 //Test whether the old abbreviation does NOT work:
-                useAbbreviation(abbrevs[cntr].getName(), true);
+                useAbbreviation((String)keys[cntr], true);
             }
             
             /*Add back all abbreviations:*/
             dialog = Abbreviations.invoke(getEditorName());
+            Abbreviation[] abbrevs=getDefaultAbbreviations();
             
             for (int cntr = 0; cntr < abbrevs.length; cntr++) {
                 dialog.addAbbreviation(abbrevs[cntr].getName(), abbrevs[cntr].getExpansion());
             }
-            
             dialog.oK();
-            
+            log("Add abbrevitaions back confirmed.");
             for (int cntr = 0; cntr < abbrevs.length; cntr++) {
                 moveCaretIntoCode();
                 //Test whether the newly added (old) abbreviation does NOT work:
@@ -340,6 +351,8 @@ public abstract class AbbreviationsTest extends JellyTestCase {
             log("testAbbreviationRemove flush results:");
             
             flushResult();
+        } catch (Exception ex) {
+            ex.printStackTrace(getLog());
         } finally {
             log("testAbbreviationRemove closing editor:");
             

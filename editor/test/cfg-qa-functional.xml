@@ -97,10 +97,19 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    
+    <!-- Abbreviation dialog test -->
+
+    <testbag testattribs="all,full,validation" name="abbrev-gui">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
     <!-- Key bindings tests -->
     
-    <testbag testattribs="all,full,regression" name="KeyBindings-Actions">
+    <testbag testattribs="all,full,validation" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
@@ -109,13 +118,6 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
     
     <!-- Experimental tests (not to be runned automaticaly): -->
-    <testbag testattribs="all,exper" name="abbrev-gui">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/suites/abbrevs/*Performer.class"/>
-            </patternset>
-        </testset>
-    </testbag>
         
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
