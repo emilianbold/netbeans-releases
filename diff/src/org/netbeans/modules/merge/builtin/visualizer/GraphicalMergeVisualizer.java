@@ -96,10 +96,11 @@ public class GraphicalMergeVisualizer extends MergeVisualizer implements Seriali
                 }
                 if (merge == null) {
                     merge = new MergeDialogComponent();
-                    merge.open();
                 }
             }
         }
+        if (!merge.isOpened()) merge.open();
+        
         MergePanel panel = new MergePanel();
         MergeControl control = new MergeControl(panel);
         control.initialize(diffs, source1, source2, result,
