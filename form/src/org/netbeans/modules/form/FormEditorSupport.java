@@ -1583,6 +1583,9 @@ public class FormEditorSupport extends JavaEditor
             if (!FormEditorSupport.isLastView(multiViewObserver.getTopComponent()))
                 return CloseOperationState.STATE_OK;
 
+            // Issue 52286
+            super.canClose(null, true);
+            
             // return a placeholder state - to be sure our CloseHandler is called
             return MultiViewFactory.createUnsafeCloseState(
                 "ID_JAVA_CLOSING", // dummy ID // NOI18N
