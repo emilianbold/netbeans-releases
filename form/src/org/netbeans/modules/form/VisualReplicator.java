@@ -416,24 +416,6 @@ public class VisualReplicator {
         if (clone instanceof java.beans.DesignMode)
             ((java.beans.DesignMode)clone).setDesignTime(true);
 
-        if (clone instanceof Component) {
-            int restrictions = getDesignRestrictions();
-            if ((restrictions & ATTACH_FAKE_PEERS) != 0) {
-                FakePeerSupport.attachFakePeer((Component)clone);
-                if (clone instanceof Container)
-                    FakePeerSupport.attachFakePeerRecursively((Container)clone);
-            }
-            if ((restrictions & DISABLE_FOCUSING) != 0
-                    && clone instanceof JComponent) {
-                ((JComponent)clone).setRequestFocusEnabled(false);
-                ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
-
-                // patch for JDK 1.4 - hide glass pane of JInternalFrame
-                if (clone instanceof JInternalFrame)
-                    ((JInternalFrame)clone).getGlassPane().setVisible(false);
-            }
-        }
-
         if (metacomp instanceof RADVisualContainer) {
             RADVisualContainer metacont = (RADVisualContainer) metacomp;
             final Container cont = (Container) clone;
@@ -483,6 +465,24 @@ public class VisualReplicator {
                     cloneComponent(menuItemComp, relativeProperties) : null;
 
                 addToMenu(clone, menuItem);
+            }
+        }
+
+        if (clone instanceof Component) {
+            int restrictions = getDesignRestrictions();
+            if ((restrictions & ATTACH_FAKE_PEERS) != 0) {
+                FakePeerSupport.attachFakePeer((Component)clone);
+                if (clone instanceof Container)
+                    FakePeerSupport.attachFakePeerRecursively((Container)clone);
+            }
+            if ((restrictions & DISABLE_FOCUSING) != 0
+                    && clone instanceof JComponent) {
+                ((JComponent)clone).setRequestFocusEnabled(false);
+                ((JComponent)clone).setNextFocusableComponent((JComponent)clone);
+
+                // patch for JDK 1.4 - hide glass pane of JInternalFrame
+                if (clone instanceof JInternalFrame)
+                    ((JInternalFrame)clone).getGlassPane().setVisible(false);
             }
         }
 
