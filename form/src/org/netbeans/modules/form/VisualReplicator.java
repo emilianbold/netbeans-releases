@@ -472,7 +472,7 @@ public class VisualReplicator {
                   && !(metacomp.getBeanInstance() instanceof RootPaneContainer))
                 compClone = // the cloned component was put to the content pane
                     ((RootPaneContainer)clone).getContentPane().getComponent(0);
-        } else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName())
+        } else if ("java.awt.ScrollPane".equals(metacomp.getBeanClass().getName()) // NOI18N
             && ((getDesignRestrictions() & ATTACH_FAKE_PEERS) != 0)
             && (System.getProperty("java.version").startsWith("1.4"))) { // NOI18N
             // Issue 36629 - ScrollPane attempts to place

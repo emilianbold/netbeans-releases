@@ -53,7 +53,7 @@ public class ClassPathUtils {
         ClassPath classPath = ClassPath.getClassPath(fileInProject, ClassPath.COMPILE);
         
         if (classPath == null) {
-            throw new ClassNotFoundException(getBundleString("MSG_NullClassPath"));
+            throw new ClassNotFoundException(getBundleString("MSG_NullClassPath")); // NOI18N
         } else {
             loader = classPath.getClassLoader(true);
         }
