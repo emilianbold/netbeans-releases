@@ -17,6 +17,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.Path;
 import org.netbeans.api.debugger.DebuggerInfo;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.util.RequestProcessor;
@@ -82,32 +83,23 @@ public class JPDAConnect extends Task {
             sourcepath, 
             bootclasspath
         );
-            
-        synchronized (exc) {
-            RequestProcessor.getDefault ().post (new Runnable () {
-                public void run() {
-                    //System.err.println("TG: " + Thread.currentThread().getThreadGroup());
-                    // VirtualMachineManagerImpl can be initialized here, so needs
-                    // to be inside RP thread.
-                    AttachingDICookie info = AttachingDICookie.create 
-                        (host, port);
-                    synchronized (exc) {
-                        DebuggerInfo di = DebuggerInfo.create (
-                            AttachingDICookie.ID, 
-                            new Object [] {
-                                info, 
-                                sourcePath
-                            }
-                        );
+        RequestProcessor.getDefault ().post (new Runnable () {
+            public void run() {
+                //System.err.println("TG: " + Thread.currentThread().getThreadGroup());
+                // VirtualMachineManagerImpl can be initialized here, so needs
+                // to be inside RP thread.
+                AttachingDICookie info = AttachingDICookie.create 
+                    (host, port);
+                DebuggerInfo di = DebuggerInfo.create (
+                    AttachingDICookie.ID, 
+                    new Object [] {
+                        info, 
+                        sourcePath
                     }
-                }
-            });
-            try {
-                exc.wait ();
-            } catch (InterruptedException e) {
-                throw new BuildException (e);
+                );
+                DebuggerManager.getDebuggerManager ().startDebugging (di);
             }
-        }
+        });
         log ("Attached JPDA debugger to " + host + ":" + port);
     }
 }
