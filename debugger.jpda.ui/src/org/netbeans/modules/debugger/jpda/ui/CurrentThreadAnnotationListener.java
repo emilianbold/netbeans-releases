@@ -58,7 +58,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             updateCurrentThread ();
             annotate ();
         } else
-        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME) {
+        if (e.getPropertyName () == JPDADebugger.PROP_CURRENT_THREAD) {
             updateCurrentThread ();
             annotate ();
         } else
@@ -106,7 +106,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             removeAnnotations ();
             return;
         }
-
+        
         // 2) get call stack & Line
         CallStackFrame[] stack = new CallStackFrame [0];
         try {
