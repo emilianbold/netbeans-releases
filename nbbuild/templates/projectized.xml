@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="projectized" default="init" basedir=".">
@@ -411,6 +411,7 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/netbeans/modules/usersguide/ide.css"/>
             </fileset>
         </jar>
+        <!-- XXX would be good to also add a Class-Path entry to the main module manifest automatically -->
     </target>
 
     <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors." if="has.javahelp">
