@@ -40,7 +40,7 @@
      <tocitem text="Opening a File Not Mounted in a Filesystem" target="filesystems.openfile" />
      <tocitem text="Disabling Compilation for a Filesystem" target="filesystems.disable-compile" />
      <tocitem text="Unmounting a Filesystem" target="filesystems.removing" />
-     <tocitem text="Hiding and Displaying a Filesystem" target=filesystems.hiding" />
+     <tocitem text="Hiding and Displaying a Filesystem" target="filesystems.hiding" />
      <tocitem text="Configuring a Mounted Filesystem" target="filesystems.settings" />
      <tocitem text="Mounting the Java 2 SDK" target="filesystems.jdk" />
      <tocitem text="Specifying Files to Ignore in a Filesystem" target="filesystems.ignore-files" />
