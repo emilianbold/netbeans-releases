@@ -84,6 +84,7 @@ workspaceswitcher
     <configmods property="modules" selectedconfig="${moduleconfig}">
       <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,projects,text,utilities"/>
       <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,projects,text,utilities"/>
+      <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
       <config name="stable" modules="ant,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,text,usersguide,utilities,vcscore,vcscvs,web"/>
       <config name="ide-hacker" modules="ant,apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,scripting,serialversion,sysprops,text,utilities,vcscore,vcscvs"/>
