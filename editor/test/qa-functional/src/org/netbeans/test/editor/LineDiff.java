@@ -110,7 +110,7 @@ public class LineDiff implements Diff {
             for (int i=0;i < a1.size();i++) {
                 if (j >= a2.size()) {
                     for (int k=i;k < a1.size();k++) {
-                        missingLines.add(i+"> "+a1.get(k));
+                        missingLines.add(k+"> "+a1.get(k));
                     }
                     break;
                 }
@@ -135,6 +135,11 @@ public class LineDiff implements Diff {
                     }
                 }
                 j++;
+            }
+            if (j < a2.size()) {
+                for (int i=j;i < a2.size();i++) {
+                    newLines.add(i+"> "+a2.get(i));
+                }
             }
             
             if (missingLines.size() > 0 || newLines.size() > 0) {
@@ -163,7 +168,7 @@ public class LineDiff implements Diff {
     public static void main(String[] argv) {
         try {
             LineDiff diff=new LineDiff(true);
-            diff.diff("/tmp/Java Editor actions.pass","/tmp/Java Editor actions.ref","/tmp/Java Editor actions.diff");
+            diff.diff("/tmp/diff/test.pass","/tmp/diff/test.ref","/tmp/diff/test.diff");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
