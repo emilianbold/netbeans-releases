@@ -1436,6 +1436,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${test.user.dir}"/>
     <delete dir="modules_javadoc"/>
     <delete file="moduledefs-tmp.properties"/>
+    <delete file="moduleCluster.properties"/>
     <delete dir="nbms" />
   </target>
 
