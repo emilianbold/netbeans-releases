@@ -159,11 +159,11 @@ public class OutputDocumentTest extends TestCase {
         ow.println(first);
         ow.println (second);
         ow.println (third);
-        assertTrue ("After a few writes, document should not think its output stream is closed, it isn't.", doc.stillGrowing());
+        assertTrue ("After a few writes, document should not think its output stream is closed, it isn't.", doc.getLines().isGrowing());
         ow.flush();
-        assertTrue ("After a flush, document should not think its output stream is closed, it isn't.", doc.stillGrowing());
+        assertTrue ("After a flush, document should not think its output stream is closed, it isn't.", doc.getLines().isGrowing());
         ow.close();
-        assertFalse ("After closing the writer, the document should not expect itself to grow", doc.stillGrowing());
+        assertFalse ("After closing the writer, the document should not expect itself to grow", doc.getLines().isGrowing());
     }
     
     private static String STATE = "(STATE NOT SET!)";

@@ -98,6 +98,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getSelectionStart() != textView.getSelectionEnd();
     }
 
+    boolean isScrollLocked() {
+        return locked;
+    }
+
     /**
      * Ensure that the document is scrolled all the way to the bottom (unless
      * some user event like scrolling or placing the caret has unlocked it).

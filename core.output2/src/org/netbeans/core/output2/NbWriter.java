@@ -17,6 +17,7 @@ import org.openide.windows.OutputWriter;
 import org.openide.windows.OutputListener;
 import org.openide.ErrorManager;
 
+import javax.swing.plaf.basic.BasicTabbedPaneUI;
 import java.io.IOException;
 
 
@@ -49,7 +50,10 @@ class NbWriter extends OutputWriter {
     public void reset() throws IOException {
         if (!((OutWriter) out).hasStorage() && !((OutWriter) out).isDisposed() || ((OutWriter) out).isEmpty()) {
             //Someone calling reset multiple times or on initialization
-            return;
+            if (!((OutWriter)out).isDisposed()) {
+                if (Controller.log) Controller.log ("Extra call to Reset on " + this + " for " + out);
+                return;
+            }
         }
         synchronized (this) {
             out = new OutWriter();

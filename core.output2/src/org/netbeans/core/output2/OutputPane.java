@@ -164,7 +164,7 @@ class OutputPane extends AbstractOutputPane implements ComponentListener {
                     textView.getCaret().setDot(pos);
                 }
             });
-            if (getDocument() instanceof OutputDocument && ((OutputDocument) getDocument()).stillGrowing()) {
+            if (getDocument() instanceof OutputDocument && ((OutputDocument) getDocument()).getLines().isGrowing()) {
                 lockScroll();
             }
             if (!val) {

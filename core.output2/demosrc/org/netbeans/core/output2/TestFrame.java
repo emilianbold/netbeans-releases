@@ -82,7 +82,7 @@
         io = (NbIO) new NbIOProvider().getIO ("Test", false);
     }
 
-    private static int ct = 0;
+    private static int ct = 5;
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
             out = ((NbWriter) io.getOut());

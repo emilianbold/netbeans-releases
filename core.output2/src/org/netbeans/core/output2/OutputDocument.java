@@ -50,29 +50,32 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             Controller.log ("Creating a Document for " + writer);
         }
         this.writer = writer;
-        writer.addChangeListener (this);
+        getLines().addChangeListener(this);
     }
 
+    /**
+     * Destroy this OutputDocument and its backing storage.  The document should not be visible
+     * in the UI when this method is called.
+     */
     public void dispose() {
-        if (Controller.log) Controller.log ("Disposing document for " + writer);
+        if (Controller.log) Controller.log ("Disposing document and backing storage for " + getLines().readLock());
+        disposeQuietly();
+        writer.dispose();
+        writer = null;
+    }
+
+    /**
+     * Destory this OutputDocument, but not its backing storage.  The document should not be
+     * visible in the UI when this method is called.
+     */
+    public void disposeQuietly() {
         if (timer != null) {
             timer.stop();
             timer = null;
         }
         dlisteners.clear();
         lastEvent = null;
-        writer.removeChangeListener(this);
-        writer.dispose();
-        writer = null;
-    }
-
-    public void disposeQuietly() {
-        writer.removeChangeListener(this);
-        if (timer != null) {
-            timer.stop();
-            timer = null;
-        }
-        writer = null;
+        getLines().removeChangeListener(this);
     }
 
     public synchronized void addDocumentListener(DocumentListener documentListener) {
@@ -124,7 +127,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             return ""; //NOI18N
         }
         String result1;
-        synchronized (writer) {
+        synchronized (getLines().readLock()) {
             result1 = getLines().getText(offset,offset + length);
         }
         String result = result1;
@@ -185,10 +188,6 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         return writer != null ? writer.getLines() : null;
     }
 
-    boolean stillGrowing() {
-        return !writer.isClosed();
-    }
-
     public int getLineStart (int line) {
         return getLines().getLineCount() > 0 ? getLines().getLineStart(line) : 0;
     }
@@ -210,15 +209,9 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         //do nothing
     }
     
-    private boolean rendering = false;
     public void render(Runnable runnable) {
-        try {
-            rendering = true;
-            getElementCount(); //Force a refresh of lastPostedLine
-            runnable.run();
-        } finally {
-            rendering = false;
-        }
+        getElementCount(); //Force a refresh of lastPostedLine
+        runnable.run();
     }
     
     public AttributeSet getAttributes() {
@@ -235,7 +228,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         if (getLines().getLineCount() == 0) {
             return new EmptyElement(OutputDocument.this);
         }
-        synchronized (writer) {
+        synchronized (getLines().readLock()) {
             if (index > lastPostedLine) {
                 lastPostedLine = index;
             }
@@ -245,7 +238,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     
     public int getElementCount() {
         int result;
-        synchronized (writer) {
+        synchronized (getLines().readLock()) {
             result = getLines().getLineCount();
             lastPostedLine = result;
         }
@@ -287,7 +280,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             if (Controller.verbose) Controller.log ("listeners empty, not firing");
             return;
         }
-        if (writer.checkDirty()) {
+        if (getLines().checkDirty(true)) {
             if (lastEvent != null && !lastEvent.isConsumed()) {
                 if (Controller.verbose) Controller.log ("Last event not consumed, not firing");
                 return;
@@ -324,18 +317,18 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         updatingTimerState = true;
         long newTime = System.currentTimeMillis();
-        if (timer == null && !writer.isClosed()) {
+        if (timer == null && getLines().isGrowing()) {
             if (Controller.log) Controller.log("Starting timer");
             //Run the timer fast and furious at first, slowing down after
             //the initial output has been captured
             timer = new javax.swing.Timer(50, this);
             timer.setRepeats(true);
             timer.start();
-        } else if (writer.isClosed()) {
+        } else if (!getLines().isGrowing()) {
             if (timer != null) {
                 timer.stop();
             }
-            if (writer.peekDirty() && timer != null) {
+            if (getLines().checkDirty(false) && timer != null) {
                 //There's still some output we haven't displayed - 
                 //fire a change one last time.
                 Mutex.EVENT.readAccess(this);
@@ -363,7 +356,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
 
     private long lastFireTime = 0;
     public void actionPerformed(ActionEvent actionEvent) {
-        if (writer.isClosed()) {
+        if (!getLines().isGrowing()) {
             updateTimerState();
         }
         stateChanged(null);
@@ -376,8 +369,6 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             dl.insertUpdate(de);
         }
     }
-
-    //**************  StyledDocument implementation ****************************
 
     static final class ODPosition implements Position {
         private int offset;
@@ -495,7 +486,7 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
         }
         
         void calc() {
-            synchronized (writer) {
+            synchronized (getLines().readLock()) {
                 if (startOffset == -1) {
                     startOffset = getLines().getLineCount() > 0 ? getLines().getLineStart(lineIndex) : 0;
                     if (lineIndex >= getLines().getLineCount()-1) {
@@ -689,6 +680,6 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
     
     public String toString() {
-        return "OD@" + System.identityHashCode(this) + " for " + writer;
+        return "OD@" + System.identityHashCode(this) + " for " + getLines().readLock();
     }
 }

@@ -245,7 +245,7 @@ public class OutWriterTest extends TestCase {
         
         CL cl = new CL();
         try {
-            ow.addChangeListener (cl);
+            ow.getLines().addChangeListener(cl);
         } catch (Exception e) {
             e.printStackTrace();
             fail ("Caught exception " + e);
@@ -289,15 +289,15 @@ public class OutWriterTest extends TestCase {
         
         CL cl = new CL();
         try {
-            ow.addChangeListener (cl);
+            ow.getLines().addChangeListener(cl);
         } catch (Exception e) {
             e.printStackTrace();
             fail ("Caught exception " + e);
         }
-        
-        
-        ow.removeChangeListener (cl);
-        
+
+
+        ow.getLines().removeChangeListener(cl);
+
         String first = "This is the first string";
         String second = "This is the second string, ain't it?";
         String third = "This is the third string";
@@ -318,8 +318,8 @@ public class OutWriterTest extends TestCase {
         
         
         OutWriter ow = new OutWriter ();
-        
-        boolean dirty = ow.checkDirty();
+
+        boolean dirty = ow.getLines().checkDirty(true);
         
         String first = "This is the a test";
         

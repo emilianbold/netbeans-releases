@@ -61,7 +61,6 @@ class NbIO implements CallbackInputOutput {
         if (Controller.log) Controller.log("CLOSE INPUT OUTPUT CALLED FOR " + this);
         if (out != null) {
             if (Controller.log) Controller.log (" - Its output is non null, calling close() on " + out);
-//            out.dispose();
             out.close();
         }
         post (this, IOEvent.CMD_CLOSE, true);
@@ -122,7 +121,7 @@ class NbIO implements CallbackInputOutput {
     }
     
     boolean isStreamClosed() {
-        return out == null ? true : out.isClosed();
+        return out == null ? true : streamClosedSet ? streamClosed : false;
     }
     
     public void select() {
@@ -152,10 +151,17 @@ class NbIO implements CallbackInputOutput {
         //do nothing
     }
 
-    private boolean streamClosed = true;
+    boolean hasStreamClosed() {
+        return streamClosedSet;
+    }
+
+    private boolean streamClosed = false;
+    private boolean streamClosedSet = false;
     public void setStreamClosed(boolean value) {
-        if (streamClosed != isStreamClosed()) {
+        if (Controller.log) Controller.log ("setStreamClosed on " + this + " to " + value);
+        if (streamClosed != value || !streamClosedSet) {
             streamClosed = value;
+            streamClosedSet = true;
             post (this, IOEvent.CMD_STREAM_CLOSED, value);
         }
     }
@@ -172,10 +178,12 @@ class NbIO implements CallbackInputOutput {
     public void reset() {
         if (Controller.log) Controller.log (this + ": reset");
         closed = null;
+        streamClosedSet = false;
+        streamClosed = false;
 
         if (in != null) {
             in.eof();
-            in = null;
+            in.reuse();
         }
         post (this, IOEvent.CMD_RESET, true);
     }
@@ -226,7 +234,11 @@ class NbIO implements CallbackInputOutput {
         IOReader() {
             super (new StringBuffer());
         }
-        
+
+        void reuse() {
+            pristine = true;
+        }
+
         private StringBuffer buffer() {
             return (StringBuffer) lock;
         }

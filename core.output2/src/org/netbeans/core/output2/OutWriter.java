@@ -43,13 +43,9 @@ import org.openide.util.Utilities;
  *
  * @author  Tim Boudreau
  */
-class OutWriter extends PrintWriter implements Runnable {
+class OutWriter extends PrintWriter {
     /** A flag indicating an io exception occured */
     private boolean trouble = false;
-    /** A flag that indicates some characters have been written */
-    private volatile boolean dirty = false;
-    /** A change listener.  Changes are fired on calls to flush, close, etc. */
-    private ChangeListener listener = null;
 
     private NbIO owner;
     
@@ -64,7 +60,7 @@ class OutWriter extends PrintWriter implements Runnable {
     /**
      * Byte array used to write the line separator after line writes.
      */
-    static byte[] lineSepBytes = new byte[] { '\0', '\n'}; //XXX Endianness
+    static byte[] lineSepBytes = new byte[] { '\0', '\n'};
     private Storage storage;
     private LinesImpl lines;
 
@@ -105,13 +101,7 @@ class OutWriter extends PrintWriter implements Runnable {
     }
 
     public String toString() {
-        return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed " + " listener=" + System.identityHashCode(listener);
-    }
-
-    public void run() {
-        if (listener != null) {
-            listener.stateChanged(new ChangeEvent(this));
-        }
+        return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed ";
     }
 
     private int doPrintln (String s) {
@@ -141,20 +131,6 @@ class OutWriter extends PrintWriter implements Runnable {
             return 0;
         }
     }
-    
-    private void fire() {
-        if (checkError()) {
-            return;
-        }
-        if (Controller.log) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
-        if (listener != null) {
-            Mutex.EVENT.readAccess(this);
-        }
-    }
-
-    boolean peekDirty() {
-        return dirty;
-    }
 
 
     /** Generic exception handling, marking the error flag and notifying it with ErrorManager */
@@ -176,56 +152,6 @@ class OutWriter extends PrintWriter implements Runnable {
     }
 
     /**
-     * Should be called by any method which modifies the contents of the 
-     * getWriteBuffer file.
-     */
-    private void markDirty() {
-        dirty = true;
-    }
-    
-    /**
-     * Allows clients that wish to poll to see if there is new output to do
-     * so.  When any thread writes to the output, the dirty flag is set.
-     * Calling this method returns its current value and clears it.  If it 
-     * returns true, a view of the data may need to repaint itself or something
-     * such.  This mechanism can be used in preference to listener based 
-     * notification, by running a timer to poll as long as the output is 
-     * open, for cases where otherwise the event queue would be flooded with
-     * notifications for small writes.
-     */
-    public boolean checkDirty() {
-        if (checkError()) {
-            return false;
-        }
-        boolean wasDirty = dirty;
-        dirty = false;
-        return wasDirty;
-    }
-
-    /**
-     * Add a change listener which will be notified on first write, flush and close operations.
-     * The added listener must be able to handle changes being fired on any thread - change
-     * firing is synchronous and not thread safe.
-     *
-     * @param cl A change listener
-     * @throws TooManyListenersException If more than one listener is added
-     */
-    public void addChangeListener (ChangeListener cl) {
-        this.listener = cl;
-    }
-
-    /**
-     * Remove a change listener
-     *
-     * @param cl A change listener
-     */
-    public void removeChangeListener (ChangeListener cl) {
-        if (listener == cl) {
-            listener = null;
-        } 
-    }
-
-    /**
      * Write the passed buffer to the backing storage, recording the line start in the mapping of lines to
      * byte offsets.
      *
@@ -236,7 +162,6 @@ class OutWriter extends PrintWriter implements Runnable {
         if (checkError()) {
             return;
         }
-        markDirty();
         int lineLength = bb.limit();
         closed = false;
         int start = -1;
@@ -261,15 +186,20 @@ class OutWriter extends PrintWriter implements Runnable {
             if (lineCount == 20 || lineCount == 10 || lineCount == 1) {
                 //Fire again after the first 20 lines
                 if (Controller.log) Controller.log ("Firing initial write event");
-                fire();
+                ((AbstractLines) getLines()).fire();
             }
-            if (owner != null && owner.isStreamClosed()) {
+            if (owner != null && owner.hasStreamClosed()) {
                 owner.setStreamClosed(false);
             }
         }
     }
     private boolean terminated = false;
-    
+
+    /**
+     * An exception has occurred while writing, which has left us in a readable state, but not
+     * a writable one.  Typically this happens when an executing process was sent Thread.stop()
+     * in the middle of a write.
+     */
     private void threadDeathClose() {
         terminated = true;
         if (Controller.log) Controller.log (this + " Close due to termination");
@@ -288,7 +218,9 @@ class OutWriter extends PrintWriter implements Runnable {
      */
     public synchronized void dispose() {
         if (disposed) {
-            throw new IllegalStateException ("Trying to dispose an OutWriter twice");
+            //This can happen if a tab was closed, so we were already disposed, but then the
+            //ant module tries to reuse the tab -
+            return;
         }
         if (Controller.log) Controller.log (this + ": OutWriter.dispose - owner is " + (owner == null ? "null" : owner.getName()));
         clearListeners();
@@ -301,10 +233,8 @@ class OutWriter extends PrintWriter implements Runnable {
             lines = null;
         }
         trouble = true;
-        listener = null;
         if (Controller.log) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
         owner = null;
-        dirty = false;
         disposed = true;
     }
 
@@ -351,9 +281,6 @@ class OutWriter extends PrintWriter implements Runnable {
     private boolean closed = false;
     public synchronized void close() {
         closed = true;
-        if (listener == null) {
-//            dispose();
-        }
         try {
             storage.close();
         } catch (IOException ioe) {
@@ -374,7 +301,7 @@ class OutWriter extends PrintWriter implements Runnable {
             }
             try {
                 getStorage().flush();
-                fire();
+                ((AbstractLines) getLines()).fire();
             } catch (IOException e) {
                 handleException (e);
             }
@@ -491,8 +418,12 @@ class OutWriter extends PrintWriter implements Runnable {
             return OutWriter.this.trouble;
         }
 
-        protected Object readLock() {
+        public Object readLock() {
             return OutWriter.this;
+        }
+
+        public boolean isGrowing() {
+            return !isClosed();
         }
 
         protected void handleException (Exception e) {

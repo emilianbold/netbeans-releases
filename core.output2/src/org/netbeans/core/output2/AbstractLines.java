@@ -14,7 +14,10 @@ package org.netbeans.core.output2;
 
 import org.openide.windows.OutputListener;
 import org.openide.ErrorManager;
+import org.openide.util.Mutex;
 
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.io.IOException;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -29,7 +32,7 @@ import java.util.regex.Pattern;
 /**
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
  */
-abstract class AbstractLines implements Lines {
+abstract class AbstractLines implements Lines, Runnable {
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
     /** Maps output listeners to the lines they are associated with */
@@ -56,8 +59,6 @@ abstract class AbstractLines implements Lines {
     protected abstract boolean isDisposed();
 
     protected abstract boolean isTrouble();
-
-    protected abstract Object readLock();
 
     protected abstract void handleException (Exception e);
 
@@ -151,6 +152,39 @@ abstract class AbstractLines implements Lines {
         return errLines != null ? errLines.contains(line) : false;
     }
 
+    private ChangeListener listener = null;
+    public void addChangeListener(ChangeListener cl) {
+        this.listener = cl;
+        synchronized(this) {
+            if (getLineCount() > 0) {
+                //May be a new tab for an old output, hide and reshow, etc.
+                fire();
+            }
+        }
+    }
+
+    public void removeChangeListener (ChangeListener cl) {
+        if (listener == cl) {
+            listener = null;
+        }
+    }
+
+    public void fire() {
+        if (isTrouble()) {
+            return;
+        }
+        if (Controller.log) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
+        if (listener != null) {
+            Mutex.EVENT.readAccess(this);
+        }
+    }
+
+    public void run() {
+        if (listener != null) {
+            listener.stateChanged(new ChangeEvent(this));
+        }
+    }
+
     public boolean hasHyperlinks() {
         return firstListenerLine() != -1;
     }
@@ -167,6 +201,21 @@ abstract class AbstractLines implements Lines {
         longestLine = 0;
         errLines = null;
         matcher = null;
+        listener = null;
+        dirty = false;
+    }
+
+    private boolean dirty;
+
+    public boolean checkDirty(boolean clear) {
+        if (isTrouble()) {
+            return false;
+        }
+        boolean wasDirty = dirty;
+        if (clear) {
+            dirty = false;
+        }
+        return wasDirty;
     }
 
     public int[] allListenerLines() {
@@ -331,7 +380,7 @@ abstract class AbstractLines implements Lines {
          return Math.min(end, result) -1;
      }
      /**
-      * Recursively search for the getLine number with the smallest number of lines
+      * Recursively search for the line number with the smallest number of lines
       * above it, greater than the passed target number of lines.  This is
       * effectively a binary search - divides the range of lines in half and
       * checks if the middle value is greater than the target; then recurses on
@@ -573,6 +622,7 @@ abstract class AbstractLines implements Lines {
     public void lineWritten(int start, int lineLength) {
         if (Controller.verbose) Controller.log ("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
         synchronized (readLock()) {
+            dirty = true;
             setLastWrappedLineCount(-1);
             setLastCharCountForWrapAboveCalculation(-1);
             longestLine = Math.max (longestLine, lineLength);
