@@ -30,6 +30,9 @@ import org.openide.*;
 import org.openide.loaders.*;
 import org.openide.cookies.*;
 import org.openide.util.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileStateInvalidException;
 
 import org.netbeans.api.xml.parsers.DocumentInputSource;
 import org.netbeans.api.xml.services.UserCatalog;
@@ -95,6 +98,7 @@ public final class DataObjectAdapters {
         }
         
     }
+
     
     /**
      * Create Source from DataObject. Default implementation prefers opened
@@ -116,7 +120,7 @@ public final class DataObjectAdapters {
         private final DataObject dataObject;
         
         public DataObjectSAXSource(DataObject dataObject) throws IOException {
-            URL url = dataObject.getPrimaryFile().getURL();
+            URL url = preferFileURL (dataObject.getPrimaryFile());
             systemId = url.toExternalForm();
             this.dataObject = dataObject;
         }
@@ -150,6 +154,23 @@ public final class DataObjectAdapters {
                 return null;
             }
         }
+
+        /**
+         * If possible it find "file:" URL if <code>fileObject</code> is on LocalFileSystem.
+         * @return URL of <code>fileObject</code>.
+         */
+        private static URL preferFileURL (FileObject fileObject) throws MalformedURLException, FileStateInvalidException {
+            URL fileURL = null;
+            File file = FileUtil.toFile (fileObject);
+            
+            if ( file != null ) {
+                fileURL = file.toURL();
+            } else {
+                fileURL = fileObject.getURL();
+            }
+            return fileURL;
+        }
+        
     }
     
     private static synchronized SAXParserFactory getSAXParserFactory () throws ParserConfigurationException, SAXNotRecognizedException, SAXNotSupportedException {

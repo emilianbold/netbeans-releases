@@ -99,7 +99,7 @@ public final class TransformableSupport implements TransformableCookie {
             
         } catch (Exception exc) { // TransformerException, ParserConfigurationException, SAXException, FileStateInvalidException
             if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("    EXCEPTION during transformation", exc);
+                Util.THIS.debug ("    EXCEPTION during transformation: " + exc.getClass().getName(), exc);
                 Util.THIS.debug ("    exception's message = " + exc.getLocalizedMessage());
 
                 Throwable tempExc = unwrapException (exc);
