@@ -28,6 +28,7 @@ import javax.swing.border.*;
 
 import com.netbeans.ide.*;
 import com.netbeans.ide.filesystems.*;
+import com.netbeans.ide.loaders.DataObject;
 import com.netbeans.ide.util.NbBundle;
 import com.netbeans.developer.modules.loaders.form.FormLoaderSettings;
 
@@ -81,21 +82,14 @@ public final class BeanInstaller extends Object {
           return;
 
         BeanSelector sel = new BeanSelector(list);
-        final Dialog dd[] = new Dialog [1];
         DialogDescriptor desc = new DialogDescriptor (
           sel, 
           bundle.getString("CTL_SelectJB"),
           true,
-          new ActionListener () { 
-            public void actionPerformed (ActionEvent evt) {
-              dd[0].setVisible (false);
-              dd[0].dispose ();
-            }
-          }
+          null
         );
         ;
-        dd[0] = TopManager.getDefault ().createDialog (desc);
-        dd[0].show();
+        TopManager.getDefault ().createDialog (desc).show ();
         if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
         
           String pal = selectPaletteCategory();
@@ -226,6 +220,11 @@ public final class BeanInstaller extends Object {
           String ic = "icon="+iconName;
           os.write (ic.getBytes ());
         }
+        DataObject dobj = DataObject.find (fo);
+        if (dobj != null) {
+          // enforce creation of node so that it is displayed
+          dobj.getNodeDelegate ();
+        }
       }
     }
     catch (java.io.IOException e) {
@@ -243,31 +242,18 @@ public final class BeanInstaller extends Object {
     return ret;
   }
 
-  /*
-  static void notifyNotFound(String what) {
-    String message = new MessageFormat(bundle.getString("ERR_ClassNotFound")).format(new Object[] { what });
-    TopManager.getDefault().notify(new NotifyDescriptor.Exception(new Exception(), message));
-  } */
-
   /** Opens dialog and lets user select category, where beans should be installed
   */
   private static String selectPaletteCategory() {
     PaletteSelector sel = new PaletteSelector();
-    final Dialog dd[] = new Dialog [1];
     DialogDescriptor desc = new DialogDescriptor (
       sel, 
       bundle.getString("CTL_SelectPalette"),
       true,
-      new ActionListener () { 
-        public void actionPerformed (ActionEvent evt) {
-          dd[0].setVisible (false);
-          dd[0].dispose ();
-        }
-      }
+      null
     );
     ;
-    dd[0] = TopManager.getDefault ().createDialog (desc);
-    dd[0].show();
+    TopManager.getDefault ().createDialog (desc).show ();
     if (desc.getValue () == NotifyDescriptor.OK_OPTION) {
       return sel.getSelectedCategory();
     } else {
@@ -575,6 +561,7 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/7/99   Ian Formanek    
  *  6    Gandalf   1.5         6/7/99   Ian Formanek    Fixed problem with 
  *       beans.properties not containing item for JAR archive
  *  5    Gandalf   1.4         6/7/99   Ian Formanek    PaletteCategory is 
