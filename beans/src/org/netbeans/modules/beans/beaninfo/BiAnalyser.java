@@ -22,6 +22,7 @@ import java.util.StringTokenizer;
 
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
+import org.openide.src.Type;
 import org.openide.nodes.Node;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -110,6 +111,14 @@ public class BiAnalyser extends Object implements Node.Cookie {
     while( it.hasNext() ) {
       IdxPropertyPattern ipp = (IdxPropertyPattern)it.next();
       //if ( ipp.isPublic() )
+      
+      
+      if ( ipp.getType() != null && ( !ipp.getType().isArray() || 
+           !ipp.getType().getElementType().equals( ipp.getIndexedType() ) ) ) {
+        continue;
+      }
+      
+
       idxProperties.add( new BiFeature.IdxProperty( ipp ) );
     }
 
@@ -619,6 +628,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
 }
 /* 
  * Log
+ *  8    Gandalf   1.7         10/11/99 Petr Hrebejk    JDK 
+ *       IndexedPropertyDescriptor bug fix
  *  7    Gandalf   1.6         8/18/99  Petr Hrebejk    BeanInfo analyse moved 
  *       to separate thread
  *  6    Gandalf   1.5         8/9/99   Petr Hrebejk    BeanInfo for no 
