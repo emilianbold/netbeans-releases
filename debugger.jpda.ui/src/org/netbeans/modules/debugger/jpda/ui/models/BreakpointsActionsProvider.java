@@ -132,6 +132,8 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         if (b instanceof ExceptionBreakpoint)
             c = new ExceptionBreakpointPanel ((ExceptionBreakpoint) b);
 
+        c.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(BreakpointsActionsProvider.class, "ACSD_Breakpoint_Customizer_Dialog")); // NOI18N
         DialogDescriptor descriptor = new DialogDescriptor (
             c,
             NbBundle.getMessage (
