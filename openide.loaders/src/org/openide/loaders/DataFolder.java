@@ -1197,10 +1197,10 @@ implements Serializable, DataObject.Container {
         */
         protected void createPasteTypes (Transferable t, java.util.List s) {
             super.createPasteTypes (t, s);
-            if (!getPrimaryFile ().isReadOnly ())
+            if (!getPrimaryFile ().isReadOnly ()) {
                 dataTransferSupport.createPasteTypes (t, s);
+            }
         }
-
     } // end of FolderNode
 
     /** New type for creation of new folder.
@@ -1388,8 +1388,18 @@ implements Serializable, DataObject.Container {
                             return obj.isCopyAllowed ();
                         }
                         protected void handlePaste (DataObject obj) throws IOException {
+                            saveIfModified(obj);
                             obj.copy (DataFolder.this);
                         }
+
+                        private void saveIfModified(DataObject obj) throws IOException {
+                            if (obj.isModified()) {
+                                SaveCookie sc = (SaveCookie)obj.getCookie(SaveCookie.class);
+                                if (sc != null) {
+                                    sc.save();
+                                }
+                            }
+                        }                        
                     },
                     new PasteTypeExt () {
                         public String getName () {
