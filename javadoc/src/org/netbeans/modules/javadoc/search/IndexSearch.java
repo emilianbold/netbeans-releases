@@ -296,7 +296,7 @@ public class IndexSearch
       byNameButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byNameButton.setSelected (true);
       byNameButton.setMinimumSize (new java.awt.Dimension(25, 25));
-      byNameButton.setActionCommand ("A");
+      byNameButton.setActionCommand ("A"); // NOI18N
       byNameButton.setRequestFocusEnabled (false);
       byNameButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -310,7 +310,7 @@ public class IndexSearch
   
       byReferenceButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byReferenceButton.setMinimumSize (new java.awt.Dimension(25, 25));
-      byReferenceButton.setActionCommand ("R");
+      byReferenceButton.setActionCommand ("R"); // NOI18N
       byReferenceButton.setRequestFocusEnabled (false);
       byReferenceButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -324,7 +324,7 @@ public class IndexSearch
   
       byTypeButton.setPreferredSize (new java.awt.Dimension(25, 25));
       byTypeButton.setMinimumSize (new java.awt.Dimension(25, 25));
-      byTypeButton.setActionCommand ("T");
+      byTypeButton.setActionCommand ("T"); // NOI18N
       byTypeButton.setRequestFocusEnabled (false);
       byTypeButton.addActionListener (new java.awt.event.ActionListener () {
         public void actionPerformed (java.awt.event.ActionEvent evt) {
@@ -767,6 +767,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  24   Gandalf   1.23        1/12/00  Petr Hrebejk    i18n mk2
  *  23   Gandalf   1.22        1/12/00  Petr Hrebejk    i18n
  *  22   Gandalf   1.21        1/11/00  Jesse Glick     Context help.
  *  21   Gandalf   1.20        11/23/99 Petr Hrebejk    Show source feature 
