@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">
       <exclude name="org/netbeans/junit/**"/>
-      <exclude name="org/netbeans/xtest/pe/server*/**"/>
+      <exclude name="org/netbeans/xtest/pe/server/**"/>
       <classpath>
 	<pathelement location="../openide/openide-13javac-workaround.jar"/>
         <fileset dir="../openide/netbeans/lib">

@@ -169,7 +169,10 @@ public class TransformXMLTask extends Task{
         boolean runningPES = (System.getProperty("pes.config") == null) ? false : true;
         
         if (runningPES) {
-            return org.netbeans.xtest.pe.server.XSLTransformers.getTransformer(xsl);
+            // PES does not use Ant class loader - use classical way to create transformer            
+            TransformerFactory tFactory = javax.xml.transform.TransformerFactory.newInstance();
+            StreamSource xslSource = new StreamSource(xsl);
+            return tFactory.newTransformer(xslSource);
         } else {
             StreamSource xslSource = new StreamSource(xsl);
             Transformer transformer = XMLFactoryUtil.newTransformer(xslSource);
