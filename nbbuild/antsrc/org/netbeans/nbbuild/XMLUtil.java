@@ -49,7 +49,6 @@ public final class XMLUtil extends Object {
 	}
 	if (xercesParser != null) {
 
-	    System.out.println("Using xerces");
 	    // We don't like it, but we have to use it, so deal with using reflection API
 	    try {
 		// Create DOMParser using default constructor
