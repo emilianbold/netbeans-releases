@@ -96,7 +96,7 @@ public class GrabTableAction extends DatabaseAction {
                             }
                         } else noResult = false;
                     }
-                }
+                } else return;
             }
             FileOutputStream fstream = new FileOutputStream(file);
             ObjectOutputStream ostream = new ObjectOutputStream(fstream);
