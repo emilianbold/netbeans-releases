@@ -79,8 +79,8 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${netbeans.home}/lib/core.jar"/>
         <pathelement location="${netbeans.home}/modules/ext/tax.jar"/>
         <pathelement location="${netbeans.home}/modules/xml-core.jar"/>
-        <!--
         <pathelement location="${netbeans.home}/modules/css.jar"/>
+        <!--
         <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
         <pathelement location="${netbeans.home}/modules/xml-syntax.jar"/>
         <pathelement location="${netbeans.home}/modules/xml-text-edit.jar"/>
@@ -89,8 +89,8 @@ Microsystems, Inc. All Rights Reserved.
         -->
         <pathelement location="${netbeans.home}/modules/editor.jar"/>                      
         <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
-        <pathelement location="${nbextra.repository}/jemmy/jemmy.jar"/>                    
-        <pathelement location="${nbextra.repository}/jellytools/jelly-nb.jar"/>                    
+        <pathelement location="${nb.repository}/jemmy/jemmy.jar"/>                    
+        <pathelement location="${nb.repository}/jellytools/jelly-nb.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/junit.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/junit-ext.jar"/>                    
         <pathelement location="${nb.repository}/xtest/lib/xtest.jar"/>                    
