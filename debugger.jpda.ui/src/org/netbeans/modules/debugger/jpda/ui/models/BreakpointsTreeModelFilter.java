@@ -67,19 +67,20 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         int         from, 
         int         to
     ) throws NoInformationException, ComputingException, UnknownTypeException {
-        Object[] ch = original.getChildren (parent, from, to);
+        if (to - from <= 0) return new Object[0]; 
+        Object[] ch = original.getChildren (parent, 0, 0);
         List l = new ArrayList ();
-        int i, k = ch.length;
+        int i, k = ch.length, n = to - from;
         for (i = 0; i < k; i++) {
             if ( (!verbose) &&
                  (ch [i] instanceof JPDABreakpoint) &&
                  ((JPDABreakpoint) ch [i]).isHidden ()
             ) continue;
-            l.add (ch [i]); 
+            if (--from >= 0) continue;
+            l.add (ch [i]);
+            if (--n == 0) break;
         }
-        l = l.subList (from, to);
-        Object[] bs = new Object [l.size ()];
-        return l.toArray (bs);
+        return l.toArray();
     }
     
     /**
