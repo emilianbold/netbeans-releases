@@ -4,7 +4,7 @@ OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/j2ee/ddloaders/
  Bundle.properties
 OpenIDE-Module: org.netbeans.modules.j2ee.ddloaders/1
-OpenIDE-Module-Implementation-Version: 1.0
+X-comment-OpenIDE-Module-Implementation-Version: 1.0
 
 Name: org/netbeans/modules/j2ee/ddloaders/ejb/EjbJarDataLoader.class
 OpenIDE-Module-Class: Loader
