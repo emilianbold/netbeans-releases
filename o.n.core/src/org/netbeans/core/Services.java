@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,6 +37,7 @@ import org.netbeans.beaninfo.editors.DebuggerTypeEditor;
 /** Works with all service types.
 *
 * @author Jaroslav Tulach
+* @deprecated Obsoleted by lookup and new settings system.
 */
 public final class Services extends ServiceType.Registry implements LookupListener {
     /** serial */
@@ -137,13 +138,7 @@ public final class Services extends ServiceType.Registry implements LookupListen
     */
     public synchronized void setServiceTypes (java.util.List arr) {
         if (arr == null) {
-            // previous implementation allowed to pass null as parameter
-            // despite of specification in open api
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
-                System.err.println("WARNING: calling org.openide.ServiceType.Registery.setServiceTypes(null)"); // NOI18N
-                Thread.dumpStack();
-            }
-            return;
+            throw new NullPointerException();
         }
         
         arr = ensureSingleness(arr);
