@@ -51,13 +51,14 @@ import org.openide.explorer.propertysheet.PropertyDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
+import org.openide.text.EditorSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
 
  
 /** Support for opening properties files (OpenCookie) in visual editor */
-public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
+public class PropertiesOpen extends OpenSupport implements OpenCookie {
                   
   /** Main properties dataobject */                                 
   PropertiesDataObject obj;
@@ -80,6 +81,7 @@ public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
   * @return the cloneable top component for this support
   */
   protected CloneableTopComponent createCloneableTopComponent () {
+System.out.println("creating new open for " + obj.getPrimaryFile().getPackageNameExt('/','.'));
     return new PropertiesCloneableTopComponent(obj);
   }
   
@@ -122,56 +124,6 @@ public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
   }
                                           
                                           
-  public void openModal() {
-    try {
-      /*MessageFormat mf = new MessageFormat(DataObject.getString("CTL_ObjectOpen"));
-      DataObject obj = entry.getDataObject();
-      
-      TopManager.getDefault().setStatusText(mf.format (
-        new Object[] {
-          obj.getName(),
-          obj.getPrimaryFile().toString()
-        }
-      ));*/
-      synchronized (allEditors) {
-//        modalTopComponent = createCloneableTopComponent ();
-        
-        // open the dialog                                         
-        JPanel mainPanel = new BundleEditPanel(obj, ((PropertiesDataObject)obj).getOpenSupport().getTableModel());
-        final DialogDescriptor dd = new DialogDescriptor(mainPanel, obj.getName());
-        dd.setButtonListener(new ActionListener() {
-          public void actionPerformed(ActionEvent event) {           
-//System.out.println("closing ...");
-            boolean closeIt;
-            if (!hasOpenComponent())
-              closeIt = closeLast();
-            else
-              closeIt = true;
-            dialog.setVisible(false);
-            dialog.dispose();
-          }
-
-    protected boolean closeLast () {
-      if (!((PropertiesDataObject)obj).getOpenSupport().canClose ()) {
-        // if we cannot close the last window
-        return false;
-      }
-      ((PropertiesDataObject)obj).getOpenSupport().closeDocuments();
-      
-      return true;
-    }
-        });
-        dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
-        dd.setOptions(new Object[] {NbBundle.getBundle(PropertiesOpen.class).getString("CTL_CLOSE_BUTTON_LABEL")});
-        dd.setModal(true);
-        dialog = TopManager.getDefault().createDialog(dd);
-        dialog.show();
-      }
-    } finally {
-//      TopManager.getDefault ().setStatusText (DataObject.getString ("CTL_ObjectOpened"));
-    }     
-  }
-  
   /** Should test whether all data is saved, and if not, prompt the user
   * to save.
   *
@@ -269,6 +221,25 @@ public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
         }));
         
       initComponents();
+
+      // dock into editor mode if possible
+System.out.println("docking " + getName());      
+      Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
+      for (int i = currentWs.length; --i >= 0; ) {
+System.out.println("docking ws " + i);      
+        Mode editorMode = currentWs[i].findMode(EditorSupport.EDITOR_MODE);
+        if (editorMode == null) {
+System.out.println("creating " + i + " name " + getName());      
+          editorMode = currentWs[i].createMode(
+            EditorSupport.EDITOR_MODE, getName(),
+            EditorSupport.class.getResource(
+              "/org/openide/resources/editorMode.gif"
+            )
+          );
+        }
+        editorMode.dockInto(this);
+System.out.println("docked ws " + i);      
+      }
     }
 
     public HelpCtx getHelpCtx () {
@@ -326,18 +297,20 @@ public class PropertiesOpen extends OpenSupport implements ModalOpenCookie {
     */
     protected CloneableTopComponent createClonedObject () {
     
-      String PROPERTIES_MODE = "com.netbeans.developer.modules.loaders.properties";
       PropertiesCloneableTopComponent pctc = new PropertiesCloneableTopComponent (dobj);
+      
+      
+      /*String PROPERTIES_MODE = "com.netbeans.developer.modules.loaders.properties";
       Workspace cur = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
       Mode m = cur.findMode(PROPERTIES_MODE);
       if (m == null) {
         m = cur.createMode(PROPERTIES_MODE, 
                            NbBundle.getBundle(PropertiesOpen.class).getString("LAB_PropertiesModeName"),
                            null);
-      } 
+      } */
       // PENDING
       //m.setBounds(new Rectangle(x, y, width, height));
-      m.dockInto(pctc);
+      
       return pctc;
     }
                           
