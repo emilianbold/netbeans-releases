@@ -145,7 +145,7 @@ public class BrokenReferencesSupport {
                         DialogDescriptor dd = new DialogDescriptor(new BrokenReferencesAlertPanel(), 
                             NbBundle.getMessage(BrokenReferencesAlertPanel.class, "MSG_Broken_References_Title"),
                             true, new Object[] {ok}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
-                        dd.setMessageType(DialogDescriptor.INFORMATION_MESSAGE);
+                        dd.setMessageType(DialogDescriptor.WARNING_MESSAGE);
                         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
                         dlg.setVisible(true);
                     } finally {
