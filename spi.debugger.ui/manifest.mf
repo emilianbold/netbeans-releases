@@ -15,6 +15,9 @@ OpenIDE-Module-Class: Option
 Name: org/netbeans/modules/debugger/support/DebuggerProjectSettings.class
 OpenIDE-Module-Class: Option
 
+Name: org/netbeans/modules/debugger/support/java/JavaProjectSettings.class
+OpenIDE-Module-Class: Option
+
 Name: org/netbeans/modules/debugger/multisession/EnterpriseDebugger.class
 OpenIDE-Module-Class: Debugger
 
