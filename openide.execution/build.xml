@@ -22,7 +22,7 @@ Microsystems, Inc. All Rights Reserved.
         </patternset>
     </target>
 
-    <target name="netbeans" depends="release,projectized.netbeans" description="Build complete module."/>
+    <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
         <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}"/>

@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
         </patternset>
     </target>
 
-    <target name="netbeans" depends="release,projectized.netbeans" description="Build complete module."/>
+    <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
         <!-- Note: this will indeed modify working sources if there is a change. -->

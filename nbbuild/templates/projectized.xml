@@ -136,7 +136,8 @@ Microsystems, Inc. All Rights Reserved.
         <nbinstaller module="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" action="reinstall"/>
     </target>
 
-    <target name="netbeans" depends="init,jar">
+    <target name="netbeans-extra"/>
+    <target name="netbeans" depends="init,jar,netbeans-extra">
         <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${module.jar}">
             <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
                 <patternset refid="module.files"/>
@@ -165,6 +166,7 @@ Microsystems, Inc. All Rights Reserved.
             <property name="javadoc.base" location="."/>
             <property name="javadoc.packages" value="${module.javadoc.packages}"/>
             <property name="javadoc.classpath" refid="cp"/>
+            <property name="javadoc.manifest" location="${manifest.mf}"/>
         </ant>
     </target>
 

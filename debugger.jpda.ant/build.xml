@@ -42,6 +42,6 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="netbeans" depends="nblib,projectized.netbeans" description="Build complete module."/>
+    <target name="netbeans-extra" depends="nblib"/>
 
 </project>

@@ -31,6 +31,6 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
     </target>
 
-    <target name="netbeans" depends="probe,projectized.netbeans" description="Build complete module."/>
+    <target name="netbeans-extra" depends="probe"/>
 
 </project>

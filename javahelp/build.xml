@@ -39,7 +39,7 @@ Microsystems, Inc. All Rights Reserved.
         </makenbm>
     </target>
     
-    <target name="netbeans" depends="release,projectized.netbeans" description="Build complete module."/>
+    <target name="netbeans-extra" depends="release"/>
 
     <target name="release" depends="init">
         <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
