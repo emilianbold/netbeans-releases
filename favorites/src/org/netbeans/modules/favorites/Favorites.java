@@ -16,7 +16,11 @@ package org.netbeans.modules.favorites;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
 
+import org.openide.actions.CopyAction;
+import org.openide.actions.CutAction;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -152,7 +156,7 @@ final class Favorites extends FilterNode {
             if (o instanceof Repository) {
                 // list all roots
                 File[] roots = File.listRoots();
-                java.util.ArrayList list = new java.util.ArrayList ();
+                List list = new ArrayList ();
                 for (int i = 0; i < roots.length; i++) {
                     FileObject r = org.openide.filesystems.FileUtil.toFileObject (roots[i]);
                     if (r == null) {
@@ -263,17 +267,17 @@ final class Favorites extends FilterNode {
             return false;
         }
         
-        public javax.swing.Action[] getActions(boolean context) {
-            javax.swing.Action[] arr;
+        public Action[] getActions(boolean context) {
+            Action[] arr;
             arr = super.getActions(context);
             
             boolean added = false;
-            java.util.ArrayList newArr = new java.util.ArrayList (arr.length + 3);
+            List newArr = new ArrayList(arr.length + 3);
             for (int i = 0; i < arr.length; i++) {
                 if (!added && (
-                    (arr[i] instanceof org.openide.actions.CopyAction)  
+                    (arr[i] instanceof CopyAction)  
                     ||
-                    (arr[i] instanceof org.openide.actions.CutAction)  
+                    (arr[i] instanceof CutAction)  
                 )) {
                     added = true;
                     newArr.add (Actions.add ());
@@ -283,7 +287,7 @@ final class Favorites extends FilterNode {
                 newArr.add (arr[i]);
             }
             
-            return (javax.swing.Action[])newArr.toArray (arr);
+            return (Action[])newArr.toArray (arr);
         }
         
     }
