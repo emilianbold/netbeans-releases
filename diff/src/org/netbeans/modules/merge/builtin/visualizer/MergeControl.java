@@ -270,7 +270,7 @@ public class MergeControl extends Object implements ActionListener, VetoableChan
     
     public void actionPerformed(ActionEvent actionEvent) {
         final String actionCommand = actionEvent.getActionCommand();
-        org.openide.util.RequestProcessor.postRequest(new Runnable() {
+        org.openide.util.RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 if (MergePanel.ACTION_FIRST_CONFLICT.equals(actionCommand)) {
                     currentDiffLine = 0;
