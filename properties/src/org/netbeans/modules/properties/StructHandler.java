@@ -147,7 +147,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
     }  
   }
 
-  /** Tests the dirty flag. */
+  /** Tests the dirty flag. This indicates whether the document and the structure match. */
   boolean isDirty() {
     return dirty;
   }

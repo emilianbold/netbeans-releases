@@ -33,6 +33,7 @@ import org.openide.util.WeakListener;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.RequestProcessor;
 import org.openide.text.EditorSupport;          
 import org.openide.text.PositionRef;
 import org.openide.cookies.EditCookie;
@@ -82,10 +83,13 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   /** Constructor */
   public PropertiesEditorSupport(PropertiesFileEntry entry) {
     super (entry);
+//System.out.println("editor support constructor - " + entry.getFile().getName());
+//Thread.dumpStack();    
     initialize();
   }
   
   public void initialize() {
+    myEntry = (PropertiesFileEntry)entry;
     super.setModificationListening(false);
     setMIMEType ("text/x-properties");
     initTimer();
@@ -94,8 +98,8 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent evt) {
         if (isDocumentLoaded()) {
-          listenDocument = getDocument();
-          listenDocument.addDocumentListener(getEntryModifL());
+//System.out.println("document loaded ok " + myEntry.getFile().getName());
+          setListening(true);
         }
       }
     });
@@ -122,12 +126,18 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     private PropertiesFileEntry serialEntry;
      
     Object readResolve() throws ObjectStreamException {
-      return new PropertiesEditorSupport(serialEntry);
+//System.out.println("deserializing properties editor");
+//System.out.println("serialEntry " + serialEntry);
+//System.out.println("dataobject " + serialEntry.getDataObject());
+//Thread.dumpStack();
+      Object pe = serialEntry.getPropertiesEditor();
+//System.out.println("deserializing properties editor END");
+      return pe;
     }
   }
   
   /** Visible view of underlying file entry */
-  PropertiesFileEntry myEntry = (PropertiesFileEntry)entry;
+  transient PropertiesFileEntry myEntry;
   
   /** Focuses existing component to open, or if none exists creates new.
   * @see OpenCookie#open
@@ -170,31 +180,6 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     });
     timer.setInitialDelay(settings.getAutoParsingDelay());
     timer.setRepeats(false);
-
-    // create document listener
-    final DocumentListener docListener = new DocumentListener() {
-      public void insertUpdate(DocumentEvent e) { change(e); }
-      public void changedUpdate(DocumentEvent e) { }
-      public void removeUpdate(DocumentEvent e) { change(e); }
-      
-      private void change(DocumentEvent e) {
-        int delay = settings.getAutoParsingDelay();
-        myEntry.getHandler().setDirty(true);
-        if (delay > 0) {
-          timer.setInitialDelay(delay);
-          timer.restart();
-        }
-      }
-    };
-
-    // add change listener
-    addChangeListener(new ChangeListener() {
-      public void stateChanged(ChangeEvent evt) {
-        if (isDocumentLoaded()) {
-          getDocument().addDocumentListener(docListener);
-        }
-      }
-    });
   }              
   
   /** Returns whether there is an open component (editor or open). */
@@ -216,8 +201,11 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   }
   
   public boolean close() {
+//System.out.println("closing");      
     if (!super.close())
       return false;
+      
+//System.out.println("closed - document open = " + isDocumentLoaded());
                       
     closeDocumentEntry();                  
     myEntry.getHandler().reparseNowBlocking();  
@@ -240,16 +228,10 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   * @param listenToModifs whether to listen to modifications
   */
   public void setModificationListening (final boolean listenToModifs) {
+//System.out.println("set modification listening - " + listenToModifs);
     this.listenToEntryModifs = listenToModifs;
     if (getDocument() == null) return;
-    if (listenToEntryModifs) {
-      listenDocument = getDocument();
-      listenDocument.addDocumentListener(getEntryModifL());
-    }  
-    else {
-      if (listenDocument != null)
-        listenDocument.removeDocumentListener(getEntryModifL());
-    }  
+    setListening(listenToEntryModifs);
   }
 
   /* A method to create a new component. Overridden in subclasses.
@@ -265,15 +247,19 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   }
                 
   /** Creates the loading task. When the task finishes, attaches a modification lisetner to the document */
-  public synchronized Task prepareDocument () {
+/*  public synchronized Task prepareDocument () {
     Task t = super.prepareDocument();
     t.addTaskListener(new TaskListener() {
       public void taskFinished (Task task) {
+        setListening(true);
         getDocument().addDocumentListener(getEntryModifL());
       }
     });
+    if (t.isFinished()) {
+      System.out.println("a
+    }
     return t;
-  }                                                         
+  } */
   
   /** Should test whether all data is saved, and if not, prompt the user
   * to save. Called by my topcomponent when it wants to close its last topcomponent, but the table editor may still be open
@@ -348,6 +334,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
   * @see #loadFromStreamToKit
   */
   protected void saveFromKitToStream(StyledDocument doc, EditorKit kit, OutputStream stream) throws IOException, BadLocationException {
+//System.out.println("saving - doc = " + doc);
     OutputStream os = new NewLineOutputStream(stream, newLineType);
     try {
       kit.write(os, doc, 0, doc.getLength());
@@ -371,8 +358,28 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     if (listenToEntryModifs) {
       getEntryModifL().clearSaveCookie();
 
+      setListening(false);
+    }
+  }
+  
+  private void setListening(boolean listen) {
+    if (listen) {
+      if ((getDocument() == null) || (listenDocument == getDocument()))
+        return;
+//System.out.println("this is " + this);
+//System.out.println("listendocument " + listenDocument);
+//System.out.println("document" + getDocument());
+      if (listenDocument != null) // also holds that listenDocument != getDocument()
+        listenDocument.removeDocumentListener(getEntryModifL());
+      listenDocument = getDocument();
+//System.out.println("adding listener");      
+      listenDocument.addDocumentListener(getEntryModifL());
+    }
+    else {
       if (listenDocument != null) {
         listenDocument.removeDocumentListener(getEntryModifL());
+        listenDocument = null;
+//System.out.println("removing listener");      
       }
     }
   }
@@ -561,6 +568,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     */
     public void insertUpdate(DocumentEvent ev) {
       modified();
+      changeStructureStatus();
     }
 
     /** Gives notification that a portion of the document has been removed.
@@ -568,6 +576,16 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     */
     public void removeUpdate(DocumentEvent ev) {
       modified();
+      changeStructureStatus();
+    }
+    
+    private void changeStructureStatus() {
+      int delay = settings.getAutoParsingDelay();
+      myEntry.getHandler().setDirty(true);
+      if (delay > 0) {
+        timer.setInitialDelay(delay);
+        timer.restart();
+      }
     }
 
     /** Gives notification that the DataObject was changed.
@@ -605,7 +623,18 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
     /** Adds save cookie to the DO. Only if a component is open, otherwise saves it right away
     */
     private void addSaveCookie() {
-      if (hasOpenComponent()) {
+      if (myEntry.getCookie(SaveCookie.class) == null) {
+        myEntry.getCookieSet().add(this);
+      }
+      ((PropertiesDataObject)myEntry.getDataObject()).updateModificationStatus();
+      RequestProcessor.postRequest(new Runnable() {
+        public void run() {
+          myEntry.getPropertiesEditor().open();
+        }
+      });
+      
+      
+      /*if (hasOpenComponent()) {
         // add Save cookie to the entry       
         if (myEntry.getCookie(SaveCookie.class) == null) {
           myEntry.getCookieSet().add(this);
@@ -619,6 +648,7 @@ public class PropertiesEditorSupport extends EditorSupport implements EditCookie
         catch (IOException e) {
           // PENDING
         }  
+      */  
     }
     /** Removes save cookie from the DO.
     */

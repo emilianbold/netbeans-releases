@@ -91,6 +91,7 @@ public class PropertyBundleSupport implements Serializable {
      * @see EventListenerList
      */
     public void fireBundleChanged(PropertyBundleEvent e) {
+//System.out.println(e.toString());    
       // Guaranteed to return a non-null array
       Object[] listeners = listenerList.getListenerList();
       // Process the listeners last to first, notifying
