@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,7 @@ class ShadowChangeAdapter extends Object implements RepositoryListener,
         /* listen on loader pool to refresh datashadows after 
         * create/delete dataobject
         */        
-        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).addOperationListener(this);
+        DataLoaderPool.getDefault().addOperationListener(this);
     }
 
     /** Checks for BrokenDataShadows */

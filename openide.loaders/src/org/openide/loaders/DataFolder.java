@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -1340,7 +1340,7 @@ implements Serializable, DataObject.Container {
 
                     DataObject created = DataObject.find(folder.createFolder (folderName));
                     if (created != null) {
-                        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).fireOperationEvent(
+                        DataLoaderPool.getDefault().fireOperationEvent(
                             new OperationEvent.Copy (created, DataFolder.this), OperationEvent.TEMPL
                         );
                     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -73,7 +73,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
             POOL = new DataObjectPool ();
         }
         
-        ((DataLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class)).addChangeListener (POOL);
+        lp.addChangeListener(POOL);
         Repository.getDefault().addRepositoryListener (POOL);
 
         return POOL;
@@ -392,7 +392,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
         notifyCreation (obj.item);
     }
 
-    private static final DataLoaderPool lp = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+    private static final DataLoaderPool lp = DataLoaderPool.getDefault();
     
     /** Notifies the creation of an item*/
     private void notifyCreation (Item item) {
@@ -1071,7 +1071,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
                 refusingObjects = new HashSet ();
                 createdFiles = new HashSet ();
 
-                DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup (DataLoaderPool.class);
+                DataLoaderPool pool = lp;
                 Iterator it = s.iterator ();
                 while (it.hasNext () && goOn ()) {
                     try {

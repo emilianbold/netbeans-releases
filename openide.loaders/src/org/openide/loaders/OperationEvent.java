@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -29,9 +29,7 @@ public class OperationEvent extends EventObject {
 
     /** data object */
     private DataObject obj;
-    private static final DataLoaderPool pl = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
-    /*
-    */
+    private static final DataLoaderPool pl = DataLoaderPool.getDefault();
     static final long serialVersionUID =-3884037468317843808L;
     OperationEvent(DataObject obj) {
         super (pl);

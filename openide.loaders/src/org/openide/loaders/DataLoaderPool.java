@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -16,6 +16,7 @@ package org.openide.loaders;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,6 +37,8 @@ import org.openide.util.enum.SequenceEnumeration;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /** Pool of data loaders.
  * Provides access to set of registered
@@ -48,12 +51,24 @@ import org.openide.util.Lookup;
  */
 public abstract class DataLoaderPool extends Object
 implements java.io.Serializable {
+
     /** SUID */
     static final long serialVersionUID=-360141823874889956L;
     /** standard system loaders. Accessed by getSystemLoaders method only */
     private static MultiFileLoader[] systemLoaders;
     /** standard default loaders. Accessed by getDefaultLoaders method only */
     private static MultiFileLoader[] defaultLoaders;
+    
+    private static DataLoaderPool DEFAULT;
+    static synchronized DataLoaderPool getDefault() {
+        if (DEFAULT == null) {
+            DEFAULT = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            if (DEFAULT == null) {
+                DEFAULT = new DefaultPool();
+            }
+        }
+        return DEFAULT;
+    }
     
     /** Cache of loaders for faster toArray() method. */
     private transient DataLoader[] loaderArray;
@@ -502,6 +517,28 @@ implements java.io.Serializable {
      */
     static MultiFileLoader getShadowLoader () {
         return getSystemLoaders ()[0];
+    }
+
+    /**
+     * Special pool for unit testing etc.
+     * Finds all relevant data loaders in default lookup.
+     */
+    private static final class DefaultPool extends DataLoaderPool implements LookupListener {
+        
+        private final Lookup.Result result;
+        
+        public DefaultPool() {
+            result = Lookup.getDefault().lookup(new Lookup.Template(DataLoader.class));
+        }
+        
+        protected Enumeration loaders() {
+            return Collections.enumeration(result.allInstances());
+        }
+        
+        public void resultChanged(LookupEvent e) {
+            fireChangeEvent(new ChangeEvent(this));
+        }
+        
     }
     
     //

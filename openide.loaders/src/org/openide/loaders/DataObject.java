@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -445,7 +445,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             }
 
             // try to use the loaders machinery
-            DataLoaderPool p = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+            DataLoaderPool p = DataLoaderPool.getDefault();
             assert p != null : "No DataLoaderPool found in " + Lookup.getDefault();
             obj = p.findDataObject (fo);
             if (obj != null) {
@@ -726,7 +726,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
     * @param type OperationEvent.XXXX constant
     */
     private static void fireOperationEvent (OperationEvent ev, int type) {
-        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).fireOperationEvent (ev, type);
+        DataLoaderPool.getDefault().fireOperationEvent (ev, type);
     }
 
     /** Provide object used for synchronization. 

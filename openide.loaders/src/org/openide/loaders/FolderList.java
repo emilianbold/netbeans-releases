@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -663,7 +663,7 @@ implements FileChangeListener, DataObject.Container {
         // list of new objects to add
         final List add = new ArrayList ();
 
-        DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class);
+        DataLoaderPool pool = DataLoaderPool.getDefault();
 
         // hashtable with FileObjects that are marked to be recognized
         // and that is why being out of enumeration

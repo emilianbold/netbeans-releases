@@ -27,9 +27,7 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
-import org.openide.util.enum.EmptyEnumeration;
 
 // XXX testChangesFromAntPropertyChanges
 // XXX testFileRenames
@@ -43,15 +41,7 @@ public class GlobFileBuiltQueryTest extends NbTestCase {
     static {
         TestUtil.setLookup(new Object[] {
             AntBasedTestUtil.testAntBasedProjectType(),
-            new NullDataLoaderPool(),
         }, GlobFileBuiltQueryTest.class.getClassLoader());
-    }
-    
-    private static final class NullDataLoaderPool extends DataLoaderPool {
-        NullDataLoaderPool() {}
-        protected Enumeration loaders() {
-            return EmptyEnumeration.EMPTY;
-        }
     }
     
     public GlobFileBuiltQueryTest(String name) {
