@@ -299,7 +299,10 @@ public class NonGui extends NbTopManager implements Runnable {
             } else if (args[i].equalsIgnoreCase("-nosplash")) // NOI18N
                 noSplash = true;
             else if (args[i].equalsIgnoreCase("-accessibility")) // NOI18N
+            {
                 accessibility = true;
+                java.lang.System.setProperty("netbeans.accessibility","true");
+            }
             else if (args[i].equalsIgnoreCase("-noinfo")) // NOI18N
                 noinfo = true;
             else if (args[i].equalsIgnoreCase("-nologging")) // NOI18N
