@@ -145,10 +145,10 @@ class DataFolderPanel extends TopComponent implements
         directoryName = new javax.swing.JTextField();
         createButton = new javax.swing.JButton();
         setLayout(new java.awt.BorderLayout());
-
+        
         packagesPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-
+        
         beanTreeView.setPopupAllowed(false);
           gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 0;
@@ -159,9 +159,9 @@ class DataFolderPanel extends TopComponent implements
           gridBagConstraints1.weightx = 1.0;
           gridBagConstraints1.weighty = 1.0;
           packagesPanel.add(beanTreeView, gridBagConstraints1);
-  
-  
-        descriptionLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_TargetLocationDescription"));
+          
+          
+        descriptionLabel.setText(bundle.getString("LAB_TargetLocationDescription"));
           gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 0;
           gridBagConstraints1.gridy = 0;
@@ -170,17 +170,17 @@ class DataFolderPanel extends TopComponent implements
           gridBagConstraints1.insets = new java.awt.Insets(8, 8, 0, 8);
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
           packagesPanel.add(descriptionLabel, gridBagConstraints1);
-  
-  
-        packageLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_package"));
+          
+          
+        packageLabel.setText(bundle.getString("LAB_package"));
           gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 0;
           gridBagConstraints1.gridy = 2;
           gridBagConstraints1.insets = new java.awt.Insets(0, 8, 0, 8);
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
           packagesPanel.add(packageLabel, gridBagConstraints1);
-  
-  
+          
+          
         gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 1;
           gridBagConstraints1.gridy = 2;
@@ -188,17 +188,17 @@ class DataFolderPanel extends TopComponent implements
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
           gridBagConstraints1.weightx = 1.0;
           packagesPanel.add(packageName, gridBagConstraints1);
-  
-  
-        dirLabel.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("LAB_directory"));
+          
+          
+        dirLabel.setText(bundle.getString("LAB_directory"));
           gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 0;
           gridBagConstraints1.gridy = 3;
           gridBagConstraints1.insets = new java.awt.Insets(8, 8, 8, 8);
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
           packagesPanel.add(dirLabel, gridBagConstraints1);
-  
-  
+          
+          
         directoryName.setEnabled(false);
           gridBagConstraints1 = new java.awt.GridBagConstraints();
           gridBagConstraints1.gridx = 1;
@@ -208,9 +208,9 @@ class DataFolderPanel extends TopComponent implements
           gridBagConstraints1.insets = new java.awt.Insets(8, 0, 8, 8);
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
           packagesPanel.add(directoryName, gridBagConstraints1);
-  
-  
-        createButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle").getString("CTL_Create"));
+          
+          
+        createButton.setText(bundle.getString("CTL_Create"));
           createButton.setEnabled(false);
           createButton.addActionListener(new java.awt.event.ActionListener() {
               public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -224,10 +224,10 @@ class DataFolderPanel extends TopComponent implements
           gridBagConstraints1.insets = new java.awt.Insets(0, 8, 0, 8);
           gridBagConstraints1.anchor = java.awt.GridBagConstraints.NORTHWEST;
           packagesPanel.add(createButton, gridBagConstraints1);
-  
-  
+          
+          
         add(packagesPanel, java.awt.BorderLayout.CENTER);
-
+        
     }//GEN-END:initComponents
 
   private void createButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createButtonActionPerformed
@@ -255,6 +255,8 @@ class DataFolderPanel extends TopComponent implements
   private javax.swing.JTextField directoryName;
   private javax.swing.JButton createButton;
   // End of variables declaration//GEN-END:variables
+
+  private static final java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/beaninfo/editors/Bundle");  
 
     //
     // Filter to accept only folders
@@ -684,7 +686,8 @@ class DataFolderPanel extends TopComponent implements
 
         // change the node
         try {
-            beanTreeView.selectionChanged(new Node[] { n }, em);
+            em.setSelectedNodes(new Node[] { n });
+            //beanTreeView.selectionChanged(new Node[] { n }, em);
         } catch (PropertyVetoException ex) {
             throw new InternalError ();
         }
