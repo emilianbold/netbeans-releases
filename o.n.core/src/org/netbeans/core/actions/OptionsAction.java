@@ -20,9 +20,12 @@ import java.awt.event.*;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListener;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
@@ -37,6 +40,7 @@ import org.openide.explorer.view.TreeTableView;
 import org.openide.awt.SplittedPanel;
 
 import org.netbeans.core.projects.SettingChildren;
+import org.netbeans.core.projects.SessionManager;
 import org.netbeans.core.NbMainExplorer;
 
 /** Action that opens explorer view which displays global
@@ -82,19 +86,6 @@ public class OptionsAction extends CallableSystemAction {
         /** Formatted title of this view */
         private static MessageFormat formatTitle;
 
-        private static final Node.Property indicator = new SettingChildren.IndicatorProperty ();
-
-        private static final Node.Property full_set [] = new Node.Property [] { 
-            indicator,
-            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT),
-            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION),
-            new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES)
-        };
-
-        private static final Node.Property simple_set [] = new Node.Property [] { 
-            indicator
-        };
-        
         public OptionsPanel () {
             super();
             setRootContext (initRC ());
@@ -180,14 +171,25 @@ public class OptionsAction extends CallableSystemAction {
             return rc;
         }
 
-        private static class TTW extends TreeTableView implements MouseListener {
+        private static class TTW extends TreeTableView implements MouseListener, PropertyChangeListener {
+            /** Project/Session indicator property */
+            private final Node.Property indicator = new SettingChildren.IndicatorProperty ();
+            /** Project layer state indicator property */
+            private final Node.Property project = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_PROJECT);
+            /** Session layer state indicator property */
+            private final Node.Property session = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_SESSION);
+            /** Modules layer state indicator property */
+            private final Node.Property modules = new SettingChildren.FileStateProperty (SettingChildren.PROP_LAYER_MODULES);
+            /** Active set of properties (columns) */
+            private Node.Property active_set [] = null;
+            PropertyChangeListener weakL = null;
+
             public TTW () {
                 super ();
-
-                setProperties (full_set);
-                setTableColumnPreferredWidth (0, 20);
-
+                refreshColumns (true);
                 addMouseListener (this);
+                weakL = WeakListener.propertyChange (this, SessionManager.getDefault ());
+                SessionManager.getDefault ().addPropertyChangeListener (weakL);
             }
             public void mouseExited (MouseEvent evt) {
             }
@@ -201,27 +203,58 @@ public class OptionsAction extends CallableSystemAction {
                     JTableHeader h = (JTableHeader)c;
                     
                     // show/hide additional properties
-                    int column = h.columnAtPoint (evt.getPoint ());
-                    if (column == 0) {
-                        // first column is the Indicator property
-                        if (h.getTable ().getColumnCount () == 1) {
-                            // show additional properties
-                            indicator.setDisplayName (NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
-                            setProperties (full_set);
-                            setTableColumnPreferredWidth (0, 20);
-                            setTableColumnPreferredWidth (1, 150);
-                            setTableColumnPreferredWidth (2, 150);
-                            setTableColumnPreferredWidth (3, 150);
-                        } else {
-                            // hide additional properties
-                            indicator.setDisplayName (NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name")); //NOI18N
-                            setProperties (simple_set);
-                            setTableColumnPreferredWidth (0, 20);
-                        }
+                    if (0 == h.columnAtPoint (evt.getPoint ())) {
+                        refreshColumns (true);
                     }
                 }
             }
             public void mouseEntered (MouseEvent evt) {
+            }
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (SessionManager.PROP_OPEN.equals (evt.getPropertyName ())) {
+                    refreshColumns (false);
+                }
+            }
+            private void refreshColumns (boolean changeSets) {
+                Node.Property new_set [] = active_set;
+                int length = active_set == null ? 0 : active_set.length;
+
+                if ((changeSets && length == 1) || (!changeSets && length > 1)) {
+                    // build full_set
+                    if (null != SessionManager.getDefault ().getLayer (SessionManager.LAYER_PROJECT))
+                        new_set = new Node.Property [] { indicator, project, session, modules };
+                    else
+                        new_set = new Node.Property [] { indicator, session, modules };
+
+                    indicator.setDisplayName (
+                        NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name_Expanded")); //NOI18N
+                }
+                else {
+                    if (changeSets) {
+                        new_set = new Node.Property [] { indicator };
+                        indicator.setDisplayName (
+                            NbBundle.getMessage (SettingChildren.class, "LBL_IndicatorProperty_Name")); //NOI18N
+                    }
+                }
+                
+                if (active_set != new_set) {
+                    // setup new columns
+                    final Node.Property set [] = new_set;
+                    javax.swing.SwingUtilities.invokeLater (new Runnable () {
+                        public void run () {
+                            // change columns
+                            setProperties (set);
+
+                            // set preferred colunm sizes
+                            setTableColumnPreferredWidth (0, 20);
+                            for (int i = 1; i < set.length; i++)
+                                setTableColumnPreferredWidth (i, 150);
+                        }
+                    });
+
+                    // remeber the last set of columns
+                    active_set = new_set;
+                }
             }
         }
         

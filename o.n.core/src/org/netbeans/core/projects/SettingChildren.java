@@ -101,7 +101,10 @@ public final class SettingChildren extends FilterNode.Children {
             } catch (Exception e) {
                 // ignore it, will be handled later
             }
-            return val != null && val.intValue () != FileStateManager.FSTATE_DEFINED;
+            
+            return val != null &&
+                val.intValue () != FileStateManager.FSTATE_DEFINED &&
+                (layer != FileStateManager.LAYER_MODULES || val.intValue () != FileStateManager.FSTATE_UNDEFINED);
         }
 
         public Object getValue () throws IllegalAccessException, InvocationTargetException {
