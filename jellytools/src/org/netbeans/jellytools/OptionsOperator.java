@@ -1,0 +1,337 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
+package org.netbeans.jellytools;
+
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.Rectangle;
+
+import java.lang.reflect.InvocationTargetException;
+
+import javax.swing.table.JTableHeader;
+
+import javax.swing.tree.TreePath;
+
+import org.netbeans.core.projects.SettingChildren.FileStateProperty;
+
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.OptionsViewAction;
+
+import org.netbeans.jemmy.ComponentChooser;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Timeouts;
+
+import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
+
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.operators.JFrameOperator;
+import org.netbeans.jemmy.operators.Operator;
+
+/**
+ * Provides access to the Options window and it's subcomponents.
+ * Use PropertySheet class to access properties. 
+ * treeTable() method returns TreeTable operator for
+ * options list accessing.
+ */
+public class OptionsOperator extends NbFrameOperator {
+
+    /** 
+     * Constant used for indication of project property definition level
+     * (first column after ">>").
+     */
+    public static final int PROJECT_LEVEL = 2;
+
+    /** 
+     * Constant used for indication of user property definition level
+     * (second column after ">>").
+     */
+    public static final int USER_LEVEL = 3;
+
+    /** 
+     * Constant used for indication of default property definition level
+     * (third column after ">>").
+     */
+    public static final int DEFAULT_LEVEL = 4;
+
+    private static final Action invokeAction = new OptionsViewAction();
+
+    private static final long BEFORE_EDITING_TIMEOUT = 2000;
+
+    private static int DEFINE_HERE = 0;
+
+    private JButtonOperator _btClose;
+    private JButtonOperator _btHelp;
+    private TreeTableOperator _treeTable;
+    
+    /**
+     * Waits for the Options window opened
+     */
+    public OptionsOperator() {
+        super(Bundle.getString("org.netbeans.core.Bundle", 
+                               "UI/Services")); 
+    } 
+    /** 
+     * Invoces Options window by the menu operation.
+     */
+    public static OptionsOperator invoke() {
+        invokeAction.perform();
+        return new OptionsOperator();
+    }
+
+    static {
+	Timeouts.initDefault("OptionsOperator.BeforeEditingTimeout", BEFORE_EDITING_TIMEOUT);
+    }
+
+    //subcomponents
+
+    /**
+     * Getter for table containing property list and
+     * property definition levels.
+     */
+    public TreeTableOperator treeTable() {
+        if(_treeTable == null) {
+            _treeTable = new TreeTableOperator(this);
+        }
+        return _treeTable;
+    }
+
+    /**
+     * Getter for close button.
+     */
+    public JButtonOperator btClose() {
+        if(_btClose == null) {
+            _btClose = 
+                new JButtonOperator(this, 
+                                    Bundle.
+                                    getString("org.netbeans.core.Bundle", 
+                                              "CLOSED_OPTION_CAPTION")); 
+        }
+        return _btClose;
+    }
+
+    /**
+     * Getter for help button.
+     */
+    public JButtonOperator btHelp() {
+        if(_btHelp == null) {
+            _btHelp = 
+                new JButtonOperator(this, 
+                                    Bundle.
+                                    getString("org.netbeans.core.Bundle", 
+                                              "HELP_OPTION_CAPTION")); 
+        }
+        return _btHelp;
+    }
+
+
+    //shortcuts
+    /**
+     * Selects an option in the options tree.
+     * @param optionPath Path to the option in left (tree-like) column.
+     */
+    public int selectOption(String optionPath) {
+        TreePath path = treeTable().tree().findPath(optionPath, "|");
+        if(!treeTable().tree().isPathSelected(path)) {
+            treeTable().tree().selectPath(path);
+        }
+        int result = treeTable().tree().getRowForPath(path);
+        treeTable().scrollToCell(result, 0);
+        return(result);
+    }
+
+    /**
+     * Pushes close button.
+     */
+    public void close() {
+        btClose().push();
+    }
+
+    /**
+     * Pushes help button.
+     */
+    public void help() {
+        btHelp().push();
+    }
+
+    //definition levels
+
+    /**
+     * Shows definition levels column by clicking on the "<<" table
+     * column title.
+     */
+    public void showLevels() {
+        if(treeTable().getColumnCount() == 2) {
+            clickOnSecondHeader();
+        }
+    }
+
+    /**
+     * Hides definition levels column by clicking on the ">>" table
+     * column title.
+     */
+    public void hideLevels() {
+        if(treeTable().getColumnCount() > 2) {
+            clickOnSecondHeader();
+        }
+    }
+
+    /**
+     * Sets definition level for the option.
+     * @param optionPath Path to the option in left (tree-like) column.
+     * @param level One of the PROJECT_LEVEL, USER_LEVEL or DEFAULT_LEVEL
+     */
+    public void setLevel(String optionPath, final int level) {
+        showLevels();
+        int curLevel = getLevel(optionPath);
+        getOutput().printLine("Setting " + level + " level for \"" +
+                              optionPath + "\" option. \nCurrent level: " + curLevel);
+        final int row = selectOption(optionPath);
+        if(level > curLevel) {
+            produceNoBlocking(new NoBlockingAction("Setting property definition level") {
+                    public Object doAction(Object param) {
+                        setLevel(row, level);
+                        return(null);
+                    }
+                });
+            JDialogOperator question = new JDialogOperator(Bundle.getString("org.openide.Bundle", 
+                                                                            "NTF_QuestionTitle"));
+            new JButtonOperator(question, Bundle.getString("org.openide.Bundle", 
+                                                           "CTL_YES")).push();
+        } else if(level < curLevel) {
+            setLevel(row, level);
+        }
+    }
+
+    /**
+     * Gets definition level for the option.
+     * @param optionPath Path to the option in left (tree-like) column.
+     * @return level One of the PROJECT_LEVEL, USER_LEVEL or DEFAULT_LEVEL
+     */
+    public int getLevel(String optionPath) {
+        int row = selectOption(optionPath);
+        if       (getValue(row, PROJECT_LEVEL) == DEFINE_HERE) {
+            return PROJECT_LEVEL;
+        } else if(getValue(row, USER_LEVEL)    == DEFINE_HERE) {
+            return USER_LEVEL;
+        } else if(getValue(row, DEFAULT_LEVEL) == DEFINE_HERE) {
+            return DEFAULT_LEVEL;
+        }
+        return -1;
+    }
+
+    /**
+     * Make an option to be difined on the project level.
+     */
+    public void setProjectLevel(String optionPath) {
+        setLevel(optionPath, PROJECT_LEVEL);
+    }
+
+    /**
+     * Make an option to be difined on the user level.
+     */
+    public void setUserLevel(String optionPath) {
+        setLevel(optionPath, USER_LEVEL);
+    }
+
+    /**
+     * Make an option to be difined on the default level.
+     */
+    public void setDefaultLevel(String optionPath) {
+        setLevel(optionPath, DEFAULT_LEVEL);
+    }
+
+
+    //protected
+
+    /**
+     * Sets a level for the row index.
+     */
+    protected void setLevel(int row, int level) {
+        if       (level == PROJECT_LEVEL) {
+            defineHere(row, level);
+        } else if(level == USER_LEVEL) {
+            defineHere(row, level);
+        } else if(level == DEFAULT_LEVEL) {
+            revertLevel(row, level);
+        }
+    }
+
+    /**
+     * Gets a value of the level definition mark.
+     */
+    protected int getValue(int row, int column) {
+        try { 
+            FileStateProperty property = ((FileStateProperty)treeTable().getValueAt(row, column));
+            return(((Integer)property.getValue()).intValue());
+        } catch(IllegalAccessException e) {
+            throw new JemmyException("Can not access value!", e);
+        } catch(InvocationTargetException e) {
+            throw new JemmyException("Can not access value!", e);
+        }
+    }
+
+    /**
+     * Chooses "Revert Def" from the combobox.
+     */
+    protected void revertLevel(final int row, final int colIndex) {
+        editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
+                                                  "LBL_action_revert"));
+    }
+
+    /**
+     * Chooses "Define Here" from the combobox.
+     */
+    protected void defineHere(int row, int colIndex) {
+        editLevel(row, colIndex, Bundle.getString("org.netbeans.core.projects.Bundle", 
+                                                  "LBL_action_define"));
+    }
+
+    /**
+     * Causes table aditing and chooses a vlue in the combobox.
+     * @param rowIndex Row index.
+     * @param colIndex Column index. One of the columns containing 
+     * level definition marks.
+     * @param value String value to be choosed in the combobox.
+     */
+    protected void editLevel(int rowIndex, int colIndex, String value) {
+        //TBD is it possible to avoid robot using here?
+        Point pnt = treeTable().getPointToClick(rowIndex, colIndex);
+        treeTable().clickOnCell(rowIndex, colIndex);
+        /*
+        new MouseRobotDriver(JemmyProperties.getCurrentTimeouts().
+                             create("EventDispatcher.RobotAutoDelay")).
+            clickMouse(treeTable(), pnt.x, pnt.y, 
+                       1, Operator.getDefaultMouseButton(),
+                       0, getTimeouts().create("ComponentOperator.MouseClickTimeout"));
+        */
+        JComboBoxOperator combo = new JComboBoxOperator(treeTable());
+        getTimeouts().sleep("OptionsOperator.BeforeEditingTimeout");
+        combo.selectItem(value);
+    }
+
+    /**
+     * Clicks on "<<" column header.
+     */
+    protected void clickOnSecondHeader() {
+        JTableHeader header = treeTable().getTableHeader();
+        Rectangle rect = header.getHeaderRect(1);
+        new ComponentOperator(header).clickMouse(rect.x + rect.width/2, 
+                                                 rect.y + rect.height/2,
+                                                 1);
+    }
+}
