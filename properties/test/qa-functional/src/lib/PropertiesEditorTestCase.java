@@ -18,9 +18,8 @@
  *
  * Description :
  *
- * This is operator used in autometed tests for netBenas dev. version. Operator has been
- * writed in Jelly2 ( see testtools.netbeans.org )
- *
+ * This is operator used in autometed tests. Operator has been
+ * writed in Jelly2
  *
  */
 
@@ -111,8 +110,11 @@ public class PropertiesEditorTestCase extends NbTestCase {
     
     
     
-    /** This method open project. Before opening the project is checked
-     * if the project is not open.
+    /** This method open project.
+     * 1) It is checked if the project is open
+     * before the project is opened.
+     * 2) open project
+     * 3) check if project is open
      * @param projectName is name of the project stored in .../editor/test/qa-functional/data/ directory.
      */
     protected void openProject(String projectName) {
@@ -130,7 +132,7 @@ public class PropertiesEditorTestCase extends NbTestCase {
             String str = pto.tree().getChild(pto.tree().getRoot(),i).toString();
             log("Found existed project in ProjectView: "+str);
             if ( str.equals(projectName) ) {
-                log("Project "+projectName+" is open!");
+                log("Project "+projectName+" is open, but shoud not be!");
                 return;
             }
         }
@@ -138,6 +140,19 @@ public class PropertiesEditorTestCase extends NbTestCase {
         /* 2. open project */
         Object prj= ProjectSupport.openProject(projectPath);
         log("treecount after  = "+pto.tree().getChildCount(pto.tree().getRoot()));
+        
+        /* 3. check the project name */
+        pto.invoke();
+        childCount = pto.tree().getChildCount(pto.tree().getRoot());
+        for ( int i=0; i < childCount; i++ ) {
+            String str = pto.tree().getChild(pto.tree().getRoot(),i).toString();
+            if ( str.equals(projectName) ) {
+                log("Project "+projectName+" is open. (Ok)");
+                return;
+            }
+        }
+        log("Project is not open, but should be!");
+        fail("Project is not open");
     }
     
     
@@ -479,29 +494,29 @@ public class PropertiesEditorTestCase extends NbTestCase {
             
             if ( key != null )
                 for ( int ii = 0; ii < jTable.getModel().getRowCount(); ii++) {
-                    // check if is the key in properties file more times
+                // check if is the key in properties file more times
+                new EventTool().waitNoEvent(250);
+                if ( index >= 0 && jTable.getModel().getValueAt(ii,0).toString().equals(key) == true ) {
+                    throw new Exception("The added key is more times in properties sheet.");
+                }
+                
+                if ( index == -1 && jTable.getModel().getValueAt(ii,0).toString().toString().equals(key) == true ) {
+                    index = ii;
+                    // check value of property if is equal to the value
+                    if ( jTable.getModel().getValueAt(ii,1).toString().toString().equals(value) == false )
+                        throw new Exception("Value doesn't match. "+ ii +" - ("+ value + " not equals "+ jTable.getCellEditor(ii, 1).getCellEditorValue().toString() );
+                    // check comment
+                    new JTableOperator(jTable).clickOnCell(ii,0);
                     new EventTool().waitNoEvent(250);
-                    if ( index >= 0 && jTable.getModel().getValueAt(ii,0).toString().equals(key) == true ) {
-                        throw new Exception("The added key is more times in properties sheet.");
-                    }
                     
-                    if ( index == -1 && jTable.getModel().getValueAt(ii,0).toString().toString().equals(key) == true ) {
-                        index = ii;
-                        // check value of property if is equal to the value
-                        if ( jTable.getModel().getValueAt(ii,1).toString().toString().equals(value) == false )
-                            throw new Exception("Value doesn't match. "+ ii +" - ("+ value + " not equals "+ jTable.getCellEditor(ii, 1).getCellEditorValue().toString() );
-                        // check comment
-                        new JTableOperator(jTable).clickOnCell(ii,0);
-                        new EventTool().waitNoEvent(250);
-                        
-                        // check comment of property if is equal to the comment
-                        if ( new JTextAreaOperator(new ContainerOperator(tco.getContainer(ComponentSearcher.getTrueChooser(""))),0).getText().equals(comment) == false )
-                            throw new Exception("Comment doesn't match. "+ ii +" : \n>"+ comment + "< not equals with : >"+ new JTextAreaOperator(new ContainerOperator(tco.getContainer(ComponentSearcher.getTrueChooser(""))),0).getText()+"<\n" );
-                        
-                        if ( ii+1 != rowOfCheckedProperty )
-                            throw new Exception("Property is not in the right row in property sheet.");
-                    }
+                    // check comment of property if is equal to the comment
+                    if ( new JTextAreaOperator(new ContainerOperator(tco.getContainer(ComponentSearcher.getTrueChooser(""))),0).getText().equals(comment) == false )
+                        throw new Exception("Comment doesn't match. "+ ii +" : \n>"+ comment + "< not equals with : >"+ new JTextAreaOperator(new ContainerOperator(tco.getContainer(ComponentSearcher.getTrueChooser(""))),0).getText()+"<\n" );
                     
+                    if ( ii+1 != rowOfCheckedProperty )
+                        throw new Exception("Property is not in the right row in property sheet.");
+                }
+                
                 }
             
             if ( index < 0 && rowOfCheckedProperty >= 0)
