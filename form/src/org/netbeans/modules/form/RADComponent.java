@@ -917,7 +917,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                 }
             });
 
-        propSets.add(new Node.PropertySet(
+        Node.PropertySet ps = new Node.PropertySet(
                 "events", // NOI18N
                 bundle.getString("CTL_EventsTab"), // NOI18N
                 bundle.getString("CTL_EventsTabHint")) // NOI18N
@@ -925,9 +925,11 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             public Node.Property[] getProperties() {
                 return getEventProperties();
             }
-        });
+        };
+        ps.setValue("tabName", bundle.getString("CTL_EventsTab")); // NOI18N
+        propSets.add(ps);
 
-        propSets.add(new Node.PropertySet(
+        ps = new Node.PropertySet(
                 "synthetic", // NOI18N
                 bundle.getString("CTL_SyntheticTab"), // NOI18N
                 bundle.getString("CTL_SyntheticTabHint")) // NOI18N
@@ -935,7 +937,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             public Node.Property[] getProperties() {
                 return getSyntheticProperties();
             }
-        });
+        };
+        ps.setValue("tabName", bundle.getString("CTL_SyntheticTab_Short")); // NOI18N
+        propSets.add(ps);
     }
 
     protected Node.Property[] createSyntheticProperties() {
