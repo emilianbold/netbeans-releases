@@ -703,21 +703,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             });
         }
 
-        /**
-         * Overrides superclass method.
-         * This method is called when parent window of this component losts focus,
-         * or when this component losts preferrence in the parent window.
-         * Overrides superclass's method. Unsets action performer for Find action of this component.
-         */
-        protected void componentDeactivated() {
-            // Unset our action performer for Find action.
-            RequestProcessor.postRequest(new Runnable() {
-                public void run() {
-                    CallbackSystemAction action = (CallbackSystemAction) SystemAction.get(FindAction.class);
-                    action.setActionPerformer(null);
-                }
-            });
-        }
+        // FindAction should remove performer when deactivated anyway...
 
         /** Inits the subcomponents. Sets layout for this top component and adds <code>BundleEditPanel</code> to it. 
          * @see BundleEditPanel */
