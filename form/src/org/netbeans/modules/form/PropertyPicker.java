@@ -111,12 +111,24 @@ public class PropertyPicker extends javax.swing.JDialog {
     return selectedComponent;
   }
 
+  void setSelectedComponent (RADComponent selectedComponent) {
+    if (selectedComponent != null)
+      componentsCombo.setSelectedItem (selectedComponent.getName ());
+  }
+
   PropertyDescriptor getSelectedProperty () {
     if ((selectedComponent == null) || (propertyList.getSelectedIndex () == -1))
       return null;
     return descriptors [propertyList.getSelectedIndex ()];
   }
 
+  void setSelectedProperty (PropertyDescriptor selectedProperty) {
+    if (selectedProperty == null) {
+      propertyList.setSelectedIndex (-1);
+    } else {
+      propertyList.setSelectedValue (selectedProperty.getName (), true);
+    }
+  }
 // ----------------------------------------------------------------------------
 // private methods
 
@@ -313,6 +325,8 @@ public class PropertyPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  17   Gandalf   1.16        1/10/00  Ian Formanek    Fixed bug 4936 - 
+ *       Incorrect initialization of Form Connection dialog
  *  16   Gandalf   1.15        1/5/00   Ian Formanek    NOI18N
  *  15   Gandalf   1.14        11/27/99 Patrik Knakal   
  *  14   Gandalf   1.13        11/25/99 Ian Formanek    Uses Utilities module

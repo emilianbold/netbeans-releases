@@ -455,6 +455,9 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
   private void methodDetailsButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_methodDetailsButtonActionPerformed
     MethodPicker picker = new MethodPicker (null, manager, sourceComponent, requiredType);
+    picker.setSelectedComponent (selectedComponent);
+    picker.setSelectedMethod (selectedMethod);
+
     picker.show ();
     if (picker.getReturnStatus () == MethodPicker.OK) {
       selectedComponent = picker.getSelectedComponent ();
@@ -478,6 +481,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     if (propertyPicker == null) {
       propertyPicker = new PropertyPicker (null, manager, sourceComponent, requiredType);
     }
+    propertyPicker.setSelectedComponent (selectedComponent);
+    propertyPicker.setSelectedProperty (selectedProperty);
     propertyPicker.show ();
     if (propertyPicker.getReturnStatus () == PropertyPicker.OK) {
       selectedComponent = propertyPicker.getSelectedComponent ();
@@ -509,9 +514,16 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
   private void updateParameterTypes () {
     valueField.setEnabled (valueButton.isSelected ());
     beanCombo.setEnabled (beanButton.isSelected ());
+    if (!propertyButton.isSelected ()) {
+      propertyLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_NoProperty")); // "<No Property Selected>"
+    }
     propertyLabel.setEnabled (propertyButton.isSelected ());
     propertyLabel.repaint ();
     propertyDetailsButton.setEnabled (propertyButton.isSelected ());
+
+    if (!methodButton.isSelected ()) {
+      methodLabel.setText (FormEditor.getFormBundle ().getString ("CTL_CW_NoMethod")); // "<No Method Selected>"
+    }
     methodLabel.setEnabled (methodButton.isSelected ());
     methodLabel.repaint ();
     methodDetailsButton.setEnabled (methodButton.isSelected ());
@@ -555,6 +567,8 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  18   Gandalf   1.17        1/10/00  Ian Formanek    Fixed bug 4936 - 
+ *       Incorrect initialization of Form Connection dialog
  *  17   Gandalf   1.16        1/5/00   Ian Formanek    NOI18N
  *  16   Gandalf   1.15        11/27/99 Patrik Knakal   
  *  15   Gandalf   1.14        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

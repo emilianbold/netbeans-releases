@@ -109,10 +109,23 @@ public class MethodPicker extends javax.swing.JDialog {
     return selectedComponent;
   }
 
+  void setSelectedComponent (RADComponent selectedComponent) {
+    if (selectedComponent != null)
+      componentsCombo.setSelectedItem (selectedComponent.getName ());
+  }
+
   MethodDescriptor getSelectedMethod () {
     if ((selectedComponent == null) || (methodList.getSelectedIndex () == -1))
       return null;
     return descriptors [methodList.getSelectedIndex ()];
+  }
+
+  void setSelectedMethod (MethodDescriptor selectedMethod) {
+    if (selectedMethod == null) {
+      methodList.setSelectedIndex (-1);
+    } else {
+      methodList.setSelectedValue (FormUtils.getMethodName (selectedMethod), true);
+    }
   }
 
 // ----------------------------------------------------------------------------
@@ -336,6 +349,8 @@ public class MethodPicker extends javax.swing.JDialog {
 
 /*
  * Log
+ *  16   Gandalf   1.15        1/10/00  Ian Formanek    Fixed bug 4936 - 
+ *       Incorrect initialization of Form Connection dialog
  *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        11/25/99 Ian Formanek    Uses Utilities module
