@@ -336,22 +336,33 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggercore/oldapi..."/>
     <ant dir="../debuggercore/oldapi" target="netbeans"/>
   </target>
-  <!-- XXX most deps on all-openide/deprecated are bogus and should be removed -->
-  <target name="all-debuggercore" depends="all-java/api,all-openide,all-java/srcmodel,all-openide/execution,all-openide/io,all-openide/loaders,all-debuggercore/oldapi,all-projects/queries">
-    <echo message="Building module debuggercore..."/>
+  <target name="all-debuggercore/api" depends="all-openide">
+    <echo message="Building module debuggercore/api ..."/>
+    <ant dir="../debuggercore/api" target="netbeans"/>
+  </target>
+  <target name="all-debuggercore/viewmodel" depends="all-openide">
+    <echo message="Building module debuggercore/viewmodel ..."/>
+    <ant dir="../debuggercore/viewmodel" target="netbeans"/>
+  </target>
+  <target name="all-debuggercore" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-openide">
+    <echo message="Building module debuggercore ..."/>
     <ant dir="../debuggercore" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda" depends="all-java/api,all-openide,all-java/srcmodel,all-openide/execution,all-openide/io,all-openide/loaders,all-debuggercore/oldapi,all-debuggercore,all-java/platform">
+  <target name="all-debuggerjpda/api" depends="all-debuggercore/api,all-debuggercore/viewmodel">
+    <echo message="Building module debuggerjpda/api ..."/>
+    <ant dir="../debuggerjpda/api" target="netbeans"/>
+  </target>
+  <target name="all-debuggerjpda" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggerjpda/api,all-openide">
     <echo message="Building module debuggerjpda..."/>
     <ant dir="../debuggerjpda" target="netbeans"/>
   </target>
-  <target name="all-debuggerjpda/ant" depends="all-debuggerjpda,all-debuggercore,all-debuggercore/oldapi,all-java/api">
+  <target name="all-debuggerjpda/ui" depends="all-debuggercore/api,all-debuggercore/viewmodel,all-debuggercore,all-debuggerjpda/api,all-debuggerjpda,all-openide,all-openide/io,all-openide/loaders,all-java/srcmodel">
+    <echo message="Building module debuggerjpda/ui ..."/>
+    <ant dir="../debuggerjpda/ui" target="netbeans"/>
+  </target>
+  <target name="all-debuggerjpda/ant" depends="all-debuggercore/api,all-debuggerjpda/api,all-openide,all-openide/loaders,all-java/api,all-java/srcmodel">
     <echo message="Building module debuggerjpda/ant..."/>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
-  </target>
-  <target name="all-debuggertools" depends="all-openide,all-debuggercore,all-openide/io,all-openide/execution">
-    <echo message="Building module debuggertools..."/>
-    <ant dir="../debuggertools" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
   <target name="all-editor" depends="all-openide,all-openide/loaders,all-core,all-java/srcmodel,all-debuggercore/oldapi,all-java/api,all-projects/queries">
