@@ -152,12 +152,6 @@ Microsystems, Inc. All Rights Reserved.
             <file name="OpenProjectList.settings" url="openProjectList.settings"/>
         </folder>
         
-        <folder name="Hidden">
-            <!-- Temporary VCS FS provider -->
-            <file name="HackedVCSProvider.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.HackedVCSProvider" />
-            </file>
-        </folder>
         
     </folder>
     
