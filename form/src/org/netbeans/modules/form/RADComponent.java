@@ -1354,8 +1354,6 @@ public class RADComponent {
               public void actionPerformed (java.awt.event.ActionEvent e) {               
                 String selected = (String) eventCombo.getEditor().getItem();
                 lastSelectedHandler = selected;
-                HandlerSetChange change = new HandlerSetChange ();
-                //setValue (change); // just to call notifyPropertyChange
                 event.gotoEventHandler (selected);              
               }
             }
@@ -1446,6 +1444,7 @@ public class RADComponent {
 
 /*
  * Log
+ *  70   Gandalf   1.69        1/10/00  Pavel Buzek     
  *  69   Gandalf   1.68        1/7/00   Pavel Buzek     patch created in rev. 63
  *       was removed (fixed in bean info)
  *  68   Gandalf   1.67        1/5/00   Ian Formanek    NOI18N
