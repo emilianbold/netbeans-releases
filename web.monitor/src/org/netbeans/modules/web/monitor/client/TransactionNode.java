@@ -25,7 +25,7 @@ import java.util.StringTokenizer;
 import java.text.DateFormat; 
 import java.util.Date; 
 import java.awt.Image;
-import org.netbeans.modules.web.monitor.server.Constants;
+import org.netbeans.modules.web.monitor.data.Constants;
 
 public class TransactionNode extends AbstractNode {
     

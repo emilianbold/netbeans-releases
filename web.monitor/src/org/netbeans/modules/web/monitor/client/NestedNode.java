@@ -24,7 +24,7 @@ import java.awt.Image;
 import java.util.StringTokenizer; 
 import java.text.DateFormat; 
 import java.util.Date;
-import org.netbeans.modules.web.monitor.server.Constants;
+import org.netbeans.modules.web.monitor.data.Constants;
 
 public class NestedNode extends AbstractNode {
     

@@ -8,161 +8,51 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 
 <project name="monitor" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
-  <target name="init" depends="default.init">
-    <patternset id="monitor.files">
-      <include name="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"/>
-      <include name="${nb.modules/docs.dir}/org-netbeans-modules-web-monitor.jar"/>
-      <include name="${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar"/>
-    </patternset>
-    <path id="core-cp">
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/>
-      <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
-      <pathelement location="${httpserver/servletapi.dir}/${nb.modules/autoload.dir}/ext/servlet-2.2.jar"/>
-    </path>
-    <path id="server-cp">
-      <pathelement location="${schema2beans/rt.dir}/${nb.modules.dir}/org-netbeans-modules-schema2beans.jar"/>
-      <pathelement location="${web/servletapi23.dir}/${nb.modules/autoload.dir}/ext/servlet-2.3.jar"/>
-    </path>
-  </target>
-
-  <!-- These are the primary targets. -->
-
-  <target name="netbeans" depends="jars,javahelp">
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="monitor.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans">
-    <makenbm file="monitor.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-	     module="${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"
-	     homepage="http://monitor.${homepage.base}/"
-	     distribution="http://${dist.base}/monitor.nbm">
-      <license file="${license.file}" />
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
-  <target name="clean" depends="init">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="monitor.files"/>
-      </fileset>
-    </delete>
-    <delete dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
-    <delete file="monitor.nbm"/>	
-    <delete file="manifest-subst.mf"/>	
-  </target>
-
-  <!-- These are the secondary targets. -->
- <target name="javahelp" depends="init">
-    <mkdir dir="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/web/monitor/docs/"
-               db="javahelp/org/netbeans/modules/web/monitor/docs/JavaHelpSearch2">
-      <classpath>
-        <fileset dir="../nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-      <include name="**/*.html"/>
-      <exclude name="JavaHelpSearch2/"/>
-      <exclude name="ja/"/>
-      <exclude name="credits.html"/>
-    </jhindexer>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/docs.dir}/org-netbeans-modules-web-monitor.jar"
-         compress="true">
-      <fileset dir="javahelp" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-    </jar>
-  </target>
-
-  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
-    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
-      <classpath>
-        <pathelement location="../nbbuild/nbantext.jar"/>
-        <fileset dir="../nbbuild/external">
-          <include name="jhall*.jar"/>
-        </fileset>
-      </classpath>
-    </taskdef>
-    <checkhelpsets>
-      <fileset dir="javahelp">
-        <include name="org/netbeans/modules/web/monitor/docs/monitor.hs"/>
-      </fileset>
-    </checkhelpsets>
-  </target>
-
-  <target name="compile"
-	  depends=" compile-core, compile-server"/>
-
-  <target name="compile-core" depends="init">
-    <javac srcdir="src" destdir="src"
-       deprecation="${build.compiler.deprecation}" 
-       debug="${build.compiler.debug}"
-       includes="**/MonitorModule.java,**/monitor/data/*,**/monitor/client/**">
-       <classpath refID="core-cp"/>
-     </javac>
-  </target>
-
-  <target name="compile-server" depends="compile-core">
-    <javac srcdir="src" destdir="src"
-       deprecation="${build.compiler.deprecation}" 
-       debug="${build.compiler.debug}"
-       includes="**/monitor/server/**">
-       <classpath refID="server-cp"/>
-     </javac>
-  </target>
-
-  <target name="jars" depends="compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf"
-          filtering="on"/>
-
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-web-monitor.jar"
-         manifest="manifest-subst.mf"
-         compress="false">
-      <fileset dir="src">
-        <patternset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
-          <include name="org/netbeans/modules/web/monitor/client/"/>
-          <include name="org/netbeans/modules/web/monitor/data/"/>
-          <include name="org/netbeans/modules/web/monitor/resources/"/>
-          <include name="org/netbeans/modules/web/monitor/MonitorModule**"/>
-          <include name="org/netbeans/modules/web/monitor/Bundle.properties"/>
-          <include name="org/netbeans/modules/web/monitor/Bundle_*.properties"/>
+     <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.system.dir}/ModuleAutoDeps/${code.name.base.dashes}.xml" if="has.module.auto.deps"/>
+            <include name="${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar"/>
         </patternset>
-      </fileset>
-    </jar>
- 
- <!-- NOTE: this is not an IDE module. It is deployed on the execution 
+    </target>
+
+    <target name="compile-server" depends="init,compile">
+        <mkdir dir="build/server-classes"/>
+        <javac srcdir="serversrc" destdir="build/server-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4" includeantruntime="false">
+            <classpath>
+                <path path="${module.classpath}:${server.cp.extra}:build/classes"/>
+            </classpath>
+        </javac>
+        <copy todir="build/server-classes">
+            <fileset dir="serversrc" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+    </target>
+
+    <!-- NOTE: this is not an IDE module. It is deployed on the execution 
       server. It will not be deployed correctly if we build a separate 
       version for another language --> 
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar"
-         compress="false">
-	<fileset dir="src">
-        <patternset excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
-	  <include name="org/netbeans/modules/web/monitor/server/"/>
-          <include name="org/netbeans/modules/web/monitor/data/"/>
-        </patternset>
-      </fileset>
-    </jar>
-  </target>
+    <target name="jar-server" depends="compile-server">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/org-netbeans-modules-web-httpmonitor.jar" 
+             compress="false">
+            <fileset dir="build/server-classes"/>
+	    <fileset dir="build/classes">
+                <include name="org/netbeans/modules/web/monitor/data/"/>
+          </fileset>
+        </jar>
+    </target>
+
+    <target name="netbeans-extra" depends="jar-server"/>
 </project>
 
 

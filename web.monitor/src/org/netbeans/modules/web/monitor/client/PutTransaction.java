@@ -32,7 +32,7 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 
-import org.netbeans.modules.web.monitor.server.Constants;
+import org.netbeans.modules.web.monitor.data.Constants;
 
 /*
  * Put a transaction
