@@ -3,5 +3,6 @@ OpenIDE-Module-Name: Bean Patterns Support
 OpenIDE-Module-Install: com/netbeans/developer/modules/beans/BeansModule.class
 OpenIDE-Module-Specification-Version: 0.9
 OpenIDE-Module-Implementation-Version: 0.9
+OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.loaders.java/1
 OpenIDE-Module-Update-Location: http://update.netbeans.com/developer30/updateInfo?rn={$netbeans.regnum}
 
