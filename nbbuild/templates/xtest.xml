@@ -77,7 +77,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This target runs main method of given class in IDE's JVM. 
          It is available only when apisupport module is installed and only for 
          functional tests. -->
-    <target name="internal-execution" depends="buildtests">
+    <target name="internal-execution">
+        <!-- Build test before execution  -->
+        <antcall target="buildtests">
+            <!-- Property has to be set to any not empty value. If not it can
+                 happen that the selected class is not built because of not
+                 matching xtest attributes. -->
+            <param name="xtest.run.singletest" value="true"/>
+        </antcall>
         <ant antfile="build-qa-functional.xml" target="internal-execution"/>
     </target>
 
