@@ -13,6 +13,8 @@
 
 package org.netbeans.modules.editor.options;
 
+import java.io.OutputStream;
+import org.openide.ErrorManager;
 import org.openide.util.Task;
 import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
@@ -180,11 +182,20 @@ public class AnnotationTypesFolder extends FolderInstance{
         
         try{
             FileLock lock = fo.lock();
+            OutputStream os = null;
             try {
-                XMLUtil.write(doc, fo.getOutputStream(lock), null);
+                os = fo.getOutputStream(lock);
+                XMLUtil.write(doc, os, null);
             } catch (Exception ex){
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
+                if (os != null) {
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
                 lock.releaseLock();
             }
         }catch (IOException ex){
