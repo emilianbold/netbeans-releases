@@ -154,7 +154,8 @@ public class NewFile extends ProjectAction implements Presenter.Popup, PropertyC
         if ( projects != null && projects.length > 0 ) {
             return createSubmenu( projects[0] );
         }
-        return null;
+        // cannot return null 
+        return new JMenuItem ();
     }
 
     private Project preselectedProject( Lookup context ) {
