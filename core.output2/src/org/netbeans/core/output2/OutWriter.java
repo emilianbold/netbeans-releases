@@ -61,9 +61,20 @@ class OutWriter extends PrintWriter {
      * Byte array used to write the line separator after line writes.
      */
     static byte[] lineSepBytes = new byte[] { '\0', '\n'};
+    /** The read-write backing storage.  May be heap or */
     private Storage storage;
-    private LinesImpl lines;
     
+    /** The Lines object that will be used for reading data out of the 
+     * storage */
+    private AbstractLines lines = new LinesImpl();
+    
+    /** Flag set if one of several exceptions occurred while writing which
+     * mean the process doing the writing was brutally terminated.  Data will
+     * be readable but not writable if set to true */
+    private boolean terminated = false;
+    
+    /** Flag set if a write failed due to disk space limits.  Subsequent
+     * instances will use HeapStorage in this case */
     static boolean lowDiskSpace = false;
 
     /** Creates a new instance of OutWriter */
@@ -84,7 +95,8 @@ class OutWriter extends PrintWriter {
             throw new IllegalStateException ("Output file has been disposed!");
         }
         if (storage == null) {
-            storage = OutWriter.USE_HEAP_STORAGE || lowDiskSpace ? (Storage)new HeapStorage() : (Storage)new FileMapStorage();
+            storage = USE_HEAP_STORAGE || lowDiskSpace ? 
+                (Storage)new HeapStorage() : (Storage)new FileMapStorage();
         }
         return storage;
     }
@@ -164,9 +176,7 @@ class OutWriter extends PrintWriter {
         if (checkError() || terminated) {
             return;
         }
-        if (lines != null) {
-            ((AbstractLines) lines).markDirty();
-        }
+        lines.markDirty();
         int lineLength = bb.limit();
         closed = false;
         int start = -1;
@@ -203,15 +213,14 @@ class OutWriter extends PrintWriter {
             if (Controller.verbose) Controller.log (this + ": Wrote " +
                     ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
 
-            ((AbstractLines) getLines()).lineWritten (start, lineLength);
+            lines.lineWritten (start, lineLength);
 
             if (owner != null && owner.hasStreamClosed()) {
                 owner.setStreamClosed(false);
-                ((AbstractLines) getLines()).fire();
+                lines.fire();
             }
         }
     }
-    private boolean terminated = false;
 
     /**
      * An exception has occurred while writing, which has left us in a readable state, but not
@@ -248,7 +257,6 @@ class OutWriter extends PrintWriter {
         }
         if (lines != null) {
             lines.clear();
-            lines = null;
         }
         trouble = true;
         if (Controller.log) Controller.log (this + ": Setting owner to null, trouble to true, dirty to false.  This OutWriter is officially dead.");
@@ -290,9 +298,6 @@ class OutWriter extends PrintWriter {
     }
 
     public Lines getLines() {
-        if (lines == null) {
-            lines = new LinesImpl();
-        }
         return lines;
     }
 
@@ -302,7 +307,7 @@ class OutWriter extends PrintWriter {
         try {
             storage.close();
             if (lines != null) {
-                ((AbstractLines) getLines()).fire();
+                lines.fire();
             }
         } catch (IOException ioe) {
             handleException (ioe);
@@ -323,7 +328,7 @@ class OutWriter extends PrintWriter {
             try {
                 getStorage().flush();
                 if (lines != null) {
-                    ((AbstractLines) getLines()).fire();
+                    lines.fire();
                 }
             } catch (IOException e) {
                 handleException (e);
@@ -453,6 +458,4 @@ class OutWriter extends PrintWriter {
             OutWriter.this.handleException(e);
         }
     }
-
-
 }
