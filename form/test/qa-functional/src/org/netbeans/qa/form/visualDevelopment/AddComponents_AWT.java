@@ -65,7 +65,7 @@ public class AddComponents_AWT extends JellyTestCase {
     
     protected void setUp() {
         mainWindow = MainWindowOperator.getDefault();
-        mainWindow.setSDI();
+        //mainWindow.setSDI();
         mainWindow.switchToGUIEditingWorkspace();
         
         FilesystemNode node = new FilesystemNode("src");
@@ -93,11 +93,11 @@ public class AddComponents_AWT extends JellyTestCase {
         log("Try to find Form Editor window ");
         FormEditorOperator formeditor = new FormEditorOperator();
         formeditor.selectForm(fileName);        
-        log("\t - Form Editor Window finded OK");
+        log("\t - Form Editor Window found OK");
                 
         log("Try to find Form Designer ");        
         FormDesignerOperator formDesigner = formeditor.designer();        
-        log("\t - Form Designer finded OK");
+        log("\t - Form Designer found OK");
         
         
         // add all beans from tab to form
@@ -109,7 +109,7 @@ public class AddComponents_AWT extends JellyTestCase {
                 (org.netbeans.modules.form.palette.PaletteItemNode)(list.getModel().getElementAt(i));
             String component = comp.getDisplayName();
             System.out.println("component: " + component);
-            sleep(500);
+            sleep(1000);
             formeditor.addComponent(categoryName, component, formDesigner.componentLayer().getSource()  );            
         }        
         
