@@ -289,9 +289,16 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
             }
             else {
                 synchronized (this) {
-                    provider.libraryCreated (impl);
                     this.libraries.put (impl.getName(), impl);
                     this.librariesByFileNames.put (fo.getPath(), impl);
+                }
+                //Has to be called outside the synchronized block,
+                // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
+                try {
+                    provider.libraryCreated (impl);
+                } catch (Exception e) {
+                    String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryCreatedError");
+                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
                 }
                 this.fireLibrariesChanged();
             }
@@ -311,16 +318,23 @@ public class LibrariesStorage extends FileChangeAdapter implements WriteableLibr
             impl = (LibraryImplementation) this.librariesByFileNames.remove (fileName);
             if (impl != null) {
                 this.libraries.remove (impl.getName());
-                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
-                if (provider == null) {
-                    ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
-                }
-                else {
-                    provider.libraryDeleted (impl);
-                }                
             }
         }
         if (impl != null) {
+            LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (impl.getType());
+            if (provider == null) {
+                ErrorManager.getDefault().log("LibrariesStorage: Can not invoke LibraryTypeProvider.libraryDeleted(), the library type provider is unknown.");  //NOI18N
+            }
+            else {
+                //Has to be called outside the synchronized block,
+                // The code is provided by LibraryType implementator and can fire events -> may cause deadlocks
+                try {
+                    provider.libraryDeleted (impl);
+                } catch (Exception e) {
+                    String message = NbBundle.getMessage(LibrariesStorage.class,"MSG_libraryDeletedError");
+                    ErrorManager.getDefault().notify(ErrorManager.getDefault().annotate(e,message));
+                }
+            }
             this.fireLibrariesChanged();
         }
     }
