@@ -20,9 +20,6 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Root folders -->
     <property name="nbextra.qa.performance.dist.dir" location="${nbextra.dir}/qa/performance/dist"/>
-    <property name="performance.testutilities.dir" location="${nball.dir}/performance/performancetestutilities"/>
-    <property name="performance.testutilities.dist.dir" location="${performance.testutilities.dir}/dist"/>
-    <property name="performance.testutilities.dist.jar" location="${performance.testutilities.dist.dir}/performance-test-utilities.jar"/>
     
     <!-- path reference used in both compiler and executor -->
     <path id="jemmy.and.jelly.path">
@@ -79,11 +76,6 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Copy and unzip project PerformanceTestFolderData from close source path, will be used for Performance tests -->
     <target name="copy_unzip_test_folder_project">
         <unzip src="${nbextra.dir}/qa/projectized/PerformanceTestFoldersData.zip" dest="${xtest.tmpdir}/"/>
-    </target>
-    
-    <!-- Compile Performance Test Utilitites library, it's neccessary for performance tests (UI esponsiveness as well as Start up) -->
-    <target name="compile_performance_testutilities">
-        <ant antfile="${performance.testutilities.dir}/build.xml" target="jar"/>
     </target>
     
         

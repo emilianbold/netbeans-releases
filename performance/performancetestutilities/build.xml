@@ -14,12 +14,16 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="Performance Test Utilities" basedir="." default="jar">
 
+    <property name="nball.dir" location="../../../nb_all"/>
+    
     <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
     <import file="../../nbbuild/templates/xtest.xml"/>
     <import file="dist/build-performance-tests.xml"/>
     
     <!-- Root folders -->
-    <property name="performance.testutilities.dist.build.dir" location="${performance.testutilities.dir}/build"/>
+    <property name="performance.testutilities.dist.dir" location="./dist"/>
+    <property name="performance.testutilities.dist.jar" location="${performance.testutilities.dist.dir}/performance-test-utilities.jar"/>
+    <property name="performance.testutilities.dist.build.dir" location="./build"/>
     
     <target name="jar" depends="compile" description="Create Performance Test Utitilities jar">
         <mkdir dir="${performance.testutilities.dist.dir}" />
@@ -30,7 +34,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="compile" description="Compile Performance Test Utilities">
         <mkdir dir="${performance.testutilities.dist.build.dir}" />
-        <javac srcdir="${performance.testutilities.dir}" 
+        <javac srcdir="." 
                deprecation="${build.compiler.deprecation}" 
                debug="${build.compiler.debug}"
                destdir="${performance.testutilities.dist.build.dir}">
@@ -43,8 +47,10 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="clean" description="Clean Performance Test Utilities">
-        <delete dir="${performance.testutilities.dist.dir}" />
-        <delete dir="${performance.testutilities.dist.build.dir}" />
+        <delete>
+            <fileset dir="${performance.testutilities.dist.build.dir}" />
+            <fileset file="${performance.testutilities.dist.jar}" />
+        </delete>
     </target>
         
 </project>
