@@ -123,7 +123,9 @@ Microsystems, Inc. All Rights Reserved.
         </java>
     </target>
     
-    <target name="debug" depends="build">
+    <target name="debug" depends="build,do-debug"/>
+    
+    <target name="do-debug">
         <java classname="threaddemo.Main" fork="true" failonerror="true">
             <classpath refid="run.cp"/>
             <arg file="${testdir}"/>
@@ -135,6 +137,16 @@ Microsystems, Inc. All Rights Reserved.
             <jvmarg value="-Djava.compiler=none"/>
             <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,address=8888,suspend=n"/>
         </java>
+    </target>
+    
+    <target name="debug-nb" depends="build">
+        <parallel>
+            <antcall target="do-debug"/>
+            <sequential>
+                <sleep seconds="2"/>
+                <nbjpdaconnect/>
+            </sequential>
+        </parallel>
     </target>
     
     <target name="optit" depends="build">
