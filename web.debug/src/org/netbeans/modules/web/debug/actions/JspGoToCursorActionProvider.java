@@ -22,6 +22,7 @@ import org.netbeans.modules.web.debug.Context;
 import org.netbeans.modules.web.debug.util.*;
 import org.netbeans.modules.web.debug.breakpoints.*;
 
+
 /**
  *
  * @author Martin Grebac
@@ -39,6 +40,11 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         debugger.addPropertyChangeListener(debugger.PROP_STATE, this);
         Context.addPropertyChangeListener(this);
     }
+
+    private void destroy () {
+        debugger.removePropertyChangeListener (debugger.PROP_STATE, this);
+        Context.removePropertyChangeListener (this);
+    }
     
     public void propertyChange (PropertyChangeEvent evt) {
         setEnabled (
@@ -49,6 +55,9 @@ public class JspGoToCursorActionProvider extends ActionsProviderSupport implemen
         if ((debugger.getState () != debugger.STATE_RUNNING) && (breakpoint != null)) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;
+        }
+        if (debugger.getState () == debugger.STATE_DISCONNECTED) {
+            destroy ();
         }
     }
     
