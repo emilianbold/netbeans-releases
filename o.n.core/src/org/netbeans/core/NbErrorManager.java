@@ -382,7 +382,15 @@ final class NbErrorManager extends ErrorManager {
                 }
             }
             for (int i = 0; i < tLines.length; i++) {
-                if (i == idx) pw.print ("[catch]"); // NOI18N
+                if (i == idx) {
+                    pw.print ("[catch]"); // NOI18N
+                    // Also translate following tab -> space since formatting is bad in
+                    // Output Window (#8104) and some mail agents screw it up etc.
+                    if (tLines[i].charAt (0) == '\t') {
+                        pw.print (' ');
+                        tLines[i] = tLines[i].substring (1);
+                    }
+                }
                 pw.println (tLines[i]);
             }
         }
