@@ -74,12 +74,7 @@ public class FileChooser extends JFileChooser {
 
     protected void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
         if (SELECTED_FILE_CHANGED_PROPERTY.equals(propertyName)) {
-            File f = (File) newValue;
-            if (f != null && ".".equals(f.getName())) {
-                // display correct path to directory "."
-                super.firePropertyChange(propertyName, oldValue, f.getParentFile());
-                return;
-            }
+            newValue = correctFile((File) newValue);
         }
         super.firePropertyChange(propertyName, oldValue, newValue);
     }
@@ -91,6 +86,13 @@ public class FileChooser extends JFileChooser {
 
     public void cancelSelection() {
         super.cancelSelection();
+    }
+
+    private static File correctFile(File f) {
+        while(f != null && ".".equals(f.getName())) { //NOI18N
+            f = f.getParentFile();
+        }
+        return f;
     }
 
     private void saveCurrentLocation() {
@@ -140,7 +142,6 @@ public class FileChooser extends JFileChooser {
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
         chooser.setAcceptAllFileFilterUsed(false);
-        chooser.setFileSystemView(new FileSystemViewDecorator(chooser.getFileSystemView()));
         return chooser;
     }
 
@@ -152,122 +153,5 @@ public class FileChooser extends JFileChooser {
         chooser.setFileFilter(fileFilter);
         chooser.setAcceptAllFileFilterUsed(false);
         return chooser;
-    }
-
-    /**
-     * FileSystemViewDecorator decorates existing FileSystemView object to add directory "." (current directory)
-     * to result of method getFiles().
-     * It is useful for browsing directories. If we browse any directory and then we select (by accident or by mistake)
-     * subdirectory of the directory, it is difficult to return selection back to the original directory.
-     * Usual procedure is to go to parent directory and then find and select the original directory, that can be often
-     * annoying. The added directory "." in list of directories enables to return selection back by one mouse click.
-     */
-    private static class FileSystemViewDecorator extends FileSystemView {
-
-        FileSystemView delegate;
-
-        public FileSystemViewDecorator(FileSystemView delegate) {
-            this.delegate = delegate;
-        }
-
-        public File createNewFolder(File containingDir) throws IOException {
-            return delegate.createNewFolder(containingDir);
-        }
-
-        public boolean isRoot(File f) {
-            return delegate.isRoot(f);
-        }
-
-        public Boolean isTraversable(File f) {
-            return delegate.isTraversable(f);
-        }
-
-        public String getSystemDisplayName(File f) {
-            return delegate.getSystemDisplayName(f);
-        }
-
-        public String getSystemTypeDescription(File f) {
-            return delegate.getSystemTypeDescription(f);
-        }
-
-        public Icon getSystemIcon(File f) {
-            return delegate.getSystemIcon(f);
-        }
-
-        public boolean isParent(File folder, File file) {
-            return delegate.isParent(folder, file);
-        }
-
-        public File getChild(File parent, String fileName) {
-            return delegate.getChild(parent, fileName);
-        }
-
-        public boolean isFileSystem(File f) {
-            return delegate.isFileSystem(f);
-        }
-
-        public boolean isHiddenFile(File f) {
-            return delegate.isHiddenFile(f);
-        }
-
-        public boolean isFileSystemRoot(File dir) {
-            return delegate.isFileSystemRoot(dir);
-        }
-
-        public boolean isDrive(File dir) {
-            return delegate.isDrive(dir);
-        }
-
-        public boolean isFloppyDrive(File dir) {
-            return delegate.isFloppyDrive(dir);
-        }
-
-        public boolean isComputerNode(File dir) {
-            return delegate.isComputerNode(dir);
-        }
-
-        public File[] getRoots() {
-            return delegate.getRoots();
-        }
-
-        public File getHomeDirectory() {
-            return delegate.getHomeDirectory();
-        }
-
-        public File getDefaultDirectory() {
-            return delegate.getDefaultDirectory();
-        }
-
-        public File createFileObject(File dir, String filename) {
-            return delegate.createFileObject(dir, filename);
-        }
-
-        public File createFileObject(String path) {
-            return delegate.createFileObject(path);
-        }
-
-        public File[] getFiles(File dir, boolean useFileHiding) {
-            File[] origFiles = delegate.getFiles(dir, useFileHiding);
-            if (dir != null && isTraversable(dir).booleanValue()) {
-                File[] files;
-                files = new File[origFiles.length + 1];
-                // Added folder "." makes easier to select current folder
-                files[0] = new File(dir, ".");
-                for (int i = 0; i < origFiles.length; i++) {
-                    files[i + 1] = origFiles[i];
-                }
-                return files;
-            } else {
-                return origFiles;
-            }
-        }
-
-        public File getParentDirectory(File dir) {
-            return delegate.getParentDirectory(dir);
-        }
-
-        protected File createFileSystemRoot(File f) {
-            return createFileSystemRoot(f);
-        }
     }
 }
