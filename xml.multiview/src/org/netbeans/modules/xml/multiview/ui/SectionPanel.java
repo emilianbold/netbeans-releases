@@ -117,6 +117,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     }
 
     public void setTitle(String title) {
+        titleButton.setText(title);
         this.title = title;
     }
 
