@@ -917,6 +917,41 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         resultScrollPane.setRowHeaderView(linesComp3);
     }
     
+    /**
+     * Copy a part of first document into the result document.
+     */
+    public void copySource1ToResult(int line1, int line2, int line3) {
+        StyledDocument doc1 = (StyledDocument) jEditorPane1.getDocument();
+        StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            copy(doc1, line1, line2, doc2, line3);
+        } catch (BadLocationException e) {
+            org.openide.TopManager.getDefault().notifyException(e);
+        }
+    }
+    
+    /**
+     * Copy a part of second document into the result document.
+     */
+    public void copySource2ToResult(int line1, int line2, int line3) {
+        StyledDocument doc1 = (StyledDocument) jEditorPane2.getDocument();
+        StyledDocument doc2 = (StyledDocument) jEditorPane3.getDocument();
+        try {
+            copy(doc1, line1, line2, doc2, line3);
+        } catch (BadLocationException e) {
+            org.openide.TopManager.getDefault().notifyException(e);
+        }
+    }
+    
+    /** Copies a part of one document into another. */
+    private void copy(StyledDocument doc1, int line1, int line2, StyledDocument doc2, int line3) throws BadLocationException {
+        int offset1 = org.openide.text.NbDocument.findLineOffset(doc1, line1);
+        int offset2 = org.openide.text.NbDocument.findLineOffset(doc1, line2);
+        int offset3 = org.openide.text.NbDocument.findLineOffset(doc2, line3);
+        String text = doc1.getText(offset1, offset2 - offset1 + 1);
+        doc1.insertString(offset3, text, null);
+    }
+    
     public void setSource1Title(String title) {
         fileLabel1.setText(title);
     }
@@ -981,6 +1016,19 @@ public class MergePanel extends javax.swing.JPanel {/*org.openide.windows.TopCom
         }
     }
     
+    /**
+     * Whether all conflicts are resolved and the panel can be closed.
+     * @return <code>true</code> when the panel can be closed, <code>false</code> otherwise.
+     */
+    public boolean canClose() {
+        return true;
+    }
+    
+    /**
+     * Write the result content into the given writer.
+     * @param w The writer to write the result into.
+     * @throws IOException When the writing process fails.
+     */
     public void writeResult(Writer w) throws IOException {
         try {
             jEditorPane3.getEditorKit().write(w, jEditorPane3.getDocument(),

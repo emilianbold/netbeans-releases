@@ -41,7 +41,7 @@ public class GraphicalMergeVisualizer implements Serializable {
     /** Listener to the buttons of currently opened merge dialog. */
     private MergeDialogActionListener mergeListener;
     /** The currently opened merge dialog. */
-    private MergeDialogDescriptor merge;
+    private MergeDialogComponent merge;
     
     static final long serialVersionUID =-2175410667258166512L;
     /** Creates a new instance of GraphicalMergeVisualizer */
@@ -61,16 +61,28 @@ public class GraphicalMergeVisualizer implements Serializable {
      * @param title2 the title of the second source
      * @param r2 the second resource compared with the first one.
      * @param MIMEType the mime type of these sources
-     * @return The TopComponent representing the diff visual representation
+     * @return The Component representing the diff visual representation
      *        or null, when the representation is outside the IDE.
      */
     public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2,
                                 String name3, String title3, Writer w3, String MIMEType) {
+        /*
         merge = new MergeDialogDescriptor(diffs, name1+" <> "+name2, MIMEType,
             name1, name2, name3, title1, title2, title3, r1, r2, w3,
             new Color[] { colorMissing, colorAdded, colorChanged }, mergeListener);
         return org.openide.TopManager.getDefault().createDialog(merge);
+         */
+        synchronized (this) {
+            if (merge == null) {
+                merge = new MergeDialogComponent();
+                merge.open();
+            }
+        }
+        MergeControl control = new MergeControl(merge, new MergePanel());
+        control.initialize(diffs, name1, title1, r1, name2, title2, r2,
+                           name3, title3, w3, MIMEType, colorAdded, colorChanged, colorMissing);
+        return merge;
     }
     
     private class MergeDialogActionListener extends Object implements ActionListener {
