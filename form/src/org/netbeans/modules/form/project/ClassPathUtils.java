@@ -169,28 +169,30 @@ public class ClassPathUtils {
 
         for (int i=0; i < artifacts.length; i++) {
             URI scriptLocation = artifacts[i].getScriptLocation().toURI();
-            URI artifactLocation = artifacts[i].getArtifactLocation();
-            File outputFile = new File(scriptLocation.resolve(artifactLocation).normalize());
+            URI[] artifactLocations = artifacts[i].getArtifactLocations();
+            for (int k=0; k < artifactLocations.length; k++) {
+                File outputFile = new File(scriptLocation.resolve(artifactLocations[k]).normalize());
 
-            URL outputURL;
-            try {
-                outputURL = outputFile.toURI().toURL();
-            }
-            catch (MalformedURLException ex) { // should not happen
-                continue;
-            }
-
-            if (FileUtil.isArchiveFile(outputURL))
-                outputURL = FileUtil.getArchiveRoot(outputURL);
-            FileObject sourceRoots[] =
-                SourceForBinaryQuery.findSourceRoots(outputURL).getRoots();
-            for (int j=0; j < sourceRoots.length; j++)
-                if (FileUtil.isParentOf(sourceRoots[j], fileInProject)) {
-                    outputs = new String[] { outputFile.getAbsolutePath() };
-                    break;
+                URL outputURL;
+                try {
+                    outputURL = outputFile.toURI().toURL();
                 }
-            if (outputs != null)
-                break;
+                catch (MalformedURLException ex) { // should not happen
+                    continue;
+                }
+
+                if (FileUtil.isArchiveFile(outputURL))
+                    outputURL = FileUtil.getArchiveRoot(outputURL);
+                FileObject sourceRoots[] =
+                    SourceForBinaryQuery.findSourceRoots(outputURL).getRoots();
+                for (int j=0; j < sourceRoots.length; j++)
+                    if (FileUtil.isParentOf(sourceRoots[j], fileInProject)) {
+                        outputs = new String[] { outputFile.getAbsolutePath() };
+                        break;
+                    }
+                if (outputs != null)
+                    break;
+            }
         }
 
         if (outputs == null) {
@@ -202,14 +204,18 @@ public class ClassPathUtils {
             if (!fileInProject.getExt().equals("class")) // NOI18N
                 return null; // not interested in other than .class binary files
 
-            outputs = new String[artifacts.length];
+            ArrayList outputList = new ArrayList(artifacts.length);
             for (int i=0; i < artifacts.length; i++) {
-                File outputFile = new File(
-                    artifacts[i].getScriptLocation().getParent()
-                    + File.separator
-                    + artifacts[i].getArtifactLocation().getPath());
-                outputs[i] = outputFile.getAbsolutePath();
+                URI[] artifactLocations = artifacts[i].getArtifactLocations();
+                for (int j=0; j < artifactLocations.length; j++) {
+                    File outputFile = new File(
+                        artifacts[i].getScriptLocation().getParent()
+                        + File.separator
+                        + artifactLocations[j].getPath());
+                    outputs[i] = outputFile.getAbsolutePath();
+                }
             }
+            outputs = (String[])outputList.toArray(new String[0]);
         }
 
         String[] types = new String[outputs.length];

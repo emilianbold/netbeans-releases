@@ -128,9 +128,11 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
 
         for (int i=0; i < artifacts.length; i++) {
             URI scriptLocation = artifacts[i].getScriptLocation().toURI();
-            URI artifactLocation = artifacts[i].getArtifactLocation();
-            File outputFile = new File(scriptLocation.resolve(artifactLocation).normalize());
-            fileList.add(outputFile);
+            URI[] artifactLocations = artifacts[i].getArtifactLocations();
+            for (int j=0; j < artifactLocations.length; j++) {
+                File outputFile = new File(scriptLocation.resolve(artifactLocations[j]).normalize());
+                fileList.add(outputFile);
+            }
         }
 
         File[] outputFiles = new File[fileList.size()];
