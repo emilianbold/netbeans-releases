@@ -18,12 +18,14 @@ import java.util.ResourceBundle;
 import org.openide.ErrorManager;
 
 import org.openide.NotifyDescriptor;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.NbBundle;
 
 /** A property editor for Rectangle class.
 * @author   Petr Hamernik
 */
-public class RectangleEditor extends ArrayOfIntSupport {
+public class RectangleEditor extends ArrayOfIntSupport implements ExPropertyEditor {
 
     // the bundle to use
     static ResourceBundle bundle = NbBundle.getBundle (
@@ -62,7 +64,7 @@ public class RectangleEditor extends ArrayOfIntSupport {
     }
 
     public java.awt.Component getCustomEditor () {
-        return new RectangleCustomEditor (this);
+        return new RectangleCustomEditor (this, env);
     }
 
     /** @return the format of value set in property editor. */
@@ -75,4 +77,10 @@ public class RectangleEditor extends ArrayOfIntSupport {
         return "Rectangle"; // NOI18N
     }
 
+    private PropertyEnv env;
+    public void attachEnv(PropertyEnv env) {
+        //cache for custom editor
+        this.env = env;
+    }
+    
 }
