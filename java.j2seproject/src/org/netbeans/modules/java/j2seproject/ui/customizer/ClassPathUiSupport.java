@@ -198,8 +198,14 @@ public class ClassPathUiSupport {
         int[] indexes = new int[files.length];
         for( int i = 0; i < files.length; i++ ) {
             int current = lastIndex + 1 + i;
-            listModel.add( current, ClassPathSupport.Item.create(files[i], null));
-            indexes[i] = current;
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( files[i], null );
+            if ( !listModel.contains( item ) ) {
+                listModel.add( current, item );
+                indexes[i] = current;
+            }
+            else {
+                indexes[i] = listModel.indexOf( item );
+            }
         }
         return indexes;
 
@@ -211,8 +217,14 @@ public class ClassPathUiSupport {
         int[] indexes = new int[artifactItems.length];
         for( int i = 0; i < artifactItems.length; i++ ) {
             int current = lastIndex + 1 + i;
-            listModel.add( current, ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null ) );
-            indexes[i] = current;
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI(), null ) ;
+            if ( !listModel.contains( item ) ) {
+                listModel.add( current, item );
+                indexes[i] = current;
+            }
+            else {
+                indexes[i] = listModel.indexOf( item );
+            }
         }
         return indexes;
     }
