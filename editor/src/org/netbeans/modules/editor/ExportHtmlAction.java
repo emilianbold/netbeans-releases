@@ -263,6 +263,9 @@ public class ExportHtmlAction extends CookieAction {
 
         private void initGUI () {
             this.setLayout ( new GridBagLayout ());
+            getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "ACSN_ExportToHTML")); // NOI18N
+            getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ExportHtmlAction.class, "ACSD_ExportToHTML")); // NOI18N
+            
             JLabel label = new JLabel (NbBundle.getMessage (ExportHtmlAction.class, "CTL_OutputDir"));
             label.setDisplayedMnemonic (NbBundle.getMessage (ExportHtmlAction.class, "MNE_OutputDir").charAt(0));
             label.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ExportHtmlAction.class, "AN_OutputDir"));
