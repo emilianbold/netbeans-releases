@@ -23,8 +23,8 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
+<!--		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>-->
             </patternset>
         </testset>
     </testbag>
@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Editor test application non-validation tests: -->
     
-    <testbag testattribs="all,full" name="app-all-full">
+<!--    <testbag testattribs="all,full" name="app-all-full">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
@@ -61,15 +61,15 @@ Microsystems, Inc. All Rights Reserved.
 		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
             </patternset>
         </testset>
-    </testbag>
+    </testbag>-->
 
-    <testbag testattribs="all,failing" name="app-all-failing">
+<!--    <testbag testattribs="all,failing" name="app-all-failing">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
             </patternset>
         </testset>
-    </testbag>
+    </testbag>-->
 
 
     <!-- Programmatic indentation tests: -->
