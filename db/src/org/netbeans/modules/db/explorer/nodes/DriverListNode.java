@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public class DriverListNode extends DatabaseNode {
@@ -23,4 +24,12 @@ public class DriverListNode extends DatabaseNode {
     public String getShortDescription() {
         return NbBundle.getBundle("org.netbeans.modules.db.resources.Bundle").getString("ND_DriverList"); //NOI18N
     }
+
+    /** Help context where to find more about the paste type action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverListNode.class);
+    }
+
 }

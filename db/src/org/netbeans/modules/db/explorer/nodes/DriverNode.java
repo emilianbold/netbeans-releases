@@ -22,6 +22,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.db.explorer.DatabaseDriver;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
+import org.openide.util.HelpCtx;
 
 public class DriverNode extends LeafNode implements PropertyChangeListener {
     
@@ -66,6 +67,13 @@ public class DriverNode extends LeafNode implements PropertyChangeListener {
                 }
             }
         });
+    }
+
+    /** Help context where to find more about the paste type action.
+    * @return the help context for this action
+    */
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(DriverNode.class);
     }
 
 }
