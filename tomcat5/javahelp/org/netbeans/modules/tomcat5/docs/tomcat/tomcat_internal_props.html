@@ -29,7 +29,13 @@
   <li><b>Admin Port.</b> The number of the TCP/IP port that the server's administrative 
     server listens to.</li>
   <li><b>User.</b> The user name that the IDE uses to log into the server's manager 
-    application. The user must be associated with the manager role.</li>
+    application. The user must be associated with the manager role. The first 
+    time the IDE starts the server, such as through the Start/Stop Server menu 
+    action or by executing a web component from the IDE, the IDE adds an admin 
+    user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
+    file. The entry looks similar to the following: 
+    <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
+  </li>
   <li><b>Password.</b> The user's password.</li>
   <li><b>Home Directory.</b> The home directory for the server on your local system. 
     This property is set when you add a Tomcat server to the Server Registry. 
@@ -42,12 +48,16 @@
     more than one user to use the same server. If no base directory is specified, 
     then the configuration files reside in the home directory.</li>
   <li><b>Enable HTTP Monitor.</b> Select this checkbox to enable the HTTP Monitor 
-    for web modules executing on the server. The HTTP Monitor is useful for debugging 
-    web modules. If you are using the server for production purposes only, you 
-    may want to clear the checkbox to reduce its impact on the server's performance. 
-    When you clear the checkbox, the IDE removes the HTTP monitor's declaration 
-    from the server. However the monitor's libraries remain deployed to the server.</li>
+    for web modules executing on the server. When enabling the monitor, you must 
+    restart the server in order for the change to take affect. The HTTP Monitor 
+    is useful for debugging web modules. If you are using the server for production 
+    purposes only, you may want to clear the checkbox to reduce its impact on 
+    the server's performance. When you clear the checkbox, the IDE removes the 
+    HTTP monitor's declaration from the server. However the monitor's libraries 
+    remain deployed to the server.</li>
   </li>
+  When you disable the HTTP Monitor, you do not need to restart the server for 
+  the change to take affect. 
 </ul>
 <h3>Debugger Section</h3>
 <ul>
@@ -73,7 +83,8 @@
   </tr>
   <tr>
     <td width="23"></td>
-    <td><a href="tomcat_internal_node.html">Tomcat Instance Node</a><br>
+    <td><a href="tomcat_start.html">Starting and Stopping a Tomcat Server</a><br>
+	  <a href="tomcat_internal_node.html">Tomcat Instance Node</a><br>
       <a href="tomcat_addinstall.html">Adding a Tomcat Server</a></td>
 </tr>
 </table>
