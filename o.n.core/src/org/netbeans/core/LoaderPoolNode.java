@@ -63,6 +63,10 @@ public final class LoaderPoolNode extends AbstractNode {
 
     /** Array of DataLoader objects */
     private static List loaders = new ArrayList ();
+    /** Those which have been modified since being read from the pool */
+    private static Set modifiedLoaders = new HashSet(); // Set<DataLoader>
+    /** Loaders by class name */
+    private static Map names2Loaders = new HashMap(200); // Map<String,DataLoader>
 
     /** Map from loader class names to arrays of class names for Install-Before's */
     private static Map installBefores = new HashMap (); // Map<String,String[]>
@@ -160,8 +164,12 @@ public final class LoaderPoolNode extends AbstractNode {
         l.removePropertyChangeListener (getNbLoaderPool ());
         l.addPropertyChangeListener (getNbLoaderPool ());
         
-        installBefores.put (l.getClass ().getName (), s.getInstallBefore ());
-        installAfters.put (l.getClass ().getName (), s.getInstallAfter ());
+        String cname = l.getClass().getName();
+        names2Loaders.put(cname, l);
+        String[] ib = s.getInstallBefore();
+        if (ib != null) installBefores.put(cname, ib);
+        String[] ia = s.getInstallAfter();
+        if (ia != null) installAfters.put(cname, ia);
         if (updatingBatch) {
             updatingBatchUsed = true;
         } else {
@@ -310,6 +318,15 @@ public final class LoaderPoolNode extends AbstractNode {
 
         while (it.hasNext ()) {
             DataLoader l = (DataLoader)it.next ();
+            
+            if (!modifiedLoaders.contains(l)) {
+                // #27190 - no real need to write this in detail.
+                String c = l.getClass().getName();
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing unmodified " + c);
+                // '=' not a permissible part of a cnb, so this distinguishes it
+                oos.writeObject("=" + c); // NOI18N
+                continue;
+            }
 
             NbMarshalledObject obj;
             try {
@@ -320,7 +337,7 @@ public final class LoaderPoolNode extends AbstractNode {
             }
 
             if (obj != null) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing " + l.getClass().getName());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("writing modified " + l.getClass().getName());
                 // Find its module, if any.
                 Class c = l.getClass();
                 Iterator mit = modules.iterator();
@@ -359,6 +376,12 @@ public final class LoaderPoolNode extends AbstractNode {
         while (e.hasMoreElements ()) {
             DataLoader l = (DataLoader) e.nextElement ();
             if (loaders.contains (l)) continue;
+            if (!modifiedLoaders.contains(l)) {
+                // #27190 again. No need to write anything
+                String c = l.getClass().getName();
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log ("skipping unmodified " + c);
+                continue;
+            }
             NbMarshalledObject obj;
             try {
                 obj = new NbMarshalledObject (l);
@@ -413,8 +436,22 @@ public final class LoaderPoolNode extends AbstractNode {
             }
             NbMarshalledObject obj;
             if (o1 instanceof String) {
-                // Module information.
                 String name = (String)o1;
+                if (name.startsWith("=")) { // NOI18N
+                    // #27190: unmodified loader, just here for the ordering.
+                    String cname = name.substring(1);
+                    DataLoader dl = (DataLoader)names2Loaders.get(cname);
+                    if (dl != null) {
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading unmodified " + cname);
+                        l.add(dl);
+                        classes.add(dl.getClass());
+                    } else {
+                        // No such known loaded - presumably disabled module.
+                        if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("skipping unmodified nonexistent " + cname);
+                    }
+                    continue;
+                }
+                // Module information.
                 int rel = ois.readInt();
                 String spec = (String)ois.readObject();
                 obj = (NbMarshalledObject)ois.readObject();
@@ -448,7 +485,7 @@ public final class LoaderPoolNode extends AbstractNode {
             try {
                 DataLoader loader = (DataLoader)obj.get ();
                 Class clazz = loader.getClass();
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading " + loader.getClass().getName());
+                if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("reading modified " + clazz.getName());
                 l.add (loader);
                 classes.add (clazz);
             } catch (IOException ex) {
@@ -518,6 +555,7 @@ public final class LoaderPoolNode extends AbstractNode {
                 readded = true;
             }
         }
+        if (l.size() > new HashSet(l).size()) throw new IllegalStateException("Duplicates in " + l); // NOI18N
 
         loaders = l;
         if (readded)
@@ -538,10 +576,21 @@ public final class LoaderPoolNode extends AbstractNode {
         // clear the cache of loaders
         loadersArray = null;
 
-        if (getNbLoaderPool () != null && installationFinished) {
-            getNbLoaderPool ().superFireChangeEvent();
+        NbLoaderPool lp = getNbLoaderPool();
+        if (lp != null && installationFinished) {
+            lp.superFireChangeEvent();
             if (myChildren != null) {
                 myChildren.update ();
+            }
+        }
+        
+        if (lp != null) {
+            Enumeration e = lp.allLoaders();
+            while (e.hasMoreElements()) {
+                DataLoader l = (DataLoader)e.nextElement();
+                // so the pool is there only once
+                l.removePropertyChangeListener(lp);
+                l.addPropertyChangeListener(lp);
             }
         }
     }
@@ -560,8 +609,10 @@ public final class LoaderPoolNode extends AbstractNode {
     public static synchronized boolean remove (DataLoader dl) {
         if (loaders.remove (dl)) {
             if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("remove: " + dl);
-            installBefores.remove (dl.getClass ().getName ());
-            installAfters.remove (dl.getClass ().getName ());
+            String cname = dl.getClass().getName();
+            names2Loaders.remove(cname);
+            installBefores.remove(cname);
+            installAfters.remove(cname);
             dl.removePropertyChangeListener (getNbLoaderPool ());
         
             if (updatingBatch) {
@@ -569,6 +620,7 @@ public final class LoaderPoolNode extends AbstractNode {
             } else {
                 resort ();
             }
+            modifiedLoaders.remove(dl);
             return true;
         }
         return false;
@@ -690,15 +742,6 @@ public final class LoaderPoolNode extends AbstractNode {
             Enumeration e = getNbLoaderPool ().allLoaders ();
             while (e.hasMoreElements ()) _loaders.add (e.nextElement ());
             setKeys (_loaders);
-
-            Iterator it = _loaders.iterator ();
-            while (it.hasNext ()) {
-                DataLoader l = (DataLoader)it.next ();
-
-                // so the pool is there only once
-                l.removePropertyChangeListener (getNbLoaderPool ());
-                l.addPropertyChangeListener (getNbLoaderPool ());
-            }
         }
 
         /** Creates new node for the loader.
@@ -747,7 +790,10 @@ public final class LoaderPoolNode extends AbstractNode {
         /** Listener to property changes.
         */
         public void propertyChange (PropertyChangeEvent ev) {
+            DataLoader l = (DataLoader)ev.getSource();
+            modifiedLoaders.add(l);
             String prop = ev.getPropertyName ();
+            if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("Got change in " + l.getClass().getName() + "." + prop);
             if (DataLoader.PROP_ACTIONS.equals (prop) || DataLoader.PROP_DISPLAY_NAME.equals (prop))
                 return; // these are not important to the pool, i.e. to file recognition
             if (installationFinished) {
