@@ -22,6 +22,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 
 import org.netbeans.editor.Coloring;
+import org.openide.util.HelpCtx;
 
 /**
  * Coloring Editor for editor settings. Operates over one ColoringBean
@@ -36,6 +37,12 @@ public class ColoringEditor extends PropertyEditorSupport {
 
     /** Construct new instance */
     public ColoringEditor() {
+    }
+    
+    private static final String HELP_ID = "editing.fontsandcolors"; // !!! NOI18N
+    
+    protected HelpCtx getHelpCtx () {
+        return new HelpCtx (HELP_ID);
     }
 
     /** Get value as text is not supported */
@@ -78,6 +85,7 @@ public class ColoringEditor extends PropertyEditorSupport {
                                                          superSetValue( editor.getValue()); // skip updating editor
                                                  }
                                              });
+            HelpCtx.setHelpIDString( editor, getHelpCtx().getHelpID() );
         }
 
         return editor;

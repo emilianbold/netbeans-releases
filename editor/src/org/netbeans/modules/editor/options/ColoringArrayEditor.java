@@ -36,6 +36,8 @@ import org.openide.util.NbBundle;
 public class ColoringArrayEditor extends PropertyEditorSupport {
 
     private ColoringArrayEditorPanel editor;
+    
+    private static final String HELP_ID = "editing.fontsandcolors"; // !!! NOI18N
 
     public boolean supportsCustomEditor() {
         return true;
@@ -59,8 +61,8 @@ public class ColoringArrayEditor extends PropertyEditorSupport {
         return editor;
     }
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    protected HelpCtx getHelpCtx () {
+        return new HelpCtx (HELP_ID);
     }
     
     public void setAsText( String s ) {
