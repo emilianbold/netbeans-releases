@@ -255,15 +255,21 @@ public class DDFactory extends Object {
 	    
 	    NamedNodeMap map = n.getAttributes();
 	    if (map != null && map.getLength() != 0) {
-		for (int i=0; i<map.getLength(); i++) {
-		    Attr a = (Attr)map.item(i);
-		    str.append(indent);
-		    str.append("attribute: ");	// NOI18N
-		    str.append(a.getName());
-		    str.append("=");	// NOI18N
-		    str.append(a.getValue());
-		    str.append("\n");	// NOI18N
-		}
+            List attrNames = new ArrayList(map.getLength());
+            for (int i=0; i<map.getLength(); i++) {
+                Attr a = (Attr)map.item(i);
+                attrNames.add(a.getName());
+            }
+            Collections.sort(attrNames);
+            for (Iterator it = attrNames.iterator(); it.hasNext(); ) {
+                Attr a = (Attr) map.getNamedItem((String)it.next());
+                str.append(indent);
+                str.append("attribute: ");	// NOI18N
+                str.append(a.getName());
+                str.append("=");	// NOI18N
+                str.append(a.getValue());
+                str.append("\n");	// NOI18N
+            }
 	    }
 	}
 	
