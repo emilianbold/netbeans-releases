@@ -372,13 +372,18 @@ public class SimpleTestStepLocation implements WizardDescriptor.Panel {
     
     private void locationChanged() {
         Object item = cboxLocation.getSelectedItem();
-        SourceGroup[] pair = (SourceGroup[]) ((NamedObject) item).object;
-        srcSourceGroup = pair[0];
-        testSourceGroup = pair[1];
-        srcRootFolder = srcSourceGroup.getRootFolder();
-        testRootFolder = testSourceGroup.getRootFolder();
-        testsRootDirName
-                = FileUtil.getFileDisplayName(testRootFolder);
+        if (item != null) {
+            SourceGroup[] pair = (SourceGroup[]) ((NamedObject) item).object;
+            srcSourceGroup = pair[0];
+            testSourceGroup = pair[1];
+            srcRootFolder = srcSourceGroup.getRootFolder();
+            testRootFolder = testSourceGroup.getRootFolder();
+            testsRootDirName = FileUtil.getFileDisplayName(testRootFolder);
+        } else {
+            srcSourceGroup = null;
+            testSourceGroup = null;
+            testsRootDirName = "";
+        }
         updateCreatedFileName();
         if (classNameValid) {
             checkSelectedClassExists();

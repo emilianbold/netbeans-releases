@@ -175,14 +175,18 @@ public class Utils {
                 if (opposite != null) {
                     oppositeSourceGroup =(SourceGroup)folder2sourceGroup.get(opposite);
                 }
-            } else {
+            } 
+            
+            if (oppositeSourceGroup == null) {
                 oppositeSourceGroup = sourceGroup;
             }
 
 
-            pairs.add(new SourceGroup[] {
-                reverse ? oppositeSourceGroup : sourceGroup,
-                reverse ? sourceGroup : oppositeSourceGroup});
+            if (sourceGroup!=null && oppositeSourceGroup != null) {
+                pairs.add(new SourceGroup[] {
+                    reverse ? oppositeSourceGroup : sourceGroup,
+                    reverse ? sourceGroup : oppositeSourceGroup});
+            }
             processed.add(oppositeSourceGroup);
 
         }

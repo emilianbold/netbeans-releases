@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.junit.wizards;
 
+import java.awt.*;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -87,6 +88,8 @@ public class StepProblemMessage implements WizardDescriptor.Panel {
             gbc.weighty = 1.0;
             gbc.insets = new Insets(0, 0, 0, 0);
             panel.add(message, gbc);
+            
+            panel.setPreferredSize(new Dimension(500,0));
         }
         return panel;
     }
