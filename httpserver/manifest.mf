@@ -5,7 +5,7 @@ OpenIDE-Module-Layer: org/netbeans/modules/httpserver/layer.xml
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Provides: org.openide.util.HttpServer$Impl
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.11
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.23
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.servletapi/1
 OpenIDE-Module-Package-Dependencies: [org.apache.tomcat.core.Context]
 Class-Path: ext/webserver.jar
