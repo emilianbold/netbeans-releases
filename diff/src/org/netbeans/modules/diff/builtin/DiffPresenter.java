@@ -245,8 +245,11 @@ public class DiffPresenter extends javax.swing.JPanel {
         if (v == null) return ;
         Difference[] diffs;
         if (p != null) {
-            diffs = p.computeDiff(diffInfo.createFirstReader(),
-                                  diffInfo.createSecondReader());
+            diffs = diffInfo.getInitialDifferences();
+            if (diffs == null) {
+                diffs = p.computeDiff(diffInfo.createFirstReader(),
+                                      diffInfo.createSecondReader());
+            }
         } else {
             diffs = diffInfo.getDifferences();
         }
@@ -269,7 +272,7 @@ public class DiffPresenter extends javax.swing.JPanel {
 
     private void setVisualizer(Component visualizer) {
         visualizerPanel.removeAll();
-        visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
+        if (visualizer != null) visualizerPanel.add(visualizer, java.awt.BorderLayout.CENTER);
         repaint();
     }
     
@@ -327,6 +330,10 @@ public class DiffPresenter extends javax.swing.JPanel {
         }
         
         public Difference[] getDifferences() {
+            return null;
+        }
+
+        public Difference[] getInitialDifferences() {
             return null;
         }
 

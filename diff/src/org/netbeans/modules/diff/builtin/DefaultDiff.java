@@ -90,12 +90,23 @@ public class DefaultDiff extends Diff implements Serializable {
         this.buffer2 = out2.toString();
                                      */
         //diffPanel = new DiffWrapperPanel(showDiffSelector, showDiffSelector);
-        DiffPresenter.Info diffInfo = new DiffInfo(name1, name2, title1, title2,
+        DiffInfo diffInfo = new DiffInfo(name1, name2, title1, title2,
             MIMEType, showDiffSelector, showDiffSelector, r1, r2);
+        // I need to know the initial differences to know whether the files actually
+        // differ or not.
+        DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        try {
+            Difference[] diffs = provider.computeDiff(diffInfo.createFirstReader(), diffInfo.createSecondReader());
+            if (diffs.length == 0) {
+                TopManager.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DefaultDiff.class, "MSG_NoDifference", name1, name2)));
+                return null;
+            }
+            diffInfo.setInitialDiffs(diffs);
+        } catch (IOException ioex) {}
         DiffPresenter diffPanel = new DiffPresenter(diffInfo);
         TopComponent tp = new DiffTopComponent(diffPanel);
         diffInfo.setPresentingComponent(tp);
-        diffPanel.setProvider((DiffProvider) Lookup.getDefault().lookup(DiffProvider.class));
+        diffPanel.setProvider(provider);
         diffPanel.setVisualizer((DiffVisualizer) Lookup.getDefault().lookup(DiffVisualizer.class));
         return tp;
         //if (!initPanel()) return null;
@@ -294,6 +305,7 @@ public class DefaultDiff extends Diff implements Serializable {
     private static class DiffInfo extends DiffPresenter.Info {
         
         private String buffer1, buffer2;
+        private Difference[] diffs;
         
         public DiffInfo(String name1, String name2, String title1, String title2,
                         String mimeType, boolean chooseProviders, boolean chooseVisualizers,
@@ -313,6 +325,16 @@ public class DefaultDiff extends Diff implements Serializable {
         
         public Reader createSecondReader() {
             return new StringReader(buffer2);
+        }
+        
+        void setInitialDiffs(Difference[] diffs) {
+            this.diffs = diffs;
+        }
+        
+        public Difference[] getInitialDifferences() {
+            Difference[] diffs = this.diffs;
+            this.diffs = null;
+            return diffs;
         }
         
     }
