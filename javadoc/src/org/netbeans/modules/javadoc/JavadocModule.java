@@ -76,13 +76,14 @@ public class JavadocModule extends ModuleInstall {
     public void restored() {
        
         // Install the factory for adding JavaDoc property to nodes
+        /*
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                        "addExplorerFilterFactory", // NOI18N
                        new JavaDocPropertySupportFactory() );
         invokeDynamic( "org.netbeans.modules.java.JavaDataObject", // NOI18N
                        "addBrowserFilterFactory", // NOI18N
                        new JavaDocPropertySupportFactory() );
-
+        */
     }
 
     /** Invoked on update */
@@ -94,6 +95,7 @@ public class JavadocModule extends ModuleInstall {
 
     /** Dynamicaly invokes a method
      */
+    /*
     private void invokeDynamic( String className, String methodName, FilterFactory factory ) {
 
         try {
@@ -121,7 +123,7 @@ public class JavadocModule extends ModuleInstall {
             notify (e);
         }
     }
-    
+    */
     // Implementation of java.io.Externalizable ------------------
 /*
     public void readExternal(final java.io.ObjectInput objectInput )

@@ -79,6 +79,17 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <folder name="NodeFactories">
+    <folder name="java">
+      <folder name="explorer">
+        <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
+      </folder>
+      <folder name="objectbrowser">
+        <file name="org-netbeans-modules-javadoc-comments-JavaDocPropertySupportFactory.instance"/>
+      </folder>
+    </folder>
+  </folder>
+   
 
 <!--  Services part -->
 

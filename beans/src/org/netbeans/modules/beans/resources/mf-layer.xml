@@ -46,6 +46,29 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <folder name="NodeFactories">
+    <folder name="java">
+      <folder name="explorer">
+        <file name="org-netbeans-modules-beans-PatternsExplorerFactory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.beans.PatternsExplorerFactory.setWritable" />
+        </file>    
+      </folder>
+      <folder name="objectbrowser">
+        <file name="org-netbeans-modules-beans-PatternsBrowserFactory.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.beans.PatternsBrowserFactory.setWritable" />
+        </file>    
+      </folder>
+    </folder>
+    <folder name="clazz">
+      <folder name="explorer">
+        <file name="org-netbeans-modules-beans-PatternsExplorerFactory.instance"/>
+      </folder>
+      <folder name="objectbrowser">
+        <file name="org-netbeans-modules-beans-PatternsBrowserFactory.instance"/>
+      </folder>
+    </folder>
+  </folder>
+
   <folder name="Services">
     <file name="beans.settings" url="beans.settings"/>
   </folder>
