@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
+import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.Method;
+import com.sun.jdi.ReferenceType;
 
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
@@ -88,21 +90,46 @@ public class MethodBreakpointImpl extends BreakpointImpl implements Executor {
         Method m = event instanceof MethodEntryEvent ?
             ((MethodEntryEvent) event).method () :
             ((MethodExitEvent) event).method ();
-        if ( (breakpoint.getMethodName ().length () > 0) &&
-             (!breakpoint.getMethodName ().equals (m.name ()))
-        ) {
-            return true; //resume
+        ThreadReference thread = event instanceof MethodEntryEvent ?
+            ((MethodEntryEvent) event).thread () :
+            ((MethodExitEvent) event).thread ();
+            
+        // check if the name is OK
+        if (breakpoint.getMethodName ().length () > 0) {
+            if ("<init>".equals (m.name ())) {
+                // stopped in constructor
+                try {
+                if (thread.frameCount () > 0) {
+                    String cn = thread.frame (0).location ().
+                        declaringType ().name ();
+                    int i = cn.lastIndexOf ('.');
+                    if (i > 0) cn = cn.substring (i + 1);
+                    if ( (!breakpoint.getMethodName ().equals (cn)) &&
+                         (!breakpoint.getMethodName ().equals ("<init>"))
+                    )
+                        return true; //resume
+                }
+                } catch (IncompatibleThreadStateException ex) {
+                    ex.printStackTrace ();
+                }
+            } else
+            if (!breakpoint.getMethodName ().equals (m.name ()))
+                // stopped in normal method
+                return true; //resume
+            
         }
+            
+        // perform breakpoint 
         return event instanceof MethodEntryEvent ?
             perform (
                 breakpoint.getCondition (),
-                ((MethodEntryEvent) event).thread (),
+                thread,
                 null,
                 null
             ) :
             perform (
                 breakpoint.getCondition (),
-                ((MethodExitEvent) event).thread (),
+                thread,
                 null,
                 null
             );

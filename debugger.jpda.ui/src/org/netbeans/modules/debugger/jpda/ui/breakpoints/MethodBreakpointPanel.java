@@ -61,8 +61,14 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
             tfPackageName.setText (className.substring (0, i));
             tfClassName.setText (className.substring (i + 1, className.length ()));
         }
-        tfMethodName.setText (b.getMethodName ());
-        cbAllMethods.setSelected (b.getMethodName().equals (""));
+        if (b.getMethodName ().equals ("")) {
+            tfMethodName.setText ("<all methods>");
+            cbAllMethods.setSelected (true);
+            tfMethodName.setEnabled (false);
+        } else {
+            tfMethodName.setText (b.getMethodName ());
+        }
+        
 //        cbInnerClasses.setSelected (b.getApplyToAnonymousInnerClasses ());
         tfCondition.setText (b.getCondition ());
         
@@ -180,6 +186,14 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
         cbAllMethods.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("MN_CB_Method_Breakpoint_All_Methods").charAt(0));
         cbAllMethods.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("CB_Method_Breakpoint_All_Methods"));
         cbAllMethods.setToolTipText(java.util.ResourceBundle.getBundle("org/netbeans/modules/debugger/jpda/ui/breakpoints/Bundle").getString("TTT_CB_Method_Breakpoint_All_Methods"));
+        cbAllMethods.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                cbAllMethodsActionPerformed(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -235,6 +249,17 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
 
     }//GEN-END:initComponents
 
+    private void cbAllMethodsActionPerformed (java.awt.event.ActionEvent evt)//GEN-FIRST:event_cbAllMethodsActionPerformed
+    {//GEN-HEADEREND:event_cbAllMethodsActionPerformed
+        if (cbAllMethods.isSelected ()) {
+            tfMethodName.setText ("<all methods>");
+            tfMethodName.setEnabled (false);
+        } else {
+            tfMethodName.setText ("");
+            tfMethodName.setEnabled (true);
+        }
+    }//GEN-LAST:event_cbAllMethodsActionPerformed
+
     
     // Controller implementation ...............................................
     
@@ -250,7 +275,10 @@ public class MethodBreakpointPanel extends JPanel implements Controller {
             className += '.';
         className += tfClassName.getText ().trim ();
         breakpoint.setClassFilters (new String[] {className});
-        breakpoint.setMethodName (tfMethodName.getText ().trim ());
+        if (!cbAllMethods.isSelected ())
+            breakpoint.setMethodName (tfMethodName.getText ().trim ());
+        else
+            breakpoint.setMethodName ("");
 //        breakpoint.setApplyToAnonymousInnerClasses (cbInnerClasses.isSelected ());
         breakpoint.setCondition (tfCondition.getText ());
         
