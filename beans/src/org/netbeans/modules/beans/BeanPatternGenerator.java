@@ -68,35 +68,35 @@ class BeanPatternGenerator extends Object {
       setterBody.append( " = this." ).append( name ).append( ";\n");
 
       if ( constrained ) {
-        setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\" , " );
+        setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange(\"").append( name ).append( "\", " );
 
         if ( type.isPrimitive() ) {
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( ") , " );
+          setterBody.append( "), " );
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( name ).append( "));\n" );
         }
         else {
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( " ," ).append( name ).append( ");\n" );
+          setterBody.append( ", " ).append( name ).append( ");\n" );
         }
       }
       if ( bound ) {
         setterBody.append( TAB + "this." ).append( name );
         setterBody.append( " = " ).append( name ).append( ";\n");
-        setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\" , " );
+        setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " );
 
         if ( type.isPrimitive() ) {
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( ") , " );
+          setterBody.append( "), " );
           setterBody.append( "new ").append( getWrapperClassName( type )).append( " (" );
           setterBody.append( name ).append( "));\n" );
         }
         else {
           setterBody.append( "old" ).append( Pattern.capitalizeFirstLetter( name ) );
-          setterBody.append( " ," ).append( name ).append( ");\n" );
+          setterBody.append( ", " ).append( name ).append( ");\n" );
         }
       }
     }
@@ -140,11 +140,11 @@ class BeanPatternGenerator extends Object {
     }
 
     if ( withSupport && constrained ) {
-      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\" , " );
+      setterBody.append( TAB + vetoSupportName ).append( ".fireVetoableChange (\"").append( name ).append( "\", " );
       setterBody.append( "null, null );\n" );
     }
     if ( withSupport && bound ) {
-      setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\" , " );
+      setterBody.append( TAB + supportName ).append( ".firePropertyChange (\"").append( name ).append( "\", " );
       setterBody.append( "null, null );\n" );
     }
 
@@ -838,6 +838,7 @@ class BeanPatternGenerator extends Object {
 }
 /* 
  * Log
+ *  4    Gandalf   1.3         10/6/99  Petr Hrebejk    Formating fix
  *  3    Gandalf   1.2         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
