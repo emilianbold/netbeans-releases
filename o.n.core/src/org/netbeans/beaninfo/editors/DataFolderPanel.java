@@ -483,7 +483,9 @@ class DataFolderPanel extends TopComponent implements
                 if (fo.isRoot ()) {
                     // bugfix #31645, possibility create new folder under root
                     name = packageName.getText().trim();
-                    if (fo.getFileObject (name) != null) {
+                    // bugfix #32910, possibility create only for single folder
+                    boolean withSubfolder = name.indexOf (File.separatorChar) != -1;
+                    if (fo.getFileObject (name) != null || withSubfolder) {
                         name = ""; // NOI18N
                     }
                 }
