@@ -370,7 +370,7 @@ final public class FormEditor extends Object {
         newDesignLayout = new DesignGridBagLayout ();
       } else if (lm instanceof EqualFlowLayout) {
         newDesignLayout = new DesignEqualFlowLayout ();
-      } else if (lm instanceof AbsoluteLayout) {
+      } else if (lm instanceof com.netbeans.developer.awt.AbsoluteLayout) {
         newDesignLayout = new DesignAbsoluteLayout ();
       } else if (lm instanceof BoxLayout) {
         newDesignLayout = new DesignBoxLayout ();
@@ -608,6 +608,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  33   Gandalf   1.32        9/9/99   Ian Formanek    AbsoluteLayout changes
  *  32   Gandalf   1.31        9/2/99   Ian Formanek    Reflecting changes in 
  *       RADComponent.getPropertyByName
  *  31   Gandalf   1.30        8/10/99  Ian Formanek    Generated Serial Version
