@@ -107,7 +107,11 @@ Microsystems, Inc. All Rights Reserved.
             <file name="CloseAllDocumentsAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance" />
             </file>
-            <attr name="CloseAllDocumentsAction.shadow/DocumentsAction.shadow" boolvalue="true" />
+            <attr name="CloseAllDocumentsAction.shadow/CloseAllButThisAction.shadow" boolvalue="true" />
+            <file name="CloseAllButThisAction.shadow" >
+                <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-CloseAllButThisAction.instance" />
+            </file>
+            <attr name="CloseAllButThisAction.shadow/DocumentsAction.shadow" boolvalue="true" />
             <file name="DocumentsAction.shadow" >
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-core-windows-actions-DocumentsAction.instance" />
             </file>

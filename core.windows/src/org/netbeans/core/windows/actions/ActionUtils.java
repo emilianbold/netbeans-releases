@@ -73,11 +73,13 @@ public abstract class ActionUtils {
                 allBut.setEnabled(false);
             }
             actions.add(new CloseAllDocumentsAction());
+            actions.add(allBut);
             actions.add(null); // Separator
             actions.add(new SaveDocumentAction(tc));
             actions.add(new CloneDocumentAction(tc));
             actions.add(null); // Separator
-            actions.add(allBut);
+            actions.add(new CloseWindowAction(tc));
+            actions.add(new MaximizeWindowAction(tc));
         } else if (kind == Constants.MODE_KIND_VIEW) {
             actions.add(new CloseWindowAction(tc));
             actions.add(new MaximizeWindowAction(tc));
