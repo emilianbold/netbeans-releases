@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -20,6 +20,7 @@ import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -84,7 +85,7 @@ public class WebProjectGenerator {
             sourceFolderEl = doc.createElementNS(NS_GENERAL, "source-folder"); // NOI18N
             sourceFolderEl.setAttribute("style", "tree"); // NOI18N
             el = doc.createElementNS(NS_GENERAL, "label"); // NOI18N
-            el.appendChild(doc.createTextNode(dispname));
+            el.appendChild(doc.createTextNode(NbBundle.getMessage(WebProjectGenerator.class, "LBL_WebPages")));
             sourceFolderEl.appendChild(el);
             el = doc.createElementNS(NS_GENERAL, "location"); // NOI18N
             el.appendChild(doc.createTextNode(path)); // NOI18N
