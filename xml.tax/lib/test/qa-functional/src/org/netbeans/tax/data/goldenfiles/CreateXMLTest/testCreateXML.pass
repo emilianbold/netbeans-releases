@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE Delme SYSTEM "simpleXXL.dtd" [
+    <!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+    <!ENTITY xcompany "Tisk &amp; spol.">
+    <!-- Current API implementation resolves CharRef. 
+<!ENTITY xthorn "&#222;">
+<!ENTITY xxamp "&#38;">
+-->
+    <!ENTITY % xsourceinfo "lang   CDATA #REQUIRED
+  cprght CDATA #IMPLIED">
+    <!ATTLIST Descript
+	xlang CDATA #IMPLIED 
+	xcprght CDATA #IMPLIED >
+    <!ENTITY % xstates SYSTEM "xstates.dtd">
+    %xstates;
+    <!NOTATION xeps SYSTEM "ghg">
+    <!ENTITY % xY "INCLUDE">
+    <!ENTITY % xX "IGNORE">
+    <?xJimmy - Nechlastej!?>
+]>
+
+<root manager="Tom Jerry" id="a"><Product isbn="123456" id="b">
+XML Book
+<Descript lang="Eng">
+The book describe how is using XML in
+&company;from &cz;
+Very important is author
+&notice;
+</Descript>
+</Product>
+</root>
+
+
