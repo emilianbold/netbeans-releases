@@ -34,11 +34,16 @@ import java.lang.reflect.*;
  */
 public abstract class XMLBean {
 
-    public static boolean DEBUG = false;
     
     public final static String XMLBEAN_PACKAGE = "org.netbeans.xtest.pe.xmlbeans";
     public final static String XMLBEAN_ATT_PREFIX = "xmlat_";
     public final static String XMLBEAN_ELEM_PREFIX = "xmlel_";
+    
+    // debugging flag - should be set to false :-)
+    private static final boolean DEBUG = false;
+    private static final void debugInfo(String message) {
+        if (DEBUG) System.out.println("XMLBean."+message);
+    }
     
     
     // pcdata of the XML element
@@ -47,6 +52,139 @@ public abstract class XMLBean {
     public String xml_cdata = null;
     
     // utility methods
+    public static Object[] addToArray(Object[] array, Object obj) throws IllegalArgumentException {
+        debugInfo("addToArray(): array = "+array+" object to add = "+obj);
+        if (array == null) {
+            if (obj == null) {
+                debugInfo("addToArray(): both array and obj are null - there is nothing to do - return null");
+                return null;
+            } else {            
+                debugInfo("addToArray(): array is null, but we can construct a new array with just one object");                
+                Object resultingArray = Array.newInstance(obj.getClass(),1);
+                Array.set(resultingArray,0,obj);
+                return (Object[])resultingArray;
+            }      
+        }
+        debugInfo("addToArray(): adding to existing array");
+        Class arrayType = array.getClass().getComponentType();
+        int length = array.length;
+        debugInfo("addToArray(): discovered array componennt type = "+arrayType+" and length = "+length);
+        Object resultingArray = Array.newInstance(arrayType,length+1);
+        debugInfo("addToArray(): copying old array to new one ");
+        for (int i=0; i<length; i++) {
+            Array.set(resultingArray,i,array[i]);
+        }
+        debugInfo("addToArray(): adding the new object at the end (position = "+length+")");
+        Array.set(resultingArray,length,obj);
+        return (Object[])resultingArray;
+    }
+    
+    
+    public boolean isObjectValid(Object obj) {
+        if (obj != null) {
+            if (obj.getClass().isInstance(this)) {
+                return true;                
+            }
+        }
+        return false;
+    }
+    
+    
+    
+    public static boolean compareObjectsByFields(Object obj1, Object obj2, String[] fieldNames) 
+                throws NoSuchFieldException {
+        debugInfo("compareObjectsByFields(): start");
+        if (fieldNames != null) {
+            if (fieldNames.length>0) {
+                // now compare objects                
+                try {
+                    if (obj1.getClass().isInstance(obj2)) {
+                        debugInfo("compareObjectsByFields(): objects are of the same type");
+                        for (int i=0;i<fieldNames.length;i++) {                            
+                            Field field = obj1.getClass().getField(fieldNames[i]);
+                            debugInfo("compareObjectsByFields(): comparing field"+field.getName());
+                            Object value1 = field.get(obj1);
+                            Object value2 = field.get(obj2);
+                            if ((value1==null)|(value2==null)) {
+                                debugInfo("compareObjectsByFields(): comparing for null");
+                                if ((value1==null)&(value2==null)) {
+                                    debugInfo("compareObjectsByFields(): both values are null");
+                                } else {
+                                     debugInfo("compareObjectsByFields(): comparing for null, but 2nd value is not null");
+                                     return false;
+                                } 
+                            } else {
+                                if (!value1.equals(value2)) {
+                                    debugInfo("compareObjectsByFields(): values differ, fieldName = "+fieldNames[i]);
+                                    debugInfo("compareObjectsByFields(): value1="+value1+"; value2="+value2);
+                                    return false;
+                                }
+                            }
+                        }
+                        debugInfo("compareObjectsByFields(): all fields are equal - true");
+                        return true;
+                    } else {
+                        debugInfo("compareObjectsByFields(): objects are not of the same type - false");
+                        return false;
+                    }
+                } catch (NullPointerException npe) {                    
+                    // there was some problem -> objects are not equal
+                    debugInfo("compareObjectsByFields(): there was NPE, hence objects are not equal");
+                    return false;
+                } catch (IllegalAccessException iae) {
+                    debugInfo("compareObjectsByFields(): there was IllegalAccessException, throwing NoSuchFieldException");
+                    throw new NoSuchFieldException(" thrown IllegalAccessException: "+iae);
+                }
+            }
+        }
+        debugInfo("compareObjectsByFields(): throwing NoSuchAFieldException - fieldNames string is empty !!!");
+        throw new NoSuchFieldException(" No fields were specified");        
+    }
+    
+    
+    public boolean equalByAttributes(Object obj) {
+        debugInfo("equalByAttribues(): comparing XMLBean to another XMLBean by all its XML attributes");
+        try {
+            ArrayList attributeFieldList = new ArrayList();
+            Field[] fields = this.getClass().getFields();
+            for (int i = 0; i<fields.length; i++) {
+                Field field = fields[i];
+                if (field.getName().startsWith(XMLBean.XMLBEAN_ATT_PREFIX)) {
+                    attributeFieldList.add(field.getName());
+                }
+            }
+            String[] fieldNames = (String[])(attributeFieldList.toArray(new String[0]));
+            debugInfo("equalByAttribues(): got field names -> comparing"); 
+            return compareObjectsByFields(this,obj,fieldNames);
+            // get all fields
+        } catch (NoSuchFieldException nsfe) {
+            // this should not happen            
+            debugInfo("equalByAttribues(): NoSuchFieldException - weird: "+nsfe);
+            return false;
+        }
+    }
+    
+    public static XMLBean findXMLBean(XMLBean[] existingBeans, XMLBean newBean) {
+        debugInfo("findXMLBean(): existingBeans = "+existingBeans+", newBean = "+newBean);
+        if (newBean == null) {
+            debugInfo("findXMLBean(): newBean is null - cannot find null :-)");
+            return null;
+        }
+        if (existingBeans == null) {
+            debugInfo("findXMLBean(): existingBeans is null - what shoud I compare :-)");
+            return null;
+        }
+        debugInfo("findXMLBean(): lets look for a bean ");
+        for (int i=0; i<existingBeans.length ; i++) {
+             if (newBean.equals(existingBeans[i])) {
+                debugInfo("addOrFindEqualBean():, found equal XMLBean");
+                return existingBeans[i];
+            }
+        }
+        return null;
+    }
+       
+    
     public static String cutPackage(String className) {
         if (DEBUG) System.out.println("XMLBean.cutPackage: className = "+className);
         int lastDot = className.lastIndexOf('.');
@@ -76,6 +214,7 @@ public abstract class XMLBean {
             throw new ExceptionInInitializerError(e);
         }
     }
+    
     
     // 
     

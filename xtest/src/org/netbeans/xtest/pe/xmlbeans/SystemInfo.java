@@ -50,8 +50,9 @@ public class SystemInfo extends XMLBean {
     // child elements
     public SystemInfoExtra[] xmlel_SystemInfoExtra;
     
-    // logic !!!
-      public String getHost() {
+    // bussiness methods
+    
+    public static String getHost() {
         String host;
         try {
             host = InetAddress.getLocalHost().getHostName();
@@ -61,37 +62,39 @@ public class SystemInfo extends XMLBean {
         }
         
         return host;
-    }            
+    }    
     
-    public String getOsArch() {
+    public static String getOsArch() {
         return System.getProperty("os.arch");
     }
     
-    public String getOsName() {
+    public static String getOsName() {
         return System.getProperty("os.name");
     }
     
-    public String getOsVersion() {
+    public static String getOsVersion() {
         return System.getProperty("os.version");
     }
     
-    public String getJavaVendor() {
+    public static String getJavaVendor() {
         return System.getProperty("java.vendor");
     }
     
-    public String getJavaVersion() {
+    public static String getJavaVersion() {
         return System.getProperty("java.version");
     }
     
-    public String getUserLanguage() {
+    public static String getUserLanguage() {
         return System.getProperty("user.language");
     }
     
-    public String getUserRegion() {
+    public static String getUserRegion() {
         return System.getProperty("user.region");
     }
     
-    
+    public static String getPlatform() {
+        return "OS: "+getOsName()+" "+getOsVersion()+" "+getOsArch()+", JDK: "+getJavaVersion()+" "+getJavaVendor();
+    }        
     
     
     public void getSystemInfo() {      

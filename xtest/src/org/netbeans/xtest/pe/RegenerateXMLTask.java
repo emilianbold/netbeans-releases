@@ -346,6 +346,9 @@ public class RegenerateXMLTask extends Task{
         }
         File testReportFile = new File(testReportResultsDir,PEConstants.TESTREPORT_XML_FILE);
         XTestResultsReport testReport = (XTestResultsReport)ResultsUtils.getXTestResultsReport(testReportFile);
+        if (testReport.xmlat_host==null) {
+            testReport.xmlat_host = SystemInfo.getHost();        
+        }        
         debugInfo("regenerateTestReport(): regenerating testreport.xml");
         File[] testRunsDirs = ResultsUtils.listTestRuns(testReportRoot);
         TestRun[] testRuns = new TestRun[testRunsDirs.length];

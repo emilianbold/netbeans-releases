@@ -41,6 +41,7 @@ public class XTestResultsReportTask extends Task{
     private String testingGroup;
     private String testedType;
     private String host;
+    private String comment;
     
     
     public void setTestingGroup(String testingGroup) {
@@ -64,7 +65,17 @@ public class XTestResultsReportTask extends Task{
     }
     
     public void setHost(String host) {
-        this.host = host;
+        if (host.startsWith("${")|host.equals("")) {
+            this.host = SystemInfo.getHost();
+        } else {
+            this.host = host;
+        }
+    }
+    
+    public void setComment(String comment) {
+        if (!comment.startsWith("${")) {
+            this.comment = comment;
+        }        
     }
     
     public XTestResultsReport getReport() {
@@ -74,6 +85,7 @@ public class XTestResultsReportTask extends Task{
         report.xmlat_testingGroup = testingGroup;
         report.xmlat_testedType = testedType;
         report.xmlat_host = host;
+        report.xmlat_comment = comment;
         report.xmlat_timeStamp = new java.sql.Timestamp(System.currentTimeMillis());
         return report;
     }
@@ -84,12 +96,9 @@ public class XTestResultsReportTask extends Task{
         try {
             Document doc = SerializeDOM.parseFile(this.outfile);
             report = (XTestResultsReport)XMLBean.getXMLBean(doc);
-            //System.out.println("TestRun already created");
-            // testrun already created - return
             log("Test report info xml already exists - skipping");
             return;
-        } catch (Exception e) {
-            //System.out.println("TestRun not found, have to crete a new one");
+        } catch (Exception e) {            
             report = getReport();
         }
         //System.err.println("TR:"+tr);

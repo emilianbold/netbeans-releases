@@ -29,6 +29,7 @@ import org.netbeans.xtest.util.*;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.*;
+import javax.xml.transform.dom.*;
 
 /**
  *
@@ -126,9 +127,24 @@ public class TransformXMLTask extends Task{
         return transformer;
     }
     
-    public static Document transform(Document xml, Transformer transformer) {
-        return null;
+    public static Document transform(Document xml, Transformer transformer) throws TransformerException {
+        DOMSource domSource = new DOMSource(xml);
+        DOMResult domResult = new DOMResult();
+        transform(transformer,domSource,domResult);
+        Node aNode = domResult.getNode();
+        Document resultDoc = SerializeDOM.getDocumentBuilder().newDocument();
+        resultDoc.appendChild(aNode);
+        return resultDoc;
     }
+    
+    public static void transform(Document xml, File outputXML, Transformer transformer) throws TransformerException, IOException {
+        DOMSource domSource = new DOMSource(xml);
+        FileOutputStream outputFileStream = new FileOutputStream(outputXML);
+        StreamResult streamResult = new StreamResult(outputFileStream);
+        transform(transformer,domSource,streamResult);       
+        outputFileStream.close();
+    }
+    
     
     public static void transform(Transformer transformer, Source xmlSource, Result outputTarget) throws TransformerException {
         try {

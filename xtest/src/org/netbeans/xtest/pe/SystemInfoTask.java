@@ -45,74 +45,11 @@ public class SystemInfoTask extends Task {
     }
     
     
-    public String getHost() {
-        String host;
-        try {
-            host = InetAddress.getLocalHost().getHostName();
-        } catch (UnknownHostException uhe) {
-            // we cannot get the hostname
-            host = "UnknownHost";
-        }
-        
-        return host;
-    }
-    
-    /*
-    private void gatherSystemInfo() {
-        host = getHostName();
-        os_arch = System.getProperty("");
-    }*/
-    
-    
-    
-    public String getOsArch() {
-        return System.getProperty("os.arch");
-    }
-    
-    public String getOsName() {
-        return System.getProperty("os.name");
-    }
-    
-    public String getOsVersion() {
-        return System.getProperty("os.version");
-    }
-    
-    public String getJavaVendor() {
-        return System.getProperty("java.vendor");
-    }
-    
-    public String getJavaVersion() {
-        return System.getProperty("java.version");
-    }
-    
-    public String getUserLanguage() {
-        return System.getProperty("user.language");
-    }
-    
-    public String getUserRegion() {
-        return System.getProperty("user.region");
-    }
-    
-    
-    
-    
-    public SystemInfo getSystemInfo() {
-        SystemInfo si = new SystemInfo();
-        si.xmlat_host = getHost();
-        si.xmlat_osArch = getOsArch();
-        si.xmlat_osName = getOsName();
-        si.xmlat_osVersion = getOsVersion();
-        si.xmlat_javaVendor = getJavaVendor();
-        si.xmlat_javaVersion = getJavaVersion();
-        si.xmlat_userLanguage = getUserLanguage();
-        si.xmlat_userRegion = getUserRegion();
-        return si;
-    }
-    
+   
 
     public void execute () throws BuildException {
         log("Generating system info xml");
-        SystemInfo si = getSystemInfo();
+        SystemInfo si = new SystemInfo();
         try {
             FileOutputStream outStream = new FileOutputStream(this.outfile);            
             SerializeDOM.serializeToStream(si.toDocument(),outStream);

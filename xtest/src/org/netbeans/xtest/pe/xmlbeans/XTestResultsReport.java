@@ -40,14 +40,31 @@ public class XTestResultsReport extends XMLBean {
     public String   xmlat_testingGroup;
     public String   xmlat_testedType;
     public String   xmlat_host;
+    public String   xmlat_comment;    
     public long     xmlat_testsTotal;
     public long     xmlat_testsPass;
     public long     xmlat_testsFail;
     public long     xmlat_testsError;
     public boolean  xmlat_fullReport;
-    
+    // only for compatibility reasons -> have to remove it
+    public String   xmlat_platform;
     // child elements
     public SystemInfo[] xmlel_SystemInfo;
     public TestRun[] xmlel_TestRun;
+    
+    
+    // business methods
+    public boolean isValid() {
+        if (xmlat_project == null) return false;
+        if (xmlat_build == null) return false;
+        if (xmlat_testingGroup == null) return false;
+        if (xmlat_testedType == null) return false;
+        if (xmlat_host == null) return false;        
+        return true;
+    }
+    
+    public boolean equals(Object obj) {
+        return equalByAttributes(obj);
+    }
     
 }
