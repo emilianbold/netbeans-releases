@@ -24,6 +24,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.code.classpath" value="src"/>
     
     <property name="xtest.home" location="../../xtest"/>
+    <property name="xtest.extra.home" location="../../../nbextra/xtest"/>
+
     <property name="xtest.results" location="results"/>
     <property name="xtest.build" location="."/>    
     <property name="xtest.file.name" value="test.jar"/>
@@ -55,7 +57,7 @@ Microsystems, Inc. All Rights Reserved.
             <include name="core.jar"/>
             <include name="ext/*.jar"/>
         </fileset>
-        <pathelement location="../../openide/netbeans/lib/openide.jar"/>        
+        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
     </path>
     
     <!-- this classpath will be used for executing tests against sources -->
@@ -96,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="pathdef" classname="org.netbeans.xtest.PathDef"/>                        
         </nbtaskdef>
         
-        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}"/>
+        <nbpath nbhome="${netbeans.test.home}" xthome="${xtest.home}" xtexhome="${xtest.extra.home}"/>
 
         <!-- XML, XSLT reporters -->
         <nbtaskdef classpath="${xtest.path};${xalan.path}">
@@ -279,8 +281,8 @@ Microsystems, Inc. All Rights Reserved.
 
         <copy file="${xtest.home}/lib/patches/testmain.jar" todir="${netbeans.test.home}/lib/patches"/>
         <copy file="${xtest.home}/lib/xtest.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
-        <copy file="${xtest.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/xtest-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
+        <copy file="${xtest.extra.home}/lib/junit.jar" todir="${netbeans.test.home}/lib/ext"/>
         <copy file="${xtest.home}/lib/junit-ext.jar" todir="${netbeans.test.home}/lib/ext"/>
 
         <exec dir="${netbeans.test.home}/bin" executable="${netbeans.test.home}/bin/runide.exe" 
