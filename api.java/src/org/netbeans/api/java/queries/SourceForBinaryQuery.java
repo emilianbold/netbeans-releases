@@ -49,12 +49,13 @@ public class SourceForBinaryQuery {
             throw new IllegalArgumentException("File URL pointing to " + // NOI18N
                 "JAR is not valid classpath entry. Use jar: URL. Was: "+binaryRoot); // NOI18N
         }
-        List result = new ArrayList ();
         for (Iterator it = implementations.allInstances().iterator(); it.hasNext();) {
-            result.addAll(Arrays.asList(
-                  ((SourceForBinaryQueryImplementation)it.next()).findSourceRoot (binaryRoot)));
+            FileObject[] result = ((SourceForBinaryQueryImplementation)it.next()).findSourceRoot (binaryRoot);
+            if (result != null) {
+                return result;
+            }
         }
-        return (FileObject[]) result.toArray (new FileObject[result.size()]);
+        return new FileObject[0];
     }
 
 }
