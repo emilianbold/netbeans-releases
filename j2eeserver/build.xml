@@ -128,9 +128,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <locjar compress="false" jarfile="netbeans/modules/autoload/j2eeserver.jar" manifest="manifest-subst.mf">
       <locale name="ja"/>
-      <branding name="f4j"/>
-      <branding name="f4j_ce"/>
-      <branding name="f4j_ie"/>
       <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
     </locjar>
   </target>
