@@ -454,7 +454,7 @@ public class NonGui extends NbTopManager implements Runnable {
         StartLog.logProgress ("PropertyEditors registered"); // NOI18N
 
         // -----------------------------------------------------------------------------------------------------
-        // 6. Initialize SecurityManager and ClassLoader
+
         setStatusText (getString("MSG_IDEInit"));
 
 
@@ -463,6 +463,11 @@ public class NonGui extends NbTopManager implements Runnable {
         getRepository ();
         StartLog.logProgress ("Repository initialized"); // NOI18N
 
+        // -----------------------------------------------------------------------------------------------------
+        // this indirectly sets system properties for proxy servers with values
+        // taken from IDESettings
+        SharedClassObject.findObject(IDESettings.class, true);
+        
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
         /*try {
