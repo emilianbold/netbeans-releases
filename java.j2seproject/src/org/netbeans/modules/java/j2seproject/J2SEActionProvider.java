@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -189,10 +190,11 @@ class J2SEActionProvider implements ActionProvider {
 
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
-            
-            while (!isSetMainClass (project.getSourceRoots().getRoots(), mainClass)) {
+            int result;
+            while ((result=isSetMainClass (project.getSourceRoots().getRoots(), mainClass))!=0) {
+                
                 // show warning, if cancel then return
-                if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep)) {
+                if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep,result)) {
                     return null;
                 }
                 mainClass = (String)ep.get ("main.class"); // NOI18N
@@ -448,22 +450,30 @@ class J2SEActionProvider implements ActionProvider {
     }
     
 
-    private boolean isSetMainClass (FileObject[] sourcesRoots, String mainClass) {
+    /**
+     * Tests if the main class is set
+     * @param sourcesRoots source roots
+     * @param mainClass main class name
+     * @return 0 if the main class is set and is valid
+     *        -1 if the main class is not set
+     *        -2 if the main class is set but is not valid
+     */
+    private int isSetMainClass (FileObject[] sourcesRoots, String mainClass) {
 
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
+            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue () ? 0 : -2;
         }
 
         if (mainClass == null || mainClass.length () == 0) {
-            return false;
+            return -1;
         }
         
         // bugfix #51255, ClassPath.EXECUTE doesn't contain classes which 
         // will be created later during invoke 'run' target
         // first check sources
         if (J2SEProjectUtil.isMainClass (mainClass, sourcesRoots)) {
-            return true;
+            return 0;
         }
 
         // check also EXECUTE classpath
@@ -473,7 +483,7 @@ class J2SEActionProvider implements ActionProvider {
         mainClass = mainClass.replace ('.','/') + ".class"; // XXX // NOI18N
         FileObject mainFO = classPath.findResource (mainClass); // NOI18N
 
-        return canBeRun (mainFO);
+        return canBeRun (mainFO) ? 0 : -2;
     }
     
     /** Checks if given file object contains the main method.
@@ -509,14 +519,36 @@ class J2SEActionProvider implements ActionProvider {
     }
 
 
-    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {
+    /**
+     * Asks user for name of main class
+     * @param mainClass current main class
+     * @param projectName the name of project
+     * @param ep EditableProperties
+     * @param messgeType type of dialog -1 when the main class is not set, -2 when the main class in not valid
+     * @return true if user selected main class
+     */
+    private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep, int messageType) {
         boolean canceled;
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         
         // main class goes wrong => warning
-        final MainClassWarning panel = new MainClassWarning (ProjectUtils.getInformation(project).getDisplayName(),
-            project.getSourceRoots().getRoots());
-
+        String message;
+        switch (messageType) {
+            case -1:
+                message = MessageFormat.format (NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassNotFound"), new Object[] {
+                    projectName
+                });
+                break;
+            case -2:
+                message = MessageFormat.format (NbBundle.getMessage(MainClassWarning.class,"LBL_MainClassWrong"), new Object[] {
+                    mainClass,
+                    projectName
+                });
+                break;
+            default:
+                throw new IllegalArgumentException ();
+        }
+        final MainClassWarning panel = new MainClassWarning (message,project.getSourceRoots().getRoots());
         Object[] options = new Object[] {
             okButton,
             DialogDescriptor.CANCEL_OPTION

@@ -23,14 +23,14 @@ import org.openide.filesystems.FileObject;
  * @author  Jiri Rechtacek
  */
 public class MainClassWarning extends JPanel {
-    
-    private String projectName;
+   
+    private String message;
     private FileObject[] sourcesRoots;
 
     /** Creates new form LibrariesChooser */
-    public MainClassWarning (String projectName, FileObject[] sourcesRoots) {
+    public MainClassWarning (String message, FileObject[] sourcesRoots) {
         this.sourcesRoots = sourcesRoots;
-        this.projectName = projectName;
+        this.message = message;
         initComponents();
         // add MainClassChooser
     }
@@ -66,7 +66,7 @@ public class MainClassWarning extends JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(MainClassWarning.class).getString("AD_MainClassWarning"));
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(MainClassWarning.class, "LBL_MainClassNotFound", new Object[] {projectName}));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, this.message);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
