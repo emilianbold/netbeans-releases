@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -180,17 +180,27 @@ public class OptionsAction extends CallableSystemAction {
             // this check prevents mixed help ids on more selected nodes
             if (!defaultHelp.equals (help)) {
                 // try if selected node isn't template
-                Node n = getExplorerManager ().getSelectedNodes ()[0];
-                Node parent = n.getParentNode ();
-                if (parent != null && TEMPLATES_DISPLAY_NAME.equals (parent.getDisplayName ())) {
+                Node node = getExplorerManager ().getSelectedNodes ()[0];
+                DataObject dataObj = (DataObject)node.getCookie (DataObject.class);
+                if (dataObj != null) {
+                    Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
+                    if (o != null) {
+                        return new HelpCtx (o.toString ());
+                    }
+                }
+                // next bugfix #23551, children have same helpId as parent if no specific is declared
+                while (node != null && !TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
                     // it's template, return specific help id
-                    DataObject dataObj = (DataObject)n.getCookie (DataObject.class);
+                    dataObj = (DataObject)node.getCookie (DataObject.class);
                     if (dataObj != null) {
                         Object o = dataObj.getPrimaryFile ().getAttribute ("helpID"); // NOI18N
                         if (o != null) {
                             return new HelpCtx (o.toString ());
                         }
                     }
+                    node = node.getParentNode ();
+                }
+                if (TEMPLATES_DISPLAY_NAME.equals (node.getDisplayName ())) {
                     return new HelpCtx ("org.netbeans.core.actions.OptionsAction$TemplatesSubnode"); // NOI18N
                 }
             }
