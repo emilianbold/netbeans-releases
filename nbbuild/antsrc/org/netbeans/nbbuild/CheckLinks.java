@@ -30,10 +30,12 @@ import org.apache.tools.ant.types.Mapper;
 // [PENDING] would be nice to have line numbers reported in output;
 // not clear what the best way to do that is without introducing
 // overhead; maybe wrapper InputStream that counts lines?
-// [PENDING] checking external links needs to go thru HTTP proxy somehow
+// XXX in Ant 1.6, permit <xmlcatalog> entries to make checking of "external" links
+// work better in the case of cross-links between APIs
 
 /** Task to check for broken links in HTML.
  * Note that this is a matching task and you must give it a list of things to match.
+ * The Java VM's configured HTTP proxy will be used (${http.proxyHost} and ${http.proxyPort}).
  * @author Jesse Glick
  */
 public class CheckLinks extends MatchingTask {
