@@ -20,6 +20,7 @@ import java.util.Properties;
 import org.xml.sax.SAXException;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 
 import org.netbeans.spi.settings.Convertor;
 import org.netbeans.spi.settings.Saver;
@@ -44,7 +45,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
      * </code>
      */
     public final static String EA_IGNORE_CHANGES = "xmlproperties.ignoreChanges"; //NOI18N
-    private org.openide.filesystems.FileObject providerFO;
+    private FileObject providerFO;
     /** cached property names to be filtered */
     private java.util.Set ignoreProperites;
     
@@ -68,10 +69,15 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     public void write(java.io.Writer w, Object inst) throws IOException {
         w.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"); // NOI18N
         w.write("<!DOCTYPE properties PUBLIC \""); // NOI18N
-        Object publicId = providerFO.getAttribute(Env.EA_PUBLICID);
+        
+        FileObject foEntity = Env.findEntityRegistration(providerFO);
+        if (foEntity == null) foEntity = providerFO;
+        Object publicId = foEntity.getAttribute(Env.EA_PUBLICID);
         if (publicId == null || !(publicId instanceof String)) {
-            throw new IOException("missing or invalid ea attribute: " + Env.EA_PUBLICID); //NOI18N
+            throw new IOException("missing or invalid attribute: " + //NOI18N
+                Env.EA_PUBLICID + ", provider: " + foEntity); //NOI18N
         }
+        
         w.write((String) publicId);
         w.write("\" \"http://www.netbeans.org/dtds/properties-1_0.dtd\">\n"); // NOI18N
         w.write("<properties>\n"); // NOI18N

@@ -16,6 +16,8 @@ package org.netbeans.modules.settings;
 import java.io.IOException;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.Environment;
 import org.openide.util.Lookup;
@@ -100,7 +102,7 @@ public final class Env implements Environment.Provider {
     public static FileObject findProvider(Class clazz) throws IOException {
         String prefix = "xml/memory/"; //NOI18N
         String name = clazz.getName().replace('.', '/');
-        org.openide.filesystems.FileSystem sfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
+        FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
         FileObject memContext = sfs.findResource(prefix);
         if (memContext == null) throw new java.io.FileNotFoundException("SFS/xml/memory/"); //NOI18N
         
@@ -116,4 +118,18 @@ public final class Env implements Environment.Provider {
         return null;
     }
     
+    private static String xmlLookupsPrefix = "xml/lookups"; // NOI18N
+    private static String xmlEntitiesPrefix = "xml/entities"; // NOI18N
+    
+    /** find an entity registration according to passed provider
+     * @param provider provider file object
+     * @return entity file object
+     */
+    public static FileObject findEntityRegistration(FileObject provider) {
+        String filename = provider.getPackageName('/');
+        String resource = xmlEntitiesPrefix +
+            filename.substring(xmlLookupsPrefix.length(), filename.length());
+        
+        return Repository.getDefault().getDefaultFileSystem().findResource(resource);
+    }
 }

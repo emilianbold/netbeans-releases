@@ -445,7 +445,7 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
         private boolean ignoreChange(PropertyChangeEvent pce) {
             // undocumented workaround used in 3.3; since 3.4 convertors make
             // possible to customize the setting change notification filtering 
-            if (Boolean.FALSE.equals(pce.getPropagationId())) return true;
+            if (pce != null && Boolean.FALSE.equals(pce.getPropagationId())) return true;
             
             if (knownToBeTemplate == null) knownToBeTemplate = getDataObject().isTemplate() ? Boolean.TRUE : Boolean.FALSE;
             return knownToBeTemplate.booleanValue();
@@ -467,10 +467,12 @@ public final class SerialDataConvertor implements PropertyChangeListener, FileSy
             try {
                 FileObject newProviderFO = Env.findProvider(inst.getClass());
                 if (newProviderFO != null) {
-                    Object attrb = newProviderFO.getAttribute(Env.EA_PUBLICID);
+                    FileObject foEntity = Env.findEntityRegistration(newProviderFO);
+                    if (foEntity == null) foEntity = newProviderFO;
+                    Object attrb = foEntity.getAttribute(Env.EA_PUBLICID);
                     if (attrb == null || !(attrb instanceof String)) {
-                        throw new IOException("wrong attribute: " + //NOI18N
-                            Env.EA_PUBLICID + ", provider: " + newProviderFO); //NOI18N
+                        throw new IOException("missing or invalid attribute: " + //NOI18N
+                            Env.EA_PUBLICID + ", provider: " + foEntity); //NOI18N
                     }
                     if (XMLSettingsSupport.INSTANCE_DTD_ID.equals(attrb)) {
                         convertor = null;

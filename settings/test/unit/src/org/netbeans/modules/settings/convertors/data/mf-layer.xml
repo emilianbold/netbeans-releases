@@ -25,7 +25,9 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans_org_netbeans_modules_settings_xtest">
-                <file name="DTD_XML_FooSetting_1_0" url="org/netbeans/modules/settings/resources/properties-1_0.dtd"/>
+                <file name="DTD_XML_FooSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 1.0//EN"/>
+                </file>
             </folder>
         </folder>
         <folder name="lookups">
@@ -36,7 +38,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.convertors.XMLPropertiesConvertor.create"/>
                     <attr name="settings.instanceClass" stringvalue="org.netbeans.modules.settings.convertors.FooSetting"/>
                     <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.settings.convertors.FooSetting"/>
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.xtest//DTD XML FooSetting 1.0//EN"/>
                 </file>
             </folder>
         </folder>

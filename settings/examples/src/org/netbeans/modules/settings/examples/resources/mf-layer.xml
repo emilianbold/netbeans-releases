@@ -53,8 +53,12 @@ SystemFileSystem]]>
     <folder name="xml">
         <folder name="entities">
             <folder name="NetBeans_org_netbeans_modules_settings_examples">
-                <file name="DTD_XML_ProxySettings_1_0" url="org/netbeans/modules/settings/resources/properties-1_0.dtd"/>
-                <file name="DTD_XML_JavaCompilerSetting_1_0" url="org/netbeans/modules/settings/resources/properties-1_0.dtd"/>
+                <file name="DTD_XML_ProxySettings_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.examples//DTD XML ProxySettings 1.0//EN"/>
+                </file>
+                <file name="DTD_XML_JavaCompilerSetting_1_0" url="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd">
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.examples//DTD XML JavaCompilerSetting 1.0//EN"/>
+                </file>
             </folder>
         </folder>
         <folder name="lookups">
@@ -66,14 +70,12 @@ SystemFileSystem]]>
                     <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.settings.examples.ProxySettings"/>
                     <attr name="xmlproperties.ignoreChanges" stringvalue="proxyPort"/>
                     <attr name="xmlproperties.preventStoring" boolvalue="true"/>
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.examples//DTD XML ProxySettings 1.0//EN"/>
                 </file>
                 <file name="DTD_XML_JavaCompilerSetting_1_0.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.api.settings.Factory.create"/>
                     <attr name="settings.convertor" methodvalue="org.netbeans.api.settings.Factory.properties"/>
                     <attr name="settings.instanceClass" stringvalue="org.netbeans.modules.settings.examples.JavaCompilerSetting"/>
                     <attr name="settings.instanceOf" stringvalue="org.netbeans.modules.settings.examples.JavaCompilerSetting"/>
-                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans org.netbeans.modules.settings.examples//DTD XML JavaCompilerSetting 1.0//EN"/>
                 </file>
             </folder>
         </folder>

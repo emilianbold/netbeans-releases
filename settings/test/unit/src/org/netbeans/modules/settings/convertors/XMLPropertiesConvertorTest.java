@@ -63,7 +63,8 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
     }
     
     public void testReadWrite() throws Exception {
-        FileObject dtdFO = fs.findResource("/xml/lookups/NetBeans_org_netbeans_modules_settings/DTD_XML_FooSetting_1_0.instance");
+        FileObject dtdFO = Repository.getDefault().getDefaultFileSystem().
+            findResource("/xml/lookups/NetBeans_org_netbeans_modules_settings_xtest/DTD_XML_FooSetting_1_0.instance");
         assertNotNull("Provider not found", dtdFO);
         Convertor c = XMLPropertiesConvertor.create(dtdFO);
         FooSetting foo = new FooSetting();

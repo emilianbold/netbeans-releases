@@ -280,7 +280,6 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DTD_Session_settings_1_0.instance">
                   <attr name="instanceCreate" methodvalue="org.netbeans.core.projects.SerialDataConvertor$Provider.create"/>
                   <attr name="settings.convertor" methodvalue="org.netbeans.core.projects.SerialDataConvertor.createWriter"/>
-                  <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Session settings 1.0//EN"/>
                 </file>
             </folder>
     	</folder>

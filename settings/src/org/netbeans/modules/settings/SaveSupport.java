@@ -101,9 +101,12 @@ final class SaveSupport {
     
     /** get publicid of the file fo */
     private String getPublicID(FileObject fo) throws IOException {
-        Object publicId = fo.getAttribute(Env.EA_PUBLICID);
+        FileObject foEntity = Env.findEntityRegistration(fo);
+        if (foEntity == null) foEntity = fo;
+        Object publicId = foEntity.getAttribute(Env.EA_PUBLICID);
         if (publicId == null || !(publicId instanceof String)) {
-            throw new IOException("wrong attribute: " + Env.EA_PUBLICID + ", provider: " + fo); //NOI18N
+            throw new IOException("missing or invalid attribute: " + //NOI18N
+                Env.EA_PUBLICID + ", provider: " + foEntity); //NOI18N
         }
         return (String) publicId;
     }
