@@ -32,6 +32,7 @@ import javax.swing.event.ChangeEvent;
 
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.SourceRoots;
 
 /**
  * Finds sources corresponding to binaries in a J2SE project.
@@ -41,11 +42,15 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
 
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
     private Map/*<URL,SourceForBinaryQuery.Result>*/  cache = new HashMap ();
 
-    public CompiledSourceForBinaryQuery(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public CompiledSourceForBinaryQuery(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
         this.helper = helper;
         this.evaluator = evaluator;
+        this.sourceRoots = srcRoots;
+        this.testRoots = testRoots;
     }
 
     public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
@@ -57,21 +62,21 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         if (res != null) {
             return res;
         }
-        String srcPropName = null;
+        SourceRoots src = null;
         if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
-            srcPropName = "src.dir";                        //NOI18N
+            src = this.sourceRoots;
         }
         else if (hasSources (binaryRoot,"dist.jar")) {      //NOI18N
-            srcPropName = "src.dir";                        //NOI18N
+            src = this.sourceRoots;
         }
         else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
-            srcPropName = "test.src.dir";                               //NOI18N
+            src = this.testRoots;
         }
-        if (srcPropName == null) {
+        if (src == null) {
             return null;
         }
         else {
-            res = new Result (this.helper, this.evaluator, srcPropName);
+            res = new Result (src);
             cache.put (binaryRoot, res);
             return res;
         }
@@ -101,37 +106,16 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
     
     private static class Result implements SourceForBinaryQuery.Result, PropertyChangeListener {
 
-        private FileObject[] cache;
-        private AntProjectHelper helper;
-        private PropertyEvaluator evaluator;
-        private String propName;
         private ArrayList listeners;
+        private SourceRoots sourceRoots;
 
-        public Result (AntProjectHelper helper, PropertyEvaluator evaluator, String propName) {
-            this.helper = helper;
-            this.evaluator = evaluator;
-            this.propName = propName;
-            this.evaluator.addPropertyChangeListener(this);
+        public Result (SourceRoots sourceRoots) {
+            this.sourceRoots = sourceRoots;
+            this.sourceRoots.addPropertyChangeListener(this);
         }
         
         public synchronized FileObject[] getRoots () {
-            if (this.cache == null) {
-                String srcDir = this.evaluator.getProperty(this.propName);
-                FileObject srcFile = null;
-                if (srcDir != null) {
-                    srcFile = this.helper.resolveFileObject(srcDir);
-                    if (srcFile != null) {
-                        if (!srcFile.isValid()) {
-                            srcFile = null;
-                        }
-                        else if (FileUtil.isArchiveFile(srcFile)) {
-                            srcFile = FileUtil.getArchiveRoot (srcFile);
-                        }
-                    }
-                }               
-                this.cache = (srcFile == null ? new FileObject[0] : new FileObject[] {srcFile});
-            }
-            return this.cache;
+            return this.sourceRoots.getRoots(); //No need to cache it, SourceRoots does
         }
         
         public synchronized void addChangeListener (ChangeListener l) {
@@ -149,15 +133,10 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (propName.equals(evt.getPropertyName())) {
-                synchronized(this) {
-                    this.cache = null;
-                }
+            if (SourceRoots.PROP_ROOTS.equals(evt.getPropertyName())) {
                 this.fireChange ();
             }
         }
-
-
 
         private void fireChange() {
             Iterator it;

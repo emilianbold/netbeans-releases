@@ -37,21 +37,6 @@ import org.openide.filesystems.FileObject;
 public class J2SEProjectUtil {
     private J2SEProjectUtil () {}
     
-    /** Returns the J2SEProject sources directory.
-     *
-     * @param p project
-     * @return source directory or null if directory not set or if the project 
-     * doesn't provide AntProjectHelper
-     */    
-    public static FileObject getProjectSourceDirectory(Project p) {
-        J2SEProject j2seprj = (J2SEProject) p.getLookup().lookup(J2SEProject.class);
-        if (j2seprj != null) {
-            return j2seprj.getSourceDirectory();
-        } else {
-            return null;
-        }
-    }
-    
     /**
      * Returns the property value evaluated by J2SEProject's PropertyEvaluator.
      *
@@ -97,19 +82,29 @@ public class J2SEProjectUtil {
         } finally {
             JavaMetamodel.getDefaultRepository ().endTrans ();
         }
-        
         return has;
+    }
+
+    /** Returns list of FQN of classes contains the main method.
+     * 
+     * @param roots the classpath roots of source to start find
+     * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
+     */
+    public static List/*String*/ getMainClasses (FileObject[] roots) {
+        List result = new ArrayList ();
+        for (int i=0; i<roots.length; i++) {
+            getMainClasses(roots[i], result);
+        }
+        return result;
     }
     
     /** Returns list of FQN of classes contains the main method.
      * 
      * @param root the root of source to start find
-     * @return list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
+     * @param addInto list of names of classes, e.g, [sample.project1.Hello, sample.project.app.MainApp]
      */
-    public static List/*<String>*/ getMainClasses (FileObject root) {
+    private static void getMainClasses (FileObject root, List/*<String>*/ addInto) {
         JavaMetamodel.getDefaultRepository ().beginTrans (false);
-        List/*<String>*/ classes = new ArrayList ();
-
         try {
             JavaModelPackage mofPackage = JavaMetamodel.getManager().getJavaExtent(root);
             ClassIndex index = ClassIndex.getIndex (mofPackage);
@@ -119,7 +114,7 @@ public class J2SEProjectUtil {
 
             if (arr == null) {
                 // no main classes
-                return classes;
+                return;
             }
 
             for (int i = 0; i < arr.length; i++) {
@@ -129,31 +124,30 @@ public class J2SEProjectUtil {
                     FileObject fo = ((JMManager)JMManager.getManager ()).getFileObject (res);
                     assert fo != null : "FileObject found for the resource " + res;
                     if (res.getPackageName ().length () > 0) {
-                        classes.add (res.getPackageName () + '.' + fo.getName ());
+                        addInto.add (res.getPackageName () + '.' + fo.getName ());
                     } else {
-                        classes.add (fo.getName ());
+                        addInto.add (fo.getName ());
                     }
                 }
             }
         } finally {
             JavaMetamodel.getDefaultRepository ().endTrans (false);
-        }
-        
-        return classes;
+        }        
     }
     
     /** Returns if the given class name exists under the sources root and
      * it's a main class.
      * 
      * @param className FQN of class
-     * @param root root of sources
+     * @param roots roots of sources
      * @return true if the class name exists and it's a main class
      */
-    public static boolean isMainClass(String className, FileObject root) {
+    public static boolean isMainClass(String className, FileObject[] roots) {
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
+        //XXX, should use the classpath created from roots
         
         JavaMetamodel.getDefaultRepository ().beginTrans (false);
         boolean isMain = false;

@@ -41,23 +41,23 @@ public class MainClassChooser extends JPanel {
     private List/*<String>*/ possibleMainClasses;
             
     /** Creates new form MainClassChooser */
-    public MainClassChooser (FileObject sourcesRoot) {
-        this (sourcesRoot, null);
+    public MainClassChooser (FileObject[] sourcesRoots) {
+        this (sourcesRoots, null);
     }
 
-    public MainClassChooser (FileObject sourcesRoot, String subtitle) {
+    public MainClassChooser (FileObject[] sourcesRoots, String subtitle) {
         dialogSubtitle = subtitle;
         initComponents();
-        initClassesView (sourcesRoot);
+        initClassesView (sourcesRoots);
     }
     
-    private void initClassesView (final FileObject sourcesRoot) {
+    private void initClassesView (final FileObject[] sourcesRoots) {
         possibleMainClasses = null;
         jMainClassList.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
         jMainClassList.setListData (getWarmupList ());
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoot);
+                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoots);
                 if (possibleMainClasses.isEmpty ()) {
                     jMainClassList.setListData (new String[] { NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE") } ); // NOI18N
                 } else {

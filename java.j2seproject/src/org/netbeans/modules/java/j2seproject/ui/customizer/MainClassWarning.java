@@ -25,11 +25,11 @@ import org.openide.filesystems.FileObject;
 public class MainClassWarning extends JPanel {
     
     private String projectName;
-    private FileObject sourcesRoot;
+    private FileObject[] sourcesRoots;
 
     /** Creates new form LibrariesChooser */
-    public MainClassWarning (String projectName, FileObject sourcesRoot) {
-        this.sourcesRoot = sourcesRoot;
+    public MainClassWarning (String projectName, FileObject[] sourcesRoots) {
+        this.sourcesRoots = sourcesRoots;
         this.projectName = projectName;
         initComponents();
         // add MainClassChooser
@@ -61,7 +61,7 @@ public class MainClassWarning extends JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel1 = new MainClassChooser (sourcesRoot, org.openide.util.NbBundle.getBundle(MainClassWarning.class).getString("CTL_SelectAvaialableMainClasses"));
+        jPanel1 = new MainClassChooser (sourcesRoots, org.openide.util.NbBundle.getBundle(MainClassWarning.class).getString("CTL_SelectAvaialableMainClasses"));
 
         setLayout(new java.awt.GridBagLayout());
 

@@ -21,8 +21,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -49,7 +49,6 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -58,39 +57,58 @@ import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
+import org.w3c.dom.Comment;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Represents one plain J2SE project.
  * @author Jesse Glick, et al.
  */
-final class J2SEProject implements Project, AntProjectListener {
+public final class J2SEProject implements Project, AntProjectListener {
     
     private static final Icon J2SE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.gif")); // NOI18N
-        
+
+    private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private MainClassUpdater mainClassUpdater;
+    private SourceRoots sourceRoots;
+    private SourceRoots testRoots;
 
     J2SEProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
         eval = createEvaluator();
-        AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
+        aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         genFilesHelper = new GeneratedFilesHelper(helper);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
+        ProjectManager.mutex().postWriteRequest(
+                new Runnable () {
+                    public void run() {
+                        try {
+                            updateProjectXML ();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        }
+                    }
+                }
+        );
     }
 
+    /**
+     * Returns the project directory
+     * @return the directory the project is located in
+     */
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -118,24 +136,6 @@ final class J2SEProject implements Project, AntProjectListener {
 
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
-        FileBuiltQueryImplementation fileBuilt = helper.createGlobFileBuiltQuery(evaluator(), new String[] {
-            "${" + J2SEProjectProperties.SRC_DIR + "}/*.java", // NOI18N
-            "${" + J2SEProjectProperties.TEST_SRC_DIR + "}/*.java", // NOI18N
-        }, new String[] {
-            "${" + J2SEProjectProperties.BUILD_CLASSES_DIR + "}/*.class", // NOI18N
-            "${" + J2SEProjectProperties.BUILD_TEST_CLASSES_DIR + "}/*.class", // NOI18N
-        });
-        final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
-        sourcesHelper.addPrincipalSourceRoot("${" + J2SEProjectProperties.SRC_DIR + "}", NbBundle.getMessage(J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
-        sourcesHelper.addPrincipalSourceRoot("${" + J2SEProjectProperties.TEST_SRC_DIR + "}", NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
-        // XXX add build dir too?
-        sourcesHelper.addTypedSourceRoot("${" + J2SEProjectProperties.SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2SEProject.class, "NAME_src.dir"), /*XXX*/null, null);
-        sourcesHelper.addTypedSourceRoot("${" + J2SEProjectProperties.TEST_SRC_DIR + "}", JavaProjectConstants.SOURCES_TYPE_JAVA, NbBundle.getMessage(J2SEProject.class, "NAME_test.src.dir"), /*XXX*/null, null);
-        ProjectManager.mutex().postWriteRequest(new Runnable() {
-            public void run() {
-                sourcesHelper.registerExternalRoots(FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            }
-        });
         return Lookups.fixed(new Object[] {
             new Info(),
             aux,
@@ -144,15 +144,15 @@ final class J2SEProject implements Project, AntProjectListener {
             new J2SEActionProvider( this, helper ),
             new J2SEPhysicalViewProvider(this, helper, evaluator(), spp, refHelper),
             new J2SECustomizerProvider(this, helper, evaluator(), refHelper),
-            new ClassPathProviderImpl(helper, evaluator()),
-            new CompiledSourceForBinaryQuery(helper, evaluator()),
+            new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
+            new CompiledSourceForBinaryQuery(helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             new JavadocForBinaryQueryImpl(helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             new ProjectOpenedHookImpl(),
-            new UnitTestForSourceQueryImpl(helper, evaluator()),
+            new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
             new SourceLevelQueryImpl(helper, evaluator()),
-            sourcesHelper.createSources(),
+            new J2SESources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             helper.createSharabilityQuery(evaluator(), new String[] {
                 "${" + J2SEProjectProperties.SRC_DIR + "}", // NOI18N
                 "${" + J2SEProjectProperties.TEST_SRC_DIR + "}", // NOI18N
@@ -160,7 +160,7 @@ final class J2SEProject implements Project, AntProjectListener {
                 "${" + J2SEProjectProperties.DIST_DIR + "}", // NOI18N
                 "${" + J2SEProjectProperties.BUILD_DIR + "}", // NOI18N
             }),
-            fileBuilt,
+            new J2SEFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             new RecommendedTemplatesImpl (helper),
             new J2SEProjectClassPathExtender(this, helper, eval,refHelper),
             this, // never cast an externally obtained Project to J2SEProject - use lookup instead
@@ -181,21 +181,23 @@ final class J2SEProject implements Project, AntProjectListener {
     }
     
     // Package private methods -------------------------------------------------
-    
-    FileObject getSourceDirectory() {
-        String srcDir = evaluator().getProperty(J2SEProjectProperties.SRC_DIR);
-        if (srcDir == null) {
-            return null;
+
+    /**
+     * Returns the source roots of this project
+     * @return project's source roots
+     */
+    public synchronized SourceRoots getSourceRoots() {
+        if (this.sourceRoots == null) {
+            this.sourceRoots = new SourceRoots(this.helper, evaluator(),"source-roots"); //NOI18N
         }
-        return helper.resolveFileObject(srcDir);
+        return this.sourceRoots;
     }
     
-    FileObject getTestSourceDirectory() {
-        String testSrcDir = evaluator().getProperty(J2SEProjectProperties.TEST_SRC_DIR);
-        if (testSrcDir == null) {
-            return null;
+    synchronized SourceRoots getTestSourceRoots() {
+        if (this.testRoots == null) {
+            this.testRoots = new SourceRoots(this.helper, evaluator(),"test-roots"); //NOI18N
         }
-        return helper.resolveFileObject(testSrcDir);
+        return this.testRoots;
     }
     
     File getTestClassesDirectory() {
@@ -232,7 +234,56 @@ final class J2SEProject implements Project, AntProjectListener {
         });
     }
      */
-    
+
+    private void updateProjectXML () throws IOException {
+        Element element = aux.getConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true);    //NOI18N
+        if (element != null) {
+            Document doc = element.getOwnerDocument();
+            Element newRoot = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"data"); //NOI18N
+            copyDocument (doc, element, newRoot);
+            Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+            Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","src.dir");   //NOI18N
+            sourceRoots.appendChild(root);
+            newRoot.appendChild (sourceRoots);
+            Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+            root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+            root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","test.src.dir");   //NOI18N
+            testRoots.appendChild (root);
+            newRoot.appendChild (testRoots);
+            helper.putPrimaryConfigurationData (newRoot, true);
+            ProjectManager.getDefault().saveProject(this);
+        }
+    }
+
+    private static void copyDocument (Document doc, Element from, Element to) {
+        NodeList nl = from.getChildNodes();
+        int length = nl.getLength();
+        for (int i=0; i< length; i++) {
+            Node node = nl.item (i);
+            Node newNode = null;
+            switch (node.getNodeType()) {
+                case Node.ELEMENT_NODE:
+                    Element oldElement = (Element) node;
+                    newNode = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,oldElement.getTagName());
+                    copyDocument(doc,oldElement,(Element)newNode);
+                    break;
+                case Node.TEXT_NODE:
+                    Text oldText = (Text) node;
+                    newNode = doc.createTextNode(oldText.getData());
+                    break;
+                case Node.COMMENT_NODE:
+                    Comment oldComment = (Comment) node;
+                    newNode = doc.createComment(oldComment.getData());
+                    break;
+            }
+            if (newNode != null) {
+                to.appendChild (newNode);
+            }
+        }
+    }
+
+
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -371,7 +422,7 @@ final class J2SEProject implements Project, AntProjectListener {
         }
         
     }
-    
+
     /**
      * Exports the main JAR as an official build product for use from other scripts.
      * The type of the artifact will be {@link AntArtifact#TYPE_JAR}.
@@ -450,5 +501,5 @@ final class J2SEProject implements Project, AntProjectListener {
         }
         
     }
-    
+
 }

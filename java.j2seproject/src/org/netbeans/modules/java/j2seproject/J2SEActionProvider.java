@@ -15,13 +15,8 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -31,7 +26,6 @@ import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassWarning;
 import org.netbeans.spi.project.ActionProvider;
@@ -53,7 +47,6 @@ import org.openide.src.ClassElement;
 import org.openide.src.SourceElement;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
 import org.openide.filesystems.FileStateInvalidException;
 import java.net.URL;
@@ -152,14 +145,16 @@ class J2SEActionProvider implements ActionProvider {
     /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         String[] targetNames = new String[0];
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            FileObject[] files = findSourcesAndPackages( context, project.getSourceDirectory());
+            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
+            FileObject[] files = findSourcesAndPackages( context, sourceRoots);
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getSourceDirectory())); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]))); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
             } 
             else {
-                files = findSourcesAndPackages(context, project.getTestSourceDirectory());
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
+                files = findSourcesAndPackages(context, testRoots);
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]))); // NOI18N
                 targetNames = new String[] {"compile-test-single"}; // NOI18N
             }
         } 
@@ -175,11 +170,11 @@ class J2SEActionProvider implements ActionProvider {
             FileObject[] files = findSources( context );
             String path = null;
             if (files != null) {
-                path = FileUtil.getRelativePath(project.getSourceDirectory(), files[0]);
+                path = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix"}; // NOI18N
             } else {
                 files = findTestSources(context, false);
-                path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
+                path = FileUtil.getRelativePath(getRoot(project.getTestSourceRoots().getRoots(),files[0]), files[0]);
                 targetNames = new String[] {"debug-fix-test"}; // NOI18N
             }
             // Convert foo/FooTest.java -> foo/FooTest
@@ -194,7 +189,7 @@ class J2SEActionProvider implements ActionProvider {
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
             
-            while (!isSetMainClass (J2SEProjectUtil.getProjectSourceDirectory (project), mainClass)) {
+            while (!isSetMainClass (project.getSourceRoots().getRoots(), mainClass)) {
                 // show warning, if cancel then return
                 if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep)) {
                     return null;
@@ -222,7 +217,7 @@ class J2SEActionProvider implements ActionProvider {
                 }
             } else {
                 FileObject file = findSources(context)[0];
-                String clazz = FileUtil.getRelativePath(project.getSourceDirectory(), file);
+                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
                 p.setProperty("javac.includes", clazz); // NOI18N
                 // Convert foo/FooTest.java -> foo.FooTest
                 if (clazz.endsWith(".java")) { // NOI18N
@@ -273,13 +268,17 @@ class J2SEActionProvider implements ActionProvider {
     }
     
     private String[] setupTestSingle(Properties p, FileObject[] files) {
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, project.getTestSourceDirectory())); // NOI18N
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         return new String[] {"test-single"}; // NOI18N
     }
 
     private String[] setupDebugTestSingle(Properties p, FileObject[] files) {
-        String path = FileUtil.getRelativePath(project.getTestSourceDirectory(), files[0]);
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        FileObject root = getRoot(testSrcPath, files[0]);
+        String path = FileUtil.getRelativePath(root, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
         return new String[] {"debug-test"}; // NOI18N
@@ -290,7 +289,8 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-            return findSourcesAndPackages( context, project.getSourceDirectory()) != null || findSourcesAndPackages( context, project.getTestSourceDirectory()) != null;
+            return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
+                    || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
         }
         else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
             return findTestSourcesForSources(context) != null;
@@ -321,16 +321,18 @@ class J2SEActionProvider implements ActionProvider {
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
     
-    /** Find selected sources 
+    /** Find selected sources, the sources has to be under single source root,
+     *  @param context the lookup in which files should be found
      */
     private FileObject[] findSources(Lookup context) {
-        FileObject srcDir = project.getSourceDirectory();
-        if (srcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
-            return files;
-        } else {
-            return null;
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, srcPath[i], ".java", true); // NOI18N
+            if (files != null) {
+                return files;
+            }
         }
+        return null;
     }
 
     private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
@@ -349,23 +351,35 @@ class J2SEActionProvider implements ActionProvider {
             return null;
         }
     }
-
+    
+    private FileObject[] findSourcesAndPackages (Lookup context, FileObject[] srcRoots) {
+        for (int i=0; i<srcRoots.length; i++) {
+            FileObject[] result = findSourcesAndPackages(context, srcRoots[i]);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
     /** Find either selected tests or tests which belong to selected source files
      */
     private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        FileObject testSrcDir = project.getTestSourceDirectory();
-        if (testSrcDir != null) {
-            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcDir, ".java", true); // NOI18N
+        //XXX: Ugly, should be rewritten
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        for (int i=0; i< testSrcPath.length; i++) {
+            FileObject[] files = ActionUtils.findSelectedFiles(context, testSrcPath[i], ".java", true); // NOI18N
             if (files != null) {
                 return files;
             }
         }
-        if (checkInSrcDir && testSrcDir != null) {
-            FileObject srcDir = project.getSourceDirectory();
-            if (srcDir != null) {
-                FileObject[] files = ActionUtils.findSelectedFiles(context, srcDir, ".java", true); // NOI18N
-                if (files != null) {
-                    FileObject[] files2 = ActionUtils.regexpMapFiles(files, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
+        if (checkInSrcDir && testSrcPath.length>0) {
+            FileObject[] files = findSources (context);
+            if (files != null) {
+                //Try to find the test under the test roots
+                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
+                for (int i=0; i<testSrcPath.length; i++) {
+                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
                     if (files2 != null) {
                         return files2;
                     }
@@ -383,30 +397,49 @@ class J2SEActionProvider implements ActionProvider {
         if (sourceFiles == null) {
             return null;
         }
-        FileObject testSrcDir = project.getTestSourceDirectory();
-        if (testSrcDir == null) {
+        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
+        if (testSrcPath.length == 0) {
             return null;
         }
-        FileObject srcDir = project.getSourceDirectory();
-        return ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBST, true);
-    }    
+        FileObject[] srcPath = project.getSourceRoots().getRoots();
+        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
+        for (int i=0; i<testSrcPath.length; i++) {
+            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
+            if (files2 != null) {
+                return files2;
+            }
+        }
+        return null;
+    }      
     
-    private boolean isSetMainClass (FileObject sourcesRoot, String mainClass) {
-        
+    private FileObject getRoot (FileObject[] roots, FileObject file) {
+        FileObject srcDir = null;
+        for (int i=0; i< roots.length; i++) {
+            if (FileUtil.isParentOf(roots[i],file)) {
+                srcDir = roots[i];
+                break;
+            }
+        }
+        return srcDir;
+    }
+    
+
+    private boolean isSetMainClass (FileObject[] sourcesRoots, String mainClass) {
+
+
         // support for unit testing
         if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
             return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
         }
-        
-        
+
         if (mainClass == null || mainClass.length () == 0) {
             return false;
         }
-        
+
         // check also EXECUTE classpath
         
         // find mainclass FileObject
-        ClassPath classPath = ClassPath.getClassPath (sourcesRoot, ClassPath.EXECUTE);
+        ClassPath classPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.EXECUTE);  //Single compilation unit
         mainClass = mainClass.replace ('.','/');// NOI18N
         FileObject mainFO = classPath.findResource (mainClass + ".class"); // XXX // NOI18N
 
@@ -451,7 +484,8 @@ class J2SEActionProvider implements ActionProvider {
         final JButton okButton = new JButton (NbBundle.getMessage (MainClassWarning.class, "LBL_MainClassWarning_ChooseMainClass_OK")); // NOI18N
         
         // main class goes wrong => warning
-        final MainClassWarning panel = new MainClassWarning (ProjectUtils.getInformation(project).getDisplayName(), project.getSourceDirectory ());
+        final MainClassWarning panel = new MainClassWarning (ProjectUtils.getInformation(project).getDisplayName(),
+            project.getSourceRoots().getRoots());
 
         Object[] options = new Object[] {
             okButton,

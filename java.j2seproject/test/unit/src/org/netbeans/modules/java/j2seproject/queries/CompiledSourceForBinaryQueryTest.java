@@ -27,6 +27,8 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
+import org.netbeans.modules.java.j2seproject.SourceRootsTest;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
@@ -79,18 +81,13 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     
     private void prepareProject () throws IOException {
         scratch = TestUtil.makeScratchDir(this);
-        projdir = scratch.createFolder("proj");
-        helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
+        projdir = scratch.createFolder("proj");        
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);
-        sources = projdir.createFolder("src");
+        sources = projdir.getFileObject("src");
         FileObject fo = projdir.createFolder("build");
-        buildClasses = fo.createFolder("classes");
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.put ("build.dir","build");
-        props.put ("build.classes.dir","${build.dir}/classes");
-        props.put ("src.dir","src");        
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        buildClasses = fo.createFolder("classes");        
     }
     
     public void testSourceForBinaryQuery() throws Exception {
@@ -121,8 +118,22 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
         assertTrue (tl.wasEvent());
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",sources2,result.getRoots()[0]);
-    }       
-    
+    }
+
+    public void testSourceForBinaryQueryMultipleSourceRoots () throws Exception {
+        this.prepareProject();
+        SourceForBinaryQuery.Result result = SourceForBinaryQuery.findSourceRoots(buildClasses.getURL());
+        assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
+        assertEquals("Project build folder must have source folder",sources,result.getRoots()[0]);
+        TestListener tl = new TestListener ();
+        result.addChangeListener(tl);
+        FileObject newRoot = SourceRootsTest.addSourceRoot(helper,projdir,"src.other.dir","other");
+        assertTrue (tl.wasEvent());
+        assertEquals("Project build folder must have 2 source folders", 2, result.getRoots().length);
+        assertEquals("Project build folder must have the first source folder",sources,result.getRoots()[0]);
+        assertEquals("Project build folder must have the second source folder",newRoot,result.getRoots()[1]);
+    }
+
     private static class TestListener implements ChangeListener {
         
         private boolean gotEvent;

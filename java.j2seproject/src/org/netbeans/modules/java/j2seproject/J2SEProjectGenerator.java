@@ -117,6 +117,18 @@ public class J2SEProjectGenerator {
         Element minant = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
+        Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"source-roots");  //NOI18N
+        Element root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","src.dir");   //NOI18N
+        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_src.dir"));
+        sourceRoots.appendChild(root);
+        data.appendChild (sourceRoots);
+        Element testRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"test-roots");  //NOI18N
+        root = doc.createElementNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"root");   //NOI18N
+        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"id","test.src.dir");   //NOI18N
+        root.setAttributeNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"name",NbBundle.getMessage(J2SEProjectGenerator.class, "NAME_test.src.dir"));
+        testRoots.appendChild (root);
+        data.appendChild (testRoots);
         h.putPrimaryConfigurationData(data, true);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ep.setProperty("dist.dir", "dist"); // NOI18N

@@ -24,6 +24,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
+import org.netbeans.modules.java.j2seproject.SourceRootsTest;
 import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -56,7 +58,8 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
     private ProjectManager pm;
     private FileObject sources;
     private FileObject tests;
-    
+    private AntProjectHelper helper;
+
     Project pp;
     
     protected void setUp() throws Exception {
@@ -68,15 +71,11 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         }, UnitTestForSourceQueryImpl.class.getClassLoader());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        AntProjectHelper helper = ProjectGenerator.createProject(projdir, "org.netbeans.modules.java.j2seproject");
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
+        sources = projdir.getFileObject("src");
+        tests = projdir.getFileObject("test");
         pm = ProjectManager.getDefault();
-        pp = pm.findProject(projdir);
-        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        props.setProperty("src.dir", "src");
-        props.setProperty("test.src.dir", "test");
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-        sources = projdir.createFolder("src");
-        tests = projdir.createFolder("test");
+        pp = pm.findProject(projdir);        
     }
 
     protected void tearDown() throws Exception {
@@ -109,5 +108,14 @@ public class UnitTestForSourceQueryImplTest extends NbTestCase {
         u = UnitTestForSourceQuery.findUnitTest (sources);
         assertEquals (result, u);
     }
-    
+
+    public void testFindUnitTestMultiRoots () throws Exception {
+        FileObject newRoot = SourceRootsTest.addSourceRoot(helper,projdir,"src.other.dir","other");
+        URL[] urls = UnitTestForSourceQuery.findSources(tests);
+        assertNotNull(urls);
+        assertEquals(2,urls.length);
+        assertEquals(sources.getURL(), urls[0]);
+        assertEquals(newRoot.getURL(), urls[1]);
+    }
+
 }

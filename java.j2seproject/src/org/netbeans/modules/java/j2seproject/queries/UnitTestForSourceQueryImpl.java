@@ -18,50 +18,44 @@ import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
-public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation {
+public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
 
-    private final AntProjectHelper helper;
-    private final PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testRoots;
 
-    public UnitTestForSourceQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
-        this.helper = helper;
-        this.evaluator = evaluator;
+    public UnitTestForSourceQueryImpl(SourceRoots sourceRoots, SourceRoots testRoots) {
+        this.sourceRoots = sourceRoots;
+        this.testRoots = testRoots;
     }
 
-    public URL findUnitTest(FileObject source) {
-        return find(source, "src.dir", "test.src.dir"); // NOI18N
+    public URL[] findUnitTests(FileObject source) {
+        return find(source, sourceRoots, testRoots); // NOI18N
+    }
+
+    public URL[] findSources(FileObject unitTest) {
+        return find(unitTest, testRoots, sourceRoots); // NOI18N
     }
     
-    public URL findSource(FileObject unitTest) {
-        return find(unitTest, "test.src.dir", "src.dir"); // NOI18N
-    }
-    
-    private URL find(FileObject file, String from, String to) {
+    private URL[] find(FileObject file, SourceRoots from, SourceRoots to) {
         Project p = FileOwnerQuery.getOwner(file);
         if (p == null) {
             return null;
         }
-        FileObject fromRoot = helper.resolveFileObject(evaluator.getProperty(from));
-        if (!fromRoot.equals(file)) {
-            return null;
-        }
-        String path = helper.resolvePath(evaluator.getProperty(to));
-        try {
-            URL url = helper.resolveFile(path).toURI().normalize().toURL();
-            if (!url.toExternalForm().endsWith("/")) {
-                url = new URL (url.toExternalForm()+'/');
+        FileObject[] fromRoots = from.getRoots();
+        for (int i = 0; i < fromRoots.length; i++) {
+            if (fromRoots[i].equals(file)) {
+                return to.getRootURLs();
             }
-            return url;
-        } catch (MalformedURLException e) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, e.toString());
-            return null;
         }
+        return null;
     }
     
 }

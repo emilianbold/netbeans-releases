@@ -22,6 +22,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -30,22 +31,25 @@ import org.openide.util.WeakListeners;
  * Defines the various class paths for a J2SE project.
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
-    
-    private static final String SRC_DIR = "src.dir"; // NOI18N
-    private static final String TEST_SRC_DIR = "test.src.dir"; // NOI18N
+
     private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
     private static final String DIST_JAR = "dist.jar"; // NOI18N
     private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
     
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
+    private final SourceRoots sourceRoots;
+    private final SourceRoots testSourceRoots;
     private final ClassPath[] cache = new ClassPath[8];
 
     private final Map/*<String,FileObject>*/ dirCache = new HashMap();
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
+                                 SourceRoots testSourceRoots) {
         this.helper = helper;
         this.evaluator = evaluator;
+        this.sourceRoots = sourceRoots;
+        this.testSourceRoots = testSourceRoots;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
@@ -60,13 +64,14 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         }
         return fo;
     }
+
     
-    private FileObject getPrimarySrcDir() {
-        return getDir(SRC_DIR);
+    private FileObject[] getPrimarySrcPath() {
+        return this.sourceRoots.getRoots();
     }
     
-    private FileObject getTestSrcDir() {
-        return getDir(TEST_SRC_DIR);
+    private FileObject[] getTestSrcDir() {
+        return this.testSourceRoots.getRoots();
     }
     
     private FileObject getBuildClassesDir() {
@@ -94,15 +99,21 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      *         </dl>
      */
     private int getType(FileObject file) {
-        FileObject dir = getPrimarySrcDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 0;
+        FileObject[] srcPath = getPrimarySrcPath();
+        for (int i=0; i < srcPath.length; i++) {
+            FileObject root = srcPath[i];
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                return 0;
+            }
+        }        
+        srcPath = getTestSrcDir();
+        for (int i=0; i< srcPath.length; i++) {
+            FileObject root = srcPath[i];
+            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
+                return 1;
+            }
         }
-        dir = getTestSrcDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return 1;
-        }
-        dir = getBuildClassesDir();
+        FileObject dir = getBuildClassesDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return 2;
         }
@@ -182,21 +193,20 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private ClassPath getSourcepath(int type) {
         if (type < 0 || type > 1) {
-            // Unknown.
             return null;
         }
         ClassPath cp = cache[type];
-        if ( cp == null ) {
-            if (type == 0) {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, SRC_DIR, evaluator)); // NOI18N
+        if (cp == null) {
+            switch (type) {
+                case 0:
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots));
+                    break;
+                case 1:
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots));
+                    break;
             }
-            else {
-                cp = ClassPathFactory.createClassPath(
-                new ProjectClassPathImplementation(helper, TEST_SRC_DIR, evaluator)); // NOI18N
-            }
-            cache[type] = cp;
         }
+        cache[type] = cp;
         return cp;
     }
     
@@ -247,7 +257,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
     

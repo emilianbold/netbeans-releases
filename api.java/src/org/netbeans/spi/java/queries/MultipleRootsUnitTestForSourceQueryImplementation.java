@@ -1,23 +1,25 @@
 /*
  *                 Sun Public License Notice
- *
+ * 
  * The contents of this file are subject to the Sun Public License
  * Version 1.0 (the "License"). You may not use this file except in
  * compliance with the License. A copy of the License is available at
  * http://www.sun.com/
- *
+ * 
  * The Original Code is NetBeans. The Initial Developer of the Original
  * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.spi.java.queries;
 
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 
+
+
+
 /**
- * Query to find Java package root of unit tests for Java package root of 
+ * Query to find Java package roots of unit tests for Java package root of
  * sources and vice versa.
  *
  * <p>A default implementation is registered by the
@@ -35,29 +37,27 @@ import org.openide.filesystems.FileObject;
  *
  * @see <a href="@PROJECTS/PROJECTAPI/org/netbeans/api/project/Project.html#getLookup"><code>Project.getLookup()</code></a>
  * @see org.netbeans.api.java.queries.UnitTestForSourceQuery
- * @deprecated Use {@link org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation} class.
- * @author David Konecny
- * @since org.netbeans.api.java/1 1.4
+ * @author Tomas Zezula
  */
-public interface UnitTestForSourceQueryImplementation {
-    
+public interface MultipleRootsUnitTestForSourceQueryImplementation {
+
     /**
-     * Returns the test root for a given source root.
+     * Returns the test roots for a given source root.
      *
      * @param source a Java package root with sources
-     * @return a corresponding Java package root with unit tests. The
-     *     returned URL need not point to an existing folder. It can be null
+     * @return a corresponding Java package roots with unit tests. The
+     *     returned URLs need not point to an existing folder. It can be null
      *     when no mapping from source to unit test is known.
      */
-    URL findUnitTest(FileObject source);
-    
+    public URL[] findUnitTests(FileObject source);
+
     /**
-     * Returns the source root for a given test root.
+     * Returns the source roots for a given test root.
      *
-     * @param unitTest a Java package root with unit tests
-     * @return a corresponding Java package root with sources. It can be null
+     * @param unitTest a Java package roots with unit tests
+     * @return a corresponding Java package roots with sources. It can be null
      *     when no mapping from unit test to source is known.
      */
-    URL findSource(FileObject unitTest);
-    
+    public URL[] findSources(FileObject unitTest);
+
 }

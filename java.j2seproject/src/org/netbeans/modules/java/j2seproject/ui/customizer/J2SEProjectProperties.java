@@ -137,7 +137,7 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( JAVAC_COMPILER_ARG, PROJECT, STRING_PARSER),
         new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( SRC_DIR, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( TEST_SRC_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_DIR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( BUILD_CLASSES_DIR, PROJECT, STRING_PARSER ),

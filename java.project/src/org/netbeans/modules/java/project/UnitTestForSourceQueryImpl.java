@@ -20,6 +20,7 @@ import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation;
+import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 
@@ -27,7 +28,7 @@ import org.openide.filesystems.FileObject;
  * Delegates {@link UnitTestForSourceQueryImplementation} to the project which
  * owns the binary file.
  */
-public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation {
+public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation, MultipleRootsUnitTestForSourceQueryImplementation {
     
     /** Default constructor for lookup. */
     public UnitTestForSourceQueryImpl() {
@@ -45,7 +46,20 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
         }
         return null;
     }
-    
+
+    public URL[] findUnitTests(FileObject source) {
+        Project project = FileOwnerQuery.getOwner(source);
+        if (project != null) {
+            MultipleRootsUnitTestForSourceQueryImplementation query =
+                (MultipleRootsUnitTestForSourceQueryImplementation)project.getLookup().lookup(
+                    MultipleRootsUnitTestForSourceQueryImplementation.class);
+            if (query != null) {
+                return query.findUnitTests(source);
+            }
+        }
+        return null;
+    }
+
     public URL findSource(FileObject unitTest) {
         Project project = FileOwnerQuery.getOwner(unitTest);
         if (project != null) {
@@ -58,5 +72,18 @@ public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImpleme
         }
         return null;
     }
-    
+
+    public URL[] findSources(FileObject unitTest) {
+        Project project = FileOwnerQuery.getOwner(unitTest);
+        if (project != null) {
+            MultipleRootsUnitTestForSourceQueryImplementation query =
+                (MultipleRootsUnitTestForSourceQueryImplementation)project.getLookup().lookup(
+                    MultipleRootsUnitTestForSourceQueryImplementation.class);
+            if (query != null) {
+                return query.findSources(unitTest);
+            }
+        }
+        return null;
+    }
+
 }
