@@ -275,8 +275,8 @@ public class EmptyTestCaseWizardIterator
         FileObject foSource = testDataObj.getPrimaryFile();
         Resource srcRc = JavaModel.getResource(foSource);        
         JavaClass cls = org.netbeans.modules.junit.TestUtil.getMainJavaClass(srcRc);
-        org.netbeans.modules.junit.TestCreator.fillGeneral(cls);
-
+        org.netbeans.modules.junit.TestCreator.createEmptyTest(srcRc, cls);
+        
         return Collections.singleton(testDataObj);
     }
 
