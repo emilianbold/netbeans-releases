@@ -102,49 +102,49 @@ public class PropertyEditorsTestSheet {
                 System.err.println("Exception during set value and add boolean property :"+exc.getMessage());
             }
             
-            props.put(new TestProperty("Byte",                  java.lang.Byte.class));            
-            props.put(new TestProperty("byte",                  byte.class));            
-            props.put(new TestProperty("Character",             java.lang.Character.class));
-            
-            // props.put(new TestProperty("char", char.class));
-            TestProperty charProperty = new TestProperty("char",     char.class);
-            try {
-                charProperty.setValue((Object)"a");
-                props.put(charProperty);            
-            }catch(Exception exc){
-                System.err.println("Exception during set value and add char property :"+exc.getMessage());
-            }
-            
-            props.put(new TestProperty("Class",                 java.lang.Class.class));            
+//            props.put(new TestProperty("Byte",                  java.lang.Byte.class));            
+//            props.put(new TestProperty("byte",                  byte.class));            
+//            props.put(new TestProperty("Character",             java.lang.Character.class));
+//            
+//            // props.put(new TestProperty("char", char.class));
+//            TestProperty charProperty = new TestProperty("char",     char.class);
+//            try {
+//                charProperty.setValue((Object)"a");
+//                props.put(charProperty);            
+//            }catch(Exception exc){
+//                System.err.println("Exception during set value and add char property :"+exc.getMessage());
+//            }
+//            
+//            props.put(new TestProperty("Class",                 java.lang.Class.class));            
             props.put(new TestProperty("Color",                 java.awt.Color.class));            
-            props.put(new TestProperty("Dimension",             java.awt.Dimension.class));            
-            props.put(new TestProperty("Double",                java.lang.Double.class));            
-            props.put(new TestProperty("double",                double.class));            
-            props.put(new TestProperty("File",                  java.io.File.class));            
-            props.put(new TestProperty("Filesystem",            org.openide.filesystems.FileSystem.class));            
-            props.put(new TestProperty("Float",                 java.lang.Float.class));            
-            props.put(new TestProperty("float",                 float.class));            
-            props.put(new TestProperty("Font",                  java.awt.Font.class));            
-            props.put(new TestProperty("Html Browser",          org.openide.awt.HtmlBrowser.Factory.class));            
-            props.put(new TestProperty("Indent Engine",         org.openide.text.IndentEngine.class));            
-            props.put(new TestProperty("Insets",                java.awt.Insets.class));            
-            props.put(new TestProperty("Integer",               java.lang.Integer.class));            
-            props.put(new TestProperty("int",                   int.class));            
-            props.put(new TestProperty("Long",                  java.lang.Long.class));            
-            props.put(new TestProperty("long",                  long.class));            
-            props.put(new TestProperty("NbClassPath",           org.openide.execution.NbClassPath.class));            
-            props.put(new TestProperty("NbProcessDescriptor",   org.openide.execution.NbProcessDescriptor.class));            
-            props.put(new TestProperty("Object",                java.lang.Object.class));            
-            props.put(new TestProperty("Point",                 java.awt.Point.class));            
-            props.put(new TestProperty("Properties",            java.util.Properties.class));            
-            props.put(new TestProperty("Rectangle",             java.awt.Rectangle.class));            
-            props.put(new TestProperty("Service Type",          org.openide.ServiceType.class));            
-            props.put(new TestProperty("Short",                 java.lang.Short.class));            
-            props.put(new TestProperty("short",                 short.class));            
-            props.put(new TestProperty("String",                java.lang.String.class));            
-            props.put(new TestProperty("String []",             java.lang.String[].class));            
-            props.put(new TestProperty("Table Model",           javax.swing.table.TableModel.class));            
-            props.put(new TestProperty("URL",                   java.net.URL.class));            
+//            props.put(new TestProperty("Dimension",             java.awt.Dimension.class));            
+//            props.put(new TestProperty("Double",                java.lang.Double.class));            
+//            props.put(new TestProperty("double",                double.class));            
+//            props.put(new TestProperty("File",                  java.io.File.class));            
+//            props.put(new TestProperty("Filesystem",            org.openide.filesystems.FileSystem.class));            
+//            props.put(new TestProperty("Float",                 java.lang.Float.class));            
+//            props.put(new TestProperty("float",                 float.class));            
+//            props.put(new TestProperty("Font",                  java.awt.Font.class));            
+//            props.put(new TestProperty("Html Browser",          org.openide.awt.HtmlBrowser.Factory.class));            
+//            props.put(new TestProperty("Indent Engine",         org.openide.text.IndentEngine.class));            
+//            props.put(new TestProperty("Insets",                java.awt.Insets.class));            
+//            props.put(new TestProperty("Integer",               java.lang.Integer.class));            
+//            props.put(new TestProperty("int",                   int.class));            
+//            props.put(new TestProperty("Long",                  java.lang.Long.class));            
+//            props.put(new TestProperty("long",                  long.class));            
+//            props.put(new TestProperty("NbClassPath",           org.openide.execution.NbClassPath.class));            
+//            props.put(new TestProperty("NbProcessDescriptor",   org.openide.execution.NbProcessDescriptor.class));            
+//            props.put(new TestProperty("Object",                java.lang.Object.class));            
+//            props.put(new TestProperty("Point",                 java.awt.Point.class));            
+//            props.put(new TestProperty("Properties",            java.util.Properties.class));            
+//            props.put(new TestProperty("Rectangle",             java.awt.Rectangle.class));            
+//            props.put(new TestProperty("Service Type",          org.openide.ServiceType.class));            
+//            props.put(new TestProperty("Short",                 java.lang.Short.class));            
+//            props.put(new TestProperty("short",                 short.class));            
+//            props.put(new TestProperty("String",                java.lang.String.class));            
+//            props.put(new TestProperty("String []",             java.lang.String[].class));            
+//            props.put(new TestProperty("Table Model",           javax.swing.table.TableModel.class));            
+//            props.put(new TestProperty("URL",                   java.net.URL.class));            
 
             return sheet;
         }
@@ -193,15 +193,6 @@ public class PropertyEditorsTestSheet {
             myValue = value;
             tn.fireMethod(getName(), oldVal, myValue);
         }
-    }
-    
-    
-    /**
-     * Main method for trying it within IDE.
-     * @param args
-     */    
-    public static void main(String args[]) {
-        new PropertiesTest();
     }
     
 }

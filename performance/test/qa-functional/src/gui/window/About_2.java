@@ -13,7 +13,11 @@
 
 package gui.window;
 
+import org.netbeans.jellytools.NbDialogOperator;
+
+
 import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 
 /**
  * Test of About dialog.
@@ -21,7 +25,7 @@ import org.netbeans.jemmy.operators.ComponentOperator;
  * @author  mmirilovic@netbeans.org
  */
 public class About_2 extends About {
-    About about;
+    NbDialogOperator about;
     
     /** Creates a new instance of ValidateAbout_2 */
     public About_2(String testName) {
@@ -36,12 +40,12 @@ public class About_2 extends About {
     }
     
     public void prepare(){
-        about = (About)super.open();
+        about = (NbDialogOperator)super.open();
     }
     
     public ComponentOperator open(){
-        about.selectPageDetail();
-        return new org.netbeans.jellytools.NbDialogOperator("About");
+        new JTabbedPaneOperator(about,1).selectPage(2);
+        return new NbDialogOperator("About");
     }
     
 }
