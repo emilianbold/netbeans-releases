@@ -56,7 +56,9 @@ class WelcomeComponent extends TopComponent{
         initAccessibility();
         
         try{
-            panel =(JComponent)Class.forName(NbBundle.getMessage(WelcomeComponent.class,"CLASS_content_panel")).newInstance();
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            panel =(JComponent)Class.forName(NbBundle.getMessage(
+                  WelcomeComponent.class,"CLASS_content_panel"), true, cl).newInstance();
         }catch(Exception e){
             ErrorManager.getDefault().notify(e);
         }
