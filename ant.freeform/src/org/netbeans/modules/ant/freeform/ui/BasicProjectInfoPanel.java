@@ -239,7 +239,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(jLabel1, gridBagConstraints);
 
         jLabel2.setText("Build Script:");
@@ -247,7 +247,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Specify a name and location for the new project.");
@@ -256,7 +256,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 6, 0);
+        gridBagConstraints.insets = new java.awt.Insets(24, 0, 12, 0);
         add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Project Name:");
@@ -272,7 +272,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -280,15 +280,15 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(antScript, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 12);
         add(projectName, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -296,7 +296,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 12);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 12);
         add(projectFolder, gridBagConstraints);
 
         browseAntScript.setText("Browse...");
@@ -309,7 +309,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(browseAntScript, gridBagConstraints);
 
         browseProjectFolder.setText("Browse...");
@@ -322,7 +322,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(browseProjectFolder, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
