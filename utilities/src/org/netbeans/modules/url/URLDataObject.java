@@ -311,8 +311,14 @@ public class URLDataObject extends MultiDataObject implements EditCookie, OpenCo
      * @return <code>URLPresenter</code> instance 
      * @see URLPresenter */
     public Object instanceCreate() throws IOException, ClassNotFoundException {
+        return createURLPresenter();
+    }
+    
+    /** Creates <code>URLPresenter</code> for this object. */
+    URLPresenter createURLPresenter() {
         return new URLPresenter(getNodeDelegate());
     }
+    
 
     /** Presenter which creates actual components on demand. */
     private static class URLPresenter extends Object implements Presenter.Menu, Presenter.Toolbar, Presenter.Popup {
