@@ -139,8 +139,8 @@ public final class BeanInstaller extends Object {
     while (it.hasNext()) {
       String key = (String) it.next();
       String value = ((Attributes) entries.get(key)).getValue("Java-Bean"); // NOI18N
-//System.out.println ("Key: >"+key+"<");
-//System.out.println ("Value: >"+value+"<");
+//System.out.println ("Key: >"+key+"<"); // NOI18N
+//System.out.println ("Value: >"+value+"<"); // NOI18N
       if ((value != null) && value.equalsIgnoreCase("True")) { // NOI18N
         if (key.endsWith(".class")) { // NOI18N
           String wholeName = key.substring(0, key.length() - 6).replace('/', '.').replace('\\', '.');
@@ -173,7 +173,7 @@ public final class BeanInstaller extends Object {
             name = wholeName.substring(lastDot + 1);
           }
           FileObject fo = jar.find(pack, name, "ser"); // NOI18N
-//System.out.println ("Find fo: >"+fo+"<"+ ", : "+pack+", "+name);
+//System.out.println ("Find fo: >"+fo+"<"+ ", : "+pack+", "+name); // NOI18N
           if (fo != null) {
             foundJB.add(fo);
           }
@@ -254,7 +254,7 @@ public final class BeanInstaller extends Object {
   private static void createShadow (FileObject folder, FileObject original) {
     try {
       DataObject originalDO = DataObject.find (original);
-//      System.out.println ("createShadow: "+folder + ", : " + original +", : "+originalDO);
+//      System.out.println ("createShadow: "+folder + ", : " + original +", : "+originalDO); // NOI18N
       if (originalDO != null) {
         DataShadow.create (DataFolder.findFolder (folder), originalDO);
       }
@@ -716,6 +716,7 @@ static final long serialVersionUID =-6038414545631774041L;
 
 /*
  * Log
+ *  28   Gandalf   1.27        1/13/00  Ian Formanek    NOI18N #2
  *  27   Gandalf   1.26        1/12/00  Pavel Buzek     I18N
  *  26   Gandalf   1.25        1/5/00   Ian Formanek    NOI18N
  *  25   Gandalf   1.24        11/5/99  Jaroslav Tulach ComponentPalette.getDefault

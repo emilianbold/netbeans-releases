@@ -470,7 +470,7 @@ static final long serialVersionUID =4248268998485315927L;
     }
 
     public void focusForm (FormManager2 formManager) {
-      //System.out.println("Focus Form: "+formManager);
+      //System.out.println("Focus Form: "+formManager); // NOI18N
       this.formManager = formManager;
       designModeAction.setFormManager (formManager);
       testModeAction.setFormManager (formManager);
@@ -636,6 +636,7 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
  *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/11/00  Pavel Buzek     
  *  41   Gandalf   1.40        1/5/00   Ian Formanek    NOI18N

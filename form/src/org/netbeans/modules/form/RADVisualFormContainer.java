@@ -45,7 +45,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     encodingList.put ("UTF-8 (Compressed Unicode)", "UTF-8"); // NOI18N
     encodingList.put ("UTF-16 (Compressed UCS)", "UTF-16"); // NOI18N
     encodingList.put ("ISO-10646-UCS-2 (Raw Unicode)", "ISO-10646-UCS-2"); // NOI18N
-    encodingList.put ("ISO-10646-UCS-4 (Raw UCS)", "ISO-10646-UCS-4"); // NOTE: no support for ISO-10646-UCS-4 yet. [from XmlReader]
+    encodingList.put ("ISO-10646-UCS-4 (Raw UCS)", "ISO-10646-UCS-4"); // NOTE: no support for ISO-10646-UCS-4 yet. [from XmlReader] // NOI18N
     encodingList.put ("ISO-8859-1 (Latin-1, western Europe)", "ISO-8859-1"); // NOI18N
     encodingList.put ("ISO-8859-2 (Latin-2, eastern Europe)", "ISO-8859-2"); // NOI18N
     encodingList.put ("ISO-8859-3 (Latin-3, southern Europe)", "ISO-8859-3"); // NOI18N
@@ -604,6 +604,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  25   Gandalf   1.24        1/13/00  Ian Formanek    NOI18N #2
  *  24   Gandalf   1.23        1/12/00  Pavel Buzek     I18N
  *  23   Gandalf   1.22        1/11/00  Pavel Buzek     
  *  22   Gandalf   1.21        1/10/00  Pavel Buzek     #5088

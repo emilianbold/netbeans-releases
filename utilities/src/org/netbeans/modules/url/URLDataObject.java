@@ -90,7 +90,7 @@ static final long serialVersionUID =6829522922370124627L;
         }
     }
     if (urlString == null)
-      urlString = ""; // if the file is empty, return empty string, as null is reserved for notifying failure
+      urlString = ""; // if the file is empty, return empty string, as null is reserved for notifying failure // NOI18N
     
     return urlString;
   }
@@ -148,7 +148,7 @@ static final long serialVersionUID =6829522922370124627L;
       TopManager.getDefault ().showUrl (url);
     } catch (java.net.MalformedURLException e) {
       try {
-        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol // NOI18N
         TopManager.getDefault ().showUrl (url);
       } catch (java.net.MalformedURLException e2) {
         if (urlString.length () > 50) { // too long URL
@@ -185,7 +185,7 @@ static final long serialVersionUID =6829522922370124627L;
       url = new java.net.URL (urlString);
     } catch (java.net.MalformedURLException e) {
       try {
-        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+        url = new java.net.URL ("http://"+urlString); // try to prepend http protocol // NOI18N
       } catch (java.net.MalformedURLException e2) {
         if (urlString.length () > 50) { // too long URL
           TopManager.getDefault ().notify (
@@ -266,6 +266,7 @@ static final long serialVersionUID =6829522922370124627L;
 
 /*
  * Log
+ *  17   Gandalf   1.16        1/13/00  Ian Formanek    NOI18N #2
  *  16   Gandalf   1.15        1/12/00  Ian Formanek    I18N
  *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

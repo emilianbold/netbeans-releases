@@ -51,9 +51,9 @@ import com.netbeans.developer.modules.loaders.form.palette.*;
 public final class BorderEditor extends PropertyEditorSupport implements org.openide.explorer.propertysheet.editors.XMLPropertyEditor { // [PENDING - not for now]
 
   /** Icon bases for unknown border node. */
-  private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder";
+  private static final String UNKNOWN_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/unknownBorder"; // NOI18N
   /** Icon bases for no border node. */
-  private static final String NO_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/nullBorder";
+  private static final String NO_BORDER_BASE = "com/netbeans/developer/explorer/propertysheet/editors/nullBorder"; // NOI18N
 
   private static final ResourceBundle bundle = NbBundle.getBundle(BorderEditor.class);
 
@@ -278,7 +278,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
       if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
         Node[] nodes = (Node[]) evt.getNewValue();
         if (nodes.length != 1)
-          throw new PropertyVetoException("", evt);
+          throw new PropertyVetoException("", evt); // NOI18N
       }
     }
                                      
@@ -340,7 +340,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
     public void propertyChange(PropertyChangeEvent evt) {
       designBorder = new DesignBorder(designBorder.getInfo());
-      firePropertyChange("", null, null);
+      firePropertyChange("", null, null); // NOI18N
     }
   } 
 
@@ -385,9 +385,9 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 //--------------------------------------------------------------------------
 // XMLPropertyEditor implementation
 
-  public static final String XML_BORDER = "Border";
+  public static final String XML_BORDER = "Border"; // NOI18N
 
-  public static final String ATTR_INFO = "info";
+  public static final String ATTR_INFO = "info"; // NOI18N
 
   /** Called to load property value from specified XML subtree. If succesfully loaded, 
   * the value should be available via the getValue method.
@@ -438,6 +438,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
 
 /*
  * Log
+ *  16   Gandalf   1.15        1/13/00  Ian Formanek    NOI18N #2
  *  15   Gandalf   1.14        1/10/00  Ian Formanek    provides better 
  *       getAsText 
  *  14   Gandalf   1.13        12/3/99  Pavel Buzek     in readFromXML creating 

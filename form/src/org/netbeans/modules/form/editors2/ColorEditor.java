@@ -48,9 +48,9 @@ public final class ColorEditor implements PropertyEditor {
   public static final int SWING_PALETTE = 3;
 
   private static final String awtColorNames[] = {
-                                    "white", "lightGray", "gray", "darkGray", "black",
-                                    "red", "pink", "orange", "yellow", "green", "magenta",
-                                    "cyan", "blue" };
+                                    "white", "lightGray", "gray", "darkGray", "black", // NOI18N
+                                    "red", "pink", "orange", "yellow", "green", "magenta", // NOI18N
+                                    "cyan", "blue" }; // NOI18N
 
   private static final Color awtColors[] = {
                                     Color.white, Color.lightGray, Color.gray, Color.darkGray,
@@ -58,26 +58,26 @@ public final class ColorEditor implements PropertyEditor {
                                     Color.green, Color.magenta, Color.cyan, Color.blue };
 
   private static final String systemColorNames[] = {
-                                    "Active Caption", "Active Caption Border",
-                                    "Active Caption Text", "Control", "Control Dk Shadow",
-                                    "Control Highlight", "Control Lt Highlight",
-                                    "Control Shadow", "Control Text", "Desktop",
-                                    "Inactive Caption", "Inactive Caption Border",
-                                    "Inactive Caption Text", "Info", "Info Text", "Menu",
-                                    "Menu Text", "Scrollbar", "Text", "Text Highlight",
-                                    "Text Highlight Text", "Text Inactive Text", "Text Text",
-                                    "Window", "Window Border", "Window Text"};
+                                    "Active Caption", "Active Caption Border", // NOI18N
+                                    "Active Caption Text", "Control", "Control Dk Shadow", // NOI18N
+                                    "Control Highlight", "Control Lt Highlight", // NOI18N
+                                    "Control Shadow", "Control Text", "Desktop", // NOI18N
+                                    "Inactive Caption", "Inactive Caption Border", // NOI18N
+                                    "Inactive Caption Text", "Info", "Info Text", "Menu", // NOI18N
+                                    "Menu Text", "Scrollbar", "Text", "Text Highlight", // NOI18N
+                                    "Text Highlight Text", "Text Inactive Text", "Text Text", // NOI18N
+                                    "Window", "Window Border", "Window Text"}; // NOI18N
 
   private static final String systemGenerate[] = {
-                                    "activeCaption", "activeCaptionBorder",
-                                    "activeCaptionText", "control", "controlDkShadow",
-                                    "controlHighlight", "controlLtHighlight",
-                                    "controlShadow", "controlText", "desktop",
-                                    "inactiveCaption", "inactiveCaptionBorder",
-                                    "inactiveCaptionText", "info", "infoText", "menu",
-                                    "menuText", "scrollbar", "text", "textHighlight",
-                                    "textHighlightText", "textInactiveText", "textText",
-                                    "window", "windowBorder", "windowText"};
+                                    "activeCaption", "activeCaptionBorder", // NOI18N
+                                    "activeCaptionText", "control", "controlDkShadow", // NOI18N
+                                    "controlHighlight", "controlLtHighlight", // NOI18N
+                                    "controlShadow", "controlText", "desktop", // NOI18N
+                                    "inactiveCaption", "inactiveCaptionBorder", // NOI18N
+                                    "inactiveCaptionText", "info", "infoText", "menu", // NOI18N
+                                    "menuText", "scrollbar", "text", "textHighlight", // NOI18N
+                                    "textHighlightText", "textInactiveText", "textText", // NOI18N
+                                    "window", "windowBorder", "windowText"}; // NOI18N
 
   private static final Color systemColors[] = {
                                     SystemColor.activeCaption, SystemColor.activeCaptionBorder,
@@ -162,11 +162,11 @@ public final class ColorEditor implements PropertyEditor {
       if (object instanceof SuperColor) color = (SuperColor) object;
       else color = new SuperColor ((Color) object);
     }
-    support.firePropertyChange ("", null, null);
+    support.firePropertyChange ("", null, null); // NOI18N
   }
 
   public String getAsText () {
-    if (color == null) return "null";
+    if (color == null) return "null"; // NOI18N
     return color.getAsText ();
   }
 
@@ -208,24 +208,24 @@ public final class ColorEditor implements PropertyEditor {
   }
 
   public String getJavaInitializationString () {
-    if (color == null) return "null";
+    if (color == null) return "null"; // NOI18N
     if (color.getID () == null)
-      return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () +
-             ", " + color.getBlue () + ")";
+      return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+             ", " + color.getBlue () + ")"; // NOI18N
 
     switch (color.getPalette ()) {
     default:
     case AWT_PALETTE:
-      return "java.awt.Color." + color.getID ();
+      return "java.awt.Color." + color.getID (); // NOI18N
     case SYSTEM_PALETTE:
-      return "java.awt.SystemColor." + systemGenerate [getIndex (systemColorNames, color.getID ())];
+      return "java.awt.SystemColor." + systemGenerate [getIndex (systemColorNames, color.getID ())]; // NOI18N
     case SWING_PALETTE:
       initSwingConstants();
       int i = getIndex (swingColorNames, color.getID ());
-      if (i < 0) return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () +
-                        ", " + color.getBlue () + ")";
-      return "(java.awt.Color) com.sun.java.swing.UIManager.getDefaults ().get (\"" +
-             color.getID () + "\")";
+      if (i < 0) return "new java.awt.Color (" + color.getRed () + ", " + color.getGreen () + // NOI18N
+                        ", " + color.getBlue () + ")"; // NOI18N
+      return "(java.awt.Color) com.sun.java.swing.UIManager.getDefaults ().get (\"" + // NOI18N
+             color.getID () + "\")"; // NOI18N
     };
   }
 
@@ -382,7 +382,7 @@ public final class ColorEditor implements PropertyEditor {
 
     String getAsText () {
       if (id != null) return id;
-      return "[" + getRed () + "," + getGreen () + "," + getBlue () + "]";
+      return "[" + getRed () + "," + getGreen () + "," + getBlue () + "]"; // NOI18N
     }
   }
 
@@ -464,7 +464,7 @@ public final class ColorEditor implements PropertyEditor {
     /** Cell of the list showing palette colors */
     final class MyListCellRenderer extends JPanel implements ListCellRenderer {
 
-      protected Border hasFocusBorder = new LineBorder (UIManager.getColor ("List.focusCellHighlight"));
+      protected Border hasFocusBorder = new LineBorder (UIManager.getColor ("List.focusCellHighlight")); // NOI18N
       protected Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);
 
       boolean selected, hasFocus;
@@ -497,8 +497,8 @@ public final class ColorEditor implements PropertyEditor {
         Dimension rectangle = getSize ();
         Color color = g.getColor ();
 
-        if (selected) g.setColor (UIManager.getColor ("List.selectionBackground"));
-        else g.setColor (UIManager.getColor ("List.background"));
+        if (selected) g.setColor (UIManager.getColor ("List.selectionBackground")); // NOI18N
+        else g.setColor (UIManager.getColor ("List.background")); // NOI18N
         g.fillRect (0, 0, rectangle.width - 1, rectangle.height - 1);
 
         if (hasFocus) {
@@ -510,8 +510,8 @@ public final class ColorEditor implements PropertyEditor {
         g.drawRect (6, rectangle.height / 2 - 5 , 10, 10);
         g.setColor (colors [index]);
         g.fillRect (7, rectangle.height / 2 - 4 , 9, 9);
-        if (selected) g.setColor (UIManager.getColor ("List.selectionForeground"));
-        else g.setColor (UIManager.getColor ("List.foreground"));
+        if (selected) g.setColor (UIManager.getColor ("List.selectionForeground")); // NOI18N
+        else g.setColor (UIManager.getColor ("List.foreground")); // NOI18N
         FontMetrics fm = g.getFontMetrics ();
         g.drawString (names [index], 22, (rectangle.height - fm.getHeight ()) / 2 + fm.getAscent ());
         g.setColor (color);
@@ -538,6 +538,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  6    Gandalf   1.5         1/13/00  Ian Formanek    NOI18N #2
  *  5    Gandalf   1.4         11/27/99 Patrik Knakal   
  *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

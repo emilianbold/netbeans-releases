@@ -94,9 +94,9 @@ public class PaletteItem implements java.io.Serializable {
   public String getDisplayName () {
     String name = getName ();
     if (name.endsWith ("BorderInfo")) { // NOI18N
-      return name.substring (0, name.length () - 4); // remove the "Info" from BorderInfo classes
+      return name.substring (0, name.length () - 4); // remove the "Info" from BorderInfo classes // NOI18N
     } else if (name.endsWith ("Layout") && name.startsWith ("Design")) { // NOI18N
-      return name.substring (6); // remove the "Design" from DesignXXXLayout classes
+      return name.substring (6); // remove the "Design" from DesignXXXLayout classes // NOI18N
     }
     return name;
   }
@@ -177,6 +177,7 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  16   Gandalf   1.15        1/13/00  Ian Formanek    NOI18N #2
  *  15   Gandalf   1.14        1/5/00   Ian Formanek    NOI18N
  *  14   Gandalf   1.13        11/27/99 Patrik Knakal   
  *  13   Gandalf   1.12        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

@@ -131,7 +131,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         case '<':      // 0x3c: the most common cases!
           switch (buf [1] & 0x0ff) {
             // First character is '<'; could be XML without
-            // an XML directive such as "<hello>", "<!-- ...",
+            // an XML directive such as "<hello>", "<!-- ...", // NOI18N
             // and so on.
             default:
               break;
@@ -221,7 +221,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     } catch (org.xml.sax.SAXException e) {
       throw new IOException (e.getMessage());
     }
-//    walkTree (mainElement, "");
+//    walkTree (mainElement, ""); // NOI18N
 // A. Do various checks
 
   // 1. check the top-level element name
@@ -270,13 +270,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
   private boolean loadNonVisuals (org.w3c.dom.Node node, FormManager2 formManager2) {
     org.w3c.dom.Node nonVisualsNode = findSubNode (node, XML_NON_VISUAL_COMPONENTS);
     org.w3c.dom.NodeList childNodes = (nonVisualsNode == null) ? null : nonVisualsNode.getChildNodes ();
-//    System.out.println ("NonVisual children: "+childNodes);
+//    System.out.println ("NonVisual children: "+childNodes); // NOI18N
     ArrayList list = new ArrayList ();
     if (childNodes != null) {
-//    System.out.println ("NonVisual children len: "+childNodes.getLength ());
+//    System.out.println ("NonVisual children len: "+childNodes.getLength ()); // NOI18N
       for (int i = 0; i < childNodes.getLength (); i++) {
         if (childNodes.item (i).getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
-//        System.out.println ("Processing node: "+childNodes.item (i).getNodeName ());
+//        System.out.println ("Processing node: "+childNodes.item (i).getNodeName ()); // NOI18N
         if (XML_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
           RADComponent comp = new RADComponent ();
           if (loadComponent (childNodes.item (i), formManager2, comp, null)) {
@@ -288,13 +288,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             list.add (cont);
           }
         } else if (XML_MENU_COMPONENT.equals (childNodes.item (i).getNodeName ())) {
-//          System.out.println ("$$$MenuItem");
+//          System.out.println ("$$$MenuItem"); // NOI18N
           RADMenuItemComponent comp = new RADMenuItemComponent ();
           if (loadComponent (childNodes.item (i), formManager2, comp, null)) {
             list.add (comp);
           }
         } else if (XML_MENU_CONTAINER.equals (childNodes.item (i).getNodeName ())) {
-//          System.out.println ("$$$Menu");
+//          System.out.println ("$$$Menu"); // NOI18N
           RADMenuComponent cont = new RADMenuComponent ();
           if (loadContainer (childNodes.item (i), formManager2, cont, null)) {
             list.add (cont);
@@ -415,19 +415,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
       if (!loadComponent (node, formManager2, comp, parentContainer)) return false;
     }
 
-//        System.out.println ("1...");
+//        System.out.println ("1..."); // NOI18N
     if (comp instanceof ComponentContainer) {
-//        System.out.println ("2...");
+//        System.out.println ("2..."); // NOI18N
       org.w3c.dom.Node subCompsNode = findSubNode (node, XML_SUB_COMPONENTS);
       org.w3c.dom.NodeList children = null;
       if (subCompsNode != null) children = subCompsNode.getChildNodes ();
-//        System.out.println ("3...");
+//        System.out.println ("3..."); // NOI18N
       if (children != null) {
-//        System.out.println ("4...");
+//        System.out.println ("4..."); // NOI18N
         ArrayList list = new ArrayList ();
         for (int i = 0; i < children.getLength (); i++) {
           org.w3c.dom.Node componentNode = children.item (i);
-//        System.out.println ("Processing node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing node: "+componentNode.getNodeName ()); // NOI18N
           if (componentNode.getNodeType () == org.w3c.dom.Node.TEXT_NODE) continue; // ignore text nodes
 
           if (XML_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
@@ -437,13 +437,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
           } else if (XML_MENU_COMPONENT.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADMenuItemComponent newComp = new RADMenuItemComponent ();
-//        System.out.println ("Processing menu node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing menu node: "+componentNode.getNodeName ()); // NOI18N
             if (loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
               list.add (newComp);
             }
           } else if (XML_MENU_CONTAINER.equals (componentNode.getNodeName ())) {  // [PENDING - visual x non-visual]
             RADMenuComponent newComp = new RADMenuComponent ();
-//        System.out.println ("Processing menu container node: "+componentNode.getNodeName ());
+//        System.out.println ("Processing menu container node: "+componentNode.getNodeName ()); // NOI18N
             if (loadContainer (componentNode, formManager2, newComp, (ComponentContainer)comp)) {
               list.add (newComp);
             }
@@ -563,7 +563,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e2.printStackTrace (); // NOI18N
         }
         Object propValue=null;
-        //System.out.println("loading name="+propName+", encodedValue="+encodedValue);
+        //System.out.println("loading name="+propName+", encodedValue="+encodedValue); // NOI18N
         try {
           if (propClass != null) {
             try {
@@ -579,7 +579,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
           if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace (); // NOI18N
           // [PENDING - handle error]
         }
-        //System.out.println("......encoded to:"+propValue);
+        //System.out.println("......encoded to:"+propValue); // NOI18N
 
         Node.Property [] props = comp.getSyntheticProperties ();
         Node.Property prop=null;
@@ -1102,7 +1102,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // [PENDING - notify problem?]
         continue;
       }
-      //System.out.println("saving name="+prop.getName ()+", value="+value);
+      //System.out.println("saving name="+prop.getName ()+", value="+value); // NOI18N
       buf.append (indent); 
 
       addLeafElementOpenAttr (
@@ -1611,7 +1611,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 */
 
   private String encodeToProperXML (String text) {
-    if (text.indexOf ('&') != -1) text = Utilities.replaceString (text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes
+    if (text.indexOf ('&') != -1) text = Utilities.replaceString (text, "&", "&amp;"); // must be the first to prevent changes in the &XX; codes // NOI18N
 
     if (text.indexOf ('<') != -1) text = Utilities.replaceString (text, "<", "&lt;"); // NOI18N
     if (text.indexOf ('>') != -1) text = Utilities.replaceString (text, ">", "&gt;"); // NOI18N
@@ -1673,6 +1673,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  48   Gandalf   1.47        1/13/00  Ian Formanek    NOI18N #2
  *  47   Gandalf   1.46        1/5/00   Ian Formanek    NOI18N
  *  46   Gandalf   1.45        1/2/00   Ian Formanek    Improved serialization 
  *       of primitive types in AUX values and Synthetic properties

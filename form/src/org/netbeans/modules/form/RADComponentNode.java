@@ -390,7 +390,7 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     if (!isRADComponentFlavor) {
       InstanceCookie ic = (InstanceCookie)NodeTransfer.cookie (t, NodeTransfer.COPY, InstanceCookie.class);
       if (ic != null) {
-//        System.out.println("Pasting instance: "+ic.instanceName ());
+//        System.out.println("Pasting instance: "+ic.instanceName ()); // NOI18N
         s.add (new InstancePaste (ic));        
       }
     }
@@ -627,7 +627,7 @@ static final long serialVersionUID =3851021533468196849L;
       } catch (UnsupportedFlavorException e) {
         return null; // ignore
       }
-//      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent);
+//      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent); // NOI18N
 
       FormManager2 pasteManager = component.getFormManager ();
 
@@ -731,6 +731,7 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
  *  43   Gandalf   1.42        1/12/00  Pavel Buzek     I18N
  *  42   Gandalf   1.41        1/10/00  Pavel Buzek     refreshing property sets
  *  41   Gandalf   1.40        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

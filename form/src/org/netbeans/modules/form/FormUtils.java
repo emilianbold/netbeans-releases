@@ -120,7 +120,7 @@ public class FormUtils extends Object {
   * the generated text. It is a String that is a tabSize of spaces
   */
   public static String getIndentString () {
-    return "  "; // EditorSettingsJava.getIndentString ();
+    return "  "; // EditorSettingsJava.getIndentString (); // NOI18N
   }
 
 // -----------------------------------------------------------------------------
@@ -447,6 +447,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  25   Gandalf   1.24        1/13/00  Ian Formanek    NOI18N #2
  *  24   Gandalf   1.23        1/5/00   Ian Formanek    NOI18N
  *  23   Gandalf   1.22        12/13/99 Pavel Buzek     
  *  22   Gandalf   1.21        12/9/99  Pavel Buzek     utils for XML properties

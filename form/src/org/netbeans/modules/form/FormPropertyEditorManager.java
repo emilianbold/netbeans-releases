@@ -82,7 +82,7 @@ final public class FormPropertyEditorManager extends Object {
 
     String typeName = getTypeName (type);
 
-    // 1. try adding "Editor" to the class name.
+    // 1. try adding "Editor" to the class name. // NOI18N
     String editorName = type.getName() + "Editor"; // NOI18N
     try {
       editorsList.add (Class.forName (editorName, true, TopManager.getDefault ().currentClassLoader ()));
@@ -171,6 +171,7 @@ final public class FormPropertyEditorManager extends Object {
 
 /*
  * Log
+ *  13   Gandalf   1.12        1/13/00  Ian Formanek    NOI18N #2
  *  12   Gandalf   1.11        1/5/00   Ian Formanek    NOI18N
  *  11   Gandalf   1.10        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

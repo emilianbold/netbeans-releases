@@ -112,9 +112,9 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
             if (pd == null) return null; // failed to initialize => do not generate code
             else {
               if (currentValue.radComponent instanceof RADFormContainer) {
-                return pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
+                return pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties] // NOI18N
               } else {
-                return currentValue.radComponentName + "." + pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties]
+                return currentValue.radComponentName + "." + pd.getReadMethod ().getName () + " ()"; // [FUTURE: Handle indexed properties] // NOI18N
               }
             } 
         case RADConnectionDesignValue.TYPE_METHOD: 

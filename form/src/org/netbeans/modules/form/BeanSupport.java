@@ -146,7 +146,7 @@ public class BeanSupport {
         } catch (Exception e) {
           // problem with reading property ==>> no default value
           if (FormEditor.getFormSettings ().getOutputLevel () != FormLoaderSettings.OUTPUT_MINIMUM) {
-//            notifyPropertyException (beanInstance.getClass (), properties [i].getName (), "component", e, true);
+//            notifyPropertyException (beanInstance.getClass (), properties [i].getName (), "component", e, true); // NOI18N
           }  
         } 
       } else { // the property does not have plain read method
@@ -250,6 +250,7 @@ public class BeanSupport {
 
 /*
  * Log
+ *  14   Gandalf   1.13        1/13/00  Ian Formanek    NOI18N #2
  *  13   Gandalf   1.12        1/5/00   Ian Formanek    NOI18N
  *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment

@@ -98,7 +98,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
       beanButton.setEnabled (false);    // no beans on the form are of the required type
     }
     
-    codeArea.setContentType ("text/x-java");    // allow syntax coloring
+    codeArea.setContentType ("text/x-java");    // allow syntax coloring // NOI18N
     
     updateParameterTypes ();
     currentFilledState = isFilled ();
@@ -196,7 +196,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
     if (valueButton.isSelected ()) {
       if (requiredType.equals (String.class)) {
         String s = valueField.getText ();
-        s = Utilities.replaceString (s, "\\", "\\\\"); // fixes bug 835
+        s = Utilities.replaceString (s, "\\", "\\\\"); // fixes bug 835 // NOI18N
         s = Utilities.replaceString (s, "\"", "\\\""); // NOI18N
         return "\""+s+"\""; // NOI18N
       }
@@ -567,6 +567,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  20   Gandalf   1.19        1/13/00  Ian Formanek    NOI18N #2
  *  19   Gandalf   1.18        1/12/00  Pavel Buzek     I18N
  *  18   Gandalf   1.17        1/10/00  Ian Formanek    Fixed bug 4936 - 
  *       Incorrect initialization of Form Connection dialog

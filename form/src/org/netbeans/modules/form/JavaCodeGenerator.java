@@ -76,7 +76,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   private static final String VARIABLES_HEADER = FormEditor.getFormBundle ().getString ("MSG_VariablesBegin");
   private static final String VARIABLES_FOOTER = FormEditor.getFormBundle ().getString ("MSG_VariablesEnd");
 
-  private static final String oneIndent = "  "; // [PENDING - indentation engine]
+  private static final String oneIndent = "  "; // [PENDING - indentation engine] // NOI18N
 
   /** The prefix for event handler sections */
   private static final String EVT_SECTION_PREFIX = "event_"; // NOI18N
@@ -502,7 +502,7 @@ public class JavaCodeGenerator extends CodeGenerator {
   }
   
   private void addInitCode (RADComponent comp, Writer initCodeWriter, AWTIndentStringWriter initCodeBuffer, int level) throws IOException {
-    //System.out.println("Adding init code for: "+comp.getName ());
+    //System.out.println("Adding init code for: "+comp.getName ()); // NOI18N
     generateComponentInit (comp, initCodeWriter);
     generateComponentEvents (comp, initCodeWriter);
     if (comp instanceof ComponentContainer) {
@@ -1457,6 +1457,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  66   Gandalf   1.65        1/13/00  Ian Formanek    NOI18N #2
  *  65   Gandalf   1.64        1/12/00  Pavel Buzek     I18N
  *  64   Gandalf   1.63        1/10/00  Ian Formanek    Fixed bug 2880 - I can 
  *       change variable modifier in component to abstract or native

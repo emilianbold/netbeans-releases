@@ -35,11 +35,11 @@ public class IconEditor extends Object {
   public static final int TYPE_FILE = 2;
   public static final int TYPE_CLASSPATH = 3;
 
-  static final String URL_PREFIX = "URL";
-  static final String FILE_PREFIX = "File";
-  static final String CLASSPATH_PREFIX = "Classpath";
+  static final String URL_PREFIX = "URL"; // NOI18N
+  static final String FILE_PREFIX = "File"; // NOI18N
+  static final String CLASSPATH_PREFIX = "Classpath"; // NOI18N
 
-  public static final String BAD_ICON_NAME = "/com/netbeans/developer/explorer/propertysheet/editors/badIcon.gif";
+  public static final String BAD_ICON_NAME = "/com/netbeans/developer/explorer/propertysheet/editors/badIcon.gif"; // NOI18N
 
   // innerclasses ...............................................................
 
@@ -105,6 +105,7 @@ public class IconEditor extends Object {
 
 /*
 * Log
+*  5    Gandalf   1.4         1/13/00  Ian Formanek    NOI18N #2
 *  4    Gandalf   1.3         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  3    Gandalf   1.2         8/17/99  Ian Formanek    Fixed bug 3431 - Forms 
