@@ -274,7 +274,9 @@ final class LibrariesNode extends AbstractNode {
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
             List/*<URL>*/ rootsList = new ArrayList ();
             List result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
-            if (platformProperty!=null) {
+            //Add PlatformNode if needed and project exists
+            FileObject projectDir = helper.getAntProjectHelper().getProjectDirectory();
+            if (platformProperty!=null && projectDir !=null && projectDir.isValid() && !projectDir.isVirtual()) {
                 result.add (new Key());
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
@@ -299,7 +301,7 @@ final class LibrariesNode extends AbstractNode {
                 raw = privateProps.getProperty(currentClassPath);
             }
             if (raw == null) {
-                return Collections.EMPTY_LIST;
+                return result;
             }
             List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
@@ -356,7 +358,6 @@ final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith(FILE_REF_PREFIX)) {
                     //File reference
                     String evaluatedRef = eval.getProperty(propName);
-                    // XXX: hotfix for bunch of issues about NPE from resolveFile() method (#53600, #53688, #53659)
                     if (evaluatedRef != null) {
                         File file = helper.getAntProjectHelper().resolveFile(evaluatedRef);
                         SourceGroup sg = createFileSourceGroup(file,rootsList);
