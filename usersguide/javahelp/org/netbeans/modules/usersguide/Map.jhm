@@ -166,11 +166,17 @@
 
 <mapID target="org.netbeans.modules.refactoring.ui.WhereUsedQueryUI" url="refactor/findUsages-CSH.html" /> <!--Find Usages-->
 <mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI" url="refactor/renameClass.html" />  <!--Rename-->
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Method" url="refactor/renameField.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.Field" url="refactor/renameField.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaClass" url="refactor/renameClass.html" />
+<mapID target="org.netbeans.modules.refactoring.ui.RenameRefactoringUI.JavaPackage" url="refactor/renameClass.html" />
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassesUI" url="refactor/moveClass.html" />  <!--Move Multiple Classes-->
 <mapID target="org.netbeans.modules.refactoring.ui.MoveClassUI" url="refactor/moveClass.html" /> <!--Move Single Class-->
 <mapID target="org.netbeans.modules.refactoring.ui.EncapsulateFieldUI" url="refactor/encapsulateField.html" /> 
 <mapID target="org.netbeans.modules.refactoring.ui.ChangeParametersUI" url="refactor/changeParameters.html" /> <!--Change Method Parameters-->
 <mapID target="org.netbeans.modules.refactoring.ui.RefactoringPanelContainer" url="refactor/previewWindow.html" /> <!--Preview Refactoring window-->
+
+
 
 <mapID target="xml_nodes"   url="xml/xmlnodes.html" />
 <mapID target="xml_createxml"   url="xml/createxml.html" />
