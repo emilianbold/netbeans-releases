@@ -731,6 +731,7 @@
    <mapID target="org.netbeans.modules.projects.settings.SettingsAction" url="project/project_settings.html" />
    <mapID target="org.netbeans.modules.projects.MainClassHelper" url="run/mainclass.html" />
    <mapID target="org.openide.awt.MenuBar$MenuFolder.Project" url="pending.html" /> 
+   <mapID target="org.netbeans.modules.form.editors2.BorderEditor$BorderPanel" url="pending.html" />
 
 <!--Explorer Node CSH-->
    <mapID target="org.openide.src.nodes.MethodNode" url="java/nodes/methods.html" />
