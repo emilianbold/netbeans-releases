@@ -193,7 +193,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   /** setter for running status */
   public void setRunning(boolean running) {
-    if (getProperty("loadingExternal") != null) {
+    if (isReadExternal()) {
       pendingRunning = running;
       return;
     }
@@ -459,6 +459,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  23   Gandalf   1.22        10/7/99  Petr Jiricka    Fixed multiple startup 
+ *       and shutdown at deserialization in some cases
  *  22   Gandalf   1.21        10/6/99  Petr Jiricka    Changes caused by module
  *       (de)serialization
  *  21   Gandalf   1.20        10/6/99  Petr Jiricka    Fixed bug causing the 
