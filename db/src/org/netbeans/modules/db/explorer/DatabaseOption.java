@@ -171,7 +171,8 @@ public class DatabaseOption extends SystemOption
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
         
-        closeConnections();
+        // here was always closed all open connections, it was a problem with the save project action
+        //closeConnections();
         
         out.writeObject(getAvailableDrivers());
         out.writeObject(getConnections());
