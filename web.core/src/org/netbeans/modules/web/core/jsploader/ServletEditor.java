@@ -150,7 +150,7 @@ public class ServletEditor extends CloneableEditorSupport
         if (obj == null)
             return "";
 
-        return NbBundle.getMessage (EditorSupport.class , "CTL_ObjectOpen", // NOI18N
+        return NbBundle.getMessage (ServletEditor.class , "CTL_ObjectOpen", // NOI18N
             obj.getName(),
             obj.getPrimaryFile().toString()
         );
@@ -165,7 +165,7 @@ public class ServletEditor extends CloneableEditorSupport
         if (obj == null)
             return "";
 
-        return NbBundle.getMessage (EditorSupport.class, "CTL_ObjectOpened", // NOI18N
+        return NbBundle.getMessage (ServletEditor.class, "CTL_ObjectOpened", // NOI18N
             obj.getName (),
             obj.getPrimaryFile ().toString ()
         );
