@@ -289,10 +289,7 @@ public final class BeanInstaller
                 DataShadow.create(DataFolder.findFolder(folder), originalDO);
             }
         } catch (IOException e) {
-            ErrorManager manager = TopManager.getDefault().getErrorManager();
-            if (manager != null)
-                manager.notify(e);
-            else e.printStackTrace();
+            TopManager.getDefault().getErrorManager().notify(e);
         }
     }
     
@@ -304,20 +301,15 @@ public final class BeanInstaller
         catch (Throwable ex) {
             if (ex instanceof ThreadDeath)
                 throw (ThreadDeath)ex;
-            if (System.getProperty("netbeans.debug.exceptions") != null) // NOI18N
-                ex.printStackTrace();
             
             ErrorManager manager = TopManager.getDefault().getErrorManager();
             
-            if (manager != null) {
-                String message = MessageFormat.format(
-                    CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
-                    new Object [] { className, ex.getClass().getName(), ex.getMessage() });
+            String message = MessageFormat.format(
+                CPManager.getBundle().getString("FMT_ERR_CannotLoadClass"), // NOI18N
+                new Object [] { className });
                 
-                manager.annotate(ex, ErrorManager.ERROR, null, message, null, null);
-                manager.notify(ex);
-            }
-            else ex.printStackTrace();
+            manager.annotate(ex, ErrorManager.WARNING, null, message, null, null);
+            manager.notify(ex);
             
             return;
         }

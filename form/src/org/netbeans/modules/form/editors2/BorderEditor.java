@@ -20,6 +20,7 @@ import java.awt.event.ActionListener;
 import java.beans.*;
 import java.util.*;
 import java.text.MessageFormat;
+import java.lang.reflect.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -94,8 +95,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
     public Object getValue() {
         if (needsUpdate) {
-            current = borderSupport == null ? null :
-                                              new DesignBorder(borderSupport);
+            current = borderSupport;
             needsUpdate = false;
         }
 
@@ -106,9 +106,21 @@ public final class BorderEditor extends PropertyEditorSupport
         current = value;
         borderSupport = null;
 
-        if (value instanceof DesignBorder)
-            borderSupport = ((DesignBorder)value).getBorderSupport();
-        else if (value instanceof Border) {
+        if (value instanceof BorderDesignSupport) {
+            try {
+                borderSupport = new BorderDesignSupport((BorderDesignSupport)value);
+            } catch (InstantiationException ex) {
+                ex.printStackTrace(); // it shouldn't happen
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace(); // it shouldn't happen
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace(); // it shouldn't happen
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace(); // it shouldn't happen
+            } catch (NoSuchMethodException ex) {
+                ex.printStackTrace(); // it shouldn't happen
+            }
+        } else if (value instanceof Border) {
             if (!(value instanceof javax.swing.plaf.UIResource))
                 borderSupport = new BorderDesignSupport((Border)value);
         }
@@ -142,7 +154,7 @@ public final class BorderEditor extends PropertyEditorSupport
 
         if (value == null)
             valueText = NO_BORDER;
-        else if (borderSupport != null) //value instanceof DesignBorder) // || value instanceof Border)
+        else if (borderSupport != null) //value instanceof BorderDesignSupport) // || value instanceof Border)
             valueText = "[" + borderSupport.getDisplayName() + "]";
         else
             valueText = "[" + org.openide.util.Utilities.getShortClassName(
@@ -273,7 +285,7 @@ public final class BorderEditor extends PropertyEditorSupport
                 return;
             }
 
-//            if (realBorder || border instanceof DesignBorder
+//            if (realBorder || border instanceof BorderDesignSupport
 //                              || border instanceof BorderInfo)
             if (borderSupport != null) {
                 boolean realBorder = border instanceof Border;
@@ -318,7 +330,7 @@ public final class BorderEditor extends PropertyEditorSupport
             }
         }
 
-        /** Prepares update (re-creation) of DesignBorder object according to
+        /** Prepares update (re-creation) of BorderDesignSupport object according to
          * changes. This is needed when another border was selected or some
          * property of currently selected border was changed.
          */
@@ -502,10 +514,9 @@ public final class BorderEditor extends PropertyEditorSupport
      */
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         Object value = getValue();
-        if ((value instanceof DesignBorder || value instanceof Border)
+        if ((value instanceof BorderDesignSupport || value instanceof Border)
                  && borderSupport != null) {
             org.w3c.dom.Node storedNode = null;
-//            borderSupport = ((DesignBorder)value).getBorderSupport();
             BorderInfo bInfo = borderSupport.getBorderInfo();
 
             if (bInfo != null) {
