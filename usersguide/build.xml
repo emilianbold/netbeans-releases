@@ -60,8 +60,19 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="javahelp">
-    <copy todir="netbeans/docs" includeEmptyDirs="false">
-      <fileset dir="javahelp">
+    <mkdir dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
+    <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
+               db="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"
+               jhall="${binroot}/nbbuild/lib/jhall.jar">
+      <include name="**/*.html"/>
+      <exclude name="credits.html"/>
+      <exclude name="ant/credits.html"/>
+      <exclude name="pending.html"/>
+    </jhindexer>
+    <mkdir dir="netbeans/modules/docs"/>
+    <locjar jarfile="netbeans/modules/docs/usersguide.jar"
+	    compress="true">
+      <fileset dir="javahelp" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <!-- Temporary files, or preprocessing scripts: -->
         <exclude name="**/check-anchors.pl"/>
         <exclude name="**/context-help.jhm"/>
@@ -70,16 +81,8 @@ Microsystems, Inc. All Rights Reserved.
         <exclude name="**/usergdix.xml"/>
         <exclude name="**/usergdto.xml"/>
       </fileset>
-    </copy>
-    <mkdir dir="netbeans/docs/org/netbeans/modules/usersguide/JavaHelpSearch"/>
-    <jhindexer basedir="javahelp/org/netbeans/modules/usersguide"
-               db="netbeans/docs/org/netbeans/modules/usersguide/JavaHelpSearch"
-               jhall="${binroot}/nbbuild/lib/jhall.jar">
-      <include name="**/*.html"/>
-      <exclude name="credits.html"/>
-      <exclude name="ant/credits.html"/>
-      <exclude name="pending.html"/>
-    </jhindexer>
+      <locale name="ja"/>
+    </locjar>
   </target>
 
   <target name="netbeans" depends="jars,javahelp"/>
@@ -111,6 +114,7 @@ Microsystems, Inc. All Rights Reserved.
         <include name="**/*.class"/>
       </fileset>
     </delete>
+    <delete dir="javahelp/org/netbeans/modules/usersguide/JavaHelpSearch2"/>
     <delete file="src/org/netbeans/modules/usersguide/demosrc.zip"/>
   </target>
 

@@ -8,3 +8,5 @@ OpenIDE-Module-Short-Description: Online documentation for the IDE.
 OpenIDE-Module-Long-Description: The General Online Help module provides online and context-sensitive
   documentation for basic IDE features such as browsing and editing files; compiling, running,
   debugging, and internationalizing applications; and using version control inside of the IDE.
+Class-Path: docs/usersguide.jar
+
