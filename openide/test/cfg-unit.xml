@@ -62,6 +62,9 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
+                <!-- following test was excluded because of issue #22629 -->
+                <exclude name="org/openide/explorer/FindHelpTest.class"/>
+                <!-- x -->
                 <exclude name="org/openide/explorer/propertysheet/FindHelpTest.class"/>
                 <include name="org/openide/explorer/view/*.class"/>
             </patternset>
