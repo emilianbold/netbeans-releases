@@ -22,9 +22,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
+import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
@@ -83,8 +86,18 @@ public class GraphicalMergeVisualizer extends MergeVisualizer implements Seriali
         synchronized (this) {
             //System.out.println("createView(): merge = "+merge);
             if (merge == null) {
-                merge = new MergeDialogComponent();
-                merge.open();
+                Set opened = TopComponent.getRegistry().getOpened();
+                for (Iterator it = opened.iterator(); it.hasNext(); ) {
+                    Object component = it.next();
+                    if (component instanceof MergeDialogComponent) {
+                        merge = (MergeDialogComponent) component;
+                        break;
+                    }
+                }
+                if (merge == null) {
+                    merge = new MergeDialogComponent();
+                    merge.open();
+                }
             }
         }
         MergePanel panel = new MergePanel();
