@@ -144,7 +144,7 @@ Microsystems, Inc. All Rights Reserved.
 	 excludes="**/SCCS/**,**/CVS/**">
        <classpath>
           <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
-          <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/> 
+          <pathelement location="${binroot}/httpserver/servletapi/release/modules/ext/servlet-2.2.jar"/> 
           <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
        </classpath>
      </javac>
