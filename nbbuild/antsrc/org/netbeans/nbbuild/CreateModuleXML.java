@@ -74,7 +74,7 @@ public class CreateModuleXML extends Task {
     private List eagerNames = new ArrayList(10); // List<String>
     
     public void execute() throws BuildException {
-        if (xmldir == null) throw new BuildException("Must set xmldir", location);
+        if (xmldir == null) throw new BuildException("Must set xmldir attribute", location);
         if (!xmldir.exists ()) {
             if (!xmldir.mkdirs ()) throw new BuildException ("Cannot create directory " + xmldir, location);
         }
@@ -121,15 +121,15 @@ public class CreateModuleXML extends Task {
         String[] kids = scan.getIncludedFiles();
         for (int i = 0; i < kids.length; i++) {
             File module = new File(dir, kids[i]);
-            if (! module.exists()) throw new BuildException("Does not really exist: " + module, location);
-            if (! module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed: " + module, location);
+            if (! module.exists()) throw new BuildException("Module file does not exist: " + module, location);
+            if (! module.getName().endsWith(".jar")) throw new BuildException("Only *.jar may be listed, check the fileset: " + module, location);
             try {
                 JarFile jar = new JarFile(module);
                 try {
                     Manifest m = jar.getManifest();
                     Attributes attr = m.getMainAttributes();
                     String codename = attr.getValue("OpenIDE-Module");
-                    if (codename == null) throw new BuildException("Not a module: " + module);
+                    if (codename == null) throw new BuildException("Missing manifest tag \"OpenIDE-Module\". File " + module + " is not a module.");
                     int idx = codename.lastIndexOf('/');
                     String codenamebase;
                     int rel;
