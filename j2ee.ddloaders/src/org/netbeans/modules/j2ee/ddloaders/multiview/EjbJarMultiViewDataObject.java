@@ -449,7 +449,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
 //        connectionPanel.setChanges(changes);
 //
 //        try {
-//            confirmChangesDialog[0] = DialogDisplayer.getDefault().createDialog(confirmChangesDescriptor);
+//            confirmChangesDialog[0] = DialogDisplayer.getDefault().createEditDialog(confirmChangesDescriptor);
 //            confirmChangesDialog[0].show();
 //        } finally {
 //            confirmChangesDialog[0].dispose();

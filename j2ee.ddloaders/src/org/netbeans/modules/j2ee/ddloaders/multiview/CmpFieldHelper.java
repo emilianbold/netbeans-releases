@@ -85,7 +85,7 @@ public class CmpFieldHelper {
     }
 
     private static MethodElement getBusinessMethod(ClassElement interfaceElement, MethodElement method) {
-        return Utils.getBusinessMethod(interfaceElement, method);
+        return Utils.getMethod(interfaceElement, method);
     }
 
     public boolean hasLocalSetter() {
@@ -102,7 +102,7 @@ public class CmpFieldHelper {
 
     public void setLocalGetter(boolean create) {
         if (create) {
-            Utils.addBusinessMethod(entityHelper.localBusinessInterfaceClass, getterMethod, false);
+            Utils.addMethod(entityHelper.localBusinessInterfaceClass, getterMethod, false);
         } else {
             Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, getterMethod);
         }
@@ -110,7 +110,7 @@ public class CmpFieldHelper {
 
     public void setLocalSetter(boolean create) {
         if (create) {
-            Utils.addBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod, false);
+            Utils.addMethod(entityHelper.localBusinessInterfaceClass, setterMethod, false);
         } else {
             Utils.removeBusinessMethod(entityHelper.localBusinessInterfaceClass, setterMethod);
         }
@@ -118,7 +118,7 @@ public class CmpFieldHelper {
 
     public void setRemoteGetter(boolean create) {
         if (create) {
-            Utils.addBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod, true);
+            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod, true);
         } else {
             Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, getterMethod);
         }
@@ -126,7 +126,7 @@ public class CmpFieldHelper {
 
     public void setRemoteSetter(boolean create) {
         if (create) {
-            Utils.addBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod, true);
+            Utils.addMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod, true);
         } else {
             Utils.removeBusinessMethod(entityHelper.remoteBusinessInterfaceClass, setterMethod);
         }
@@ -158,24 +158,6 @@ public class CmpFieldHelper {
         if (businessMethod != null) {
             Utils.removeMethod(interfaceElement, method);
         }
-    }
-
-    public void addFinderMethod() {
-        EntityNode entityNode = entityHelper.createEntityNode();
-        new AddFinderMethodAction() {
-            protected void performAction(Node[] activatedNodes) {
-                super.performAction(activatedNodes);
-            }
-        }.performAction(new Node[]{entityNode});
-    }
-
-    public void addSelectMethod() {
-        EntityNode entityNode = entityHelper.createEntityNode();
-        new AddSelectMethodAction() {
-            protected void performAction(Node[] activatedNodes) {
-                super.performAction(activatedNodes);
-            }
-        }.performAction(new Node[]{entityNode});
     }
 
     public void setFieldName(String newName) {

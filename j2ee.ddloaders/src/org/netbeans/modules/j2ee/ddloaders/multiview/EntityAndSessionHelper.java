@@ -198,12 +198,12 @@ public class EntityAndSessionHelper {
         return className == null ? null : Utils.getClassElement(sourceClassPath, className);
     }
 
-    public ClassElement getLocalHomeClass() {
+    public ClassElement getLocalHomeInterfaceClass() {
         return localHomeClass;
 
     }
 
-    public ClassElement getHomeClass() {
+    public ClassElement getHomeInterfaceClass() {
         return homeClass;
     }
 

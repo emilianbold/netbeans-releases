@@ -15,8 +15,10 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.src.MethodElement;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
@@ -43,6 +45,20 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
         initMethods();
         fireTableRowsInserted(-1, -1);
         return getRowCount() - 1;
+    }
+
+
+    public void editRow(int row) {
+        Query query = (Query) getQueries().get(row);
+        QueryMethodHelper helper = getQueryMethodHelper(query);
+        QueryCustomizer customizer = new QueryCustomizer();
+        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        query = (Query) query.clone();
+        boolean result = customizer.showSelectCustomizer(methodElement, query);
+        if (result) {
+            helper.updateSelectMethod(methodElement, query);
+            fireTableRowsUpdated(row, row);
+        }
     }
 
     protected boolean isSupportedMethod(Query query) {

@@ -13,13 +13,18 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.MethodParams;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 import org.netbeans.modules.j2ee.dd.api.ejb.QueryMethod;
 import org.openide.src.ClassElement;
 import org.openide.src.Identifier;
 import org.openide.src.MethodElement;
-import org.openide.src.Type;
+import org.openide.src.MethodParameter;
 import org.openide.src.SourceException;
+import org.openide.src.Type;
+
+import java.lang.reflect.Modifier;
+import java.util.Collection;
 
 /**
  * @author pfiala
@@ -30,8 +35,8 @@ public class QueryMethodHelper {
     private final EntityHelper entityHelper;
     private boolean isSelectMethod;
     private MethodElement implementationMethod;
-    private MethodElement remoteMethod;
-    private MethodElement localMethod;
+    public MethodElement remoteMethod;
+    public MethodElement localMethod;
 
     public QueryMethodHelper(EntityHelper helper, Query query) {
         this.query = query;
@@ -45,9 +50,9 @@ public class QueryMethodHelper {
         Type[] types = getQueryMethodParamTypes(queryMethod);
         Identifier methodName = Identifier.create(queryMethod.getMethodName());
         implementationMethod = entityHelper.beanClass.getMethod(methodName, types);
-        ClassElement homeClass = entityHelper.getHomeClass();
+        ClassElement homeClass = entityHelper.getHomeInterfaceClass();
         remoteMethod = homeClass == null ? null : homeClass.getMethod(methodName, types);
-        ClassElement localHomeClass = entityHelper.getLocalHomeClass();
+        ClassElement localHomeClass = entityHelper.getLocalHomeInterfaceClass();
         localMethod = localHomeClass == null ? null : localHomeClass.getMethod(methodName, types);
     }
 
@@ -56,18 +61,7 @@ public class QueryMethodHelper {
     }
 
     public String getReturnType() {
-        MethodElement method;
-        if (isSelectMethod) {
-            //select method
-            method = implementationMethod;
-        } else {
-            //finder method
-            if (localMethod != null) {
-                method = localMethod;
-            } else {
-                method = remoteMethod;
-            }
-        }
+        MethodElement method = getPrototypeMethod();
         return method == null ? null : method.getReturn().getFullString();
     }
 
@@ -76,8 +70,8 @@ public class QueryMethodHelper {
     }
 
     public String getResultInterface() {
-        ClassElement localHomeClass = entityHelper.getLocalHomeClass();
-        ClassElement homeClass = entityHelper.getHomeClass();
+        ClassElement localHomeClass = entityHelper.getLocalHomeInterfaceClass();
+        ClassElement homeClass = entityHelper.getHomeInterfaceClass();
 
         QueryMethod queryMethod = query.getQueryMethod();
         Type[] types = getQueryMethodParamTypes(queryMethod);
@@ -92,7 +86,7 @@ public class QueryMethodHelper {
             } else {
                 return local;
             }
-        } else{
+        } else {
             if (hasRemote) {
                 return remote;
             } else {
@@ -105,7 +99,15 @@ public class QueryMethodHelper {
         String[] methodParam = queryMethod.getMethodParams().getMethodParam();
         Type[] types = new Type[methodParam.length];
         for (int i = 0; i < methodParam.length; i++) {
-            types[i] = Type.createClass(Identifier.create(methodParam[i]));
+            MethodParameter parameter = null;
+            Type type;
+            try {
+                parameter = MethodParameter.parse(methodParam[i]);
+                type = parameter.getType();
+            } catch (IllegalArgumentException e) {
+                type = Type.parse(methodParam[i]);
+            }
+            types[i] = type;
         }
         return types;
     }
@@ -115,23 +117,176 @@ public class QueryMethodHelper {
             try {
                 entityHelper.beanClass.removeMethod(implementationMethod);
             } catch (SourceException e) {
-                Utils.notifyError(e);
+                notifyError(e);
             }
         }
         if (localMethod != null) {
             try {
-                entityHelper.getLocalHomeClass().removeMethod(localMethod);
+                entityHelper.getLocalHomeInterfaceClass().removeMethod(localMethod);
             } catch (SourceException e) {
-                Utils.notifyError(e);
+                notifyError(e);
             }
         }
         if (remoteMethod != null) {
             try {
-                entityHelper.getHomeClass().removeMethod(remoteMethod);
+                entityHelper.getHomeInterfaceClass().removeMethod(remoteMethod);
             } catch (SourceException e) {
-                Utils.notifyError(e);
+                notifyError(e);
             }
         }
         entityHelper.removeQuery(query);
+    }
+
+    public MethodElement getPrototypeMethod() {
+        MethodElement prototypeMethod = null;
+        if (isSelectMethod) {
+            //select method
+            prototypeMethod = implementationMethod;
+        } else {
+            //finder method
+            if (localMethod != null) {
+                prototypeMethod = localMethod;
+            } else if (remoteMethod != null) {
+                prototypeMethod = remoteMethod;
+            }
+        }
+        if (prototypeMethod == null) {
+            prototypeMethod = new MethodElement();
+            QueryMethod queryMethod = query.getQueryMethod();
+            try {
+                prototypeMethod.setName(Identifier.create(queryMethod.getMethodName()));
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+            MethodParams queryParams = queryMethod.getMethodParams();
+            MethodParameter[] params = new MethodParameter[queryParams.sizeMethodParam()];
+            for (int i = 0; i < params.length; i++) {
+                String queryParam = queryParams.getMethodParam(i);
+                try {
+                    params[i] = MethodParameter.parse(queryParam);
+                } catch (IllegalArgumentException e) {
+                    Type type = Type.parse(queryParam);
+                    params[i] = new MethodParameter("p" + i, type, false);
+                }
+            }
+            try {
+                prototypeMethod.setParameters(params);
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+        }
+        return prototypeMethod;
+    }
+
+    public void updateFinderMethod(MethodElement prototype, Query query, boolean singleReturn, boolean publishToLocal,
+            boolean publishToRemote) {
+        //todo: validation
+        try {
+            prototype.setModifiers(0);
+        } catch (SourceException e) {
+            notifyError(e);
+        }
+        if (publishToLocal) {
+            localMethod = setMethod(localMethod, prototype, singleReturn, false);
+        } else {
+            localMethod = removeMethod(localMethod, false);
+        }
+        if (publishToRemote) {
+            remoteMethod = setMethod(remoteMethod, prototype, singleReturn, true);
+        } else {
+            remoteMethod = removeMethod(remoteMethod, true);
+        }
+        updateQuery(query);
+    }
+
+    private void updateQuery(Query query) {
+        this.query.setQueryMethod(query.getQueryMethod());
+        this.query.setDescription(query.getDefaultDescription());
+        this.query.setEjbQl(query.getEjbQl());
+    }
+
+    private MethodElement setMethod(MethodElement method, MethodElement prototype, boolean singleReturn,
+            boolean remote) {
+        ClassElement interfaceClass = remote ? entityHelper.homeClass : entityHelper.localHomeClass;
+        setReturn(prototype, singleReturn, remote);
+        if (method == null) {
+            Utils.addMethod(interfaceClass, (MethodElement) prototype.clone(), remote);
+            method = Utils.getMethod(interfaceClass, prototype);
+        } else {
+            updateMethod(method, prototype);
+        }
+        return method;
+    }
+
+    private MethodElement removeMethod(MethodElement method, boolean remote) {
+        ClassElement intefaceClass = remote ? entityHelper.homeClass : entityHelper.localHomeClass;
+        if (remoteMethod != null) {
+            try {
+                intefaceClass.removeMethod(method);
+            } catch (SourceException e) {
+                notifyError(e);
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private void setReturn(MethodElement prototype, boolean singleReturn, boolean remote) {
+        try {
+            String interfaceName = remote ? entityHelper.getRemote() : entityHelper.getLocal();
+            prototype.setReturn(Type.parse(singleReturn ? interfaceName : Collection.class.getName()));
+        } catch (SourceException e) {
+            notifyError(e);
+        }
+    }
+
+    public void updateSelectMethod(MethodElement prototype, Query query) {
+        //todo: validation
+        try {
+            prototype.setModifiers(Modifier.PUBLIC | Modifier.ABSTRACT);
+        } catch (SourceException e) {
+            notifyError(e);
+        }
+        if (implementationMethod == null) {
+            Utils.addMethod(entityHelper.beanClass, prototype);
+            implementationMethod = prototype;
+        } else {
+            updateMethod(implementationMethod, prototype);
+        }
+        updateQuery(query);
+    }
+
+    private static void updateMethod(MethodElement method, MethodElement prototype) {
+        if (method != null) {
+            try {
+                method.setName(prototype.getName());
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+            try {
+                method.setReturn(prototype.getReturn());
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+            try {
+                method.setParameters(prototype.getParameters());
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+            try {
+                method.setExceptions(prototype.getExceptions());
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+            try {
+                method.setModifiers(prototype.getModifiers());
+            } catch (SourceException e) {
+                notifyError(e);
+            }
+        }
+    }
+
+    private static void notifyError(Exception ex) {
+        Utils.notifyError(ex);
     }
 }

@@ -227,7 +227,7 @@ public class Utils {
         return enterpriseProject.getEjbModule().getJavaSources();
     }
 
-    public static MethodElement getBusinessMethod(ClassElement interfaceElement, MethodElement method) {
+    public static MethodElement getMethod(ClassElement interfaceElement, MethodElement method) {
         if (interfaceElement == null || method == null) {
             return null;
         } else {
@@ -240,21 +240,24 @@ public class Utils {
         }
     }
 
-    public static void addBusinessMethod(ClassElement interfaceElement, MethodElement method, boolean remote) {
+    public static void addMethod(ClassElement interfaceElement, MethodElement method) {
+        addMethod(interfaceElement, method, false);
+    }
+
+    public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote) {
+        addMethod(interfaceElement, method, remote, method.getModifiers());
+    }
+
+    public static void addMethod(ClassElement interfaceElement, MethodElement method, boolean remote, int modifiers) {
         if (interfaceElement == null || method == null) {
             return;
         }
-        MethodElement businessMethod = getBusinessMethod(interfaceElement, method);
-        if (businessMethod != null) {
+        if (getMethod(interfaceElement, method) != null) {
             return;
         }
-        MethodParameter[] parameters = method.getParameters();
-        Type[] paramTypes = new Type[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            paramTypes[i] = parameters[i].getType();
-        }
+        method = (MethodElement) method.clone();
         try {
-            method.setModifiers(0);
+            method.setModifiers(modifiers);
             if (remote) {
                 addExceptionIfNecessary(method, RemoteException.class.getName());
             }
@@ -283,7 +286,7 @@ public class Utils {
         if (interfaceElement == null || method == null) {
             return;
         }
-        MethodElement businessMethod = getBusinessMethod(interfaceElement, method);
+        MethodElement businessMethod = getMethod(interfaceElement, method);
         if (businessMethod == null) {
             return;
         }

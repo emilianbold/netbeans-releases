@@ -14,10 +14,14 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.SelectMethodCustomizer;
 import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.filesystems.FileObject;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 /**
  * @author pfiala
@@ -34,9 +38,12 @@ class SelectMethodsNode extends SectionNode {
     protected SectionInnerPanel createNodeInnerPanel() {
         Entity entity = (Entity) key;
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new SelectMethodsTableModel(ejbJarFile, entity, entityHelper));
-        innerTablePanel.getEditButton().setVisible(false);
+        final SelectMethodsTableModel model = new SelectMethodsTableModel(ejbJarFile, entity, entityHelper);
+        final InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+            protected void editCell(final int row, final int column) {
+                model.editRow(row);
+            }
+        };
         return innerTablePanel;
 
     }

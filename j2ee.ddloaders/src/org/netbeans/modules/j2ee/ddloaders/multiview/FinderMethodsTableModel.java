@@ -15,7 +15,9 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.QueryCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.src.MethodElement;
 
 /**
  * @author pfiala
@@ -31,6 +33,27 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
 
     public FinderMethodsTableModel(FileObject ejbJarFile, Entity entity, EntityHelper entityHelper) {
         super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity, entityHelper);
+    }
+
+    public void editRow(int row) {
+        Query query = (Query) getQueries().get(row);
+        QueryMethodHelper helper = getQueryMethodHelper(query);
+
+        boolean hasLocal = entityHelper.getLocal() != null;
+        boolean hasRemote = entityHelper.getRemote() != null;
+        boolean hasLocalMethod = helper.localMethod != null;
+        boolean hasRemoteMethod = helper.remoteMethod != null;
+        boolean returnsCollection = helper.returnsCollection();
+        QueryCustomizer customizer = new QueryCustomizer();
+        MethodElement methodElement = (MethodElement) helper.getPrototypeMethod().clone();
+        query = (Query) query.clone();
+        boolean result = customizer.showFinderCustomizer(methodElement, query, returnsCollection,
+                hasLocal, hasRemote, hasLocalMethod, hasRemoteMethod);
+        if (result) {
+            helper.updateFinderMethod(methodElement, query, customizer.finderReturnIsSingle(), customizer.publishToLocal(),
+                    customizer.publishToRemote());
+            fireTableRowsUpdated(row, row);
+        }
     }
 
     public int addRow() {

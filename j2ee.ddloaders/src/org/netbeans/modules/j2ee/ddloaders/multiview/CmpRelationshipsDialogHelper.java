@@ -227,8 +227,8 @@ class CmpRelationshipsDialogHelper {
                 MethodElement getterMethod = entityHelper.getGetterMethod(origFieldName);
                 MethodElement setterMethod = entityHelper.getSetterMethod(origFieldName, getterMethod);
                 origLocalInterface = entityHelper.getLocalBusinessInterfaceClass();
-                origLocalGetterMethod = Utils.getBusinessMethod(origLocalInterface, getterMethod);
-                origLocalSetterMethod = Utils.getBusinessMethod(origLocalInterface, setterMethod);
+                origLocalGetterMethod = Utils.getMethod(origLocalInterface, getterMethod);
+                origLocalSetterMethod = Utils.getMethod(origLocalInterface, setterMethod);
                 lastGetter = origLocalGetterMethod != null;
                 lastSetter = origLocalSetterMethod != null;
                 setLocalGetter(lastGetter);

@@ -34,9 +34,12 @@ class FinderMethodsNode extends SectionNode {
     protected SectionInnerPanel createNodeInnerPanel() {
         Entity entity = (Entity) key;
         final FileObject ejbJarFile = getSectionNodeView().getDataObject().getPrimaryFile();
-        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(),
-                new FinderMethodsTableModel(ejbJarFile, entity, entityHelper));
-        innerTablePanel.getEditButton().setVisible(false);
+        final FinderMethodsTableModel model = new FinderMethodsTableModel(ejbJarFile, entity, entityHelper);
+        InnerTablePanel innerTablePanel = new InnerTablePanel(getSectionNodeView(), model) {
+            protected void editCell(final int row, final int column) {
+                model.editRow(row);
+            }
+        };
         return innerTablePanel;
 
     }
