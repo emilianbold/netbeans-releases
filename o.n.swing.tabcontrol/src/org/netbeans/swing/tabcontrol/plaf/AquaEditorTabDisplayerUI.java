@@ -26,6 +26,8 @@ import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.event.HierarchyListener;
 import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 
 /**
  * A provisional look and feel for OS-X, round 2, using Java2d to emulate the
@@ -35,7 +37,6 @@ import java.awt.event.MouseWheelEvent;
  */
 public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     private Insets taInsets = new Insets(0, 0, 2, 80);
-    private static final JRadioButton radioButtonRenderer = new QuietRadioButton();
 
     /** Color used in drawing the line behind the tabs */
     private Color lineMiddleColor = null;
@@ -71,6 +72,17 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
     protected boolean isAntialiased() {
         return true;
     }
+    
+    protected int createRepaintPolicy () {
+        return TabState.REPAINT_SELECTION_ON_ACTIVATION_CHANGE
+//                | TabState.REPAINT_ON_SELECTION_CHANGE
+//                | TabState.REPAINT_ON_MOUSE_ENTER_TAB
+//                | TabState.REPAINT_ON_MOUSE_ENTER_CLOSE_BUTTON
+                
+//                | TabState.REPAINT_ALL_ON_MOUSE_ENTER_TABS_AREA
+                | TabState.REPAINT_ON_MOUSE_PRESSED;
+    }
+    
 
     protected void processMouseWheelEvent(MouseWheelEvent e) {
         //overridden to repaint the arrow buttons if the selected tab moves into
@@ -352,139 +364,81 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         }
     }
 
-    /**
-     * A peculiar hack - a border which actually paints a radio button
-     * underneath the real button
-     */
+    private static BufferedImage img = null;
+    private static final void createImages() {
+        img = new BufferedImage (60, 20, BufferedImage.TYPE_INT_ARGB_PRE);
+        JRadioButton jrb = new JRadioButton();
+        CellRendererPane pane = new CellRendererPane();
+        pane.add (jrb);
+        jrb.setBounds (0, 0, 80, 20);
+        
+        jrb.getModel().setRollover(false);
+        jrb.setRolloverEnabled(false);
+        jrb.getModel().setPressed(true);
+        jrb.setSelected (false);
+        
+        Graphics g = img.getGraphics();
+        jrb.paint (g);
+        
+        g.translate (20, 0);
+        jrb.setSelected(true);
+        jrb.paint (g);
+        g.translate (20, 0);
+        
+        jrb.setEnabled(false);
+        jrb.paint (g);
+    }
+    
+    
     private class RadioButtonPseudoBorder implements Border {
         public RadioButtonPseudoBorder() {
+            if (img == null) {
+                createImages();
+            }
         }
-
+        
         public Insets getBorderInsets(Component c) {
             Insets ins = new Insets(3, 3, 3, 3);
             return ins;
         }
 
         public boolean isBorderOpaque() {
-            return true;
+            return false;
         }
 
-        /*
-         //TODO:  Stop using a radio button as a background and use 
-         //java 2d to mimic the appearance
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
 
+            
             Icon ic = ((JButton) c).getIcon();
-
-            boolean shouldSelect = selectionModel.getSelectedIndex() != -1
+            
+            int pos = 0;
+            if (!c.isEnabled()) {
+                pos = 40;
+            } else {
+                boolean shouldSelect = selectionModel.getSelectedIndex() != -1
                     && displayer.isActive() && ((ic.getClass()
                     == LeftIcon.class && selectionModel.getSelectedIndex()
                     < getFirstVisibleTab()) || (ic.getClass()
                     == RightIcon.class && selectionModel.getSelectedIndex()
                     > getLastVisibleTab()));
-
-            if (shouldSelect) {
-                c.setForeground(new Color(0, 64, 128));
-            } else {
-                c.setForeground(UIManager.getColor("controlDkShadow")); //NOI18N
+                if (shouldSelect) {
+                    pos = 20;
+                }
+                if (shouldSelect) {
+                    c.setForeground(new Color(0, 64, 128));
+                } else {
+                    c.setForeground(UIManager.getColor("controlDkShadow")); //NOI18N
+                }            
             }
-            GenericGlowingChiclet ck = GenericGlowingChiclet.INSTANCE;
-            ck.setBounds (x + 3, y + 3, width-3, height-3);
-            ck.setArcs (0.6f, 0.6f, 0.6f, 0.6f);
-            ck.setNotch(false, false);
-            
-            int state = (((AbstractButton) c).getModel().isPressed() ? ck.STATE_ACTIVE : 0);
-            ck.draw((Graphics2D) g);
-            
+            Graphics2D g2d = (Graphics2D) g;
+            AffineTransform at = AffineTransform.getTranslateInstance(-pos, -1);
+            g2d.drawRenderedImage(img, at);
+
             ((LeftIcon) ic).dontpaint = false;
             ic.paintIcon(c, g, x + (width / 4) + 2, y + (width / 4) + 3);
             ((LeftIcon) ic).dontpaint = true;
-                                    
-        }       
-         */ 
- 
-        public void paintBorder(Component c, Graphics g, int x, int y,
-                                int width, int height) {
-            radioButtonRenderer.setEnabled(c.isEnabled());
-            radioButtonRenderer.getModel().setRollover(false);
-            radioButtonRenderer.setRolloverEnabled(false);
-            radioButtonRenderer.getModel().setPressed(((JButton) c).getModel().isPressed());
 
-            Icon ic = ((JButton) c).getIcon();
-
-            boolean shouldSelect = selectionModel.getSelectedIndex() != -1
-                    && displayer.isActive() && ((ic.getClass()
-                    == LeftIcon.class && selectionModel.getSelectedIndex()
-                    < getFirstVisibleTab()) || (ic.getClass()
-                    == RightIcon.class && selectionModel.getSelectedIndex()
-                    > getLastVisibleTab()));
-
-
-            radioButtonRenderer.setSelected(shouldSelect);
-
-            SwingUtilities.paintComponent(g, radioButtonRenderer, (Container) c, x, y, width,
-                                          height);
-            
-            //Kill a few repaints SwingUtilities.paintComponent will
-            //gennerate because it adds the button to a container
-            RepaintManager rm = RepaintManager.currentManager(c);
-            rm.markCompletelyClean((JComponent) c);
-            rm.markCompletelyClean(radioButtonRenderer);
-
-            if (shouldSelect) {
-                c.setForeground(new Color(0, 64, 128));
-            } else {
-                c.setForeground(UIManager.getColor("controlDkShadow")); //NOI18N
-            }
-            ((LeftIcon) ic).dontpaint = false;
-            ic.paintIcon(c, g, x + (width / 4) + 2, y + (width / 4) + 3);
-            ((LeftIcon) ic).dontpaint = true;
         }
     }
-
-    /**
-     * The radio button used as a renderer for the control buttons
-     */
-    private static class QuietRadioButton extends JRadioButton {
-        public void addHierarchyListener(HierarchyListener hl) {
-            //do nothing - generates lots of useless repaints and resettings
-            //of borders because SwingUtilities.paintComponent will add it to
-            //a CellRendererPane
-        }
-
-        public void paintBorder(Graphics g) {
-            super.paintBorder(g);
-            
-            //Draw some more of the rounded border extension behind the
-            //buttons
-            Insets ins = getInsets();
-
-            int centerY = (getHeight() / 2) - 1;
-
-            Color col = ColorUtil.getMiddle(
-                    UIManager.getColor("controlShadow"),
-                    UIManager.getColor("control")); //NOI18N
-
-            g.setColor(col);
-            g.drawLine(0, centerY, ins.left + 1, centerY);
-            g.drawLine(getWidth() - (ins.right - 1), centerY, getWidth(),
-                       centerY);
-            g.setColor(ColorUtil.getMiddle(col,
-                                           UIManager.getColor("control"))); //NOI18N
-            g.drawLine(0, centerY + 1, ins.left + 1, centerY + 1);
-            g.drawLine(getWidth() - (ins.right - 1), centerY + 1,
-                       getWidth(), centerY + 1);
-
-        }
-
-        public void revalidate() {
-            //do nothing
-        }
-
-        public void repaint() {
-            //do nothing
-        }
-    }
-
 }
