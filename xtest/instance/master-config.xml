@@ -50,19 +50,25 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
+      -->
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="form" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
+      -->
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk14"/>
+      -->
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
       <module name="vcsgeneric"	testtypes="qa-functional"  attributes="validation"/>      
@@ -81,19 +87,25 @@ Microsystems, Inc. All Rights Reserved.
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>  
+      -->
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="form" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
+      -->
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
+      <!-- no longer in validation suite
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk13"/> 
+      -->
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
       <!-- temporarily removed because it crashes all testing
       <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
