@@ -25,7 +25,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target depends="javahelp,jars" name="netbeans"/>
+  <!-- <target depends="javahelp,jars" name="netbeans"/> -->
+  <target depends="release" name="netbeans"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="j2eeserver.nbm"
@@ -148,6 +149,12 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/core/netbeans/lib/core.jar"/>
       </classpath>
     </javac>
+  </target>
+
+  <target name="release">
+    <copy todir="netbeans">
+      <fileset dir="release"/>
+    </copy>
   </target>
 
   <target name="javahelp">
