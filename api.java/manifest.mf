@@ -3,4 +3,4 @@ OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.6
 OpenIDE-Module-Specification-Version: 1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Localizing-Bundle: org/netbeans/api/java/classpath/Bundle.properties
-
+OpenIDE-Module-Public-Packages: org.netbeans.api.java.**
