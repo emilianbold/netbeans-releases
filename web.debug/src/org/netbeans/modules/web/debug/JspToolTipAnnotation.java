@@ -117,9 +117,9 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         try {
             Variable v = d.evaluate(text);
             if (v instanceof ObjectVariable) {
-                toolTipText = text + " = (" + v.getType() + ")" + ((ObjectVariable)v).getToStringValue();
+                toolTipText = textForTooltip + " = (" + v.getType() + ")" + ((ObjectVariable)v).getToStringValue();
             } else {
-                toolTipText = text + " = (" + v.getType() + ")" + v.getValue();
+                toolTipText = textForTooltip + " = (" + v.getType() + ")" + v.getValue();
             }
         } catch (InvalidExpressionException e) {
             toolTipText = text + " = >" + e.getMessage() + "<";
