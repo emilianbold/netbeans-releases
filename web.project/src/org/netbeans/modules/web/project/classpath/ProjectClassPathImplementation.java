@@ -12,14 +12,7 @@
  */
 package org.netbeans.modules.web.project.classpath;
 
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileUtil;
-
+import java.beans.PropertyChangeEvent;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,21 +21,38 @@ import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.net.URL;
-
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
-final class ProjectClassPathImplementation implements ClassPathImplementation, AntProjectListener {
+/**
+ * Implementation of a single classpath that is derived from one Ant property.
+ */
+final class ProjectClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private AntProjectHelper helper;
     private String propertyName;
     private List resources;
+    private final PropertyEvaluator evaluator;
 
-    public ProjectClassPathImplementation (AntProjectHelper helper, String propertyName) {
+    /**
+     * Construct the implementation.
+     * @param helper an Ant project, used to resolve file paths
+     * @param propertyName the name of an Ant property which will supply the classpath
+     * @param evaluator a property evaluator used to find the value of the classpath
+     */
+    public ProjectClassPathImplementation(AntProjectHelper helper, String propertyName, PropertyEvaluator evaluator) {
         assert helper != null && propertyName != null;
         this.helper = helper;
+        this.evaluator = evaluator;
         this.propertyName = propertyName;
-        this.helper.addAntProjectListener (this);
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
     public synchronized List /*<PathResourceImplementation>*/ getResources() {
@@ -61,11 +71,11 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, A
     }
 
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        //Not interesting
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (!evt.getPropertyName().equals(propertyName)) {
+            // Not interesting to us.
+            return;
+        }
         List newRoots = getPath ();
         boolean fire = false;
         synchronized (this) {
@@ -78,33 +88,28 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, A
             support.firePropertyChange (PROP_RESOURCES,null,null);
         }
     }
-
+    
     private List getPath() {
         List result = new ArrayList ();
-        String prop = helper.getStandardPropertyEvaluator ().getProperty (propertyName);
+        String prop = evaluator.getProperty(propertyName);
         if (prop != null) {
             String[] pieces = PropertyUtils.tokenizePath(prop);
             for (int i = 0; i < pieces.length; i++) {
                 File f = helper.resolveFile(pieces[i]);
                 try {
-                    URL entry;
-                    // if file does not exist (e.g. build/classes folder
-                    // was not created yet) then corresponding File will
-                    // not be ended with slash. Fix that.
-                    if (f.getPath().toLowerCase().endsWith(".jar") || (f.getPath().toLowerCase().endsWith(".zip"))) {
-                        entry = FileUtil.getArchiveRoot(f.toURI().toURL());
-                    } else {
-                        entry = f.toURI().toURL();
-                        if (!f.exists()) {
-                            assert !entry.toExternalForm().endsWith("/") : f;
-                            entry = new URL(entry.toExternalForm() + "/");
-                        }
+                    URL entry = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(entry)) {
+                        entry = FileUtil.getArchiveRoot(entry);
+                    } else if (!f.exists()) {
+                        // if file does not exist (e.g. build/classes folder
+                        // was not created yet) then corresponding File will
+                        // not be ended with slash. Fix that.
+                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
+                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
                     }
-                    if (entry != null) {
-                        result.add(ClassPathSupport.createResource(entry));
-                    }
+                    result.add(ClassPathSupport.createResource(entry));
                 } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue);
+                    assert false : mue;
                 }
             }
         }

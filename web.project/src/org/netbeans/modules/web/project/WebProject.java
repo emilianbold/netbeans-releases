@@ -172,7 +172,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
             new WebActionProvider( this, helper, refHelper ),
             new WebPhysicalViewProvider(this, helper, evaluator (), spp, refHelper),
             new WebCustomizerProvider( this, helper, refHelper ),
-            new ClassPathProviderImpl(helper),
+            new ClassPathProviderImpl(helper, evaluator ()),
             new CompiledSourceForBinaryQuery(helper),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),

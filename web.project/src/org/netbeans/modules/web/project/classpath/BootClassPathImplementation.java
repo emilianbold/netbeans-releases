@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.web.project.classpath;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -29,21 +30,25 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.util.WeakListeners;
 
-final class BootClassPathImplementation implements ClassPathImplementation, AntProjectListener {
+final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private static final String PLATFORM_ACTIVE = "platform.active";        //NOI18N
     private static final String ANT_NAME = "platform.ant.name";             //NOI18N
     private static final String J2SE = "j2se";                              //NOI18N
 
     private AntProjectHelper helper;
+    private final PropertyEvaluator evaluator;
     private List resourcesCache;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    public BootClassPathImplementation (AntProjectHelper helper) {
+    public BootClassPathImplementation(AntProjectHelper helper, PropertyEvaluator evaluator) {
         assert helper != null;
         this.helper = helper;
-        this.helper.addAntProjectListener(this);
+        this.evaluator = evaluator;
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
     public synchronized List /*<PathResourceImplementation>*/ getResources() {
@@ -72,19 +77,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, AntP
         this.support.removePropertyChangeListener (listener);
     }
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-    }
-
-    public void propertiesChanged(AntProjectEvent ev) {
-        synchronized (this) {
-            this.resourcesCache = null;
-        }
-        this.support.firePropertyChange (PROP_RESOURCES,null,null);
-    }
-
     private JavaPlatform findActivePlatform () {
         JavaPlatformManager pm = JavaPlatformManager.getDefault();
-        String platformName = this.helper.getStandardPropertyEvaluator ().getProperty (PLATFORM_ACTIVE);
+        String platformName = evaluator.getProperty(PLATFORM_ACTIVE);
         if (platformName!=null) {
             JavaPlatform[] installedPlatforms = pm.getInstalledPlatforms();
             for (int i = 0; i< installedPlatforms.length; i++) {
@@ -99,4 +94,14 @@ final class BootClassPathImplementation implements ClassPathImplementation, AntP
         //Invalid platform ID or default platform
         return pm.getDefaultPlatform();
     }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
+            synchronized (this) {
+                resourcesCache = null;
+            }
+            support.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+    }
+    
 }
