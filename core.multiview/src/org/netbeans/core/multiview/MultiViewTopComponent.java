@@ -68,6 +68,8 @@ public final class MultiViewTopComponent
         peer = new MultiViewPeer(this, this);
         // initializes the multiview component.
         peer.initComponents();
+        setName("");
+
     }
     
     

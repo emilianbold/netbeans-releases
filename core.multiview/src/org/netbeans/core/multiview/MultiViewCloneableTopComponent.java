@@ -68,6 +68,7 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         // initializes the multiview component.
         peer.initComponents();
         setFocusCycleRoot(false);
+        setName("");
 //        setFocusable(false);
     }
     
