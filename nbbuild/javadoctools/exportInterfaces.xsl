@@ -30,7 +30,7 @@ Microsystems, Inc. All Rights Reserved.
                 footer="{$arch.footer}">
             
             <description>
-                <xsl:apply-templates select="api-answers/answer[@id='arch-what']/node()"/>
+                <xsl:apply-templates select="api-answers/answer[@id='arch-what']/node()" mode="description"/>
             </description>
 
             <xsl:variable name="deploy-dependencies" select="api-answers/answer[@id='deploy-dependencies']"/>
@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         </api>
     </xsl:template>
      
-    <xsl:template match="api">
+    <xsl:template match="api" mode="description">
         <api-ref name="{@name}"/>
     </xsl:template>  
     

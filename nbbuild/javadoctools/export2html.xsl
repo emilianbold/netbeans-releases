@@ -23,15 +23,14 @@ Microsystems, Inc. All Rights Reserved.
             <!-- projects.netbeans.org -->
            <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
            <title>NetBeans API List</title>
-            <link rel="StyleSheet" href="http://www.netbeans.org/netbeans.css" type="text/css" title="NetBeans OpenSource Style" />
-        <!--    <link rel="StyleSheet" href="docs.css" type="text/css"> -->
+            <link rel="stylesheet" href="http://www.netbeans.org/netbeans.css" type="text/css"/>
 
           <link REL="icon" href="http://www.netbeans.org/favicon.ico" type="image/ico" />
           <link REL="shortcut icon" href="http://www.netbeans.org/favicon.ico" />
 
         </head>
 
-        <body style="margin-left: 20px; margin-right: 20px; margin-top: 0px;" bgcolor="#FFFFFF" >
+        <body>
 
         <center><h1>NetBeans API List</h1></center>
 
@@ -68,6 +67,13 @@ Microsystems, Inc. All Rights Reserved.
                 <xsl:choose>
                     <xsl:when test="api" >
                         <a href="#def-api-{@name}"><xsl:value-of select="@name"/></a> -
+                            <!-- XXX the following is crap; e.g. messes up descs of Dialogs API, I/O API, ... -->
+                            <!-- Should use e.g.:
+                            <answer id="arch-what">
+                                <span class="summary">This API does such-and-such.</span>
+                                It also does some other less important stuff.
+                            </answer>
+                            -->
                             <xsl:value-of select="substring-before(description, '.')" disable-output-escaping="yes"/>.
                         
                     </xsl:when>
