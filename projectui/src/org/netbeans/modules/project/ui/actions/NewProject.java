@@ -78,15 +78,20 @@ public class NewProject extends BasicAction {
                         
                         // check if it's project's directory
                         if (newDo.getPrimaryFile ().isFolder ()) {
-                            Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );
+                            Project p = ProjectManager.getDefault().findProject( newDo.getPrimaryFile () );                            
                             if ( p != null ) {
+                                // It is a project open it
                                 OpenProjectList.getDefault().open( p, true );
                                 if ( setFirstMain ) {
                                     OpenProjectList.getDefault().setMainProject( p );
                                     setFirstMain = false;
                                 }
                             }
-                        } else {
+                            else {
+                                // Just a folder to expand
+                                filesToOpen.add( newDo );
+                            }
+                        } else {                            
                             filesToOpen.add( newDo );                            
                         }
                     } else {
