@@ -47,12 +47,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private JTextField nbInstallDirTF;
     private JButton    nbBrowseButton;
     private JLabel     nbInputLabel;
-    //private JTextArea  nbListLabel;
 
     private JTextField j2seInstallDirTF;
     private JButton    j2seBrowseButton;
     private JLabel     j2seInputLabel;
-    //private JTextArea  j2seListLabel;
 
     private JPanel mainPanel;
     private JPanel displayPanel;
@@ -61,18 +59,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private JTextArea bottomTextArea;
     private JLabel exPathLabel;
     
-    private String installedJdk;
     private String installedVersion = "";
-    private String backupDirName    = "";
     private String nbLabel          = null;
-    private String j2seLabel        = null;
-    private String j2seDir          = null;
-
-    private static int NB_INSTALL_DIR   = 1;
-    private static int J2SE_INSTALL_DIR = 2;
 
     private boolean emptyExistingDirNB   = false;
-    private boolean emptyExistingDirJ2SE = false;
     
     public void build(WizardBuilderSupport support) {
         super.build(support);
@@ -115,16 +105,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     
     protected void initialize() {
         super.initialize();
-
-	// if null, no previous jdk was found. Always null on unix platforms.
-	installedJdk = (String) System.getProperties().get("installedJdk");
-	logEvent(this, Log.DBG, "Installed JDK Found: " + installedJdk);
-
-        backupDirName = (String)System.getProperties().get("backupDirName");
-        if (backupDirName == null) {
-		backupDirName = "backup";
-        }
-
+        
 	String tempPath;
 	String sysDrive = null;
 	if (Util.isWindowsOS()) {
@@ -152,26 +133,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         
         infoTextArea = new JTextArea();	
         
-        String desc;
-        if (Util.isJDKAlreadyInstalled()) {
-            if (Util.isJREAlreadyInstalled()) {
-                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErr,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
-                + installedJdk + ","
-                + "$L(org.netbeans.installer.Bundle,Product.displayName))");
-            } else {
-                //Warning message when JDK is installed but public JRE is NOT installed
-                desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.dirSelectionDescErrJRE,"
-                + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
-                + installedJdk + ","
-                + "$L(org.netbeans.installer.Bundle,Product.displayName),"
-                + "$L(org.netbeans.installer.Bundle,JRE.shortName))");
-            }
-        } else {
-            desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
-            + "$L(org.netbeans.installer.Bundle,JDK.shortName),"
-            + "$L(org.netbeans.installer.Bundle,Product.displayName))");
-        }
+        String desc = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.description,"
+        + "$L(org.netbeans.installer.Bundle,Product.displayName),"
+        + "$L(org.netbeans.installer.Bundle,AS.name))");
         
         infoTextArea.setText(desc);
         
@@ -224,13 +188,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	gridBagConstraints.gridwidth = 1;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         inputPanel.add(nbBrowseButton, gridBagConstraints);
-
-	/*String defaultDirLabel = resolveString("$L(com.sun.installer.InstallerResources,DEFAULT_DIR_LABEL)");
-        nbListLabel = new JTextArea();	
-	nbListLabel.setText("(" + defaultDirLabel + " " + nbInstallDir + ")");
-        nbListLabel.setWrapStyleWord(true);
-        nbListLabel.setLineWrap(true);
-        nbListLabel.setEditable(false);*/
 	
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.insets = new Insets(0, 25, 20, 0);
@@ -242,84 +199,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         //inputPanel.add(nbListLabel, gridBagConstraints);
-
-	//----------------------------------------------------------------------
-	// j2se install dir components
-        
-        //#49200: On Windows JDK 1.5.0 installer uses default installation dir
-        //"C:\Program Files\Java\jdk1.5.0" whereas JDK 1.4.2_X uses "C:\j2sdk1.4.2_X"
-        //ie. "Program Files" is missing.
-	String j2seInstallDir = tempPath + File.separator
-        + resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
-	/*j2seDir = resolveString("$L(org.netbeans.installer.Bundle,JDK.defaultInstallDirectory)");
-	String j2seInstallDir = null;
-	if (Util.isWindowsOS()) {
-	    j2seInstallDir = sysDrive + j2seDir;
-	} else {
-	    j2seInstallDir = tempPath + File.separator + j2seDir;
-	}*/
-	j2seLabel = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.jdkInstallDirectoryLabel)");
-
-	if (!Util.isJDKAlreadyInstalled()) {
-	    j2seInputLabel = new JLabel(j2seLabel);
-	    j2seInputLabel.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
-	    gridBagConstraints = new GridBagConstraints();
-	    gridBagConstraints.insets = new Insets(0, 25, 3, 0);
-	    gridBagConstraints.gridx = 0;
-	    gridBagConstraints.gridy = 3;
-	    gridBagConstraints.weightx = 0.5;
-	    gridBagConstraints.gridheight = 1;
-	    gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-	    gridBagConstraints.anchor = GridBagConstraints.SOUTHWEST;
-	    gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	    inputPanel.add(j2seInputLabel, gridBagConstraints);
-	    
-	    j2seInstallDirTF = new JTextField(j2seInstallDir);
-	    gridBagConstraints = new GridBagConstraints();
-	    gridBagConstraints.insets = new Insets(0, 25, 3, 0);
-	    gridBagConstraints.gridx = 0;
-	    gridBagConstraints.gridy = 4;
-	    gridBagConstraints.weightx = 0.5;
-	    gridBagConstraints.gridheight = 1;
-	    gridBagConstraints.gridwidth = 1;
-	    gridBagConstraints.anchor = GridBagConstraints.WEST;
-	    gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	    inputPanel.add(j2seInstallDirTF, gridBagConstraints);
-	    
-	    j2seBrowseButton = new JButton();
-	    j2seBrowseButton.setText(browseButtonText);
-	    j2seBrowseButton.setActionCommand("j2se"); 
-	    j2seBrowseButton.addActionListener(this);
-	    gridBagConstraints = new GridBagConstraints();
-	    gridBagConstraints.insets = new Insets(0, 12, 3, 0);
-	    gridBagConstraints.gridx = GridBagConstraints.RELATIVE;
-	    gridBagConstraints.gridy = 4;
-	    gridBagConstraints.gridheight = 1;
-	    gridBagConstraints.gridwidth = 1;
-	    gridBagConstraints.anchor = GridBagConstraints.WEST;
-	    inputPanel.add(j2seBrowseButton, gridBagConstraints);
-
-	    //j2seListLabel = new JTextArea();
-	    //j2seListLabel.setText("(" + defaultDirLabel + " " + j2seInstallDir + ")");	
-	    //j2seListLabel.setWrapStyleWord(true);
-	    //j2seListLabel.setLineWrap(true);
-	    //j2seListLabel.setEditable(false);
-	    
-	    gridBagConstraints = new GridBagConstraints();
-	    gridBagConstraints.insets = new Insets(0, 25, 0, 0);
-	    gridBagConstraints.gridx = 0;
-	    gridBagConstraints.gridy = 5;
-	    gridBagConstraints.gridheight = 1;
-	    gridBagConstraints.gridwidth = GridBagConstraints.REMAINDER;
-	    gridBagConstraints.weightx = 0.5;
-	    gridBagConstraints.anchor = GridBagConstraints.WEST;
-	    gridBagConstraints.fill = GridBagConstraints.BOTH;
-	    //inputPanel.add(j2seListLabel, gridBagConstraints);
-
-	    //j2seBrowseButton.setBackground(getContentPane().getBackground());
-	    //j2seInputLabel.setBackground(getContentPane().getBackground());
-	    //j2seListLabel.setBackground(getContentPane().getBackground());
-	}
 
 	//----------------------------------------------------------------------
 
@@ -368,8 +247,8 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	}
         
 	// If there is a problem with the specified directory, then return false
-        if (!checkInstallDir(nbInstallDir, NB_INSTALL_DIR, nbMsgStart)) {
-	    return false;
+        if (!checkInstallDir(nbInstallDir, nbMsgStart)) {
+            return false;
 	}
 	try {
 	    ProductService service = (ProductService)getService(ProductService.NAME);
@@ -382,69 +261,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	
 	System.getProperties().put("nbInstallDir", nbInstallDir);
 	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
-	
- 	// Check the j2se directory
-        String j2seMsgStart = null;
-        index = j2seLabel.lastIndexOf(':');
-        if (index > 0) {
-            j2seMsgStart = j2seLabel.substring(0, index);
-        } else {
-            j2seMsgStart = j2seLabel;
-        }
-        String j2seInstallDir = null;
-        if (Util.isJDKAlreadyInstalled() && Util.isWindowsOS()) {
-            try {
-                ProductService service = (ProductService)getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "active", Boolean.FALSE);
-            }catch(ServiceException ex) {
-                ex.printStackTrace();
-                Util.logStackTrace(this,ex);
-            }
-        }
-        else {
-            // There is no jdk already installed so check the j2se directory.
-            j2seInstallDir = j2seInstallDirTF.getText().trim();
-            instDirFile = new File(j2seInstallDir);
-
-            try { // cleanup any misc chars in path such as "."
-                j2seInstallDir = instDirFile.getCanonicalPath();
-                instDirFile = new File(j2seInstallDir);
-            } catch (IOException ioerr) {
-                System.out.println("IOException: Could not get canonical path: " + ioerr);
-                j2seInstallDir = instDirFile.getAbsolutePath();
-            }
-            j2seInstallDirTF.setText(j2seInstallDir);
-
-            // If there is a problem with the specified directory, then return false
-            if (!checkInstallDir(j2seInstallDir, J2SE_INSTALL_DIR, j2seMsgStart)) {
-                return false;
-            }
-            try {
-                ProductService service = (ProductService)getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
-            } catch (ServiceException e) {
-                logEvent(this, Log.ERROR, e);
-            }
-            System.getProperties().put("jdkHome", j2seInstallDir);
-            System.getProperties().put("j2seInstallDir", j2seInstallDir);
-            logEvent(this, Log.DBG, "User specified j2seInstallDir: " + j2seInstallDir);
-
-            // Last thing to do is create the J2SE directory unless the
-            // directory exists and is empty.
-            if (!emptyExistingDirJ2SE) {
-                if (!createDirectory(j2seInstallDir, j2seMsgStart)) return false;
-            }
-        }
         
-        //#49348: Do not allow the same dir for JDK and NB.
-        if (!checkBothInstallDirs(nbInstallDir,j2seInstallDir)) {
-            return false;
-        }
-        
-	// Last thing to do is create the NB directory unless the
-	// directory exists and is empty. Creating directory as last thing
-	// to do so as not to create  when having problems with checking
-	// the j2se directory.
+	// Last thing to do is to create the NB directory unless the
+	// directory exists and is empty.
 	if (!emptyExistingDirNB) {
 	    if (!createDirectory(nbInstallDir, nbMsgStart)) {
                 return false;
@@ -453,30 +272,10 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	return true;
     }
     
-    /* Check if J2SE and NB installation dirs are the same or not.
-     */
-    private boolean checkBothInstallDirs(String nbDir, String j2seDir) {
-        String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
-	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
-        Frame parent = ((AWTWizardUI)getWizard().getUI()).getFrame();
-        String dialogMsg = "";
-        MessageDialog msgDialog = null;
-        
-        //#49348: Do not allow the same dir for JDK and NB.
-        if (nbDir.equals(j2seDir)) {
-            dialogMsg = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryNBJDKTheSame)");
-            msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-            msgDialog.setVisible(true);
-            return false;
-        }
-        return true;
-    }
-    
     /* Check the installation directory to see if it has illegal chars,
      * or if it already exits or if it's empty then create it.
      */ 
-    private boolean checkInstallDir(String dir, int installDirType, String msgPrefix) {
-
+    private boolean checkInstallDir(String dir, String msgPrefix) {
         String[] okString  = {resolveString("$L(com.installshield.wizard.i18n.WizardResources, ok)")};
 	String dialogTitle = resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryDialogTitle)");
         StringTokenizer st = new StringTokenizer(dir);
@@ -491,15 +290,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             msgDialog.setVisible(true);
             return false;
         }
-	else if (st.countTokens() > 1) {
-	    if (!Util.isWindowsOS() && installDirType == J2SE_INSTALL_DIR) {
-		dialogMsg = msgPrefix + " "
-		+ resolveString("$L(org.netbeans.installer.Bundle,InstallLocationPanel.directoryHasSpaceMessage)");
-		msgDialog = new MessageDialog(parent, dialogMsg, dialogTitle, okString);
-		msgDialog.setVisible(true);
-		return false;
-	    }
-	}
 	// check for illegal characters in a windows path name
 	else if ((Util.isWindowsOS() && (dir.indexOf("@") != -1 || dir.indexOf("&") != -1 ||
 					 dir.indexOf("%") != -1 || dir.indexOf("#") != -1)) ||
@@ -566,12 +356,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    }
 	    // We have write permissions, now see if the directory is empty
 	    boolean isEmpty = checkNonEmptyDir(dir);
-	    if (installDirType == NB_INSTALL_DIR) {
-		emptyExistingDirNB = isEmpty;
-	    }
-	    else {
-		emptyExistingDirJ2SE = isEmpty;
-	    }
+            emptyExistingDirNB = isEmpty;
             if(!isEmpty) {
                 // Another version installed. prompt to uninstall
                 dialogMsg = msgPrefix + " "
@@ -614,25 +399,6 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	return true;
     }
     
-    public boolean backupDirectory(java.io.File dir){
-        File backupDir = new File(dir, backupDirName);
-        Util.deleteDirectory(backupDir);
-        backupDir.mkdirs();
-        java.io.File[] list = dir.listFiles();
-        for (int i=0; i < list.length ; i++) {
-            if(!list[i].getName().equals(backupDir.getName())) {
-                File newFile = new File(backupDir,list[i].getName());
-                list[i].renameTo(newFile);
-            }
-        }
-        list=dir.listFiles();
-        if (list.length > 1) return false;
-        if(!list[0].getName().equals(backupDir.getName()))
-            return false;
-        else
-            return true;
-    }
-
     private boolean checkNonEmptyDir(String instDir) {
         boolean empty = true;
 
@@ -677,9 +443,9 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
     private char getWinSystemDrive() {
 	char sysDrive = 'C';
         try {
-            String sysLib=resolveString("$D(lib)"); // Resolve system library directory 
+            String sysLib = resolveString("$D(lib)"); // Resolve system library directory 
             logEvent(this, Log.DBG, "System Library directory is "+sysLib); 
-            sysDrive=sysLib.charAt(0); // Resolve system drive letter
+            sysDrive = sysLib.charAt(0); // Resolve system drive letter
             logEvent(this, Log.DBG, " Found system drive is: " + String.valueOf(sysDrive));
         } catch(Exception ex) {
             Util.logStackTrace(this,ex);

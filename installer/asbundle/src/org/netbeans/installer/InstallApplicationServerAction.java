@@ -49,7 +49,7 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
     private static final String AS_SETUP_DIR    = "as_setup";
     private static final String STATE_FILE_NAME = "statefile";
     private static final String UNINST_DIRECTORY_NAME = "_uninst";
-    protected static final String IMAGE_DIRECTORY_NAME = "SunAppServer8";
+    protected static final String IMAGE_DIRECTORY_NAME = "SunAppServer8.1";
     protected static final String JDK_DIRECTORY_NAME = "java";
     protected static final String POINTBASE_DIRECTORY_NAME = "pointbase";
 
@@ -103,9 +103,9 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
             support.putClass(FileComparator.class.getName());
             support.putClass(Util.class.getName());
             support.putClass(NetUtils.class.getName());
-            support.putClass("com.sun.installer.InstallApplicationServerAction$ProgressThread");
-            support.putClass("com.sun.installer.InstallApplicationServerAction$PointbaseFileFilter");
-            support.putClass("com.sun.installer.InstallApplicationServerAction$PEFileFilter");
+            support.putClass("org.netbeans.installer.InstallApplicationServerAction$ProgressThread");
+            support.putClass("org.netbeans.installer.InstallApplicationServerAction$PointbaseFileFilter");
+            support.putClass("org.netbeans.installer.InstallApplicationServerAction$PEFileFilter");
             support.putRequiredService(Win32RegistryService.NAME);
             support.putRequiredService(DesktopService.NAME);
         } catch (Exception ex){
