@@ -92,7 +92,7 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
         JavaSettings.getDefault().setParsingErrors(parsingErrors);        
     }
     
-    protected void initialize() {
+    public void initialize() {
         /*
         javax.swing.text.Caret thecaret = editorOperator.txtEditorPane().getCaret();
         if (thecaret instanceof BaseCaret)
@@ -133,7 +133,7 @@ public class TypingInEditor extends testUtilities.PerformanceTestCase {
         // do nothing
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         turnBack();
         editorOperator.closeDiscard();
         super.shutdown();

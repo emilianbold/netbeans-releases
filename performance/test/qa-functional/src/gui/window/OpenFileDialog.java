@@ -46,7 +46,7 @@ public class OpenFileDialog extends testUtilities.PerformanceTestCase {
         gui.Utilities.workarroundMainMenuRolledUp();
     }
     
-    protected void initialize() {
+    public void initialize() {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.openfile.Bundle","LBL_openFile");
     }
     

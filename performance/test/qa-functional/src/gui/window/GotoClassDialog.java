@@ -41,7 +41,7 @@ public class GotoClassDialog extends testUtilities.PerformanceTestCase {
     }
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Edit") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.editor.java.Bundle","NAME_JavaFastOpenAction");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.editor.ext.java.Bundle", "JFO_title");
     }
     

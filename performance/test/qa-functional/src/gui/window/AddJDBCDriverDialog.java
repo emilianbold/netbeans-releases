@@ -41,7 +41,7 @@ public class AddJDBCDriverDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         BUNDLE = "org.netbeans.modules.db.resources.Bundle";
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddNewDriver");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE, "AddDriverDialogTitle");

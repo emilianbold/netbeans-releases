@@ -53,7 +53,7 @@ public class PageUpPageDownInEditor extends testUtilities.PerformanceTestCase {
     
     private EditorOperator editorOperator;
     
-    protected void initialize() {
+    public void initialize() {
         EditorOperator.closeDiscardAll();
         
         setPaintFilteringForEditor();

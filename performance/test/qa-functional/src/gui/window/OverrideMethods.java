@@ -42,7 +42,7 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LAB_OverrideTool");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.java.tools.Bundle","LBL_OverridePanel2_Title");
         
@@ -59,7 +59,7 @@ public class OverrideMethods extends testUtilities.PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
     
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
 

@@ -40,7 +40,7 @@ public class DocumentsDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize(){
+    public void initialize(){
         gui.Utilities.open10FilesFromJEdit();
         editor = new EditorWindowOperator();
     }
@@ -56,7 +56,7 @@ public class DocumentsDialog extends testUtilities.PerformanceTestCase {
         return new DocumentsDialogOperator();
     }
 
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
     

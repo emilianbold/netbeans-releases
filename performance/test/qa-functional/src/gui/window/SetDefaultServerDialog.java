@@ -45,8 +45,8 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
     private RuntimeTabOperator thetab;
     private Node thenode;
     
-    protected void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actionsBundle","LBL_SetDefaultServer");
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","LBL_SetDefaultServer");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle","LBL_SetDefaultDlgTitle");
         
         // show Runtime tab, maximize it and select Server Registry node
@@ -68,7 +68,7 @@ public class SetDefaultServerDialog extends testUtilities.PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         // restore the original size of Runtime tab
         thetab.restore();
     }

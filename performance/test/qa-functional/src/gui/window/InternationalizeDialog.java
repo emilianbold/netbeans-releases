@@ -42,7 +42,7 @@ public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         BUNDLE = "org.netbeans.modules.i18n.Bundle";
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"LBL_I18nGroupActionName") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nAction");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_I18nDialogTitle");
@@ -60,7 +60,7 @@ public class InternationalizeDialog extends testUtilities.PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
  
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
     

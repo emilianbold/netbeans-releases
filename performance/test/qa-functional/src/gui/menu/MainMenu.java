@@ -83,7 +83,7 @@ public class MainMenu extends testUtilities.PerformanceTestCase {
     }
     
     public void testRefactoringMenu(){
-        testMenu("org.netbeans.modules.refactoring.ui.Bundle","LBL_Refactoring");
+        testMenu("org.netbeans.modules.refactoring.ui.Bundle","LBL_Action");
     }
     
     public void testVersioningMenu(){

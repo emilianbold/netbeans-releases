@@ -70,11 +70,11 @@ public class MeasureDialogs  {
 
 //TODO Javadoc Index Search isn't TopComponent        suite.addTest(new JavadocIndexSearch("measureTime", "Javadoc Index Search open"));
         
-        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new JavaPlatformManager("measureTime", "Java Platform Manager open"));
         suite.addTest(new LibrariesManager("measureTime", "Libraries Manager open"));
         
         // dialogs and windows which first open a file in the editor
+        suite.addTest(new GotoClassDialog("measureTime", "Go To Class dialog open"));
         suite.addTest(new OverrideMethods("measureTime", "Override and Implement Methods dialog open"));
         suite.addTest(new GotoLineDialog("measureTime", "Go to Line dialog open"));
         suite.addTest(new AutoCommentWindow("measureTime", "Auto Comment Tool open"));

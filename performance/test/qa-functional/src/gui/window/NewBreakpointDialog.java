@@ -40,7 +40,7 @@ public class NewBreakpointDialog extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","Menu/RunProject") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_AddBreakpoint");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle","CTL_Breakpoint_Title");
     }

@@ -46,8 +46,8 @@ public class OpenProjectDialog extends testUtilities.PerformanceTestCase {
         gui.Utilities.workarroundMainMenuRolledUp();
     }
     
-    protected void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle","LBL_NodeNewProjectAction_Name");
+    public void initialize() {
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/File") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle","LBL_OpenProjectAction_Name");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle","LBL_PrjChooser_Title");
     }
     

@@ -146,7 +146,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
         nodeToBeExpanded.collapse();
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         turnBack();
         org.netbeans.junit.ide.ProjectSupport.closeProject(testDataProject);
         projectTab.restore();

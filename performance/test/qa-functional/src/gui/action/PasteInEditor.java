@@ -47,7 +47,7 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
     
     private EditorOperator editorOperator1, editorOperator2;
     
-    protected void initialize() {
+    public void initialize() {
         EditorOperator.closeDiscardAll();
         
         setPaintFilteringForEditor();
@@ -77,7 +77,7 @@ public class PasteInEditor extends testUtilities.PerformanceTestCase {
         return null;
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         // close the second file without saving it
         editorOperator2.closeDiscard();
     }

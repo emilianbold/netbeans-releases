@@ -81,7 +81,7 @@ public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
         JavaSettings.getDefault().setParsingErrors(parsingErrors);        
     }
     
-    protected void initialize() {
+    public void initialize() {
         // open a java file in the editor
         new OpenAction().performAPI(new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|Main.java"));
         editorOperator = new EditorWindowOperator().getEditor("Main.java");
@@ -119,7 +119,7 @@ public class JavaCompletionInEditor extends testUtilities.PerformanceTestCase {
         return new ComponentOperator(MainWindowOperator.getDefault(), new CodeCompletionSubchooser());
     }
     
-    protected void shutdown() {
+    public void shutdown() {
         turnBack();
         editorOperator.closeDiscard();
         super.shutdown();

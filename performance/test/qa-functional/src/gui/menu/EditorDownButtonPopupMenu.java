@@ -46,7 +46,7 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
         doMeasurement();
     }
     
-    protected void initialize(){
+    public void initialize(){
         gui.Utilities.open10FilesFromJEdit();
         editor = new EditorWindowOperator();
     }
@@ -61,7 +61,7 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
         return popupComponent;
   }
     
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
     

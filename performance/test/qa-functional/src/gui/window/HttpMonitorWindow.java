@@ -42,8 +42,8 @@ public class HttpMonitorWindow extends testUtilities.PerformanceTestCase {
     
     
     public void initialize() {
-        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(" org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed(" org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
+        MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Window") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_HTTP_Transaction_13");
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.web.monitor.client.Bundle", "MON_Title");        
     }
     
     

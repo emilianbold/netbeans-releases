@@ -47,7 +47,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         // open a java file in the editor
         editor = gui.Utilities.openJavaFile();
     }
@@ -62,7 +62,7 @@ public class FindInSourceEditor extends testUtilities.PerformanceTestCase {
         return new NbDialogOperator(TITLE);
     }
 
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
     

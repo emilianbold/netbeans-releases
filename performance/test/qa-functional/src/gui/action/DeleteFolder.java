@@ -20,7 +20,10 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.jellytools.actions.RefreshFolderAction;
+
+//TODO temporary
+import gui.action.RefreshFolderAction;
+//TODO import org.netbeans.jellytools.actions.RefreshFolderAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
@@ -162,7 +165,7 @@ public class DeleteFolder extends testUtilities.PerformanceTestCase {
         }
     }
 
-    protected void shutdown() {
+    public void shutdown() {
         org.netbeans.junit.ide.ProjectSupport.closeProject("PerformanceTestFoldersData");
         projectTab.restore();
         setPrintClassNames(false);

@@ -43,7 +43,7 @@ public class ProxyConfiguration extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         BUNDLE = "org.netbeans.modules.autoupdate.Bundle";
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_Update");
         TITLE_1 = org.netbeans.jellytools.Bundle.getStringTrimmed(BUNDLE,"CTL_Wizard");
@@ -66,7 +66,7 @@ public class ProxyConfiguration extends testUtilities.PerformanceTestCase {
         return new org.netbeans.jellytools.NbDialogOperator(TITLE);
     }
 
-    protected void shutdown() {
+    public void shutdown() {
         // close the wizard
         wizard.close();
     }

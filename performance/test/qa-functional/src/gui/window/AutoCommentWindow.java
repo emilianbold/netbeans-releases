@@ -42,7 +42,7 @@ public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
         expectedTime = WINDOW_OPEN;
     }
     
-    protected void initialize() {
+    public void initialize() {
         MENU = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle","Menu/Tools") + "|" + org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_MenuItem");
         TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.javadoc.comments.Bundle","CTL_AUTOCOMMENT_WindowTitle");
     
@@ -65,7 +65,7 @@ public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
         new TopComponentOperator(TITLE).close();
     }
     
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscard();
     }
 

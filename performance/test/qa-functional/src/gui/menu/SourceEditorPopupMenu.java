@@ -94,7 +94,7 @@ public class SourceEditorPopupMenu extends testUtilities.PerformanceTestCase {
     }
     
     
-    protected void initialize(){
+    public void initialize(){
         Node fileNode = new Node(new ProjectsTabOperator().getProjectRootNode("PerformanceTestData"), gui.Utilities.SOURCE_PACKAGES + "|org.netbeans.test.performance|" + fileName);
         
         if (fileName.endsWith("xml")) {
@@ -116,7 +116,7 @@ public class SourceEditorPopupMenu extends testUtilities.PerformanceTestCase {
         return new JPopupMenuOperator();
     }
     
-    protected void shutdown(){
+    public void shutdown(){
         editor.closeDiscardAll();
     }
     
