@@ -46,9 +46,6 @@ public class MeasureActions  {
         suite.addTest(new OpenFiles("testOpening20kBXmlFile", "Open Xml file (20kB)"));
         suite.addTest(new OpenFilesWithOpenedEditor("testOpening20kBXmlFile", "Open Xml file (20kB) if Editor opened"));
 
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
-
         
         suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
         suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
@@ -68,6 +65,9 @@ public class MeasureActions  {
         
         suite.addTest(new JavaCompletionInEditor("measureTime", "Invoke Code Completion dialog in Editor"));
         suite.addTest(new TypingInEditor("measureTime", "Type a character in Editor"));
+
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
 
         suite.addTest(new CloseEditor("testClosing20kBJavaFile", "Close Java file (20kB)"));
 //TODO Form designer isn't TopComponent        suite.addTest(new CloseEditor("testClosing20kBFormFile", "Close Form file (20kB)"));

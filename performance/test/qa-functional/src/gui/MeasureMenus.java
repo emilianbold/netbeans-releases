@@ -36,9 +36,6 @@ public class MeasureMenus  {
         suite.addTest(new MainMenu("testWindowMenu", "Window main menu"));
         suite.addTest(new MainMenu("testHelpMenu", "Help main menu"));
 
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
-
         suite.addTest(new MainSubMenus("testFileOpenRecentProjectMenu", "File | Open Recent Project main menu"));
         suite.addTest(new MainSubMenus("testFileSetMainProjectMenu", "File | Set Main Project main menu"));
         suite.addTest(new MainSubMenus("testViewDocumentationIndicesMenu", "View | Documentation Indices main menu"));
@@ -87,6 +84,9 @@ public class MeasureMenus  {
         
         suite.addTest(new ToolsOptionsNodePopupMenu("testOptionsNodePopupMenu", "Tools-Options node popup"));
 
+/*
+    TEMPORARY commented -> try to solve never finixhed tests
+ *
         suite.addTest(new EditorDownButtonPopupMenu("testEditorDownButtonPopupMenu", "Editor Down Button popup"));
         
         

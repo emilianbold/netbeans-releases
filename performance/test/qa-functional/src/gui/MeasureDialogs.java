@@ -35,8 +35,6 @@ public class MeasureDialogs  {
         suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
         suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
         
-/* TEMPORARY commented -> try to solve never finixhed tests
-
         suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
         suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
  
@@ -92,6 +90,8 @@ public class MeasureDialogs  {
         suite.addTest(new FindInSourceEditor("measureTime", "Find in Source Editor dialog open"));
         suite.addTest(new InternationalizeDialog("measureTime", "Internationalize dialog open"));
         
+/* TEMPORARY commented -> try to solve never finixhed tests
+
         suite.addTest(new DocumentsDialog("measureTime", "Documents dialog open"));
 */        
         return suite;
