@@ -126,6 +126,13 @@ final class CatalogEntryNode extends BeanNode {
         protected java.lang.String messageOpened() {
             return Util.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
+        
+        /** 
+         * Do not write it down, it is runtime view. #20007
+         */
+        private Object writeReplace() {
+            return null;
+        }
                 
     }    
     
