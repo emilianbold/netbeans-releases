@@ -1,5 +1,5 @@
 OpenIDE-Module: com.netbeans.developer.modules.loaders.properties/1
-OpenIDE-Module-Name: Properties Files
+OpenIDE-Module-Name: Resource Bundles Module
 OpenIDE-Module-Specification-Version: 1.0
 OpenIDE-Module-Implementation-Version: 1.0
 OpenIDE-Module-Install: com/netbeans/developer/modules/loaders/properties/PropertiesModule.class
