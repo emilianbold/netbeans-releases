@@ -101,16 +101,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
 
     /** Creates new HTMLSyntaxSupport */
     
-    public JspSyntaxSupport(BaseDocument doc) {
+    public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
         super(doc);
         fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
-        isXmlSyntax = false;
-    }
-    
-    public JspSyntaxSupport(BaseDocument doc, boolean isXml) {
-        this(doc);
         isXmlSyntax = isXml;
     }
+    
+    public JspSyntaxSupport(BaseDocument doc) {
+        this(doc, false);
+    }
+    
+    
     
     public boolean isXmlSyntax(){
         return isXmlSyntax;
