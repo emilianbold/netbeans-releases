@@ -83,13 +83,14 @@ public class EjbJarSharabilityQuery implements SharabilityQueryImplementation, P
     private SharabilityQueryImplementation createDelegate () {
         String[] srcProps = srcRoots.getRootProperties();
         String[] testProps = testRoots.getRootProperties();
-        String[] props = new String [srcProps.length + testProps.length];
+        String[] props = new String [srcProps.length + testProps.length + 1];
         for (int i=0; i<srcProps.length; i++) {
             props[i] = "${"+srcProps[i]+"}"; // NOI18N
         }
         for (int i=0; i<testProps.length; i++) {
             props[srcProps.length+i] = "${"+testProps[i]+"}"; // NOI18N
         }
+        props[props.length - 1] = "${" + EjbJarProjectProperties.META_INF + "}";
         return helper.createSharabilityQuery(this.evaluator, props,
             new String[] {
                 "${" + EjbJarProjectProperties.DIST_DIR + "}", // NOI18N
