@@ -76,7 +76,6 @@ public class ColorPreview extends javax.swing.JPanel {
         this.green = green;
         propertyChangeSupport.firePropertyChange("green", new Integer(oldGreen), new Integer(green));
         setBackground(new java.awt.Color(red, green, blue));
-
         repaint();
     }
 
