@@ -293,6 +293,10 @@ public final class ServerRegistry implements java.io.Serializable {
         return getInstances();
     }
     
+    public synchronized void addInstanceListener (InstanceListener il) {
+        instanceListeners.add (il);
+    }
+    
     public synchronized void removeInstanceListener(InstanceListener il) {
         instanceListeners.remove(il);
     }
@@ -317,17 +321,21 @@ public final class ServerRegistry implements java.io.Serializable {
         }
     }
     
-    private void fireDefaultInstance(ServerString instance) {
+    private void fireDefaultInstance(ServerString oldInstance, ServerString newInstance) {
         for(Iterator i = instanceListeners.iterator();i.hasNext();) {
             InstanceListener pl = (InstanceListener)i.next();
-            pl.changeDefaultInstance(instance);
+            pl.changeDefaultInstance(oldInstance, newInstance);
         }
     }
     
     public void setDefaultInstance(ServerString instance) {
+        if ((instance == null && defaultInstance == null) || instance.equals (defaultInstance)) {
+            return;
+        }
         if (ServerStringConverter.writeServerInstance(instance, DIR_INSTALLED_SERVERS, FILE_DEFAULT_INSTANCE)) {
+            ServerString oldValue = defaultInstance;
             defaultInstance = instance;
-            fireDefaultInstance(instance);
+            fireDefaultInstance(oldValue, instance);
         }
     }
     public ServerString getDefaultInstance() {
@@ -360,7 +368,7 @@ public final class ServerRegistry implements java.io.Serializable {
         
         public void instanceRemoved(ServerString instance);
         
-        public void changeDefaultInstance(ServerString instance);
+        public void changeDefaultInstance(ServerString oldInstance, ServerString newInstance);
         
     }
     

@@ -83,7 +83,7 @@ public class ServerRegistryNode extends AbstractNode {
                 public void instanceRemoved(ServerString instance) {
                     removeInstance(instance.getServerInstance());
                 }
-                public void changeDefaultInstance(ServerString instance) {
+                public void changeDefaultInstance(ServerString oldInstance, ServerString instance) {
                     //                    System.err.println("Changing default to " + instance);
                     setInstance(instance == null ? null : instance.getServerInstance());
                 }

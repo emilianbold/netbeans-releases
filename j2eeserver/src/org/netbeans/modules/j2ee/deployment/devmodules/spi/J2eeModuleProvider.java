@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.deployment.devmodules.spi;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.J2eeDeploymentLookup;
-import org.netbeans.modules.j2ee.deployment.impl.projects.ExecutionProfileEditor;
 import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;

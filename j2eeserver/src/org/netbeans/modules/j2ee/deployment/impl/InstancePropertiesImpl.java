@@ -61,7 +61,8 @@ public class InstancePropertiesImpl extends InstanceProperties implements Server
             fo = null;
     }
     public void instanceAdded(ServerString instance) {}
-    public void changeDefaultInstance(ServerString instance){}
+    public void changeDefaultInstance(ServerString oldInstance, ServerString newInstance){
+    }
     
     public String getProperty(String propname) throws IllegalStateException {
         return getFO().getAttribute(propname).toString();
