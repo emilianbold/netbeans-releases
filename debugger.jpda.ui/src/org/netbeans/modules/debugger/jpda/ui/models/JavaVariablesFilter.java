@@ -37,6 +37,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return new String[] {
             "java.lang.String",
             "java.lang.StringBuffer",
+            
             "java.lang.Character",
             "java.lang.Integer",
             "java.lang.Float",
@@ -66,6 +67,7 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             "java.util.WeakHashMap",
             "java.util.LinkedHashMap",
             "java.util.LinkedHashMap$Entry",
+            
             "java.beans.PropertyChangeSupport"
         };
     }
@@ -214,52 +216,20 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
      *
      * @return  number of filtered children for given variable
      */
-    public int getChildrenCount(TreeModel original, Variable variable) throws NoInformationException,
+    public int getChildrenCount (TreeModel original, Variable variable) 
+    throws NoInformationException,
             ComputingException, UnknownTypeException {
 
         String type = variable.getType();
+
         if (isToArrayType(type) || isMapMapType (type)) {
-            try {
-                ObjectVariable ov = (ObjectVariable) variable;
-                return Integer.parseInt(ov.invokeMethod("size", "()I", new Variable[0]).getValue());
-            } catch (NoSuchMethodException e) {
-                System.out.println (e.getLocalizedMessage ());
-                e.printStackTrace ();
-            } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof
-                       UnsupportedOperationException)
-                ) {
-                    return original.getChildrenCount(variable);
-                }
-                System.out.println (e.getLocalizedMessage ());
-                e.printStackTrace ();
-            }
+            return getChildren (original, variable, 0, 0).length;
         }
         else if (isMapEntryType(type)) {
             return 2;
         }
         else if (type.equals("java.beans.PropertyChangeSupport")) {
-            try {
-                ObjectVariable ov = (ObjectVariable) variable;
-                ov = (ObjectVariable) ov.invokeMethod("getPropertyChangeListeners",
-                                                      "()[Ljava/beans/PropertyChangeListener;",
-                                                      new Variable [0]);
-                return ov.getFieldsCount();
-            } catch (InvalidExpressionException e) {
-                if ( (e.getTargetException () != null) &&
-                     (e.getTargetException () instanceof
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getChildrenCount(variable);
-                }
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
-            } catch (NoSuchMethodException e) {
-                System.out.println(e.getLocalizedMessage ());
-                e.printStackTrace ();
-            }
+            return getChildren (original, variable, 0, 0).length;
         }
         else if (type.equals("java.lang.ref.WeakReference")) {
             return 1;
@@ -278,7 +248,9 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
     public boolean isLeaf (TreeModel original, Variable variable) 
     throws UnknownTypeException {
         String type = variable.getType ();
-        if ( isPrimitiveLikeType (type)
+
+        // PATCH for J2ME
+        if ( isLeafType (type) 
         ) return true;
         return original.isLeaf (variable);
     }
@@ -298,24 +270,13 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
             return ov.getField ("key").getValue () + "=>" + 
                    ov.getField ("value").getValue ();
         }
-        if ( isPrimitiveLikeType (type) &&
+        if ( isGetValueType (type) &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
-            try {
-                return ov.getToStringValue ();
-            } catch (InvalidExpressionException ex) {
-                if ( (ex.getTargetException () != null) &&
-                     (ex.getTargetException () instanceof 
-                       UnsupportedOperationException)
-                ) {
-                    // PATCH for J2ME. see 45543
-                    return original.getValueAt (variable, columnID);
-                }
-                return ex.getLocalizedMessage ();
-            }
+            return ov.getField ("value").getValue ();
         }
-        if (type.equals("java.lang.StringBuffer") &&
+        if ( isToStringValueType (type) &&
              ( columnID == Constants.LOCALS_VALUE_COLUMN_ID ||
                columnID == Constants.WATCH_VALUE_COLUMN_ID)
         ) {
@@ -338,25 +299,50 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
     
     // other methods ...........................................................
     
-    private HashSet primitiveLikeType;
-    private boolean isPrimitiveLikeType (String type) {
-        if (primitiveLikeType == null) {
-            primitiveLikeType = new HashSet ();
-            primitiveLikeType.add ("java.lang.String");
-            primitiveLikeType.add ("java.lang.Character");
-            primitiveLikeType.add ("java.lang.Integer");
-            primitiveLikeType.add ("java.lang.Float");
-            primitiveLikeType.add ("java.lang.Byte");
-            primitiveLikeType.add ("java.lang.Boolean");
-            primitiveLikeType.add ("java.lang.Double");
-            primitiveLikeType.add ("java.lang.Long");
-            primitiveLikeType.add ("java.lang.Short");
+    private static HashSet getValueType;
+    private static boolean isGetValueType (String type) {
+        if (getValueType == null) {
+            getValueType = new HashSet ();
+            getValueType.add ("java.lang.Character");
+            getValueType.add ("java.lang.Integer");
+            getValueType.add ("java.lang.Float");
+            getValueType.add ("java.lang.Byte");
+            getValueType.add ("java.lang.Boolean");
+            getValueType.add ("java.lang.Double");
+            getValueType.add ("java.lang.Long");
+            getValueType.add ("java.lang.Short");
         }
-        return primitiveLikeType.contains (type);
+        return getValueType.contains (type);
     }
     
-    private HashSet mapEntryType;
-    private boolean isMapEntryType (String type) {
+    private static HashSet leafType;
+    private static boolean isLeafType (String type) {
+        if (leafType == null) {
+            leafType = new HashSet ();
+            leafType.add ("java.lang.String");
+            leafType.add ("java.lang.Character");
+            leafType.add ("java.lang.Integer");
+            leafType.add ("java.lang.Float");
+            leafType.add ("java.lang.Byte");
+            leafType.add ("java.lang.Boolean");
+            leafType.add ("java.lang.Double");
+            leafType.add ("java.lang.Long");
+            leafType.add ("java.lang.Short");
+        }
+        return leafType.contains (type);
+    }
+    
+    private static HashSet toStringValueType;
+    private static boolean isToStringValueType (String type) {
+        if (toStringValueType == null) {
+            toStringValueType = new HashSet ();
+            toStringValueType.add ("java.lang.StringBuffer");
+        }
+        return toStringValueType.contains (type);
+    }
+    
+    private static HashSet mapEntryType;
+    private static boolean isMapEntryType (String type) {
         if (mapEntryType == null) {
             mapEntryType = new HashSet ();
             mapEntryType.add ("java.util.HashMap$Entry");
@@ -368,8 +354,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return mapEntryType.contains (type);
     }
     
-    private HashSet mapMapType;
-    private boolean isMapMapType (String type) {
+    private static HashSet mapMapType;
+    private static boolean isMapMapType (String type) {
         if (mapMapType == null) {
             mapMapType = new HashSet ();
             mapMapType.add ("java.util.HashMap");
@@ -382,8 +368,8 @@ public class JavaVariablesFilter extends VariablesFilterAdapter {
         return mapMapType.contains (type);
     }
     
-    private HashSet toArrayType;
-    private boolean isToArrayType (String type) {
+    private static HashSet toArrayType;
+    private static boolean isToArrayType (String type) {
         if (toArrayType == null) {
             toArrayType = new HashSet ();
             toArrayType.add ("java.util.ArrayList");
