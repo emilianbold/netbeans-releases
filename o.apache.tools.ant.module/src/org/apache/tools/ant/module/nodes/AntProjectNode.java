@@ -77,8 +77,13 @@ public class AntProjectNode extends DataNode implements ChangeListener, Property
             setShortDescription (getDisplayName ());
             setIconBase ("/org/apache/tools/ant/module/resources/AntIcon"); // NOI18N
         } else {
-            setShortDescription (exc.getLocalizedMessage ());
-            //exc.printStackTrace ();
+            String m = exc.getLocalizedMessage ();
+            if (m == null || m.length () == 0) {
+                m = exc.toString ();
+                AntModule.err.annotate (exc, ErrorManager.UNKNOWN, "Strange parse error in " + ((DataObject) getCookie (DataObject.class)).getPrimaryFile (), null, null, null); // NOI18N
+                AntModule.err.notify (ErrorManager.INFORMATIONAL, exc);
+            }
+            setShortDescription (m);
             setIconBase ("/org/apache/tools/ant/module/resources/AntIconError"); // NOI18N
         }
     }

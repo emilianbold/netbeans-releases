@@ -16,6 +16,7 @@
 package org.apache.tools.ant.module.xml;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.util.*;
 import javax.swing.event.*;
 import javax.swing.text.BadLocationException;
@@ -161,7 +162,18 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             }
             try {
                 InputSource in = new InputSource (rd);
-                // XXX set system ID on in??
+                if (file != null) { // #10348
+                    try {
+                        in.setSystemId (file.toURL ().toString ());
+                    } catch (MalformedURLException mfue) {
+                        AntModule.err.notify (ErrorManager.WARNING, mfue);
+                    }
+                    // [PENDING] Ant's ProjectHelper has an elaborate set of work-
+                    // arounds for inconsistent parser behavior, e.g. file:foo.xml
+                    // works in Ant but not with Xerces parser. You must use just foo.xml
+                    // as the system ID. If necessary, Ant's algorithm could be copied
+                    // here to make the behavior match perfectly, but it ought not be necessary.
+                }
                 parser.parse (in);
                 Document doc = parser.getDocument ();
                 if (editor != null) {
