@@ -274,18 +274,14 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="DebuggerWindow.wstcref" url="DebuggerWindow.wstcref"/>
             </folder>
 
-            <!--
-            <file name="ouput.wsmode" url="ouput.wsmode"/>
+            <file name="output.wsmode" url="output.wsmode"/>
             <folder name="output">
-                <file name="output.wstcref" url="ouput.wstcref"/>
+                <file name="output.wstcref" url="output.wstcref"/>
             </folder>
-            -->
 
-            <!--
             <file name="editor.wsmode" url="editor.wsmode"/>
             <folder name="editor">
             </folder>
-            -->
 
         </folder>
      </folder>
