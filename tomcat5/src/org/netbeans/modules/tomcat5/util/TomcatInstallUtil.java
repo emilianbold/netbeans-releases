@@ -84,13 +84,9 @@ public class TomcatInstallUtil {
         int defCon = -1;
         boolean[] connectors = service.getConnector();
         String port = "8080";   //NOI18N
-        
-        System.err.println("connectors: " + connectors);
-        
+                
         for (int i=0; i<service.sizeConnector(); i++) {
             String protocol = service.getAttributeValue("Connector",i,"protocol"); // NOI18N
-            System.err.println("classname: " + protocol);
-            
             if ((protocol == null) || (protocol.toLowerCase().indexOf("http") > -1)) { // NOI18N
                 defCon = i;
             }
