@@ -27,7 +27,6 @@ import org.xml.sax.InputSource;
 /** This class represents module updates tracking
  *
  * @author  akemr
- * @version 
  */
 public class UpdateTracking {
     private static final String ELEMENT_MODULES = "installed_modules"; // NOI18N
