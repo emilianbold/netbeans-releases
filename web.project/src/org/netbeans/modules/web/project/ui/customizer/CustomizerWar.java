@@ -49,7 +49,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         vps = new VisualPropertySupport(webProperties);
         vws = new VisualWarIncludesSupport( webProperties.getProject(),
                                             (String) webProperties.get(WebProjectProperties.J2EE_PLATFORM),
-                                            jListAddContent,
+                                            jTableAddContent,
                                             jButtonAddJar,
                                             jButtonAddLib,
                                             jButtonAddProject,
@@ -107,7 +107,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         jButtonRemoveFilter = new javax.swing.JButton();
         jLabelAddContent = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jListAddContent = new javax.swing.JList();
+        jTableAddContent = new javax.swing.JTable();
         jButtonAddJar = new javax.swing.JButton();
         jButtonAddLib = new javax.swing.JButton();
         jButtonAddProject = new javax.swing.JButton();
@@ -172,8 +172,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 11);
         add(jScrollPane1, gridBagConstraints);
 
-        jButtonAddFilter.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddFilter_LabelMnemonic").charAt(0));
         jButtonAddFilter.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddFilter_JButton"));
+        jButtonAddFilter.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddFilter_LabelMnemonic").charAt(0));
         jButtonAddFilter.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonAddFilterActionPerformed(evt);
@@ -207,8 +207,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         jButtonRemoveFilter.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_Remove_A11YDesc"));
 
         jLabelAddContent.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddContent_LabelMnemonic").charAt(0));
+        jLabelAddContent.setLabelFor(jTableAddContent);
         jLabelAddContent.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddContent_JLabel"));
-        jLabelAddContent.setLabelFor(jListAddContent);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -217,8 +217,16 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 2, 11);
         add(jLabelAddContent, gridBagConstraints);
 
-        jScrollPane2.setViewportView(jListAddContent);
-        jListAddContent.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddContent_A11YDesc"));
+        jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
+        jScrollPane2.setViewportView(jTableAddContent);
+        jTableAddContent.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddContent_A11YDesc"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -250,8 +258,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         add(jButtonAddLib, gridBagConstraints);
         jButtonAddLib.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddLib_A11YDesc"));
 
-        jButtonAddProject.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddProject_LabelMnemonic").charAt(0));
         jButtonAddProject.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_AddProject_JButton"));
+        jButtonAddProject.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AddProject_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
@@ -261,8 +269,8 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         add(jButtonAddProject, gridBagConstraints);
         jButtonAddProject.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("ACS_CustomizeWAR_AddProject_A11YDesc"));
 
-        jButtonRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AdditionalRemove_LabelMnemonic").charAt(0));
         jButtonRemove.setText(NbBundle.getMessage(CustomizerWar.class, "LBL_CustomizeWAR_Remove_JButton"));
+        jButtonRemove.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeWAR_AdditionalRemove_LabelMnemonic").charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -303,11 +311,11 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
     private javax.swing.JLabel jLabelAddContent;
     private javax.swing.JLabel jLabelExContent;
     private javax.swing.JLabel jLabelFileName;
-    private javax.swing.JList jListAddContent;
     private javax.swing.JList jListExContent;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTable jTableAddContent;
     private javax.swing.JTextField jTextFieldFileName;
     // End of variables declaration//GEN-END:variables
         
