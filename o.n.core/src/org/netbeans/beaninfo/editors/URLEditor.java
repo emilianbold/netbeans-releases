@@ -41,7 +41,7 @@ public class URLEditor extends PropertyEditorSupport {
   
   public String getJavaInitializationString () {
     URL url = (URL) getValue ();
-    return "\""+s.toString ()+"\"";
+    return "\""+url.toString ()+"\"";
   }
   
   public boolean supportsCustomEditor () {
@@ -52,6 +52,7 @@ public class URLEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  2    Gandalf   1.1         5/8/99   Ian Formanek    Fixed to compile
  *  1    Gandalf   1.0         5/8/99   Ian Formanek    
  * $
  */
