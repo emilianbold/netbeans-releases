@@ -525,15 +525,15 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         }
         
         public boolean isValid () {
-            boolean res1 = true;
-            boolean res2 = true;
+            boolean res1 = false;
+            boolean res2 = false;
             boolean res3 = true;
             
-            if (!panel.jTextFieldWebPages.getText().trim().equals(""))
+            if (panel.jTextFieldWebPages.getText().trim().length() > 0)
                 res1 = relativePath(panel.jTextFieldWebPages.getText().trim());
-            if (!panel.jTextFieldJavaSources.getText().trim().equals(""))
+            if (panel.jTextFieldJavaSources.getText().trim().length() > 0)
                 res2 = relativePath(panel.jTextFieldJavaSources.getText().trim());
-            if (!panel.jTextFieldLibraries.getText().trim().equals(""))
+            if (panel.jTextFieldLibraries.getText().trim().length() > 0)
                 res3 = relativePath(panel.jTextFieldLibraries.getText().trim());
                 
             return res1 && res2 && res3;
