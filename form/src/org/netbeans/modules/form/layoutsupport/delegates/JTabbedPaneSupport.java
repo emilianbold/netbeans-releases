@@ -219,8 +219,7 @@ public class JTabbedPaneSupport extends AbstractLayoutSupport {
                         tooltip instanceof String ? (String) tooltip : null);
                 }
                 catch (Exception ex) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        ex.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }
             }
         }

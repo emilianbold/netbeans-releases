@@ -81,8 +81,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         try {
             kitClass = Class.forName( kitClassName, true, TopManager.getDefault().systemClassLoader() );
         } catch( ClassNotFoundException e ) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) // NOI18N
-                e.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return;
         }
 

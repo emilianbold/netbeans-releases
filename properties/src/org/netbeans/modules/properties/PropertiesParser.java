@@ -134,8 +134,7 @@ class PropertiesParser {
                 propertiesReader.close();
                 propertiesReader = null;
             } catch(IOException ioe) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ioe.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
             }
         }
     }

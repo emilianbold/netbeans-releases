@@ -43,8 +43,7 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
                        Introspector.getBeanInfo(CompilerType.class)
                    };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }
@@ -86,8 +85,7 @@ public class XTestCompilerTypeBeanInfo extends SimpleBeanInfo {
             properties[4].setValue("files",new Boolean(false)); // NOI18N
             return properties;
         } catch( IntrospectionException e) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(e);
             e.printStackTrace();
             return null;
         }

@@ -101,8 +101,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             if (df != null)
                 folder = new AnnotationTypesFolder(f, df);
         } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null;
         }
         return folder;
@@ -184,14 +183,12 @@ public class AnnotationTypesFolder extends FolderInstance{
             try {
                 XMLUtil.write(doc, fo.getOutputStream(lock), null);
             } catch (Exception ex){
-                if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             } finally {
                 lock.releaseLock();
             }
         }catch (IOException ex){
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         
     }

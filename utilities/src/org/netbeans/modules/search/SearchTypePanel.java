@@ -91,8 +91,7 @@ public class SearchTypePanel extends JPanel implements PropertyChangeListener {
                 System.err.println("No customizer for " + this.searchType.getName() + ", skipping...");
             }
         } catch(IntrospectionException ie) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ie);
         }
 
         customizer.setObject(this.searchType);

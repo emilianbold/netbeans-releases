@@ -91,8 +91,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                     (Container) m.invoke(container, new Object[0]);
             }
             catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
         return containerDelegate;
@@ -113,8 +112,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
                             delegateGetterName, new Class[0]);
                 }
                 catch (NoSuchMethodException ex) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        ex.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 }
             }
             else noContainerDelegate = true;

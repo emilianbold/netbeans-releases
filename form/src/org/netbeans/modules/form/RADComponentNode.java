@@ -509,8 +509,7 @@ public class RADComponentNode extends FormNode
                     cls = ic.instanceClass();
             }
             catch (Exception ex) { // notify??
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
 
             if (cls != null

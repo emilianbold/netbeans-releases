@@ -35,8 +35,7 @@ public class DataLoaderPool {
             return new PropertyDescriptor[] { extensions };
         } 
         catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }
@@ -52,8 +51,7 @@ public class DataLoaderPool {
                 // provided by UniFileLoaderBeanInfo.
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }
@@ -82,8 +80,7 @@ public class DataLoaderPool {
                 // provided by UniFileLoaderBeanInfo.
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }
@@ -108,8 +105,7 @@ public class DataLoaderPool {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }
@@ -129,8 +125,7 @@ public class DataLoaderPool {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }
@@ -143,12 +138,10 @@ public class DataLoaderPool {
                 actions.setHidden (true);
                 return new PropertyDescriptor[] { actions };
             } catch (ClassNotFoundException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }

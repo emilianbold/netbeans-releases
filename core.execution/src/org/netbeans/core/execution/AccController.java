@@ -19,6 +19,8 @@ import java.security.AccessController;
 import java.security.PermissionCollection;
 import java.lang.reflect.Field;
 
+import org.openide.ErrorManager;
+
 /** Tries to get an IOProtectionDomain from an AccessControlContext.
 *
 * @author Ales Novak
@@ -69,13 +71,11 @@ class AccController {
             }
             return null;
         } catch (final Exception e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) { // NOI18N
                 javax.swing.SwingUtilities.invokeLater(new Runnable () {
                                                            public void run () {
-                                                               e.printStackTrace();
+                                                               ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                                                            }
                                                        });
-            }
             return null;
         }
     }

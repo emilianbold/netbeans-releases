@@ -129,8 +129,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
             Class kitClass = Class.forName( (String)map.get( null ), true, TopManager.getDefault ().systemClassLoader () );
             typeName = OptionSupport.getTypeName( kitClass );
         } catch( ClassNotFoundException e ) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                e.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return;
         }
 

@@ -207,8 +207,7 @@ public class PaletteItem {
                 return instanceCookie.instanceClass();
             }
             catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 beanClassFailed = true;
             }
         }

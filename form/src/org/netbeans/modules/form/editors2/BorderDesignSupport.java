@@ -221,8 +221,7 @@ public class BorderDesignSupport implements FormDesignValue,
                 otherProps[i].reinstateTarget();
         }
         catch (Exception ex) { // should not happen (at least for standard borders)
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
     

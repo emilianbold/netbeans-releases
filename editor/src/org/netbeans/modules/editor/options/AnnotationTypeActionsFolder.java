@@ -68,8 +68,7 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
                 return true;
             }
         } catch (org.openide.loaders.DataObjectNotFoundException ex) {
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) )
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return false;
         }
         return false;

@@ -115,7 +115,7 @@ public abstract class MIMEOptionFile{
         try{
             processor.getXMLDataObject().setValid(false);
         }catch(PropertyVetoException pve){
-            if( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) pve.printStackTrace(); //NOI18N
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, pve);
         }
         // remove editor uninstallation listener
         editorMI.removePropertyChangeListener(moduleListener);

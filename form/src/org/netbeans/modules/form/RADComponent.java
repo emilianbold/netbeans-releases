@@ -154,8 +154,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                     props[i].reinstateProperty();
                 }
                 catch (Exception e) {
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                     // simply ignore this property
                 }
             }
@@ -295,8 +294,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             clone = createBeanInstance();
         }
         catch (Exception ex) { // ignore, this should not fail
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null;
         }
 

@@ -73,10 +73,7 @@ public class HTTPFileSystemBeanInfo extends SimpleBeanInfo {
 
             }
             catch( IntrospectionException e ) {            
-                if ( Boolean.getBoolean( "netbeans.debug.exceptions" ) ) { //NOI18N
-                    e.printStackTrace( );                
-                    return null;
-                }            
+                org.openide.ErrorManager.getDefault().notify(e);
             }
         }
         return propertyDescriptors;        

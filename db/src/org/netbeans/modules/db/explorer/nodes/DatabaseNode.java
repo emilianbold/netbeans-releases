@@ -161,8 +161,7 @@ public class DatabaseNode extends AbstractNode implements Node.Cookie {
         try{
             parent.refreshChildren();
         } catch (Exception ex){
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
 

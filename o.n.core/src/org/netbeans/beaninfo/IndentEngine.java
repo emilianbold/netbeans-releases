@@ -48,8 +48,7 @@ public abstract class IndentEngine {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (org.openide.text.IndentEngine.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }

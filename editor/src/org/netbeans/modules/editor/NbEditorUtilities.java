@@ -197,7 +197,7 @@ public class NbEditorUtilities {
         try {
             return NbBundle.getBundle(FormatterIndentEngine.class).getString(key);
         } catch (MissingResourceException e) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return key;
         }
     }

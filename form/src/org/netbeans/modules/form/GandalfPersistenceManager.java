@@ -2152,8 +2152,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 comp.setInstance(instance);
             }
             catch (Exception ex) { // ignore
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
 
@@ -3427,8 +3426,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 value = property.getValue();
             }
             catch (Exception ex) { // should not happen
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return;
             }
 
@@ -3695,8 +3693,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             declaredType = getClassFromString(node.getNodeValue());
         }
         catch (ClassNotFoundException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         if (declaredType == null)
             return null; // variable declared type loading error
@@ -3781,8 +3778,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             ctorClass = getClassFromString(node.getNodeValue());
                         }
                         catch (ClassNotFoundException ex) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                ex.printStackTrace();
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             return null; // constructor class loading error
                         }
 
@@ -3803,8 +3799,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             typeList.toArray(paramTypes);
                         }
                         catch (ClassNotFoundException ex) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                ex.printStackTrace();
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             return null; // parameters classes loading error
                         }
 
@@ -3813,8 +3808,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             ctor = ctorClass.getConstructor(paramTypes);
                         }
                         catch (NoSuchMethodException ex) {
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                ex.printStackTrace();
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             return null; // constructor not found error
                         }
 
@@ -4035,8 +4029,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             methodClass = getClassFromString(node.getNodeValue());
         }
         catch (ClassNotFoundException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null; // method class loading error
         }
 
@@ -4057,8 +4050,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             typeList.toArray(paramTypes);
         }
         catch (ClassNotFoundException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null; // parameters classes loading error
         }
 
@@ -4066,8 +4058,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return methodClass.getMethod(name, paramTypes);
         }
         catch (NoSuchMethodException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null; // method not found error
         }
     }
@@ -4091,8 +4082,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             fieldClass = getClassFromString(node.getNodeValue());
         }
         catch (ClassNotFoundException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null; // field class loading error
         }
 
@@ -4100,8 +4090,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return fieldClass.getField(name);
         }
         catch (NoSuchFieldException ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null; // field not found error
         }
     }
@@ -4814,12 +4803,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return formInfo.getFormInstance().getClass();
         }
         catch (Exception ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         catch (LinkageError ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
 
         return null;

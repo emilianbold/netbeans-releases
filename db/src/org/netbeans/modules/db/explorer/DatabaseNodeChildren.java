@@ -70,8 +70,7 @@ public class DatabaseNodeChildren extends Children.Array
                             // add connection (if needed) and make the connection to SAMPLE database connected
                             PointbasePlus.addOrConnectAccordingToOption();
                             } catch(Exception ex) {
-                                if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                                    ex.printStackTrace();
+                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                             }
                         }
                     });

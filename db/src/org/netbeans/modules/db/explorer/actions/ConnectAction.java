@@ -81,8 +81,7 @@ public class ConnectAction extends DatabaseAction {
                 pwd = (String)nfo.getPassword();
                 rpwd = (Boolean)nfo.get(DatabaseNodeInfo.REMEMBER_PWD);
             } catch(Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
             
         if (user == null || pwd == null || !remember) {

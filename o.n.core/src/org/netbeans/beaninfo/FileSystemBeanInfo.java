@@ -53,7 +53,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
             desc[6].setHidden (true);
             return desc;
         } catch (IntrospectionException ex) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(ex);
             return super.getPropertyDescriptors();
         }
     }

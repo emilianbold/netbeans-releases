@@ -138,8 +138,7 @@ public class VisualReplicator {
                 copyRelativeProperties(relativeProperties);
         }
         catch (Exception ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             clone = null;
         }
 
@@ -424,8 +423,7 @@ public class VisualReplicator {
                 ((Component)targetComp).invalidate();
         }
         catch (Exception ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
 

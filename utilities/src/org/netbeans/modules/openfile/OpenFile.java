@@ -177,8 +177,7 @@ public class OpenFile extends Object {
                     if(fileObject.getFileSystem() instanceof JarFileSystem)
                         return;
                 } catch(FileStateInvalidException fse) {
-                    if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        fse.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, fse);
                 }
                 
                 Node node = dataObject.getNodeDelegate ();
@@ -236,8 +235,7 @@ public class OpenFile extends Object {
                                 opened = true;
                             }
                         } catch(DataObjectNotFoundException dnfe) {
-                            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                dnfe.printStackTrace();
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, dnfe);
                         }
                     }
                 }

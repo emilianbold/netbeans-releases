@@ -134,8 +134,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
               propRegenerateSuiteMethod, propTestRunner, propProperties };
         }
         catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

@@ -289,8 +289,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
             if (! SystemAction.class.isAssignableFrom (clazz)) return null;
             return (SystemAction) inst.instanceCreate ();
         } catch (Exception e) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             return null;
         }
     }

@@ -341,8 +341,7 @@ public class FormUtils
             }
         }
         catch (Exception ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             throw new CloneNotSupportedException(ex.getMessage());
         }
 
@@ -457,8 +456,7 @@ public class FormUtils
                 }
             }
             catch (Exception ex) { // ignore
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -496,8 +494,7 @@ public class FormUtils
                 writeMethod.invoke(targetBean, new Object[] { realValue });
             }
             catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
     }
@@ -518,8 +515,7 @@ public class FormUtils
                 return new BorderDesignSupport((BorderDesignSupport)value);
             }
             catch (Exception ex) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             }
         }
 

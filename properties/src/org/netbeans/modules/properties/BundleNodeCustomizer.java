@@ -252,8 +252,7 @@ public class BundleNodeCustomizer extends JPanel {
             try {
                 entry.delete();
             } catch(IOException ioe) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ioe.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
             }
         }
         
@@ -264,8 +263,7 @@ public class BundleNodeCustomizer extends JPanel {
         try {
             propDataObject.getNodeDelegate().getNewTypes()[0].create();
         } catch(IOException ioe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
         }
         
         localesList.setListData(retrieveLocales(propDataObject));

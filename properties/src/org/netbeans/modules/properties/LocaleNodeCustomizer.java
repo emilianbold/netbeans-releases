@@ -352,8 +352,7 @@ public class LocaleNodeCustomizer extends JPanel {
 
             updateKeyList();
         } catch(IOException ioe) {
-            if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ioe.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
         }
     }//GEN-LAST:event_addKeyButtonActionPerformed
 

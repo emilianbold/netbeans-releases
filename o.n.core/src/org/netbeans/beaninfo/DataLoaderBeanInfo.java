@@ -39,8 +39,7 @@ public class DataLoaderBeanInfo extends SimpleBeanInfo {
             actions.setValue ("canEditAsText", Boolean.FALSE); // NOI18N
             return new PropertyDescriptor[] { actions, representationClass };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

@@ -25,8 +25,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }
@@ -38,8 +37,7 @@ public class UniFileLoaderBeanInfo extends SimpleBeanInfo {
             extensions.setShortDescription (NbBundle.getBundle (UniFileLoaderBeanInfo.class).getString ("HINT_UniFileLoader_extensions"));
             return new PropertyDescriptor[] { extensions };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

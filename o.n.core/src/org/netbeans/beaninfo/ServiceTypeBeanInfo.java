@@ -33,8 +33,7 @@ public class ServiceTypeBeanInfo extends SimpleBeanInfo {
             helpCtx.setHidden (true);
             return new PropertyDescriptor[] { name, helpCtx };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

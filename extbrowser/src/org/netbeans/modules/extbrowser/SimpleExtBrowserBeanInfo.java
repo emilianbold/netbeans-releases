@@ -62,8 +62,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
                 properties[1].setShortDescription (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "HINT_browserExecutable"));
 
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }

@@ -206,8 +206,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                                 // refresh indexes
                                 ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
                                 } catch(Exception ex) {
-                                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                                        ex.printStackTrace();
+                                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                                 }
                             }
                         });
@@ -223,8 +222,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
                                 // refresh foreign keys
                                 ((DatabaseNode)childrenNodes[j]).getInfo().refreshChildren();
                                 } catch(Exception ex) {
-                                    if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                                        ex.printStackTrace();
+                                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                                 }
                             }
                         });
@@ -244,8 +242,7 @@ public class TableNodeInfo extends DatabaseNodeInfo {
             children.add(subTreeNodes);
 
         } catch (Exception ex) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
     }
 

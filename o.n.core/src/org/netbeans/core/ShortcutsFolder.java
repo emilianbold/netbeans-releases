@@ -365,10 +365,9 @@ final class ShortcutsFolder extends FolderInstance {
                     Class.forName(act, true, (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)));
                 map.put (stroke, action);
 	    } catch (ClassNotFoundException cnfe) {
-		if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-		    System.err.println ("Warning: action " + act + " not found to add key binding for."); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning: action " + act + " not found to add key binding for."); // NOI18N
             } catch (Exception e) { // NullPointer might be thrown if there is not the correct attribute present
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace(); // NOI18N
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // NOI18N
             }
         }
     }

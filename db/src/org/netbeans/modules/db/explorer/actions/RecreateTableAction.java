@@ -94,8 +94,7 @@ public class RecreateTableAction extends DatabaseAction {
                                 
                                 continue;
                             } catch (org.netbeans.modules.db.DatabaseException exc) {
-                                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                    exc.printStackTrace();
+                                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, exc);
                                 
                                 continue;
                             }

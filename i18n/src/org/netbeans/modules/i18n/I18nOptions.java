@@ -200,8 +200,7 @@ public class I18nOptions extends SystemOption {
             try {
                 lastResource = TopManager.getDefault().getLoaderPool().findDataObject(fileObject);
             } catch (IOException ioe) {
-                if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ioe.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ioe);
             }
         }
 

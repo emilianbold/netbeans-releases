@@ -332,8 +332,7 @@ public class AddTableColumnDialog {
                 }
                 
             } catch (Exception e) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) //NOI18N
-                    e.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             }
 
             // Index name combo

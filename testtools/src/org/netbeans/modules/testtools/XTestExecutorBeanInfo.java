@@ -44,8 +44,7 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
                        Introspector.getBeanInfo(Executor.class)
                    };
         } catch (IntrospectionException ie) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ie.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(ie);
             return null;
         }
     }
@@ -93,8 +92,7 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
             properties[6].setShortDescription(NbBundle.getMessage(XTestExecutorBeanInfo.class, "ShowResultsDescription")); // NOI18N
             return properties;
         } catch( IntrospectionException e) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                e.printStackTrace ();
+            org.openide.ErrorManager.getDefault().notify(e);
             return null;
         }
     }

@@ -500,8 +500,7 @@ public class MetaComponentCreator {
                                         FormUtils.cloneObject(auxValue));
                 }
                 catch (Exception e) { // ignore problem with aux value
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                 }
             }
 
@@ -623,8 +622,7 @@ public class MetaComponentCreator {
             }
             catch (RuntimeException ex) {
                 // LayoutSupportDelegate may not accept the component
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                    ex.printStackTrace();
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return null;
             }
         }
@@ -794,12 +792,10 @@ public class MetaComponentCreator {
             FormUtils.copyProperties(sourceProps, targetProps, copyMode);
         }
         catch (Exception ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         catch (LinkageError ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
 
         return targetComp;
@@ -867,12 +863,10 @@ public class MetaComponentCreator {
             setComponentBorderProperty(designBorder, targetComp);
         }
         catch (Exception ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
         catch (LinkageError ex) { // ignore
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
 
         return targetComp;
@@ -1007,14 +1001,12 @@ public class MetaComponentCreator {
         }
         catch (Exception ex) {
             // report exception...
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null;
         }
         catch (LinkageError ex) {
             // report exception...
-            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace();
+            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
             return null;
         }
     }

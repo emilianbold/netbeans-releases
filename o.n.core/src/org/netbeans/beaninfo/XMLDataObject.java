@@ -27,8 +27,7 @@ public class XMLDataObject {
             try {
                 return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
             } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                    ie.printStackTrace ();
+                org.openide.ErrorManager.getDefault().notify(ie);
                 return null;
             }
         }

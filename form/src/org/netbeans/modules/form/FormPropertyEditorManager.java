@@ -143,8 +143,7 @@ final public class FormPropertyEditorManager extends Object
                                 editorsList.add(edClass);
                         }
                         catch (Exception e) { // ignore
-                            if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                                e.printStackTrace();
+                            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                         }
                     }
                 }
@@ -193,8 +192,7 @@ final public class FormPropertyEditorManager extends Object
                     instancesList.add(edType.newInstance());
                 }
                 catch (Exception e) { // ignore
-                    if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                        e.printStackTrace();
+                    org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
                 }
             }
             // ignore classes which do not implement java.beans.PropertyEditor

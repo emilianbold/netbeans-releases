@@ -370,7 +370,7 @@ class BiIconEditor extends PropertyEditorSupport {
             try {
                 BiIconEditor.this.setValue(iconFromText(val));
             } catch (IllegalArgumentException ee) {
-                if (Boolean.getBoolean("netbeans.debug.exceptions")) ee.printStackTrace(); // NOI18N
+                org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ee);
             }
             updateIcon();
         }
