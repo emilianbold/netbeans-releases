@@ -48,6 +48,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor; // TEMP
 import org.openide.util.WeakListener;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -235,8 +236,12 @@ implements EditCookie, PrintCookie, Serializable {
      *    or false if it refused it and the document should still be unmodified
      */
     protected boolean notifyModified () {
-        // reparse file
-        myEntry.getHandler().autoParse();
+        // Reparse file, but not in this AWT thread.
+        RequestProcessor.postRequest(new Runnable() {
+            public void run() {
+                myEntry.getHandler().autoParse();
+            }
+        });
         
         if (super.notifyModified()) {
             
