@@ -22,8 +22,8 @@ public class CookiesData extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    static public final String COOKIEIN = "CookieIn";
-    static public final String COOKIEOUT = "CookieOut";
+    static public final String COOKIEIN = "CookieIn"; // NOI18N
+    static public final String COOKIEOUT = "CookieOut"; // NOI18N
 
     public CookiesData() {
 	this(Common.USE_DEFAULT_VALUES);
@@ -32,45 +32,43 @@ public class CookiesData extends BaseBean {
     public CookiesData(int options) {
 	super(CookiesData.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
-	this.createProperty("CookieIn", COOKIEIN, 
+	this.createProperty("CookieIn", COOKIEIN, // NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    CookieIn.class);
-	this.createAttribute(COOKIEIN, "name", "Name", 
+	this.createAttribute(COOKIEIN, "name", "Name",  // NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(COOKIEIN, "value", "Value", 
+	this.createAttribute(COOKIEIN, "value", "Value", // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createProperty("CookieOut", COOKIEOUT, 
+	this.createProperty("CookieOut", COOKIEOUT, // NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    CookieOut.class);
-	this.createAttribute(COOKIEOUT, "name", "Name", 
+	this.createAttribute(COOKIEOUT, "name", "Name", // NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "value", "Value", 
+	this.createAttribute(COOKIEOUT, "value", "Value", // NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "path", "Path", 
+	this.createAttribute(COOKIEOUT, "path", "Path", // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "domain", "Domain", 
+	this.createAttribute(COOKIEOUT, "domain", "Domain", // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "maxAge", "MaxAge", 
+	this.createAttribute(COOKIEOUT, "maxAge", "MaxAge", // NOI18N
 			     AttrProp.NMTOKEN | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "comment", "Comment", 
+	this.createAttribute(COOKIEOUT, "comment", "Comment", // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "version", "Version", 
+	this.createAttribute(COOKIEOUT, "version", "Version", // NOI18N
 			     AttrProp.NMTOKEN | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(COOKIEOUT, "secure", "Secure", 
+	this.createAttribute(COOKIEOUT, "secure", "Secure", // NOI18N
 			     AttrProp.ENUM,
-			     new String[] {
-				 "false",
-				 "true"
-			     }, "false");
+			     new String[] { "false", "true" }, // NOI18N
+			     "false"); // NOI18N
 	this.initialize(options);
     }
 
@@ -202,31 +200,36 @@ public class CookiesData extends BaseBean {
     public void dump(StringBuffer str, String indent) {
 	String s;
 	BaseBean n;
+
 	str.append(indent);
-	str.append("CookieIn["+this.sizeCookieIn()+"]");
-	for(int i=0; i<this.sizeCookieIn(); i++)
+	str.append("Replace=" + // NOI18N
+		   this.getAttributeValue("replace") + "\n");  // NOI18N
+
+	str.append(indent);
+	str.append("CookieIn["+this.sizeCookieIn()+"]"); // NOI18N
+	for(int i=0; i<this.sizeCookieIn(); i++) 
 	    {
-		str.append(indent+"\t");
-		str.append("#"+i+":");
+		str.append(indent+"\t"); // NOI18N
+		str.append("#"+i+":"); // NOI18N
 		n = this.getCookieIn(i);
 		if (n != null)
-		    n.dump(str, indent + "\t");
+		    n.dump(str, indent + "\t"); // NOI18N
 		else
-		    str.append(indent+"\tnull");
+		    str.append(indent+"\tnull"); // NOI18N
 		this.dumpAttributes(COOKIEIN, i, str, indent);
 	    }
 
 	str.append(indent);
-	str.append("CookieOut["+this.sizeCookieOut()+"]");
-	for(int i=0; i<this.sizeCookieOut(); i++)
+	str.append("CookieOut["+this.sizeCookieOut()+"]"); // NOI18N
+	for(int i=0; i<this.sizeCookieOut(); i++) 
 	    {
-		str.append(indent+"\t");
-		str.append("#"+i+":");
+		str.append(indent+"\t"); // NOI18N
+		str.append("#"+i+":"); // NOI18N
 		n = this.getCookieOut(i);
 		if (n != null)
-		    n.dump(str, indent + "\t");
+		    n.dump(str, indent + "\t"); // NOI18N
 		else
-		    str.append(indent+"\tnull");
+		    str.append(indent+"\tnull"); // NOI18N
 		this.dumpAttributes(COOKIEOUT, i, str, indent);
 	    }
 
@@ -234,8 +237,8 @@ public class CookiesData extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("CookiesData\n");
-	this.dump(str, "\n  ");
+	str.append("CookiesData\n"); // NOI18N
+	this.dump(str, "\n  "); // NOI18N
 	return str.toString();
     }
 }

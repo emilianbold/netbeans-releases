@@ -17,7 +17,7 @@
  *
  * Created: Mon Feb  5 13:34:46 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @author Simran Gleason
  * @version
  */
@@ -29,39 +29,25 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-import javax.swing.*;
 import java.awt.event.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import java.util.*;
-import java.awt.FlowLayout;
-import java.awt.Dimension;
+import java.util.ResourceBundle;
 import java.awt.event.*;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import java.net.*;
-
+import java.net.URL;
+import java.net.MalformedURLException;
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelServer extends javax.swing.JPanel {
+public class EditPanelServer extends DataDisplay {
 
     private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
-    private static final Dimension size = new Dimension(500, 550);
-    private static final Dimension reqSize = new Dimension(450, 100);
-    private static final Dimension tableSize = new Dimension(450, 100);
-   
     private static final String[] servercats = { 
 	msgs.getString("MON_Server_name"),
 	msgs.getString("MON_Server_port"),
@@ -88,82 +74,64 @@ public class EditPanelServer extends javax.swing.JPanel {
 	this.monitorData = md;
 	setServerTable(servercats);
 	
-	if(debug) System.out.println("in EditPanelServer.setData()");
-	 
-	ServletData sd = monitorData.getServletData();
-	holdTableChanges = true;
-	serverTable.setValueAt(sd.getAttributeValue("serverName"), 0, 1); 
-	serverTable.setValueAt(sd.getAttributeValue("serverPort"), 1, 1);
-	holdTableChanges = false;
+	if(debug) System.out.println("in EditPanelServer.setData()"); //NOI18N 
 
-	this.removeAll();
-	this.setLayout(new GridBagLayout());
-	//this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+	holdTableChanges = true;	 
+	EngineData ed  = monitorData.getEngineData();
+	if(ed != null) {
+	     
+	    serverTable.setValueAt(ed.getAttributeValue("serverName"), 0, 1); //NOI18N 
+	    serverTable.setValueAt(ed.getAttributeValue("serverPort"), 1, 1); //NOI18N 
+	}
+	// for backwards compatibility
+	else {
+	    ServletData sd = monitorData.getServletData();
+	    serverTable.setValueAt(sd.getAttributeValue("serverName"), 0, 1); //NOI18N 
+	    serverTable.setValueAt(sd.getAttributeValue("serverPort"), 1, 1); //NOI18N 
+	}
 	
+	holdTableChanges = false;
+	this.removeAll();
+
 	// use this for the server! 
 
 	int gridy = -1;
-	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 
-	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
+	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.topSpacerInsets,
+			    topSpacerInsets,
 			    0, 0);
 
         serverTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Exec_serverTableA11yName"));
         serverTable.setToolTipText(msgs.getString("ACS_MON_Exec_serverTableA11yDesc"));
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Exec_server"), msgs.getString("MON_Exec_server_Mnemonic").charAt(0), msgs.getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
+	addGridBagComponent(this, createHeaderLabel(msgs.getString("MON_Exec_server"), msgs.getString("MON_Exec_server_Mnemonic").charAt(0), msgs.getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
                             0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.labelInsets,
+			    labelInsets,
 			    0, 0);
 
 	addGridBagComponent(this, serverTable, 0, ++gridy,
 			    fullGridWidth, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.HORIZONTAL,
-			    TransactionView.tableInsets,
+			    tableInsets,
 			    0, 0);
 	
-	addGridBagComponent(this, Box.createGlue(), 0, ++gridy,
+	addGridBagComponent(this, createGlue(), 0, ++gridy,
 			    1, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.BOTH,
-			    TransactionView.zeroInsets,
+			    zeroInsets,
 			    0, 0);
 
 	// Housekeeping
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
-
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
-    }
-
 
     public void setServerTable(String []servercats) {
    	serverTable = new DisplayTable(servercats, DisplayTable.SERVER);
@@ -181,8 +149,8 @@ public class EditPanelServer extends javax.swing.JPanel {
 		portStr = portStr.trim();
 		
  
-		if(server.equals("")) inputOK = false;
-		if(portStr.equals("")) portStr = "80";
+		if(server.equals("")) inputOK = false; //NOI18N 
+		if(portStr.equals("")) portStr = "80"; //NOI18N 
 
 		int port = 0;
 		if(inputOK) {
@@ -196,8 +164,8 @@ public class EditPanelServer extends javax.swing.JPanel {
 		
 		if(inputOK) {
 		    try {
-			URL url = new URL("http", server, port, "");
-		    }
+			URL url = new URL("http", server, port, ""); //NOI18N
+		   }
 		    catch(MalformedURLException mue) {
 			inputOK = false;
 		    }
@@ -205,8 +173,8 @@ public class EditPanelServer extends javax.swing.JPanel {
 
 		if(inputOK) {
 		    ServletData sd = monitorData.getServletData();
-		    sd.setAttributeValue("serverName", server);
-		    sd.setAttributeValue("serverPort", portStr); 
+		    sd.setAttributeValue("serverName", server); //NOI18N
+		    sd.setAttributeValue("serverPort", portStr); //NOI18N
 		}
 		else {
 		    showErrorDialog();

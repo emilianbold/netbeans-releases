@@ -46,10 +46,11 @@ public class ReplaySendXMLServlet extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
 
-	if(debug) System.out.println("\n\nReplaySendXMLServlet:  DoPost.\n\n");
+	if(debug) 
+	    System.out.println("\n\nReplaySendXMLServlet:  DoPost.\n\n"); //NOI18N
 	PrintWriter out = res.getWriter();
 	try { 
-	    out.println("Shouldn't use POST for this!"); 
+	    out.println("Shouldn't use POST for this!");  //NOI18N
 	}
 	catch (Exception e) { 
 	}
@@ -61,16 +62,17 @@ public class ReplaySendXMLServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
 
-	if(debug) System.out.println("\n\nReplaySendXMLServlet:  DoGet.\n\n");
+	if(debug) System.out.println("\n\nReplaySendXMLServlet:  DoGet.\n\n"); //NOI18N
 
 	String status = null;
 	String id = null;
 	
 	try {
-	    status = req.getParameter("status");
-	    id = req.getParameter("id");
-	    if(debug) System.out.println("\n\nReplaySendXMLServlet: id=" + 
-					 id + " ,status=" + status);
+	    status = req.getParameter("status");  //NOI18N
+	    id = req.getParameter("id");  //NOI18N
+	    if(debug) 
+		System.out.println("\n\nReplaySendXMLServlet: id=" +  //NOI18N
+				   id + " ,status=" + status);  //NOI18N
 	}
 	catch(Exception ex) {
 	    // PENDING - deal 
@@ -83,16 +85,17 @@ public class ReplaySendXMLServlet extends HttpServlet {
 
 	    Util.setSessionCookieHeader(md);
 	    String method =
-		md.getRequestData().getAttributeValue("method");
+		md.getRequestData().getAttributeValue("method");  //NOI18N
 	    
-	    if(method.equals("POST")) {
+	    if(method.equals("POST")) {  //NOI18N
 		Util.removeParametersFromQuery(md.getRequestData());
 	    }
-	    else if(method.equals("GET")) {
+	    else if(method.equals("GET")) {  //NOI18N
 		Util.composeQueryString(md.getRequestData());
 	    }
 
-	    res.addHeader("Content-type", "text/plain;charset=\"UTF-8\"");
+	    res.addHeader("Content-type", //NOI18N
+			  "text/plain;charset=\"UTF-8\"");  //NOI18N
 
 	    PrintWriter out = res.getWriter();
 	    try {
@@ -118,19 +121,26 @@ public class ReplaySendXMLServlet extends HttpServlet {
 	}
 	if(debug) {
 	    try {
-		File file = new File("/tmp/replay-servlet.xml");
+		StringBuffer buf = new StringBuffer
+		    (System.getProperty("java.io.tmpdir")); // NOI18N
+		buf.append(System.getProperty("file.separator")); // NOI18N
+		buf.append("replay-servlet.xml"); // NOI18N
+		File file = new File(buf.toString()); 
+		log("Writing replay data to " // NOI18N
+		    + file.getAbsolutePath()); 		
 		FileOutputStream fout = new FileOutputStream(file);
 		PrintWriter pw2 = new PrintWriter(fout);
 		md.write(pw2);
 		pw2.close();
 		fout.close();
+
 	    }
 	    catch(Throwable t) {
-		System.out.println("Couldn't write the fucking file");
 	    }   
 	}
 	
-	if(debug) System.out.println("ReplaySendXMLServlet doGet exiting...");
+	if(debug) 
+	    System.out.println("ReplaySendXMLServlet doGet exiting...");  //NOI18N
     }
 } //ReplaySendXMLServlet.java
 

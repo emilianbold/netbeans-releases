@@ -89,8 +89,8 @@ public class ClientData extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("ClientData\n");
-	this.dump(str, "\n  ");
+	str.append("ClientData\n");//NOI18N
+	this.dump(str, "\n  ");//NOI18N
 	return str.toString();
     }
 }

@@ -17,84 +17,19 @@ import org.w3c.dom.*;
 import com.sun.forte4j.modules.dd.*;
 import java.beans.*;
 import java.util.*;
-import javax.servlet.http.Cookie;
-
-public class CookieOut extends BaseBean
-{
+ 
+public class EngineData extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    public CookieOut()
-    {
+
+    public EngineData() {
 	this(Common.USE_DEFAULT_VALUES);
     }
 
-    public CookieOut(Cookie cookie) {
 
-	// Note - the XML beans library does not treat NMTOKENS as
-	// special - they have to be set as strings! 
-	setAttributeValue("name", cookie.getName()); //NOI18N
-	setAttributeValue("value", cookie.getValue()); //NOI18N
-	setAttributeValue("maxAge", //NOI18N
-			  String.valueOf(cookie.getMaxAge()));
-	setAttributeValue("version", //NOI18N
-			  String.valueOf(cookie.getVersion()));
-
-	String domain = "";  //NOI18N
-	try { 
-	    domain = cookie.getDomain();
-	} 
-	catch(NullPointerException ne) {} 
-	if(domain != null) {
-	    if(domain.trim().equals("")) //NOI18N
-		setAttributeValue("domain", ""); //NOI18N
-	    else 
-		setAttributeValue("domain", domain);  //NOI18N
-	}
-
-	String path = "";  //NOI18N
-	try { 
-	    path = cookie.getPath();
-	} 
-	catch(NullPointerException ne) {} 
-	if(path != null) {
-	    if(path.trim().equals("")) //NOI18N
-		setAttributeValue("path", ""); //NOI18N
-	    else 
-		setAttributeValue("path", path); //NOI18N
-	}
-
-	String comment = "";  //NOI18N
-	try { 
-	    comment = cookie.getComment();
-	} 
-	catch(NullPointerException ne) {} 
-	if(comment != null) {
-	    if(comment.trim().equals("")) //NOI18N
-		setAttributeValue("comment", ""); //NOI18N
-	    else 
-		setAttributeValue("comment", comment);  //NOI18N
-	}
-	
-	int version = cookie.getVersion();   
-	// XML Beans...
-	if(version != 0) setAttributeValue("version", //NOI18N
-					   String.valueOf(version));  
-      
-	try { 
-	    if(cookie.getSecure()) 
-		// XMLBeans library... 
-		setAttributeValue("secure", //NOI18N
-				  String.valueOf(cookie.getSecure())); 
-	    
-	}
-	catch(Exception exc) {}
-    }
-
-
-    public CookieOut(int options)
-    {
-	super(CookieOut.comparators, new GenBeans.Version(1, 0, 5));
+    public EngineData(int options) {
+	super(EngineData.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.initialize(options);
     }
@@ -114,13 +49,13 @@ public class CookieOut extends BaseBean
     //
     static public void addComparator(BeanComparator c)
     {
-	CookieOut.comparators.add(c);
+	EngineData.comparators.add(c);
     }
 
     //
     static public void removeComparator(BeanComparator c)
     {
-	CookieOut.comparators.remove(c);
+	EngineData.comparators.remove(c);
     }
     //
     public void addPropertyChangeListener(PropertyChangeListener l)
@@ -164,8 +99,8 @@ public class CookieOut extends BaseBean
     public String dumpBeanNode()
     {
 	StringBuffer str = new StringBuffer();
-	str.append("CookieOut\n"); //NOI18N
-	this.dump(str, "\n  "); //NOI18N
+	str.append("EngineData\n");//NOI18N
+	this.dump(str, "\n  ");//NOI18N
 	return str.toString();
     }
 }

@@ -17,31 +17,21 @@
  *
  * Created: Wed Jan 31 18:04:22 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
 package org.netbeans.modules.web.monitor.client;
 
-import javax.swing.*;     // widgets
 import javax.swing.table.*;     // widgets
-import java.awt.Component;
-import java.awt.FlowLayout;
-import java.awt.Dimension;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.SystemColor;
-
+import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import org.netbeans.modules.web.monitor.data.*;
 import org.openide.util.NbBundle;
-import java.util.*;
+import java.util.ResourceBundle;
+import java.awt.Component;
 
-
-public class RequestDisplay extends JPanel {
+public class RequestDisplay extends DataDisplay {
     
     private final static boolean debug = false;
     private static final ResourceBundle msgs =
@@ -71,41 +61,32 @@ public class RequestDisplay extends JPanel {
     // that does not matter...
     public void setData(MonitorData md) {
 
-	if(debug) System.out.println("in RequestDisplay.setData()");
+	if(debug) System.out.println("in RequestDisplay.setData()"); //NOI18N
 	this.removeAll();
 	if (md == null)
 	    return;
 	
 	RequestData rd = md.getRequestData();
 	dt = new DisplayTable(requestCategories);
-	dt.setValueAt(rd.getAttributeValue("uri"), 0,1); 
-	dt.setValueAt(rd.getAttributeValue("method"),1,1);
-	dt.setValueAt(rd.getAttributeValue("queryString"), 2,1);
-	dt.setValueAt(rd.getAttributeValue("protocol"), 3,1);
-	dt.setValueAt(rd.getAttributeValue("ipaddress"), 4,1);
-	dt.setValueAt(rd.getAttributeValue("scheme"), 5,1);
-	dt.setValueAt(rd.getAttributeValue("status"), 6,1);
-        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
+	dt.setValueAt(rd.getAttributeValue("uri"), 0,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("method"),1,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("queryString"), 2,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("protocol"), 3,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("ipaddress"), 4,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("scheme"), 5,1); //NOI18N
+	dt.setValueAt(rd.getAttributeValue("status"), 6,1); //NOI18N
+        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName")); 
         dt.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
 
-	this.setLayout(new GridBagLayout());
-
 	int gridy = -1;
-	Insets labelInsets = TransactionView.labelInsets;
-	Insets tableInsets = TransactionView.tableInsets;
-	Insets buttonInsets = TransactionView.buttonInsets;
-	double tableWeightX = 1.0;
-	double tableWeightY = 0;
-	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
-
-	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
+	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.topSpacerInsets,
+			    topSpacerInsets,
 			    0, 0);
 
-        JLabel requestHeaderLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Request_19"));
+        JLabel requestHeaderLabel = createHeaderLabel(msgs.getString("MON_Request_19"));
         requestHeaderLabel.setDisplayedMnemonic(msgs.getString("MON_Request_19_Mnemonic").charAt(0));
         requestHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_19A11yDesc"));
         requestHeaderLabel.setLabelFor(dt);
@@ -135,19 +116,19 @@ public class RequestDisplay extends JPanel {
 	boolean bad = false;
 	
 	if(params2 == null || params2.length == 0) {
-	    if("POST".equals(rd.getAttributeValue("method"))) {
+	    if("POST".equals(rd.getAttributeValue("method"))) { //NOI18N
 
-		String type = rd.getAttributeValue("urlencoded");
+		String type = rd.getAttributeValue("urlencoded"); //NOI18N
 		
 		if(type != null) {
 
-		    if (type.equals("false")) {
+		    if (type.equals("false")) { //NOI18N
 			msg2 = msgs.getString("MON_Unparameterized");
 		    }
-		    else if (type.equals("bad")) {
+		    else if (type.equals("bad")) { //NOI18N
 			msg2 = msgs.getString("MON_Warning_param"); 
 			queryDataLabel =
-			    TransactionView.createHeaderLabel(msg2); 
+			    createHeaderLabel(msg2); 
 			bad = true;
 		    }
 		    else msg2 = msgs.getString("MON_No_posted_data");
@@ -157,14 +138,14 @@ public class RequestDisplay extends JPanel {
 		msg2 = msgs.getString("MON_No_querystring");
 	    }
 	    if(queryDataLabel == null) 
-		queryDataLabel = TransactionView.createDataLabel(msg2);
+		queryDataLabel = createDataLabel(msg2);
 	    
 	} else {
 	    msg2 = msgs.getString("MON_Parameters");
 	    paramTable = new DisplayTable(params2);
             paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yName"));
             paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
-	    queryDataLabel = TransactionView.createSortButtonLabel(msg2, paramTable, msgs.getString("MON_Parameters_Mnemonic").charAt(0), msgs.getString("ACS_MON_ParametersA11yDesc"));
+	    queryDataLabel = createSortButtonLabel(msg2, paramTable, msgs.getString("MON_Parameters_Mnemonic").charAt(0), msgs.getString("ACS_MON_ParametersA11yDesc"));
 	}
 	
 	addGridBagComponent(this, queryDataLabel, 0, ++gridy,
@@ -196,39 +177,81 @@ public class RequestDisplay extends JPanel {
 			
 	}
 	
-	addGridBagComponent(this, Box.createGlue(), 0, ++gridy,
+	this.add(createRigidArea()); 
+
+	Param[] param = null;
+	try {
+	    param = rd.getRequestAttributesIn().getParam();
+	}
+	catch(Exception ex) {
+	}
+
+	if(param != null && param.length > 0) {
+
+	    JLabel requestAttrBeforeLabel =
+		createHeaderLabel(msgs.getString("MON_Request_att_before")); 
+	    requestAttrBeforeLabel.setDisplayedMnemonic(msgs.getString("MON_Request_att_before_Mnemonic").charAt(0));
+	    requestAttrBeforeLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_att_beforeA11yDesc"));
+	    addGridBagComponent(this, requestAttrBeforeLabel, 0, ++gridy,
+				fullGridWidth, 1, 0, 0, 
+				java.awt.GridBagConstraints.WEST,
+				java.awt.GridBagConstraints.NONE,
+				labelInsets,
+				0, 0);
+	    dt = new DisplayTable(param);
+	    requestAttrBeforeLabel.setLabelFor(dt);
+	    dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Request_att_beforeTableA11yName"));
+	    dt.setToolTipText(msgs.getString("ACS_MON_Request_att_beforeTableA11yDesc"));
+	    addGridBagComponent(this, dt, 0, ++gridy,
+				fullGridWidth, 1, tableWeightX, tableWeightY, 
+				java.awt.GridBagConstraints.WEST,
+				java.awt.GridBagConstraints.BOTH,
+				tableInsets,
+				0, 0);	
+	    this.add(createRigidArea()); 
+	}
+    
+	param = null;
+	try {
+	    param = rd.getRequestAttributesOut().getParam();
+	}
+	catch(Exception ex) {
+	}
+
+	if(param != null && param.length > 0) {
+
+	    JLabel requestAttrAfterLabel =
+		createHeaderLabel(msgs.getString("MON_Request_att_after")); 
+	    requestAttrAfterLabel.setDisplayedMnemonic(msgs.getString("MON_Request_att_after_Mnemonic").charAt(0));
+	    requestAttrAfterLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_att_afterA11yDesc"));
+	    addGridBagComponent(this, requestAttrAfterLabel, 0, ++gridy,
+				fullGridWidth, 1, 0, 0, 
+				java.awt.GridBagConstraints.WEST,
+				java.awt.GridBagConstraints.NONE,
+				labelInsets,
+				0, 0);
+	    dt = new DisplayTable(param);
+	    requestAttrAfterLabel.setLabelFor(dt);
+	    dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Request_att_afterTableA11yName"));
+	    dt.setToolTipText(msgs.getString("ACS_MON_Request_att_afterTableA11yDesc"));
+	    addGridBagComponent(this, dt, 0, ++gridy,
+				fullGridWidth, 1, tableWeightX, tableWeightY, 
+				java.awt.GridBagConstraints.WEST,
+				java.awt.GridBagConstraints.BOTH,
+				tableInsets,
+				0, 0);	
+	}
+    
+	addGridBagComponent(this, createGlue(), 0, ++gridy,
 			    1, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.BOTH,
-			    TransactionView.zeroInsets,
+			    zeroInsets,
 			    0, 0);
+
+
 
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
-
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
-    }
-
-
 } // RequestDisplay

@@ -17,7 +17,7 @@
  *
  * Created: Fri Feb 9 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @author Simran Gleason
  * @version
  */
@@ -28,48 +28,31 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-import java.util.*;
-import javax.swing.*;
+import java.util.ResourceBundle;
+import java.awt.event.*;
+import javax.swing.JButton;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.awt.event.*;
-
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
-
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelHeaders extends javax.swing.JPanel {
+public class EditPanelHeaders extends DataDisplay {
 
     private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
     
-    private static final Dimension size = new Dimension(500, 550);
-    private static final Dimension reqSize = new Dimension(450, 100);
-    private static final Dimension tableSize = new Dimension(450, 100);
-   
     private DisplayTable headerTable = null;    
-
     private MonitorData monitorData = null;
-
     private EditPanel editPanel;
-
     private boolean setParams = false;
 
     //
@@ -102,7 +85,6 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 	if(debug) System.out.println("in RequestDisplay.setData()"); // NOI18N
 	 
 	this.removeAll();
-	this.setLayout(new GridBagLayout());
 	
 	// Headers
 	String msg = msgs.getString("MON_HTTP_Headers"); 
@@ -115,50 +97,29 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 	if(params == null) params = new Param[0];
 	setHeaders(params);
 
-	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
+	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.topSpacerInsets,
+			    topSpacerInsets,
 			    0, 0);
 
         headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
         headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
-	addGridBagComponent(this, TransactionView.createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
+	addGridBagComponent(this, createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.labelInsets,
+			    labelInsets,
 			    0, 0);
 
 	JScrollPane scrollpane = new JScrollPane(headerTable);
-	//headerTable.setPreferredScrollableViewportSize(tableSize);
-	/*
-	Dimension d = headerTable.getPreferredSize();
-	if(debug) {
-	    System.out.println("EditPanelHeaders:: table size is " +
-			       String.valueOf(d));
-	    System.out.println("EditPanelHeaders:: real size is " +
-			       String.valueOf(headerTable.getSize()));
-	    System.out.println("EditPanelHeaders:: default size is " +
-			       String.valueOf(tableSize));
-	}
-	Dimension useD = null;
-	if(d.getHeight() < tableSize.getHeight())
-	    useD = d;
-	else useD = tableSize;
-	scrollpane.setSize(useD); 
-	if(debug) {
-	    System.out.println("EditPanelHeaders:: table size is " +
-			       String.valueOf(scrollpane.getSize()));
-	}
-	*/
 	addGridBagComponent(this, scrollpane, 0, ++gridy,
 			    fullGridWidth, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
 			    //java.awt.GridBagConstraints.HORIZONTAL, 
 			    java.awt.GridBagConstraints.BOTH,
-			    TransactionView.tableInsets,
+			    tableInsets,
 			    0, 0);
 
 	newHeaderB = new JButton(msgs.getString("MON_New_header"));
@@ -167,8 +128,8 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 	newHeaderB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    String title = msgs.getString("MON_New_header"); 
-		    ParamEditor pe = new ParamEditor("", "", true,
-						     true, title);
+		    ParamEditor pe = new ParamEditor("", "", //NOI18N
+						     true, true, title);
 
 		    if(debug) System.out.println("Now showing dialog");// NOI18N
 		    
@@ -189,8 +150,9 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 			//   if we find one, we put up a warning dialog.
 			//   
 			int nth = hd.addParam(newParam);
-			if(debug) 
-			    System.out.println("Headers are " + hd.toString()); // NOI18N
+			if(debug) System.out.println("Headers are " // NOI18N
+						     + hd.toString()); 
+
 			redisplayData();
 		    }
 		}});
@@ -208,15 +170,15 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 
 		    StringBuffer buf = new StringBuffer
 			(msgs.getString("MON_Confirm_Delete_Headers")); 
-		    buf.append("\n");
+		    buf.append("\n"); // NOI18N
 
 		    for(int i=0; i<numRows; ++i) {
 
 			if(headerTable.isRowSelected(i)) {
 			    buf.append(headerTable.getValueAt(i, 0));
-			    buf.append(" ");
+			    buf.append(" ");  // NOI18N
 			    buf.append(headerTable.getValueAt(i, 1));
-			    buf.append("\n");
+			    buf.append("\n"); // NOI18N
 			}
 		    }
 
@@ -246,31 +208,31 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 		}});
 	
 	int gridx = -1;
-	addGridBagComponent(this, Box.createGlue(), ++gridx, ++gridy,
+	addGridBagComponent(this, createGlue(), ++gridx, ++gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 	addGridBagComponent(this, newHeaderB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 	/*
 	addGridBagComponent(this, editHeaderB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 	*/
 	addGridBagComponent(this, deleteHeaderB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 
 	setEnablings();
@@ -349,29 +311,6 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 	deleteHeaderB.setEnabled(selectedRows.length > 0);
     }
 
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
-    }
-
     boolean tableModelChanging;
     public void setHeaders(Param[] newParams) {
 	headerTable = new DisplayTable(newParams, DisplayTable.HEADERS);
@@ -401,13 +340,13 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 		    for(int i=0; i < num; i++) {
 			String name = (String)headerTable.getValueAt(i, 0);
 			name = name.trim();
-			if(name.equals("")) {
+			if(name.equals("")) { // NOI18N
 			    headerTable.setValueAt(params[i].getName(), i, 0);
 			    inputOK = false;
 			}
 			String value = (String)headerTable.getValueAt(i, 1);
 			value = value.trim();
-			if(value.equals("")) {
+			if(value.equals("")) { // NOI18N
 			    headerTable.setValueAt(params[i].getValue(), i, 1);
 			    inputOK = false;
 			}

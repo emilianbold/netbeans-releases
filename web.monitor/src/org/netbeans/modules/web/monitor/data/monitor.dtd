@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 
-<!ELEMENT MonitorData (ClientData, SessionData?, CookiesData?, RequestData, ServletData?)>
+<!ELEMENT MonitorData (ClientData, SessionData?, CookiesData?, RequestData, ServletData?, ContextData?,EngineData?)>
 <!ATTLIST MonitorData
     resource CDATA #REQUIRED
     timestamp CDATA #REQUIRED
@@ -79,15 +79,34 @@
     jre  CDATA #IMPLIED
     platform  CDATA #IMPLIED
     serverPort NMTOKEN #IMPLIED
+    serverName CDATA #IMPLIED
+    collected CDATA #IMPLIED>
+
+<!ELEMENT EngineData>
+<!ATTLIST EngineData
+    jre  CDATA #IMPLIED
+    platform  CDATA #IMPLIED
+    serverPort NMTOKEN #IMPLIED
     serverName CDATA #IMPLIED>
 
+<!ELEMENT ContextData (Param*, ContextAttributes?)>
+<!ATTLIST ContextData
+    contextName CDATA #IMPLIED 
+    absPath  CDATA #IMPLIED>
 
-<!ELEMENT RequestData (Headers, Param*)>
+<!ELEMENT RequestData (Headers, Param*, RequestAttributesIn?, RequestAttributesOut?)>
 <!ATTLIST RequestData
     uri CDATA #REQUIRED
     method CDATA #REQUIRED
     queryString CDATA #IMPLIED
+    replace CDATA #IMPLIED
     protocol CDATA #IMPLIED
     ipaddress CDATA #IMPLIED
     scheme CDATA #IMPLIED
     status CDATA #IMPIED>
+
+<!ELEMENT RequestAttributesIn (Param*)>
+
+<!ELEMENT RequestAttributesOut (Param*)>
+
+<!ELEMENT ContextAttributes (Param*)>

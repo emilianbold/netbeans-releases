@@ -181,7 +181,7 @@ public class DisplayTable extends JTable {
 	TableCellEditor ed = new DefaultCellEditor(box);
 	cellEditors[row][col] = ed;
 
-	// if the table is editable, we should turn off the "..." editor
+	// if the table is editable, we should turn off the [...] editor
 	// when there's a choice on the row.
 	data[row][2]=msgs.getString("MON_Editing");
 	cellEditors[row][2] = null;
@@ -231,7 +231,7 @@ public class DisplayTable extends JTable {
     }
 
     public void noSorting() {
-	if(debug) System.out.println("Neutral sorting selected");
+	if(debug) System.out.println("Neutral sorting selected"); //NOI18N
 	setMyModel(editable > UNEDITABLE);
     }
     
@@ -321,7 +321,7 @@ public class DisplayTable extends JTable {
     // moment. In reality they can be of different types, though maybe 
     // that does not matter...
     public void reset() {
-	for(int i=0; i<numRows; ++i) setValueAt("", i, 1);
+	for(int i=0; i<numRows; ++i) setValueAt("", i, 1); //NOI18N
     }
 
     public Object[][] getData() {

@@ -12,45 +12,42 @@
  */
 
 /**
- * SessionIn.java
+ * RequestAttributesOut.java
+ * 
+ * Matches the DTD element RequestAttributesOut
  *
- *
- * Created: Wed Feb  7 16:45:02 2001
+ * Created: Tue Jan 15 18:22:27 2002
  *
  * @author Ana von Klopp
  * @version
- *
- * The Param class is used to represent session attributes. 
- *
  */
 
 package org.netbeans.modules.web.monitor.data;
-
 import org.w3c.dom.*;
 import com.sun.forte4j.modules.dd.*;
 import java.beans.*;
 import java.util.*;
 
-public class SessionIn extends BaseBean {
+public class RequestAttributesOut extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    static public final String PARAM = "Param"; //NOI18N
+    static public final String PARAM = "Param"; // NOI18N
 
-    public SessionIn() {
+    public RequestAttributesOut() {
 	this(Common.USE_DEFAULT_VALUES);
     }
 
-    public SessionIn(int options) {
-	super(SessionIn.comparators, new GenBeans.Version(1, 0, 6));
+    public RequestAttributesOut(int options) {
+	super(RequestAttributesOut.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
-	this.createProperty("Param", PARAM, //NOI18N
+	this.createProperty("Param", PARAM,  // NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    Param.class);
-	this.createAttribute(PARAM, "name", "Name", //NOI18N
+	this.createAttribute(PARAM, "name", "Name",  // NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(PARAM, "value", "Value", //NOI18N
+	this.createAttribute(PARAM, "value", "Value",  // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
 	this.initialize(options);
@@ -58,6 +55,7 @@ public class SessionIn extends BaseBean {
 
     // Setting the default values of the properties
     void initialize(int options) {
+
     }
 
     // This attribute is an array, possibly empty
@@ -79,6 +77,21 @@ public class SessionIn extends BaseBean {
     public Param[] getParam() {
 	return (Param[])this.getValues(PARAM);
     }
+
+    public Hashtable getHashtable() {
+
+	Param[] attributes =  (Param[])this.getValues(PARAM);
+	int numAttributes = attributes.length;
+	Hashtable ht = new Hashtable(numAttributes);
+	
+	for(int i=0; i<numAttributes; ++i) {
+	    String name =  attributes[i].getAttributeValue("name");  // NOI18N
+	    String value = attributes[i].getAttributeValue("value"); // NOI18N
+	    ht.put(name, value);
+	}	
+	return ht;
+    }
+
 
     // Return the number of properties
     public int sizeParam() {
@@ -105,12 +118,12 @@ public class SessionIn extends BaseBean {
 
     //
     static public void addComparator(BeanComparator c) {
-	SessionIn.comparators.add(c);
+	RequestAttributesOut.comparators.add(c);
     }
 
     //
     static public void removeComparator(BeanComparator c) {
-	SessionIn.comparators.remove(c);
+	RequestAttributesOut.comparators.remove(c);
     }
     //
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -127,7 +140,8 @@ public class SessionIn extends BaseBean {
     }
 
     //
-    public void addPropertyChangeListener(String n, PropertyChangeListener l) {
+    public void addPropertyChangeListener(String n,
+					  PropertyChangeListener l) {
 	BeanProp p = this.beanProp(n);
 	if (p != null)
 	    p.addPCListener(l);
@@ -135,7 +149,7 @@ public class SessionIn extends BaseBean {
 
     //
     public void removePropertyChangeListener(String n,
-					     PropertyChangeListener l) {
+					     PropertyChangeListener l) { 
 	BeanProp p = this.beanProp(n);
 	if (p != null)
 	    p.removePCListener(l);
@@ -146,16 +160,16 @@ public class SessionIn extends BaseBean {
 	String s;
 	BaseBean n;
 	str.append(indent);
-	str.append("Param["+this.sizeParam()+"]"); //NOI18N
+	str.append("Param["+this.sizeParam()+"]"); // NOI18N
 	for(int i=0; i<this.sizeParam(); i++)
 	    {
-		str.append(indent+"\t"); //NOI18N
-		str.append("#"+i+":"); //NOI18N
+		str.append(indent+"\t"); // NOI18N
+		str.append("#"+i+":");  // NOI18N
 		n = this.getParam(i);
 		if (n != null)
-		    n.dump(str, indent + "\t"); //NOI18N
+		    n.dump(str, indent + "\t");  // NOI18N
 		else
-		    str.append(indent+"\tnull"); //NOI18N
+		    str.append(indent+"\tnull");  // NOI18N
 		this.dumpAttributes(PARAM, i, str, indent);
 	    }
 
@@ -163,9 +177,25 @@ public class SessionIn extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("SessionIn\n"); //NOI18N
-	this.dump(str, "\n  "); //NOI18N
+	str.append("RequestAttributesOut\n");  // NOI18N
+	this.dump(str, "\n  ");  // NOI18N
 	return str.toString();
     }
-}
 
+    public String toString() {
+	StringBuffer buf = new StringBuffer("RequestAttributesOut\n");  // NOI18N
+	
+	Param[] params = getParam();
+	buf.append(String.valueOf(params.length));
+	buf.append(" attribute lines\n");  // NOI18N
+	for(int i=0; i<params.length; ++i) {
+	    buf.append(String.valueOf(i));
+	    buf.append(". Attribute: ");  // NOI18N
+	    buf.append(params[i].getAttributeValue("name"));  // NOI18N
+	    buf.append(", Value: ");  // NOI18N
+	    buf.append(params[i].getAttributeValue("value"));  // NOI18N
+	    buf.append("\n");  // NOI18N
+	}
+	return buf.toString();
+    }
+}

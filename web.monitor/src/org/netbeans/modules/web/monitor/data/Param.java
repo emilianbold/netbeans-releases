@@ -28,8 +28,8 @@ public class Param extends BaseBean {
     }
 
     public Param(String name, String value) {
-	setAttributeValue("name", name);
-	setAttributeValue("value", value);
+	setAttributeValue("name", name); //NOI18N
+	setAttributeValue("value", value); //NOI18N
     }
 
     public Param(int options) {
@@ -110,8 +110,8 @@ public class Param extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("Param\n");
-	this.dump(str, "\n  ");
+	str.append("Param\n"); //NOI18N
+	this.dump(str, "\n  "); //NOI18N
 	return str.toString();
     }
 }

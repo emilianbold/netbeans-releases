@@ -17,7 +17,7 @@
  *
  * Created: Mon Feb  5 13:34:46 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @author Simran Gleason
  * @version
  */
@@ -29,25 +29,18 @@
 
 package org.netbeans.modules.web.monitor.client; 
 
-import javax.swing.*;
+import java.awt.event.*;
+import java.awt.Component;
+import java.util.ResourceBundle;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-
-import java.awt.event.*;
-import java.util.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import java.awt.event.*;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
@@ -55,16 +48,12 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.web.monitor.data.*;
 
-public class EditPanelQuery extends javax.swing.JPanel {
+public class EditPanelQuery extends DataDisplay {
 
     private final static boolean debug = false;
     private static final ResourceBundle msgs =
 	NbBundle.getBundle(TransactionView.class);
-    
-    private static final Dimension size = new Dimension(500, 550);
-    private static final Dimension reqSize = new Dimension(450, 100);
-    private static final Dimension tableSize = new Dimension(450, 100);
-   
+ 
     private DisplayTable paramTable = null; 
 
     private MonitorData monitorData = null;
@@ -101,17 +90,16 @@ public class EditPanelQuery extends javax.swing.JPanel {
 	
 	if(debug) System.out.println("in EditPanelQuery.setData()"); // NOI18N
 	this.removeAll();
-	this.setLayout(new GridBagLayout());
 
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 	int gridy = -1;
 	 
 
-	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
+	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.topSpacerInsets,
+			    topSpacerInsets,
 			    0, 0);
 	
 	// The query parameters: PENDING
@@ -126,30 +114,32 @@ public class EditPanelQuery extends javax.swing.JPanel {
 	//    only. They can edit the query string as well. 
 	
 	final RequestData rd = monitorData.getRequestData();
-	String method = rd.getAttributeValue("method");
-	if ("POST".equals(method)) {
-	    queryStringText = new JTextField(rd.getAttributeValue("queryString"));
+	String method = rd.getAttributeValue(EditPanel.METHOD);
+	if (EditPanel.POST.equals(method)) {
+	    queryStringText =
+		new JTextField(rd.getAttributeValue("queryString")); // NOI18N
 	    queryStringText.addFocusListener(new FocusListener() {
 		public void focusGained(FocusEvent evt) {
 		}
 		public void focusLost(FocusEvent evt) {
 		    // PENDING - check that this works
-		    rd.setAttributeValue("queryString", queryStringText.getText());
+		    rd.setAttributeValue("queryString", //NOI18N
+					 queryStringText.getText());
 		}
 	    });
 
-	    addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Querystring"), msgs.getString("MON_Querystring_Mnemonic").charAt(0), msgs.getString("ACS_MON_QuerystringA11yDesc"), paramTable),
+	    addGridBagComponent(this, createHeaderLabel(msgs.getString("MON_Querystring"), msgs.getString("MON_Querystring_Mnemonic").charAt(0), msgs.getString("ACS_MON_QuerystringA11yDesc"), paramTable),
                                 0, ++gridy,
 				1, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
-				TransactionView.labelInsets,
+				labelInsets,
 				0, 0);
 	    addGridBagComponent(this, queryStringText, 0, ++gridy,
 				fullGridWidth, 1, 1.0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.HORIZONTAL,
-				TransactionView.tableInsets,
+				tableInsets,
 				0, 0);
 	}
 	    
@@ -157,14 +147,14 @@ public class EditPanelQuery extends javax.swing.JPanel {
 	String msg2 = null;
 	Component msg2Label;
 
-	if ("PUT".equals(method)) {
+	if (EditPanel.PUT.equals(method)) {
 	    msg2 = msgs.getString("MON_Upload_File");
-	    msg2Label = TransactionView.createDataLabel(msg2);
+	    msg2Label = createDataLabel(msg2);
 	    addGridBagComponent(this, msg2Label, 0, ++gridy,
 				fullGridWidth, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
-				TransactionView.labelInsets,
+				labelInsets,
 				0, 0);
 	    
 	    String uploadFileMsg = msgs.getString("MON_Upload_File_Not_Supported");
@@ -174,13 +164,13 @@ public class EditPanelQuery extends javax.swing.JPanel {
 				fullGridWidth, 1, 1.0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.HORIZONTAL,
-				TransactionView.labelInsets,
+				labelInsets,
 				0, 0);
-	    addGridBagComponent(this, Box.createGlue(), 0, ++gridy,
+	    addGridBagComponent(this, createGlue(), 0, ++gridy,
 				1, 1, 1.0, 1.0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.BOTH,
-				TransactionView.labelInsets,
+				labelInsets,
 				0, 0);
 
 	} else if (method != null) {  // GET or POST
@@ -191,14 +181,14 @@ public class EditPanelQuery extends javax.swing.JPanel {
             char mnemonic = ' ';
             String ad = null;
 
-	    if(method.equals("GET")) {
+	    if(method.equals(EditPanel.GET)) {
 		msg2 = msgs.getString("MON_Query_parameters");
                 mnemonic = msgs.getString("MON_Query_parameters_Mnemonic").charAt(0);
                 ad = msgs.getString("ACS_MON_Query_parametersA11yDesc");
                 paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
                 paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
 		
-	    } else if(method.equals("POST")) {
+	    } else if(method.equals(EditPanel.POST)) {
 		msg2 = msgs.getString("MON_Posted_data");
                 mnemonic = msgs.getString("MON_Posted_data_Mnemonic").charAt(0);
                 ad = msgs.getString("ACS_MON_Posted_dataA11yDesc");
@@ -206,13 +196,13 @@ public class EditPanelQuery extends javax.swing.JPanel {
                 paramTable.setToolTipText(msgs.getString("ACS_MON_Posted_dataTableA11yDesc"));
 	    }
 
-	    msg2Label = TransactionView.createSortButtonLabel(msg2, paramTable, mnemonic, ad);
+	    msg2Label = createSortButtonLabel(msg2, paramTable, mnemonic, ad);
 
 	    addGridBagComponent(this, msg2Label, 0, ++gridy,
 				1, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
-				TransactionView.labelInsets,
+				labelInsets,
 				0, 0);
 
 	    gridy = addParamTable(this, params2, gridy);
@@ -228,18 +218,14 @@ public class EditPanelQuery extends javax.swing.JPanel {
 
     private int addParamTable(JPanel panel, Param[] params, int gridy) {
 	
-	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
-
 	JScrollPane scrollpane = new JScrollPane(paramTable);
-	//paramTable.setPreferredScrollableViewportSize(tableSize);
-	//scrollpane.setMinimumSize(tableSize);
 
 	addGridBagComponent(panel, scrollpane, 0, ++gridy,
 			    fullGridWidth, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
 			    //java.awt.GridBagConstraints.HORIZONTAL, 
 			    java.awt.GridBagConstraints.BOTH,
-			    TransactionView.tableInsets,
+			    tableInsets,
 			    0, 0);
 
 	newParamB = new JButton(msgs.getString("MON_New_param"));
@@ -249,7 +235,8 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 
 		    String title = msgs.getString("MON_New_param"); 
-		    ParamEditor pe = new ParamEditor("", "", true, true,
+		    ParamEditor pe = new ParamEditor("", "", //NOI18N
+						     true, true,
 						     title, false);
 
 		    if(debug) System.out.println("Now showing dialog"); // NOI18N
@@ -283,15 +270,15 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		
 		    StringBuffer buf = new StringBuffer
 			(msgs.getString("MON_Confirm_Delete_Params")); 
-		    buf.append("\n");
+		    buf.append("\n"); //NOI18N
 		
 		    for(int i=0; i<numRows; ++i) {
 		    
 			if(paramTable.isRowSelected(i)) {
 			    buf.append(paramTable.getValueAt(i, 0));
-			    buf.append("=");
+			    buf.append("="); //NOI18N
 			    buf.append(paramTable.getValueAt(i, 1));
-			    buf.append("\n");
+			    buf.append("\n"); //NOI18N
 			}
 		    }
 		
@@ -322,30 +309,30 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		}});
 	++gridy;
 	int gridx = -1;
-	addGridBagComponent(this, Box.createGlue(), ++gridx, gridy,
+	addGridBagComponent(this, createGlue(), ++gridx, gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
-	addGridBagComponent(this, Box.createGlue(), ++gridx, gridy,
+	addGridBagComponent(this, createGlue(), ++gridx, gridy,
 			    1, 1, 1.0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 	addGridBagComponent(this, newParamB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 
 	addGridBagComponent(this, deleteParamB, ++gridx, gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.EAST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.buttonInsets,
+			    buttonInsets,
 			    0, 0);
 	return gridy;
     }
@@ -380,30 +367,6 @@ public class EditPanelQuery extends javax.swing.JPanel {
 	// The delete row button is enabled if any rows are selected.
 	//
 	deleteParamB.setEnabled(selectedRows.length > 0);
-    }
-
-
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
     }
 
     public void repaint() {

@@ -17,7 +17,7 @@
  *
  * Created: Fri Jan 19 16:21:06 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -69,7 +69,7 @@ public class Controller  {
 	NbBundle.getBundle(TransactionView.class);
 
     public static final boolean debug = false;
-    private transient static boolean starting = true;
+    //private transient static boolean starting = true;
 
     // Test server location and port
     // Should use InetAddress.getLocalhost() instead
@@ -82,10 +82,10 @@ public class Controller  {
     private static FileObject saveDir = null;
     private static FileObject replayDir = null;
 
-    private final static String monDirStr = "HTTPMonitor"; // NOI18N
-    private final static String currDirStr = "current"; // NOI18N
-    private final static String saveDirStr = "save"; // NOI18N
-    private final static String replayDirStr = "replay"; // NOI18N
+    public final static String monDirStr = "HTTPMonitor"; // NOI18N
+    public final static String currDirStr = "current"; // NOI18N
+    public final static String saveDirStr = "save"; // NOI18N
+    public final static String replayDirStr = "replay"; // NOI18N
 
     // Constant nodes etc we need to know about
     private transient  NavigateNode root = null;
@@ -101,18 +101,19 @@ public class Controller  {
 
     private transient Comparator comp = null;
 
+    private boolean useBrowserCookie = true;
+    
     public Controller() {
 
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
 	
 	createNodeStructure();
-	if(debug) System.err.println("Creating port server"); // NOI18N
+	if(debug) log("Creating port server"); // NOI18N
 	PortServer ps = new PortServer();
-	if(debug) 
-	    System.err.println("Created port server, about to run it"); // NOI18N
+	if(debug) log("Created port server, about to run it"); // NOI18N
 	ps.start();
-	if(debug) System.err.println("Running port server"); // NOI18N
+	if(debug) log("Running port server"); // NOI18N
     }
 
     /**
@@ -238,21 +239,20 @@ public class Controller  {
 
     private static void createDirectories() throws FileNotFoundException {
 
-	if(debug) System.out.println("Now in createDirectories()"); // NOI18N
+	if(debug) log("Now in createDirectories()"); // NOI18N
 
 	FileLock lock = null;
 
 	TopManager tm = TopManager.getDefault();
-	if(debug) System.out.println("TopManager: " + tm.toString()); // NOI18N
+	if(debug) log("TopManager: " + tm.toString()); // NOI18N
 	
 	FileObject rootdir = 
 	    tm.getRepository().getDefaultFileSystem().getRoot();
 	if(debug) {
-	    System.out.println("Root directory is " + // NOI18N
-			       rootdir.getName()); 
+	    log("Root directory is " +  rootdir.getName()); // NOI18N
 	    File rootF = NbClassPath.toFile(rootdir);
-	    System.out.println("Root directory abs path " + // NOI18N
-			       rootF.getAbsolutePath());
+	    log("Root directory abs path " + // NOI18N
+		rootF.getAbsolutePath());
 	}
 
 	if(monDir == null || !monDir.isFolder()) {
@@ -285,8 +285,8 @@ public class Controller  {
 		throw new FileNotFoundException();
 	}
 
-	if(debug) System.out.println("monitor directory is " + // NOI18N
-				     monDir.getName());
+	if(debug) 
+	    log("monitor directory is " + monDir.getName());// NOI18N
 
 	// Current directory
 
@@ -319,8 +319,7 @@ public class Controller  {
 		throw new FileNotFoundException();
 	}
 	
-	if(debug) System.out.println("curr directory is " + // NOI18N
-				     currDir.getName());
+	if(debug) log("curr directory is " + currDir.getName()); // NOI18N
 
 
 
@@ -354,9 +353,8 @@ public class Controller  {
 	    if(saveDir == null || !saveDir.isFolder()) 
 		throw new FileNotFoundException();
 
-	    if(debug) System.out.println("save directory is " + // NOI18N
-					 saveDir.getName());
-
+	    if(debug) 
+		log("save directory is " + saveDir.getName()); // NOI18N
 	}
 
 	// Replay Directory
@@ -389,9 +387,8 @@ public class Controller  {
 	    if(replayDir == null || !replayDir.isFolder()) 
 		throw new FileNotFoundException();
 
-	    if(debug) System.out.println("replay directory is " + // NOI18N
-					 replayDir.getName());
-
+	    if(debug) 
+		log("replay directory is " + replayDir.getName());// NOI18N
 	}
     }
 
@@ -406,13 +403,46 @@ public class Controller  {
      * data. In that case we wouldn't have to get the MonitorData
      * object at all, and the ReplaySendXML servlet could just 
      * pass on the data. 
+     *
      */
     public void replayTransaction(Node node) {
-	if(debug) System.out.println("Replay transaction from node " // NOI18N
-				       + node.getName()); 
+
+	boolean debug = false;
+	 
+	if(debug) 
+	    log("Replay transaction from node " + node.getName()); // NOI18N
+		
 	if(!checkServer(true)) return;
 	TransactionNode tn = (TransactionNode)node;
 	MonitorData md = getMonitorData(tn);
+	if(!useBrowserCookie) 
+	    md.getRequestData().setReplaceSessionCookie(true);
+
+	if(debug) { 
+	    log("Replace is " +  // NOI18N
+		String.valueOf(md.getRequestData().getReplaceSessionCookie()));
+    
+	    try {
+		StringBuffer buf = new StringBuffer
+		    (System.getProperty("java.io.tmpdir")); // NOI18N
+		buf.append(System.getProperty("file.separator")); // NOI18N
+		buf.append("control-replay.xml"); // NOI18N
+		File file = new File(buf.toString()); 
+		FileOutputStream fout = new FileOutputStream(file);
+		PrintWriter pw2 = new PrintWriter(fout);
+		md.write(pw2);
+		pw2.close();
+		fout.close();
+		log("Wrote replay data to " + // NOI18N 
+		    file.getAbsolutePath()); 
+		
+	    }
+	    catch(Throwable t) {
+	    }
+	}
+
+
+
 	String status;
 	if(tn.isCurrent()) status = currDirStr; 
 	else status = saveDirStr; 
@@ -427,11 +457,11 @@ public class Controller  {
 	    };
 
 	    Object[] args = {
-		md.getServletData().getAttributeValue("serverName"),
+		md.getServletData().getAttributeValue("serverName"),  // NOI18N
 	    };
 	    
 	    MessageFormat msgFormat = new MessageFormat
-		(resBundle.getString("MON_Exec_server_no_host")); 
+		(resBundle.getString("MON_Exec_server_no_host"));  
 	    NotifyDescriptor noServerDialog = 
 		new NotifyDescriptor(msgFormat.format(args),
 				     resBundle.getString("MON_Exec_server"),
@@ -450,8 +480,8 @@ public class Controller  {
 	    };
 
 	    Object[] args = {
-		md.getServletData().getAttributeValue("serverName"),
-		md.getServletData().getAttributeValue("serverPort"),
+		md.getServletData().getAttributeValue("serverName"), // NOI18N
+		md.getServletData().getAttributeValue("serverPort"), // NOI18N
 	    };
 	    
 	    MessageFormat msgFormat = new MessageFormat
@@ -474,9 +504,9 @@ public class Controller  {
      */
     public void replayTransaction(MonitorData md) 
 	throws UnknownHostException, IOException  {
-
+	
 	if(debug)
-	    System.out.println("Controller::replayTransaction(MD)"); //NOI18N
+	    log("Controller::replayTransaction(MD)"); //NOI18N
 	
 	FileLock lock = null;
 	OutputStream out = null;
@@ -484,23 +514,30 @@ public class Controller  {
 
 	try {
 	    
-	    if(debug) System.out.println("Trying to create record for replay"); //NOI18N
-	    String id = md.getAttributeValue("id"); 
+	    if(debug) 
+		log("Creating record for replay"); //NOI18N
+	    String id = md.getAttributeValue("id"); // NOI18N
 	    FileObject fo = getReplayDir().createData(id, "xml"); //NOI18N
 	    lock = fo.lock();
 	    out = fo.getOutputStream(lock);
 	    pw = new PrintWriter(out);
 	    md.write(pw);	    
-	    if(debug) System.out.println("...record complete"); //NOI18N
+	    if(debug) log("...record complete"); //NOI18N
 
 	    if(debug) {
 		try {
-		    File file = new File("/tmp/replay.xml");
+
+		    StringBuffer buf = new StringBuffer
+			(System.getProperty("java.io.tmpdir")); // NOI18N
+		    buf.append(System.getProperty("file.separator")); // NOI18N
+		    buf.append("control-record.xml"); // NOI18N
+		    File file = new File(buf.toString()); 
 		    FileOutputStream fout = new FileOutputStream(file);
 		    PrintWriter pw2 = new PrintWriter(fout);
 		    md.write(pw2);
 		    pw2.close();
 		    fout.close();
+		    log("Wrote replay data to " + file.getAbsolutePath()); // NOI18N
 		}
 		catch(Throwable t) {
 		}
@@ -523,14 +560,12 @@ public class Controller  {
 	    try {
 		lock.releaseLock();
 		if(debug) 
-		    System.out.println
-			("Released lock on replay file"); // NOI18N
+		    log("Released lock on replay file"); // NOI18N
 		
 	    }
 	    catch(Throwable t) {
 		if(debug) 
-		    System.out.println
-			("Failed to release lock on replay file"); // NOI18N
+		    log("Failed to release lock on replay file"); // NOI18N
 		
 	    }  
 	}
@@ -552,14 +587,27 @@ public class Controller  {
     public void replayTransaction(MonitorData md, String status)
 	throws UnknownHostException, IOException  {
 	if(debug) 
-	    System.out.println
-		("Replay transaction from transaction file "); //NOI18N 
+	    log("Replay transaction from transaction file "); //NOI18N 
 	URL url = null;
 	try {
-	    String name = 
-		md.getServletData().getAttributeValue("serverName"); //NOI18N 
-	    String portStr = 
-		md.getServletData().getAttributeValue("serverPort"); //NOI18N 
+	    String name;
+	    String portStr;
+	     
+	    // New data beans
+	    try {
+		name =
+		    md.getEngineData().getAttributeValue("serverName"); //NOI18N  
+		portStr = 
+		    md.getEngineData().getAttributeValue("serverPort"); //NOI18N 
+	    }
+	    // Old data beans
+	    catch(Exception ex) {
+		name =
+		    md.getServletData().getAttributeValue("serverName"); //NOI18N  
+		portStr = 
+		    md.getServletData().getAttributeValue("serverPort"); //NOI18N 
+	    }
+	    
 	    int port = Integer.parseInt(portStr);
 	    StringBuffer uriBuf = new StringBuffer(128);
 	    uriBuf.append(md.getRequestData().getAttributeValue("uri")); //NOI18N 
@@ -570,10 +618,10 @@ public class Controller  {
 	    url = new URL("http", name, port, uriBuf.toString()); //NOI18N 
 	}
 	catch(MalformedURLException me) { 
-	    if(debug) System.out.println(me.getMessage());
+	    if(debug) log(me.getMessage());
 	}
 	catch(NumberFormatException ne) { 
-	    if(debug) System.out.println(ne.getMessage());
+	    if(debug) log(ne.getMessage());
 	}
 
 	// Send the url to the browser.
@@ -593,7 +641,7 @@ public class Controller  {
 	if(!haveDirectories()) {
 	    // PENDING - report the error properly
 	    // This should not happen
-	    System.out.println("Couldn't get the directory"); //NOI18N
+	    log("Couldn't get the directory"); //NOI18N
 	    return;
 	}
 
@@ -606,7 +654,7 @@ public class Controller  {
 	    oldNode = (TransactionNode)nodes[i];
 	    id = oldNode.getID();
 	    
-	    if(debug) System.out.println("Controller: Saving " + id); //NOI18N 
+	    if(debug) log("Controller: Saving " + id); //NOI18N 
 
 	    if(currBeans.containsKey(id)) 
 		saveBeans.put(id, currBeans.remove(id)); 
@@ -619,7 +667,7 @@ public class Controller  {
 		    currDir.getFileObject(id, "xml"); //NOI18N
 		FileLock lock = fold.lock();
 		fold.copy(saveDir, id, "xml"); //NOI18N
-		if(debug) System.out.println(fold.getName());
+		if(debug) log(fold.getName());
 		fold.delete(lock);
 		lock.releaseLock();
 					      
@@ -644,7 +692,7 @@ public class Controller  {
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    // This should not happen
-	    System.out.println("Couldn't get the directory"); //NOI18N 
+	    log("Couldn't get the directory"); //NOI18N 
 	    return;
 	}
 
@@ -659,11 +707,11 @@ public class Controller  {
 	    
 	    n = (TransactionNode)nodes[i];
 	    if(debug) 
-		System.out.println("Deleting :" + n.toString()); //NOI18N 
+		log("Deleting :" + n.toString()); //NOI18N 
 	    
 	    try {
 		if(n.isCurrent()) {
-		    if(debug) System.out.println("Deleting current"); //NOI18N 
+		    if(debug) log("Deleting current"); //NOI18N 
 		    fold = currDir.getFileObject(n.getID(), "xml"); //NOI18N
 		    // PENDING
 		    Node[] ns = { n };
@@ -672,7 +720,7 @@ public class Controller  {
 		}
 		
 		else {
-		    if(debug) System.out.println("Deleting saved"); //NOI18N 
+		    if(debug) log("Deleting saved"); //NOI18N 
 		    fold = saveDir.getFileObject(n.getID(), "xml");//NOI18N
 		    // PENDING
 		    Node[] ns = { n };
@@ -681,16 +729,16 @@ public class Controller  {
 		}
 		lock = fold.lock();
 		if(debug) 
-		    System.out.println("Deleting: " + //NOI18N 
-				       fold.getName()); 
+		    log("Deleting: " + fold.getName()); //NOI18N 
+			
 		
 		fold.delete(lock); 
 		lock.releaseLock();
 	    }
 	    catch(Exception ex) {
 		// PENDING report properly
-		if(debug) System.out.println("Failed :" + //NOI18N 
-					     n.getID());
+		if(debug) log("Failed :" + n.getID()); //NOI18N 
+					     
 	    }
 	}
     }
@@ -700,7 +748,7 @@ public class Controller  {
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    // This should not happen
-	    System.out.println("Couldn't get the directory"); //NOI18N 
+	    log("Couldn't get the directory"); //NOI18N 
 	    return;
 	}
 
@@ -745,7 +793,7 @@ public class Controller  {
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
 	    // This should not happen
-	    System.out.println("Couldn't get the directory"); //NOI18N 
+	    log("Couldn't get the directory"); //NOI18N 
 	    return;
 	}
 
@@ -755,69 +803,61 @@ public class Controller  {
 	InputStreamReader in = null;
 	 
 
-	if(starting) 
-	    starting = false;
+	currTrans.remove(currTrans.getNodes());
+	nodes = new Vector();
 
-	else {
+	e = currDir.getData(false);
+	while(e.hasMoreElements()) {
+
+	    FileObject fo = (FileObject) e.nextElement();
+	    String id = fo.getName();
+	    if(debug) 
+		log("getting current transaction: " + id); //NOI18N 
+		    
 	    
-	    // Only do the current transaction one if we are not
-	    // starting... 
-	    currTrans.remove(currTrans.getNodes());
-	    nodes = new Vector();
-
-	    e = currDir.getData(false);
-	    while(e.hasMoreElements()) {
-
-		FileObject fo = (FileObject) e.nextElement();
-		String id = fo.getName();
-		if(debug) 
-		    System.out.println("getting current transaction: " + //NOI18N 
-				       id);
-	    
-		if(currBeans.containsKey(id)) {
-		    MonitorData md = (MonitorData)(currBeans.get(id));
-		    nodes.add(md.createTransactionNode(true)); 
+	    if(currBeans.containsKey(id)) {
+		MonitorData md = (MonitorData)(currBeans.get(id));
+		nodes.add(md.createTransactionNode(true)); 
+	    }
+	    else {
+		try {
+		    lock = fo.lock();
+		    in = new InputStreamReader(fo.getInputStream());
+		    MonitorData md = MonitorData.createGraph(in);
+		    currBeans.put(id, md);
+		    nodes.add(md.createTransactionNode(true));
 		}
-		else {
+		catch(IOException ioe) {
+		    String message = ioe.getMessage();
+		    if(message == null || message.equals("")) //NOI18N
+			message = resBundle.getString("MON_Bad_input");
+		    log(message);
+		    if (debug) ioe.printStackTrace();
+		}
+		catch(Exception ex) {
+		    log(resBundle.getString("MON_Bad_input"));
+		    if(debug) ex.printStackTrace();
+		}
+		finally {
 		    try {
-			lock = fo.lock();
-			in = new InputStreamReader(fo.getInputStream());
-			MonitorData md = MonitorData.createGraph(in);
-			currBeans.put(id, md);
-			nodes.add(md.createTransactionNode(true));
+			in.close();
 		    }
-		    catch(IOException ioe) {
-			String message = ioe.getMessage();
-			if(message == null || message.equals(""))
-			    message = resBundle.getString("MON_Bad_input");
-			System.out.println(message);
-			if (debug) ioe.printStackTrace();
-		    }
-		    catch(Exception ex) {
-			System.out.println(resBundle.getString("MON_Bad_input"));
-			if(debug) ex.printStackTrace();
-		    }
-		    finally {
-			try {
-			    in.close();
-			}
-			catch(Throwable t) {}
+		    catch(Throwable t) {}
 
-			try {
-			    lock.releaseLock();
-			}
-			catch(Throwable t) {}
+		    try {
+			lock.releaseLock();
 		    }
+		    catch(Throwable t) {}
 		}
 	    }
-	    
-	    int numtns = nodes.size();
-	    TransactionNode[] tns = new TransactionNode[numtns]; 
-	    for(int i=0;i<numtns;++i) 
-		tns[i] = (TransactionNode)nodes.elementAt(i);
-	    currTrans.add(tns);
 	}
-	
+	    
+	int numtns = nodes.size();
+	TransactionNode[] tns = new TransactionNode[numtns]; 
+	for(int i=0;i<numtns;++i) 
+	    tns[i] = (TransactionNode)nodes.elementAt(i);
+	currTrans.add(tns);
+	// end of region
 
 	// Get the saved transactions
 	savedTrans.remove(savedTrans.getNodes());
@@ -829,8 +869,8 @@ public class Controller  {
 	    FileObject fo = (FileObject) e.nextElement();
 	    String id = fo.getName();
 	    if(debug) 
-		System.out.println("getting saved transaction: " + //NOI18N 
-				   id);
+		log("getting saved transaction: " + id); //NOI18N 
+		    
 	    
 	    if(saveBeans.containsKey(id)) {
 		MonitorData md = (MonitorData)(saveBeans.get(id));
@@ -860,12 +900,13 @@ public class Controller  {
 		}
 	    }
 	}
-	int numtns = nodes.size();
-	TransactionNode[] tns = new TransactionNode[numtns]; 
+	numtns = nodes.size();
+	tns = new TransactionNode[numtns]; 
 	for(int i=0;i<numtns;++i) {
 	    tns[i] = (TransactionNode)nodes.elementAt(i);
-	    if(debug) System.out.println("Adding saved node" + //NOI18N 
-					   tns[i].toString());
+	    if(debug) 
+		log("Adding saved node" + tns[i].toString()); //NOI18N 
+		    
 	}
 	savedTrans.add(tns);
     }
@@ -886,9 +927,13 @@ public class Controller  {
 	savedTrans.setComparator(comp);
     }
 
-    // PENDING - should just pass the ID to replay, would be more
-    // efficient. 
-
+    public void setUseBrowserCookie(boolean value) { 
+	useBrowserCookie = value;
+	if(debug) 
+	    log("Setting useBrowserCookie to " + //NOI18N
+		String.valueOf(useBrowserCookie));
+    }
+    
     // PENDING - should just pass the ID to replay, would be more
     // efficient. 
 
@@ -898,7 +943,7 @@ public class Controller  {
     
     public MonitorData getMonitorData(TransactionNode node, boolean cached) {
 
-	if(debug) System.out.println("Entered getMonitorData()"); //NOI18N 
+	if(debug) log("Entered getMonitorData()"); //NOI18N 
 	
 	String id = node.getID();
 	Hashtable ht = null;
@@ -907,7 +952,7 @@ public class Controller  {
 	if(node.isCurrent()) {
 	    ht = currBeans;
 	    dir = currDir;
-	    if(debug) System.out.println("node is current"); //NOI18N 
+	    if(debug) log("node is current"); //NOI18N 
 	}
 	else {
 	    ht = saveBeans;
@@ -915,8 +960,8 @@ public class Controller  {
 	}
 	
 	if(debug) {
-	    System.out.println("node id is " + node.getID()); //NOI18N 
-	    System.out.println("using directory " + dir.getName()); //NOI18N 
+	    log("node id is " + node.getID()); //NOI18N 
+	    log("using directory " + dir.getName()); //NOI18N 
 	}
 
 	if (!cached) {
@@ -925,7 +970,7 @@ public class Controller  {
 	
 	if(!ht.containsKey(id)) {
 	    if(debug) 
-		System.out.println("Node is not in the hashtable yet"); //NOI18N 
+		log("Node is not in the hashtable yet"); //NOI18N 
 	    MonitorData md = retrieveMonitorData(id, dir);
 	    ht.put(id, md);
 
@@ -938,21 +983,20 @@ public class Controller  {
     MonitorData retrieveMonitorData(String id, String dirS) {
 
 	if(debug) 
-	    System.out.println
-		("Controller::retrieveMonitorData(String, String)"); //NOI18N 
+	    log("Controller::retrieveMonitorData(String, String)"); //NOI18N 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
-	    System.out.println("Couldn't get the directory"); //NOI18N 
+	    log("Couldn't get the directory"); //NOI18N 
 	    return null;
 	}
 	
 	FileObject dir = null;
 	
-	if (dirS.equalsIgnoreCase("current"))  dir = currDir;
-	else if (dirS.equalsIgnoreCase("save")) dir = saveDir;
-	else if (dirS.equalsIgnoreCase("replay")) dir = replayDir;
+	if (dirS.equalsIgnoreCase(currDirStr))  dir = currDir;
+	else if (dirS.equalsIgnoreCase(saveDirStr)) dir = saveDir;
+	else if (dirS.equalsIgnoreCase(replayDirStr)) dir = replayDir;
 
-	if(debug) System.out.println("Directory = " + dir.getName()); //NOI18N 
+	if(debug) log("Directory = " + dir.getName()); //NOI18N 
 	return retrieveMonitorData(id, dir);
     }
     
@@ -960,32 +1004,31 @@ public class Controller  {
     MonitorData retrieveMonitorData(String id, FileObject dir) {
 
 	if(debug)
-	    System.out.println
-		("Controller::retrieveMonitorData(String, FileObject)"); //NOI18N 
+	    log("Controller::retrieveMonitorData(String, FileObject)"); //NOI18N 
 	if(!haveDirectories()) {
 	    // PENDING - report the error property
-	    System.out.println("Couldn't get the directory"); //NOI18N 
+	    log("Couldn't get the directory"); //NOI18N 
 	    return null;
 	}
 	
 	MonitorData md = null;
 
 	FileObject fo = dir.getFileObject(id, "xml"); // NOI18N
-	if(debug) System.out.println("From file: " + fo.getName()); //NOI18N 
+	if(debug) log("From file: " + fo.getName()); //NOI18N 
 
 	FileLock lock = null; 
 	InputStreamReader in = null;
 	
 	try {
-	    if(debug) System.out.println("Locking " + fo.getName()); //NOI18N 
+	    if(debug) log("Locking " + fo.getName()); //NOI18N 
 	    lock = fo.lock();
-	    if(debug) System.out.println("Getting InputStreamReader"); //NOI18N 
+	    if(debug) log("Getting InputStreamReader"); //NOI18N 
 	    in = new InputStreamReader(fo.getInputStream()); 
-	    if(debug) System.out.println("Creating monitordata"); //NOI18N 
+	    if(debug) log("Creating monitordata"); //NOI18N 
 	    md = MonitorData.createGraph(in);
 	} 
 	catch(Exception ex) {
-	    System.out.println("Controller couldn't read the file..."); //NOI18N 
+	    log("Controller couldn't read the file..."); //NOI18N 
 	    ex.printStackTrace();
 	}
 	finally {
@@ -1006,7 +1049,7 @@ public class Controller  {
 	    catch(Throwable t) {}
 	    fo = null;
 	}
-	if(debug) System.out.println("We're done!"); //NOI18N 
+	if(debug) log("We're done!"); //NOI18N 
 	return md;
     }
 
@@ -1016,19 +1059,19 @@ public class Controller  {
 
 	try {
 	    if(debug) 
-		System.out.println("Getting the server setting"); //NOI18N 
+		log("Getting the server setting"); //NOI18N 
 	    
 	    HttpServerSettings setting = 
 		(HttpServerSettings)SystemOption.findObject 
 		(HttpServerSettings.class);
 	    if(setting == null) {
 		if(debug) 
-		    System.out.println("No server setting object"); //NOI18N 
+		    log("No server setting object"); //NOI18N 
 		serverRunning = false; 
 	    }
 	    else if(!setting.isRunning()) {
 		if(debug) 
-		    System.out.println("Server is not running"); //NOI18N 
+		    log("Server is not running"); //NOI18N 
 		serverRunning = false;
 	    }
 	}
@@ -1059,6 +1102,8 @@ public class Controller  {
     private void showReplay(URL url) throws UnknownHostException,
 	                                    IOException {
 	
+	if(debug) log("Controller::showReplay()"); // NOI18N
+	if(debug) log("Controller::showReplay() url is " + url.toString()); // NOI18N
 	// First we check that we can find a host of the name that's
 	// specified 
 	ServerCheck sc = new ServerCheck(url.getHost());
@@ -1073,10 +1118,12 @@ public class Controller  {
 	t.stop();
 	if(!sc.isServerGood()) {
 	    if(debug) 
-		System.out.println("Controller::showReplay(): No host"); // NOI18N
+		log("Controller::showReplay(): No host"); // NOI18N
 	    throw new UnknownHostException();
 	}
 	
+	if(debug) log("Controller::performed server check"); // NOI18N
+
 	// Next we see if we can connect to the server
 	try {
 	    Socket server = new Socket(url.getHost(), url.getPort());
@@ -1084,19 +1131,26 @@ public class Controller  {
 	    server = null;
 	}
 	catch(UnknownHostException uhe) {
-	    if(debug) System.out.println("Controller::showReplay(): uhe2"); // NOI18N
+	    if(debug) log("Controller::showReplay(): uhe2"); // NOI18N
 	    throw uhe;
 	}
 	catch(IOException ioe) {
 	    if(debug) 
-		System.out.println("Controller::showReplay(): No service"); // NOI18N
+		log("Controller::showReplay(): No service"); // NOI18N
 	    throw ioe;
 	}
 	
+	if(debug) log("Controller::showReplay(): reaching the end..."); // NOI18N
 	// Finally we ask the browser to show it
 	org.netbeans.modules.web.core.WebExecUtil.showInBrowser(url,"text/html"); // NOI18N
 	 
     }
+
+    // PENDING - use the logger instead
+    private static void log(final String s) {
+	System.out.println(s);
+    }
+    
 
     
     /**
@@ -1141,19 +1195,17 @@ public class Controller  {
 
 	public int compare(Object o1, Object o2) {
 
-	    if(debug) System.out.println("In compareTime"); //NOI18N
+	    if(debug) log("In compareTime"); //NOI18N
 	    TransactionNode n1 = (TransactionNode)o1;
 	    TransactionNode n2 = (TransactionNode)o2;
 
-	    if(debug) System.out.println("Cast the nodes"); //NOI18N
+	    if(debug) log("Cast the nodes"); //NOI18N
 	    if(debug) {
-		System.out.println("Comparing " + //NOI18N
-				   String.valueOf(o1) +
-				   " and " + //NOI18N
-				   String.valueOf(o2));
+		log("Comparing " + String.valueOf(o1) + //NOI18N
+		    " and " + String.valueOf(o2)); //NOI18N
 		try {
-		    System.out.println(n1.getID());
-		    System.out.println(n2.getID());
+		    log(n1.getID());
+		    log(n2.getID());
 		}
 		catch(Exception ex) {};
 	    }
@@ -1161,7 +1213,7 @@ public class Controller  {
 	    if(descend)
 		result = n1.getID().compareTo(n2.getID());
 	    else result = n2.getID().compareTo(n1.getID());
-	    if(debug) System.out.println("End of compareTime"); //NOI18N
+	    if(debug) log("End of compareTime"); //NOI18N
 	    return result;
 	}
     }
@@ -1193,22 +1245,20 @@ public class Controller  {
     class CompAlpha implements Comparator {
 
 	public int compare(Object o1, Object o2) {
-	    if(debug) System.out.println("In compareAlpha"); //NOI18N
+	    if(debug) log("In compareAlpha"); //NOI18N
 	    TransactionNode n1 = (TransactionNode)o1;
 	    TransactionNode n2 = (TransactionNode)o2;
-	    if(debug) System.out.println("cast the nodes"); //NOI18N
+	    if(debug) log("cast the nodes"); //NOI18N
 	    if(debug) {
-		System.out.println("Comparing " + //NOI18N
-				   String.valueOf(o1) +
-				   " and " + //NOI18N
-				   String.valueOf(o2));
+		log("Comparing " + String.valueOf(o1) + //NOI18N
+		    " and " + String.valueOf(o2)); //NOI18N
 		try {
-		    System.out.println("names"); //NOI18N
-		    System.out.println(n1.getName());
-		    System.out.println(n2.getName());
-		    System.out.println("IDs");  //NOI18N
-		    System.out.println(n1.getID());
-		    System.out.println(n2.getID());
+		    log("names"); //NOI18N
+		    log(n1.getName());
+		    log(n2.getName());
+		    log("IDs");  //NOI18N
+		    log(n1.getID());
+		    log(n2.getID());
 		}
 		catch(Exception ex) {};
 	    }

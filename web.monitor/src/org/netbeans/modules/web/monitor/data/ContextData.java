@@ -12,17 +12,15 @@
  */
 
 /**
- * SessionIn.java
+ * ContextData.java
  *
  *
- * Created: Wed Feb  7 16:45:02 2001
+ * Created: Wed Jan 16 17:08:27 2002
  *
  * @author Ana von Klopp
  * @version
- *
- * The Param class is used to represent session attributes. 
- *
  */
+
 
 package org.netbeans.modules.web.monitor.data;
 
@@ -31,18 +29,21 @@ import com.sun.forte4j.modules.dd.*;
 import java.beans.*;
 import java.util.*;
 
-public class SessionIn extends BaseBean {
+
+public class ContextData extends BaseBean {
 
     static Vector comparators = new Vector();
 
     static public final String PARAM = "Param"; //NOI18N
+    static public final String CONTEXTATTRIBUTES = 
+	"ContextAttributes"; //NOI18N
 
-    public SessionIn() {
+    public ContextData() {
 	this(Common.USE_DEFAULT_VALUES);
     }
 
-    public SessionIn(int options) {
-	super(SessionIn.comparators, new GenBeans.Version(1, 0, 6));
+    public ContextData(int options) {
+	super(ContextData.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
 	this.createProperty("Param", PARAM, //NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
@@ -53,12 +54,19 @@ public class SessionIn extends BaseBean {
 	this.createAttribute(PARAM, "value", "Value", //NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
+
+	this.createProperty("ContextAttributes", CONTEXTATTRIBUTES, //NOI18N
+			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
+			    ContextAttributes.class);
+
+
 	this.initialize(options);
     }
 
     // Setting the default values of the properties
     void initialize(int options) {
     }
+
 
     // This attribute is an array, possibly empty
     public void setParam(int index, Param value) {
@@ -98,6 +106,19 @@ public class SessionIn extends BaseBean {
 	return this.removeValue(PARAM, value);
     }
 
+
+    // This attribute is mandatory
+    public void setContextAttributes(ContextAttributes value) {
+	this.setValue(CONTEXTATTRIBUTES, value);
+    }
+
+    //
+    public ContextAttributes getContextAttributes() {
+	return (ContextAttributes)this.getValue(CONTEXTATTRIBUTES);
+    }
+
+
+
     // This method verifies that the mandatory properties are set
     public boolean verify() {
 	return true;
@@ -105,12 +126,12 @@ public class SessionIn extends BaseBean {
 
     //
     static public void addComparator(BeanComparator c) {
-	SessionIn.comparators.add(c);
+	ContextData.comparators.add(c);
     }
 
     //
     static public void removeComparator(BeanComparator c) {
-	SessionIn.comparators.remove(c);
+	ContextData.comparators.remove(c);
     }
     //
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -151,7 +172,7 @@ public class SessionIn extends BaseBean {
 	    {
 		str.append(indent+"\t"); //NOI18N
 		str.append("#"+i+":"); //NOI18N
-		n = this.getParam(i);
+		n = this.getParam(i); 
 		if (n != null)
 		    n.dump(str, indent + "\t"); //NOI18N
 		else
@@ -163,9 +184,10 @@ public class SessionIn extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("SessionIn\n"); //NOI18N
+	str.append("ContextData\n"); //NOI18N
 	this.dump(str, "\n  "); //NOI18N
 	return str.toString();
     }
 }
+
 

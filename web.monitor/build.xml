@@ -96,8 +96,8 @@ Microsystems, Inc. All Rights Reserved.
 
 
   <target name="compile"
-	  depends="compile-view, compile-core, compile-server, compile-tomcat"/>
-
+	  depends="compile-view, compile-core, compile-server,
+		   compile-tomcat, compile-catalina"/>
 
   <!-- If this is compiled with the rest of the core, it fails to find 
        openide.jar in the classpath for some reason --> 
@@ -154,13 +154,29 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
-	 includes="**/monitor/tomcat/**,**/org/apache/**"
+	 includes="**/monitor/tomcat/**,**/org/apache/tomcat/**"
 	 excludes="**/SCCS/**,**/CVS/**">
 
        <classpath>
           <pathelement location="${binroot}/httpserver/release/modules/ext/webserver.jar"/>
           <pathelement location="extra/servlet.jar"/> 
          <pathelement location="${f4jroot}/dd2beans/netbeans/modules/dd2beans.jar"/>
+       </classpath>
+     </javac>
+  </target>
+
+
+  <target name="compile-catalina" depends="compile-server">
+
+    <javac srcdir="src" destdir="src"
+         deprecation="${build.compiler.deprecation}" 
+	 debug="${build.compiler.debug}"
+	 includes="**/org/apache/catalina/**"
+	 excludes="**/SCCS/**,**/CVS/**">
+
+       <classpath>
+          <pathelement location="extra/servlet.jar"/> 
+          <pathelement location="extra/catalina.jar"/> 
        </classpath>
      </javac>
   </target>
@@ -195,9 +211,11 @@ Microsystems, Inc. All Rights Reserved.
       <branding name="f4j_ie"/>
       <fileset dir="src">
         <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
-          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
-          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
-          <exclude name="org/netbeans/modules/web/monitor/server/"/>
+          <include name="org/netbeans/modules/web/monitor/client/"/>
+          <include name="org/netbeans/modules/web/monitor/data/"/>
+          <include name="org/netbeans/modules/web/monitor/MonitorModule**"/>
+          <include name="org/netbeans/modules/web/monitor/Bundle.properties"/>
+          <include name="org/netbeans/modules/web/monitor/layer.xml"/>
         </patternset>
       </fileset>
     </locjar>
@@ -210,9 +228,22 @@ Microsystems, Inc. All Rights Reserved.
       <branding name="f4j_ie"/>
       <fileset dir="src">
         <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
-          <exclude name="org/netbeans/modules/web/monitor/iplanet/"/>
-          <exclude name="org/netbeans/modules/web/monitor/tomcat/"/>
-          <exclude name="org/netbeans/modules/web/monitor/client/"/>
+	  <include name="org/netbeans/modules/web/monitor/server/"/>
+          <include name="org/netbeans/modules/web/monitor/data/"/>
+          <include name="org/apache/catalina/"/>	
+        </patternset>
+      </fileset>
+    </locjar>
+
+  <locjar jarfile="netbeans/modules/ext/cathttpmon.jar"
+         compress="false">
+      <locale name="ja"/>
+      <branding name="f4j"/>
+      <branding name="f4j_ce"/>
+      <branding name="f4j_ie"/>
+      <fileset dir="src">
+        <patternset excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt">
+          <include name="org/apache/catalina/"/>
         </patternset>
       </fileset>
     </locjar>

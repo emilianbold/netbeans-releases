@@ -17,7 +17,7 @@
  *
  * Created: Wed Mar  1 16:59:21 2000
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -47,12 +47,12 @@ public class DeleteCurrentAction extends NodeAction {
 
     public void performAction() { 
 	// PENDING - this string... 
-	MonitorAction.getController().deleteDirectory("current");
+	MonitorAction.getController().deleteDirectory(Controller.currDirStr); 
     }
 
     public void performAction(Node[] node) { 
 	// PENDING - this string... 
-	MonitorAction.getController().deleteDirectory("current");
+	MonitorAction.getController().deleteDirectory(Controller.currDirStr); 
     }
 
     public boolean enable(Node[] nodes) {

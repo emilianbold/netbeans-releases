@@ -17,7 +17,7 @@
  *
  * Created: Fri May 19 17:05:19 2000
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 

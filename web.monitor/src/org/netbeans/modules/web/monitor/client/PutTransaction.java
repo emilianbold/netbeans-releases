@@ -40,14 +40,14 @@ public class PutTransaction extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
 
-	if(debug) log("PutTransaction::doPost");
+	if(debug) log("PutTransaction::doPost"); //NOI18N
 	if(currDir == null) {
 	    try { 
 		currDir = Controller.getCurrDir();
 	    }
 	    catch(FileNotFoundException ex) {
 		// PENDING report this error properly
-		if(debug) log("Couldn't write the transaction data");
+		if(debug) log("Couldn't write the transaction data");  //NOI18N
 		return;
 	    }
 	}
@@ -79,6 +79,7 @@ public class PutTransaction extends HttpServlet {
 	     
 	    while((numChars = isr.read(charBuf, 0, 4096)) != -1) {
 		fout.write(charBuf, 0, numChars);
+		if(debug) log(new String(charBuf));
 	    }
 	    
 	    isr.close();
@@ -91,16 +92,16 @@ public class PutTransaction extends HttpServlet {
 		MonitorAction.getController().addTransaction(id); 
 	    }
 	    catch(Exception ex) {
-		log("Couldn't add the transaction");
+		log("Couldn't add the transaction");  //NOI18N
 		if (debug) 
-		   log("MonitorAction.getController(): " + 
+		   log("MonitorAction.getController(): " +  //NOI18N
 		       MonitorAction.getController());
 		if (debug) log(ex); 
 	    }
 	    
 	    if(debug) log("...success"); //NOI18N
 
-	    res.setContentType("text/plain");
+	    res.setContentType("text/plain");  //NOI18N
 	    
 	    PrintWriter out = res.getWriter();
 	    out.println(Constants.Comm.ACK); 
@@ -114,12 +115,12 @@ public class PutTransaction extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) 
 	throws ServletException, IOException {
 
-	if(debug) log("PutTransaction::doGet");
+	if(debug) log("PutTransaction::doGet");  //NOI18N
 
 	PrintWriter out = res.getWriter();
 	try { 
 	    //out.println(id); 
-	    out.println("Shouldn't use GET for this!"); 
+	    out.println("Shouldn't use GET for this!");  //NOI18N
 	}
 	catch (Exception e) { 
 	    System.out.println(e.getMessage());
@@ -135,7 +136,7 @@ public class PutTransaction extends HttpServlet {
     public void init(ServletConfig servletConfig) { 
 
 	this.servletConfig = servletConfig;
-	if(debug) log("PutTransaction::init");
+	if(debug) log("PutTransaction::init");  //NOI18N
     }
     
     public void log(String msg) {

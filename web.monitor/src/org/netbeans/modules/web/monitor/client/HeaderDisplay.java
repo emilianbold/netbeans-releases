@@ -17,7 +17,7 @@
  *
  * Created: Wed Jan 31 18:04:22 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -40,7 +40,7 @@ import org.openide.util.NbBundle;
 import java.util.*;
 
 
-public class HeaderDisplay extends JPanel {
+public class HeaderDisplay extends DataDisplay {
     
     private final static boolean debug = false;
     private static final ResourceBundle msgs =
@@ -59,7 +59,8 @@ public class HeaderDisplay extends JPanel {
     // that does not matter...
     public void setData(MonitorData md) {
 
-	if(debug) System.out.println("in HeaderDisplay.setData()");
+	if(debug) System.out.println("in HeaderDisplay.setData()"); //NOI18N
+
 	this.removeAll();
 	if (md == null)
 	    return;
@@ -80,27 +81,27 @@ public class HeaderDisplay extends JPanel {
 
 	if(params == null || params.length == 0) {
 	    msg = msgs.getString("MON_No_headers");
-	    hLabel = TransactionView.createDataLabel(msg);
+	    hLabel = createDataLabel(msg);
 	} else {
 	    msg = msgs.getString("MON_HTTP_Headers");
 	    headerTable = new DisplayTable(params);
             headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
             headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
-	    hLabel = TransactionView.createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc"));
+	    hLabel = createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc"));
 	}
 
-	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
+	addGridBagComponent(this, createTopSpacer(), 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.topSpacerInsets,
+			    topSpacerInsets,
 			    0, 0);
 
 	addGridBagComponent(this, hLabel, 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
-			    TransactionView.labelInsets,
+			    labelInsets,
 			    0, 0);
 
 
@@ -109,7 +110,7 @@ public class HeaderDisplay extends JPanel {
 				fullGridWidth, 1, tableWeightX, tableWeightY, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.HORIZONTAL,
-				TransactionView.tableInsets,
+				tableInsets,
 				0, 0);
 	}
 
@@ -117,35 +118,10 @@ public class HeaderDisplay extends JPanel {
 			    1, 1, 1.0, 1.0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.BOTH,
-			    TransactionView.zeroInsets,
+			    zeroInsets,
 			    0, 0);
 
 	this.setMaximumSize(this.getPreferredSize()); 
 	this.repaint();
     }
-
-    private void addGridBagComponent(Container parent,
-				     Component comp,
-				     int gridx, int gridy,
-				     int gridwidth, int gridheight,
-				     double weightx, double weighty,
-				     int anchor, int fill,
-				     Insets insets,
-				     int ipadx, int ipady) {
-	GridBagConstraints cons = new GridBagConstraints();
-	cons.gridx = gridx;
-	cons.gridy = gridy;
-	cons.gridwidth = gridwidth;
-	cons.gridheight = gridheight;
-	cons.weightx = weightx;
-	cons.weighty = weighty;
-	cons.anchor = anchor;
-	cons.fill = fill;
-	cons.insets = insets;
-	cons.ipadx = ipadx;
-	cons.ipady = ipady;
-	parent.add(comp,cons);
-    }
-
-
 } // HeaderDisplay

@@ -17,7 +17,7 @@
  *
  * Created: Wed Mar  1 16:59:21 2000
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -46,11 +46,11 @@ public class DeleteSavedAction extends NodeAction {
     }
 
     public void performAction() { 
-	MonitorAction.getController().deleteDirectory("save");
+	MonitorAction.getController().deleteDirectory(Controller.saveDirStr);
     }
 
     public void performAction(Node[] node) { 
-	MonitorAction.getController().deleteDirectory("save");
+	MonitorAction.getController().deleteDirectory(Controller.saveDirStr);
     }
 
     public boolean enable(Node[] nodes) {

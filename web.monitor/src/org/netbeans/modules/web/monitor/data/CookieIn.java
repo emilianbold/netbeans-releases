@@ -29,8 +29,8 @@ public class CookieIn extends BaseBean {
     }
 
     public CookieIn(Cookie cookie) {
-	this.setAttributeValue("name", cookie.getName());
-	this.setAttributeValue("value", cookie.getValue());
+	this.setAttributeValue("name", cookie.getName());//NOI18N
+	this.setAttributeValue("value", cookie.getValue());//NOI18N
     }
 
     public CookieIn(int options) {
@@ -104,8 +104,8 @@ public class CookieIn extends BaseBean {
     public String dumpBeanNode()
     {
 	StringBuffer str = new StringBuffer();
-	str.append("CookieIn\n");
-	this.dump(str, "\n  ");
+	str.append("CookieIn\n");//NOI18N
+	this.dump(str, "\n  ");//NOI18N
 	return str.toString();
     }
 }

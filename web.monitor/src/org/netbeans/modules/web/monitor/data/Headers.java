@@ -27,7 +27,7 @@ public class Headers extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    static public final String PARAM = "Param";
+    static public final String PARAM = "Param";  // NOI18N
 
     public Headers() {
 	this(Common.USE_DEFAULT_VALUES);
@@ -36,13 +36,13 @@ public class Headers extends BaseBean {
     public Headers(int options) {
 	super(Headers.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
-	this.createProperty("Param", PARAM, 
+	this.createProperty("Param", PARAM,  // NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    Param.class);
-	this.createAttribute(PARAM, "name", "Name", 
+	this.createAttribute(PARAM, "name", "Name",  // NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(PARAM, "value", "Value", 
+	this.createAttribute(PARAM, "value", "Value",  // NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
 	this.initialize(options);
@@ -80,8 +80,8 @@ public class Headers extends BaseBean {
 	Hashtable ht = new Hashtable(numHeaders);
 	
 	for(int i=0; i<numHeaders; ++i) {
-	    String name =  headers[i].getAttributeValue("name");
-	    String value = headers[i].getAttributeValue("value");
+	    String name =  headers[i].getAttributeValue("name"); // NOI18N
+	    String value = headers[i].getAttributeValue("value"); // NOI18N
 	    ht.put(name, value);
 	}	
 	return ht;
@@ -174,16 +174,16 @@ public class Headers extends BaseBean {
 	String s;
 	BaseBean n;
 	str.append(indent);
-	str.append("Param["+this.sizeParam()+"]");
+	str.append("Param["+this.sizeParam()+"]"); // NOI18N
 	for(int i=0; i<this.sizeParam(); i++)
 	    {
-		str.append(indent+"\t");
-		str.append("#"+i+":");
+		str.append(indent+"\t"); // NOI18N
+		str.append("#"+i+":"); // NOI18N
 		n = this.getParam(i);
 		if (n != null)
-		    n.dump(str, indent + "\t");
+		    n.dump(str, indent + "\t"); // NOI18N
 		else
-		    str.append(indent+"\tnull");
+		    str.append(indent+"\tnull"); // NOI18N
 		this.dumpAttributes(PARAM, i, str, indent);
 	    }
 
@@ -191,24 +191,24 @@ public class Headers extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("Headers\n");
-	this.dump(str, "\n  ");
+	str.append("Headers\n"); // NOI18N
+	this.dump(str, "\n  "); // NOI18N
 	return str.toString();
     }
 
     public String toString() {
-	StringBuffer buf = new StringBuffer("Request Headers\n");
+	StringBuffer buf = new StringBuffer("Request Headers\n"); // NOI18N
 	
 	Param[] params = getParam();
 	buf.append(String.valueOf(params.length));
-	buf.append(" header lines\n");
+	buf.append(" header lines\n"); // NOI18N
 	for(int i=0; i<params.length; ++i) {
 	    buf.append(String.valueOf(i));
-	    buf.append(". Attribute: ");
-	    buf.append(params[i].getAttributeValue("name"));
-	    buf.append(", Value: ");
-	    buf.append(params[i].getAttributeValue("value"));
-	    buf.append("\n");
+	    buf.append(". Attribute: "); // NOI18N
+	    buf.append(params[i].getAttributeValue("name")); // NOI18N
+	    buf.append(", Value: "); // NOI18N
+	    buf.append(params[i].getAttributeValue("value")); // NOI18N
+	    buf.append("\n"); // NOI18N
 	}
 	return buf.toString();
     }

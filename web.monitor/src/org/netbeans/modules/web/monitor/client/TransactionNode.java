@@ -186,9 +186,9 @@ public class TransactionNode extends AbstractNode {
     public void setNameString() {
 	
 	String name = null;
-	if(uri.equals("/")) name = uri;
+	if(uri.equals("/")) name = uri;  //NOI18N
 	else {
-	    StringTokenizer st = new StringTokenizer(uri,"/");
+	    StringTokenizer st = new StringTokenizer(uri,"/");  //NOI18N
 	    while(st.hasMoreTokens()) name = st.nextToken();
 	}
 	
@@ -220,24 +220,24 @@ public class TransactionNode extends AbstractNode {
     } 
     
     public String toString() {
-	StringBuffer buf = new StringBuffer("TransactionNode: ");
+	StringBuffer buf = new StringBuffer("TransactionNode: ");  //NOI18N
 	buf.append(this.getName());
-	buf.append("\n");
-	buf.append("id=");
+	buf.append("\n");  //NOI18N
+	buf.append("id=");  //NOI18N
 	buf.append(id); 
 
-	buf.append("\n");
-	buf.append("method=");
+	buf.append("\n");  //NOI18N
+	buf.append("method=");  //NOI18N
 	buf.append(method); 
 
-	buf.append("\n");
-	buf.append("uri=");
+	buf.append("\n");  //NOI18N
+	buf.append("uri=");  //NOI18N
 	buf.append(uri); 
 
-	buf.append("\n");
-	buf.append("current=");
+	buf.append("\n");  //NOI18N
+	buf.append("current=");  //NOI18N
 	buf.append(String.valueOf(current)); 
-	buf.append("\n");
+	buf.append("\n");  //NOI18N
 
 	return buf.toString();
     }

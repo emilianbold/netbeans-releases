@@ -22,8 +22,8 @@ public class SessionData extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    static public final String SESSIONIN = "SessionIn";
-    static public final String SESSIONOUT = "SessionOut";
+    static public final String SESSIONIN = "SessionIn"; //NOI18N
+    static public final String SESSIONOUT = "SessionOut"; //NOI18N
 
     public SessionData() {
 	this(Common.USE_DEFAULT_VALUES);
@@ -32,22 +32,30 @@ public class SessionData extends BaseBean {
     public SessionData(int options) {
 	super(SessionData.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
-	this.createProperty("SessionIn", SESSIONIN, 
+	this.createProperty("SessionIn", SESSIONIN, //NOI18N
 			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    SessionIn.class);
-	this.createAttribute(SESSIONIN, "lastAccessed", "LastAccessed", 
+	this.createAttribute(SESSIONIN, 
+			     "lastAccessed", //NOI18N
+			     "LastAccessed", //NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(SESSIONIN, "inactiveInterval", "InactiveInterval", 
+	this.createAttribute(SESSIONIN, 
+			     "inactiveInterval", //NOI18N
+			     "InactiveInterval",  //NOI18N
 			     AttrProp.NMTOKEN | AttrProp.IMPLIED,
 			     null, null);
-	this.createProperty("SessionOut", SESSIONOUT, 
+	this.createProperty("SessionOut", SESSIONOUT, //NOI18N
 			    Common.TYPE_1 | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    SessionOut.class);
-	this.createAttribute(SESSIONOUT, "lastAccessed", "LastAccessed", 
+	this.createAttribute(SESSIONOUT, 
+			     "lastAccessed", //NOI18N
+			     "LastAccessed",  //NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
-	this.createAttribute(SESSIONOUT, "inactiveInterval", "InactiveInterval", 
+	this.createAttribute(SESSIONOUT, 
+			     "inactiveInterval", //NOI18N
+			     "InactiveInterval", //NOI18N
 			     AttrProp.NMTOKEN | AttrProp.IMPLIED,
 			     null, null);
 	this.initialize(options);
@@ -126,29 +134,29 @@ public class SessionData extends BaseBean {
 	String s;
 	BaseBean n;
 	str.append(indent);
-	str.append("SessionIn");
+	str.append("SessionIn");//NOI18N
 	n = this.getSessionIn();
 	if (n != null)
-	    n.dump(str, indent + "\t");
+	    n.dump(str, indent + "\t"); //NOI18N
 	else
-	    str.append(indent+"\tnull");
+	    str.append(indent+"\tnull"); //NOI18N
 	this.dumpAttributes(SESSIONIN, 0, str, indent);
 
 	str.append(indent);
-	str.append("SessionOut");
+	str.append("SessionOut"); //NOI18N
 	n = this.getSessionOut();
 	if (n != null)
-	    n.dump(str, indent + "\t");
+	    n.dump(str, indent + "\t"); //NOI18N
 	else
-	    str.append(indent+"\tnull");
+	    str.append(indent+"\tnull"); //NOI18N
 	this.dumpAttributes(SESSIONOUT, 0, str, indent);
 
     }
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("SessionData\n");
-	this.dump(str, "\n  ");
+	str.append("SessionData\n"); //NOI18N
+	this.dump(str, "\n  "); //NOI18N
 	return str.toString();
     }
 }

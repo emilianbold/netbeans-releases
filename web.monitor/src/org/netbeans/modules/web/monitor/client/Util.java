@@ -47,7 +47,7 @@ public class Util  {
 
     public static void composeQueryString(RequestData rd) { 
 	
-	if(debug) System.out.println("Doing query string");
+	if(debug) System.out.println("Doing query string"); //NOI18N
 	
 	if(rd.sizeParam() == 0) return;
 	
@@ -59,29 +59,29 @@ public class Util  {
 
 	    try {
 		name = params[i].getName().trim();
-		if(debug) System.out.println("name: " + name);
+		if(debug) System.out.println("name: " + name); //NOI18N
 		value = params[i].getValue(); 
-		if(debug) System.out.println("value: " + value);
+		if(debug) System.out.println("value: " + value); //NOI18N
 	    }
 	    catch(Exception ex) { 
 		continue;
 	    }
-	    if(name.equals("")) continue; 
+	    if(name.equals("")) continue;  //NOI18N
 
 	    if (value != null) value = value.trim();
 	    else value = "";
 	    
 	    if(i>0) buf.append('&'); // NOI18N
 	    buf.append(name);
-	    buf.append('=');
+	    buf.append('=');  //NOI18N
 	    buf.append(value);
 	}
-	rd.setAttributeValue("queryString", buf.toString());
+	rd.setAttributeValue("queryString", buf.toString());  //NOI18N
 	rd.setParam(new Param[0]);
 	
 	if (debug) 
-	    System.out.println("EditPanel::composedQueryString: [" +
-			       buf.toString() + "]");
+	    System.out.println("EditPanel::composedQueryString: [" +  //NOI18N
+			       buf.toString() + "]");  //NOI18N
     }
 
     static boolean removeParametersFromQuery(RequestData rd) {
@@ -90,7 +90,7 @@ public class Util  {
 	if(rd.sizeParam() == 0) return false;
 	
 	String queryString =
-	    rd.getAttributeValue("queryString");
+	    rd.getAttributeValue("queryString");  //NOI18N
 
 	// MULTIBYTE - I think this isn't working... 
 	Hashtable ht = null;
@@ -110,7 +110,9 @@ public class Util  {
 	    try {
 		String[] value = (String[])(ht.get(name));
 		for(int i=0; i<value.length; ++i) {
-		    if(debug) System.out.println("Removing " + name + " " +  value);
+		    if(debug) System.out.println("Removing " + //NOI18N
+						 name + " " + //NOI18N
+						 value);
 		    Param p = findParam(rd.getParam(), name, value[i]);
 		    rd.removeParam(p);
 		}
@@ -124,7 +126,7 @@ public class Util  {
     static void addParametersToQuery(RequestData rd) {
 
 	Hashtable ht = null;
-	String queryString = rd.getAttributeValue("queryString");
+	String queryString = rd.getAttributeValue("queryString");  //NOI18N
 	try {
 	    ht = javax.servlet.http.HttpUtils.parseQueryString(queryString);
 	}
@@ -165,56 +167,57 @@ public class Util  {
 
 	boolean sessionCookie = false;
 	Param[] params = headers.getParam(); 
-	StringBuffer cookiesOut = new StringBuffer("");
+	StringBuffer cookiesOut = new StringBuffer("");  //NOI18N
 	 
 	for(int i=0; i<numParams; ++i) {
 
 	    Param p = params[i];
 	    
-	    if(p.getAttributeValue("name").equals("Cookie")) {
+	    if(p.getAttributeValue("name").equals("Cookie")) {  //NOI18N
 		
-		String cookies = p.getAttributeValue("value");
+		String cookies = p.getAttributeValue("value");  //NOI18N
 		
-		StringTokenizer st = new StringTokenizer(cookies, ";");
+		StringTokenizer st = new StringTokenizer(cookies, ";");  //NOI18N
 		
 		while(st.hasMoreTokens()) {
 		    String cookie = st.nextToken();
-		    if(debug) System.out.println("Now doing " + cookie);
-		    if(cookie.startsWith("JSESSIONID")) {
+		    if(debug) System.out.println("Now doing "+ //NOI18N
+						 cookie);
+		    if(cookie.startsWith("JSESSIONID")) {  //NOI18N
 			sessionCookie = true;
-			if(debug) System.out.println("Found session cookie");
-			if(debug) System.out.println("Getting session ID");
+			if(debug) System.out.println("Found session cookie"); //NOI18N
+			if(debug) System.out.println("Getting session ID");  //NOI18N
 			String sessionID = null; 
 			try {
 			    sessionID = 
-				md.getSessionData().getAttributeValue("id");
-			    if(debug) System.out.println("..." + sessionID);
+				md.getSessionData().getAttributeValue("id");  //NOI18N
+			    if(debug) System.out.println("..." + sessionID);  //NOI18N
 			}
 			catch(Exception ex) {}
-			if(debug) System.out.println("Setting session cookie");
-			cookiesOut.append("JSESSIONID=");
+			if(debug) System.out.println("Setting session cookie");  //NOI18N
+			cookiesOut.append("JSESSIONID=");  //NOI18N
 			cookiesOut.append(sessionID);
-			cookiesOut.append(";");
+			cookiesOut.append(";");  //NOI18N
 		    }
 		    else {
-			if(debug) System.out.println("Appending " + cookie); 
+			if(debug) System.out.println("Appending " + cookie);   //NOI18N
 			cookiesOut.append(cookie);
-			cookiesOut.append(";");
+			cookiesOut.append(";");  //NOI18N
 		    }
 		}
 		if(debug) 
-		    System.out.println("Cookie string: " +
+		    System.out.println("Cookie string: " +  //NOI18N
 				       cookiesOut.toString()); 
 		if(sessionCookie) {
-		    if(debug) System.out.println("Found session cookie");
-		    p.setAttributeValue("value",
+		    if(debug) System.out.println("Found session cookie");  //NOI18N
+		    p.setAttributeValue("value",  //NOI18N
 					cookiesOut.toString());
 		}
 	    }
 	}
 	if(debug) 
 	    System.out.println
-		(md.getRequestData().getHeaders().getHashtable().get("Cookie")); 
+		(md.getRequestData().getHeaders().getHashtable().get("Cookie"));   //NOI18N
     }
 
     /**

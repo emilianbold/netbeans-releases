@@ -136,7 +136,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     
     public void createPanel() {
 
-	if(debug) System.out.println("in (new) ParamEditor.createPanel()");
+	if(debug) System.out.println("in (new) ParamEditor.createPanel()"); //NOI18N
 
 	this.setLayout(new GridBagLayout());
 	int gridy = -1;
@@ -245,7 +245,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
      */
 
     public void actionPerformed(ActionEvent e) {
-	if (debug)System.out.println("Got action from the dialog");
+	if (debug)System.out.println("Got action from the dialog");//NOI18N
 	if(editDialog.getValue().equals(DialogDescriptor.OK_OPTION)) {
 	    if(!editable) {
 		dialog.dispose();

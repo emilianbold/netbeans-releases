@@ -17,7 +17,7 @@
  *
  * Created: Wed Feb  2 15:42:32 2000
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -29,7 +29,6 @@ import javax.swing.*;     // widgets
 import javax.swing.border.*;     // widgets
 import javax.swing.event.*;
 import java.awt.Font;
-import java.awt.Insets;
 
 import java.net.*;        // url
 import java.awt.*;          // layouts, dialog, etc.
@@ -72,12 +71,13 @@ public class TransactionView extends ExplorerPanel implements
     // Misc
     private transient Frame parentFrame = null;
     private transient JLabel transactionTitle = null;
-    private transient ToolbarToggleButton timeAButton, timeDButton, alphaButton;
+    private transient ToolbarToggleButton timeAButton, 	timeDButton,
+	alphaButton, browserCookieButton, savedCookieButton; 
 
     // Sizing and stuff...
     private transient  Dimension logD = new Dimension(250, 400);
-    private transient  Dimension dataD = new Dimension(450, 400);
-    private transient  Dimension tabD = new Dimension(450,472);
+    private transient  Dimension dataD = new Dimension(500, 400);
+    private transient  Dimension tabD = new Dimension(500,472);
     
     // Are we debugging?
     private transient  final static boolean debug = false;
@@ -91,6 +91,7 @@ public class TransactionView extends ExplorerPanel implements
     private transient CookieDisplay  cookieDisplay = null;
     private transient SessionDisplay sessionDisplay = null;
     private transient ServletDisplay servletDisplay = null;
+    private transient ContextDisplay contextDisplay = null;
     private transient ClientDisplay  clientDisplay = null;
     private transient HeaderDisplay  headerDisplay = null;
 
@@ -109,19 +110,11 @@ public class TransactionView extends ExplorerPanel implements
     static protected Icon timesortAIcon;
     static protected Icon timesortDIcon;
     static protected Icon timestampIcon;
+    static protected Icon browserCookieIcon;
+    static protected Icon savedCookieIcon;
     static protected ImageIcon frameIcon;
 
-    //
-    // Common Insets
-    // Insets(top, left, bottom, right)
-    public static Insets zeroInsets =       new Insets( 0,  0,  0,  0);
-    public static Insets tableInsets =      new Insets( 0, 18, 12, 12);
-    public static Insets labelInsets =      new Insets( 0,  6,  0,  0);
-    public static Insets buttonInsets =     new Insets( 6,  0,  5,  6);
-    public static Insets sortButtonInsets = new Insets( 0, 12,  0,  0);
-    public static Insets indentInsets =     new Insets( 0, 18,  0,  0);
-    public static Insets topSpacerInsets =  new Insets(12,  0,  0,  0);
-    
+   
     static {
 		
 	try {
@@ -145,11 +138,18 @@ public class TransactionView extends ExplorerPanel implements
 	    new ImageIcon(TransactionView.class.getResource
 			  ("/org/netbeans/modules/web/monitor/client/icons/timestamp.gif")); // NOI18N
 
+	    browserCookieIcon = 
+	    new ImageIcon(TransactionView.class.getResource
+			  ("/org/netbeans/modules/web/monitor/client/icons/browsercookie.gif")); // NOI18N
+
+
+	    savedCookieIcon = 
+	    new ImageIcon(TransactionView.class.getResource
+			  ("/org/netbeans/modules/web/monitor/client/icons/savedcookie.gif")); // NOI18N
+
 	    frameIcon =
 	    new ImageIcon(TransactionView.class.getResource
             ("/org/netbeans/modules/web/monitor/client/icons/menuitem.gif")); // NOI18N
-
-
 
 	} catch(Throwable t) {
 	    t.printStackTrace();
@@ -404,6 +404,36 @@ public class TransactionView extends ExplorerPanel implements
 
 		}});
 
+
+	// Do we use the browser's cookie or the saved cookie? 
+	browserCookieButton = new ToolbarToggleButton(browserCookieIcon, true);
+	browserCookieButton.setToolTipText(msgs.getString("MON_Browser_cookie"));
+	browserCookieButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+
+		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
+			return;
+		    else {
+			savedCookieButton.setSelected(false);
+			controller.setUseBrowserCookie(true); 
+		    }
+
+		}});
+
+	savedCookieButton = new ToolbarToggleButton(savedCookieIcon, false);
+	savedCookieButton.setToolTipText(msgs.getString("MON_Saved_cookie"));
+	savedCookieButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    
+		    if(!((ToolbarToggleButton)e.getSource()).isSelected())
+			return;
+		    else {
+			browserCookieButton.setSelected(false);
+			controller.setUseBrowserCookie(false); 
+		    }
+		}});
+
+
 	ToolbarToggleButton timestampButton = new
 	    ToolbarToggleButton(timestampIcon,
 				TransactionNode.showTimeStamp());
@@ -427,7 +457,6 @@ public class TransactionView extends ExplorerPanel implements
 		}
 	    };
 	sep.setMaximumSize(new Dimension(10, 10));
-	buttonPanel.add(sep);
 	buttonPanel.add(timeDButton);
 	buttonPanel.add(timeAButton);
 	buttonPanel.add(alphaButton);
@@ -441,8 +470,20 @@ public class TransactionView extends ExplorerPanel implements
 	    };
 	sep.setMaximumSize(new Dimension(10, 10));
 	buttonPanel.add(sep);
+	buttonPanel.add(browserCookieButton);
+	buttonPanel.add(savedCookieButton);
+	//browserCookieButton.setSelected(true);
+	sep = new JPanel() {
+		public float getAlignmentX() {
+		    return 0;
+		}
+		public float getAlignmentY() {
+		    return 0;
+		}
+	    };
+	sep.setMaximumSize(new Dimension(10, 10));
+	buttonPanel.add(sep);
 	buttonPanel.add(timestampButton);
-
 
 	logPanel = new JPanel();
 	logPanel.setLayout(new BorderLayout());
@@ -488,10 +529,7 @@ public class TransactionView extends ExplorerPanel implements
 
 	cookieDisplay = new CookieDisplay(); 
 	p = new JScrollPane(cookieDisplay);
-	// border for debugging. 
-	//p.setViewportBorder(BorderFactory.createEtchedBorder());
 	jtp.addTab(msgs.getString("MON_Cookies_4"), p);
-
 
 	sessionDisplay = new SessionDisplay(); 
 	p = new JScrollPane(sessionDisplay);
@@ -501,10 +539,13 @@ public class TransactionView extends ExplorerPanel implements
 	p = new JScrollPane(servletDisplay);
 	jtp.addTab(msgs.getString("MON_Servlet_23"), p);
 
+	contextDisplay = new ContextDisplay(); 
+	p = new JScrollPane(contextDisplay);
+	jtp.addTab(msgs.getString("MON_Context_23"), p);
+
 	clientDisplay = new ClientDisplay(); 
 	p = new JScrollPane(clientDisplay);
-	jtp.addTab(msgs.getString("MON_Client_3"), p);
-
+	jtp.addTab(msgs.getString("MON_Client_Server"), p);
 
 	headerDisplay = new HeaderDisplay(); 
 	p = new JScrollPane(headerDisplay);
@@ -522,70 +563,6 @@ public class TransactionView extends ExplorerPanel implements
 	return dataPanel;
     }
 
-    //
-    // Routines for creating widgets in centralzied styles.
-    //
-    /**
-     * create a header label that uses bold.
-     */
-    public static JLabel createHeaderLabel(String label) {
-        return createHeaderLabel(label, ' ', null, null);
-    }
-    
-    public static JLabel createHeaderLabel(String label, char mnemonic, String ad, Component comp) {
-	JLabel jl = new JLabel(label);
-	Font labelFont = jl.getFont();
-	Font boldFont = labelFont.deriveFont(Font.BOLD);
-	jl.setFont(boldFont);
-        if (mnemonic != ' ')
-            jl.setDisplayedMnemonic(mnemonic);
-        if (ad != null)
-            jl.getAccessibleContext().setAccessibleDescription(ad);
-        if (comp != null)
-            jl.setLabelFor(comp);
-	return jl;
-    }
-	
-    public static JLabel createDataLabel(String label) {
-	JLabel jl = new JLabel(label);
-	return jl;
-    }
-
-    public static Component createSortButtonLabel(String label, final DisplayTable dt) {
-        return createSortButtonLabel(label, dt, ' ', null);
-    }
-    
-    public static Component createSortButtonLabel(String label, final DisplayTable dt, char mnemonic, String ad) {
-	JPanel panel = new JPanel();
-	panel.add(createHeaderLabel(label, mnemonic, ad, dt));
-	panel.add(createSortButton(dt));
-	return panel;
-    }
-		  
-
-
-
-
-    /**
-     * create a toggle-able button that changes the sort-order of a
-     * DisplayTable. Showing different buttons (up & down arrow)
-     * depending on the state. 
-     */
-    public static JButton createSortButton(DisplayTable dt) {
-	SortButton b = new SortButton(dt); 
-	return(JButton)b;
-    } 
-
-    public static Component createTopSpacer() {
-	/*
-	JPanel space = new JPanel();
-	space.add(Box.createVerticalStrut(1));
-	//debug
-	space.setBorder(BorderFactory.createLineBorder(Color.red));
-	return space;
-	*/
-	return Box.createVerticalStrut(1);
-    }
 
     /**
      * Invoked by DisplayAction. Displays monitor data for the selected
@@ -687,8 +664,10 @@ public class TransactionView extends ExplorerPanel implements
 	else if (displayType == 3)
 	    servletDisplay.setData(md);
 	else if (displayType == 4)
-	    clientDisplay.setData(md);
+	    contextDisplay.setData(md);
 	else if (displayType == 5)
+	    clientDisplay.setData(md);
+	else if (displayType == 6)
 	    headerDisplay.setData(md);
 	this.repaint();
 	

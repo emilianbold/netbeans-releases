@@ -131,7 +131,7 @@ public class NameValueCellEditor extends DefaultCellEditor {
 	TableModel model = table.getModel();
 
 	if(debug) 
-	    System.out.println("type = " + String.valueOf(type));
+	    System.out.println("type = " + String.valueOf(type)); //NOI18N
 
 	if(type == DisplayTable.UNEDITABLE) 
 	    title = msgs.getString("MON_ParamValue"); 

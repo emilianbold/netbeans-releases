@@ -17,7 +17,7 @@
  *
  * Created: Wed Feb  7 16:45:50 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  *
  *
@@ -36,7 +36,7 @@ public class SessionOut extends BaseBean {
 
     static Vector comparators = new Vector();
 
-    static public final String PARAM = "Param";
+    static public final String PARAM = "Param"; //NOI18N
 
     public SessionOut() {
 	this(Common.USE_DEFAULT_VALUES);
@@ -45,13 +45,13 @@ public class SessionOut extends BaseBean {
     public SessionOut(int options) {
 	super(SessionOut.comparators, new GenBeans.Version(1, 0, 6));
 	// Properties (see root bean comments for the bean graph)
-	this.createProperty("Param", PARAM, 
+	this.createProperty("Param", PARAM,  //NOI18N
 			    Common.TYPE_0_N | Common.TYPE_BEAN | Common.TYPE_KEY, 
 			    Param.class);
-	this.createAttribute(PARAM, "name", "Name", 
+	this.createAttribute(PARAM, "name", "Name", //NOI18N
 			     AttrProp.CDATA | AttrProp.REQUIRED,
 			     null, null);
-	this.createAttribute(PARAM, "value", "Value", 
+	this.createAttribute(PARAM, "value", "Value", //NOI18N
 			     AttrProp.CDATA | AttrProp.IMPLIED,
 			     null, null);
 	this.initialize(options);
@@ -149,16 +149,16 @@ public class SessionOut extends BaseBean {
 	String s;
 	BaseBean n;
 	str.append(indent);
-	str.append("Param["+this.sizeParam()+"]");
+	str.append("Param["+this.sizeParam()+"]"); //NOI18N
 	for(int i=0; i<this.sizeParam(); i++)
 	    {
-		str.append(indent+"\t");
-		str.append("#"+i+":");
+		str.append(indent+"\t"); //NOI18N
+		str.append("#"+i+":"); //NOI18N
 		n = this.getParam(i);
 		if (n != null)
-		    n.dump(str, indent + "\t");
+		    n.dump(str, indent + "\t"); //NOI18N
 		else
-		    str.append(indent+"\tnull");
+		    str.append(indent+"\tnull"); //NOI18N
 		this.dumpAttributes(PARAM, i, str, indent);
 	    }
 
@@ -166,8 +166,8 @@ public class SessionOut extends BaseBean {
 
     public String dumpBeanNode() {
 	StringBuffer str = new StringBuffer();
-	str.append("SessionOut\n");
-	this.dump(str, "\n  ");
+	str.append("SessionOut\n"); //NOI18N
+	this.dump(str, "\n  "); //NOI18N
 	return str.toString();
     }
 }
