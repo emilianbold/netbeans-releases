@@ -13,12 +13,21 @@
 
 package com.netbeans.developer.modules.text;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeEvent;
+import java.io.Writer;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
+import com.netbeans.editor.BaseDocument;
 import com.netbeans.editor.BaseKit;
+import com.netbeans.editor.Settings;
+import com.netbeans.editor.ext.JavaKit;
+import com.netbeans.editor.Indent;
 import com.netbeans.editor.view.DialogSupport;
 import com.netbeans.editor.ext.ExtSettings;
 import com.netbeans.ide.modules.ModuleInstall;
+import com.netbeans.ide.text.IndentEngine;
 
 /**
 * Module installation class for editor
@@ -27,12 +36,32 @@ import com.netbeans.ide.modules.ModuleInstall;
 */
 public class EditorModule implements ModuleInstall {
 
+  private static final String MIME_PLAIN = "text/plain";
+  private static final String MIME_JAVA = "text/x-java";
+  private static final String MIME_IDL = "text/x-idl";
+
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
-    new KitInfo("text/plain", "com.netbeans.developer.modules.text.NbEditorPlainKit"),
-    new KitInfo("text/x-java", "com.netbeans.developer.modules.text.NbEditorJavaKit"),
-    new KitInfo("text/x-idl", "com.netbeans.developer.modules.text.NbEditorIDLKit")
+    new KitInfo(MIME_PLAIN, "com.netbeans.developer.modules.text.NbEditorPlainKit"),
+    new KitInfo(MIME_JAVA, "com.netbeans.developer.modules.text.NbEditorJavaKit"),
+    new KitInfo(MIME_IDL, "com.netbeans.developer.modules.text.NbEditorIDLKit")
   };
+
+  private static PropertyChangeListener settingsListener;
+
+  static {
+    settingsListener = new PropertyChangeListener() {
+      public void propertyChange(PropertyChangeEvent evt) {
+        registerIndents();
+      }
+    };
+    Settings.addPropertyChangeListener(settingsListener);
+  }
+
+  private static void registerIndents() {
+    IndentEngine.register(MIME_JAVA,
+        new FilterIndentEngine(Indent.getIndent(JavaKit.class)));
+  }
 
   /** Module installed for the first time. */
   public void installed () {
@@ -50,14 +79,15 @@ public class EditorModule implements ModuleInstall {
     // preload some classes for faster editor opening
     BaseKit.getKit(NbEditorJavaKit.class).createDefaultDocument();
 
+    // install new kits
     for (int i = 0; i < replacements.length; i++) {
-      // install new kit
       JEditorPane.registerEditorKitForContentType(
         replacements[i].contentType,
         replacements[i].newKitClassName,
-        getClass ().getClassLoader ()
+        getClass().getClassLoader()
       );
     }
+
   }
 
   /** Module was uninstalled. */
@@ -84,11 +114,33 @@ public class EditorModule implements ModuleInstall {
 
   }
 
+  static class FilterIndentEngine extends IndentEngine {
+
+    Indent indent;
+
+    FilterIndentEngine(Indent indent) { 
+      this.indent = indent;
+    }
+
+    public int indentLine (Document doc, int offset) {
+      return indent.indentLine((BaseDocument)doc, offset);
+    }
+    
+    public int indentNewLine (Document doc, int offset) {
+      return indent.indentNewLine((BaseDocument)doc, offset);
+    }
+    
+    public Writer createWriter (Document doc, int offset, Writer writer) {
+      return indent.createWriter((BaseDocument)doc, offset, writer);
+    }
+
+  }
 
 }
 
 /*
  * Log
+ *  13   Gandalf   1.12        6/1/99   Miloslav Metelka 
  *  12   Gandalf   1.11        6/1/99   Miloslav Metelka 
  *  11   Gandalf   1.10        5/5/99   Miloslav Metelka 
  *  10   Gandalf   1.9         4/23/99  Miloslav Metelka Differrent document 
