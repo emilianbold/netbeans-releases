@@ -224,10 +224,10 @@ public class AttachWindowAction extends Action {
     public void performAPI(TopComponentOperator tco) {
         final TopComponent sourceTc = (TopComponent)tco.getSource();
         final TopComponent targetTc = (TopComponent)getTargetTopComponentOperator().getSource();
-        final ModeImpl mode = (ModeImpl)WindowManagerImpl.getDefault().findMode(targetTc);
         // run in dispatch thread
         tco.getQueueTool().invokeSmoothly(new Runnable() {
             public void run() {
+                ModeImpl mode = (ModeImpl)WindowManagerImpl.getDefault().findMode(targetTc);
                 if(sideConstant == AS_LAST_TAB) {
                     mode.dockInto(sourceTc);
                     sourceTc.open();
