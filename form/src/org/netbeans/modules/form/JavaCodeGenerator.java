@@ -981,8 +981,15 @@ public class JavaCodeGenerator extends CodeGenerator {
       regenerateInitializer ();
     }
 
-    public void formChanged () {
+    public void codeChanged () {
       // 1. regenerate initializer
+      regenerateInitializer ();
+    }
+
+    public void formChanged () {
+      // 1. regenerate variables
+      regenerateVariables ();
+      // 2. regenerate initializer
       regenerateInitializer ();
     }
     
@@ -1242,6 +1249,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  53   Gandalf   1.52        9/29/99  Ian Formanek    codeChanged added to 
+ *       FormListener
  *  52   Gandalf   1.51        9/24/99  Ian Formanek    New system of changed 
  *       properties in RADComponent - Fixes bug 3584 - Form Editor should try to
  *       enforce more order in the XML elements in .form.

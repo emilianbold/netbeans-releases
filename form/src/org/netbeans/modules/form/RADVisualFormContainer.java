@@ -163,7 +163,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         ((MenuBarContainer)formInfo).setMenuBar (null);
       }
     }
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public Point getFormPosition () {
@@ -176,7 +176,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setFormPosition (Point value) {
     formPosition = value;
     // [PENDING - set on form window if in single mode]
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public Dimension getFormSize () {
@@ -189,7 +189,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setFormSize (Dimension value) {
     formSize = value;
     // [PENDING - set on form window if in single mode]
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public boolean getGeneratePosition () {
@@ -199,7 +199,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setGeneratePosition (boolean value) {
     // [PENDING - set as aux value]
     generatePosition = value;
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public boolean getGenerateSize () {
@@ -209,7 +209,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setGenerateSize (boolean value) {
     // [PENDING - set as aux value]
     generateSize = value;
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public boolean getGenerateCenter () {
@@ -219,7 +219,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setGenerateCenter (boolean value) {
     // [PENDING - set as aux value]
     generateCenter = value;
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
   public int getFormSizePolicy () {
@@ -229,7 +229,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
   public void setFormSizePolicy (int value) {
     // [PENDING - set as aux value]
     formSizePolicy = value;
-    getFormManager ().fireFormChange ();
+    getFormManager ().fireCodeChange ();
   }
 
 // ------------------------------------------------------------------------------
@@ -457,6 +457,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
 /*
  * Log
+ *  14   Gandalf   1.13        9/29/99  Ian Formanek    codeChanged added to 
+ *       FormListener
  *  13   Gandalf   1.12        8/15/99  Ian Formanek    getContainerGenName 
  *       usage clarified
  *  12   Gandalf   1.11        7/30/99  Ian Formanek    Fixed bugs 2915 - 
