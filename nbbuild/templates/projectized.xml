@@ -126,7 +126,10 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="cp"/>
         </javac>
         <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
+          <fileset dir="${src.dir}" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt">
+            <!-- don't copy *.class leftover from pre-projectized builds -->
+            <exclude name="**/*.class"/>
+          </fileset>
         </copy>
     </target>
 
