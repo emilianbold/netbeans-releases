@@ -479,7 +479,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module testtools..."/>
     <ant dir="../testtools" target="netbeans"/>
   </target>
-  <target name="all-text" depends="all-openide,all-openide/deprecated">
+  <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
     <ant dir="../text" target="netbeans"/>
   </target>
