@@ -32,8 +32,6 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
         <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="../editor/netbeans/modules/editor.jar"/>
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
@@ -44,13 +42,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../core/netbeans/lib/core.jar"/>
         <pathelement location="../properties/netbeans/modules/properties.jar"/>
-        <pathelement location="../editor/netbeans/modules/ext/nb-editor.jar"/>
-        <pathelement location="../editor/netbeans/modules/editor.jar"/>
         <pathelement location="../form/netbeans/modules/form.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
     </javac>
 

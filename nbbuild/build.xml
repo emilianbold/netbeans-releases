@@ -175,7 +175,7 @@ workspaceswitcher
     <echo message="Building module httpserver..."/>
     <ant dir="../httpserver" target="netbeans"/>
   </target>
-  <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form,all-editor">
+  <target name="all-i18n" depends="all-openide,all-core,all-properties,all-form">
     <echo message="Building module i18n..."/>
     <ant dir="../i18n" target="netbeans"/>
   </target>
