@@ -20,6 +20,8 @@ import junit.framework.*;
 
 import org.netbeans.junit.*;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -264,6 +266,41 @@ public class TopComponentGetLookupTest extends NbTestCase {
         listener.check ("Queriing for node does generate an event", 0);
         assertEquals ("No Queries to the not active node made", 0, cnt.queries);
         assertEquals ("No listeneners on cookies", allListeners, cnt.listeners);
+    }
+    
+    public void testBug32470FilterNodeAndANodeImplementingACookie () {
+        class NY extends AbstractNode implements org.openide.cookies.SaveCookie {
+            public NY () {
+                super (org.openide.nodes.Children.LEAF);
+                getCookieSet ().add (this);
+            }
+            
+            public void save () {
+            }
+        }
+        
+        Node ny = new NY ();
+        Node node = new FilterNode (new FilterNode (ny, null, ny.getLookup ()));
+        top.setActivatedNodes (new Node[] { node });
+        
+        Lookup.Template nodeTemplate = new Lookup.Template (Node.class);
+        Lookup.Template saveTemplate = new Lookup.Template (org.openide.cookies.SaveCookie.class);
+        java.util.Collection res;
+        
+        res = lookup.lookup (nodeTemplate).allInstances ();
+        assertEquals ("FilterNode is the only node there", 
+            java.util.Collections.singletonList (node), res
+        );
+
+        res = lookup.lookup (saveTemplate).allInstances ();
+        assertEquals ("SaveCookie is there only once", 
+            java.util.Collections.singletonList (ny), res
+        );
+
+        res = lookup.lookup (nodeTemplate).allInstances ();
+        assertEquals ("FilterNode is still the only node there", 
+            java.util.Collections.singletonList (node), res
+        );
     }
     
     
