@@ -388,9 +388,10 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
         if (is != null) { // merging model with the document
             try {
                 EjbJarProxy newEjbJar = (EjbJarProxy) EjbJarDDUtils.createEjbJar(is);
-                ejbJar.setStatus(EjbJar.STATE_VALID);
-                ejbJar.setError(null);
-                setSaxError(null);
+                ejbJar.setStatus(newEjbJar.getStatus());
+                SAXParseException error = newEjbJar.getError();
+                ejbJar.setError(error);
+                setSaxError(error);
                 if (updateModel) {
                     if (ejbJar.getOriginal() != null) {
                         ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
