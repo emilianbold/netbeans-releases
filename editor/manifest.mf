@@ -14,3 +14,6 @@ OpenIDE-Module-Class: Action
 Name: org/netbeans/modules/editor/java/JavaIndentEngine.class
 OpenIDE-Module-Class: Service
 
+Name: org/netbeans/modules/editor/SimpleIndentEngine.class
+OpenIDE-Module-Class: Service
+
