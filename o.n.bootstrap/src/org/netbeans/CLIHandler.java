@@ -123,7 +123,7 @@ public abstract class CLIHandler extends Object {
     /** Notification of available handlers.
      * @return non-zero if one of the handlers fails
      */
-    private static int notifyHandlers(Args args, List handlers, int when, boolean failOnUnknownOptions) {
+    private static int notifyHandlers(Args args, List handlers, int when, boolean failOnUnknownOptions, boolean consume) {
         try {
             //System.err.println("notifyHandlers: handlers=" + handlers + " when=" + when + " args=" + Arrays.asList(args.getArguments()));
             if (failOnUnknownOptions) {
@@ -165,7 +165,7 @@ public abstract class CLIHandler extends Object {
             }
             return 0;
         } finally {
-            args.reset(failOnUnknownOptions);
+            args.reset(consume);
         }
     }
     
@@ -257,7 +257,7 @@ public abstract class CLIHandler extends Object {
     static Status initialize(final Args args, Integer block, final List handlers, boolean doAllInit, final boolean failOnUnknownOptions) {
         // initial parsing of args
         {
-            int r = notifyHandlers(args, handlers, WHEN_BOOT, failOnUnknownOptions);
+            int r = notifyHandlers(args, handlers, WHEN_BOOT, false, failOnUnknownOptions);
             if (r != 0) {
                 return new Status(r);
             }
@@ -324,11 +324,11 @@ public abstract class CLIHandler extends Object {
                 
                 int exitCode;
                 if (doAllInit) {
-                    exitCode = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions);
+                    exitCode = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
                 } else {
                     doLater = new Runnable() {
                         public void run() {
-                            int r = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions);
+                            int r = notifyHandlers(args, handlers, WHEN_INIT, failOnUnknownOptions, failOnUnknownOptions);
                             if (r != 0) {
                                 // Not much to do about it.
                                 System.err.println("Post-initialization command-line options could not be run."); // NOI18N
@@ -689,7 +689,7 @@ public abstract class CLIHandler extends Object {
                 String currentDir = is.readUTF ();
                 
                 Args arguments = new Args(args, new IS(is, os), new OS(is, os), currentDir);
-                int res = notifyHandlers(arguments, handlers, WHEN_INIT, failOnUnknownOptions);
+                int res = notifyHandlers(arguments, handlers, WHEN_INIT, failOnUnknownOptions, false);
                 
                 if (res == 0) {
                     enterState(98, block);
