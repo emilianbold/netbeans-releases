@@ -34,7 +34,7 @@ import org.netbeans.spi.xml.services.*;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public class CatalogEntityResolver extends UsersCatalogProvider implements EntityResolver {
+public class CatalogEntityResolver extends UserCatalogProvider implements EntityResolver {
 
     /** Creates new CatalogEntityResolver */
     public CatalogEntityResolver() {

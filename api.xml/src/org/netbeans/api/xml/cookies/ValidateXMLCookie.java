@@ -42,7 +42,7 @@ public interface ValidateXMLCookie extends Node.Cookie {
     /**
      * Validate XML document entity.
      * @param observer optional listener (<code>null</code> allowed)
-     *               giving judgement details via {@link XMLProcessorMessage}s.
+     *               giving judgement details via {@link XMLProcessorDetail}s.
      * @return true if validity check passes
      */
     boolean validateXML(CookieObserver observer);

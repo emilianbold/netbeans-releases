@@ -79,7 +79,11 @@ public final class TransformableSupport implements TransformableCookie {
         } catch (TransformerConfigurationException ex) {
             // thrown if error in style sheet
             if (notifier != null) {
-                CookieObserver.Message message = new DefaultXMLProcessorMessage (ex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+                CookieObserver.Message message = new CookieObserver.Message(
+                    ex.getLocalizedMessage(), 
+                    CookieObserver.Message.FATAL_ERROR_LEVEL
+                );                
+                message.addDetail(new DefaultXMLProcessorDetail(ex));
                 notifier.receive (message);
             }
         }                
@@ -115,17 +119,29 @@ public final class TransformableSupport implements TransformableCookie {
         }
         
         public void error (TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.ERROR_LEVEL);
+            CookieObserver.Message message = new CookieObserver.Message(
+                tex.getLocalizedMessage(), 
+                CookieObserver.Message.ERROR_LEVEL
+            );            
+            message.addDetail(new DefaultXMLProcessorDetail(tex));
             peer.receive (message);
         }
         
         public void fatalError(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.FATAL_ERROR_LEVEL);
+            CookieObserver.Message message = new CookieObserver.Message(
+                tex.getLocalizedMessage(), 
+                CookieObserver.Message.FATAL_ERROR_LEVEL
+            );            
+            message.addDetail(new DefaultXMLProcessorDetail(tex));
             peer.receive (message);            
         }
         
         public void warning(TransformerException tex) throws javax.xml.transform.TransformerException {
-            CookieObserver.Message message = new DefaultXMLProcessorMessage (tex, CookieObserver.Message.WARNING_LEVEL);
+            CookieObserver.Message message = new CookieObserver.Message(
+                tex.getLocalizedMessage(), 
+                CookieObserver.Message.WARNING_LEVEL
+            );            
+            message.addDetail(new DefaultXMLProcessorDetail(tex));
             peer.receive (message);            
         }
         

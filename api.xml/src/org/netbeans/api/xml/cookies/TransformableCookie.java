@@ -39,7 +39,7 @@ public interface TransformableCookie extends Node.Cookie {
      * @param transformSource source of transformation.
      * @param outputResult result of transformation.
      * @param observer optional notifier (<code>null</code> allowed)
-     *                 giving judgement details via {@link XMLProcessorMessage}s.
+     *                 giving judgement details via {@link XMLProcessorDetail}s.
      */
     public void transform (Source transformSource, Result outputResult, CookieObserver observer)
         throws IOException, TransformerConfigurationException, TransformerException;

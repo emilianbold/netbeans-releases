@@ -34,7 +34,7 @@ public interface CheckXMLCookie extends Node.Cookie {
     /**
      * Check XML parsed entity for syntax wellformedness.
      * @param observer optional listener (<code>null</code> allowed)
-     *               giving judgement details via {@link XMLProcessorMessage}s.
+     *               giving judgement details via {@link XMLProcessorDetail}s.
      * @return <code>true</code> if syntax check passes
      */
     boolean checkXML(CookieObserver observer);
