@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -27,9 +27,6 @@ import org.openide.cookies.ViewCookie;
 */
 public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory {
 
-    private static final String HTML_ICON_BASE =
-        "org/netbeans/modules/html/htmlObject"; // NOI18N
-
     static final long serialVersionUID =8354927561693097159L;
     
     /** New instance.
@@ -46,7 +43,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     protected org.openide.nodes.Node createNodeDelegate () {
         DataNode n = new HtmlDataNode (this, Children.LEAF);
-        n.setIconBase (HTML_ICON_BASE);
+        n.setIconBase ("org/netbeans/modules/html/htmlObject"); // NOI18N
         return n;
     }
 

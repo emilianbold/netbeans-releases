@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -41,9 +41,9 @@ public class HtmlLoaderBeanInfo extends SimpleBeanInfo {
     public Image getIcon(final int type) {
         if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
                 (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-	    return Utilities.loadImage("org/netbeans/modules/html/htmlLoader.gif"); // NOI18N
+	    return Utilities.loadImage("org/netbeans/modules/html/htmlObject.gif"); // NOI18N
         } else {
-	    return Utilities.loadImage ("org/netbeans/modules/html/htmlLoader32.gif"); // NOI18N
+	    return Utilities.loadImage ("org/netbeans/modules/html/htmlObject32.gif"); // NOI18N
         }
     }
 
