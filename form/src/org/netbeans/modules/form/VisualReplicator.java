@@ -597,13 +597,8 @@ public class VisualReplicator {
             Container contentCont =
                 (Container) CreationFactory.createDefaultInstance(contentClass);
 
-            // try to copy all possible properties to the content pane
-            FormUtils.copyPropertiesToBean(metacomp.getAllBeanProperties(),
-                                           contentCont,
-                                           relativeProperties);
             // set the content pane
             ((JRootPane)component).setContentPane(contentCont);
-            return component;
         }
         else if (MenuItem.class.isAssignableFrom(beanClass)
                  && JMenuItem.class.isAssignableFrom(requiredClass)) {
