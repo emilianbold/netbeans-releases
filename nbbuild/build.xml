@@ -415,7 +415,7 @@ the nbbuild/netbeans/bin/ directory.
   <target name="trybuild" depends="firststart-merge,tryme"
           description="Build the IDE and try it immediately (no first start)."/>
 
-  <target name="update-info" depends="init,init,build-messaging"
+  <target name="update-info" depends="init,all-openide,all-core"
           description="Build Auto Update NBM files and XML descriptions.">
     <!-- Note: partially sorted in dependency order -->
     <!-- (this could also be done with separate targets). -->
@@ -451,6 +451,8 @@ the nbbuild/netbeans/bin/ directory.
     <ant dir="../httpserver" target="nbm"/>
     <echo message="Making NBM for module properties..."/>
     <ant dir="../properties" target="nbm"/>
+    <echo message="Making NBM for module web..."/>
+    <ant dir="../web" target="nbm"/>
     <echo message="Making NBM for module i18n..."/>
     <ant dir="../i18n" target="nbm"/>
     <echo message="Making NBM for module icebrowser..."/>
@@ -467,8 +469,8 @@ the nbbuild/netbeans/bin/ directory.
     <ant dir="../javadoc" target="nbm"/>
     <echo message="Making NBM for module javaembeddedserver..."/>
     <ant dir="../javaembeddedserver" target="nbm"/>
-<!--    <echo message="Making NBM for module jini..."/>
-    <ant dir="../jini" target="nbm"/>-->
+    <echo message="Making NBM for module jini..."/>
+    <ant dir="../jini" target="nbm"/>
     <echo message="Making NBM for module makefile..."/>
     <ant dir="../makefile" target="nbm"/>
     <echo message="Making NBM for module multicompile..."/>
@@ -495,8 +497,6 @@ the nbbuild/netbeans/bin/ directory.
     <ant dir="../utilities" target="nbm"/>
     <echo message="Making NBM for module vcscvs..."/>
     <ant dir="../vcscvs" target="nbm"/>
-    <echo message="Making NBM for module web..."/>
-    <ant dir="../web" target="nbm"/>
     <makeupdatedesc desc="../www/www/updates/40_1.1_.xml">
       <!-- Not for now:
       <group name="Standard">
