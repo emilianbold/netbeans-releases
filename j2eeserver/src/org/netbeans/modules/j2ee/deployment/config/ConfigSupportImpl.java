@@ -23,6 +23,7 @@ import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.config.ui.ConfigUtils;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
 import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.WebContextResolver;
 
 /*
  * ConfigSupportImpl.java
@@ -35,14 +36,19 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     private ServerString server;
     private String webContextRootXpath;
     private String webContextRootPropName;
+    private WebContextResolver resolver;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl(J2eeDeploymentLookup deployment) {
         this.deployment = deployment;
         server = deployment.getJ2eeProfileSettings().getServerString();
-        WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
-        webContextRootXpath = webContextRoot.getXpath();
-        webContextRootPropName = webContextRoot.getPropName();
+        Server s = server.getServer();
+        resolver = s.getWebContextResolver ();
+        if (resolver == null) {
+            WebContextRoot webContextRoot = server.getServer().getWebContextRoot();
+            webContextRootXpath = webContextRoot.getXpath();
+            webContextRootPropName = webContextRoot.getPropName();
+        }
     }
     
     private DConfigBean getWebContextDConfigBean() {
@@ -78,16 +84,29 @@ public class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
      * @return string value, null if not set or could not find
      */
     public String getWebContextRoot() {
+        if (resolver != null) {
+            DeploymentConfiguration dc = deployment.getStorage().getDeploymentConfiguration();
+            return resolver.getWebContext (dc);
+        }
         DConfigBean configBean = getWebContextDConfigBean();
-        if (configBean == null) return null;
+        if (configBean == null) {
+            return null;
+        }
         return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
     }
     /**
      * Set context root
      */
     public void setWebContextRoot(String contextRoot) {
-        DConfigBean configBean = getWebContextDConfigBean();
-        if (configBean == null) return;
-        ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
+        if (resolver != null) {
+            DeploymentConfiguration dc = deployment.getStorage().getDeploymentConfiguration();
+            resolver.setWebContext (dc, contextRoot);
+        } else {
+            DConfigBean configBean = getWebContextDConfigBean();
+            if (configBean == null) {
+                return;
+            }
+            ConfigUtils.setBeanPropertyValue(configBean, webContextRootPropName, contextRoot);
+        }
     }
 }

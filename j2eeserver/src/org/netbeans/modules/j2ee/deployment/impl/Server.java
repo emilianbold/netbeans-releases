@@ -282,4 +282,8 @@ public class Server implements Node.Cookie {
     public WebContextRoot getWebContextRoot() {
         return dep.getWebContextRoot();
     }
+    
+    public WebContextResolver getWebContextResolver () {
+        return (WebContextResolver) lkp.lookup (WebContextResolver.class);
+    }
 }
