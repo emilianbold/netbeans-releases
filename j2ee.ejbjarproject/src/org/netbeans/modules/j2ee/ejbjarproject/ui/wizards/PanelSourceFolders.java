@@ -134,7 +134,10 @@ public class PanelSourceFolders extends SettingsPanel implements PropertyChangeL
         settings.putProperty (WizardProperties.JAVA_ROOT,sourceRoots);    //NOI18N
         settings.putProperty(WizardProperties.TEST_ROOT,testRoots);      //NOI18N
         settings.putProperty(WizardProperties.CONFIG_FILES_FOLDER, new File(jTextFieldConfigFiles.getText().trim()));
-        settings.putProperty(WizardProperties.LIB_FOLDER, new File(jTextFieldLibraries.getText().trim()));
+        String libPath = jTextFieldLibraries.getText().trim();
+        if (libPath != null && !libPath.equals("")) {
+            settings.putProperty(WizardProperties.LIB_FOLDER, new File(libPath));
+        }
     }
     
     boolean valid (WizardDescriptor settings) {
