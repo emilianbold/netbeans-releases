@@ -16,12 +16,13 @@ package com.netbeans.developer.modules.javadoc;
 import java.io.File;
 
 import java.util.Enumeration;
+import java.lang.reflect.Method;
 import javax.swing.event.*;
 import javax.swing.KeyStroke;
 import javax.swing.text.Keymap;
 
 import org.openide.util.Utilities;
-
+import org.openide.src.nodes.FilterFactory;
 // IDE imports ------------------
 
 import org.openide.actions.CutAction;
@@ -38,6 +39,7 @@ import org.openide.filesystems.Repository;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaNode;
 import com.netbeans.developer.modules.javadoc.settings.StdDocletSettings;
+import com.netbeans.developer.modules.javadoc.comments.JavaDocPropertySupportFactory;
 
 /** Class for initializing Javadoc module on IDE startup.
 
@@ -152,6 +154,14 @@ public class JavadocModule implements ModuleInstall {
       }
     });
     */
+  
+    // Install the factory for adding JavaDoc property to nodes
+    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
+                   "addExplorerFilterFactory",
+                   new JavaDocPropertySupportFactory() );
+    invokeDynamic( "com.netbeans.developer.modules.loaders.java.JavaDataObject",
+                   "addBrowserFilterFactory",
+                   new JavaDocPropertySupportFactory() );
     
     // Assign the Ctrl+F1 to JavaDoc Index Search Action
 
@@ -238,11 +248,36 @@ public class JavadocModule implements ModuleInstall {
   }
 
 
+  private void invokeDynamic( String className, String methodName, FilterFactory factory ) {  
+
+    try {
+      Class dataObject = TopManager.getDefault().systemClassLoader().loadClass( className );
+    
+      if ( dataObject == null )
+        return;
+
+      Method method = dataObject.getDeclaredMethod( methodName, new Class[] { FilterFactory.class }  );
+      if ( method == null )
+        return;
+        
+      method.invoke( null, new Object[] { factory } );
+    }
+    catch ( java.lang.ClassNotFoundException e ) { 
+    }
+    catch ( java.lang.NoSuchMethodException e ) {  
+    }
+    catch ( java.lang.IllegalAccessException e ) {
+    }
+    catch ( java.lang.reflect.InvocationTargetException e ) {
+    }
+  }
 
 }
 
 /* 
  * Log
+ *  12   Gandalf   1.11        7/9/99   Petr Hrebejk    JavaDoc comments support
+ *       added to module
  *  11   Gandalf   1.10        6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  10   Gandalf   1.9         6/8/99   Petr Hrebejk    
