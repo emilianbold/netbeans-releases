@@ -44,6 +44,8 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.xml.sax.SAXException;
 
+import org.netbeans.modules.schema2beans.Common;
+import org.netbeans.modules.schema2beans.BaseBean;
 
 /** Monitor enabling/disabling utilities for Tomcat 5.
  *
@@ -192,6 +194,19 @@ public class MonitorSupport {
             if (!isMapping) {
                 try {
                     FilterMapping filterMapping = (FilterMapping)webApp.createBean("FilterMapping"); //NOI18N
+                    
+                    // setting the dispatcher values even for Servlet2.3 web.xml
+                    String[] dispatcher = new String[] {"REQUEST","FORWARD","INCLUDE","ERROR"}; //NOI18N
+                    try {
+                        filterMapping.setDispatcher(dispatcher);
+                    } catch (org.netbeans.api.web.dd.common.VersionNotSupportedException ex) {
+                        ((BaseBean)filterMapping).createProperty("dispatcher", // NOI18N
+                            "Dispatcher", // NOI18N
+                            Common.TYPE_0_N | Common.TYPE_STRING | Common.TYPE_KEY, 
+                            java.lang.String.class);
+                        ((BaseBean)filterMapping).setValue("Dispatcher",dispatcher); // NOI18N
+                    }
+                    
                     filterMapping.setFilterName(MONITOR_FILTER_NAME);
                     filterMapping.setUrlPattern(MONITOR_FILTER_PATTERN);
                     webApp.addFilterMapping(filterMapping);
