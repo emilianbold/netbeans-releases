@@ -409,6 +409,18 @@ Controller, ActionListener {
             return NbBundle.getMessage (ConnectPanel.class, "CTL_Host");
         if (str.equalsIgnoreCase ("Port"))
             return NbBundle.getMessage (ConnectPanel.class, "CTL_Port");
+        if (str.equalsIgnoreCase ("Java executable"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_JavaExecutable");
+        if (str.equalsIgnoreCase ("Corefile"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Corefile");
+        if (str.equalsIgnoreCase ("Debug server"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_DebugServer");
+        if (str.equalsIgnoreCase ("PID"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_PID");
+        if (str.equalsIgnoreCase ("Timeout"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_Timeout");
+        if (str.equalsIgnoreCase ("Local Address"))
+            return NbBundle.getMessage (ConnectPanel.class, "CTL_ConnectorArgument_LocalAddress");
         return str;
     }
     
@@ -419,6 +431,18 @@ Controller, ActionListener {
         if (str.equalsIgnoreCase ("Port"))
             return NbBundle.getMessage (ConnectPanel.class, 
                 "CTL_Port_mnemonic").charAt (0);
+        if (str.equalsIgnoreCase("Java executable"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_JavaExecutable_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("Corefile"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Corefile_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("Debug server"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_DebugServer_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("PID"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_PID_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("Timeout"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_Timeout_mnemonic").charAt(0);
+        if (str.equalsIgnoreCase("Local Address"))
+            return NbBundle.getMessage(ConnectPanel.class, "CTL_ConnectorArgument_LocalAddress_mnemonic").charAt(0);
         return str.charAt (0);
     }
 }
