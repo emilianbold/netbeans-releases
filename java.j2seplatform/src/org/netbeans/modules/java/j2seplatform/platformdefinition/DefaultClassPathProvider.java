@@ -20,7 +20,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +43,7 @@ import org.netbeans.modules.classfile.ClassName;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -72,6 +72,11 @@ public class DefaultClassPathProvider implements ClassPathProvider {
     
     public synchronized ClassPath findClassPath(FileObject file, String type) {
         if (!file.isValid ()) {
+            return null;
+        }
+        // #49013 - do not return classpath for files which do 
+        // not have EXTERNAL URL, e.g. files from DefaultFS
+        if (URLMapper.findURL(file, URLMapper.EXTERNAL) == null) {
             return null;
         }
         if (JAVA_EXT.equalsIgnoreCase(file.getExt()) || file.isFolder()) {  //Workaround: Editor asks for package root
