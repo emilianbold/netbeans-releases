@@ -306,7 +306,7 @@ public final class TransformPanel extends javax.swing.JPanel {
     private Object guessOutputFile() {
         Object output = data.output;
         
-        if ( ( output == null ) || ( JUST_PREVIEW.equals(output) ) ) {
+        if ( output == null || "".equals(output) || JUST_PREVIEW.equals(output)) {
             String origName = guessFileName(data.xml);
             String origExt = "";
             int dotIndex = origName.lastIndexOf('.');
@@ -372,28 +372,21 @@ public final class TransformPanel extends javax.swing.JPanel {
             canOutput = false;
         }
         
-        boolean notPreview = true;
-        
         // Output
         outputComboBox.setEnabled(canOutput);
         if ( canOutput ) {
             Object output = guessOutputFile();
-            
             initOutputComboBox(output);
-            if ( data.output != null ) {
-                output = data.output;
-            }
             
-            outputComboBox.setSelectedItem(output);
-            notPreview = ( JUST_PREVIEW.equals(output) == false );
-            outputComboBox.setEditable(notPreview);
+            outputComboBox.setSelectedItem(data.output != null ? output : JUST_PREVIEW);
+            outputComboBox.setEditable(data.output != null);
         }
         
         // Overwrite Output
         if ( data.overwrite != null ) {
             overwriteCheckBox.setSelected(data.overwrite.booleanValue());
         }
-        overwriteCheckBox.setEnabled(canOutput && notPreview);
+        overwriteCheckBox.setEnabled(canOutput && data.output != null);
         
         // Process Output
         if ( data.process != null ) {
@@ -406,14 +399,14 @@ public final class TransformPanel extends javax.swing.JPanel {
                 showComboBox.setSelectedIndex(TransformHistory.APPLY_DEFAULT_ACTION);
             }
         }
-        showComboBox.setEnabled(canOutput && notPreview);
+        showComboBox.setEnabled(canOutput && data.output != null);
         
         setInitialized(true);
     }
     
     
     public Data getData() {
-        return data;
+        return new Data (getInput(), getXSL(), getOutput(), isOverwriteOutput(), getProcessOutput());
     }
     
     public void setData(Data data) {
@@ -913,7 +906,7 @@ public final class TransformPanel extends javax.swing.JPanel {
         public Data() {
             this.xml       = null;
             this.xsl       = null;
-            this.output    = null;
+            this.output    = "";
             this.overwrite = null;
             this.process   = null;
         }
@@ -923,7 +916,7 @@ public final class TransformPanel extends javax.swing.JPanel {
             this.xsl       = xsl;
             this.output    = output;
             this.overwrite = overwrite ? Boolean.TRUE : Boolean.FALSE;
-            this.process   = new Integer(process);
+            this.process   = process == -1 ? null : new Integer(process);
         }
         
         /**
@@ -976,7 +969,11 @@ public final class TransformPanel extends javax.swing.JPanel {
         }
         
         public void setOutput(Object outputValue) {
-            output=outputValue;
+            if (JUST_PREVIEW.equals(outputValue)) {
+                output = null;
+            } else {
+                output=outputValue;
+            }
         }
         
         public void setOverwriteOutput(boolean overwriteValue) {
@@ -1015,5 +1012,5 @@ public final class TransformPanel extends javax.swing.JPanel {
             return Util.THIS.getString("NAME_output_just_preview");
         }
     } // class Preview
-    
+
 }
