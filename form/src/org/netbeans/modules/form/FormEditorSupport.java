@@ -343,7 +343,7 @@ public class FormEditorSupport extends JavaEditor
         assert java.awt.EventQueue.isDispatchThread();
 
         MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
-        handler.requestActive(handler.getPerspectives()[1]);
+        handler.requestActive(handler.getPerspectives()[0]);
     }
 
     /** @return the FormDesigner for this form */
