@@ -457,7 +457,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="build-platform,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api">
+  <target name="all-j2eeserver" depends="build-platform,all-j2eeserver/j2eeapis,all-projects/projectapi,build-schema2beans/anttask,all-xml/api,all-schema2beans/rt">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
   </target>
@@ -1304,6 +1304,8 @@ Tag:
       </zipfileset>
       <zipfileset dir="${netbeans.dest}" prefix="${netbeans.dest}">
         <exclude name="*.built" />
+        <exclude name="test/**"/>
+        <exclude name="extra/**"/>
       </zipfileset>
     </zip>
     <echo>Build created; see NetBeans-${buildnum}.zip (in nbbuild/).
