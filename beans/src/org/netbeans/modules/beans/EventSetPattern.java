@@ -166,9 +166,11 @@ public class EventSetPattern extends Pattern {
 
             if ( listener != null ) {
                 MethodElement methods[] = listener.getMethods();
-
+                boolean isInterface = !listener.isClassOrInterface();
                 for( int i = 0; i < methods.length; i++ ) {
-                    if ( (methods[i].getModifiers() & Modifier.PUBLIC) != 0 ) {
+                    if ( ((methods[i].getModifiers() & Modifier.PUBLIC) != 0 ) ||
+                         (isInterface && (methods[i].getModifiers() & (Modifier.PROTECTED | Modifier.PRIVATE)) == 0)
+                       ) {
                         if ( isUnicast )
                             BeanPatternGenerator.unicastFireMethod( esp.getDeclaringClass(), esp.type,
                                                                     methods[i], implementation, passEvent );
