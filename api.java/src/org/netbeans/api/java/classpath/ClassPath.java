@@ -274,8 +274,14 @@ public abstract class ClassPath {
      * The method uses <code>FileObject</code> instead <code>org.openide.loaders.DataObject</code>,
      * since <code>org.openide.loaders.*</code> contents are going to be deprecated soon.
      * @param f the file, whose classpath settings should be returned,
-     * if null then active project's setting is retrieved. 
+     * if null then active project's setting is retrieved.<br>
+     * The method is permitted to return null, if:<ul>
+     * <li>the path type (id parameter) is not know to the system
+     * <li>the path type is not defined for the given FileObject
+     * </ul> 
      * @param id the type of the ClassPath
+     * @return Path of the desired type for the given FileObject, or <code>null</code>, if
+     * the path type is not supported for that FileObject.
      */
     public static ClassPath getClassPath(FileObject f, String id) {
         return getClassPathImpl(id);
