@@ -50,7 +50,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
   <target name="release">
     <copy todir="netbeans" includeEmptyDirs="false">
-      <fileset dir="release"/>
+      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
