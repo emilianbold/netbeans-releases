@@ -159,9 +159,6 @@ Microsystems, Inc. All Rights Reserved.
   </folder>
   
   <folder name="Editors">
-        <folder name="AnnotationTypes">
-            <file name="XMLJ2eeAnnotation.xml" url="XMLJ2eeAnnotation.xml"/>
-        </folder>
         <folder name="text">
             <folder name="x-jsp">
                 <folder name="Popup">
