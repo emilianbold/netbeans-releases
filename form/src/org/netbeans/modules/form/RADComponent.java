@@ -39,7 +39,7 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
 //    public static final String SYNTHETIC_PREFIX = "synthetic_"; // NOI18N
 //    public static final String PROP_NAME = SYNTHETIC_PREFIX + "Name"; // NOI18N
-    public static final String PROP_NAME = "Name"; // NOI18N
+    public static final String PROP_NAME = "variableName"; // NOI18N
 
     static final NewType[] NO_NEW_TYPES = {};
     static final FormProperty[] NO_PROPERTIES = {};
