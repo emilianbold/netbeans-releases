@@ -100,13 +100,10 @@ public class MakeListOfNBM extends Task {
         fs.createInclude().setName(systemDir + File.separator + "Modules" + File.separator + track.getTrackingFileName());
         
         DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
-        String excludes[]={"Info/info.xml", "main/**"};
-        ds.setExcludes( excludes );
         ds.scan();
         
         String include[] = ds.getIncludedFiles();
         for( int j=0; j < include.length; j++ ){
-            if (include[j].equals("Info/info.xml") || include[j].startsWith("main/")) continue;
             try {
                 File inFile = new File( ds.getBasedir(), include[j] );
                 FileInputStream inFileStream = new FileInputStream( inFile );
