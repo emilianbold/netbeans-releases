@@ -317,7 +317,8 @@ public final class SourceRoots {
             else {
                 //If the name is not given, it should be either a relative path in the project dir
                 //or absolute path when the root is not under the project dir
-                File sourceRoot = helper.getAntProjectHelper().resolveFile(evaluator.getProperty(propName));
+                String propValue = evaluator.getProperty(propName);
+                File sourceRoot = propValue == null ? null : helper.getAntProjectHelper().resolveFile(propValue);
                 rootName = createInitialDisplayName(sourceRoot);                
             }
         }
