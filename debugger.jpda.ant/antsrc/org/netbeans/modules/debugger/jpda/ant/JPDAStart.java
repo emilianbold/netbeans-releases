@@ -17,6 +17,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -77,15 +80,8 @@ public class JPDAStart extends Task implements Runnable {
     private Object []               lock = null; 
     /** The class debugger should stop in, or null. */
     private String                  stopClassName = null;
-    private MethodBreakpoint        breakpoint;
 
-    {
-        DebuggerManager.getDebuggerManager ().addDebuggerListener (
-            DebuggerManager.PROP_DEBUGGER_ENGINES,
-            new Listener ()
-        );
-    }
-
+    
     // properties ..............................................................
     
     public void setAddressProperty (String propertyName) {
@@ -217,7 +213,11 @@ public class JPDAStart extends Task implements Runnable {
                 if (stopClassName != null && stopClassName.length() > 0) {
                     if (startVerbose)
                         System.out.println("\nS create method breakpoint, class name = " + stopClassName);
-                    createBreakpoint (stopClassName);
+                    MethodBreakpoint b = createBreakpoint (stopClassName);
+                    DebuggerManager.getDebuggerManager ().addDebuggerListener (
+                        DebuggerManager.PROP_DEBUGGER_ENGINES,
+                        new Listener (b)
+                    );
                 }                
                 
                 debug ("Debugger started");
@@ -240,20 +240,14 @@ public class JPDAStart extends Task implements Runnable {
     
     // support methods .........................................................
     
-    private void createBreakpoint (String stopClassName) {
-        breakpoint = MethodBreakpoint.create (
+    private MethodBreakpoint createBreakpoint (String stopClassName) {
+        MethodBreakpoint breakpoint = MethodBreakpoint.create (
             stopClassName,
             ""
         );
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
-    }
-    
-    private void removeBreakpoint () {
-        if (breakpoint != null) {
-            DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-            breakpoint = null;
-        }
+        return breakpoint;
     }
 
     private void debug (String msg) {
@@ -415,7 +409,16 @@ public class JPDAStart extends Task implements Runnable {
         return true;
     }
     
-    private class Listener extends DebuggerManagerAdapter {
+    private static class Listener extends DebuggerManagerAdapter {
+        
+        private MethodBreakpoint    breakpoint;
+        private Set                 debuggers = new HashSet ();
+        
+        
+        Listener (MethodBreakpoint breakpoint) {
+            this.breakpoint = breakpoint;
+        }
+        
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
@@ -424,12 +427,31 @@ public class JPDAStart extends Task implements Runnable {
                 ) {
                     RequestProcessor.getDefault ().post (new Runnable () {
                         public void run () {
-                            removeBreakpoint ();
+                            if (breakpoint != null) {
+                                DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
+                                breakpoint = null;
+                            }
                         }
                     });
+                    dispose ();
                 }
             }
             return;
+        }
+        
+        private void dispose () {
+            DebuggerManager.getDebuggerManager ().removeDebuggerListener (
+                DebuggerManager.PROP_DEBUGGER_ENGINES,
+                this
+            );
+            Iterator it = debuggers.iterator ();
+            while (it.hasNext ()) {
+                JPDADebugger d = (JPDADebugger) it.next ();
+                d.removePropertyChangeListener (
+                    JPDADebugger.PROP_STATE,
+                    this
+                );
+            }
         }
         
         public void engineAdded (DebuggerEngine engine) {
@@ -440,6 +462,7 @@ public class JPDAStart extends Task implements Runnable {
                 JPDADebugger.PROP_STATE,
                 this
             );
+            debuggers.add (debugger);
         }
         
         public void engineRemoved (DebuggerEngine engine) {
@@ -450,6 +473,7 @@ public class JPDAStart extends Task implements Runnable {
                 JPDADebugger.PROP_STATE,
                 this
             );
+            debuggers.remove (debugger);
         }
     }
 }
