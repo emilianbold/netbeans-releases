@@ -211,21 +211,21 @@ public class JPDASupport implements DebuggerManagerListener {
 
     public void doContinue() {
         if (debugger.getState() != DebuggerConstants.STATE_STOPPED) throw new IllegalStateException();
-        waitEnabled(DebuggerManager.ACTION_CONTINUE);
-        getActionsManager().doAction(DebuggerManager.ACTION_CONTINUE);
+        waitEnabled(ActionsManager.ACTION_CONTINUE);
+        getActionsManager().doAction(ActionsManager.ACTION_CONTINUE);
         if (verbose) System.err.println(df.format(new Date()) + " Successfully invoked continue");
     }
 
     public void stepOver() {
-        step(DebuggerManager.ACTION_STEP_OVER);
+        step(ActionsManager.ACTION_STEP_OVER);
     }
 
     public void stepInto() {
-        step(DebuggerManager.ACTION_STEP_INTO);
+        step(ActionsManager.ACTION_STEP_INTO);
     }
 
     public void stepOut() {
-        step(DebuggerManager.ACTION_STEP_OUT);
+        step(ActionsManager.ACTION_STEP_OUT);
     }
 
     public void step(Object action) {
@@ -318,7 +318,7 @@ public class JPDASupport implements DebuggerManagerListener {
         if (DebuggerManager.getDebuggerManager().getCurrentEngine() != null) {
             try {
                 ActionsManager am = getActionsManager();
-                am.doAction(DebuggerManager.ACTION_KILL);
+                am.doAction(ActionsManager.ACTION_KILL);
                 waitDisconnected(10000);
             } catch (Throwable e) {
                 e.printStackTrace(System.out);
