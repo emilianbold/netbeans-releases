@@ -473,13 +473,13 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 change = true;
             }
         }
-        if (change || toolbarPool().getConfigurations().length != lastConfigurationCount) {
+        if (change || Utilities.arrayHashCode(toolbarPool().getConfigurations()) != lastConfigurationHash) {
             rebuildMenu();
         }
         return change;
     }
 
-    private int lastConfigurationCount = -1;
+    private int lastConfigurationHash = -1;
     private void rebuildMenu() {
         if (toolbarMenu != null) {
             toolbarMenu.removeAll();
@@ -675,7 +675,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
 
     /** Fills given menu instance with list of toolbars and configurations */
     private void fillToolbarsMenu (JComponent menu) {
-        lastConfigurationCount = ToolbarPool.getDefault().getConfigurations().length;
+        lastConfigurationHash = Utilities.arrayHashCode(ToolbarPool.getDefault().getConfigurations());
         // generate list of available toolbars
         Iterator it = Arrays.asList (ToolbarPool.getDefault ().getToolbars ()).iterator ();
         while (it.hasNext()) {
@@ -696,6 +696,8 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 //we permit this - I'm sure it's a popular feature).
                 checkConfigurationOver();
             }
+
+            
             if (tc != null && tb != null) {
                 //May be null if a toolbar has been renamed
                 JCheckBoxMenuItem mi = new JCheckBoxMenuItem (
