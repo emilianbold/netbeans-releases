@@ -11,16 +11,38 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="all" name="XML modules tests build script">
-    <!-- Points to directory with IDE to test-->
-    <property name="netbeans.home" location="../../../nb_all/nbbuild/netbeans"/>
-    <property name="nbextra.repository" location="../../../nbextra"/>
-    <property name="nb.repository" location="../../../nb_all"/>
+<project basedir="." default="all" name="XML modules&apos; tests build script">
 
-    <property name="nbext.root" location="../../nbbuild"/>
-    <taskdef  name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="${nbext.root}/nbantext.jar"/>
-    <!--property name="submodules" value="api, tax, core, catalog, tools, text-edit, tree-edit, css"/-->
-    <property name="submodules" value="../core/test, ../catalog/test"/>
+    <!-- Ant property. Value 'ignore' means that system classpath is ignored
+         and only classpath specified in build file is used. -->
+    <property name="build.sysclasspath" value="ignore"/>
+    <property name="xtest.ide.winsys" value="sdi"/>
+    <!--property name="xtest.ide.commandline.suffix" value="-J-Dtest.exit=false"/-->
+
+    <!-- Points to directory with IDE to test-->
+    <property location="../../nbbuild/netbeans" name="netbeans.home"/>
+    <property location="../../../nb_all" name="nb.repository"/>
+    
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="All_XML"/>
+    
+    <!-- Home of XTest -->
+    <property location="../../xtest" name="xtest.home"/>
+   
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.attribs" value="stable"/>
+    <property name="xtest.includes" value=""/>
+    <property name="xtest.excludes" value=""/>   
+    <!--property name="test.exit" value="false"/-->
+    
+    <!-- Points to antfile with module's harness. 
+         Targets from that antfile is called from this build.xml -->
+    <property location="${xtest.home}/lib/module_harness.xml" name="xtest.module_harness.antfile"/>
+
+    <!-- Says how to create classpath for compilation and for execution code tests by default.
+         Can have values src, jar, ide -->
+    <property name="xtest.source.location" value="ide"/>
  
     <!-- ============ -->
     <!-- Main targets -->
@@ -28,45 +50,66 @@ Microsystems, Inc. All Rights Reserved.
     
     <target depends="runtests" name="all"/>
     
-    <!-- This calls target which will call compilers according to cfg file.          You should not change this target unless you realy know what you are doing -->
+    <!-- This calls target which will call compilers according to cfg file.
+         You should not change this target unless you realy know what you are doing -->
     <target name="buildtests">
-        <for-each locations="${submodules}"/>
+       <!--ant antfile="build.xml" dir="../../../test" target="build-xml-lib"/-->
+       <!-- Collect sources to all_src dir -->
+       <delete dir="qa-functional/src" quiet="true"/>
+       <mkdir dir="qa-functional/src"/>
+       <copy todir="qa-functional/src">
+            <fileset dir="qa-lib/src"/>
+            <fileset dir="../catalog/test/qa-functional/src"/>
+            <fileset dir="../core/test/qa-functional/src"/>
+            <fileset dir="../tax/lib/test/qa-functional/src"/>
+        </copy>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="compiler-launcher"/>
     </target>
     
     <!-- This calls common clean process. -->
     <!-- You can write your own if you need something special -->
     <target name="cleantests">
-        <for-each locations="${submodules}"/>
+       <!-- Cleans xml-lib. -->
+       <!--
+       <delete>
+            <fileset dir="../../../test">
+                <include name="**/src/**/*.class"/>
+            </fileset>
+       </delete>
+       -->
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleantests"/>
     </target> 
 
     <!-- This target runs tests. You should not change this --> 
     <!-- target unless you realy know what you are doing -->
     <target depends="buildtests" name="runtests">
-        <for-each locations="${submodules}"/>
+        <echo message="Module: Running tests for ${xtest.module}, testtype ${xtest.testtype}, attribs=${xtest.attribs}"/>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="runtests"/>
     </target>
    
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <target name="test_report">
-        <for-each locations="${submodules}"/>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="test_report"/>
     </target>
     
     <target name="cleanresults">
-        <for-each locations="${submodules}"/>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="cleanresults"/>
     </target>
     
     <target depends="cleantests,cleanresults" name="realclean">
-        <for-each locations="${submodules}"/>
+        <ant antfile="${xtest.module_harness.antfile}" dir="." target="realclean"/>
     </target>
     
     <target name="printconfig">
-        <for-each locations="${submodules}"/>
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attribs}."/>
     </target>
     
+    
+    <!-- Task is use at submodules' build scripts -->
     <target name="build-xml-lib">
-        <javac classpathref="xmllib.classpath" srcdir="qa-functional/src"/>
-        <mkdir dir="qa-functional/lib"/>
-        <jar basedir="qa-functional/src" jarfile="qa-functional/lib/xml-test-lib.jar"/>
+        <javac classpathref="xmllib.classpath" srcdir="qa-lib/src" verbose="true"/>
+        <jar basedir="qa-lib/src" jarfile="qa-lib/xml-test-lib.jar"/>
     </target>
     
     <path id="xmllib.classpath">   

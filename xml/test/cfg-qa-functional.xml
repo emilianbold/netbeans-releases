@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<mconfig name="XML-ALL config">
+
+    <testbag testattribs="stable" compiler="qa-compiler" executor="ide" name="all_xml_stable" resultsprocessor="qa-reporter">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/tax/EncodingTest.class"/>
+		<include name="org/netbeans/modules/xml/core/settings/CoreSettingsTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
+    <testbag testattribs="fail" executor="ide" name="all_xml_fail" resultsprocessor="qa-reporter">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <!-- fail due invalid editor title -->
+		<include name="org/netbeans/modules/xml/catalog/CatalogTest.class"/>
+		<include name="org/netbeans/modules/xml/core/CoreTemplatesTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+        
+    <testbag testattribs="dev" executor="ide" name="all_xml_dev" resultsprocessor="qa-reporter">
+        <testset dir="qa-functional/src">
+            <patternset>
+           </patternset>
+        </testset>
+    </testbag>    
+
+    <resultsprocessor name="qa-reporter" antfile="build.xml" target="test_report"/>
+    <executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/>
+    <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
+    <compiler name="qa-compiler" antfile="build-qa-functional.xml" target="qa-compiler" default="true"/>
+</mconfig>
