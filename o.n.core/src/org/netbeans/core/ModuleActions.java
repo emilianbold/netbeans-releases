@@ -52,15 +52,11 @@ public class ModuleActions extends ActionManager
     /** current module */
     private static Object module;
 
-    private int rpCounter = 0;
-    /** pool of _unused_ processor threads */
-    private Set requestProcessors = new HashSet (4); // Set<Reference<RequestProcessor>>
+    private RequestProcessor rp =
+		    new RequestProcessor("Module-Actions", Integer.MAX_VALUE);
 
     /** Map of currently running actions, (maps action event to action) */
     private Map runningActions = new HashMap(4);
-    /** Map of currently running processors of running actions,
-     * (maps action event to processor) */
-    private Map runningProcessors = new HashMap(4);
     
     /** instance */
     static final ModuleActions INSTANCE = new ModuleActions ();
@@ -85,10 +81,7 @@ public class ModuleActions extends ActionManager
      * actions.
      */
     public void invokeAction(final Action a, final ActionEvent e) {
-    //    a.actionPerformed(e);
         //System.err.println ("invokeAction: " + a);
-        final RequestProcessor rp = findRequestProcessor ();
-        //System.err.println ("invokeAction -> run: rp=" + rp);
         Runnable r = new Runnable () {
                 public void run () {
                     // [PENDING] Ugly, but see e.g. TemplateWizard.DefaultIterator.instantiate:
@@ -103,50 +96,21 @@ public class ModuleActions extends ActionManager
                         //System.err.println ("invokeAction -> run: " + a);
                               
                         try {
-                            addRunningAction(rp, a, e);
-
+                            addRunningAction(a, e);
                             a.actionPerformed (e);
                         } finally {
                             removeRunningAction(e);
-                            
                             INSTANCE.firePropertyChange(PROP_RUNNING_ACTIONS, null, null);
                         }
                     } else {
                         Toolkit.getDefaultToolkit ().beep ();
                     }
                     //System.err.println ("invokeAction -> run done: " + a);
-                    releaseRequestProcessor (rp);
                 }
             };
         rp.post (r);
     }
 
-    private RequestProcessor findRequestProcessor () {
-        //System.err.println ("findRequestProcessor");
-        synchronized (requestProcessors) {
-            Iterator it = requestProcessors.iterator ();
-            if (it.hasNext ()) {
-                Reference r = (Reference) it.next ();
-                it.remove ();
-                RequestProcessor rp = (RequestProcessor) r.get ();
-                if (rp != null) {
-                    //System.err.println ("reuse existing");
-                    return rp;
-                }
-                //System.err.println ("was collected");
-            }
-        }
-        //System.err.println ("make new");
-        return new RequestProcessor ("org.netbeans.core.ModuleActions-" + ++rpCounter); // NOI18N
-    }
-
-    private void releaseRequestProcessor (RequestProcessor rp) {
-        synchronized (requestProcessors) {
-            //System.err.println ("releasing: " + rp);
-            requestProcessors.add (new SoftReference (rp));
-        }
-    }
-    
     /** Listens on change of modules and if changed,
     * fires change to all listeners.
     */
@@ -158,7 +122,7 @@ public class ModuleActions extends ActionManager
      * @param rp <code>RequestProcessor</code> which runs the actio task
      * @param action action to put in map 
      * @param evt action event used as key in the map */
-    private void addRunningAction(RequestProcessor rp, Action action, ActionEvent evt) {
+    private void addRunningAction(Action action, ActionEvent evt) {
         // Ignore actions which are marked, currently exit action.
         // When the pending dialog will be used for switching project and
         // also unmounting FS's mark also those actions with this flag.
@@ -168,7 +132,6 @@ public class ModuleActions extends ActionManager
         
         synchronized(runningActions) {
             runningActions.put(evt, action);
-            runningProcessors.put(evt, rp);
         }
     }
     
@@ -177,7 +140,6 @@ public class ModuleActions extends ActionManager
     private void removeRunningAction(ActionEvent evt) {
         synchronized(runningActions) {
             runningActions.remove(evt);
-            runningProcessors.remove(evt);
         }
     }
 
@@ -191,19 +153,7 @@ public class ModuleActions extends ActionManager
     /** Tries to stop all processors executing currently running
      * action tasks. */
     static void killRunningActions() {
-        Set processors;
-        // Synchronize according runningActions lock.
-        synchronized(INSTANCE.runningActions) {
-            processors = new HashSet(INSTANCE.runningProcessors.values());
-        }
-        
-        for(Iterator it = processors.iterator(); it.hasNext(); ) {
-            RequestProcessor rp = (RequestProcessor)it.next();
-            
-            if(rp != null) {
-                rp.stop();
-            }
-        }
+	INSTANCE.rp.stop();
     }
     
     /** Change enabled property of an action
