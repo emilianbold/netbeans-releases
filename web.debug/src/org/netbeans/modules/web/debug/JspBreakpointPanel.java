@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -19,59 +19,59 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
 
 import javax.swing.*;
-import org.netbeans.spi.debugger.ui.Controller;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
+import org.netbeans.spi.debugger.ui.Controller;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 import org.netbeans.modules.web.debug.util.Utils;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.modules.web.debug.breakpoints.ActionsPanel;
 
 /**
 * Customizer of JspLineBreakpoint
 *
 * @author Martin Grebac
 */
-public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
+public class JspBreakpointPanel extends JPanel implements Controller {
 
     static final long serialVersionUID =-8164649328980808272L;
 
+    private ActionsPanel actionsPanel;
     private LineBreakpoint breakpoint;
-    private boolean valid = false;
+    private boolean createBreakpoint = false;
 
     public JspBreakpointPanel() {
-        //TODO
+        this(LineBreakpoint.create(Context.getCurrentURL(), Context.getCurrentLineNumber()));
+        createBreakpoint = true;
     }        
     
     /** Creates new form JspBreakpointPanel */
     public JspBreakpointPanel(LineBreakpoint b) {
-   
+
+        System.err.println("JspLineBreakpointPanel constructor: " + b);
+
         breakpoint = b;
         initComponents ();
         putClientProperty("HelpID", "jsp_breakpoint");//NOI18N
 
-        Listener l = new Listener(this);
         cboxJspSourcePath.setEditable(false);
-        cboxJspSourcePath.getEditor().getEditorComponent().addKeyListener(l);
-        cboxJspSourcePath.addActionListener(l);
         
         // a11y
-        getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_LineBreakpointPanel")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JspBreakpointPanel.class, "ACSD_LineBreakpointPanel")); // NOI18N
  
-//        Object[] objs = Utils.getJsps();
-//        if (objs != null) {
-//            if (objs.length != 0) {
-//                cboxJspSourcePath.setModel(
-//                    new DefaultComboBoxModel(objs)
-//                );
-//            }
-//        }
-//        
+        Object[] objs = Utils.getJsps();
+        if (objs != null) {
+            if (objs.length != 0) {
+                cboxJspSourcePath.setModel(
+                    new DefaultComboBoxModel(objs)
+                );
+            }
+        }
+        
 //        String jspSourcePath = breakpoint.getJspName();
 //        String contextRoot = breakpoint.getContextRoot();
 //       
-//        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : contextRoot + " : " + jspSourcePath);
+//        cboxJspSourcePath.setSelectedItem(jspSourcePath == null ? "" : jspSourcePath);
 //
 //        String value = (String)cboxJspSourcePath.getSelectedItem();
 //        if (value != null && value.indexOf(':') > -1) {
@@ -82,7 +82,8 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 //        }
 //        
         fillLineNumber();
-        run();
+        actionsPanel = new ActionsPanel(b);
+        pActions.add(actionsPanel, "Center");
     }
 
     /** This method is called from within the constructor to
@@ -93,29 +94,33 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     private void initComponents() {//GEN-BEGIN:initComponents
         java.awt.GridBagConstraints gridBagConstraints;
 
+        pSettings = new javax.swing.JPanel();
         lblJspSourcePath = new javax.swing.JLabel();
         cboxJspSourcePath = new javax.swing.JComboBox();
         lblLineNumber = new javax.swing.JLabel();
         tfLineNumber = new javax.swing.JTextField();
+        pActions = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
+        pSettings.setLayout(new java.awt.GridBagLayout());
+
+        pSettings.setBorder(new javax.swing.border.TitledBorder("Settings"));
         lblJspSourcePath.setText(NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Source_name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
-        add(lblJspSourcePath, gridBagConstraints);
+        pSettings.add(lblJspSourcePath, gridBagConstraints);
         lblJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Source_name"));
 
         cboxJspSourcePath.setEditable(true);
         cboxJspSourcePath.getEditor().getEditorComponent().addFocusListener(new java.awt.event.FocusListener() {
             public void focusGained(java.awt.event.FocusEvent evt) {
-                cboxJspSourcePathFocusGained(evt);
             }
             public void focusLost(java.awt.event.FocusEvent evt) {
-                cboxJspSourcePathFocusLost(evt);
             }
         });
 
@@ -132,7 +137,7 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
-        add(cboxJspSourcePath, gridBagConstraints);
+        pSettings.add(cboxJspSourcePath, gridBagConstraints);
         cboxJspSourcePath.getAccessibleContext().setAccessibleName(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Source_name"));
         cboxJspSourcePath.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Source_name"));
 
@@ -144,7 +149,7 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
-        add(lblLineNumber, gridBagConstraints);
+        pSettings.add(lblLineNumber, gridBagConstraints);
         lblLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number"));
 
         tfLineNumber.setColumns(7);
@@ -169,9 +174,30 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 2, 2);
-        add(tfLineNumber, gridBagConstraints);
+        pSettings.add(tfLineNumber, gridBagConstraints);
         tfLineNumber.getAccessibleContext().setAccessibleName(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSN_CTL_Line_number"));
         tfLineNumber.getAccessibleContext().setAccessibleDescription(NbBundle.getBundle(JspBreakpointPanel.class).getString("ACSD_CTL_Line_number"));
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(pSettings, gridBagConstraints);
+
+        pActions.setLayout(new java.awt.BorderLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        add(pActions, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -188,7 +214,6 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 
     private void tfLineNumberKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tfLineNumberKeyTyped
         // Add your handling code here:
-        run();
     }//GEN-LAST:event_tfLineNumberKeyTyped
 
     private void tfLineNumberFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfLineNumberFocusGained
@@ -224,22 +249,15 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
 //        }
     }//GEN-LAST:event_tfLineNumberFocusLost
 
-    private void cboxJspSourcePathFocusGained(java.awt.event.FocusEvent evt) {
-    }
-
-    private void cboxJspSourcePathFocusLost(java.awt.event.FocusEvent evt) {
-    }
-
     private void fillLineNumber () {
-    /*    if (!isAcceptableDataObject()) {
-            return;
-        }*/
-//        int lnum = event.getLineNumber();
-//        if (lnum < 1)  {
-//            tfLineNumber.setText ("");  //NOI18N
-//        } else {
-//            tfLineNumber.setText ("" + lnum); // NOI18N
-//        }
+//        if (!isAcceptableDataObject()) {
+//            return;
+        int lnum = breakpoint.getLineNumber();
+        if (lnum < 1)  {
+            tfLineNumber.setText ("");  //NOI18N
+        } else {
+            tfLineNumber.setText(Integer.toString(lnum));
+        }
     }
     
     /******************************/
@@ -248,7 +266,26 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     
     //interface org.netbeans.modules.debugger.Controller
     public boolean ok() {
-        return true; //TEMP
+        
+        int line = -1;
+        actionsPanel.ok ();
+
+        String ln = tfLineNumber.getText().trim();
+        String jsp = (cboxJspSourcePath.getSelectedItem() == null) ? "" : cboxJspSourcePath.getSelectedItem().toString().trim();
+        
+        if (ln.length() > 0) {
+            try {
+                line = Integer.parseInt (ln);
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        breakpoint.setLineNumber(line);
+        //breakpoint.setURL(???); TODO
+        if (createBreakpoint) {
+            DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+        }
+        return true;
     }
     
     //interface org.netbeans.modules.debugger.Controller
@@ -258,58 +295,17 @@ public class JspBreakpointPanel extends JPanel implements Controller, Runnable {
     
     //interface org.netbeans.modules.debugger.Controller
     public boolean isValid() {
-        return valid;
+        return true;
     }
-    
-    /** thread that evaluates entered parameters and enables 'OK' button based on evaluation
-     */
-    public void run () {
-        SwingUtilities.invokeLater (new Runnable () {
-            public void run () {
-                
-                boolean nv = false;
-
-                // check values
-                String ln = tfLineNumber.getText().trim();
-                String jsp = (cboxJspSourcePath.getSelectedItem() == null) ? "" : cboxJspSourcePath.getSelectedItem().toString().trim();
-                if (ln.length() > 0) {
-                    try {
-                        int i = Integer.parseInt (ln);
-                        if (i > 0) {
-                            nv = true;
-                        }
-                    } catch (NumberFormatException e) {
-                    }
-                }
-                if (jsp.length() < 1) {
-                    nv = false;
-                }                
-                if (valid == nv) {
-                    return;
-                }
-                valid = nv;
-                firePropertyChange(PROP_VALID, Boolean.valueOf(!valid), Boolean.valueOf(valid));
-            }
-        });
-    }    
-    
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cboxJspSourcePath;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblJspSourcePath;
     private javax.swing.JLabel lblLineNumber;
+    private javax.swing.JPanel pActions;
+    private javax.swing.JPanel pSettings;
     private javax.swing.JTextField tfLineNumber;
     // End of variables declaration//GEN-END:variables
 
-    static class Listener extends KeyAdapter implements ActionListener {
-        Runnable r;
-        Listener (Runnable v) {
-            r = v;
-        }
-        public void keyTyped (java.awt.event.KeyEvent evt) {
-            r.run ();
-        }
-        public void actionPerformed (ActionEvent evt) {
-            r.run ();
-        }
-    }
 }

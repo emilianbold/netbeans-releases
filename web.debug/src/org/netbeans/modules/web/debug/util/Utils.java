@@ -24,7 +24,11 @@ import org.openide.windows.TopComponent;
 import org.openide.filesystems.Repository;
 
 import org.netbeans.modules.web.core.jsploader.*;
-import java.net.URL;
+import org.netbeans.modules.web.debug.Context;
+import org.netbeans.api.project.*;
+import org.netbeans.modules.web.spi.webmodule.*;
+
+import java.net.*;
 
 /**
  *
@@ -43,46 +47,27 @@ public class Utils {
         
         //HashMap sorted = new TreeMap();
         List jsps = new Vector();
-        Enumeration e, fsenum;
-        
-//        getEM().log("fsystems: " + fsenum);
+        Enumeration e;
 
-//        while (fsenum.hasMoreElements()) {
-//            FileSystem fs = (FileSystem)fsenum.nextElement();
-//            getEM().log("fsystem: " + fs);
-//            if (fs.findResource("WEB-INF") != null) {
-//                FileObject f = fs.getRoot();
-//                try {
-//                    e = f.getFileSystem().getRoot().getChildren(true);
-//                    getEM().log("children: " + e);
-//                    while (e.hasMoreElements()) {
-//                        FileObject ch = (FileObject)e.nextElement();
-//                        getEM().log("ch: " + ch);
-//                        if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
-//                            String ctx = "";                                    
-//                            FileObject root = ch.getFileSystem().getRoot();
-//                            DataObject data = null;
-//                            try {
-//                                data = DataObject.find(root);
-//                            } catch (Exception excep) {
-//                                // don't care
-//                            }
-//                            if ((data instanceof WebContextObject) && (data!=null)) {
-//                                ctx = ((WebContextObject)data).getContextPath();
-//                                String idStr = ctx + " : " + ch.getPath();
-//                                if (!jsps.contains(idStr)) {
-//                                    jsps.add(idStr);
-//                                }
-//                            }
-//                        }
-//                    }
-//                } catch (FileStateInvalidException fe) {
-//                    // just continue with other fsystem
-//                }
-//            }
-            
-//        }
-        //Arrays.
+        String currentUrl = Context.getCurrentURL();
+        if (currentUrl == null) {
+            return null;
+        }
+        
+        Project project = FileOwnerQuery.getOwner(URI.create(currentUrl));
+        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
+        e = wmi.getDocumentBase().getChildren(true);
+        
+        while (e.hasMoreElements()) {
+            FileObject ch = (FileObject)e.nextElement();
+            getEM().log("ch: " + ch);
+            if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
+                String idStr = ch.getPath();
+                if (!jsps.contains(idStr)) {
+                    jsps.add(idStr);
+                }
+            }
+        }
         getEM().log("jsps : " + jsps);
         Object[] sorted = jsps.toArray();
         Arrays.sort(sorted);
