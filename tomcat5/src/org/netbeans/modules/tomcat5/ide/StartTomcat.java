@@ -34,6 +34,7 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.tomcat5.TomcatFactory;
 import org.netbeans.modules.tomcat5.TomcatManager;
+import org.netbeans.modules.tomcat5.URLWait;
 import org.netbeans.modules.tomcat5.progress.ProgressEventSupport;
 import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.ErrorManager;
@@ -61,13 +62,15 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     
     /** Startup command tag. */
     public static final String TAG_STARTUP_CMD   = "startup"; // NOI18N
+    /** Shutdown command tag. */
+    public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
     
-    private static NbProcessDescriptor defaultExecDesc() {
+    private static NbProcessDescriptor defaultExecDesc(String command) {
         return new NbProcessDescriptor (
                 "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
                 ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
                 ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
-                StartTomcat.TAG_STARTUP_CMD + "}",  // NOI18N
+                command + "}",  // NOI18N
                 "", 
                 org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
             );     
@@ -76,6 +79,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     private TomcatManager tm;
     
     private ProgressEventSupport pes;
+    
+    private CommandType command;
     
     /** Default constructor. */
     public StartTomcat () {
@@ -97,7 +102,8 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
             TomcatFactory.getEM ().log ("StartTomcat.startDeploymentManager called on "+tm);    // NOI18N
         }
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.RUNNING));
+        command = CommandType.START;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
         RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
         return this;
     }
@@ -107,7 +113,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
      * Start/stopping/debug apply to both servers.
      * @return true when admin is also target server
      */
-    public boolean isAlsoTargetServer(Target target) { return false; }
+    public boolean isAlsoTargetServer(Target target) { return true; }
 
     /**
      * Returns true if the admin server should be started before configure.
@@ -117,7 +123,15 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
     /**
      * Returns true if this admin server is running.
      */
-    public boolean isRunning() { return true; } //PENDING
+    boolean running = false;
+    public boolean isRunning() {
+        /* PENDING should this be cached? 
+         * Currently it  checks the status every time, but a check
+         * at first time may be enough (?)
+         */
+        return  URLWait.waitForStartup (tm, 600);
+//        return running;
+    }
 
     /**
      * Returns true if this target is in debug mode.
@@ -131,7 +145,15 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
      * exceptions thrown.
      * @return ServerProgress object used to monitor start server progress
      */
-    public ProgressObject stopDeploymentManager() { return null; }//PENDING
+    public ProgressObject stopDeploymentManager() { 
+        if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
+            TomcatFactory.getEM ().log ("StartTomcat.stopDeploymentManager called on "+tm);    // NOI18N
+        }
+        command = CommandType.STOP;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.RUNNING));
+        RequestProcessor.getDefault ().post (this, 0, Thread.NORM_PRIORITY);
+        return this;
+    }
 
     /**
      * Start or restart the target in debug mode.
@@ -151,7 +173,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         if (home == null) {
             // no home - start not supported
             pes.fireHandleProgressEvent (
-                null, new Status (ActionType.EXECUTE, CommandType.START, NbBundle.getMessage (StartTomcat.class, "MSG_notStarting"), StateType.COMPLETED));
+                null, new Status (ActionType.EXECUTE, command, 
+                    NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_notStarting" : "MSG_notStopping"),
+                    StateType.COMPLETED));
             return;
         }
         
@@ -177,14 +201,14 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         }
         // XXX check for null's
         
-        NbProcessDescriptor pd  = defaultExecDesc ();
+        NbProcessDescriptor pd  = defaultExecDesc (command == CommandType.START ? StartTomcat.TAG_STARTUP_CMD : StartTomcat.TAG_SHUTDOWN_CMD);
         try { 
             pes.fireHandleProgressEvent (
                 null, 
                 new Status (
                     ActionType.EXECUTE, 
-                    CommandType.START, 
-                    NbBundle.getMessage (StartTomcat.class, "MSG_startProcess"), 
+                    command,
+                    NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess"), 
                     StateType.RUNNING
                 )
             );
@@ -204,12 +228,13 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             }
             pes.fireHandleProgressEvent (
                 null, 
-                new Status (ActionType.EXECUTE, CommandType.START, ioe.getLocalizedMessage (), StateType.FAILED)
+                new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
             );
         }
         
         // XXX probably better is to check exit status before reporting COMPLETED
-        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, CommandType.START, "", StateType.COMPLETED));
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
+        running = command == CommandType.START;
     }
     
     /** This implementation does nothing.
@@ -448,6 +473,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             super(new java.util.HashMap ());
             java.util.Map map = getMap ();
             map.put (TAG_STARTUP_CMD, org.openide.util.Utilities.isWindows ()? "startup.bat": "startup.sh"); // NOI18N
+            map.put (TAG_SHUTDOWN_CMD, org.openide.util.Utilities.isWindows ()? "shutdown.bat": "shutdown.sh"); // NOI18N
             map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
             map.put (ProcessExecutor.Format.TAG_SEPARATOR, File.separator);
         }
