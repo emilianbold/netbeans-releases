@@ -120,7 +120,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     private boolean isDebugMode = false;
     private boolean startDebugMode = false;
     
-    private static final String DEPLOYMENT_PLAN_FNAME = "tomcat_configuration.xml";
+    private static final String DEPLOYMENT_PLAN_FNAME = "WEB-INF" + System.getProperty("file.separator")+ "tomcat_configuration.xml"; //NOI18N
     
     /** Default constructor. */
     public StartTomcat () {
