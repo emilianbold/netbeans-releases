@@ -172,7 +172,7 @@ public class TemplateWizard extends WizardDescriptor {
         if (template != obj) {
             template = obj;
         }
-
+        setTitle (getTitleFormat().format(new Object[] { obj.getNodeDelegate().getDisplayName() }));
         if (old != template) {
             Iterator it;
             if (
