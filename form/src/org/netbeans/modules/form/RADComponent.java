@@ -61,9 +61,8 @@ public class RADComponent {
 
     private Node.PropertySet[] beanPropertySets;
     private Node.Property[] syntheticProperties;
-    private Node.Property[] beanPreferredProperties;
     private Node.Property[] beanProperties;
-    private Node.Property[] beanExpertProperties;
+    private Node.Property[] beanProperties2;
     private Node.Property[] beanEvents;
     private RADComponent.RADProperty[] allProperties;
 
@@ -212,9 +211,8 @@ public class RADComponent {
         nameToProperty = new HashMap();
 
         syntheticProperties = null; //createSyntheticProperties();
-        beanPreferredProperties = null;
-        beanProperties = null; //createBeanProperties();
-        beanExpertProperties = null; //createBeanExpertProperties();
+        beanProperties = null;
+        beanProperties2 = null;
 
         beanEvents = null; //createEventsProperties();
 
@@ -376,13 +374,12 @@ public class RADComponent {
 
     RADComponent.RADProperty[] getAllProperties() {
         if (allProperties == null) {
-            Node.Property[] props = getComponentProperties();
-            Node.Property[] prefProps = getComponentPreferredProperties();
-            Node.Property[] expertProps = getComponentExpertProperties();
-            ArrayList list = new ArrayList(props.length + prefProps.length + expertProps.length);
-            list.addAll(Arrays.asList(props));
-            list.addAll(Arrays.asList(prefProps));
-            list.addAll(Arrays.asList(expertProps));
+            if (beanProperties == null)
+                createBeanProperties();
+
+            ArrayList list = new ArrayList(beanProperties.length + beanProperties2.length);
+            list.addAll(Arrays.asList(beanProperties));
+            list.addAll(Arrays.asList(beanProperties2));
             allProperties = FormEditor.sortProperties(list, beanClass);
         }
 
@@ -393,42 +390,32 @@ public class RADComponent {
         if (beanPropertySets != null)
             return beanPropertySets;
 
+        if (beanProperties == null)
+            createBeanProperties();
+
         ArrayList propSets = new ArrayList(4);
 
-        if (0 != getComponentPreferredProperties().length) {
-            propSets.add(new Node.PropertySet(
-                             "preferred", // NOI18N
-                             FormEditor.getFormBundle().getString("CTL_PreferredTab"),
-                             FormEditor.getFormBundle().getString("CTL_PreferredTabHint")
-                             ) {
-                public Node.Property[] getProperties() {
-                    return getComponentPreferredProperties();
-                }
-            });
-        }
-        
         propSets.add(new Node.PropertySet(
-                         "properties", // NOI18N
-                         FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
-                         FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
-                         ) {
+                "properties", // NOI18N
+                FormEditor.getFormBundle().getString("CTL_PropertiesTab"),
+                FormEditor.getFormBundle().getString("CTL_PropertiesTabHint")
+                ) {
             public Node.Property[] getProperties() {
                 return getComponentProperties();
             }
         });
 
-        if (0 != getComponentExpertProperties().length) {
+        if (beanProperties2.length > 0)
             propSets.add(new Node.PropertySet(
-                             "expert", // NOI18N
-                             FormEditor.getFormBundle().getString("CTL_ExpertTab"),
-                             FormEditor.getFormBundle().getString("CTL_ExpertTabHint")
-                             ) {
+                    "properties2", // NOI18N
+                    FormEditor.getFormBundle().getString("CTL_Properties2Tab"),
+                    FormEditor.getFormBundle().getString("CTL_Properties2TabHint")
+                    ) {
                 public Node.Property[] getProperties() {
-                    return getComponentExpertProperties();
+                    return getComponentProperties2();
                 }
             });
-        }
-        
+
         propSets.add(new Node.PropertySet(
                          "events", // NOI18N
                          FormEditor.getFormBundle().getString("CTL_EventsTab"),
@@ -471,25 +458,16 @@ public class RADComponent {
         return syntheticProperties;
     }
 
-    public Node.Property[] getComponentPreferredProperties() {
-        if (beanPreferredProperties == null) {
-            beanPreferredProperties = createBeanPreferredProperties();
-        }
-        return beanPreferredProperties;
-    }
-
-    public Node.Property[] getComponentProperties() {
-        if (beanProperties == null) {
-            beanProperties = createBeanProperties();
-        }
+    Node.Property[] getComponentProperties() {
+        if (beanProperties == null)
+            createBeanProperties();
         return beanProperties;
     }
 
-    public Node.Property[] getComponentExpertProperties() {
-        if (beanExpertProperties == null) {
-            beanExpertProperties = createBeanExpertProperties();
-        }
-        return beanExpertProperties;
+    Node.Property[] getComponentProperties2() {
+        if (beanProperties2 == null)
+            createBeanProperties();
+        return beanProperties2;
     }
 
     public Node.Property[] getComponentEvents() {
@@ -511,11 +489,8 @@ public class RADComponent {
      * @return the RADProperty representing the specified property or null if property with specified name does not exist
      */
     public RADProperty getPropertyByName(String name) {
-        getSyntheticProperties();
-        getComponentPreferredProperties();
-        getComponentProperties();
-        getComponentEvents();
-        getComponentExpertProperties();
+        if (beanProperties == null)
+            createBeanProperties();
         return(RADProperty) nameToProperty.get(name);
     }
 
@@ -550,60 +525,52 @@ public class RADComponent {
         return getFormManager().getCodeGenerator().getSyntheticProperties(this);
     }
 
-    protected Node.Property[] createBeanPreferredProperties() {
+    protected void createBeanProperties() {
+        ArrayList prefProps = new ArrayList();
+        ArrayList normalProps = new ArrayList();
+        ArrayList expertProps = new ArrayList();
+
         PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        ArrayList nodeProps = new ArrayList();
         for (int i = 0; i < props.length; i++) {
-            if ((!props[i].isHidden())
-                && (props[i].isPreferred()
-                    || Boolean.TRUE.equals(props[i].getValue("preferred"))) // NOI18N
-                ) {
-                Node.Property prop = createProperty(props[i]);
-                nodeProps.add(prop);
+            PropertyDescriptor pd = props[i];
+            if (!pd.isHidden()) {
+                Node.Property prop = createProperty(pd);
+                if (prop != null)
+                    if (pd.isExpert())
+                        expertProps.add(prop);
+                    else if (pd.isPreferred()
+                             || Boolean.TRUE.equals(pd.getValue("preferred")))
+                        prefProps.add(prop);
+                    else
+                        normalProps.add(prop);
             }
         }
 
-        Node.Property[] np = new Node.Property [nodeProps.size()];
-        nodeProps.toArray(np);
+        int prefCount = prefProps.size();
+        int normalCount = normalProps.size();
+        int expertCount = expertProps.size();
 
-        return np;
-    }
-
-    protected Node.Property[] createBeanProperties() {
-        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        ArrayList nodeProps = new ArrayList();
-        for (int i = 0; i < props.length; i++) {
-            if ((!props[i].isHidden()) &&(!props[i].isExpert())
-                && (!props[i].isPreferred())
-                && (! Boolean.TRUE.equals(props[i].getValue("preferred"))) // NOI18N
-                ) {
-                Node.Property prop = createProperty(props[i]);
-                nodeProps.add(prop);
+        if (prefCount > 0) {
+            beanProperties = new Node.Property[prefCount];
+            prefProps.toArray(beanProperties);
+            if (normalCount + expertCount > 0) {
+                normalProps.addAll(expertProps);
+                beanProperties2 = new Node.Property[normalCount + expertCount];
+                normalProps.toArray(beanProperties2);
             }
+            else beanProperties2 = new Node.Property[0];
         }
-
-        Node.Property[] np = new Node.Property [nodeProps.size()];
-        nodeProps.toArray(np);
-
-        return np;
-    }
-
-    protected Node.Property[] createBeanExpertProperties() {
-        PropertyDescriptor[] props = getBeanInfo().getPropertyDescriptors();
-        ArrayList nodeProps = new ArrayList();
-        for (int i = 0; i < props.length; i++) {
-            if ((!props[i].isHidden()) && props[i].isExpert()) {
-                Node.Property prop = createProperty(props[i]);
-                nodeProps.add(prop);
+        else {
+            beanProperties = new Node.Property[normalCount];
+            normalProps.toArray(beanProperties);
+            if (expertCount > 0) {
+                beanProperties2 = new Node.Property[expertCount];
+                expertProps.toArray(beanProperties2);
             }
+            else beanProperties2 = new Node.Property[0];
         }
-
-        Node.Property[] np = new Node.Property [nodeProps.size()];
-        nodeProps.toArray(np);
-
-        return np;
     }
-    
+
     protected Node.Property[] createEventsProperties() {
         eventsList = getEventsListImpl();
 
