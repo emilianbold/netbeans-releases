@@ -62,10 +62,11 @@ public final class SearchDocAction extends CallableSystemAction {
         if (toFind != null)
             indexSearch.setTextToFind( toFind );
 
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                indexSearch.open ();
-            }
-        });
+        indexSearch.open();
+        indexSearch.requestActive();
     }
+	
+	public boolean asynchronous() {
+		return false;
+	}
 }
