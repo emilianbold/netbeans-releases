@@ -175,34 +175,15 @@ implements PropertyChangeListener, ChangeListener {
         }
         return super.findChild(name);
     }
-    
+
+
+
     /**
-     * This code could probably be replaced by
-     * Children.MUTEX.isReadAccess, if such call would be added to Mutex
      * @return true if it is safe to wait (our thread is
      *         not in Children.MUTEX.readAccess
      */
     private static boolean checkChildrenMutex() {
-        class MutexChecker implements Runnable {
-            public boolean checkReadOrWrite;
-            public boolean inReadAccess = true;
-            public boolean inWriteAccess = true;
-            public void run () {
-                if (checkReadOrWrite) {
-                    inReadAccess = false;
-                } else {
-                    inWriteAccess = false;
-                }
-            }
-        }
-        MutexChecker test = new MutexChecker();
-        // the code will run either immediatally or after we leave readAccess
-        // section
-        Children.MUTEX.postWriteRequest(test);
-        test.checkReadOrWrite = true;
-        Children.MUTEX.postReadRequest(test);
-
-        return !test.inReadAccess && !test.inWriteAccess;
+        return !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess ();
     }
     
     /** Initializes the children.
