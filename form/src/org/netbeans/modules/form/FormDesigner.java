@@ -216,7 +216,6 @@ public class FormDesigner extends TopComponent
     void updateWholeDesigner() {
         if (formModelListener != null)
             formModelListener.formChanged(null);
-        updateName(formModel.getName());
     }
 
     public static Container createFormView(final RADVisualComponent metacomp,
@@ -871,6 +870,8 @@ public class FormDesigner extends TopComponent
                 if (formClone != null) {
                     formClone.setVisible(true);
                     componentLayer.setTopDesignComponent(formClone);
+                    componentLayer.revalidate();
+                    componentLayer.repaint();
                 }
                 updateName(formModel.getName());
                 return;
