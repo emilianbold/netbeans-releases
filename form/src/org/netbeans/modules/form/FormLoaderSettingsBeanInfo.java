@@ -244,11 +244,17 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
     public String[] getTags() {
       WindowManager wm = TopManager.getDefault().getWindowManager();
       Workspace[] wss = wm.getWorkspaces();
-      String[] names = new String[wss.length + 1];
+      java.util.Vector tagList = new java.util.Vector ();
       for (int i = wss.length; --i >= 0; ) {
-        names[i] = wss[i].getName();
+        String name = wss[i].getName();
+        if (!("Browsing".equals (name) || "Running".equals (name) || "Debugging".equals (name))) { // NOI18N
+          tagList.add(name);
+        }
       }
-      names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE");
+      tagList.add(NbBundle.getBundle(WorkspaceEditor.class).getString("VALUE_WORKSPACE_NONE"));
+      String[] names = new String [tagList.size()];
+      for (int i=0, n=tagList.size(); i<n; i++)
+        names[i] = (String) tagList.get(i);
       return names;
     }
   }
@@ -257,6 +263,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  23   Gandalf   1.22        1/13/00  Pavel Buzek     #5322 fixed
  *  22   Gandalf   1.21        1/11/00  Pavel Buzek     
  *  21   Gandalf   1.20        1/10/00  Ian Formanek    Removed obsoleted code
  *  20   Gandalf   1.19        1/5/00   Ian Formanek    NOI18N
