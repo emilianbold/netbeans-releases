@@ -79,13 +79,21 @@ public class RobotTest {
         robot.keyPress(KeyEvent.VK_S);
         robot.keyRelease(KeyEvent.VK_S);
         robot.keyRelease(KeyEvent.VK_SHIFT);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_Y);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_S);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_T);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_E);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_M);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_DECIMAL);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_G);
+        robot.delay(100);
         robot.keyPress(KeyEvent.VK_CONTROL);
         robot.keyPress(KeyEvent.VK_SPACE);
         robot.keyRelease(KeyEvent.VK_SPACE);
@@ -113,6 +121,7 @@ public class RobotTest {
         long last = System.currentTimeMillis();
         
         public synchronized void eventDispatched(AWTEvent e) {
+            System.err.println("AWT event " + e);
             last = System.currentTimeMillis();
         }
         

@@ -40,6 +40,8 @@ Microsystems, Inc. All Rights Reserved.
         <filter token="TAX_SPEC_VERS_SUBST" value="${xml.tax.specification.version}"/>
         <filter token="CORE_SPEC_VERS_SUBST" value="${xml.core.specification.version}"/>
         <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+        <property name="xml.implementation.version" value="${buildnumber}"/>
+        <filter token="XML_BUILD_NUMBER_SUBST"  value="${xml.implementation.version}"/>
     </target>
 
     <target name="compile">
