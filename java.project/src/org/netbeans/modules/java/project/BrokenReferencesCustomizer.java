@@ -181,7 +181,10 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
             } else {
                 description.setText(NbBundle.getMessage(BrokenReferencesCustomizer.class, 
                     "LBL_BrokenLinksCustomizer_Problem_Was_Resolved"));
-                fix.setEnabled(false);
+                // Leave the button always enabled so that user can alter 
+                // resolved reference. Especially needed for automatically
+                // resolved JAR references.
+                fix.setEnabled(true);
             }
         } else {
             description.setText("");

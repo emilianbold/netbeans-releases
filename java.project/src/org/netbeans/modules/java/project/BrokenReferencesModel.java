@@ -286,6 +286,29 @@ public class BrokenReferencesModel extends AbstractListModel {
     // XXX: perhaps could be moved to ReferenceResolver. 
     // But nobody should need it so it is here for now.
     void updateReference(int index, File file) {
+        updateReference0(index, file);
+        // #48210 - check whether the folder does not contain other jars
+        // which could auto resolve some broken links:
+        OneReference or = getOneReference(index);
+        if (or.getType() != REF_TYPE_FILE) {
+            return;
+        }
+        for (int i=0; i<getSize(); i++) {
+            if (!isBroken(i) || i == index) {
+                continue;
+            }
+            or = getOneReference(i);
+            if (or.getType() != REF_TYPE_FILE) {
+                continue;
+            }
+            File f = new File(file.getParentFile(), or.getDisplayID());
+            if (f.exists()) {
+                updateReference0(i, f);
+            }
+        }
+    }
+    
+    private void updateReference0(int index, File file) {
         final String reference = getOneReference(index).ID;
         FileObject myProjDirFO = helper.getProjectDirectory();
         File myProjDir = FileUtil.toFile(myProjDirFO);
