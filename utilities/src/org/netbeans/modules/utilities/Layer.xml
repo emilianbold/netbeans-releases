@@ -17,16 +17,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Templates">
         <attr name="API_Support/Other" boolvalue="true"/>
-        <folder name="Other">
-            <file name="bookmark.url" url="nbresloc:/org/netbeans/modules/utilities/bookmark.url">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
-                <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/url/TemplateHelp.html"/>
-                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.url.URLWizardIterator"/>
-                <attr name="templateCategory" stringvalue="simple-files"/>
-            </file>
-        </folder> <!-- Other -->
-
         <folder name="Services">
             <folder name="SearchType">
                 <attr name="helpID" stringvalue="org.openidex.search.SearchType"/>

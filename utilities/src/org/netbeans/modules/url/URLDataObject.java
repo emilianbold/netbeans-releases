@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  * @see org.openide.Places.Folders#bookmarks
  */
 public class URLDataObject extends MultiDataObject
-                           implements EditCookie, OpenCookie, InstanceCookie {
+                           implements OpenCookie, InstanceCookie {
 
     /** Name for url property. */
     static final String PROP_URL = "url";                       //NOI18N
@@ -146,16 +146,6 @@ public class URLDataObject extends MultiDataObject
         return new HelpCtx(URLDataObject.class);
     }
 
-    /**
-     * Creates a node delagate for this <code>URLDataObject</code>.
-     *
-     * @return <code>URLNode</code> representing this <code>URLDataObject</code>
-     */
-    protected Node createNodeDelegate () {
-        return new URLNode(this);
-    }
-
-
     /* implements interface OpenCookie */
     public void open() {
         String urlString = getURLString();
@@ -204,30 +194,6 @@ public class URLDataObject extends MultiDataObject
                 msg,
                 NotifyDescriptor.ERROR_MESSAGE));
         return null;
-    }
-
-    /* Implements interface EditCookie. */
-    /**
-     * Asks the user for a new URL and changes this object to the new URL.
-     */
-    public void edit() {
-        String urlString = getURLString();
-        if (urlString == null) {
-            return;
-        }
-
-        String msgTitle = NbBundle.getMessage(URLDataObject.class,
-                                              "CTL_EditURL");           //NOI18N
-        String msgText  = NbBundle.getMessage(URLDataObject.class,
-                                              "CTL_URL");               //NOI18N
-        NotifyDescriptor.InputLine urlLine;
-        urlLine = new NotifyDescriptor.InputLine(msgText, msgTitle);
-        urlLine.setInputText(urlString);
-        DialogDisplayer.getDefault().notify(urlLine);
-        
-        if (urlLine.getValue() == NotifyDescriptor.OK_OPTION) {
-            setURLString(urlLine.getInputText());
-        }
     }
 
     /* implements interface InstanceCookie */
