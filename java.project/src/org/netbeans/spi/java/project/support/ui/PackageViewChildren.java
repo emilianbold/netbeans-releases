@@ -116,8 +116,8 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
     }
     
     public Node[] getNodes( boolean optimal ) {
-        Node[] garbage = super.getNodes( false );
         if ( optimal ) {
+            Node[] garbage = super.getNodes( false );        
             task.waitFinished();
         }
         return super.getNodes( false );
