@@ -94,7 +94,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar") /* NO I18N */
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/templates.jar") // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -105,7 +105,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar") /* NO I18N */
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/enterprise/modules/group/toinstall/templates.jar") // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -116,7 +116,7 @@ public class Installer extends ModuleInstall {
     try {
       FileUtil.extractJar (
         TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
-        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar") /* NO I18N */
+        getClass ().getClassLoader ().getResourceAsStream ("com/netbeans/developer/modules/loaders/url/bookmarks.jar") // NOI18N
       );
     } catch (IOException e) {
       TopManager.getDefault ().notifyException (e);
@@ -126,26 +126,26 @@ public class Installer extends ModuleInstall {
   private void installActions () {
     try {
       // install into actions pool
-      Utilities2.createAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
+      Utilities2.createAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
 
       // install into menu
       Utilities2.createAction (BookmarksAction.class, 
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), /* NO I18N */
-        "TipOfTheDayAction", false, true, true, false /* NO I18N */
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
+        "TipOfTheDayAction", false, true, true, false // NOI18N
       );
       
       // OpenFile:
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), /* NO I18N */
-        "SaveAction", false, true, false, false); /* NO I18N */
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), // NOI18N
+        "SaveAction", false, true, false, false); // NOI18N
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), /* NO I18N */
-        "SaveAction", false, true, false, false); /* NO I18N */
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), // NOI18N
+        "SaveAction", false, true, false, false); // NOI18N
       Utilities2.createAction (OpenFileAction.class,
-        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); /* NO I18N */
+        DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
 
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
         e.printStackTrace ();
       }
       // ignore failure to install
@@ -155,14 +155,14 @@ public class Installer extends ModuleInstall {
   private void uninstallActions () {
     try {
       // remove from actions pool and menu
-      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); /* NO I18N */
-      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); /* NO I18N */
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
+      Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
       // OpenFile:
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File")); /* NO I18N */
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System")); /* NO I18N */
-      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); /* NO I18N */
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File")); // NOI18N
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System")); // NOI18N
+      Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
     } catch (Exception e) {
-      if (System.getProperty ("netbeans.debug.exceptions") != null) { /* NO I18N */
+      if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
         e.printStackTrace ();
       }
       // ignore failure to uninstall
@@ -172,6 +172,7 @@ public class Installer extends ModuleInstall {
 
 /*
  * Log
+ *  8    Gandalf   1.7         1/5/00   Ian Formanek    NOI18N
  *  7    Gandalf   1.6         1/5/00   Jesse Glick     Should be relative to 
  *       SaveAction, since OB is now installed after OpenFile due to module 
  *       dependencies.
