@@ -455,6 +455,17 @@ public class EditorModule extends ModuleInstall {
             if (sc == null){
                 return;
             }
+
+            final Node node = dobj.getNodeDelegate();
+            if (node!=null){
+                getCCUpdateProcessor().post(new Runnable() {
+                    public void run() {
+                        JCUpdater update = new JCUpdater();
+                        update.processNode(node, null);
+                    }
+                });
+            }
+            
             removeClass(ev.getOriginalPrimaryFile(),null);
         }
         
