@@ -137,7 +137,7 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         DialogDescriptor descriptor = new DialogDescriptor (
             c,
             NbBundle.getMessage (
-                BreakpointActionsProvider.class,
+                BreakpointsActionsProvider.class,
                 "CTL_Breakpoint_Customizer_Title" // NOI18N
             )
         );
@@ -146,11 +146,11 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         JButton bClose = null;
         descriptor.setOptions (new JButton[] {
             bOk = new JButton (NbBundle.getMessage (
-                BreakpointActionsProvider.class,
+                BreakpointsActionsProvider.class,
                 "CTL_Ok" // NOI18N
             )),
             bClose = new JButton (NbBundle.getMessage (
-                BreakpointActionsProvider.class,
+                BreakpointsActionsProvider.class,
                 "CTL_Close" // NOI18N
             ))
         });
@@ -160,13 +160,13 @@ public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
         descriptor.setHelpCtx (helpCtx);
         bOk.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
-                BreakpointActionsProvider.class,
+                BreakpointsActionsProvider.class,
                 "ACSD_CTL_Ok" // NOI18N
             )
         );
         bClose.getAccessibleContext ().setAccessibleDescription (
             NbBundle.getMessage (
-                BreakpointActionsProvider.class,
+                BreakpointsActionsProvider.class,
                 "ACSD_CTL_Close" // NOI18N
             )
         );
