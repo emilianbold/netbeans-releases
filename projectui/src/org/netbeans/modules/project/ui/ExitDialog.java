@@ -50,7 +50,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Ian Formanek, Petr Hrebejk
  */
-public class ExitDialog extends JPanel implements ActionListener {
+final public class ExitDialog extends JPanel implements ActionListener {
 
 
     private static Object[] exitOptions;
@@ -64,34 +64,26 @@ public class ExitDialog extends JPanel implements ActionListener {
     JList list;
     DefaultListModel listModel;
 
-    /** Constructs new dlg */
-    public ExitDialog () {
-        setLayout (new BorderLayout ());
-
-        listModel = new DefaultListModel();
-        Iterator iter = DataObject.getRegistry ().getModifiedSet ().iterator();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next();
-            listModel.addElement(obj);
-        }
-        draw ();
-    }
-    
     /** Constructs new dlg for unsaved files in filesystems marked 
      * for unmount.
     */
-    public ExitDialog (Node[] activatedNodes) {
+    private ExitDialog (Set/*DataObject*/ openedFiles) {
         setLayout (new BorderLayout ());
 
         listModel = new DefaultListModel();
-        Iterator iter = getModifiedActSet (activatedNodes).iterator();
-        while (iter.hasNext()) {
-            DataObject obj = (DataObject) iter.next();
-            listModel.addElement(obj);
+        
+        Set set = getModifiedFiles (openedFiles);
+        if (!set.isEmpty ()) {
+            Iterator iter = set.iterator ();
+            while (iter.hasNext ()) {
+                DataObject obj = (DataObject) iter.next ();
+                listModel.addElement(obj);
+            }
+            draw ();
         }
-        draw ();
     }
-
+    
+    
     /** Constructs rest of dialog.
     */
     private void draw () {
@@ -207,16 +199,18 @@ public class ExitDialog extends JPanel implements ActionListener {
      * for unmount and blocks until it's closed. If dialog doesm't
      * exists it creates new one. Returns true if the IDE should be closed.
      */
-    public static boolean showDialog (Node[] activatedNodes) {
-        return innerShowDialog (activatedNodes);
+    public static boolean showDialog (Set/*DataObject*/ openedFiles) {
+        return innerShowDialog (getModifiedFiles (openedFiles));
     }
     
-    private static Set getModifiedActSet (Node[] activatedNodes) {
-        Set set = new HashSet (activatedNodes.length);
-        for (int i = 0; i < activatedNodes.length; i++) {
-            EditorCookie ed = (EditorCookie)activatedNodes[i].getCookie (EditorCookie.class);
+    private static Set getModifiedFiles (Set/*DataObject*/ openedFiles) {
+        Set set = new HashSet (openedFiles.size ());
+        Iterator iter = openedFiles.iterator ();
+        while (iter.hasNext()) {
+            DataObject obj = (DataObject) iter.next ();
+            EditorCookie ed = (EditorCookie)obj.getCookie (EditorCookie.class);
             if (ed != null && ed.isModified ()) {
-                set.add (activatedNodes[i].getCookie (DataObject.class));
+                set.add (obj);
             }
         }
         return set;
@@ -226,14 +220,8 @@ public class ExitDialog extends JPanel implements ActionListener {
     /** Opens the ExitDialog for activated nodes or for
      * whole repository.
      */
-    private static boolean innerShowDialog (Node[] activatedNodes) {
-        Set set = null;
-        if (activatedNodes != null)
-            set = getModifiedActSet (activatedNodes);
-        else
-            set = DataObject.getRegistry ().getModifiedSet ();
-        
-        if (!set.isEmpty()) {
+    private static boolean innerShowDialog (Set/*DataObject*/ openedFiles) {
+        if (!openedFiles.isEmpty()) {
 
             // XXX(-ttran) caching this dialog is fatal.  If the user
             // cancels the Exit action, modifies some more files and tries to
@@ -264,7 +252,7 @@ public class ExitDialog extends JPanel implements ActionListener {
                                   buttonDiscardAll,
                               };
                 ExitDialog exitComponent = null;
-                exitComponent = new ExitDialog (activatedNodes);
+                exitComponent = new ExitDialog (openedFiles);
                 DialogDescriptor exitDlgDescriptor = new DialogDescriptor (
                                                          exitComponent,                                                   // inside component
                                                          bundle.getString("CTL_ExitTitle"), // title

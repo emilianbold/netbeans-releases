@@ -62,26 +62,20 @@ public class ProjectUtilities {
             // no projects to close, no documents will be closed
             return true;
         }
-        List listOfProjects = Arrays.asList (projects);
-        Set modifiedFiles = new HashSet ();
-        Set tc2close = new HashSet ();
+        List/*Project*/ listOfProjects = Arrays.asList (projects);
+        Set/*DataObject*/ modifiedFiles = new HashSet ();
+        Set/*TopComponent*/ tc2close = new HashSet ();
         Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
         TopComponent[] openTCs = editorMode.getTopComponents ();
         for (int i = 0; i < openTCs.length; i++) {
-            Node[] nodes = openTCs[i].getActivatedNodes ();
-            if (nodes != null) {
-                for (int j = 0; j < nodes.length; j++) {
-                  Node n = nodes[j];
-                  DataObject dobj = (DataObject)n.getCookie (DataObject.class);
-                  if (dobj != null) {
-                      FileObject fobj = dobj.getPrimaryFile ();
-                      Project owner = FileOwnerQuery.getOwner (fobj);
-                      if (listOfProjects.contains (owner)) {
-                          modifiedFiles.add (n);
-                          tc2close.add (openTCs[i]);
-                      }
-                  }
-                }
+            DataObject dobj = (DataObject)openTCs[i].getLookup ().lookup (DataObject.class);
+            if (dobj != null) {
+              FileObject fobj = dobj.getPrimaryFile ();
+              Project owner = FileOwnerQuery.getOwner (fobj);
+              if (listOfProjects.contains (owner)) {
+                  modifiedFiles.add (dobj);
+                  tc2close.add (openTCs[i]);
+              }
             }
         }
         
@@ -89,17 +83,11 @@ public class ProjectUtilities {
             return true;
         }
         
-        Node[] modifiedNodes = new Node[modifiedFiles.size ()];
-        Iterator it = modifiedFiles.iterator ();
-        int i = 0;
-        while (it.hasNext ()) {
-            modifiedNodes[i++] = (Node)it.next ();
-        }
-        boolean result = ExitDialog.showDialog (modifiedNodes);
+        boolean result = ExitDialog.showDialog (modifiedFiles);
         
         if (result) {
             // close documents
-            it = tc2close.iterator ();
+            Iterator it = tc2close.iterator ();
             while (it.hasNext ()) {
                 ((TopComponent)it.next ()).close ();
             }
