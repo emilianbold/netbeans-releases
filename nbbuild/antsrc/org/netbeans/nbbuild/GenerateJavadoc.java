@@ -19,6 +19,8 @@ public class GenerateJavadoc extends Task
 {
     private File dest;
     private Vector modules = new Vector ();
+    private Vector classpath = new Vector ();
+    private String packageNames = null;
     private List topdirs = new ArrayList ();
 
     /** Target directory to unpack to (top of IDE installation). */
@@ -32,6 +34,11 @@ public class GenerateJavadoc extends Task
         modules = new Vector ();
         while (tok.hasMoreTokens ())
             modules.addElement (tok.nextToken ());
+    }
+
+    /** Comma-separated list of modules to include. */
+    public void setPackageNames (String s) {
+        packageNames = s;
     }
 
     /** Set the top directory.
@@ -79,9 +86,11 @@ public class GenerateJavadoc extends Task
                 File sources = new File (new File (topdir, module), "javadoc-temp/");
                 if (! sources.exists ()) { //testing existination of 'javadoc-temp' dir if existing - skiping dafult source dirs...
                     sources = new File (new File (topdir, module), "src/");
-                    path.append(new Path( project, sources.getPath()));
+                    if (sources.exists ())
+                        path.append(new Path( project, sources.getPath()));
                     sources = new File (new File (topdir, module), "libsrc/");
-                    path.append(new Path( project, sources.getPath()));
+                    if (sources.exists ())
+                        path.append(new Path( project, sources.getPath()));
                 }
                 else {
                     path.append(new Path( project, sources.getPath()));
@@ -90,8 +99,12 @@ public class GenerateJavadoc extends Task
         }
         Javadoc javaDoc = (Javadoc) project.createTask("javadoc");
         javaDoc.setSourcepath( path );
+        
         javaDoc.setDestdir( dest );
-        javaDoc.setPackagenames("com.*,org.*");
+        if (packageNames == null)
+            javaDoc.setPackagenames(packageNames);
+        else javaDoc.setPackagenames("org.netbeans.*,com.sun.*");
+        javaDoc.setUse(true);
         javaDoc.setMaxmemory("256M");
         javaDoc.execute();
 
