@@ -18,7 +18,7 @@ import org.openide.*;
 import org.openide.actions.OpenAction;
 import org.openide.actions.ViewAction;
 import org.openide.filesystems.*;
-import org.openide.text.EditorSupport;
+import org.openide.text.DataEditorSupport;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.*;
@@ -36,10 +36,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     static final long serialVersionUID =8354927561693097159L;
     
-    // public static final String PROP_FOR_EDIT = "forEdit";   // NOI18N
-    
-    // boolean forEdit = false;
-    
     /** New instance.
     * @param pf primary file object for this data object
     * @param loader the data loader creating it
@@ -48,7 +44,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     public HtmlDataObject(FileObject pf, UniFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet set = getCookieSet();
-        set.add(EditorSupport.class, this);
+        set.add(HtmlEditorSupport.class, this);
         set.add(ViewSupport.class, this);
     }
 
@@ -73,9 +69,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
-        if (klass == EditorSupport.class) {
-            EditorSupport es = new EditorSupport(getPrimaryEntry());
-            es.setMIMEType ("text/html"); // NOI18N
+        if (klass == HtmlEditorSupport.class) {
+            HtmlEditorSupport es = new HtmlEditorSupport(this);
             return es;
         } else if (klass == ViewSupport.class) {
             return new ViewSupport(getPrimaryEntry());
@@ -101,28 +96,4 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
          }
     }
     
-    /*
-    public boolean isForEdit () {
-        Object o = getPrimaryFile ().getAttribute (PROP_FOR_EDIT);
-        boolean ret = false;
-        if (o instanceof Boolean)
-            ret = ((Boolean) o).booleanValue ();
-        return ret;
-    }
-    
-    public void setForEdit (boolean isForEdit) throws IOException {
-        FileObject fo = getPrimaryFile ();
-
-        boolean oldVal = false;
-        Object o = fo.getAttribute (HtmlDataObject.PROP_FOR_EDIT);
-        if ((o instanceof Boolean) && ((Boolean)o).booleanValue ())
-            oldVal = true;
-        if (oldVal == isForEdit)
-            return;
-
-        fo.setAttribute(HtmlDataObject.PROP_FOR_EDIT, (isForEdit ? new Boolean (true) : null));
-        // firePropertyChange(DataObject.PROP_TEMPLATE, new Boolean(!newTempl), new Boolean(newTempl));
-    }
-     */
 }
-

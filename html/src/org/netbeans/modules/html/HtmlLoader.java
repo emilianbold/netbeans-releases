@@ -26,7 +26,6 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.text.EditorSupport;
 import org.openide.loaders.OpenSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -87,44 +86,3 @@ public class HtmlLoader extends UniFileLoader {
         return new HtmlDataObject (primaryFile, this);
     }
 }
-
-/*
-* Log
-*  26   Gandalf   1.25        1/13/00  Ian Formanek    NOI18N
-*  25   Gandalf   1.24        11/27/99 Patrik Knakal   
-*  24   Gandalf   1.23        11/25/99 Jesse Glick     Fixed bogus 
-*       representation class.
-*  23   Gandalf   1.22        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  22   Gandalf   1.21        9/30/99  Jan Jancura     Bug 3921 & 3392
-*  21   Gandalf   1.20        8/9/99   Ian Formanek    HtmlDataObject is a 
-*       standalone class
-*  20   Gandalf   1.19        8/8/99   Ian Formanek    
-*  19   Gandalf   1.18        7/8/99   Jesse Glick     Context help.
-*  18   Gandalf   1.17        7/8/99   Michal Fadljevic FileSystemAction added  
-*  17   Gandalf   1.16        6/10/99  Jan Jancura     Bug 1772
-*  16   Gandalf   1.15        6/9/99   Ian Formanek    ToolsAction
-*  15   Gandalf   1.14        6/9/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  14   Gandalf   1.13        5/13/99  Jan Jancura     What action is default? 
-*       It's a question.
-*  13   Gandalf   1.12        5/12/99  Jan Jancura     Edit in txt editor & use 
-*       common Html view window
-*  12   Gandalf   1.11        4/1/99   Jaroslav Tulach Does not recognize .txt 
-*       files.
-*  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
-*       NbBundle.getBundle (this)
-*  10   Gandalf   1.9         3/17/99  Ian Formanek    Made compilable
-*  9    Gandalf   1.8         3/17/99  Jaroslav Tulach No setIconBase
-*  8    Gandalf   1.7         3/14/99  Jaroslav Tulach Change of 
-*       MultiDataObject.Entry.
-*  7    Gandalf   1.6         3/2/99   Jan Jancura     
-*  6    Gandalf   1.5         2/16/99  Jan Jancura     
-*  5    Gandalf   1.4         2/11/99  Jan Jancura     
-*  4    Gandalf   1.3         2/3/99   Jaroslav Tulach 
-*  3    Gandalf   1.2         1/11/99  Jan Jancura     
-*  2    Gandalf   1.1         1/11/99  Jan Jancura     
-*  1    Gandalf   1.0         1/8/99   Jan Jancura     
-* $
-*/
-
