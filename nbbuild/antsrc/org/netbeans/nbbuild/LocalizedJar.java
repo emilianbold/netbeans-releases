@@ -197,6 +197,7 @@ public class LocalizedJar extends MatchingTask {
             throw new BuildException ("The specified manifest does not actually exist.");
         }
 
+        //System.err.println ("Stage #1");
         // First find out which files need to be archived.
         Map allFiles = new HashMap (); // all files to do something with; Map<String,File> from JAR path to actual file
         // Populate it.
@@ -226,6 +227,7 @@ public class LocalizedJar extends MatchingTask {
             }
         }
 
+        //System.err.println ("Stage #2");
         // Now find all files which should always be put into a locale
         // kit (e.g. dir/locale/name.jar, no special locale or
         // branding, but distinguished as localizable/brandable).
@@ -243,6 +245,7 @@ public class LocalizedJar extends MatchingTask {
             }
         }
 
+        //System.err.println ("Stage #3");
         // Compute list of supported locales and brandings.
         List locales2 = new LinkedList (); // List<String>; all locales
         List brandings2 = new LinkedList (); // List<String>; all brandings
@@ -268,6 +271,7 @@ public class LocalizedJar extends MatchingTask {
             Collections.sort (brandings2, c);
         }
 
+        //System.err.println ("Stage #4");
         // Analyze where everything goes.
         Set jars = new HashSet (); // Set<File>; JAR files to build
         Map localeMarks = new HashMap (); // Map<File,String>; JAR files to locale (or null for basic JAR, "-" for blank)
@@ -327,13 +331,14 @@ public class LocalizedJar extends MatchingTask {
                 jars.add (thisjar);
                 Map files = (Map) router.get (thisjar);
                 if (files == null) {
-                    files = new HashMap ();
+                    files = new TreeMap ();
                     router.put (thisjar, files);
                 }
                 files.put (path, file);
             }
         }
 
+        //System.err.println ("Stage #5");
         // Go through JARs one by one, and build them (if necessary).
         {
             List jars2 = new ArrayList (jars);
@@ -404,6 +409,8 @@ public class LocalizedJar extends MatchingTask {
                         if (brandingMark != null) {
                             attr.putValue ("OpenIDE-Archive-Branding", brandingMark);
                         }
+                        // [PENDING] would be good to also remove any Class-Path attributes
+                        // if this is a */locale/* JAR, since they no longer apply.
                         ByteArrayOutputStream baos = new ByteArrayOutputStream ();
                         mani.write (baos);
                         zipFile (new ByteArrayInputStream (baos.toByteArray ()), zOut, "META-INF/MANIFEST.MF", time, addedDirs);
