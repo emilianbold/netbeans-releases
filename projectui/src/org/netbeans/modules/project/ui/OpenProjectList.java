@@ -141,7 +141,7 @@ public final class OpenProjectList {
                 notifyOpened(p);
             }            
             if ( openSubprojects ) {
-                openSubprojects( p );
+                recentProjectsChanged |= openSubprojects( p );
             }
             saveProjectList( openProjects );
             if ( recentProjectsChanged ) {
@@ -398,24 +398,31 @@ public final class OpenProjectList {
     }
     
     /** Will recursively open subprojects of given project.
+     * @return True if the recent projects list has changed
      */
-    private synchronized void openSubprojects( Project p ) {
+    private synchronized boolean openSubprojects( Project p ) {
+        
+        
         
         SubprojectProvider spp = (SubprojectProvider)p.getLookup().lookup( SubprojectProvider.class );
         
         if ( spp == null ) {
-            return;
+            return false;
         }
+        
+        boolean recentProjectsChanged = false;
         
         for( Iterator/*<Project>*/ it = spp.getSubprojects().iterator(); it.hasNext(); ) {
             Project sp = (Project)it.next(); 
             if ( !openProjects.contains( sp ) ) {
                 openProjects.add( sp );
+                recentProjectsChanged |= recentProjects.remove( sp );
                 notifyOpened(sp);
             }
-            openSubprojects( sp );            
+            recentProjectsChanged |= openSubprojects( sp );            
         }
         
+        return recentProjectsChanged;
     }
     
     private static List loadProjectList() {               
