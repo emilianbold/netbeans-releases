@@ -178,6 +178,15 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
     //////////////////////////////////////////////////////
 
     
+    /** Clears the global node selection.  Called by WindowManagerImpl before
+     * starting to load a new window system configuration, so no components
+     * retain nodes from the previous project and throw exceptions. */
+    public void clearNodesForProjectChange() {
+        Node[] old = currentNodes;
+        Node[] nue = new Node[0];
+        tryFireChanges (old, nue);
+    }
+    
     
     /** Cancels the menu if it is not assigned to specified window.
      * @param window window that the menu should be checked against
@@ -220,7 +229,7 @@ public final class RegistryImpl extends Object implements TopComponent.Registry 
         if (newNodes != null) {
             oldNodes = activatedNodes;
             activatedNodes = newNodes;
-            doFirePropertyChange(PROP_ACTIVATED_NODES, oldNodes, activatedNodes);
+            support.firePropertyChange(PROP_ACTIVATED_NODES, oldNodes, activatedNodes);
         }
     }
     

@@ -188,6 +188,28 @@ public final class NbSheet extends TopComponent {
         return sharedSheet;
     }
     
+    /** Called by winsys to ensure that nodes, selection and position information do
+     * not survive a project change */
+    public static void discardDefault() {
+        //XXX deleteme - need some standard way of notifying components that
+        //they should dump project-owned data before a project change.
+        if (sharedSheet != null) {
+            PropertySheet ps = sharedSheet.propertySheet;
+            if (ps != null) {
+		//We need clear the property sheet synchronously, bypassing the normal delay
+                //used to improve performance when navigating between nodes
+                try {
+                    java.lang.reflect.Method method = 
+                        PropertySheet.class.getDeclaredMethod ("clear", null); //NOI18N
+                    method.setAccessible(true);
+                    method.invoke (ps, null);
+                } catch (Exception e) {
+                    //oh well...
+                }
+            }
+        }
+    }
+    
     /** Overriden to explicitely set persistence type of NbSheet
      * to PERSISTENCE_ALWAYS */
     public int getPersistenceType() {
