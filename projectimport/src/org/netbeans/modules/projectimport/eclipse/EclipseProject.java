@@ -46,6 +46,7 @@ public final class EclipseProject implements Comparable {
     private boolean javaNature;
     private ClassPath cp;
     private Set links;
+    private Set otherNatures;
     
     private File projectDir;
     private File cpFile;
@@ -128,6 +129,19 @@ public final class EclipseProject implements Comparable {
     
     void setJavaNature(boolean javaNature) {
         this.javaNature = javaNature;
+    }
+    
+    public Set getOtherNatures() {
+        return otherNatures;
+    }
+    
+    void addOtherNature(String nature) {
+        if (otherNatures == null) {
+            otherNatures = new HashSet();
+        }
+        logger.fine("Project " + getName() + " has another nature: " + // NOI18N
+                nature);
+        otherNatures.add(nature);
     }
     
     /**

@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
-import org.netbeans.modules.projectimport.LoggerFactory;
 
 /**
  * Represents classpath for an Eclipse project (.classpath file content)

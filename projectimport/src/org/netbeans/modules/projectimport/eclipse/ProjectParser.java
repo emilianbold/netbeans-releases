@@ -181,8 +181,11 @@ final class ProjectParser extends DefaultHandler {
                 break;
             case POSITION_NATURE:
                 if (localName.equals(NATURE)) {
-                    if (JAVA_NATURE.equals(chars.toString().trim())) {
+                    String nature = chars.toString().trim();
+                    if (JAVA_NATURE.equals(nature)) {
                         project.setJavaNature(true);
+                    } else {
+                        project.addOtherNature(nature);
                     }
                 }
                 position = POSITION_NATURES;

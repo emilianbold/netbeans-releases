@@ -58,18 +58,22 @@ final class SelectionWizardPanel extends ImporterWizardPanel implements
     }
     
     // ==== delegate methods ==== //
+
     boolean isWorkspaceChosen() {
         return panel.isWorkspaceChosen();
     }
     
+    /** Returns project directory of single-selected project. */
     String getProjectDir() {
         return panel.getProjectDir();
     }
     
+    /** Returns destination directory for single-selected project. */
     public String getProjectDestinationDir() {
         return panel.getProjectDestinationDir();
     }
     
+    /** Returns workspace directory choosed by user. */
     public String getWorkspaceDir() {
         return panel.getWorkspaceDir();
     }

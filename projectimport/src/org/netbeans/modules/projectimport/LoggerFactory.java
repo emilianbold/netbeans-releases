@@ -66,7 +66,6 @@ public class LoggerFactory {
         private DateFormat formatter = new SimpleDateFormat(format);
         
         public String format(LogRecord record) {
-            String message = formatMessage(record);
             StringBuffer sb = new StringBuffer();
             String name = record.getLevel().getName();
             // indent on the base of severity to have nice and readable output

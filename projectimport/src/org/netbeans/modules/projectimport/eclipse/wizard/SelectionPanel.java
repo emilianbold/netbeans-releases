@@ -116,10 +116,12 @@ final class SelectionPanel extends JPanel {
         return workspaceButton.isSelected();
     }
     
+    /** Returns project directory of single-selected project. */
     public String getProjectDir() {
         return projectDir.getText();
     }
     
+    /** Returns destination directory for single-selected project. */    
     public String getProjectDestinationDir() {
         return projectDestDir.getText();
     }

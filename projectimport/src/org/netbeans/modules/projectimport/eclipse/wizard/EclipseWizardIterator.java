@@ -22,7 +22,6 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.projectimport.ProjectImporterException;
-import org.netbeans.modules.projectimport.eclipse.EclipseProject;
 import org.netbeans.modules.projectimport.eclipse.ProjectFactory;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
@@ -42,8 +41,6 @@ final class EclipseWizardIterator implements
     
     private boolean hasNext;
     private boolean hasPrevious;
-    
-    private EclipseProject eclProject;
     
     /** Registered ChangeListeners */
     private List changeListeners;

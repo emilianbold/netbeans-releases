@@ -20,7 +20,9 @@ package org.netbeans.modules.projectimport;
  */
 public class ProjectImporterException extends java.lang.Exception {
     
-    /**
+	private static final long serialVersionUID = 3258688819070055737L;
+
+	/**
      * Creates a new instance of <code>ProjectImporterException</code> without
      * detail message.
      */
