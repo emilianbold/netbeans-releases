@@ -577,10 +577,14 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (cookiesLkp == null || envLkp == null || !envLkp.getClass().equals(cookiesLkp.getClass())) {
                 cookiesLkp = (envLkp == null) ? Lookup.EMPTY : envLkp;
                 initCookieResult();
-                initNodeResult();                    
+                initNodeResult();
             } 
-            return cookiesLkp;
         }
+        
+        if (nodeResult != null) nodeResult.allItems();
+        if (cookieResult != null) cookieResult.allItems();
+        
+        return cookiesLkp;        
     }
 
     private void initNodeResult() {
@@ -598,7 +602,6 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                         }
                     };
             nodeResult.addLookupListener(nodeLsnr);
-            nodeResult.allItems();
         }
     }
 
@@ -614,7 +617,6 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
                 }
             };
             cookieResult.addLookupListener(cookiesLsnr);
-            cookieResult.allItems();
         }
     }
 
