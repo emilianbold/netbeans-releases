@@ -25,6 +25,10 @@ class CodeSupport {
     private CodeSupport() {
     }
 
+    static String getSourceClassName(Class cls) {
+        return cls.getName().replace('$', '.').replace('+', '.').replace('/', '.'); // NOI18N
+    }
+
     // ----------
     // implementation classes of CodeStatement interface
 
@@ -140,8 +144,7 @@ class CodeSupport {
                 if ((varType & CodeVariable.FINAL) == CodeVariable.FINAL)
                     buf.append("final "); // NOI18N
 
-                buf.append(variable.getDeclaredType().getName()
-                                                       .replace('$','.'));
+                buf.append(getSourceClassName(variable.getDeclaredType()));
                 buf.append(" "); // NOI18N
             }
 
@@ -205,7 +208,7 @@ class CodeSupport {
                     buf.append("final "); // NOI18N
             }
 
-            buf.append(variable.getDeclaredType().getName().replace('$','.'));
+            buf.append(getSourceClassName(variable.getDeclaredType()));
             buf.append(" "); // NOI18N
             buf.append(variable.getName());
             buf.append(";"); // NOI18N
@@ -325,8 +328,7 @@ class CodeSupport {
                 }
             }
             else { // we suppose a static method
-                buf.append(creationMethod.getDeclaringClass().getName()
-                            .replace('$','.')); // NOI18N 
+                buf.append(getSourceClassName(creationMethod.getDeclaringClass()));
                 buf.append("."); // NOI18N
             }
 
@@ -384,8 +386,7 @@ class CodeSupport {
                 }
             }
             else { // we suppose a static field
-                buf.append(originField.getDeclaringClass().getName()
-                            .replace('$','.')); // NOI18N 
+                buf.append(getSourceClassName(originField.getDeclaringClass()));
                 buf.append("."); // NOI18N
             }
 

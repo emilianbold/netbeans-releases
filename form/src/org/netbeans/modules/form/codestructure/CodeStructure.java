@@ -477,9 +477,12 @@ public class CodeStructure {
             }
             else { // derive default name from class type, add "1" as suffix
                 String typeName = expression.getOrigin().getType().getName();
-                int i = typeName.lastIndexOf('$');
-                if (i < 0)
-                    i = typeName.lastIndexOf('.');
+                int i = typeName.lastIndexOf('$'); // NOI18N
+                if (i < 0) {
+                    i = typeName.lastIndexOf('+'); // NOI18N
+                    if (i < 0)
+                        i = typeName.lastIndexOf('.'); // NOI18N
+                }
                 baseName = Character.toLowerCase(typeName.charAt(i+1))
                            + typeName.substring(i+2);
             }
