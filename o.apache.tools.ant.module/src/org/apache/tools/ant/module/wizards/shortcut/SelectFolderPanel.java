@@ -68,6 +68,7 @@ public class SelectFolderPanel extends javax.swing.JPanel implements PropertyCha
         public String getDisplayName () {
             String name = super.getDisplayName ();
             if (stripAmps) {
+                // XXX use o.o.a.Mnemonics instead
                 int idx = name.indexOf ('&');
                 if (idx != -1) {
                     name = name.substring (0, idx) + name.substring (idx + 1);
