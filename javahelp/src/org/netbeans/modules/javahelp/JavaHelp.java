@@ -71,6 +71,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     private boolean reparentToFrameLater = false;
     /** the modal dialog(s) currently in effect */
     private Stack currentModalDialogs = new Stack(); // Stack<Dialog>
+    /** modal dialogs stack has been used successfully */
+    private boolean currentModalDialogsReady = false;
     /** last-displayed JHelp */
     private JHelp lastJH = null;
     
@@ -134,9 +136,10 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
     private Dialog currentModalDialog() {
         if (currentModalDialogs.empty()) {
             Window w = HelpAction.WindowActivatedDetector.getCurrentActivatedWindow();
-            if (w instanceof Dialog && ((Dialog)w).isModal()) {
+            if (!currentModalDialogsReady && (w instanceof Dialog) &&
+                    !(w instanceof ProgressDialog) && w != dialogViewer && ((Dialog)w).isModal()) {
                 // #21286. A modal dialog was opened before JavaHelp was even created.
-                Installer.err.log("Early-opened modal dialog: " + ((Dialog)w).getTitle());
+                Installer.err.log("Early-opened modal dialog: " + w.getName() + " [" + ((Dialog)w).getTitle() + "]");
                 return (Dialog)w;
             } else {
                 return null;
@@ -381,7 +384,12 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                     if (d == dialogViewer) {
                         // ignore, expected
                     } else if (d == currentModalDialog()) {
-                        currentModalDialogs.pop();
+                        if (!currentModalDialogs.isEmpty()) {
+                            currentModalDialogs.pop();
+                            currentModalDialogsReady = true;
+                        } else {
+                            Installer.err.notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Please see IZ #24993")); // NOI18N
+                        }
                         showDialogStack();
                         if ((frameViewer == null || !frameViewer.isVisible() ||
                              /* 14393 */frameViewer.getState() == Frame.ICONIFIED) &&
@@ -401,7 +409,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
                             Installer.err.log(ErrorManager.WARNING, "WARNING - frameViewer visible when a dialog was closing"); // NOI18N
                         }
                     } else {
-                        Installer.err.log("some random modal dialog closed: " + d.getTitle());
+                        Installer.err.log("some random modal dialog closed: " + d.getName() + " [" + d.getTitle() + "]");
                     }
                 } else {
                     // WINDOW_OPENED
