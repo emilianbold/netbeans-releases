@@ -41,8 +41,8 @@ final class DocSearchIcons extends Object {
 
     static {
         try {
-            icons[ ICON_NOTRESOLVED ] = new ImageIcon (Utilities.loadImage("org/openide/resources/pending.gif")); // NOI18N
-            icons[ ICON_PACKAGE ] = new ImageIcon (Utilities.loadImage ("org/openide/loaders/defaultFolder.gif")); // NOI18N
+            icons[ ICON_NOTRESOLVED ] = new ImageIcon (Utilities.loadImage("org/netbeans/modules/javadoc/resources/pending.gif")); // NOI18N
+            icons[ ICON_PACKAGE ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/comments/resources/package.gif")); // NOI18N                                    
             icons[ ICON_CLASS ] = new ImageIcon (Utilities.loadImage ("org/openide/src/resources/class.gif")); // NOI18N
             icons[ ICON_INTERFACE ] = new ImageIcon (Utilities.loadImage ("org/openide/src/resources/interface.gif")); // NOI18N
             icons[ ICON_EXCEPTION ] = new ImageIcon (Utilities.loadImage ("org/netbeans/modules/javadoc/resources/exception.gif")); // NOI18N
