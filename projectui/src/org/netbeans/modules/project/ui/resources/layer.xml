@@ -483,23 +483,7 @@ Microsystems, Inc. All Rights Reserved.
             </file>
     
         </folder>
-        
-        <folder name="Debug">
-        
-            <file name="org-netbeans-modules-project-ui-FinishSessions.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-FinishSessions.shadow/org-netbeans-modules-project-ui-Continue.shadow" boolvalue="true"/>
-            
-            <file name="org-netbeans-modules-project-ui-Continue.shadow">
-                <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
-            </file>
-            
-            <attr name="org-netbeans-modules-project-ui-Continue.shadow/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true"/>
-                                                 
-        </folder>
-        
+                
     </folder>
         
     <!-- Shortcuts for the new actions -->    
