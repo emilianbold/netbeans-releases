@@ -1000,123 +1000,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../jini" target="netbeans"/>
   </target>
-  <target name="all-latex/ant/antint" depends="init">
-    <echo message="Building module latex/ant/antint..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/ant/antint" target="netbeans"/>
-  </target>
-  <target name="all-latex/auted" depends="init,all-latex/model">
-    <echo message="Building module latex/auted..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/auted" target="netbeans"/>
-  </target>
-  <target name="all-latex/bibtex" depends="init,all-latex/model">
-    <echo message="Building module latex/bibtex..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/bibtex" target="netbeans"/>
-  </target>
-  <target name="all-latex/branding" depends="init,all-core/ui,all-latex/project,all-latex/ui">
-    <echo message="Building module latex/branding..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/branding" target="netbeans"/>
-  </target>
-  <target name="all-latex/core" depends="init,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model,all-latex/editor">
-    <echo message="Building module latex/core..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/core" target="netbeans"/>
-  </target>
-  <target name="all-latex/editor" depends="init,all-editor,all-lexer,all-lexer/editorbridge,all-latex/model">
-    <echo message="Building module latex/editor..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/editor" target="netbeans"/>
-  </target>
-  <target name="all-latex/loaders" depends="init,all-editor,all-latex/model,all-latex/editor,all-latex/core">
-    <echo message="Building module latex/loaders..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/loaders" target="netbeans"/>
-  </target>
-  <target name="all-latex/manual" depends="init">
-    <echo message="Building module latex/manual..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/manual" target="netbeans"/>
-  </target>
-  <target name="all-latex/model" depends="init,all-lexer">
-    <echo message="Building module latex/model..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/model" target="netbeans"/>
-  </target>
-  <target name="all-latex/nexplorer" depends="init">
-    <echo message="Building module latex/nexplorer..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/nexplorer" target="netbeans"/>
-  </target>
-  <target name="all-latex/project" depends="init,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
-    <echo message="Building module latex/project..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/project" target="netbeans"/>
-  </target>
-  <target name="all-latex/guiproject" depends="init,all-editor,all-ant,all-latex/ant/antint,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders,all-projects/projectapi,all-projects/projectuiapi">
-    <echo message="Building module latex/guiproject..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/guiproject" target="netbeans"/>
-  </target>
-  <target name="all-latex/ui" depends="init,all-editor,all-latex/model,all-latex/editor,all-latex/core,all-latex/loaders">
-    <echo message="Building module latex/ui..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
-    <antcall target="build-one-cluster-dependencies" inheritAll="false">
-      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
-      <param name="one.cluster.name" value="this-cluster"/>
-    </antcall>
-    <ant dir="../latex/ui" target="netbeans"/>
-  </target>
   <target name="all-jndi" depends="init,all-openidex,all-openide/deprecated,all-projects">
     <echo message="Building module jndi..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -1871,6 +1754,16 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../corba" target="netbeans"/>
+  </target>
+
+  <target name="all-ide/projectimport" depends="init">
+    <echo message="Building module ide/projectimport..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../ide/projectimport" target="netbeans"/>
   </target>
 
   <target name="all-ide/welcome" depends="init">
