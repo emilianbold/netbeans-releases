@@ -599,6 +599,11 @@ public class PropertiesOpen extends CloneableOpenSupport
             super.open();
         }
         
+        public boolean requestFocusInWindow() {
+            super.requestFocusInWindow();
+            return getComponent(0).requestFocusInWindow();
+        }
+        
         public boolean canClose () {
             ((BundleEditPanel)getComponent(0)).stopEditing();
             return super.canClose();

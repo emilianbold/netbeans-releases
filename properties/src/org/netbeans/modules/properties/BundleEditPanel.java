@@ -242,8 +242,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         valuePanel.add(commentLabel, gridBagConstraints);
 
-        textComment.setLineWrap(true);
         textComment.setEditable(false);
+        textComment.setLineWrap(true);
         textComment.setRows(3);
         textComment.setEnabled(false);
         jScrollPane2.setViewportView(textComment);
@@ -265,8 +265,8 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         valuePanel.add(valueLabel, gridBagConstraints);
 
-        textValue.setLineWrap(true);
         textValue.setEditable(false);
+        textValue.setLineWrap(true);
         textValue.setRows(3);
         textValue.setEnabled(false);
         jScrollPane3.setViewportView(textValue);
@@ -308,6 +308,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
 
         removeButton.setMnemonic((NbBundle.getBundle(BundleEditPanel.class).getString("LBL_RemovePropertyButton_Mnem")).charAt(0));
         removeButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_RemovePropertyButton"));
+        removeButton.setEnabled(false);
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
@@ -481,6 +482,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                                             table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
                                             table.getSelectionModel().setSelectionInterval(row, row);
                                             
+                                            table.requestFocusInWindow();
                                             table.editCellAt(row, column);
                                         }
                                     });
@@ -504,20 +506,20 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JTable table;
-    private javax.swing.JLabel valueLabel;
-    private javax.swing.JTextArea textValue;
     private javax.swing.JButton addButton;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTextArea textComment;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPanel tablePanel;
     private javax.swing.JCheckBox autoResizeCheck;
+    private javax.swing.JPanel buttonPanel;
     private javax.swing.JLabel commentLabel;
-    private javax.swing.JPanel valuePanel;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JButton removeButton;
+    private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JTable table;
+    private javax.swing.JPanel tablePanel;
+    private javax.swing.JTextArea textComment;
+    private javax.swing.JTextArea textValue;
+    private javax.swing.JLabel valueLabel;
+    private javax.swing.JPanel valuePanel;
     // End of variables declaration//GEN-END:variables
     
     
