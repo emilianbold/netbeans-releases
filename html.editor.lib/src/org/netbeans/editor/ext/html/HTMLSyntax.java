@@ -421,8 +421,8 @@ public class HTMLSyntax extends Syntax {
                     state = INIT;
                     return HTMLTokenContext.BLOCK_COMMENT;
                 default:
-                    state = ISI_ERROR;
-                    return HTMLTokenContext.BLOCK_COMMENT;
+                    state = ISI_HTML_COMMENT;
+                    continue;
                 }
                 //break;
 
