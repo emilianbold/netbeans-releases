@@ -84,7 +84,12 @@ public class ServiceTypePanel extends ExplorerPanel {
             return;
         }
         
-        int i = services.indexOf (s);
+        int i = -1;//services.indexOf (s);
+        for (int n = 0; n < services.size(); n++) {
+            if ( ((ServiceType)services.get(n)).getName().equals(s.getName()) ) {
+                i = n;
+            }
+        }
 
         if (i < 0) {
             // if s is not found try to add s to the nodes by temporarily 
