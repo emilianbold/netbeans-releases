@@ -648,18 +648,27 @@ public final class NbMainExplorer extends CloneableTopComponent
                                public void run () {
                                    previousTask = null;
 
-                                   selectNode (ev.getObject ());
+                                   doSelectNode (ev.getObject ());
                                }
-                           }, 2000);
+                           }, 100);
+        }
+
+        /** Setups the environment to select the right node.
+        */
+        public void doSelectNode (DataObject obj) {
+            if (selectNode (obj, null)) {
+                requestFocus ();
+            }
         }
 
 
         /** Finds a node for given data object.
+        * @param stop the folder to stop at or null
         */
-        private void selectNode (DataObject obj) {
+        protected boolean selectNode (DataObject obj, DataFolder stop) {
             Stack stack = new Stack ();
 
-            while (obj != null) {
+            while (obj != null && obj != stop) {
                 stack.push (obj);
                 obj = obj.getFolder ();
             }
@@ -668,7 +677,8 @@ public final class NbMainExplorer extends CloneableTopComponent
             while (!stack.isEmpty ()) {
                 Node n = findDataObject (current, (DataObject)stack.pop ());
                 if (n == null) {
-                    break;
+                    // no node to select found
+                    return false;
                 }
                 current = n;
             }
@@ -679,6 +689,8 @@ public final class NbMainExplorer extends CloneableTopComponent
                 // you are out of luck!
                 throw new InternalError ();
             }
+
+            return true;
         }
 
         /** Finds a data object in given node.
@@ -701,7 +713,7 @@ public final class NbMainExplorer extends CloneableTopComponent
     }
 
     /** Special class for projects tab in main explorer */
-    public static class ProjectsTab extends MainTab {
+    public static class ProjectsTab extends RepositoryTab {
         static final long serialVersionUID =-8178367548546385799L;
 
         /** Exchanges deserialized root context to projects root context
@@ -710,6 +722,14 @@ public final class NbMainExplorer extends CloneableTopComponent
             Node projectsRc = NbProjectOperation.getProjectDesktop();
             setRootContext(projectsRc);
             registerRootContext(projectsRc);
+        }
+
+        public void doSelectNode (DataObject obj) {
+            DataFolder root = (DataFolder)getRootContext ().getCookie (DataFolder.class);
+
+            if (selectNode (obj, root)) {
+                requestFocus ();
+            }
         }
 
     } // end of ProjectsTab inner class
