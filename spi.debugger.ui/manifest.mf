@@ -7,7 +7,7 @@ OpenIDE-Module-Implementation-Version: 0.1.9.2
 Name: com/netbeans/developer/modules/debugger/support/DebuggerSettings.class
 OpenIDE-Module-Class: Option
 
-Name: com/netbeans/developer/modules/debugger/core/CoreDebugger.class
+Name: com/netbeans/developer/modules/debugger/delegator/DelegatingDebugger.class
 OpenIDE-Module-Class: Debugger
 
 Name: com/netbeans/developer/modules/debugger/support/nodes/DebuggerNode.class
