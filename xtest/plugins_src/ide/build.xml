@@ -13,14 +13,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <!-- build script for IDE XTest plugin -->
-<project basedir="." default="all" name="XTest IDE plugin">
+<project basedir="." default="deploy" name="XTest IDE plugin">
     <import file="../../../nbbuild/default-properties.xml"/>
 
-    <target name="all">
-        <!-- WRITEME -->
-    </target>
-    
-    
+    <property name="plugins.install.dir" location="../../plugins"/>
+
     <target name="compile">
         <path id="basecp">
             <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
@@ -47,7 +44,8 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="junit*.jar"/>
             </fileset>            
         </path>
-        <javac srcdir="src" destdir="src"
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">          
           <classpath refid="basecp"/>
@@ -58,15 +56,15 @@ Microsystems, Inc. All Rights Reserved.
     <target name="jar" depends="compile">
         <!-- ant tasks used in ide_plugin_targets.xml -->
         <jar jarfile="lib/xtest-ide-plugin.jar"            
-            basedir="src"
-            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            basedir="build/classes"
+            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/plugin/ide/Ide*.class"/>
         </jar>
         <!-- load by system classloader (-J-Dnetbeans.systemclassloader.patches) -->
         <jar jarfile="lib/xtest-ide-testexec.jar"
-            basedir="src"
-            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            basedir="build/classes"
+            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name=""/>
             <!-- At the time there is no reason to include anything in this jar. -->
@@ -74,8 +72,8 @@ Microsystems, Inc. All Rights Reserved.
         </jar>
         <!-- -J-Dnetbeans.classpath or also AKA Dynamic Classpath-->
         <jar jarfile="lib/xtest-ide-main.jar"
-            basedir="src"
-            excludesfile="${nball.cvs.root}/nbbuild/standard-jar-excludes.txt"
+            basedir="build/classes"
+            excludesfile="../../../nbbuild/standard-jar-excludes.txt"
             compress="false">
             <include name="org/netbeans/xtest/plugin/ide/Main*.class"/>
             <include name="org/netbeans/xtest/plugin/ide/MainWithExec*.class"/>
@@ -99,11 +97,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="lib/xtest-ide-main.jar"/>
         <delete file="lib/xtest-ide-testexec.jar"/>
         <delete file="lib/xtest-ide-plugin.jar"/>
-        <delete>
-            <fileset dir="src">
-                <include name="**/*.class"/>
-            </fileset>        
-        </delete>
+        <delete dir="build"/>
      </target>
      
 </project>

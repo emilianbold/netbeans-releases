@@ -11,86 +11,72 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project basedir="." default="netbeans" name="NbJUnit">
-  <import file="../../nbbuild/default.xml"/>
-      
-  <target name="init" depends="default.init">
-    <ant dir="../external" target="unscramble"/>
-    <path id="compile.classpath">
-        <fileset dir="../external">
-          <include name="junit*.jar"/>
-        </fileset>
-        <!-- project support classpath -->
-        <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar" />
-        <pathelement location="${projects/projectapi.dir}/${nb.modules.dir}/org-netbeans-modules-projectapi.jar"/>
-        <pathelement location="${projects/projectui.dir}/${nb.modules.dir}/org-netbeans-modules-projectui.jar"/>
-        <pathelement location="${java/j2seproject.dir}/${nb.modules.dir}/org-netbeans-modules-java-j2seproject.jar"/>
-        <pathelement location="${ant/project.dir}/${nb.modules.dir}/org-netbeans-modules-project-ant.jar"/>
-        <!-- metadata repository support classpath -->
-        <pathelement location="${java/javacore.dir}/${nb.modules.dir}/org-netbeans-modules-javacore.jar"/>
-        <pathelement location="${mdr/nbjmiutils.dir}/${nb.modules.dir}/ext/jmiutils.jar"/>
-    </path>
-  </target>
-  
-  <target name="compile-nbjunit" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
-      <include name="org/netbeans/junit/**"/>
-      <classpath refid="compile.classpath"/>
-    </javac>
-  </target>
+<project name="xtest/nbjunit" basedir="." default="netbeans">
+  <import file="../../nbbuild/templates/projectized.xml"/>
 
-  <target name="jar-nbjunit" depends="compile-nbjunit">
-      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
-      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"
-            basedir="src"
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <!-- All files created for NBM -->
+            <include name="${module.jar}" />
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml" />
+            <include name="${nb.docs.dir}/nbjunit-api.zip"/>
+            <include name="${nb.modules.dir}/ext/nbjunit.jar"/>
+            <include name="${nb.modules.dir}/ext/nbjunit-ide.jar"/>
+        </patternset>
+    </target>
+
+    <target name="compile" depends="init">
+        <!-- unscramble ../external/junit-3.8.1.jar used in cp.extra -->
+        <ant dir="../external" target="unscramble"/>
+        <antcall target="projectized.compile"/>
+    </target>
+    
+    <!-- Called after jar target and before module-* targets in projectized.xml -->
+    <target name="netbeans-extra" depends="jar-nbjunit,javadoc">
+        <copy file="javadoc/nbjunit-api.zip" todir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
+    </target>
+
+    <target name="jar-with-module-deps" if="module.dependencies">
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" 
+             compress="${build.package.compress}" 
+             index="${build.package.index}" 
+             manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Module-Dependencies" value="${module.dependencies}"/>
+                <!-- XXX make this conditional so can use OIDE-M-B-V instead -->
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+            </manifest>
+            <!-- includes only module resources because other classes are in library jars (target jar-nbjunit). -->
+            <fileset dir="${build.classes.dir}" includes="**/resources/**"/>
+        </jar>
+    </target>
+
+    <!-- build nbjunit libraries -->
+    <target name="jar-nbjunit" depends="compile">
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"
+            basedir="${build.classes.dir}"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="true"
             includes="org/netbeans/junit/**"
-            excludes="org/netbeans/junit/ide/**"
-      />
-      <!-- Project support available in test cases -->
-      <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar"
-            basedir="src"
+            excludes="org/netbeans/junit/ide/**,org/netbeans/junit/resources/**"
+        />
+        <!-- Project support available in test cases -->
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar"
+            basedir="${build.classes.dir}"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="true"
             includes="org/netbeans/junit/ide/**"
-      />
-  </target>
-
-  <target name="check-javadoc-uptodate">
-    <uptodate property="javadoc-uptodate" targetfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip">
-      <srcfiles dir="src">
-        <include name="**/*.java"/>
-      </srcfiles>
-    </uptodate>
-  </target>
-
-  <target name="javadoc-nbjunit" depends="check-javadoc-uptodate" unless="javadoc-uptodate">
-      <mkdir dir="javadoc/nbjunit-api"/>
-      <javadoc packagenames="org.netbeans.junit.*" 
-               sourcepath="src" 
-	       destdir="javadoc/nbjunit-api"
-	       windowtitle="NetBeans extensions to JUnit"
-	       doctitle="NetBeans extensions to JUnit">  
-        <classpath refid="compile.classpath"/>
-      </javadoc>
-      <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}"/>
-      <zip zipfile="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip"
-           basedir="javadoc/nbjunit-api"/>
-  </target>
-  
-  <target name="netbeans" depends="compile-nbjunit, jar-nbjunit, javadoc-nbjunit"/>
-
-  <target name="clean" depends="default.init">
-     <delete dir="javadoc"/>
-     <delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.docs.dir}/nbjunit-api.zip"/>
-     <delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar"/>
-     <delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar"/>
-     <delete>
-         <fileset dir="src">
-            <include name="org/netbeans/junit/**/*.class"/>
-         </fileset>
-     </delete>
-  </target>
-  
+        />
+    </target>
+    
+    <target name="clean" depends="projectized.clean">
+        <delete>
+            <fileset dir="../external">
+                <include name="**/*.jar"/>
+            </fileset>
+        </delete>
+     </target>
 </project>

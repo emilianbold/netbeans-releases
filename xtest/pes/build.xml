@@ -1,48 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="all" name="build-pes">
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project name="xtest/pes" basedir="." default="makedist">
 
   <property name="build.sysclasspath" value="ignore"/>
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
-
+  
   <target name="init">
-    <ant dir="../external" target="unscramble"/>
+       <ant dir="../external" target="unscramble"/>
   </target>
-
-
+  
   <target name="compile" depends="init">
+      <mkdir dir="build/classes"/>
       <!-- compile xtest first -> pes depends on several of its classes -->
-      <javac srcdir="../src" destdir="src"
+      <javac srcdir="../src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}"> 
         <include name="org/netbeans/xtest/pe/**"/>
         <include name="org/netbeans/xtest/util/**"/>
         <include name="org/netbeans/xtest/xmlserializer/**"/>
         <classpath>	
-          <fileset dir="../external">
-            <include name="ant-1.*.jar"/>
-          </fileset>
+            <pathelement location="${ant.home}/lib/ant.jar"/>
         </classpath>        
       </javac>     
 
-      <javac srcdir="src" destdir="src"
+      <javac srcdir="src" destdir="build/classes"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}"> 
         <classpath>		
-          <fileset dir="../external">
-            <include name="ant-1.*.jar"/>
-          </fileset>
+            <pathelement location="${ant.home}/lib/ant.jar"/>
         </classpath>
       </javac>
   </target>
   
   <target name="jar" depends="compile">
     <mkdir dir="lib"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="lib/xtest-pes.jar"
-            basedir="src"
-            manifest="manifest-subst.mf"
+            basedir="build/classes"
+            manifest="manifest.mf"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="false"
             includes="org/netbeans/xtest/**"/>
@@ -59,16 +65,13 @@
     <zip zipfile="xtest-pes-distribution.zip">
      	<zipfileset dir="lib" prefix="lib" includes="**/*.jar,**/*.xsl"/>
      	<zipfileset dir="bin" prefix="bin" includes="xtest-pes.sh"/>
+        <!-- This could be removed when bin/xtest-pes.sh uses $ANT_HOME/lib/ant.jar -->
      	<zipfileset  dir="../external/" prefix="lib" includes="ant-1.4.1.jar"/>
      </zip>  
   </target>
   
   <target name="clean">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
+    <delete dir="build"/>
     <delete dir="lib"/>
     <delete file="xtest-pes-distribution.zip"/>
   </target>  

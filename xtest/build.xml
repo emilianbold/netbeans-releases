@@ -20,17 +20,18 @@ Microsystems, Inc. All Rights Reserved.
   <property name="build.compiler.deprecation" value="off"/>    
   <property name="build.compiler.debug" value="on"/>
   <property name="xtest.license.file" location="xtest-license.txt"/>
-  <property name="nbext" value="../nbbuild"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="plugins.install.dir" location="plugins"/>
 
   <property name="ant.jar" location="${ant.home}/lib/ant.jar"/>
-  
-  <target name="prepare-nbjunit">
-    <ant dir="nbjunit" antfile="build.xml" target="jar-nbjunit"/>
-    <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
-    <copy file="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar" todir="lib"/>
+
+  <property name="build.classes.dir" location="build/classes"/>
+    
+  <target name="prepare-nbjunit" depends="init">
+    <ant dir="nbjunit" target="jar-nbjunit" inheritAll="false"/>
+    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit.jar" todir="lib"/>
+    <copy file="${xtest/nbjunit.dir}/${nb.modules.dir}/ext/nbjunit-ide.jar" todir="lib"/>
   </target>
 
   <target name="init" depends="default.init">
@@ -48,7 +49,8 @@ Microsystems, Inc. All Rights Reserved.
         </fileset>
 	<pathelement location="lib/nbjunit.jar"/>
     </path>
-    <javac srcdir="src" destdir="src"
+    <mkdir dir="${build.classes.dir}"/>
+    <javac srcdir="src" destdir="${build.classes.dir}"
            deprecation="${build.compiler.deprecation}"
            debug="${build.compiler.debug}">       
       <classpath refid="basecp"/>
@@ -60,12 +62,9 @@ Microsystems, Inc. All Rights Reserved.
   <target name="jars" depends="compile">
     <mkdir dir="lib"/>
     <mkdir dir="lib/patches"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-
     <jar jarfile="lib/xtest.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
+            manifest="manifest.mf"
+            basedir="${build.classes.dir}"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
 	<include name="org/netbeans/xtest/**"/>
@@ -74,8 +73,8 @@ Microsystems, Inc. All Rights Reserved.
     </jar>	    
     
     <jar jarfile="lib/xtest-junit-testrunner.jar"
-            manifest="manifest-subst.mf"
-            basedir="src"
+            manifest="manifest.mf"
+            basedir="${build.classes.dir}"
             excludesfile="../nbbuild/standard-jar-excludes.txt"
             compress="false">
 	<include name="org/netbeans/xtest/testrunner/**"/>
@@ -90,7 +89,6 @@ Microsystems, Inc. All Rights Reserved.
   <!-- builds XTest's plugins -->
   <target name="build-plugins">
     <mkdir dir="${plugins.install.dir}"/>
-
     <ant dir="plugins_src/base" target="deploy"/>
     <ant dir="plugins_src/jvm" target="deploy"/>    
     <ant dir="plugins_src/ide" target="deploy"/>
@@ -100,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
   
   
   <target name="makedist">
-     <!-- build xtest from nbbuil, so required openide/core modules are built as well -->     
+     <!-- build xtest from nbbuild, so required openide/core modules are built as well -->     
      <ant dir="../nbbuild" target="all-xtest">
         <property name="netbeans.no.pre.unscramble" value="true"/>
      </ant>
@@ -114,30 +112,20 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="netbeans" depends="build-all"/>
 
-  <target name="clean-xtest" depends="init">
-    <ant dir="nbjunit" antfile="build.xml" target="clean"/>
+  <target name="clean-xtest">
+    <ant dir="nbjunit" target="clean"/>
     <delete file="lib/nbjunit.jar"/>
     <delete file="lib/nbjunit-ide.jar"/>
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-    </delete>
-    <delete file="manifest-subst.mf"/>
+    <delete dir="build"/>
     <delete file="module-manifest-subst.mf"/>
     <delete file="lib/directories.properties"/>
     <delete dir="lib/patches"/>
     <delete file="lib/xtest.jar"/>
-    <delete file="lib/xtest-ide-plugin.jar"/>
     <delete file="lib/junit.jar"/>
-    <delete file="lib/xalan.jar"/>
-    <delete file="lib/xerces.jar"/>
-    <delete file="lib/xml-apis.jar"/>
     <delete file="lib/xtest-junit-testrunner.jar"/>
     <delete file="xtest-distribution.zip"/>
     <delete file="xtest-pes-distribution.zip"/>
     <delete dir="${plugins.install.dir}"/>
-    <ant antfile="module_build.xml" target="clean"/>
   </target>
   
    <target name="clean-plugins">
@@ -148,9 +136,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   
-  <target name="clean" depends="clean-xtest,clean-plugins">    
-
-  </target>
+  <target name="clean" depends="clean-xtest,clean-plugins"/>
 
   <target name="real-clean" depends="clean">
     <!-- depending modules -->
