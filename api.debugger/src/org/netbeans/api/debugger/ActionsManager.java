@@ -132,8 +132,9 @@ public final class ActionsManager {
      *    in this class with ACTION_ prefix)
      * @return true if action has been performed
      */
-   public final boolean doAction (Object action) {
-        return fireActionDone (action, doActionIn (action));
+    public final void doAction (Object action) {
+        doActionIn (action);
+        fireActionDone (action);
     }
     
     /**
@@ -225,9 +226,8 @@ public final class ActionsManager {
      *
      * @param breakpoint  a breakpoint that was removed
      */
-    private boolean fireActionDone (
-        final Object action, 
-        boolean succeed
+    private void fireActionDone (
+        final Object action
     ) {
         initListeners ();
         Vector l = (Vector) listener.clone ();
@@ -239,17 +239,16 @@ public final class ActionsManager {
         int i, k = l.size ();
         for (i = 0; i < k; i++)
             ((ActionsManagerListener) l.elementAt (i)).actionPerformed ( 
-                action, succeed
+                action
             );
         if (l1 != null) {
             k = l1.size ();
             for (i = 0; i < k; i++)
                 ((ActionsManagerListener) l1.elementAt (i)).actionPerformed 
-                    (action, succeed);
+                    (action);
         }
 //        if ((action == DebuggerManager.ACTION_KILL) && succeed)
 //            destroyDebuggerEngineListeners ();
-        return succeed;
     }
 
     /**
@@ -289,17 +288,16 @@ public final class ActionsManager {
     
     // private support .........................................................
 
-    private final boolean doActionIn (Object action) {
+    private final void doActionIn (Object action) {
         if (actionProviders == null) initActionImpls ();
         ArrayList l = (ArrayList) actionProviders.get (action);
         if (l != null) {
             l = (ArrayList) l.clone ();
             int i, k = l.size ();
             for (i = 0; i < k; i++)
-                if (((ActionsProvider) l.get (i)).doAction (action))
-                    return true;
+                if (((ActionsProvider) l.get (i)).isEnabled (action))
+                    ((ActionsProvider) l.get (i)).doAction (action);
         }
-        return false;
     }
     
     private void registerActionsProvider (Object action, ActionsProvider p) {

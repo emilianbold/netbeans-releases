@@ -46,10 +46,9 @@ public interface ActionsManagerListener extends EventListener {
      * Called when some action is performed.
      *
      * @param action action constant
-     * @param success is true if action has been successfuly performed
      */
     public void actionPerformed (
-        Object action, boolean success
+        Object action
     );
     
     /**

@@ -51,13 +51,13 @@ implements PropertyChangeListener {
         return Collections.singleton (DebuggerManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
-    public boolean doAction (Object action) {
+    public void doAction (Object action) {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
         int ln = Context.getCurrentLineNumber ();
         String url = Context.getCurrentURL ();
-        if (url == null) return true;
+        if (url == null) return;
         
         // 2) find and remove existing line breakpoint
         Breakpoint[] bs = d.getBreakpoints ();
@@ -68,7 +68,7 @@ implements PropertyChangeListener {
             if (ln != lb.getLineNumber ()) continue;
             if (!url.equals (lb.getURL ())) continue;
             d.removeBreakpoint (lb);
-            return true;
+            return;
         }
         
         // 3) create a new line breakpoint
@@ -77,6 +77,5 @@ implements PropertyChangeListener {
             ln
         );
         d.addBreakpoint (p);
-        return true;
     }
 }

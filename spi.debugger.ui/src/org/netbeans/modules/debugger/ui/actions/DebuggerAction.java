@@ -90,7 +90,7 @@ public abstract class DebuggerAction extends AbstractAction {
             });
         }
         
-        public void actionPerformed (Object action, boolean success) {
+        public void actionPerformed (Object action) {
         }
         public void actionStateChanged (
             final Object action, 

@@ -36,7 +36,7 @@ public abstract class ActionsProviderSupport extends ActionsProvider {
      *
      * @param action an action which has been called
      */
-    public abstract boolean doAction (Object action);
+    public abstract void doAction (Object action);
     
     /**
      * Returns a state of given action defined by {@link #setEnabled} 

@@ -36,7 +36,7 @@ public abstract class ActionsProvider {
      *
      * @param action an action which has been called
      */
-    public abstract boolean doAction (Object action);
+    public abstract void doAction (Object action);
     
     /**
      * Should return a state of given action.

@@ -28,9 +28,8 @@ public class ActionsManagerAdapter implements ActionsManagerListener {
      * Called when some action is performed.
      *
      * @param action action constant
-     * @param success returns true if action has been successfuly performed
      */
-    public void actionPerformed (Object action, boolean success) {
+    public void actionPerformed (Object action) {
     }
     
     /**

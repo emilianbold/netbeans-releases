@@ -68,7 +68,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         return Collections.singleton (DebuggerManager.ACTION_RUN_TO_CURSOR);
     }
     
-    public boolean doAction (Object action) {
+    public void doAction (Object action) {
         if (breakpoint != null) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;
@@ -82,6 +82,5 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         session.getEngineForLanguage ("Java").getActionsManager ().doAction (
             DebuggerManager.ACTION_CONTINUE
         );
-        return true;
     }
 }
