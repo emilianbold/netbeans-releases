@@ -15,4 +15,7 @@
     <folder name="baz">
         <file name="thingy"/>
     </folder>
+    <folder name="bug39210">
+        <file name="inline.txt">MyContent</file>
+    </folder>
 </filesystem>
