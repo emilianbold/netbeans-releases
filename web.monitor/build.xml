@@ -51,7 +51,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <!-- These are the primary targets. -->
 
-  <target name="netbeans" depends="jars,javahelp,release"/>
+  <target name="netbeans" depends="jars,javahelp,copy-to-tomcat"/>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="monitor.nbm"
@@ -114,17 +114,27 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
 
-  <target name="release" if="have-catalina" depends="compile-catalina-check">
-    <!-- Carrefully - we copy these files into directory where bundled tomcat resides
-         in order to have all required libraries installed. The assumption here is that 
-         they will be in the same directory as the rest of bundled Tomcat (it means there won't 
-         be a conflict between IDE instalation dir and user dir when installed from NBM
+  <target name="copy-to-tomcat" if="tomcat-bundled" depends="bundled-tomcat-check">
+    <!-- Originally added by Radim Kubacki. This target copies the
+    server side component directly to the installed Tomcat server,
+    should such a server exist, for release purposes. This makes sense
+    with the current approach to the bundled server installation,
+    where the shared binaries live under the IDE root and the
+    configuration files in the user directory. If the IDE is installed
+    as shared in a read-only directory, then those jar files cannot be
+    copied when an individual user requires it. 
+    The need for this target will be removed when we move the the
+    projects based deployment of the monitor. 
     --> 
     <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/schema2beans.jar"/>
     <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/httpmonitor.jar"/>
     <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/monitor-valve.jar"/>
   </target>
 
+  <target name="bundled-tomcat-check">
+    <available property="tomcat-bundled" 
+    file="${nb_root}/tomcatint/netbeans/tomcat40-bundled.jar.jar"/>
+  </target>
 
   <target name="compile"
 	  depends="setup-jdkhome, compile-core, compile-server,
@@ -166,12 +176,7 @@ Microsystems, Inc. All Rights Reserved.
      </javac>
   </target>
 
-  <target name="compile-catalina-check">
-    <available property="have-catalina" file="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/catalina.jar"/>
-  </target>
-
-  <target name="compile-catalina" if="have-catalina" depends="compile-server,compile-catalina-check">
-
+  <target name="compile-catalina">
     <javac srcdir="src" destdir="src"
          deprecation="${build.compiler.deprecation}" 
 	 debug="${build.compiler.debug}"
@@ -218,16 +223,18 @@ Microsystems, Inc. All Rights Reserved.
         <patternset excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt">
 	  <include name="org/netbeans/modules/web/monitor/server/"/>
           <include name="org/netbeans/modules/web/monitor/data/"/>
-          <include name="org/netbeans/modules/web/monitor/catalina/MonitorUtil**"/>	
         </patternset>
       </fileset>
     </jar>
   </target>
 
-  <target name="catalina-jar" if="have-catalina">
+  <target name="catalina-jar">
  <!-- NOTE: this is not an IDE module. It is deployed on the execution 
       server. It will not be deployed correctly if we build a separate 
-      version for another language --> 
+      version for another language. 
+      This jar file will no longer be required when we switch to J2EE
+      1.4. 
+   --> 
   <jar jarfile="netbeans/modules/ext/monitor-valve.jar"
          compress="false">
       <fileset dir="src">
