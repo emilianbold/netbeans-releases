@@ -7,13 +7,12 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package gui.javahelp;
 
-import java.awt.EventQueue;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 
@@ -54,7 +53,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
         suite.addTest(new JavaHelpDialogTest("testHelpF1"));
         suite.addTest(new JavaHelpDialogTest("testHelpFromMenu"));
         suite.addTest(new JavaHelpDialogTest("testHelpByButtonNonModal"));
-        //TODO Help button is no more visible in Setup Wizard suite.addTest(new JavaHelpDialogTest("testHelpByButtonModal"));
+        suite.addTest(new JavaHelpDialogTest("testHelpByButtonModal"));
         suite.addTest(new JavaHelpDialogTest("testSearchInIndex"));
         suite.addTest(new JavaHelpDialogTest("testContextualSearch"));
         //suite.addTest(new JavaHelpDialogTest("testHelpByButtonNestedModal"));
@@ -107,10 +106,12 @@ public class JavaHelpDialogTest extends JellyTestCase {
     
     public void testHelpByButtonModal(){
         String toolsMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Tools"); // Tools
-        String setupWizardMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "LBL_SetupWizard"); // Setup Wizard
+        //String setupWizardMenu = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "LBL_SetupWizard"); // Setup Wizard
+        String javaPlatformMenu = "Java Platform Manager";
         
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu+"|"+setupWizardMenu,"|"); 
-        new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenuNoBlock(toolsMenu+"|"+javaPlatformMenu,"|"); 
+        //new NbDialogOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.core.ui.Bundle", "CTL_SetupWizardTitle")).help();    // Setup Wizard
+        new NbDialogOperator("Java Platform Manager").help();    // Java Platform Manager
         new NbDialogOperator(org.netbeans.jellytools.Bundle.getString("org.netbeans.core.Bundle", "CTL_Help"));      // Help
     }
     
@@ -124,7 +125,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
         helpWindow.selectPageIndex();
         helpWindow.indexFind("compile");
         try{
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         }catch(Exception exc){
             exc.printStackTrace(err);
         }
@@ -144,7 +145,7 @@ public class JavaHelpDialogTest extends JellyTestCase {
         helpWindow.searchFind("compile");
         
         try{
-            Thread.sleep(10000);
+            Thread.sleep(5000);
         }catch(Exception exc){
             exc.printStackTrace(err);
         }
