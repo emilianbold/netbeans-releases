@@ -17,6 +17,7 @@ package org.netbeans.modules.image;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.text.MessageFormat;
 import java.util.Enumeration;
 import javax.swing.Icon;
@@ -77,6 +78,19 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
         if(fileChangeL == null) {
             fileChangeL = new FileChangeAdapter() {
                 public void fileChanged(final FileEvent evt) {
+                    if(allEditors.isEmpty()) {
+                        return;
+                    }
+                    
+                    if(evt.getFile().isVirtual()) {
+                        entry.getFile().removeFileChangeListener(this);
+                        // File doesn't exist on disk - simulate env
+                        // invalidation.
+                        ((Environment)ImageOpenSupport.this.env).fileRemoved();
+                        entry.getFile().addFileChangeListener(this);
+                        return;
+                    }
+                    
                     if (evt.getTime() > lastSaveTime) {
                         lastSaveTime = System.currentTimeMillis();
                         
@@ -139,6 +153,19 @@ public class ImageOpenSupport extends OpenSupport implements OpenCookie, CloseCo
         /** Overrides superclass method. Gets from OpenCookie. */
         public CloneableOpenSupport findCloneableOpenSupport() {
             return (CloneableOpenSupport)getDataObject().getCookie(OpenCookie.class);
+        }
+        
+        /** Called from enclosing support.
+         * The components are going to be closed anyway and in case of
+         * modified document its asked before if to save the change. */
+        private void fileRemoved() {
+            try {
+                fireVetoableChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
+            } catch(PropertyVetoException pve) {
+                // Ignore.
+            }
+            
+            firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
         }
     } // End of nested Environment class.
 }
