@@ -16,6 +16,7 @@ package org.netbeans.modules.java.j2seproject;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Properties;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -166,7 +167,7 @@ public class
         assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/**", p.getProperty("javac.includes"));
         p = new Properties();
         context = Lookups.fixed(new DataObject[] {sourcePkg1, sourcePkg2});
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
@@ -174,7 +175,7 @@ public class
         assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
-        assertEquals("There must be be target parameter", "foo/,foo2/", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/**,foo2/**", p.getProperty("javac.includes"));
         p = new Properties();
         context = Lookups.fixed(new DataObject[] {DataFolder.findFolder(sources)});
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
@@ -183,6 +184,31 @@ public class
         assertEquals("Unexpected target name", "compile-single", targets[0]);
         assertEquals("There must be one target parameter", 1, p.keySet().size());
         assertEquals("There must be be target parameter", "**", p.getProperty("javac.includes"));
+        
+        p = new Properties();
+        context = Lookups.fixed(new Object[] {sourcePkg1, new NonRecursiveFolderImpl (sourcePkg1)});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/*", p.getProperty("javac.includes"));
+        p = new Properties();
+        context = Lookups.fixed(new Object[] {sourcePkg1, sourcePkg2, new NonRecursiveFolderImpl(sourcePkg1), new NonRecursiveFolderImpl(sourcePkg2)});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "foo/*,foo2/*", p.getProperty("javac.includes"));
+        p = new Properties();
+        context = Lookups.fixed(new Object[] {DataFolder.findFolder(sources), new NonRecursiveFolderImpl(sources)});
+        targets = actionProvider.getTargetNames(ActionProvider.COMMAND_COMPILE_SINGLE, context, p);
+        assertNotNull("Must found some targets for COMMAND_COMPILE_SINGLE", targets);
+        assertEquals("There must be one target for COMMAND_COMPILE_SINGLE", 1, targets.length);
+        assertEquals("Unexpected target name", "compile-single", targets[0]);
+        assertEquals("There must be one target parameter", 1, p.keySet().size());
+        assertEquals("There must be be target parameter", "*", p.getProperty("javac.includes"));
         
         // test COMMAND_TEST_SINGLE
 
@@ -572,6 +598,26 @@ public class
         context = Lookups.fixed(new DataObject[] {someSource1, someTest1});
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_DEBUG_SINGLE, context);
         assertFalse("COMMAND_DEBUG_SINGLE must be disabled on mixed multiple test files", enabled);
+    }
+    
+    
+    private static final class NonRecursiveFolderImpl implements NonRecursiveFolder {
+        
+        private FileObject fobj;
+        
+        public NonRecursiveFolderImpl (DataObject dobj) {
+            assert dobj != null;
+            this.fobj = dobj.getPrimaryFile();
+        }
+        
+        public NonRecursiveFolderImpl (FileObject fobj) {
+            assert fobj != null;
+            this.fobj = fobj;
+        }
+                
+        public FileObject getFolder() {
+            return this.fobj;
+        }        
     }
 
 }

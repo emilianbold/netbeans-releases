@@ -25,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -149,14 +150,15 @@ class J2SEActionProvider implements ActionProvider {
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             FileObject[] sourceRoots = project.getSourceRoots().getRoots();
             FileObject[] files = findSourcesAndPackages( context, sourceRoots);
+            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
             if (files != null) {
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]))); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
                 targetNames = new String[] {"compile-single"}; // NOI18N
             } 
             else {
                 FileObject[] testRoots = project.getTestSourceRoots().getRoots();
                 files = findSourcesAndPackages(context, testRoots);
-                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]))); // NOI18N
+                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
                 targetNames = new String[] {"compile-test-single"}; // NOI18N
             }
         } 
