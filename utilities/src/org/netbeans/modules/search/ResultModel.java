@@ -55,6 +55,9 @@ public class ResultModel implements NodeAcceptor, TaskListener {
   /** Which criteria produced this result. */
   private CriteriaModel criteria;
   
+  private boolean useDisp = false;
+  private SearchDisplayer disp = null;
+  
   /** Creates new ResultModel */
   public ResultModel(CriteriaModel model) {       
     
@@ -65,14 +68,32 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
   /** Some nodes was found by engine.
   */
-  public boolean acceptNodes(Node[] nodes) {
+  public synchronized boolean acceptNodes(Node[] nodes) {
             
     root.getChildren().add(nodes);    
     found += nodes.length;
     
+    if (useDisp && disp != null) {
+      disp.acceptNodes(nodes);
+    }
+    
     return true;
   }
 
+  /** Wherher mirror search sesults in output window. 
+  * @return new state
+  */
+  synchronized boolean fillOutput (boolean fill) {
+    if (useDisp) return true;
+    
+    useDisp = true;
+    
+    disp = new SearchDisplayer();
+    disp.acceptNodes(root.getChildren().getNodes());
+    
+    return true;
+  }
+  
   /** Is search engine still running?  */
   public boolean isDone() {
     return done;
@@ -97,6 +118,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
   public CriteriaModel getCriteriaModel() {
     return criteria;
   }
+
   
   /** Search task finished. Notify all listeners.
   */
@@ -180,6 +202,7 @@ public class ResultModel implements NodeAcceptor, TaskListener {
 
 /* 
 * Log
+*  10   Gandalf-post-FCS1.8.2.0     2/24/00  Ian Formanek    Post FCS changes
 *  9    Gandalf   1.8         1/13/00  Radko Najman    I18N
 *  8    Gandalf   1.7         1/5/00   Petr Kuzel      Margins used. Help 
 *       contexts.

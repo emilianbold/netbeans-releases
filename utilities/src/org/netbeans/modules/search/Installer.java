@@ -75,7 +75,7 @@ public class Installer extends ModuleInstall {
     }
 
     // define default criteria tab order
-    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ModificationDateType.class} );
+    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
     
     restored();
   }
@@ -83,6 +83,10 @@ public class Installer extends ModuleInstall {
   /** Start listening at SELECTED_NODES.
   */
   public void restored () {
+    
+    // TODO listen on new project
+    Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
+    
     SearchEngine.setDefault (new SearchEngineImpl ());
     
     hook = new SearchHook(new SearchPerformer());
@@ -124,6 +128,7 @@ public class Installer extends ModuleInstall {
 
 /* 
 * Log
+*  12   Gandalf-post-FCS1.10.2.0    2/24/00  Ian Formanek    Post FCS changes
 *  11   Gandalf   1.10        1/16/00  Jesse Glick     Installing implementation
 *       to search API.
 *  10   Gandalf   1.9         1/15/00  Jesse Glick     Actions pool 
