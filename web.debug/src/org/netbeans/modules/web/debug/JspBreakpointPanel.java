@@ -14,7 +14,7 @@
 package org.netbeans.modules.web.debug;
 
 import org.openide.*;
-import org.openide.NotifyDescriptor.Message;
+//import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
 
 import java.net.URI;
