@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.lang.ref.WeakReference;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -80,7 +81,7 @@ final class ResultView extends TopComponent
      *
      * @see  #getInstance
      */
-    private static ResultView instance = null;
+    private static WeakReference instance = null;
     
     /** manages the tree of nodes representing found objects */
     private final ExplorerManager explorerManager;
@@ -105,11 +106,12 @@ final class ResultView extends TopComponent
      * @return  singleton of this <code>TopComponent</code>
      */
     static synchronized ResultView getInstance() {
-        if (instance == null) {
-            instance = (ResultView)
-                       WindowManager.getDefault().findTopComponent(ID);
+        ResultView view;
+        view = (ResultView) WindowManager.getDefault().findTopComponent(ID);
+        if (view == null) {
+            view = getDefault();
         }
-        return instance;
+        return view;
     }
 
     /**
@@ -123,10 +125,18 @@ final class ResultView extends TopComponent
      * @return  singleton - instance of this class
      */
     public static synchronized ResultView getDefault() {
+        ResultView view;
         if (instance == null) {
-            instance = new ResultView();
+            view = new ResultView();
+            instance = new WeakReference(view);
+        } else {
+            view = (ResultView) instance.get();
+            if (view == null) {
+                view = new ResultView();
+                instance = new WeakReference(view);
+            }
         }
-        return instance;
+        return view;
     }
     
     /** Creates a new <code>ResultView</code>. */
