@@ -148,18 +148,18 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
     /**
      * Returns true if the admin server should be started before configure.
      */
-    public boolean needsStartForConfigure() { return false; } //PENDING: review
+    public boolean needsStartForConfigure() { return false; }
 
     /**
      * Returns true if the admin server should be started before asking for
      * target list.
      */
-    public boolean needsStartForTargetList() { return false; } //PENDING: review
+    public boolean needsStartForTargetList() { return false; }
 
     /**
      * Returns true if the admin server should be started before admininistrative configuration.
      */
-    public boolean needsStartForAdminConfig() { return false; } //PENDING: review
+    public boolean needsStartForAdminConfig() { return false; }
 
     /**
      * Returns true if this admin server is running.
