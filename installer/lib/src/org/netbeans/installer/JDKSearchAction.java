@@ -112,31 +112,57 @@ public class JDKSearchAction extends CancelableWizardAction  {
             logEvent(this, Log.DBG,"Checking Win32 Registry ... ");
             Win32RegistryService regserv = (Win32RegistryService)getService(Win32RegistryService.NAME);
             int HKLM = Win32RegistryService.HKEY_LOCAL_MACHINE;
+            //SUN JDK
             String HKEY_jdk = "Software\\JavaSoft\\Java Development Kit";
-            String[] subKeyNames = regserv.getSubkeyNames(HKLM, HKEY_jdk);
-            
-            if (subKeyNames.length != 0) {
-                for (int i=0; i < subKeyNames.length; i++) {
-                    try {
-                        if (Util.isAboveOrEqualMinimumVersion("1.4.2", subKeyNames[i])) {
-                            String HKEY_jdkVersion = HKEY_jdk + "\\" + subKeyNames[i];
-                            jdkHome  = regserv.getStringValue(HKLM, HKEY_jdkVersion, "JavaHome", false);
-                            if(JDKInfo.checkJdkHome(this, jdkHome)) 
-                                addToList(jdkHome);
+            if (regserv.keyExists(HKLM, HKEY_jdk)) {
+                String[] subKeyNames = regserv.getSubkeyNames(HKLM, HKEY_jdk);
+                if (subKeyNames.length != 0) {
+                    for (int i = 0; i < subKeyNames.length; i++) {
+                        try {
+                            logEvent(this, Log.DBG,"JavaSoft subkey: " + subKeyNames[i]);
+                            if (Util.isAboveOrEqualMinimumVersion("1.4.2", subKeyNames[i])) {
+                                String HKEY_jdkVersion = HKEY_jdk + "\\" + subKeyNames[i];
+                                jdkHome  = regserv.getStringValue(HKLM, HKEY_jdkVersion, "JavaHome", false);
+                                if (JDKInfo.checkJdkHome(this, jdkHome)) {
+                                    addToList(jdkHome);
+                                }
+                            }
                         }
-                    } 
-                    catch (Exception ex) {
-                        Util.logStackTrace(this, ex);
+                        catch (Exception ex) {
+                            Util.logStackTrace(this, ex);
+                        }
                     }
                 }
-                
+            }
+            //IBM JDK
+            HKEY_jdk = "Software\\IBM\\Java Development Kit";
+            if (regserv.keyExists(HKLM, HKEY_jdk)) {
+                String[] subKeyNames = regserv.getSubkeyNames(HKLM, HKEY_jdk);
+
+                if (subKeyNames.length != 0) {
+                    for (int i = 0; i < subKeyNames.length; i++) {
+                        try {
+                            logEvent(this, Log.DBG,"IBM subkey: " + subKeyNames[i]);
+                            if (Util.isAboveOrEqualMinimumVersion("1.4.2", subKeyNames[i])) {
+                                String HKEY_jdkVersion = HKEY_jdk + "\\" + subKeyNames[i];
+                                jdkHome  = regserv.getStringValue(HKLM, HKEY_jdkVersion, "JavaHome", false);
+                                if (JDKInfo.checkJdkHome(this, jdkHome)) {
+                                    addToList(jdkHome);
+                                }
+                            }
+                        } 
+                        catch (Exception ex) {
+                            Util.logStackTrace(this, ex);
+                        }
+                    }
+                }
             }
         } 
         catch (Exception ex) {
             Util.logStackTrace(this, ex);
         }
     }
-          
+    
     void findUnixJDK(){
         String jdkHome;
         // Try the standard places first
