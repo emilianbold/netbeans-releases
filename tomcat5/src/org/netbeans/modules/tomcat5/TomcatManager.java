@@ -322,6 +322,20 @@ public class TomcatManager implements DeploymentManager {
         return catalinaDir;        
     }
 
+    /**
+     * Return path to catalina work directory, which is used to store generated 
+     * sources and classes from JSPs.
+     *
+     * @return path to catalina work directory.
+     */
+    public String getCatalinaWork() {
+        String engineName = getEngineElement().getAttributeValue("name"); //NOI18N
+        String hostName = getHostElement().getAttributeValue("name"); //NOI18N
+        StringBuffer catWork = new StringBuffer(getCatalinaDir().getAbsolutePath());
+        catWork.append("/work/").append(engineName).append("/").append(hostName); //NOI18N
+        return catWork.toString(); 
+    }
+    
     public FileObject getCatalinaBaseFileObject() {
         if (catalinaBaseDir!=null) return catalinaBaseDir;
         File baseDir = getCatalinaBaseDir();
@@ -1308,6 +1322,7 @@ public class TomcatManager implements DeploymentManager {
         boolean isTimestamped = Boolean.valueOf(timestamp).booleanValue();
         
         String msg = null; // error message
+        String catalinaWork = getCatalinaWork();
         // ensure only one thread will be opened
         synchronized(lock) {
             if (logViewer != null && logViewer.isOpen()) {
@@ -1315,9 +1330,9 @@ public class TomcatManager implements DeploymentManager {
                 return;
             }
             try {
-                logViewer = new LogViewer(catalinaDir, className, dir, prefix, 
-                        suffix, isTimestamped, true);
-                logViewer.start();                
+                logViewer = new LogViewer(catalinaDir, catalinaWork, className, 
+                        dir, prefix, suffix, isTimestamped, false);
+                logViewer.start();
                 return;
             } catch (UnsupportedLoggerException e) {
                 msg = NbBundle.getMessage(TomcatManager.class, 
@@ -1355,9 +1370,9 @@ public class TomcatManager implements DeploymentManager {
             Engine engine = getEngineElement();
             if  (engine != null && engine.isLogger()) {
                 return true;
-            }            
+            }
         }
         return false;
-    }  
+    }
     
 }

@@ -52,7 +52,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
     private static final String CONTEXT_XML_PATH = File.separator + "META-INF" + File.separator + "context.xml";  // NOI18N
  
     private final TomcatModule tomcatModule;
-    private final DeploymentManager manager;    
+    private final TomcatManager manager;
     
     private boolean isRunning;
     
@@ -66,7 +66,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
     /** Creates a new instance of TomcatWebModule */
     public TomcatWebModule(DeploymentManager manager, TomcatModule tomcatModule, boolean isRunning) {
         this.tomcatModule = tomcatModule;
-        this.manager = manager;
+        this.manager = (TomcatManager)manager;
         this.isRunning = isRunning;
         target = new TargetModuleID[]{tomcatModule};
     }
@@ -158,7 +158,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
      * @return context element from server.xml if defined, <code>null</code> otherwise
      */
     private SContext getSContext() {
-        Server server = ((TomcatManager)manager).getRoot();
+        Server server = manager.getRoot();
         if (server == null) return null;
         String path = tomcatModule.getPath();
         if (path.equals("/")) path = ""; // NOI18N
@@ -188,8 +188,8 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
     /**
      * Opens the log file defined for this web moudel in the ouput window.
      */
-    public void openLog() {        
-        File catalinaDir = ((TomcatManager)manager).getCatalinaDir();
+    public void openLog() {
+        File catalinaDir = manager.getCatalinaDir();
         String className = null;
         String dir = null;
         String prefix = null;
@@ -201,7 +201,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
             className = ctx.getLoggerClassName();
             dir = ctx.getLoggerDirectory();
             prefix = ctx.getLoggerPrefix();
-            suffix = ctx.getLoggerSuffix();            
+            suffix = ctx.getLoggerSuffix();
             timestamp = ctx.getLoggerTimestamp();
         } else {
             SContext sCtx = getSContext();
@@ -210,10 +210,10 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
             dir = sCtx.getAttributeValue(SContext.LOGGER, "directory"); // NOI18N
             prefix = sCtx.getAttributeValue(SContext.LOGGER, "prefix"); // NOI18N
             suffix = sCtx.getAttributeValue(SContext.LOGGER, "suffix"); // NOI18N
-            timestamp = sCtx.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N         
+            timestamp = sCtx.getAttributeValue(SContext.LOGGER, "timestamp"); // NOI18N
         }        
         boolean isTimestamped = Boolean.valueOf(timestamp).booleanValue();
-        
+        String catalinaWork = manager.getCatalinaWork();
         String msg = null; // error message
         // ensure only one thread will be opened
         synchronized(lock) {
@@ -222,8 +222,8 @@ public class TomcatWebModule implements TomcatWebModuleCookie{
                 return;
             }
             try {
-                logViewer = new LogViewer(catalinaDir, className, dir, prefix, 
-                        suffix, isTimestamped, true);
+                logViewer = new LogViewer(catalinaDir, catalinaWork, className, dir, prefix, 
+                        suffix, isTimestamped, false);
                 logViewer.start();
                 return;
             } catch (UnsupportedLoggerException e) {

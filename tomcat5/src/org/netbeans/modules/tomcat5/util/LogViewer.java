@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -34,10 +32,6 @@ import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.windows.*;
 
-
-
-
-
 /**
  * Thread which displays Tomcat log files in the output window. The output 
  * window name equals prefix minus trailing dot, if present.
@@ -47,39 +41,42 @@ import org.openide.windows.*;
  *
  * @author  Stepan Herold
  */
-public class LogViewer extends Thread {   
-    private Map/*<String, Link>*/ links = new HashMap();
-    private Annotation errAnnot;
+public class LogViewer extends Thread {
     private volatile boolean stop = false;
-    private InputOutput inOut;    
-    
+    private InputOutput inOut;
+    private OutputWriter writer;
+    private OutputWriter errorWriter;
     private File directory;
     private String prefix;
     private String suffix;
     private boolean isTimestamped;
     private boolean takeFocus;    
     
+    private ContextLogSupport logSupport;    
+    
     /**
-     * Creates a new LogViewer thread.
+     * Create a new LogViewer thread.
      *
-     * @param catalinaDir catalina directory (CATALINA_BASE or CATALINA_HOME)
+     * @param catalinaDir catalina directory (CATALINA_BASE or CATALINA_HOME).
+     * @param catalinaWorkDir work directory where Tomcat stores generated classes
+     *        and sources from JSPs (e.g. $CATALINA_BASE/work/Catalina/localhost).
      * @param className class name of logger implementation
      * @param directory absolute or relative pathname of a directory in which log 
-     * files reside, if null catalina default is used
-     * @param prefix log file prefix, if null catalina default is used
-     * @param suffix log file suffix, if null catalina default is used
-     * @param isTimestamped whether logged messages are timestamped
-     * @param takeFocus whether output window should get focus after each change
+     *        files reside, if null catalina default is used.
+     * @param prefix log file prefix, if null catalina default is used.
+     * @param suffix log file suffix, if null catalina default is used.
+     * @param isTimestamped whether logged messages are timestamped.
+     * @param takeFocus whether output window should get focus after each change.
      * 
-     * @throws NullPointerException if catalinaDir parameter is null
+     * @throws NullPointerException if catalinaDir parameter is <code>null</code>.
      * @throws UnsupportedLoggerException logger specified by the className parameter
-     * is not supported
+     *         is not supported.
      */
-    public LogViewer(File catalinaDir, String className, String directory, 
-            String prefix, String suffix, boolean isTimestamped, 
-            boolean takeFocus) throws UnsupportedLoggerException {        
+    public LogViewer(File catalinaDir, String catalinaWorkDir, String className, 
+            String directory, String prefix, String suffix, boolean isTimestamped, 
+            boolean takeFocus) throws UnsupportedLoggerException {
         super("LogViewer - Thread"); // NOI18N
-        if (catalinaDir == null) throw new NullPointerException();        
+        if (catalinaDir == null) throw new NullPointerException();
         if (!"org.apache.catalina.logger.FileLogger".equals(className)) { // NOI18N
             throw new UnsupportedLoggerException(className);
         }
@@ -112,6 +109,17 @@ public class LogViewer extends Thread {
         if (trailingDot > -1) displayName = displayName.substring(0, trailingDot);
         
         inOut = IOProvider.getDefault().getIO(displayName, false);
+        try {
+            inOut.getOut().reset();
+        } 
+        catch (IOException e) {
+            // not a critical error, continue
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }        
+        inOut.select();
+        writer = inOut.getOut();
+        errorWriter = inOut.getErr();
+        logSupport = new ContextLogSupport(catalinaWorkDir);
     }
     
     /**
@@ -153,27 +161,30 @@ public class LogViewer extends Thread {
         return df.format(new Date());
     }
     
-    private Link getLink(String errorMsg) {
-        if (links.containsKey(errorMsg)) {
-            return (Link)links.get(errorMsg);
+    private void processLine(String line) {
+        ContextLogSupport.LineInfo lineInfo = logSupport.analyzeLine(line);
+        if (lineInfo.isError()) {
+            if (lineInfo.isAccessible()) {
+                try {
+                    errorWriter.println(line, logSupport.getLink(lineInfo.message(), lineInfo.path(), lineInfo.line()));
+                } catch (IOException ex) {
+                    ErrorManager.getDefault().notify(ex);
+                }
+            } else {
+                errorWriter.println(line);
+            }
         } else {
-            Link ln = new Link(errorMsg);
-            links.put(errorMsg, ln);
-            return ln;
+            writer.println(line);
         }
     }
     
     public void run() {
-        OutputWriter writer = inOut.getOut();
-        OutputWriter errorWriter = inOut.getErr();
         BufferedReader reader = null;
         String timestamp = getTimestamp();
         String oldTimestamp = timestamp;
         try {
             File logFile = getLogFile(timestamp);
             reader = new BufferedReader(new FileReader(logFile));
-            // remember error msg
-            String errorMsg = "";
             while (!stop && !inOut.isClosed()) {
                 // check whether a log file has rotated
                 timestamp = getTimestamp();
@@ -186,33 +197,23 @@ public class LogViewer extends Thread {
                 int count = 0;
                 // take a nap after 1024 read cycles, this should ensure responsiveness
                 // even if log file is growing fast
+                boolean updated = false;
                 while (reader.ready() && count++ < 1024) {
-                    String line = reader.readLine();
-                    if (line.trim().startsWith("at ")) { //NOI18N
-                        // stacktrace msg
-                        errorWriter.println(line, getLink(errorMsg));
-                    } else if (isTimestamped && line.length() > 0 
-                            && !Character.isDigit(line.charAt(0)))  {
-                        // if log msgs are timestamped try to filter exception msg
-                        errorMsg = line;
-                        errorWriter.println(line);
-                    } else {
-                        // other msg
-                        
-                        // if msgs are not timestamped, exceptions cannot be recognized,
-                        // consider then every msg as a possible exception and remember it
-                        errorMsg = line;
-                        writer.println(line);
-                    }
-                    errorWriter.flush();
+                    processLine(reader.readLine());
+                    updated = true;
+                }
+                if (updated) {
                     writer.flush();
-                    if (takeFocus) inOut.select();
+                    errorWriter.flush();
+                    if (takeFocus) {
+                        inOut.select();
+                    }                    
                 }
                 // wait for the next attempt
                 try {
                     synchronized(this) {
                         if (!stop &&  !inOut.isClosed()) {
-                            wait(1000);
+                            wait(100);
                         }
                     }
                 } catch(InterruptedException ex) {
@@ -229,81 +230,129 @@ public class LogViewer extends Thread {
                 // ok to ignore
             }
         }
-        if (errAnnot != null) {
-            errAnnot.detach();
-        }
+        logSupport.detachAnnotation();
     }
     
-    private static class ErrorAnnotation extends Annotation {
-        private String shortDesc = null;
+    /**
+     * Support class for context log line analyzation and for creating links in 
+     * the output window.
+     */
+    private static class ContextLogSupport extends LogSupport {
+        private final String CATALINA_WORK_DIR;
+        String context = null;
+        String prevMessage = null;
+        static final String STANDARD_CONTEXT = "StandardContext["; // NOI18N
+        static final int STANDARD_CONTEXT_LENGTH = STANDARD_CONTEXT.length();
+        private GlobalPathRegistry globalPathReg = GlobalPathRegistry.getDefault();
         
-        public ErrorAnnotation(String desc) {
-            shortDesc = desc;
+
+        public ContextLogSupport(String catalinaWork) {
+            CATALINA_WORK_DIR = catalinaWork;
         }
         
-        public String getAnnotationType() {
-            return "org-netbeans-modules-tomcat5-error"; // NOI18N
-        }
-        
-        public String getShortDescription() {
-            return shortDesc;
-        }
-        
-    }
-    
-    private class Link implements OutputListener {
-        private String errMsg = null;
-        
-        public Link(String errMsg) {
-            this.errMsg = errMsg;
-        }
-        
-        public void outputLineAction(OutputEvent ev) {
-            String line = ev.getLine().trim();
-            String classWithMethod = line.substring(line.indexOf(' ') + 1, line.indexOf('('));
-            String className = classWithMethod.substring(0,classWithMethod.lastIndexOf('.'));
-            String sourceFileName = className.replace('.','/') + ".java";
-            String lineNumber = line.substring(line.lastIndexOf(':') + 1, line.lastIndexOf(')'));
-            
-            FileObject sourceFile = GlobalPathRegistry.getDefault().findResource(sourceFileName);
-            DataObject dataObject = null;
-            if (sourceFile != null) {
-                try {
-                    dataObject = DataObject.find(sourceFile);
-                } catch(DataObjectNotFoundException ex) {
-                    // it's ok to ignore, msg will be shown by the if-else statement below
+        public LineInfo analyzeLine(String logLine) {
+            String path = null;
+            int line = -1;
+            String message = null;
+            boolean error = false;
+            boolean accessible = false;
+
+            logLine = logLine.trim();
+            int lineLenght = logLine.length();
+
+            // look for unix file links (e.g. /foo/bar.java:51: 'error msg')
+            if (logLine.startsWith("/")) {
+                error = true;
+                int colonIdx = logLine.indexOf(':');
+                if (colonIdx > -1) {
+                    path = logLine.substring(0, colonIdx);
+                    accessible = true;
+                    if (lineLenght > colonIdx) {
+                        int nextColonIdx = logLine.indexOf(':', colonIdx + 1);
+                        if (nextColonIdx > -1) {
+                            String lineNum = logLine.substring(colonIdx + 1, nextColonIdx);
+                            try {
+                                line = Integer.valueOf(lineNum).intValue();
+                            } catch(NumberFormatException nfe) { // ignore it
+                            }
+                            if (lineLenght > nextColonIdx) {
+                                message = logLine.substring(nextColonIdx + 1, lineLenght); 
+                            }
+                        }
+                    }
                 }
             }
-            if (dataObject != null) {
-                EditorCookie editorCookie = (EditorCookie)dataObject.getCookie(EditorCookie.class);
-                if (editorCookie == null) return;
-                editorCookie.open();              
-                int errLineNum = 0;
-                Line errorLine = null;
-                try {
-                    errLineNum= Integer.parseInt(lineNumber) - 1;
-                    errorLine = editorCookie.getLineSet().getCurrent(errLineNum);
-                } catch (IndexOutOfBoundsException iobe) {
-                    return;
-                } catch (NumberFormatException nfe) {
-                    return;
+            // look for windows file links (e.g. c:\foo\bar.java:51: 'error msg')
+            else if (lineLenght > 3 && Character.isLetter(logLine.charAt(0))
+                        && (logLine.charAt(1) == ':') && (logLine.charAt(2) == '\\')) {
+                error = true;
+                int secondColonIdx = logLine.indexOf(':', 2);
+                if (secondColonIdx > -1) {
+                    path = logLine.substring(0, secondColonIdx);
+                    accessible = true;
+                    if (lineLenght > secondColonIdx) {
+                        int thirdColonIdx = logLine.indexOf(':', secondColonIdx + 1);
+                        if (thirdColonIdx > -1) {
+                            String lineNum = logLine.substring(secondColonIdx + 1, thirdColonIdx);
+                            try {
+                                line = Integer.valueOf(lineNum).intValue();
+                            } catch(NumberFormatException nfe) { // ignore it
+                            }
+                            if (lineLenght > thirdColonIdx) {
+                                message = logLine.substring(thirdColonIdx + 1, lineLenght);
+                            }
+                        }
+                    }
                 }
-                if (errAnnot != null) {
-                    errAnnot.detach();
-                }
-                if (errMsg == null || errMsg.equals("")) { //NOI18N
-                    errMsg = NbBundle.getMessage(Link.class, "MSG_ExceptionOccurred");
-                }
-                errAnnot = new ErrorAnnotation(errMsg);
-                errAnnot.attach(errorLine);
-                errAnnot.moveToFront();
-                errorLine.show(Line.SHOW_TRY_SHOW);
-            } else {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Link.class, "MSG_SrcFileNotFound", className));
             }
+            // look for stacktrace links (e.g. at java.lang.Thread.run(Thread.java:595))
+            else if (logLine.startsWith("at ") && lineLenght > 3) {
+                error = true;
+                int parenthIdx = logLine.indexOf('(');
+                if (parenthIdx > -1) {
+                    String classWithMethod = logLine.substring(3, parenthIdx);
+                    int lastDotIdx = classWithMethod.lastIndexOf('.');
+                    if (lastDotIdx > -1) {  
+                        int lastParenthIdx = logLine.lastIndexOf(')');
+                        int lastColonIdx = logLine.lastIndexOf(':');
+                        if (lastParenthIdx > -1 && lastColonIdx > -1) {
+                            String lineNum = logLine.substring(lastColonIdx + 1, lastParenthIdx);
+                            try {
+                                line = Integer.valueOf(lineNum).intValue();
+                            } catch(NumberFormatException nfe) { // ignore it
+                            }
+                            message = prevMessage;
+                        }
+                        String className = classWithMethod.substring(0, lastDotIdx);
+                        path = className.replace('.','/') + ".java"; // NOI18N              
+                        accessible = globalPathReg.findResource(path) != null;
+                        if (className.startsWith("org.apache.jsp.") && context != null) { // NOI18N
+                            if (context != null) {
+                                String contextPath = context.equals("/") 
+                                                        ? "/_"     // hande ROOT context
+                                                        : context;
+                                path = CATALINA_WORK_DIR + contextPath + "/" + path;
+                                accessible = new File(path).exists();
+                            }
+                        }
+                    }
+                }
+            }
+            // every other message treat as normal info message
+            else {
+                prevMessage = logLine;
+                // try to get context, if stored
+                int stdContextIdx = logLine.indexOf(STANDARD_CONTEXT);
+                int lBracketIdx = -1;
+                if (stdContextIdx > -1) {
+                    lBracketIdx = stdContextIdx + STANDARD_CONTEXT_LENGTH;
+                }
+                int rBracketIdx = logLine.indexOf(']');
+                if (lBracketIdx > -1 && rBracketIdx > -1 && rBracketIdx > lBracketIdx) {
+                    context = logLine.substring(lBracketIdx, rBracketIdx);
+                }
+            }
+            return new LineInfo(path, line, message, error, accessible);
         }
-        
-        public void outputLineCleared(OutputEvent ev) {}
-        public void outputLineSelected(OutputEvent ev) {}
     }
 }
