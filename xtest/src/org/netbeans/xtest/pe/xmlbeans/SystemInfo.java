@@ -110,6 +110,18 @@ public class SystemInfo extends XMLBean {
         xmlat_userLanguage = getCurrentUserLanguage();
         xmlat_userRegion = getCurrentUserRegion();
     }
+    
+    
+    public void readSystemInfo(SystemInfo si) {
+        xmlat_osArch = si.xmlat_osArch;
+        xmlat_osName = si.xmlat_osName;
+        xmlat_osVersion = si.xmlat_osVersion;
+        xmlat_javaVendor = si.xmlat_javaVendor;
+        xmlat_javaVersion = si.xmlat_javaVersion;
+        xmlat_host = si.xmlat_host;
+        xmlat_userLanguage = si.xmlat_userLanguage;
+        xmlat_userRegion = si.xmlat_userRegion;
+    }
 
     /** Getter for property host.
      * @return Value of property host.

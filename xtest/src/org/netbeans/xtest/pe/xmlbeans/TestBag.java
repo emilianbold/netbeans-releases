@@ -217,8 +217,8 @@ public class TestBag extends XMLBean {
     /** Getter for property testRun_id.
      * @return Value of property testRun_id.
      */
-    public long getTestRun_id() {
-        return this.testRun_id;
+    public String getRunID() {
+        return this.runID;
     }
     
     /** getter for property xtestResultsReport_id.
@@ -230,10 +230,9 @@ public class TestBag extends XMLBean {
     
     /** Setter for property testRun_id.
      * @param testRun_id New value of property testRun_id.
-     * @deprecated
      */
-    public void setTestRun_id(long testRun_id) {
-        this.testRun_id = testRun_id;
+    public void setRunID(String runID) {
+        this.runID = runID;
     }
     
     /** Setter for property xtestResultsReport_id.
@@ -266,9 +265,9 @@ public class TestBag extends XMLBean {
     // child elements
     public UnitTestSuite[] xmlel_UnitTestSuite;
     
-    /** Holds value of property testRun_id. */
-    // obsolete - now use xtestResutlsReport_id
-    private long testRun_id;
+    /** Holds value of property testRun_id. */    
+    private String runID;
+    // test run id
     private long xtestResultsReport_id;
     
     

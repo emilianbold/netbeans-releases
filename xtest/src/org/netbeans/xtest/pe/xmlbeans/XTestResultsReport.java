@@ -309,7 +309,25 @@ public class XTestResultsReport extends XMLBean {
         return xmlat_team;
     }
     
-    
+    // read xtest result report (without testruns)
+    public void readXTestResultsReport(XTestResultsReport xtr) {
+        xmlat_timeStamp = xtr.xmlat_timeStamp;
+        xmlat_time = xtr.xmlat_time;
+        xmlat_project = xtr.xmlat_project;
+        xmlat_project_id = xtr.xmlat_project_id;
+        xmlat_team = xtr.xmlat_team;
+        xmlat_build = xtr.xmlat_build;
+        xmlat_testingGroup = xtr.xmlat_testingGroup;
+        xmlat_testedType = xtr.xmlat_testedType;
+        xmlat_host = xtr.xmlat_host;
+        xmlat_comment = xtr.xmlat_comment;
+        xmlat_testsTotal = xtr.xmlat_testsTotal;
+        xmlat_testsPass = xtr.xmlat_testsPass;
+        xmlat_testsFail = xtr.xmlat_testsFail;
+        xmlat_testsError = xtr.xmlat_testsError;
+        xmlat_fullReport = xtr.xmlat_fullReport;
+        xmlat_webLink = xtr.xmlat_webLink;      
+    }
     
     // load XTestResultsReport from a file
     /** this one should be deprecated as well :-(
