@@ -278,7 +278,7 @@ public class SelectionModeTest extends NbTestCase {
             Method m = c.getMethod ("setSelectionMode", new Class[] {Integer.class});
             m.invoke (tree, new Object[] {new Integer (mode)});
         } catch (NoSuchMethodException nsme) {
-            fail ("The method setSelectionMode can't be called on this object.");
+            fail ("The method setSelectionMode can't be called on this object. See enh #11928.");
         } catch (IllegalAccessException iae) {
             fail ("IllegalAccessException thrown from setSelectionMode.");
         } catch (InvocationTargetException ite) {
