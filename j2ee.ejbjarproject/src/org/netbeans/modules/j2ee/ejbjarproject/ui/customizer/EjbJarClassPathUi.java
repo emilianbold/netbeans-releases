@@ -190,6 +190,13 @@ public class EjbJarClassPathUi {
                         return ICON_BROKEN_ARTIFACT;
                     }
                     else {
+                        Project p = item.getArtifact().getProject();
+                        if (p != null) {
+                            ProjectInformation pi = (ProjectInformation) p.getLookup().lookup(ProjectInformation.class);
+                            if (pi != null) {
+                                return pi.getIcon();
+                            }
+                        }
                         return ICON_ARTIFACT;
                     }
                 case ClassPathSupport.Item.TYPE_JAR:
