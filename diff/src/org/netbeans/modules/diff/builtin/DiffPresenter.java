@@ -42,6 +42,7 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.*;
+import org.openide.loaders.InstanceDataObject;
 
 /**
  * This panel is to be used as a wrapper for diff visualizers.
@@ -215,20 +216,51 @@ public class DiffPresenter extends javax.swing.JPanel {
         return defaultProvider;
     }
     
+    /** Set the diff provider and update the view. */
     public void setProvider(DiffProvider p) {
         this.defaultProvider = (DiffProvider) p;
         //propSupport.firePropertyChange(PROP_PROVIDER, null, p);
         showDiff();
+        // Set the defaults for the future:
+        setDefaultDiffService(p, "Services/DiffProviders");
     }
     
     public DiffVisualizer getVisualizer() {
         return defaultVisualizer;
     }
     
+    /** Set the diff visualizer and update the view. */
     public void setVisualizer(DiffVisualizer v) {
         this.defaultVisualizer = (DiffVisualizer) v;
         //propSupport.firePropertyChange(PROP_VISUALIZER, null, v);
         showDiff();
+        // Set the defaults for the future:
+        setDefaultDiffService(v, "Services/DiffVisualizers");
+    }
+    
+    private static void setDefaultDiffService(Object ds, String folder) {
+        //System.out.println("setDefaultDiffService("+ds+")");
+        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
+        FileObject services = dfs.findResource(folder);
+        DataFolder df = DataFolder.findFolder(services);
+        DataObject[] children = df.getChildren();
+        //System.out.println("  Got children.");
+        for (int i = 0; i < children.length; i++) {
+            if (children[i] instanceof InstanceDataObject) {
+                InstanceDataObject ido = (InstanceDataObject) children[i];
+                if (ido.instanceOf(ds.getClass())) {
+                    //System.out.println("  Found an instance of my class.");
+                    try {
+                        if (ds.equals(ido.instanceCreate())) {
+                            //System.out.println("  Have it, settings the order.");
+                            df.setOrder(new DataObject[] { ido });
+                            break;
+                        }
+                    } catch (java.io.IOException ioex) {
+                    } catch (ClassNotFoundException cnfex) {}
+                }
+            }
+        }
     }
 
     private void showDiff() {

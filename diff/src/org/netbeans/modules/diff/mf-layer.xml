@@ -49,35 +49,13 @@ Microsystems, Inc. All Rights Reserved.
       <attr name="helpID" stringvalue="org.netbeans.modules.merge.Merge.visualizers"/>
     </folder>
 
-    <folder name="Hidden"> 
-      <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
-        <attr name="SystemFileSystem.layer" stringvalue="project"/>
-        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
-      </file>
-    </folder>
-
-    <!--
-    <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
-      <attr name="SystemFileSystem.layer" stringvalue="project"/>
-      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-      <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
-    </file>
-    -->
   </folder>
 
   <folder name="UI"> 
     <folder name="Services">
       <folder name="IDEConfiguration">
         <folder name="ServerAndExternalToolSettings">
-          <!--
-          <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
-          </file>
-          -->
-
-          <file name="org-netbeans-modules-diff-DiffSettings.shadow">
-              <attr name="originalFile" stringvalue="Services/Hidden/org-netbeans-modules-diff-DiffSettings.settings"/>
-          </file>
+          
           <folder name="DiffTypes">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
             <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
@@ -95,7 +73,6 @@ Microsystems, Inc. All Rights Reserved.
             </file>
             <attr name="helpID" stringvalue="org.netbeans.modules.diff.Diff.types"/>
           </folder>
-          <attr name="org-netbeans-modules-diff-DiffSettings.shadow/DiffTypes" boolvalue="true"/>
 
         </folder>
       </folder>
