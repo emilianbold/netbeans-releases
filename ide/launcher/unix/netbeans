@@ -52,11 +52,7 @@ if [ -f "${userdir}"/etc/netbeans.conf ] ; then
 fi
 
 if [ -z "$netbeans_clusters" ] ; then
-    if [ -d "$progdir/../ide5" ] ; then
-        netbeans_clusters="$progdir/../nb4.1:$progdir/../ide5"
-    else
-        netbeans_clusters="$progdir/../nb4.0:$progdir/../ide4"
-    fi
+    netbeans_clusters="$progdir/../nb4.1:$progdir/../ide5"
     if [ -d "$progdir/../enterprise1" ] ; then
         netbeans_clusters="$netbeans_clusters:$progdir/../enterprise1"
     fi
@@ -69,11 +65,7 @@ if [ ! -z "$netbeans_extraclusters" ] ; then
     netbeans_clusters="$netbeans_clusters:$netbeans_extraclusters"
 fi
 
-if [ -x "$progdir"/../platform5/lib/nbexec ] ; then
-    nbexec="$progdir"/../platform5/lib/nbexec
-else
-    nbexec="$progdir"/../platform4/lib/nbexec
-fi
+nbexec="$progdir"/../platform5/lib/nbexec
 
 case "`uname`" in
     Darwin*)

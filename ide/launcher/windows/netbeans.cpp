@@ -82,35 +82,27 @@ int WINAPI
     char cmdline2[10240];
     
     if (dirs[0] == '\0') {
-        sprintf(buf, "%s\\ide5", topdir);
-        if (dirExists(buf)) {
-            sprintf(dirs, "%s\\%s;%s\\%s",
-                    topdir, "\\nb4.1", topdir, "\\ide5");
-        } else {
-            sprintf(dirs, "%s\\%s;%s\\%s",
-                    topdir, "\\nb4.0", topdir, "\\ide4");
-        }
+        sprintf(dirs, "%s\\%s;%s\\%s", topdir, "\\nb4.1", topdir, "\\ide5");
+
         sprintf(buf, "%s\\enterprise1", topdir);
         if (dirExists(buf)) {
             sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\enterprise1");
             strcpy(dirs, buf);
         }
+
         sprintf(buf, "%s\\extra", topdir);
         if (dirExists(buf)) {
             sprintf(buf, "%s;%s\\%s", dirs, topdir, "\\extra");
             strcpy(dirs, buf);
         }
     }
+    
     if (extradirs[0] != '\0') {
         strcat(strcat(dirs, ";"), extradirs);
     }
     
-    sprintf(buf, "%s\\platform5", topdir);
-    if (dirExists(buf)) {
-        sprintf(nbexec, "%s\\platform5\\lib\\nbexec.exe", topdir);
-    } else {
-        sprintf(nbexec, "%s\\platform4\\lib\\nbexec.exe", topdir);
-    }
+    sprintf(nbexec, "%s\\platform5\\lib\\nbexec.exe", topdir);
+
     sprintf(cmdline2, "\"%s\" %s -J-Dnetbeans.importclass=org.netbeans.upgrade.AutoUpgrade --branding nb --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
