@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- this classpath will be used for executing tests against jars -->
     <path id="jar.codetest.classpath">
-        <fileset dir="../netbeans/lib">            
+        <fileset dir="../netbeans/lib">
             <include name="core.jar"/>
             <include name="ext/*.jar"/>
         </fileset>
@@ -70,7 +70,7 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     
     <!-- this classpath will be used for executing tests against installed IDE -->
-    <path id="ide.codetest.classpath">        
+    <path id="ide.codetest.classpath">
         <fileset dir="${netbeans.home}/lib">
             <include name="core.jar"/>
             <include name="ext/*.jar"/>
@@ -305,7 +305,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ================= -->
     <target name="junit_test">
         
-        <nbjunit fork="${junit.fork}" printsummary="yes">
+        <nbjunit fork="${junit.fork}" printsummary="yes">            
             <sysproperty key="work.dir" value="${xtest.results}/${tbag.testtype}/work"/>
             <sysproperty key="xtest.results" value="${xtest.results}/${tbag.testtype}/formaters/${tbag.formater}"/>
             <formatter classname="org.netbeans.xtest.junit.JUnitXMLFormatter" extension=".xml"/>
@@ -347,7 +347,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Compiles all tests -->
-    <target name="compile" depends="init">
+    <target name="compile" depends="init" unless="dont-compile">
         <ant dir="unit/src/org/netbeans/core/modules"/>
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
