@@ -86,6 +86,8 @@ public class ClassFile {
         try {
             is = new BufferedInputStream( new FileInputStream( file ), BUFFER_SIZE);
             load(is);
+        } catch (IOException e) {
+            throw new IOException("Invalid classfile format in " + file.getName());
         } finally {
             if (is != null)
                 is.close();
@@ -125,6 +127,8 @@ public class ClassFile {
                 throw new IOException("input stream not specified");
             in = new BufferedInputStream(new FileInputStream(classFileName), BUFFER_SIZE);
             load(in);
+        } catch (IOException e) {
+            throw new IOException("Invalid classfile format in " + classFileName);
         } finally {
             if (in != null)
                 in.close();
