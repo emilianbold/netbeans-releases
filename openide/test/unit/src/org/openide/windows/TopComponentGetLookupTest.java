@@ -40,9 +40,9 @@ import org.openide.util.lookup.InstanceContent;
 public class TopComponentGetLookupTest extends NbTestCase {
     
     /** top component we work on */
-    private TopComponent top;
+    protected TopComponent top;
     /** its lookup */
-    private Lookup lookup;
+    protected Lookup lookup;
     
     public TopComponentGetLookupTest(String testName) {
         super(testName);
@@ -402,6 +402,7 @@ public class TopComponentGetLookupTest extends NbTestCase {
         top.setActivatedNodes(new Node[] { node });
         
         Lookup.Result res = lookup.lookup (new Lookup.Template (ActionMap.class));
+        assertEquals ("One item there", 1, res.allInstances ().size ());
         ActionMap map = (ActionMap)res.allInstances().toArray()[0];
         
         L l = new L ();
