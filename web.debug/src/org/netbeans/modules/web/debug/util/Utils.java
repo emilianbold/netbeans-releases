@@ -307,7 +307,7 @@ public class Utils {
             if (wco == null) {
                 continue;
             }
-            if (!ctxRoot.equals(wco.getContextPath())) {
+            if (!(((ctxRoot == null) && (wco.getContextPath() == null)) || ctxRoot.equals(wco.getContextPath()))) {
                 continue;
             }
             lineCookie = (LineCookie) data.getCookie (LineCookie.class);
