@@ -175,8 +175,10 @@ implements ItemListener, Runnable {
   public void removeNotify () {
     super.removeNotify ();
     
-    actions.detach ();
-    actions = null;
+    if (actions != null) {
+      actions.detach ();
+      actions = null;
+    }
     tabs.removeChangeListener (managersListener);
   }
   
@@ -679,6 +681,7 @@ implements ItemListener, Runnable {
 
 /*
 * Log
+*  31   Gandalf   1.30        8/18/99  David Simonek   bugfix #3463, #3461  
 *  30   Gandalf   1.29        8/17/99  David Simonek   commentaries removed
 *  29   Gandalf   1.28        8/13/99  Jaroslav Tulach New Main Explorer
 *  28   Gandalf   1.27        8/9/99   Ian Formanek    Generated Serial Version 
