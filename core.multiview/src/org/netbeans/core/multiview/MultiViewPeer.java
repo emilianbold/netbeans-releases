@@ -14,21 +14,13 @@
 package org.netbeans.core.multiview;
 
 import java.awt.BorderLayout;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.KeyStroke;
-import org.netbeans.core.api.multiview.MultiViewHandler;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+import java.util.*;
+import javax.swing.*;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
 import org.netbeans.core.multiview.MultiViewModel.ElementSelectionListener;
@@ -36,16 +28,14 @@ import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.MultiViewElementCallback;
-import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.openide.ErrorManager;
 import org.openide.awt.UndoRedo;
-import org.openide.text.CloneableEditorSupport;
+import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.TopComponent;
+
 
 
 /** Special subclass of TopComponent which shows and handles set of
@@ -67,9 +57,9 @@ public final class MultiViewPeer  {
     CloseOperationHandler closeHandler;
     transient MVProxyLookup lookup;
     TopComponent peer;
-    private MultiViewModel.ActionRequestObserverFactory factory;
+    private ActionRequestObserverFactory factory;
     
-    public MultiViewPeer(TopComponent pr, MultiViewModel.ActionRequestObserverFactory fact) {
+    public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
@@ -113,10 +103,13 @@ public final class MultiViewPeer  {
         peer.add(tabs);
         ActionMap map = peer.getActionMap();
         Action act = new AccessTogglesAction();
-        map.put("accesstoggles", act);
+        map.put("accesstoggles", act); //NOI18N
         InputMap input = peer.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         KeyStroke stroke = KeyStroke.getKeyStroke("control F10"); //NOI18N
-        input.put(stroke, "accesstoggles");
+        input.put(stroke, "accesstoggles"); //NOI18N
+        input = peer.getInputMap(JComponent.WHEN_FOCUSED);
+        input.put(stroke, "accesstoggles"); //NOI18N
+           
     }
     
     void peerComponentClosed() {
@@ -348,10 +341,10 @@ public final class MultiViewPeer  {
     
 
     
-    javax.swing.JEditorPane getEditorPane() {
+    JEditorPane getEditorPane() {
         MultiViewElement el = model.getActiveElement();
-        if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
-            CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
+        if (el.getVisualRepresentation() instanceof Pane) {
+            Pane pane = (Pane)el.getVisualRepresentation();
             return pane.getEditorPane();
         }
         return null;
@@ -402,8 +395,8 @@ public final class MultiViewPeer  {
         // is called before setMultiViewDescriptions() need to check for null.
         if (model != null) {
             MultiViewElement el = model.getActiveElement();
-            if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
-                CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
+            if (el.getVisualRepresentation() instanceof Pane) {
+                Pane pane = (Pane)el.getVisualRepresentation();
                 pane.updateName();
                 peer.setDisplayName(pane.getComponent().getDisplayName());
             }
@@ -464,6 +457,7 @@ public final class MultiViewPeer  {
         
     }
     
+
     private class AccessTogglesAction extends AbstractAction {
         
         AccessTogglesAction() {
@@ -471,13 +465,12 @@ public final class MultiViewPeer  {
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F10")); //NOI18N
         }
         
-        public void actionPerformed(java.awt.event.ActionEvent e) {
-            System.out.println("tabs requests focus..");
-            tabs.requestFocus();
+        public void actionPerformed(ActionEvent e) {
+            tabs.requestFocusForSelectedButton();
+            
         }
-        
-        
     }
+    
     
     private static class MVProxyLookup extends ProxyLookup {
         private Lookup initialLookup;

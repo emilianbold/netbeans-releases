@@ -6,47 +6,20 @@
 
 package org.netbeans.core.multiview;
 
-import java.awt.CardLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.FocusTraversalPolicy;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.GridLayout;
-import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
-import java.awt.LayoutManager;
-import java.awt.Toolkit;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.*;
+import java.awt.event.*;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
+import javax.swing.*;
 import javax.swing.JToggleButton.ToggleButtonModel;
-import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
+
 
 /**
  * Temporary solution tomultiview tabs..
@@ -59,7 +32,6 @@ class TabsComponent extends JToolBar {
     
     MultiViewModel model;
     private ActionListener listener;
-    private ButtonGroup buttons;
     private MouseListener buttonMouseListener = null;
     private JComponent toolbarPanel;
     private JPanel componentPanel;
@@ -74,16 +46,17 @@ class TabsComponent extends JToolBar {
 //        setLayout (new AdaptiveGridLayout());
         setLayout (new OneLineGridLayout());
         setFloatable(false);
-        setFocusable(false);
-        setFocusCycleRoot(true);
-        setFocusTraversalKeysEnabled(true);
+        setFocusable(true);
+        startToggling();
+//        setFocusCycleRoot(true);
+//        setFocusTraversalKeysEnabled(true);
 //        Set leftKeys = new HashSet();
 //        leftKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
-//        Set rightKeys = new HashSet();
+ //       Set rightKeys = new HashSet();
 //        rightKeys.add(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
 //        setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, rightKeys);
 //        setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, leftKeys);
-        setFocusTraversalPolicy(new TabsFocusTraversalPolicy());
+//        setFocusTraversalPolicy(new TabsFocusTraversalPolicy());
     }
     
     
@@ -167,7 +140,7 @@ class TabsComponent extends JToolBar {
     }
     
     private JToggleButton createButton(MultiViewDescription description) {
-        JToggleButton button = new JToggleButton(description.getDisplayName());
+        final JToggleButton button = new JToggleButton(description.getDisplayName());
         button.setModel(new TabsButtonModel(description));
         button.setRolloverEnabled(true);
         Border b = (getButtonBorder());
@@ -210,7 +183,7 @@ class TabsComponent extends JToolBar {
                 add(toolbarPanel);
             }
             // rootcycle is the tabscomponent..
-            toolbarPanel.setFocusCycleRoot(false);
+//            toolbarPanel.setFocusCycleRoot(false);
             revalidate();
             repaint();
         }
@@ -225,6 +198,24 @@ class TabsComponent extends JToolBar {
         return EMPTY;
     }
     
+    
+    void requestFocusForSelectedButton() {
+        setFocusable(true);
+        Enumeration en = model.getButtonGroup().getElements();
+        while (en.hasMoreElements()) {
+            JToggleButton but = (JToggleButton)en.nextElement();
+            if (model.getButtonGroup().isSelected(but.getModel())) {
+                but.requestFocus();
+                return;
+            }
+        }
+        throw new IllegalStateException("How come none of the buttons is selected?");
+    }
+
+    void requestFocusForPane() {
+        setFocusable(false);
+        componentPanel.requestFocus();
+    }
     
     
     private Border buttonBorder = null;
@@ -280,10 +271,72 @@ class TabsComponent extends JToolBar {
         return isXP == null ? false : isXP.booleanValue();
     }
     
-    public void requestFocus() {
-        super.requestFocus();
-//        getFocusTraversalPolicy().getDefaultComponent(this).requestFocus();
-    }    
+  
+    void startToggling() {
+        ActionMap map = getActionMap();
+        Action act = new TogglesGoEastAction();
+        // JToolbar action name
+        map.put("navigateRight", act);
+        InputMap input = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        
+        act = new TogglesGoWestAction();
+        // JToolbar action name
+        map.put("navigateLeft", act);
+        
+        act = new TogglesGoDownAction();
+        map.put("TogglesGoDown", act);
+        // JToolbar action name
+        map.put("navigateUp", act);
+        KeyStroke stroke = KeyStroke.getKeyStroke("ESCAPE"); //NOI18N
+        input.put(stroke, "TogglesGoDown");
+    }
+
+    
+    private class TogglesGoWestAction extends AbstractAction {
+        
+        public void actionPerformed(ActionEvent e) {
+            MultiViewDescription[] descs = model.getDescriptions();
+            MultiViewDescription active = model.getActiveDescription();
+            for (int i = 0; i < descs.length; i++) {
+                if (descs[i] == active) {
+                    int next = i - 1;
+                    if (next < 0) {
+                        next = descs.length - 1;
+                    }
+                    changeVisibleManually(descs[next]);
+                    requestFocusForSelectedButton();
+                }
+            }
+        }
+    }
+    
+    private class TogglesGoEastAction extends AbstractAction {
+        
+        public void actionPerformed(ActionEvent e) {
+            MultiViewDescription[] descs = model.getDescriptions();
+            MultiViewDescription active = model.getActiveDescription();
+            for (int i = 0; i < descs.length; i++) {
+                if (descs[i] == active) {
+                    int next = i + 1;
+                    if (next >= descs.length) {
+                        next = 0;
+                    }
+                    changeVisibleManually(descs[next]);
+                    requestFocusForSelectedButton();
+                }
+            }
+        }
+    }
+
+    private class TogglesGoDownAction extends AbstractAction {
+        
+        public void actionPerformed(ActionEvent e) {
+            changeActiveManually(model.getActiveDescription());
+            model.getActiveElement().getVisualRepresentation().requestFocusInWindow();
+        }
+    }
+    
+    
     
     
     
@@ -708,61 +761,75 @@ class TabsComponent extends JToolBar {
         }
     }        
     
-    private class TabsFocusTraversalPolicy extends FocusTraversalPolicy {
-        private final int DIR_ASC = 1;
-        private final int DIR_DES = -1;
-        
-        private Component getComponent(int direction, int startIndex, Container focusCycleRoot) {
-            int count = TabsComponent.this.getComponentCount();
-            if (count == 0) {
+//    private class TabsFocusTraversalPolicy extends FocusTraversalPolicy {
+//        private final int DIR_ASC = 1;
+//        private final int DIR_DES = -1;
+//        
+//        private Component getComponent(int direction, int startIndex, Container focusCycleRoot) {
+//            int count = TabsComponent.this.getComponentCount();
+//            if (count == 0) {
 //                System.out.println("count is zero...");
-                return null;
-            }
-            int index = startIndex + direction;
-            while (true) {
-                if (index < 0) {
-                    index = count - 1;
-                } else if (index >= count) {
-                    index = 0;
-                }
-                Component comp = TabsComponent.this.getComponentAtIndex(startIndex);
-                if (!(comp instanceof JPanel || comp instanceof JToolBar)) {
-                    return comp;
-                }
-                index = index + direction;
-            }
-            
-        }
-        
-        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-//            System.out.println("getafter compo");
-            int index = TabsComponent.this.getComponentIndex(aComponent);
-            return getComponent(DIR_ASC, index, focusCycleRoot);
-        }
-        
-        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-//            System.out.println("getbefore compo");
-            int index = TabsComponent.this.getComponentIndex(aComponent);
-            return getComponent(DIR_DES, index, focusCycleRoot);
-        }
-        
-        
-        
-        public Component getFirstComponent(Container focusCycleRoot) {
+//                return null;
+//            }
+//            int index = startIndex + direction;
+//            System.out.println("startindex=" + index);
+//            System.out.println("count=" + count);
+//            while (true) {
+//                if (index < 0) {
+//                    index = count - 1;
+//                } else if (index >= count) {
+//                    index = 0;
+//                }
+//                Component comp = TabsComponent.this.getComponentAtIndex(index);
+////                System.out.println("component atindex=" + index + " is " + comp);
+//                if (comp instanceof JToggleButton) {
+//                    return comp;
+//                }
+//                index = index + direction;
+//            }
+//            
+//        }
+//        
+//        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
+////            System.out.println("getafter" + aComponent);
+//            if (aComponent == TabsComponent.this) {
+//                return getFirstComponent(focusCycleRoot);
+//            }
+//            int index = TabsComponent.this.getComponentIndex(aComponent);
+//            Component comp = getComponent(DIR_ASC, index, focusCycleRoot);
+//            System.out.println("getafter compo=" + comp);
+//            return comp;
+//        }
+//        
+//        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
+////            System.out.println("getbefore" + aComponent);
+//            if (aComponent == TabsComponent.this) {
+//                return getFirstComponent(focusCycleRoot);
+//            }
+//            int index = TabsComponent.this.getComponentIndex(aComponent);
+//            Component comp = getComponent(DIR_DES, index, focusCycleRoot);
+//            System.out.println("getbefore compo=" + comp);
+//            return comp;
+//        }
+//        
+//        
+//        
+//        public Component getFirstComponent(Container focusCycleRoot) {
 //            System.out.println("getfirst compo");
-            return getComponent(DIR_ASC, -1, focusCycleRoot);
-        }
-        
-        public Component getLastComponent(Container focusCycleRoot) {
+//            return getComponent(DIR_ASC, -1, focusCycleRoot);
+//        }
+//        
+//        public Component getLastComponent(Container focusCycleRoot) {
 //            System.out.println("getlast compo");
-            return getComponent(DIR_DES, TabsComponent.this.getComponentCount(), focusCycleRoot);
-        }
-        
-        public Component getDefaultComponent(Container focusCycleRoot) {
-//            System.out.println("getdefault compo");
-            return getComponent(DIR_ASC, -1, focusCycleRoot);
-        }
-        
-    }
+//            return getComponent(DIR_DES, TabsComponent.this.getComponentCount(), focusCycleRoot);
+//        }
+//        
+//        public Component getDefaultComponent(Container focusCycleRoot) {
+//            Component comp = getComponent(DIR_ASC, -1, focusCycleRoot);
+//            System.out.println("getdefault compo=" + comp);
+//            return comp;
+//        }
+//        
+//    }
     
 }
