@@ -785,14 +785,22 @@ public class PropertyPattern extends Pattern {
                                                    new Object[] { name } );
             newField.getJavaDoc().setRawText( comment );
         }
-
         if ( declaringClass == null ) {
             //System.out.println ("nodecl - gen setter"); // NOI18N
             throw new SourceException();
         }
         else {
-            declaringClass.addField( newField );
-            estimatedField = declaringClass.getField( newField.getName() );
+            if( declaringClass.getField(newField.getName()) == null ){
+                declaringClass.addField( newField );
+                estimatedField = declaringClass.getField( newField.getName() );
+            }
+            else{
+                FieldElement fe = declaringClass.getField(newField.getName());
+                if( (fe.getModifiers() & Modifier.STATIC) != 0 )    //static can not be accessed via property
+                    throw new SourceException();
+                if( !fe.getType().getFullString().equals(newField.getType().getFullString()) )  //type not equal
+                    throw new SourceException();
+            }
         }
     }
 
