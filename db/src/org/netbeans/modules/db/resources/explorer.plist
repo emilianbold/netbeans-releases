@@ -100,6 +100,21 @@
 				prefix = "jdbc:db2://<HOST>:<PORT>/<DB>";
 			},
 			{
+				name = "IDS Server";
+				driver = "ids.sql.IDSDriver";
+				prefix = "jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>'";
+			},
+			{
+				name = "InstantDB";
+				driver = "jdbc.idbDriver";
+				prefix = "jdbc:idb:<DB>";
+			},
+			{
+				name = "Interbase (InterClient driver)";
+				driver = "interbase.interclient.Driver";
+				prefix = "jdbc:interbase://<HOST>/<DB>";
+			},
+			{
 				name = "Hypersonic SQL";
 				driver = "hSql.hDriver";
 				prefix = "jdbc:HypersonicSQL:<DB>";
@@ -108,6 +123,16 @@
 				name = "Microsoft SQL Server (JTurbo driver)";
 				driver = "com.ashna.jturbo.driver.Driver";
 				prefix = "jdbc:JTurbo://<HOST>:<PORT>/<DB>";
+			},
+			{
+				name = "Microsoft SQL Server (Sprinta driver)";
+				driver = "com.inet.tds.TdsDriver";
+				prefix = "jdbc:inetdae:<HOST>:<POR>?database=<DB>";
+			},
+			{
+				name = "MySQL (MM.MySQL driver)";
+				driver = "org.gjt.mm.mysql.Driver";
+				prefix = "jdbc:mysql://<HOST>:<PORT>/<DB>";
 			},
 			{
 				name = "ODBC Bridge";
@@ -135,8 +160,18 @@
 				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
 			},
 			{
-				name = "Sybase";
+				name = "PostgreSQL";
+				driver = "postgresql.Driver";
+				prefix = "jdbc:postgresql://<HOST>:<PORT>/<DB>";
+			},
+			{
+				name = "Sybase (JDK 1.1)";
 				driver = "com.sybase.jdbc.SybDriver";
+				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
+			},
+			{
+				name = "Sybase (JDK 1.2)";
+				driver = "com.sybase.jdbc2.jdbc.SybDriver";
 				prefix = "jdbc:sybase:Tds:<HOST>:<PORT>";
 			}
 		);	
