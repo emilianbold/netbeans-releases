@@ -409,23 +409,23 @@ public class TargetServer {
         handleDeployProgress(ui, po, false);
     }
     private void handleDeployProgress(DeployProgressUI ui, ProgressObject po, boolean isIncremental) {
+        ProgressListener handler;
+        if (isIncremental)
+            handler = new TargetServer.IncrementalEventHandler(po);
+        else
+            handler = new DistributeEventHandler(ui, po);
+        po.addProgressListener(handler);
         ui.setProgressObject(po);
+
         StateType state = po.getDeploymentStatus().getState();
         if (state == StateType.COMPLETED) {
             handleCompletedDistribute(ui, po);
         } else if (state == StateType.FAILED) {
             ui.addError(NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedWithNoEvent"));
         } else {
-            ProgressListener handler;
-            if (isIncremental)
-                handler = new TargetServer.IncrementalEventHandler(po);
-            else
-                handler = new DistributeEventHandler(ui, po);
-            
-            po.addProgressListener(handler);
             sleep(isIncremental ? INCREMENTAL_TIMEOUT : DISTRIBUTE_TIMEOUT);
-            po.removeProgressListener(handler);
         }
+        po.removeProgressListener(handler);
     }
     
     private void handleCompletedDistribute(DeployProgressUI ui, ProgressObject po) {
