@@ -53,7 +53,7 @@ public class JspToolTipAnnotation extends Annotation implements Runnable {
         if (ec != null) { // Only for editable dataobjects
             try {
                 doc = ec.openDocument ();                    
-                RequestProcessor.getDefault().post(this);                    
+                //RequestProcessor.getDefault().post(this);                    
                 doc.render (this);
             } catch (IOException e) {
             }
