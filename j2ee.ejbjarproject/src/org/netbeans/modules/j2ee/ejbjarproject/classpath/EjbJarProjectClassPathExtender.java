@@ -113,7 +113,6 @@ public class EjbJarProjectClassPathExtender implements ProjectClassPathExtender 
                             if (!resources.contains(item)) {
                                 resources.add (item);
                                 raw = parser.encode (resources, project, helper.getAntProjectHelper(), refHelper);
-                                System.out.println("Raw is: " + raw);                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.put (classPathId, raw);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
