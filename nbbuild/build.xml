@@ -1040,11 +1040,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../contrib/insertunicode" target="netbeans"/>
   </target>
 
-  <target name="all-contrib/workplace" depends="build-platform">
-    <echo message="Building module contrib/workplace..."/>
-    <ant dir="../contrib/workplace" target="netbeans"/>
-  </target>
-
   <target name="all-jasm" depends="build-platform,all-editor,all-java/srcmodel,all-openide/deprecated,all-openide/compiler,all-clazz">
       <echo message="Building module jasm..."/>
       <ant dir="../jasm" target="netbeans"/>
@@ -1852,9 +1847,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
           <available file="../jemmy/build.xml" />
           <available file="../jellytools/build.xml" />
           <available file="../xtest/build.xml" />
-          <not>
-            <isfalse value="${nb.run.validation}" />
-          </not>
+          <or>
+            <not>
+              <isset property="nb.run.validation"/>
+            </not>
+            <istrue value="${nb.run.validation}"/>
+          </or>
         </and>
     </condition>
   </target>
