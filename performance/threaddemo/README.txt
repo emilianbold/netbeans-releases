@@ -3,6 +3,8 @@ large data sets such as massive files.
 
 Configure paths to various libs; see build.xml and create user.build.properties
 or just pass -D args to ant. Make sure openide.jar is up-to-date (check CVS).
+--> You need openide/src/org/openide/util/Mutex*.java from branch mutex_32439, but rest of openide from trunk
+--> You need Looks from branch looks_jul_2002_private_b
 
 Default build target builds and runs the app. It creates a data model, called
 Phadhail, which is just a thin wrapper over basic aspects of File. You probably
@@ -23,12 +25,16 @@ Start the app. First select a threading model to use.
 
 1. Synchronous - view will call model directly.
 
-2. Locked - same, but will use a read mutex for every access.
+2. Locked - same, but will use a read mutex for every display operation and a
+   write mutex for every modification.
 
-3. Spun - uses Spin (spin.sf.net) to make the access asynch. FoxTrot would be
+3. Event-hybrid-locked - same as the locked model, but using a special mutex
+   that only permits writes in AWT (reads can be in any thread).
+
+4. Spun - uses Spin (spin.sf.net) to make the access asynch. FoxTrot would be
    similar, I think.
 
-4. Swung - uses a technique similar to SwingWorker
+5. Swung - uses a technique similar to SwingWorker
    (http://java.sun.com/docs/books/tutorial/uiswing/misc/threads.html)
    to make the access fully asynch.
 

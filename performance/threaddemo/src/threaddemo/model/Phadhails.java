@@ -31,6 +31,10 @@ public class Phadhails {
         return LockedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
     }
     
+    public static Phadhail eventHybridLocked(File f) {
+        return EventHybridLockedPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
+    }
+    
     public static Phadhail spun(File f) {
         return SpunPhadhail.forPhadhail(DefaultPhadhail.forFile(f));
     }

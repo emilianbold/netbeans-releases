@@ -17,7 +17,8 @@ Microsystems, Inc. All Rights Reserved.
     <property file="user.build.properties"/>
 
     <property name="nbroot" location="../.."/>
-    <property name="openide.jar" location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+    <!-- Trunk, except Mutex*.java should be with tag mutex_32439: -->
+    <property name="openide.jar" location="???/openide/netbeans/lib/openide.jar"/>
     <property name="naming.jar" location="${nbroot}/core/naming/netbeans/modules/autoload/naming.jar"/>
     <!-- Must be looks_jul_2002_private_b branch -->
     <property name="looks" location="???/openidex/looks"/>
@@ -37,13 +38,13 @@ Microsystems, Inc. All Rights Reserved.
     </path>
     
     <target name="init">
-        <available property="openide/build.xml" file="${nbroot}/openide/build.xml"/>
+        <available property="openide/build.xml" file="${openide.jar}/../../../build.xml"/>
         <available property="looks/build.xml" file="${looks}/build.xml"/>
         <property name="build.compiler.debug" value="true"/>
     </target>
     
     <target name="build-openide" depends="init" if="openide/build.xml">
-        <ant dir="${nbroot}/openide" target="jars"/>
+        <ant dir="${openide.jar}/../../.." target="jars"/>
     </target>
     
     <target name="build-looks" depends="init,build-openide" if="looks/build.xml">

@@ -48,7 +48,7 @@ public final class Main extends JFrame {
     }
     
     private final File root;
-    private final JRadioButton synchButton, lockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
+    private final JRadioButton synchButton, lockedButton, eventHybridLockedButton, spunButton, swungButton, nodeButton, lookNodeButton, lookButton, rawButton;
     
     private Main(File root) {
         super("Thread Demo");
@@ -58,14 +58,17 @@ public final class Main extends JFrame {
         ButtonGroup modelGroup = new ButtonGroup();
         synchButton = new JRadioButton("Synchronous", true);
         lockedButton = new JRadioButton("Locked", false);
+        eventHybridLockedButton = new JRadioButton("Event-Hybrid-Locked", false);
         spunButton = new JRadioButton("Spun", false);
         swungButton = new JRadioButton("Swung", false);
         modelGroup.add(synchButton);
         modelGroup.add(lockedButton);
+        modelGroup.add(eventHybridLockedButton);
         modelGroup.add(spunButton);
         modelGroup.add(swungButton);
         modelPanel.add(synchButton);
         modelPanel.add(lockedButton);
+        modelPanel.add(eventHybridLockedButton);
         modelPanel.add(spunButton);
         modelPanel.add(swungButton);
         getContentPane().add(modelPanel);
@@ -109,6 +112,9 @@ public final class Main extends JFrame {
         } else if (lockedButton.isSelected()) {
             model = Phadhails.locked(root);
             modelType = "Locked";
+        } else if (eventHybridLockedButton.isSelected()) {
+            model = Phadhails.eventHybridLocked(root);
+            modelType = "Event-Hybrid-Locked";
         } else if (spunButton.isSelected()) {
             model = Phadhails.spun(root);
             modelType = "Spun";

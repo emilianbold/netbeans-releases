@@ -28,7 +28,9 @@ import org.openide.util.Mutex;
 final class LockedPhadhail implements Phadhail, PhadhailListener {
     
     private static final Mutex.Privileged PMUTEX = new Mutex.Privileged();
-    private static final Mutex MUTEX = new Mutex(PMUTEX);
+    static {
+        new Mutex("LP", PMUTEX, 0);
+    }
     
     /**
      * add/removePhadhailListener must be called serially
@@ -209,22 +211,32 @@ final class LockedPhadhail implements Phadhail, PhadhailListener {
     }
     
     public void childrenChanged(PhadhailEvent ev) {
-        if (listeners != null) {
-            ev = PhadhailEvent.create(this);
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((PhadhailListener)it.next()).childrenChanged(ev);
+        PMUTEX.enterReadAccess();
+        try {
+            if (listeners != null) {
+                ev = PhadhailEvent.create(this);
+                Iterator it = listeners.iterator();
+                while (it.hasNext()) {
+                    ((PhadhailListener)it.next()).childrenChanged(ev);
+                }
             }
+        } finally {
+            PMUTEX.exitReadAccess();
         }
     }
     
     public void nameChanged(PhadhailNameEvent ev) {
-        if (listeners != null) {
-            ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
-            Iterator it = listeners.iterator();
-            while (it.hasNext()) {
-                ((PhadhailListener)it.next()).childrenChanged(ev);
+        PMUTEX.enterReadAccess();
+        try {
+            if (listeners != null) {
+                ev = PhadhailNameEvent.create(this, ev.getOldName(), ev.getNewName());
+                Iterator it = listeners.iterator();
+                while (it.hasNext()) {
+                    ((PhadhailListener)it.next()).childrenChanged(ev);
+                }
             }
+        } finally {
+            PMUTEX.exitReadAccess();
         }
     }
     
