@@ -27,6 +27,7 @@ import java.util.StringTokenizer;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Window;
+import javax.swing.text.JTextComponent;
 import org.openide.explorer.propertysheet.PropertySheet;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -486,7 +487,7 @@ public class NewPropertyPanelTest extends NbTestCase {
         requestFocus(stringPanel);
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         assertTrue ("Requesting focus on a property panel for a string property should set focus to a JTextField not " + focusOwner,
-            focusOwner instanceof JTextField);
+            focusOwner instanceof JTextComponent);
         
         typeKey(stringPanel, KeyEvent.VK_T);
         typeKey(stringPanel, KeyEvent.VK_H);
@@ -663,12 +664,40 @@ public class NewPropertyPanelTest extends NbTestCase {
         public WaitWindow (JFrame f) {
             f.addWindowListener(this);
             f.show();
+            f.toFront();
+            f.requestFocus();
             if (!shown) {
                 synchronized(this) {
                     try {
                         //System.err.println("Waiting for window");
-                            wait(5000);
+                            wait(6000);
                     } catch (Exception e) {}
+                }
+            }
+            int ct = 0;
+            while (!f.isShowing()) {
+                ct++;
+                try {
+                    Thread.currentThread().sleep(400);
+                } catch (Exception e) {
+                    
+                }
+                if (ct > 100) {
+                    break;
+                }
+            }
+            ct=0;
+            Container c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+            while (c != f) {
+                try {
+                    Thread.currentThread().sleep(400);
+                } catch (Exception e) {
+                    
+                }
+                c = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+                ct++;
+                if (ct > 100) {
+                    break;
                 }
             }
         }
