@@ -13,6 +13,7 @@
         <path orientation="vertical" number="20" weight="0.7" />
         <path orientation="horizontal" number="20" weight="0.25" />
     </constraints>
+    <relative-bounds x="10" y="18" width="20" height="50" />
     <active-tc id="filesystems" />
     <empty-behavior permanent="true" />
 </mode>

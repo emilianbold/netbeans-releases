@@ -12,6 +12,7 @@
         <path orientation="vertical" number="20" weight="0.7" />
         <path orientation="horizontal" number="60" weight="0.2" />
         <path orientation="vertical" number="60" weight="0.5" />
+        <relative-bounds x="75" y="43" width="15" height="25" />
     </constraints>
     <active-tc id="properties" />
     <empty-behavior permanent="true" />

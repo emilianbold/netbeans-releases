@@ -207,7 +207,7 @@ final class PersistenceHandler implements PersistenceObserver {
             wm.setMainWindowBoundsJoined(joinedBounds);
         }
         // PENDING else { ...some default value?
-        
+
         Rectangle separatedBounds = computeBounds(
             wmc.centeredHorizontallySeparated,
             wmc.centeredVerticallySeparated,
@@ -219,7 +219,6 @@ final class PersistenceHandler implements PersistenceObserver {
             wmc.relativeYSeparated,
             wmc.relativeWidthSeparated,
             wmc.relativeHeightSeparated);
-
         if(separatedBounds != null) {
             wm.setMainWindowBoundsSeparated(separatedBounds);
         }
@@ -227,8 +226,19 @@ final class PersistenceHandler implements PersistenceObserver {
 
         wm.setMainWindowFrameStateJoined(wmc.mainWindowFrameStateJoined);
         wm.setMainWindowFrameStateSeparated(wmc.mainWindowFrameStateSeparated);
-        
-        wm.setEditorAreaBounds(wmc.editorAreaBounds);
+
+        Rectangle absBounds = wmc.editorAreaBounds == null ? new Rectangle() : wmc.editorAreaBounds;
+        Rectangle relBounds = wmc.editorAreaRelativeBounds == null ? new Rectangle() : wmc.editorAreaRelativeBounds;
+        Rectangle bounds = computeBounds(false, false,
+            absBounds.x,
+            absBounds.y,
+            absBounds.width,
+            absBounds.height,
+            relBounds.x / 100.0F,
+            relBounds.y / 100.0F,
+            relBounds.width / 100.0F,
+            relBounds.height / 100.0F);
+        wm.setEditorAreaBounds(bounds);
         wm.setEditorAreaFrameState(wmc.editorAreaFrameState);
         
     }
@@ -287,7 +297,19 @@ final class PersistenceHandler implements PersistenceObserver {
             }
         }
 
-        mode.setBounds(mc.bounds);
+        // PENDING Refine the unneded computing.
+        Rectangle absBounds = mc.bounds == null ? new Rectangle() : mc.bounds;
+        Rectangle relBounds = mc.relativeBounds == null ? new Rectangle() : mc.relativeBounds;
+        Rectangle bounds = computeBounds(false, false, 
+            absBounds.x,
+            absBounds.y,
+            absBounds.width,
+            absBounds.height,
+            relBounds.x / 100.0F,
+            relBounds.y / 100.0F,
+            relBounds.width / 100.0F,
+            relBounds.height / 100.0F);
+        mode.setBounds(bounds);
         mode.setFrameState(mc.frameState);
         
         return mode;
@@ -789,7 +811,7 @@ final class PersistenceHandler implements PersistenceObserver {
         } else if(relativeWidth > 0F && relativeHeight > 0F) {
             // From relative values.
             Rectangle screen = Utilities.getUsableScreenBounds();
-            bounds = new Rectangle((int)(screen.x * relativeX), (int)(screen.y * relativeY),
+            bounds = new Rectangle((int)(screen.width * relativeX), (int)(screen.height * relativeY),
                         (int)(screen.width * relativeWidth), (int)(screen.height * relativeHeight));
         } else {
             return null;

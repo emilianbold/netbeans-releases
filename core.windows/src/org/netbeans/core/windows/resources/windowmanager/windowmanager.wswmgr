@@ -8,13 +8,15 @@
     <main-window> 
         <joined-properties centered-horizontally="true" centered-vertically="true"
                            relative-width="0.8" relative-height="0.8" />
+        <separated-properties centered-horizontally="true" relative-y="0.1"
+                           relative-width="0.8" relative-height="0.08" />
     </main-window>
     <editor-area state="joined">
         <constraints>
             <path orientation="vertical" number="20" weight="0.7" />
             <path orientation="horizontal" number="40" weight="0.55" />
         </constraints>
-        <relative-bounds x="0" y="0" width="100" height="60" />
+        <relative-bounds x="30" y="18" width="45" height="50" />
     </editor-area>
     <screen width="1280" height="1024" />
     <active-mode name="explorer" />
