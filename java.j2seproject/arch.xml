@@ -572,7 +572,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   No.
+   Uses property <code>platform.ant.name</code> returned by the <code>J2SEPlatformImpl.getProperties()</code>
+   to determine the name of platform used in build scripts.
   </p>
  </answer>
 
@@ -757,6 +758,11 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="format-types">
   <p>
    The usual Ant-based project metadata files and build scripts.
+  </p>
+  <p>
+   Depends on the Javadoc structure. It tries to find the <code>overview-summary.html</code> in
+   the api folder, and the <code>package-summary.html</code> and javadoc pages for classes in the
+   package structure under the api folder.
   </p>
  </answer>
 

@@ -97,13 +97,7 @@ class ActionFilterNode extends FilterNode {
     }
 
     public Action[] getActions(boolean context) {
-        Action[] result;
-        if (!context) {
-            result = initActions();
-        }
-        else {
-            result = new Action[0];
-        }
+        Action[] result = initActions();        
         return result;
     }
 
@@ -206,19 +200,22 @@ class ActionFilterNode extends FilterNode {
             try {
                 String relativeName = FileUtil.getRelativePath(cpRoot,resource);
                 URL[] urls = JavadocForBinaryQuery.findJavadoc(cpRoot.getURL()).getRoots();
-                String javadocFileName;
+                URL pageURL;
                 if (relativeName.length()==0) {
-                    javadocFileName = "/index.html";    //NOI18N
+                    pageURL = ShowJavadocAction.findJavadoc ("/overview-summary.html",urls); //NOI18N
+                    if (pageURL == null) {
+                        pageURL = ShowJavadocAction.findJavadoc ("/index.html",urls); //NOI18N
+                    }                    
                 }
                 else if (resource.isFolder()) {
-                    //XXX Are the names the same also in the localized javadoc?
-                    javadocFileName = relativeName + "/package-summary.html";  //NOI18N
+                    //XXX Are the names the same also in the localized javadoc?                    
+                    pageURL = ShowJavadocAction.findJavadoc ("/package-summary.html",urls); //NOI18N
                 }
                 else {
-                    javadocFileName = relativeName.substring(0,relativeName.lastIndexOf('.'))+".html"; //NOI18Ns
+                    String javadocFileName = relativeName.substring(0,relativeName.lastIndexOf('.'))+".html"; //NOI18Ns
+                    pageURL = ShowJavadocAction.findJavadoc (javadocFileName,urls);
                 }
-                ShowJavadocAction.showJavaDoc(
-                    ShowJavadocAction.findJavadoc (javadocFileName,urls),relativeName.replace('/','.'));  //NOI18N
+                ShowJavadocAction.showJavaDoc(pageURL,relativeName.replace('/','.'));  //NOI18N
             } catch (FileStateInvalidException fsi) {
                 ErrorManager.getDefault().notify (fsi);
             }

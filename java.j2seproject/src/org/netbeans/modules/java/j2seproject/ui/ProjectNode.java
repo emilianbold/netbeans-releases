@@ -92,6 +92,8 @@ class ProjectNode extends AbstractNode {
             ProjectInformation info = (ProjectInformation) this.project.getLookup().lookup(ProjectInformation.class);
             if (info != null) {
                 Icon icon = info.getIcon();
+                //XXX: There should be an API for Icon -> Image conversion,
+                //issue: http://www.netbeans.org/issues/show_bug.cgi?id=52562
                 if (icon instanceof ImageIcon) {
                     cachedIcon = ((ImageIcon)icon).getImage();
                 }
@@ -118,16 +120,11 @@ class ProjectNode extends AbstractNode {
     }
 
     public Action[] getActions(boolean context) {
-        if (!context) {
-            return new Action[] {
-                SystemAction.get (OpenProjectAction.class),
-                SystemAction.get (ShowJavadocAction.class),
-                SystemAction.get (RemoveClassPathRootAction.class),
-            };
-        }
-        else {
-            return new Action[0];
-        }
+        return new Action[] {
+            SystemAction.get (OpenProjectAction.class),
+            SystemAction.get (ShowJavadocAction.class),
+            SystemAction.get (RemoveClassPathRootAction.class),
+        };
     }
 
     public Action getPreferredAction () {
@@ -179,7 +176,12 @@ class ProjectNode extends AbstractNode {
                 }
                 URL[] urls = JavadocForBinaryQuery.findJavadoc(artifactURL).getRoots();
                 ProjectInformation info = (ProjectInformation) project.getLookup().lookup(ProjectInformation.class);
-                ShowJavadocAction.showJavaDoc (ShowJavadocAction.findJavadoc("index.html",urls),info == null ?
+                
+                URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",urls);
+                if (pageURL == null) {
+                    pageURL = ShowJavadocAction.findJavadoc("index.html",urls);
+                }
+                ShowJavadocAction.showJavaDoc (pageURL, info == null ?
                     NbBundle.getMessage (ProjectNode.class,"TXT_UnknownProjectName") : info.getDisplayName());
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify (mue);

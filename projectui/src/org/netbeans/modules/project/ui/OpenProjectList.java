@@ -130,7 +130,7 @@ public final class OpenProjectList {
     }
 
     public void open (Project p, boolean openSubprojects ) {
-        open( new Project[] {p}, false );
+        open( new Project[] {p}, openSubprojects );
     }
 
     public void open( Project[] projects, boolean openSubprojects ) {

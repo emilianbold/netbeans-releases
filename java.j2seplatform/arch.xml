@@ -513,7 +513,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-component">
   <p>
-   No.
+   The <code>java.util.Map</code> returned by the <code>J2SEPlatformImpl.getProperties()</code> contains
+   property <code>platform.ant.name</code> holding the name of the platform used by build scripts.
   </p>
  </answer>
 

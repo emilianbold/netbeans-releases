@@ -15,7 +15,9 @@ package org.netbeans.modules.java.j2seproject.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.SourceGroup;
 
@@ -29,17 +31,30 @@ import org.netbeans.api.project.SourceGroup;
 final class LibrariesSourceGroup implements SourceGroup {
 
     private final FileObject root;
-    private final String name;
+    private final String displayName;
     private final Icon icon;
     private final Icon openIcon;
 
-    LibrariesSourceGroup (FileObject root, String name ) {
-        this (root, name, null, null);
+    /**
+     * Creates new LibrariesSourceGroup
+     * @param root the classpath root
+     * @param displayName the display name presented to user
+     */              
+    LibrariesSourceGroup (FileObject root, String displayName ) {
+        this (root, displayName, null, null);
     }
 
-    LibrariesSourceGroup (FileObject root, String name, Icon icon, Icon openIcon) {
+    /**
+     * Creates new LibrariesSourceGroup
+     * @param root the classpath root
+     * @param displayName the display name presented to user
+     * @param icon closed icon
+     * @param openIcon opened icon
+     */          
+    LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
+        assert root != null;
         this.root = root;
-        this.name = name;
+        this.displayName = displayName;
         this.icon = icon;
         this.openIcon = openIcon;
     }
@@ -50,11 +65,17 @@ final class LibrariesSourceGroup implements SourceGroup {
     }
 
     public String getName() {
-        return this.name;
+        String result = null;
+        try {        
+            return root.getURL().toExternalForm();
+        } catch (FileStateInvalidException fsi) { 
+            ErrorManager.getDefault().notify (fsi);
+        }
+        return result;
     }
 
     public String getDisplayName() {
-        return this.getName();
+        return this.displayName;
     }
 
     public Icon getIcon(boolean opened) {
@@ -70,12 +91,12 @@ final class LibrariesSourceGroup implements SourceGroup {
             return false;
         }
         LibrariesSourceGroup osg = (LibrariesSourceGroup) other;
-        return name == null ? osg.name == null : name.equals (osg.name) &&
+        return displayName == null ? osg.displayName == null : displayName.equals (osg.displayName) &&
             root == null ? osg.root == null : root.equals (osg.root);  
     }
 
     public int hashCode () {
-        return ((name == null ? 0 : name.hashCode())<<16) | ((root==null ? 0 : root.hashCode()) & 0xffff);
+        return ((displayName == null ? 0 : displayName.hashCode())<<16) | ((root==null ? 0 : root.hashCode()) & 0xffff);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
