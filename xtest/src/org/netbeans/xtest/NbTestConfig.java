@@ -172,7 +172,7 @@ public class NbTestConfig extends Task {
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
             if (attr.getName().equals("dir")) { // <start dir="???">
-                ss.dir = new File(ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties()));
+                ss.dir = project.resolveFile(ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties()));
             }
             if (attr.getName().equals("target")) { // <start target="???">
                 ss.target = ProjectHelper.replaceProperties(project, attr.getValue(), project.getProperties());
@@ -415,7 +415,7 @@ public class NbTestConfig extends Task {
     
     private void convertProperties(Hashtable table, String filename)  {
        try {  
-         File file = new File (filename);
+         File file = project.resolveFile (filename);
          if (!file.exists()) throw new BuildException("Property file "+file.getAbsolutePath()+" not found.");
          java.util.Properties javaprop = new java.util.Properties();
          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));

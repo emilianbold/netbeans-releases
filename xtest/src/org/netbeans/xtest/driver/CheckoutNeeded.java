@@ -88,7 +88,7 @@ public class CheckoutNeeded extends Task {
                 else
                     cvs.setCvsRoot( ":pserver:anoncvs@" + repository ); //NOI18N
                 
-                File destfile = new File(directory);
+                File destfile = project.resolveFile(directory);
                 if (!destfile.exists()) destfile.mkdirs();
                 cvs.setDest(destfile);
                 

@@ -163,7 +163,7 @@ public class NbExecutor extends Task {
         String testrundir = project.getProperty("xtest.results.testrun.dir");
         if (testrundir == null) return null;
         String dir = testrundir + File.separator + "logs";
-        File dirfile = new File(dir);
+        File dirfile = project.resolveFile(dir);
         if (!dirfile.exists()) dirfile.mkdirs();
         String new_prefix = prefix.replace('/','_');
         File file = new File(dirfile, new_prefix + ".log");
