@@ -53,6 +53,7 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -387,7 +388,15 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
     private void createLibrary(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibrary
         Dialog dlg = null;
         try {
-            NewLibraryPanel p = new NewLibraryPanel (this.model);
+            String preselectedLibraryType = null;
+            Node[] preselectedNodes = this.getExplorerManager().getSelectedNodes();
+            if (preselectedNodes.length == 1) {
+                LibraryCategory lc = (LibraryCategory) preselectedNodes[0].getLookup().lookup(LibraryCategory.class);
+                if (lc != null) {
+                    preselectedLibraryType = lc.getCategoryType();
+                }
+            }
+            NewLibraryPanel p = new NewLibraryPanel (this.model, preselectedLibraryType);
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(LibrariesCustomizer.class,"CTL_CreateLibrary"),
                     true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
             p.setDialogDescriptor(dd);
@@ -532,6 +541,21 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         
     }
     
+    
+    private static final class LibraryCategory {
+        
+        private final String name;
+        
+        LibraryCategory (String name) {
+            this.name = name;
+        }
+        
+        public String getCategoryType () {
+            return this.name;
+        }
+        
+    }
+    
     private static class CategoryNode extends AbstractNode {
                 
         
@@ -539,7 +563,7 @@ public final class LibrariesCustomizer extends JPanel implements ExplorerManager
         private Node iconDelegate;
                 
         public CategoryNode (LibraryTypeProvider provider, LibrariesModel model) {
-            super (new CategoryChildren(provider, model));
+            super (new CategoryChildren(provider, model), Lookups.singleton(new LibraryCategory (provider.getLibraryType())));
             this.provider = provider;       
             this.iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }

@@ -36,7 +36,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     private DialogDescriptor dd;
 
     /** Creates new form NewLibraryPanel */
-    public NewLibraryPanel (LibrariesModel model) {
+    public NewLibraryPanel (LibrariesModel model, String preselectedLibraryType) {
         this.model = model;
         initComponents();
         this.name.setColumns(25);
@@ -54,7 +54,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
             }
 
         });
-        this.initModel ();
+        this.initModel (preselectedLibraryType);
         Color c = javax.swing.UIManager.getColor("nb.errorForeground"); //NOI18N
         if (c == null) {
             c = new Color(89,79,191);  // RGB suggested by Bruce in #28466
@@ -81,13 +81,18 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     }
 
 
-    private void initModel () {
+    private void initModel (String preselectedLibraryType) {
         this.typeMap = new HashMap ();
         this.name.setText (NbBundle.getMessage (NewLibraryPanel.class,"TXT_NewLibrary"));
         LibraryTypeRegistry regs = LibraryTypeRegistry.getDefault();
         LibraryTypeProvider[] providers = regs.getLibraryTypeProviders();
+        int index = 0;
         for (int i=0; i< providers.length; i++) {
-            typeMap.put (new Integer(i),providers[i].getLibraryType());
+            String type = providers[i].getLibraryType();
+            if (type.equals(preselectedLibraryType)) {
+                index = i;
+            }
+            typeMap.put (new Integer(i),type);
             String displayName = providers[i].getDisplayName();
             if (displayName == null) {
                 displayName = providers[i].getLibraryType();
@@ -95,7 +100,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
             this.libraryType.addItem (displayName);
         }
         if (this.libraryType.getItemCount() > 0) {
-            this.libraryType.setSelectedIndex(0);
+            this.libraryType.setSelectedIndex(index);
         }
     }
 
