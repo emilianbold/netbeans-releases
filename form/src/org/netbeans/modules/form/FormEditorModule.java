@@ -101,29 +101,29 @@ public class FormEditorModule extends ModuleInstall {
       DataFolder paletteFolder = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders().toolbars (), "Palette");
   
       DataObject[] formInstances = {
-        InstanceDataObject.create (formFolder, Utilities.getShortClassName (ComponentInspectorAction.class), ComponentInspectorAction.class.getName ()),
-        InstanceDataObject.create (formFolder, Utilities.getShortClassName (TestModeAction.class), TestModeAction.class.getName ()),
-        InstanceDataObject.create (formFolder, Utilities.getShortClassName (DesignModeAction.class), DesignModeAction.class.getName ()),
-        InstanceDataObject.create (formFolder, Utilities.getShortClassName (ShowGridAction.class), ShowGridAction.class.getName ()),
+        Utilities2.createAction (ComponentInspectorAction.class, formFolder),
+        Utilities2.createAction (TestModeAction.class, formFolder),
+        Utilities2.createAction (DesignModeAction.class, formFolder),
+        Utilities2.createAction (ShowGridAction.class, formFolder),
       };
       formFolder.setOrder (formInstances);
   
-      InstanceDataObject.create (paletteFolder, Utilities.getShortClassName (PaletteAction.class), PaletteAction.class.getName ());
+      Utilities2.createAction (PaletteAction.class, paletteFolder);
 
       // install actions into action pool
       DataFolder formActions = DataFolder.create (org.openide.TopManager.getDefault ().getPlaces ().folders ().actions (), "Form");
-      InstanceDataObject.create (formActions, "InstallBeanAction", InstallBeanAction.class.getName ());
-      InstanceDataObject.create (formActions, "ComponentInspectorAction", ComponentInspectorAction.class.getName ());
-      InstanceDataObject.create (formActions, "PaletteAction", PaletteAction.class.getName ());
-      InstanceDataObject.create (formActions, "CustomizeLayoutAction", CustomizeLayoutAction.class.getName ());
-      InstanceDataObject.create (formActions, "DesignModeAction", DesignModeAction.class.getName ());
-      InstanceDataObject.create (formActions, "EventsAction", EventsAction.class.getName ());
-      InstanceDataObject.create (formActions, "GotoEditorAction", GotoEditorAction.class.getName ());
-      InstanceDataObject.create (formActions, "GotoFormAction", GotoFormAction.class.getName ());
-      InstanceDataObject.create (formActions, "GotoInspectorAction", GotoInspectorAction.class.getName ());
-      InstanceDataObject.create (formActions, "SelectLayoutAction", SelectLayoutAction.class.getName ());
-      InstanceDataObject.create (formActions, "ShowGridAction", ShowGridAction.class.getName ());
-      InstanceDataObject.create (formActions, "TestModeAction", TestModeAction.class.getName ());
+      Utilities2.createAction (InstallBeanAction.class, formActions);
+      Utilities2.createAction (ComponentInspectorAction.class, formActions);
+      Utilities2.createAction (PaletteAction.class, formActions);
+      Utilities2.createAction (CustomizeLayoutAction.class, formActions);
+      Utilities2.createAction (DesignModeAction.class, formActions);
+      Utilities2.createAction (EventsAction.class, formActions);
+      Utilities2.createAction (GotoEditorAction.class, formActions);
+      Utilities2.createAction (GotoFormAction.class, formActions);
+      Utilities2.createAction (GotoInspectorAction.class, formActions);
+      Utilities2.createAction (SelectLayoutAction.class, formActions);
+      Utilities2.createAction (ShowGridAction.class, formActions);
+      Utilities2.createAction (TestModeAction.class, formActions);
 
     } catch (Exception e) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) {
@@ -449,6 +449,8 @@ public class FormEditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  38   Gandalf   1.37        1/4/00   Ian Formanek    Uses 
+ *       Utilities2.createAction for Toolbars and action pool
  *  37   Gandalf   1.36        11/27/99 Patrik Knakal   
  *  36   Gandalf   1.35        11/25/99 Ian Formanek    Uses Utilities module
  *  35   Gandalf   1.34        10/27/99 Ian Formanek    Fixed bug 4596 - There 
