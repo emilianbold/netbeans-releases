@@ -89,8 +89,10 @@ public abstract class NbTopManager extends TopManager {
     /** stores main shortcut context*/
     private Keymap shortcutContext;
     
-    /** lookup service for this top mangager */
-    private org.netbeans.core.lookup.InstanceLookup lookup = new org.netbeans.core.lookup.InstanceLookup ();
+    /** dynamic lookup service for this top mangager */
+    private org.netbeans.core.lookup.InstanceLookup instanceLookup;
+    /** main lookup service of the system */
+    private org.openide.util.Lookup lookup;
 
     /** currently used debugger or null if none is in use */
     private Debugger debugger;
@@ -157,6 +159,23 @@ public abstract class NbTopManager extends TopManager {
         putSystemProperty ("org.openide.version", p.getImplementationVersion (), "OwnBuild"); // NOI18N
         putSystemProperty ("org.openide.major.version", p.getSpecificationTitle (), "IDE/1"); // NOI18N
         putSystemProperty ("netbeans.buildnumber", p.getImplementationVersion (), "OwnBuild"); // NOI18N
+        
+        if (System.getProperties ().get ("java.naming.factory.initial") == null) { // NOI18N
+          // we would like to use our own implementation of JNDI, so the
+          // OpenAPI can find the right implementations
+          System.getProperties().put (
+            "java.naming.factory.initial", // NOI18N
+            "org.netbeans.core.lookup.Jndi" // NOI18N
+          );
+        }
+
+        if (System.getProperties ().get ("org.openide.util.Lookup") == null) { // NOI18N
+          // update the top manager to our main if it has not been provided yet
+          System.getProperties().put (
+            "org.openide.util.Lookup", // NOI18N
+            "org.netbeans.core.NbTopManager$Lkp" // NOI18N
+          );
+        }
     }
     
     /** Puts a property into the system ones, but only if the value is not null.
@@ -224,19 +243,50 @@ public abstract class NbTopManager extends TopManager {
     /** Register new instance.
      */
     public final void register (Object obj) {
-        lookup.add (obj);
+        getInstanceLookup ().add (obj);
     }
     
     /** Unregisters the service.
      */
     public final void unregister (Object obj) {
-        lookup.remove (obj);
+        getInstanceLookup ().remove (obj);
     }
     
-    /** Lookup for given service.
+    /** Private get instance lookup.
      */
-    public final org.netbeans.core.lookup.NbLookup getLookup () {
-        return lookup;
+    protected final org.netbeans.core.lookup.InstanceLookup getInstanceLookup () {
+        if (instanceLookup != null) {
+            return instanceLookup;
+        }
+        
+        synchronized (this) {
+            if (instanceLookup != null) {
+                return instanceLookup;
+            }
+            
+            instanceLookup = new org.netbeans.core.lookup.InstanceLookup ();
+            return instanceLookup;
+        }
+    }
+    
+    /** Main lookup of the system.
+     */
+    public final org.openide.util.Lookup getLookup () {
+        if (lookup != null) {
+            return lookup;
+        }
+        
+        synchronized (this) {
+            if (lookup != null) {
+                return lookup;
+            }
+            lookup = new org.netbeans.core.lookup.ProxyLookup (new org.openide.util.Lookup[] {
+                new org.netbeans.core.lookup.TMLookup (),
+                getInstanceLookup ()
+            });
+            return lookup;
+        }
+        
     }
 
     //
@@ -752,6 +802,22 @@ public abstract class NbTopManager extends TopManager {
         public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
             super.readExternal (in);
             NbTopManager.get ().htmlViewer = this;
+        }
+    }
+    
+    /** The default lookup for the system.
+     */
+    public static final class Lkp extends org.openide.util.Lookup {
+        /** Just delegates to top manager lookup.
+         */
+        public Object lookup (Class clazz) {
+            return NbTopManager.get ().getLookup ().lookup (clazz);
+        }
+        
+        /** Template lookup.
+         */
+        public Result lookup (Template t) {
+            return NbTopManager.get ().getLookup ().lookup (t);
         }
     }
 }

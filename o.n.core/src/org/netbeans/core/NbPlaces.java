@@ -24,10 +24,9 @@ import org.openide.filesystems.FileSystem;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 import org.netbeans.core.windows.nodes.WorkspacePoolContext;
 import org.openide.modules.ManifestSection.NodeSection;
-
-import org.netbeans.core.lookup.*;
 
 /** Important places in the system.
 *
@@ -217,7 +216,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
     final static class Ch extends Children.Keys 
     implements javax.swing.event.ChangeListener {
         /** result */
-        private NbLookup.Result result;
+        private Lookup.Result result;
         /** remebmber the section name */
         private String sectionName;
 
@@ -246,11 +245,11 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
         /** Static method to compute a Lookup.Result from a template.
          */
-        private static NbLookup.Result re (String n) {
-            NbLookup.Template t = new NbLookup.Template (
+        private static Lookup.Result re (String n) {
+            Lookup.Template t = new Lookup.Template (
                 org.openide.modules.ManifestSection.NodeSection.class
             );
-            return org.netbeans.core.NbTopManager.get ().getLookup ().lookup (t);
+            return Lookup.getDefault ().lookup (t);
         }
 
         /** Method called when we are about to update the keys for 
