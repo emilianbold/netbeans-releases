@@ -386,7 +386,6 @@
 <mapID target="webmod_servconfig" url="web/webmod/mod_servconfig.html" />
 <mapID target="webmod_server_set" url="web/webmod/mod_server_set.html" />
 <mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
-<mapID target="webmod_deploy" url="web/webmod/mod_deploy.html" />
 <mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
 <mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
 <mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
