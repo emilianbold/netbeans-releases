@@ -403,19 +403,7 @@ public class DefaultOpenFileImpl implements OpenFileImpl {
     }
     
     public synchronized FileObject findFileObject(File f) {
-        // XXX: once the issue #40410 is implemented 
-        // use FileUtil.normalizeFile() instead of:
-        if (Utilities.isWindows()) {
-            try {
-                f = f.getCanonicalFile();
-            } catch (IOException e) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, e.toString());
-                // so try to absolutize the file
-                f = f.getAbsoluteFile();
-            }
-        } else {
-            f = new File(f.toURI().normalize());
-        }
+        f = FileUtil.normalizeFile(f);
         
         FileObject fos[] = FileUtil.fromFile(f);
         if (fos.length > 0) {
