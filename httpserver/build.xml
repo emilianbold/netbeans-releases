@@ -55,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
   <target name="release">
     <mkdir dir="release"/>
     <copy todir="netbeans" includeEmptyDirs="false">
-      <fileset dir="release"/>
+      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
     <copy todir="netbeans">
       <fileset dir="${binroot}/httpserver/release"/>

@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="release">
     <copy todir="netbeans">
-      <fileset dir="release">
+      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="sources"/>
       </fileset>
     </copy>

@@ -49,7 +49,7 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
     <copy todir="netbeans">
-      <fileset dir="${binroot}/core/release"/>
+      <fileset dir="${binroot}/core/release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
     <!-- [PENDING] may according to wishes give another attribute: eof="add" -->
     <fixcrlf srcdir="netbeans/bin" cr="add">
