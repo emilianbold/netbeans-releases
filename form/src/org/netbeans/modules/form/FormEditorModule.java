@@ -73,6 +73,11 @@ public class FormEditorModule extends ModuleInstall {
                     JarFileSystem jarfs = (JarFileSystem) fs;
 
                     try {
+                        // XXX this should never happen, but sometimes it kdjf
+                        // does. WHY?
+                        if (null == jarfs.getJarFile())
+                            return;
+                        
                         String jarpath = jarfs.getJarFile().getCanonicalPath();
                         if (! jarpath.endsWith(File.separator + "beans"
                                                + File.separator + "TimerBean.jar"))
