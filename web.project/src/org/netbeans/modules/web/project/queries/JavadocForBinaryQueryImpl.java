@@ -13,6 +13,7 @@
 package org.netbeans.modules.web.project.queries;
 
 import java.io.File;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
@@ -41,7 +42,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
     public JavadocForBinaryQuery.Result findJavadoc(final URL binaryRoot) {
         class R implements JavadocForBinaryQuery.Result {
             public URL[] getRoots() {
-                String javadocDir = evaluator.getProperty("dist.javadoc.dir");      //NOI18N
+                String javadocDir = evaluator.getProperty(WebProjectProperties.DIST_JAVADOC_DIR);      //NOI18N
                 if (javadocDir != null) {
                     File f = helper.resolveFile(javadocDir);
                     try {
@@ -59,7 +60,7 @@ public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplement
                 // XXX not implemented
             }
         }
-        if (isRootOwner(binaryRoot, "build.classes.dir") || isRootOwner (binaryRoot, "dist.jar")) { //NOI18N
+        if (isRootOwner(binaryRoot, WebProjectProperties.BUILD_CLASSES_DIR) || isRootOwner (binaryRoot, WebProjectProperties.DIST_WAR)) { //NOI18N
             return new R();
         }
         return null;

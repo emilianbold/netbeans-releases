@@ -33,11 +33,6 @@ import org.openide.util.WeakListeners;
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
     
-    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    private static final String DIST_JAR = "dist.jar"; // NOI18N
-    private static final String DOC_BASE_DIR = "web.docbase.dir"; // NOI18N
-    private static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
@@ -75,19 +70,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
 
     private FileObject getBuildClassesDir() {
-        return getDir(BUILD_CLASSES_DIR);
+        return getDir(WebProjectProperties.BUILD_CLASSES_DIR);
     }
     
     private FileObject getDistJar() {
-        return getDir(DIST_JAR);
+        return getDir(WebProjectProperties.DIST_WAR);
     }
     
     private FileObject getBuildTestClassesDir() {
-        return getDir(BUILD_TEST_CLASSES_DIR);
+        return getDir(WebProjectProperties.BUILD_TEST_CLASSES_DIR);
     }
 
     private FileObject getDocumentBaseDir() {
-        return getDir(DOC_BASE_DIR);
+        return getDir(WebProjectProperties.WEB_DOCBASE_DIR);
     }
     
      /**

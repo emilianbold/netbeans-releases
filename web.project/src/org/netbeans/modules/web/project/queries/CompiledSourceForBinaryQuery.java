@@ -13,6 +13,7 @@
 package org.netbeans.modules.web.project.queries;
 
 import java.io.File;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
@@ -63,13 +64,13 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return res;
         }
         SourceRoots src = null;
-        if (hasSources(binaryRoot,"build.classes.dir")) {   //NOI18N
+        if (hasSources(binaryRoot, WebProjectProperties.BUILD_CLASSES_DIR)) {   //NOI18N
             src = this.sourceRoots;
         }
-        else if (hasSources (binaryRoot,"dist.jar")) {      //NOI18N
+        else if (hasSources (binaryRoot, WebProjectProperties.DIST_WAR)) {      //NOI18N
             src = this.sourceRoots;
         }
-        else if (hasSources (binaryRoot,"build.test.classes.dir")) {    //NOI18N
+        else if (hasSources (binaryRoot, WebProjectProperties.BUILD_TEST_CLASSES_DIR)) {    //NOI18N
             src = this.testRoots;
         }
         if (src == null) {
