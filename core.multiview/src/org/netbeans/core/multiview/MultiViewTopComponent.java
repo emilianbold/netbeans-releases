@@ -86,9 +86,6 @@ public final class MultiViewTopComponent
         peer.setDeserializedMultiViewDescriptions(descriptions, defaultDesc, existingElements);
     }
     
-    /**
-     * @deprecated - for use in tests only!!!!!
-     */
     MultiViewModel getModel() {
         return peer.getModel();
     }

@@ -16,4 +16,10 @@ Microsystems, Inc. All Rights Reserved.
                             "http://www.netbeans.org/dtds/filesystem-1_1.dtd" >
 
 <filesystem>
+    <folder name="Menu">
+        <folder name="View">
+            <file name="org-netbeans-core-multiview-EditorsAction.instance"/>
+            <attr name="org-netbeans-core-multiview-EditorsAction.instance/org-netbeans-core-windows-actions-ToolbarsListAction.instance" boolvalue="true" />
+        </folder>
+    </folder>
 </filesystem>

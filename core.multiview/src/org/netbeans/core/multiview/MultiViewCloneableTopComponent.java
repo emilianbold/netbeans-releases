@@ -86,9 +86,6 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         peer.setDeserializedMultiViewDescriptions(descriptions, defaultDesc, existingElements);
     }
     
-    /**
-     * @deprecated - for use in tests only!!!!!
-     */
     MultiViewModel getModel() {
         return peer.getModel();
     }
@@ -203,8 +200,8 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
         if (peer == null || peer.model == null) {
             return null;
         }
-        MultiViewElement el = peer.model.getActiveElement();
-        if (el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
+        MultiViewElement el = peer.model.getActiveElement(false);
+        if (el != null && el.getVisualRepresentation() instanceof CloneableEditorSupport.Pane) {
             CloneableEditorSupport.Pane pane = (CloneableEditorSupport.Pane)el.getVisualRepresentation();
             return pane.getEditorPane();
         }

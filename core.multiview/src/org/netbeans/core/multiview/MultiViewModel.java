@@ -95,13 +95,17 @@ class MultiViewModel {
     }
     
     MultiViewElement getActiveElement() {
-        return getElementForDescription(currentEditor);
+        return getActiveElement(true);
+    }
+    
+    MultiViewElement getActiveElement(boolean createIfNotCreatedYet) {
+        return getElementForDescription(currentEditor, createIfNotCreatedYet);
     }
     
     /**
      * returns all elements that were so far created/instantiated.
      */
-    Collection getCreatedElements() {
+    synchronized Collection getCreatedElements() {
        Collection col = new ArrayList(nestedElements.size());
        Iterator it = nestedElements.entrySet().iterator();
        while (it.hasNext()) {
@@ -172,7 +176,7 @@ class MultiViewModel {
     /**
      * used primarily at deserialization time.
      */
-    MultiViewElement getElementForDescription(MultiViewDescription description, boolean create) {
+     synchronized MultiViewElement getElementForDescription(MultiViewDescription description, boolean create) {
         MultiViewElement element = (MultiViewElement)nestedElements.get(description);
         if (element == null && create) {
             element = description.createElement();
