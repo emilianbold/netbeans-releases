@@ -157,12 +157,6 @@ else System.err.println( "Inside token " + item.getTokenID() );
                     l = translateCharRefs( offset-len, len, dtd.getCharRefList( preText ) );
                 }
                 /* Tag finder */
-            } else if( id == HTMLTokenContext.TEXT && preText.endsWith( "<" ) ) { // NOI18N
-                // There will be lookup for possible StartTags, in SyntaxSupport
-                //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
-                l = translateTags( offset-len, len, dtd.getElementList( "" ) );
-                
-                //System.err.println("l = " + l );
             } else if( id == HTMLTokenContext.TAG_OPEN) { // NOI18N
                 len = offset - itemOffset + 1; // minus the < char length
                 l = translateTags( itemOffset -1 , len, dtd.getElementList( preText ) );
@@ -195,6 +189,12 @@ else System.err.println( "Inside token " + item.getTokenID() );
                         }
                     }
                 }
+                
+                
+            } else if( /*id == HTMLTokenContext.TEXT && */ preText.endsWith( "<" ) ) { // NOI18N
+                // There will be lookup for possible StartTags, in SyntaxSupport
+                //                l = translateTags( offset-len, len, sup.getPossibleStartTags ( offset-len, "" ) );
+                l = translateTags( offset-len, len, dtd.getElementList( "" ) );
                 
                 /* EndTag finder */
             } else if( id == HTMLTokenContext.TEXT && preText.endsWith( "</" ) ) { // NOI18N
