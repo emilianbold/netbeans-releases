@@ -13,7 +13,9 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
+
   <folder name="Templates">
+ 
     <folder name="Ant">
       <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.resources.Bundle"/>
       <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntDescription.html"/>
@@ -46,6 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="templateWizardURL" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntShortcut.html"/>
       </file>
     </folder>
+
     <!-- Service templates -->
     <folder name="Services">
       <folder name="CompilerType">
@@ -62,9 +65,11 @@ Microsystems, Inc. All Rights Reserved.
         </file>
       </folder>
     </folder>
+
   </folder>
 
   <folder name="Services">
+
     <!-- Recognize text/x-ant+xml: -->
     <folder name="MIMEResolver">
       <file name="org-apache-tools-ant-module-mime-resolver.xml" url="mime-resolver.xml">
@@ -72,6 +77,7 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
       </file>
     </folder>
+
     <file name="AntSettings.settings" url="AntSettings.settings"/>
     <folder name="CompilerType">
       <file name="AntCompiler.settings" url="AntCompiler.settings"/>
@@ -80,10 +86,12 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Executor">
       <file name="AntExecutor.settings" url="AntExecutor.settings"/>
     </folder>
+
     <folder name="Hidden">
       <!-- To make the module nicer to debug, list the cookies it provides. -->
       <file name="org-apache-tools-ant-module-cookies.xml" url="cookies.xml"/>
     </folder>
+
     <folder name="JavaHelp">
       <attr name="org-netbeans-modules-usersguide-below-regular.txt/org-apache-tools-ant-module-helpset.xml" boolvalue="true"/>
       <file name="org-apache-tools-ant-module-helpset.xml">
@@ -95,7 +103,9 @@ Microsystems, Inc. All Rights Reserved.
 ]]>
       </file>
     </folder>
+
   </folder>
+
   <folder name="Menu">
     <folder name="Help">
       <folder name="HelpShortcuts">
@@ -113,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
   </folder>
+
   <folder name="Actions">
     <folder name="Help">
       <file name="org-apache-tools-ant-module-mainpage.xml">
@@ -127,6 +138,7 @@ Microsystems, Inc. All Rights Reserved.
       </file>
     </folder>
   </folder>
+
   <!-- Mount documentation automatically. -->
   <folder name="Mount">
     <folder name="Javadoc">
@@ -145,4 +157,12 @@ Microsystems, Inc. All Rights Reserved.
       </file>
     </folder>
   </folder>
+
+  <!-- Lines marked as erroneous: -->
+  <folder name="Editors">
+    <folder name="AnnotationTypes">
+      <file name="org-apache-tools-ant-module-error.xml" url="error-annotation.xml"/>
+    </folder>
+  </folder>
+
 </filesystem>
