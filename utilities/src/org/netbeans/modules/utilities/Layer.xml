@@ -163,7 +163,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <folder name="Services">
         <!-- Open File Server Settings -->
-        <file name="openfile_server.settings">
+        <file name="org-netbeans-modules-openfile-Settings.settings">
             <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
@@ -180,7 +180,7 @@ Microsystems, Inc. All Rights Reserved.
         </file>
         
         <!-- PDF Settings -->
-        <file name="pdg_settings.settings">
+        <file name="org-netbeans-modules-pdf-PDFSettings.settings">
             <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
@@ -200,7 +200,7 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="SearchType">
             <attr name="SystemFileSystem.localizingBundle" stringValue="org.netbeans.modules.search.Bundle"/>
             <attr name="SystemFileSystem.icon" urlValue="nbresloc:/org/openidex/search/res/find.gif"/>
-            <file name="fulltext_searchtype.settings">
+            <file name="org-netbeans-modules-search-FullTextType.settings">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                     <settings version="1.0">
@@ -218,7 +218,7 @@ Microsystems, Inc. All Rights Reserved.
                 ]]>
             </file>
             
-            <file name="mofificationdate_searchtype.settings">
+            <file name="org-netbeans-modules-search-ModificationDateType.settings">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                     <settings version="1.0">
@@ -235,7 +235,7 @@ Microsystems, Inc. All Rights Reserved.
                 ]]>
             </file>
             
-            <file name="objecttypetype_searchtype.settings">
+            <file name="org-netbeans-modules-search-ObjectTypeType.settings">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                     <settings version="1.0">
@@ -252,7 +252,7 @@ Microsystems, Inc. All Rights Reserved.
                 ]]>
             </file>
             
-            <file name="objectnametype_searchtype.settings">
+            <file name="org-netbeans-modules-search-ObjectNameType.settings">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                     <settings version="1.0">
@@ -269,16 +269,16 @@ Microsystems, Inc. All Rights Reserved.
                     </settings>
                 ]]>
             </file>
-            <attr name="fulltext_searchtype.settings/objectnametype_searchtype.settings" boolValue="true"/>
-            <attr name="objectnametype_searchtype.settings/objecttypetype_searchtype.settings" boolValue="true"/>
-            <attr name="objecttypetype_searchtype.settings/modificationdate_searchtype.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-FullTextType.settings/org-netbeans-modules-search-ObjectNameType.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-ObjectNameType.settings/org-netbeans-modules-search-ObjectTypeType.settings" boolValue="true"/>
+            <attr name="org-netbeans-modules-search-ObjectTypeType.settings/org-netbeans-modules-search-ModificationDateType.settings" boolValue="true"/>
         </folder>
     </folder>
     
     <folder name="Templates">
         <folder name="Services">
             <folder name="SearchType">
-                <file name="fulltext_searchtype.settings">
+                <file name="org-netbeans-modules-search-FullTextType.settings">
                     <![CDATA[<?xml version="1.0"?>
                         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                         <settings version="1.0">
@@ -297,7 +297,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolValue="true"/>
                 </file>
                 
-                <file name="mofificationdate_searchtype.settings">
+                <file name="org-netbeans-modules-search-MofificationDateType.settings">
                     <![CDATA[<?xml version="1.0"?>
                         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                         <settings version="1.0">
@@ -315,7 +315,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolValue="true"/>
                 </file>
 
-                <file name="objecttypetype_searchtype.settings">
+                <file name="org-netbeans-modules-search-ObjectTypeType.settings">
                     <![CDATA[<?xml version="1.0"?>
                         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                         <settings version="1.0">
@@ -333,7 +333,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="template" boolValue="true"/>
                 </file>
 
-                <file name="objectnametype_searchtype.settings">
+                <file name="org-netbeans-modules-search-ObjectNameType.settings">
                     <![CDATA[<?xml version="1.0"?>
                         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                         <settings version="1.0">
