@@ -180,7 +180,7 @@ public abstract class BaseBean implements Cloneable, Bean {
     }
 
     protected void init(Vector comps, Version version) {
-        if (version.getMajor() < 4) {
+        if (version.getMajor() < 3) {
             initPropertyTables(13);
         }
         this.comparators = new ArrayList(2);
