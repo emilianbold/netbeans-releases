@@ -161,18 +161,18 @@ public class RADProperty extends FormProperty {
         if (descriptor.getPropertyType() == Integer.TYPE
             // XXX(-ttran) DebugGraphics.NONE_OPTION is not an enum, see Swing
             // source code for details
-            && !"debugGraphicsOptions".equals(descriptor.getName()) // NOI18N
-            ) {
-            if ("mnemonic".equals(descriptor.getName())) {
+            && !"debugGraphicsOptions".equals(descriptor.getName())) // NOI18N
+        {
+            if ("mnemonic".equals(descriptor.getName()) // NOI18N
+                    || "displayedMnemonic".equals(descriptor.getName())) // NOI18N
                 return new org.netbeans.modules.form.editors.MnemonicEditor();
-            }                
+
             Object[] enumerationValues =
                 (Object[]) descriptor.getValue("enumerationValues"); // NOI18N
-            if (enumerationValues != null) {
+            if (enumerationValues != null)
                 return new org.netbeans.modules.form.editors.EnumEditor(enumerationValues);
-            }
         }
-        
+
         if (desc.getPropertyEditorClass() != null) {
             try {
                 return (PropertyEditor) desc.getPropertyEditorClass().newInstance();
