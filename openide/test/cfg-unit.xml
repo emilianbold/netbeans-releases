@@ -93,7 +93,6 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- excluded, needs an ide executor -->
                 <exclude name="org/openide/util/UtilProgressCursorTest.class"/>
                 <include name="org/openide/util/actions/*Test.class"/>
-                <!-- #35856 -->
                 <include name="org/openide/xml/*.class"/>
                 <!-- following test was excluded because of issue #22629 
                 <include name="org/openide/explorer/FindHelpTest.class"/>
