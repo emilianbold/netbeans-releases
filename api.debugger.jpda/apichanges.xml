@@ -48,11 +48,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>JPDADebugger.getException() method added.</summary>
         <date day="20" month="4" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             JPDADebugger.getException() method added to. This is support for notifications about 
             problems during start of debugger.
@@ -63,11 +59,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Support for synchronouous start of JPDADebugger added.</summary>
         <date day="3" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility modification="yes"/>
         <description>
             <p>
                 Methods starting debugger has been modified to support synchronous start of debugging.
@@ -79,11 +71,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Breakpoint Listener added.</summary>
         <date day="4" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 JPDABreakpointEvent and JPDABreakpointListener classes added.
@@ -97,11 +85,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Support methods for various new features added.</summary>
         <date day="9" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 Support for Fix Action improved. Support for Pop Frame action added. Support for static and
@@ -122,11 +106,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Definition of various breakpoints has been generalized.</summary>
         <date day="10" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility modification="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
                 We have changed ClassLoadUnloadBreakpoint to support class exclusion filters, and
@@ -139,11 +119,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>JPDABreakpointEvent improvements.</summary>
         <date day="11" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility modification="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
                 We have added several new properties to JPDABreakpointEvent:
@@ -161,11 +137,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Improvements of SmartStepping implementation.</summary>
         <date day="16" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 We have added several new methods to fix issues in smart stepping implementation:
@@ -186,11 +158,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>JPDADebugger.SESSION_ID.</summary>
         <date day="17" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 JPDADebugger.SESSION_ID constant has been added.
@@ -202,11 +170,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Firing of exceptions during watches evaluation fixed.</summary>
         <date day="25" month="5" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility modification="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
                 InvalidExpressionException is fired from folowing methods now:
@@ -223,11 +187,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>InvalidExpressionException can encapsulate other exceptions.</summary>
         <date day="1" month="6" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 Mew constructor added (InvalidExpressionException(java.lang.Throwable)), 
@@ -246,11 +206,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>ContextProvider.getFieldLineNumber() method added.</summary>
         <date day="1" month="6" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 ContextProvider.getFieldLineNumber() method added.
@@ -262,11 +218,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>Two methods added to ContextProvider.</summary>
         <date day="8" month="6" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Compatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes"/>
         <description>
             <p>
                 ContextProvider.getImports () method added to support better evaluation of expressions.
@@ -279,11 +231,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>ContextProvider and EngineContextProvider has been changed from interfaces to abstract classes.</summary>
         <date day="8" month="6" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility modification="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
                 ContextProvider and EngineContextProvider has been changed from interfaces to abstract classes. 
@@ -296,11 +244,7 @@ Microsystems, Inc. All Rights Reserved.
         <summary>"String EditorContext.getClassName (url, lineNumber)" method has been added.</summary>
         <date day="8" month="10" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
                 This method is needed to correctly implement line breakpoint in secondary classes.
@@ -312,14 +256,10 @@ Microsystems, Inc. All Rights Reserved.
         <summary>"EditorContext.updateTimeStamp(timeStamp,url)" method has been added.</summary>
         <date day="13" month="10" year="2004"/>
         <author login="jjancura"/>
-        <compatibility>
-            <p>
-                Incompatile change.
-            </p>
-        </compatibility>
+        <compatibility addition="yes" source="incompatible" binary="incompatible"/>
         <description>
             <p>
-                This method is needed to correctly implement fix & continue action.
+                This method is needed to correctly implement fix &amp; continue action.
             </p>
         </description>
     </change>
