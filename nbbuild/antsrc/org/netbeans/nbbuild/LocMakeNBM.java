@@ -32,7 +32,7 @@ public class LocMakeNBM extends Task {
 
   protected String locales = null ;
   protected String mainDir = null ;
-  protected String topDir = null ;
+  protected File topDir = null ;
   protected String fileName = null ;
   protected String baseFileName = null ;
   protected boolean deleteInfo = false ;
@@ -52,8 +52,8 @@ public class LocMakeNBM extends Task {
   public void setMainDir( String s) {
     mainDir = s ;
   }
-  public void setTopDir( String s) {
-    topDir = s ;
+  public void setTopDir( File f) {
+    topDir = f ;
   }
   public void setFile( String s) {
     fileName = s ;
@@ -102,7 +102,7 @@ public class LocMakeNBM extends Task {
       mainDir = new String( "netbeans") ;
     }
     if( topDir == null) {
-      topDir = new String( ".") ;
+      topDir = getProject().getBaseDir() ;
     }
 
     // Print a warning and stop if the topDir doesn't exist. //
@@ -154,9 +154,10 @@ public class LocMakeNBM extends Task {
     if( deleteInfo) {
       del = (Delete) project.createTask( "delete") ;
       del.init() ;
-      del.setDir( new File( topDir + File.separator + "Info")) ;
+      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info")) ;
       del.execute() ;
-      del.setDir( new File( topDir + File.separator + "Info_" + locale)) ;
+      del.setDir( new File( topDir.getAbsolutePath() + File.separator + "Info_" + 
+			    locale)) ;
       del.execute() ;
     }
     else {
@@ -170,8 +171,9 @@ public class LocMakeNBM extends Task {
 
     makenbm.setModInfo( modInfo) ;
     makenbm.setLangCode( locale) ;
-    makenbm.setFile( new File( getLocalizedFileName( locale))) ;
-    makenbm.setTopdir( new File( topDir)) ;
+    makenbm.setFile( new File( getProject().getBaseDir().getAbsolutePath() + 
+			       File.separator + getLocalizedFileName( locale))) ;
+    makenbm.setTopdir( topDir) ;
     makenbm.setIsStandardInclude( false) ;
     licenseFile = getLicenseFile( locale) ;
     if( licenseFile != null) {
@@ -234,7 +236,8 @@ public class LocMakeNBM extends Task {
     String license_prop = project.getProperty( license_prop_name) ;
     File license = null ;
     if( license_prop != null) {
-      license = new File( license_prop) ;
+      license = new File( getProject().getBaseDir().getAbsolutePath() + 
+			  File.separator + license_prop) ;
     }
     return( license) ;
   }
@@ -244,12 +247,13 @@ public class LocMakeNBM extends Task {
     File dir ;
 
     if( to_info) {
-      dir = new File( topDir + File.separator + "Info_" + locale) ;
-      dir.renameTo( new File( topDir + File.separator + "Info")) ;
+      dir = new File( topDir.getAbsolutePath() + File.separator + "Info_" + locale) ;
+      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info")) ;
     }
     else {
-      dir = new File( topDir + File.separator + "Info") ;
-      dir.renameTo( new File( topDir + File.separator + "Info_" + locale)) ;
+      dir = new File( topDir.getAbsolutePath() + File.separator + "Info") ;
+      dir.renameTo( new File( topDir.getAbsolutePath() + File.separator + "Info_" + 
+			      locale)) ;
     }
   }
 
@@ -272,7 +276,7 @@ public class LocMakeNBM extends Task {
 
     // Setup a fileset to find files in this locale. //
     fs = new FileSet() ;
-    fs.setDir( new File( topDir)) ;
+    fs.setDir( topDir) ;
     addLocalePatterns( fs, loc) ;
 
     // See if there are any localized files for this locale. //
@@ -386,9 +390,9 @@ public class LocMakeNBM extends Task {
   /** If the topDir doesn't exist, warn the user and return true. */
   protected boolean printMissingDirWarning() {
     boolean ret = false ;
-    File dir = new File( topDir) ;
-    if( !dir.exists()) {
-      log( "WARNING: Skipping this task: Directory " + dir.getPath() + " doesn't exist.") ;
+    if( !topDir.exists()) {
+      log( "WARNING: Skipping this task: Directory " + topDir.getPath() + 
+	   " doesn't exist.") ;
       ret = true ;
     }
     return( ret) ;
@@ -448,7 +452,8 @@ public class LocMakeNBM extends Task {
     String s, srcdir = null ;
 
     // See if the file containing the srcdir is there. //
-    srcdirfile = new File( topDir + File.separator + "srcdir.properties") ;
+    srcdirfile = new File( topDir.getAbsolutePath() + File.separator + 
+			   "srcdir.properties") ;
     if( srcdirfile.exists()) {
       srcdir = getSrcDir( srcdirfile) ;
     }
