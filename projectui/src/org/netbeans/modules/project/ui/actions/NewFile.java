@@ -218,9 +218,9 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
         fileItem.addActionListener( menuListener );
         fileItem.putClientProperty( TEMPLATE_PROPERTY, null );
         menuItem.add( fileItem );
-        menuItem.add( new Separator() );
-        
+                
         List lruList = OpenProjectList.getDefault().getTemplatesLRU( project );
+        boolean first = true;
         for( Iterator it = lruList.iterator(); it.hasNext(); ) {
             DataObject template = (DataObject)it.next();
             
@@ -229,7 +229,11 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
                 MessageFormat.format( TEMPLATE_NAME_FORMAT, new Object[] { delegate.getDisplayName() } ),
                 new ImageIcon( delegate.getIcon( BeanInfo.ICON_COLOR_16x16 ) ) );
             item.addActionListener( menuListener );
-            item.putClientProperty( TEMPLATE_PROPERTY, template );            
+            item.putClientProperty( TEMPLATE_PROPERTY, template );        
+            if ( first ) {
+                menuItem.add( new Separator() );
+                first = false;
+            }
             menuItem.add( item );
         }
         
