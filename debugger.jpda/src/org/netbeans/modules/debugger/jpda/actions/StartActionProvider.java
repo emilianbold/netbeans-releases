@@ -45,6 +45,19 @@ public class StartActionProvider extends ActionsProvider {
     
     private static final boolean startVerbose = 
         System.getProperty ("netbeans.debugger.start") != null;
+    private static int jdiTrace;
+    static { 
+        if (System.getProperty ("netbeans.debugger.jditrace") != null) {
+            try {
+                jdiTrace = Integer.parseInt (
+                    System.getProperty ("netbeans.debugger.jditrace")
+                );
+            } catch (NumberFormatException ex) {
+                jdiTrace = VirtualMachine.TRACE_NONE;
+            }
+        } else
+            jdiTrace = VirtualMachine.TRACE_NONE;
+    }
 
     private JPDADebuggerImpl debuggerImpl;
     private ContextProvider lookupProvider;
@@ -62,10 +75,12 @@ public class StartActionProvider extends ActionsProvider {
     
     public void doAction (Object action) {
         if (startVerbose)
-            System.out.println("\nS StartActionProvider.doAction ()");
+            System.out.println ("\nS StartActionProvider.doAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
             lookupFirst (null, JPDADebugger.class);
-        if (debugger != null && debugger.getVirtualMachine() != null) return;
+        if ( debugger != null && 
+             debugger.getVirtualMachine () != null
+        ) return;
         final AbstractDICookie cookie = (AbstractDICookie) lookupProvider.
             lookupFirst (null, AbstractDICookie.class);
         
@@ -79,13 +94,18 @@ public class StartActionProvider extends ActionsProvider {
                     try {
                         VirtualMachine virtualMachine = cookie.
                             getVirtualMachine ();
+                        virtualMachine.setDebugTraceMode (jdiTrace);
                         
                         final Object startLock = new Object();
                         Operator o = createOperator (virtualMachine, startLock);
-                        synchronized(startLock) {
-                            if (startVerbose) System.out.println("\nS StartActionProvider.doAction () - starting operator thread");
+                        synchronized (startLock) {
+                            if (startVerbose) System.out.println (
+                                    "\nS StartActionProvider.doAction () - " +
+                                    "starting operator thread"
+                                );
                             o.start ();
-                            if (cookie instanceof ListeningDICookie) startLock.wait(1500);
+                            if (cookie instanceof ListeningDICookie) 
+                                startLock.wait(1500);
                         }
                         debuggerImpl.setRunning (
                             virtualMachine,
