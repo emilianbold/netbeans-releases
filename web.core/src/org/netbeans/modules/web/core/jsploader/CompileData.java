@@ -162,14 +162,17 @@ public class CompileData {
     private String getContextPath() {
         try {
             FileObject contextRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
-            WebContextObject wco = (WebContextObject)DataObject.find(contextRoot);
-            return wco.getURIParameter();
+            DataObject dobj = DataObject.find(contextRoot);
+            if (dobj instanceof WebContextObject) {
+                WebContextObject wco = (WebContextObject)dobj;
+                return wco.getURIParameter();
+            }
         }
         catch (DataObjectNotFoundException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            // an ugly fallback
-            return "";
         }
+        // an ugly fallback
+        return "";
     }
     
     /** PENDING - remove this, as this is Tomcat-specific.
