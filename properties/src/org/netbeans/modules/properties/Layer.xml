@@ -18,7 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Other">
             <file name="properties.properties">
-                <![CDATA[# Sample ResourceBundle properties file]]>
+                <![CDATA[# Sample ResourceBundle properties file
+]]>
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.properties.Bundle"/>
                 <attr name="templateWizardDescResource" stringvalue="org/netbeans/modules/properties/TemplateHelp.html"/>
