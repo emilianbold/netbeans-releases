@@ -37,7 +37,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
-public final class NewFileWizard  extends TemplateWizard {
+public final class NewFileWizard extends TemplateWizard {
         
     private Project p;
     private String[] recommendedTypes;
@@ -60,7 +60,7 @@ public final class NewFileWizard  extends TemplateWizard {
     }
         
 }
-    
+
 /** Old impl might be usefull later in Wizards API
     
 ///** Wizard for creating new files in a project.

@@ -47,12 +47,17 @@ import org.openide.windows.WindowManager;
 public class TemplateWizard extends WizardDescriptor {
     /** EA that defines the wizards description */
     private static final String EA_DESCRIPTION = "templateWizardURL"; // NOI18N
-    /** EA that defines custom iterator */
+    /** EA that defines custom iterator*/
     private static final String EA_ITERATOR = "templateWizardIterator"; // NOI18N
     /** EA that defines resource string to the description instead of raw URL
      * @deprecated
      */
     private static final String EA_DESC_RESOURCE = "templateWizardDescResource"; // NOI18N
+    
+    /** Defines the wizards description */
+    private static final String CUSTOM_DESCRIPTION = "instantiatingWizardURL"; // NOI18N
+    /** Defines custom iterator */
+    private static final String CUSTOM_ITERATOR = "instantiatingIterator"; // NOI18N
 
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
@@ -537,6 +542,7 @@ public class TemplateWizard extends WizardDescriptor {
     */
     public static void setDescription (DataObject obj, URL url) throws IOException {
         obj.getPrimaryFile().setAttribute(EA_DESCRIPTION, url);
+        obj.getPrimaryFile().setAttribute(CUSTOM_DESCRIPTION, url);
     }
 
     /** Method to get a description for a data object.
@@ -544,7 +550,9 @@ public class TemplateWizard extends WizardDescriptor {
     * @return the url with description or null
     */
     public static URL getDescription (DataObject obj) {
-        URL desc = (URL)obj.getPrimaryFile().getAttribute(EA_DESCRIPTION);
+        URL desc = (URL)obj.getPrimaryFile().getAttribute(CUSTOM_DESCRIPTION);
+        if (desc != null) return desc;
+        desc = (URL)obj.getPrimaryFile().getAttribute(EA_DESCRIPTION);
         if (desc != null) return desc;
 	// Backwards compatibility:
         String rsrc = (String) obj.getPrimaryFile ().getAttribute (EA_DESC_RESOURCE);
@@ -603,6 +611,7 @@ public class TemplateWizard extends WizardDescriptor {
     */
     public static void setIterator (DataObject obj, Iterator iter)
     throws IOException {
+        obj.getPrimaryFile().setAttribute(CUSTOM_ITERATOR, iter);
         obj.getPrimaryFile().setAttribute(EA_ITERATOR, iter);
     }
 
@@ -615,7 +624,17 @@ public class TemplateWizard extends WizardDescriptor {
     * @return custom iterator or null
     */
     public static Iterator getIterator (DataObject obj) {
-        Iterator it = (Iterator)obj.getPrimaryFile ().getAttribute(EA_ITERATOR);
+        Object unknownIterator = obj.getPrimaryFile ().getAttribute(CUSTOM_ITERATOR);
+        if (unknownIterator == null) {
+            unknownIterator = obj.getPrimaryFile ().getAttribute(EA_ITERATOR);
+        }
+        Iterator it = null;
+        if (unknownIterator instanceof Iterator) {
+            // old style iterator
+            it = (Iterator)unknownIterator;
+        } if (unknownIterator instanceof WizardDescriptor.InstantiatingIterator) {
+            it = new TemplateWizard.Brigde2Iterator ((WizardDescriptor.InstantiatingIterator) unknownIterator);
+        }
         if (it != null) {
             return it;
         }
@@ -874,7 +893,58 @@ public class TemplateWizard extends WizardDescriptor {
         public void removeChangeListener(javax.swing.event.ChangeListener l) {
         }
     }
-
+    
+    static class Brigde2Iterator implements TemplateWizard.Iterator {
+        private WizardDescriptor.InstantiatingIterator instantiatingIterator;
+        public Brigde2Iterator (WizardDescriptor.InstantiatingIterator it) {
+            instantiatingIterator = it;
+        }
+        
+        public void addChangeListener (javax.swing.event.ChangeListener l) {
+            instantiatingIterator.addChangeListener (l);
+        }
+        
+        public org.openide.WizardDescriptor.Panel current () {
+            return instantiatingIterator.current ();
+        }
+        
+        public boolean hasNext () {
+            return instantiatingIterator.hasNext ();
+        }
+        
+        public boolean hasPrevious () {
+            return instantiatingIterator.hasPrevious ();
+        }
+        
+        public String name () {
+            return instantiatingIterator.name ();
+        }
+        
+        public void nextPanel () {
+            instantiatingIterator.nextPanel ();
+        }
+        
+        public void previousPanel () {
+            instantiatingIterator.previousPanel ();
+        }
+        
+        public void removeChangeListener (javax.swing.event.ChangeListener l) {
+            instantiatingIterator.removeChangeListener (l);
+        }
+        
+        public void initialize (TemplateWizard wiz) {
+            instantiatingIterator.initialize (wiz);
+        }
+        
+        public java.util.Set instantiate (TemplateWizard wiz) throws IOException {
+            return instantiatingIterator.instantiate ();
+        }
+        
+        public void uninitialize (TemplateWizard wiz) {
+            instantiatingIterator.uninitialize (wiz);
+        }
+        
+    }
     /*
       public static void main (String[] args) throws java.lang.Exception {
         TemplateWizard wiz = new TemplateWizard ();

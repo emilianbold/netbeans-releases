@@ -28,7 +28,6 @@ import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
 /**
@@ -83,23 +82,23 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel, Cha
 
     public void readSettings( Object settings ) {
         
-        TemplateWizard templateWizard = (TemplateWizard)settings;
+        WizardDescriptor wizard = (WizardDescriptor)settings;
         
         if ( gui != null ) {
             
-            Project project = Templates.getProject( templateWizard );
+            Project project = Templates.getProject( wizard );
             
             // Try to preselect a folder
             // XXX The test should be rewritten if external project dirs are supported
             
-            FileObject preselectedTarget = Templates.getTargetFolder( templateWizard );
+            FileObject preselectedTarget = Templates.getTargetFolder( wizard );
             String targetFolder = null;
             if ( preselectedTarget != null && FileUtil.isParentOf( project.getProjectDirectory(), preselectedTarget ) ) {
                 targetFolder = FileUtil.getRelativePath( project.getProjectDirectory(), preselectedTarget );
             }
                         
             // Init values
-            gui.initValues( project, folders, Templates.getTemplate( templateWizard ), targetFolder );
+            gui.initValues( project, folders, Templates.getTemplate( wizard ), targetFolder );
         }
     }
 

@@ -529,17 +529,17 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="Classes/GUIForms" boolvalue="true"/>
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>
+            <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>
 
             <file name="JApplet.java" url="templates/SwingForms/JApplet_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JApplet.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JApplet.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JAppletColor32.gif"/>
                 <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
                 <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="JApplet.form" url="templates/SwingForms/JApplet_form">
                 <attr name="template" boolvalue="true" />
@@ -548,10 +548,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JDialog.java" url="templates/SwingForms/JDialog_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JDialog.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JDialog.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="JDialog.form" url="templates/SwingForms/JDialog_form">
                 <attr name="template" boolvalue="true" />
@@ -560,10 +560,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JFrame.java" url="templates/SwingForms/JFrame_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JFrame.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="JFrame.form" url="templates/SwingForms/JFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -572,10 +572,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JInternalFrame.java" url="templates/SwingForms/JInternalFrame_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JInternalFrame.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JInternalFrame.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JInternalFrameColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="JInternalFrame.form" url="templates/SwingForms/JInternalFrame_form">
                 <attr name="template" boolvalue="true" />
@@ -584,10 +584,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="JPanel.java" url="templates/SwingForms/JPanel_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JPanel.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/JPanel.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor16.gif"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JPanelColor32.gif"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="JPanel.form" url="templates/SwingForms/JPanel_form">
                 <attr name="template" boolvalue="true" />
@@ -596,8 +596,8 @@ Microsystems, Inc. All Rights Reserved.
             <file name="BeanForm.java" url="templates/SwingForms/BeanForm_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                 <attr name="template" boolvalue="true" />
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
-                <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.form.wizard.TemplateWizardIterator.singleton"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/BeanForm.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
             </file>
             <file name="BeanForm.form" url="templates/SwingForms/BeanForm_form">
                 <attr name="template" boolvalue="true" />
@@ -605,16 +605,16 @@ Microsystems, Inc. All Rights Reserved.
 
             <folder name="AWTForms">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/AWTForms.html"/>
 
                 <file name="Applet.java" url="templates/AWTForms/Applet_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Applet.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/applet.gif"/>
                     <attr name="NetBeansAttrDebuggerType" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420446562756767696e6774002e6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c657444656275676765725479706578"/>
                     <attr name="NetBeansAttrExecutor" serialvalue="aced00057372001e6f72672e6f70656e6964652e53657276696365547970652448616e646c6564612acc871b81080300024c0009636c6173734e616d657400124c6a6176612f6c616e672f537472696e673b4c00046e616d6571007e000178707400104170706c657420457865637574696f6e74002a6f72672e6e65746265616e732e6d6f64756c65732e6170706c65742e4170706c65744578656375746f7278"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="Applet.form" url="templates/AWTForms/Applet_form">
                     <attr name="template" boolvalue="true" />
@@ -623,9 +623,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Dialog.java" url="templates/AWTForms/Dialog_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialog.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/dialog.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="Dialog.form" url="templates/AWTForms/Dialog_form">
                     <attr name="template" boolvalue="true" />
@@ -634,9 +634,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Frame.java" url="templates/AWTForms/Frame_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Frame.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/resources/frame.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="Frame.form" url="templates/AWTForms/Frame_form">
                     <attr name="template" boolvalue="true" />
@@ -645,9 +645,9 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="Panel.java" url="templates/AWTForms/Panel_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Panel.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/beaninfo/awt/panel.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="Panel.form" url="templates/AWTForms/Panel_form">
                     <attr name="template" boolvalue="true" />
@@ -656,15 +656,15 @@ Microsystems, Inc. All Rights Reserved.
 
             <folder name="Dialogs">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Dialogs.html"/>
 
                 <file name="Application.java" url="templates/Dialogs/Application_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Application.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="Application.form" url="templates/Dialogs/Application_form">
                     <attr name="template" boolvalue="true" />
@@ -673,10 +673,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="MDIApplication.java" url="templates/Dialogs/MDIApplication_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/MDIApplication.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor16.gif"/>
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JFrameColor32.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="MDIApplication.form" url="templates/Dialogs/MDIApplication_form">
                     <attr name="template" boolvalue="true" />
@@ -685,10 +685,10 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="OkCancelDialog.java" url="templates/Dialogs/OkCancelDialog_java">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.resources.Bundle"/>
                     <attr name="template" boolvalue="true" />
-                    <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/OKCancelDialog.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor16.gif"/>
                     <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/javax/swing/beaninfo/images/JDialogColor32.gif"/>
-                    <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.java.ui.wizard.JavaWizardIterator.singleton"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplatesIterator" />
                 </file>
                 <file name="OkCancelDialog.form" url="templates/Dialogs/OkCancelDialog_form">
                     <attr name="template" boolvalue="true" />

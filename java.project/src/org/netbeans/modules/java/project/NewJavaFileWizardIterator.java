@@ -41,14 +41,13 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.nodes.Node;
 
 /**
  * Wizard to create a new J2SE project.
  * @author Jesse Glick
  */
-public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
+public class NewJavaFileWizardIterator implements WizardDescriptor.InstantiatingIterator {
     
     private static final long serialVersionUID = 1L;
     
@@ -87,7 +86,7 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
         };
     }
         
-    public Set/*<DataObject>*/ instantiate(TemplateWizard wiz) throws IOException {
+    public Set/*<DataObject>*/ instantiate (/*WizardDescriptor wizardDescriptor*/) throws IOException {
         FileObject dir = Templates.getTargetFolder( wiz );
         
         DataFolder df = DataFolder.findFolder( dir );
@@ -116,9 +115,9 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
         
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
+    private transient WizardDescriptor wiz;
     
-    public void initialize(TemplateWizard wiz) {
+    public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels( wiz );
@@ -141,7 +140,7 @@ public class NewJavaFileWizardIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize(TemplateWizard wiz) {
+    public void uninitialize (WizardDescriptor wiz) {
         this.wiz = null;
         panels = null;
     }

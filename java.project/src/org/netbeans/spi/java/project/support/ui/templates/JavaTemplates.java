@@ -15,11 +15,11 @@ package org.netbeans.spi.java.project.support.ui.templates;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.project.JavaTargetChooserPanel;
+import org.netbeans.modules.java.project.NewJavaFileWizardIterator;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.TemplateWizard;
 
 /**
  * Default implementations of Java-specific template UI.
@@ -39,6 +39,10 @@ public class JavaTemplates {
      */
     public static WizardDescriptor.Panel createPackageChooser(Project project, SourceGroup[] folders) {       
         return new JavaTargetChooserPanel(project, folders);
+    }
+    
+    public static WizardDescriptor.InstantiatingIterator createJavaTemplatesIterator () {
+        return new NewJavaFileWizardIterator ();
     }
     
 }

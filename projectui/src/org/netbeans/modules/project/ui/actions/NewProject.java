@@ -46,7 +46,7 @@ public class NewProject extends BasicAction {
     public void actionPerformed( ActionEvent evt ) {
 
         if ( wizard == null ) {
-            wizard = new TemplateWizard();                
+            wizard = new TemplateWizard(); // XXX Create NewProjectWizard instead of TemplateWizard               
             FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource( "Templates/Project" ); //NOI18N                
 
             DataFolder templates = DataFolder.findFolder( fo );

@@ -21,7 +21,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ProjectChooserFactory;
-import org.netbeans.api.project.SourceGroup;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -88,7 +87,7 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
             gui.initValues( p );
         }
         
-        TemplateWizard wd = (TemplateWizard)settings;
+        WizardDescriptor wd = (WizardDescriptor)settings;
         wd.setTitle( "New File - Choose File Type" );
         wd.putProperty( "WizardPanel_contentData", new String[] { "Choose Template", "..." } ); // NOI18N
         wd.putProperty( "WizardPanel_contentSelectedIndex", new Integer( 0 ) ); // NOI18N
@@ -96,16 +95,21 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel, ChangeListen
 
     public void storeSettings(Object settings) {
             
-        TemplateWizard templateWizard = (TemplateWizard)settings;
+        WizardDescriptor wd = (WizardDescriptor)settings;
         
-        Object value = templateWizard.getValue();
+        Object value = wd.getValue();
         
         if ( NotifyDescriptor.CANCEL_OPTION != value &&
              NotifyDescriptor.CLOSED_OPTION != value ) {        
             try { 
 
-                templateWizard.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, gui.getProject() );
-                templateWizard.setTemplate( DataObject.find( gui.getTemplate() ) );
+                wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, gui.getProject() );
+                
+                if (wd instanceof TemplateWizard) {
+                    ((TemplateWizard)wd).setTemplate( DataObject.find( gui.getTemplate() ) );
+                } else {
+                    wd.putProperty( ProjectChooserFactory.WIZARD_KEY_TEMPLATE, gui.getTemplate () );
+                }
             }
             catch( DataObjectNotFoundException e ) {
                 // XXX

@@ -24,7 +24,6 @@ import org.netbeans.modules.project.ui.NewFileWizard;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -56,7 +55,7 @@ public class NewFile extends ProjectAction implements PropertyChangeListener {
 
     protected void actionPerformed( Lookup context ) {
 
-        TemplateWizard wd = new NewFileWizard( preselectedProject( context ), null ); //wizardIterator );
+        NewFileWizard wd = new NewFileWizard( preselectedProject( context ), null );
 
         DataFolder preselectedFolder = preselectedFolder( context );
         if ( preselectedFolder != null ) {

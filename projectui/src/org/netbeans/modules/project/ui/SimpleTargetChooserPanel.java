@@ -26,7 +26,6 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.TemplateWizard;
 import org.openide.util.HelpCtx;
 
 /**
@@ -81,23 +80,23 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
 
     public void readSettings( Object settings ) {
         
-        TemplateWizard templateWizard = (TemplateWizard)settings;
+        WizardDescriptor wd = (WizardDescriptor)settings;
         
         if ( gui != null ) {
             
-            Project project = Templates.getProject( templateWizard );
+            Project project = Templates.getProject( wd );
             
             // Try to preselect a folder
             // XXX The test should be rewritten if external project dirs are supported
             
-            FileObject preselectedTarget = Templates.getTargetFolder( templateWizard );
+            FileObject preselectedTarget = Templates.getTargetFolder( wd );
             String targetFolder = null;
             if ( preselectedTarget != null && FileUtil.isParentOf( project.getProjectDirectory(), preselectedTarget ) ) {
                 targetFolder = FileUtil.getRelativePath( project.getProjectDirectory(), preselectedTarget );
             }
                         
             // Init values
-            gui.initValues( project, Templates.getTemplate( templateWizard ), targetFolder );
+            gui.initValues( project, Templates.getTemplate( wd ), targetFolder );
         }
     }
 
