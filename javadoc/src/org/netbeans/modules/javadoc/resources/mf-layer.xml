@@ -117,6 +117,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>  
 
         <folder name="StdDocletType">
@@ -128,6 +129,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoclet.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>
 
         <folder name="JavadocSearchType">
@@ -145,6 +147,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/searchDoc.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
         </folder>  
 
         <folder name="ExternalJavadocProcess">
@@ -157,6 +160,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/javadoc/resources/JavaDoc.gif"/>
                 <attr name="SystemFileSystem.layer" stringvalue="project"/>
             </file>
+            <attr name="SystemFileSystem.layer" stringvalue="project"/>
          </folder>   
     </folder>
 
