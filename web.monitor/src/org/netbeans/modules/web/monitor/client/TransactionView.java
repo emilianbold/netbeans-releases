@@ -24,8 +24,10 @@
 package org.netbeans.modules.web.monitor.client;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.event.ActionListener;    
@@ -57,13 +59,16 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children.SortedArray;
+import org.openide.windows.TopComponent;
 import org.openide.windows.Workspace;
+import org.openide.windows.Mode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.web.monitor.data.DataRecord;
 import org.netbeans.modules.web.monitor.data.MonitorData;
-import org.openide.util.Mutex;
 
 /**
  * Update title does not work like it should. Maybe there is a getName
@@ -220,11 +225,15 @@ public class TransactionView extends ExplorerPanel implements
 	// Post the request for later in case there are timing issues
 	// going on here. 
 
+	OpenTransactionNodesRequest req = new
+	    OpenTransactionNodesRequest();
+	
 	if(debug) 
 	    log("OpenTransactionNodesRequest:: " +  // NOI18N
 			       "posting request..."); // NOI18N
 				     
-        Mutex.EVENT.writeAccess(new OpenTransactionNodesRequest());
+	RequestProcessor.Task t = 
+	    RequestProcessor.postRequest(req, 500); // wait a sec...
     }
 
     class OpenTransactionNodesRequest implements Runnable {

@@ -38,7 +38,6 @@ public class MonitorAction extends CallableSystemAction {
     private static final boolean debug = false;
      
     public MonitorAction() {
-	getController();
     }
 
     protected static Controller getController() {
@@ -67,15 +66,7 @@ public class MonitorAction extends CallableSystemAction {
   
     public void performAction() {
 	
-	if (tv == null) { 
-	    if(debug) 
-		log("Transaction view to be created by: " + //NOI18N 
-				   "performAction"); //NOI18N
-	    tv = new TransactionView(getController());
-	    if(debug) 
-		log("Transaction view was created by: " + //NOI18N
-				   "performAction"); //NOI18N
-	} 
+	if (tv == null) tv = new TransactionView(getController());
         openTransactionView(tv);
     }
     
