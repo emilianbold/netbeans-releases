@@ -536,9 +536,9 @@ public class NonGui extends NbTopManager implements Runnable {
     	    StartLog.logProgress ("ModuleSystem created"); // NOI18N
             fireSystemClassLoaderChange();
 
-            Main.addToSplashMaxSteps(40); // additional steps after loading all modules
             moduleSystem.loadBootModules();
             moduleSystem.readList();
+            Main.addAndSetSplashMaxSteps(40); // additional steps after loading all modules
             moduleSystem.scanForNewAndRestore();
     	    StartLog.logEnd ("Modules initialization"); // NOI18N
         }
