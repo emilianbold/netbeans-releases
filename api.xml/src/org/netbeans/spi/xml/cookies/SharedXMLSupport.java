@@ -443,18 +443,16 @@ class SharedXMLSupport {
         }
     }
 
-    private Map ns2Location;
-
     private String[] getSchemaLocations(InputSource is) {
         EntityResolver res = createEntityResolver();
         if (res==null) return null;
-        ns2Location = Collections.EMPTY_MAP;
-        String[] namespaces = getNamespaces(is);
+        NsHandler nsHandler = getNamespaces(is); 
+        String[] namespaces = nsHandler.getNamespaces();
         List loc = new ArrayList();
         for (int i=0;i<namespaces.length;i++) {
             String ns = namespaces[i];
-            if (ns2Location.containsKey(ns)) {
-                loc.add(ns + " " + ns2Location.get(ns)); //NOI18N
+            if (nsHandler.mapping.containsKey(ns)) {
+                loc.add(ns + " " + nsHandler.mapping.get(ns)); //NOI18N
             } else {
                 try {
                     javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(ns, null);
@@ -464,11 +462,10 @@ class SharedXMLSupport {
         }
         String[] schemaLocations = new String[loc.size()];
         loc.toArray(schemaLocations);
-        ns2Location = Collections.EMPTY_MAP;
         return schemaLocations;
     }
     
-    private String[] getNamespaces(InputSource is) {
+    private NsHandler getNamespaces(InputSource is) {
         NsHandler handler = new NsHandler();
         try {
             XMLReader xmlReader = org.openide.xml.XMLUtil.createXMLReader(false, true);
@@ -477,8 +474,7 @@ class SharedXMLSupport {
         } catch (IOException ex) {
         } catch (SAXException ex) {
         }
-        ns2Location = handler.mapping;
-        return handler.getNamespaces();
+        return handler;
     }
     
     private static class NsHandler extends org.xml.sax.helpers.DefaultHandler {
