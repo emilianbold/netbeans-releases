@@ -34,6 +34,9 @@ import org.netbeans.modules.debugger.support.nodes.DebuggerWindow;
 import org.netbeans.modules.debugger.support.actions.AddBreakpointAction;
 import org.netbeans.modules.debugger.GUIManager;
 import org.netbeans.modules.web.core.jsploader.JspLoader;
+import org.netbeans.modules.web.context.WebContextObject;
+import org.netbeans.modules.web.core.jsploader.JspDataObject;
+
 
 /**
  *
@@ -41,7 +44,7 @@ import org.netbeans.modules.web.core.jsploader.JspLoader;
  */
 public class Utils {
     
-    /** Logger for extbrowser module. */
+    /** Logger for web.debug module. */
     private static ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.web.debug");   // NOI18N
      
     public static ErrorManager getEM () {
@@ -130,8 +133,8 @@ public class Utils {
     }
     
     public static Line getCurrentLine () {
-        EditorCookie e = getCurrentEditorCookie (); // grr ugly, but safe
-        if (e == null) return null;                 // i am very sorry..
+        EditorCookie e = getCurrentEditorCookie ();
+        if (e == null) return null;
         JEditorPane ep = getCurrentEditor (e);
         if (ep == null) return null;
         StyledDocument d = e.getDocument ();
@@ -210,9 +213,9 @@ public class Utils {
     /**
     * Return line for given params.
     */
-    public static Line getLine (String className, int lineNumber) {
-        getEM().log("Utils.getLine for: " + className + ":" + lineNumber);
-        Line.Set ls = getLineSet (className);
+    public static Line getLine (String jspName, String ctxRoot, int lineNumber) {
+        getEM().log("Utils.getLine for: " + jspName + ":" + lineNumber + ", " + ctxRoot);
+        Line.Set ls = getLineSet (jspName, ctxRoot);
         if (ls == null) return null;
         try {
             //Line l = ls.getOriginal (lineNumber - 1);
@@ -233,25 +236,52 @@ public class Utils {
     /**
     * Return line set for given class name.
     */
-    public static Line.Set getLineSet (String className) {
-        getEM().log("Utils.getLineSet for: " + className);
-        FileObject file = Repository.getDefault().findResource(className);
-        getEM().log("file: " + file);
-        if (file == null) return null; 
-        DataObject data = null;
-        try {
-            data = DataObject.find (file);
-        } catch (Exception e) {  
-            return null;  
+    public static Line.Set getLineSet (String jspName, String ctxRoot) {
+        getEM().log("Utils.getLineSet for: " + jspName + ", " + ctxRoot);
+        Enumeration files = Repository.getDefault().findAllResources(jspName);
+        if ((files == null) || (!files.hasMoreElements())) {
+            return null;
         }
-        getEM().log("dataobject: " + data);
-        if (data.getCookie (DebuggerCookie.class) == null)
+        LineCookie lineCookie = null;
+        while (files.hasMoreElements()) {
+            
+            FileObject file = (FileObject)files.nextElement();
+            getEM().log("file: " + file);
+            if (file == null) {
+                continue;
+            }
+            DataObject data = null;
+            try {
+                data = DataObject.find(file);
+            } catch (Exception e) {  
+                continue;
+            }
+            if (data.getCookie(DebuggerCookie.class) == null) {
+                continue;
+            }
+            if ((data == null) || !(data instanceof JspDataObject)) {
+                continue;
+            }
+            WebContextObject wco = (WebContextObject)((JspDataObject)data).getModule();
+            if (wco == null) {
+                continue;
+            }
+            if (!ctxRoot.equals(wco.getContextPath())) {
+                continue;
+            }
+            lineCookie = (LineCookie) data.getCookie (LineCookie.class);
+            if (lineCookie == null) {
+                continue;
+            }
+            
+        }
+
+        if (lineCookie == null) {
+            getEM().log("returning: null");                                     // NOI18N
             return null;
-        LineCookie lineCookie = (LineCookie) data.getCookie (LineCookie.class);
-        getEM().log("linecookie: " + lineCookie);
-        if (lineCookie == null)
-            return null;
-        getEM().log("returning: " + lineCookie.getLineSet());
+        }
+        
+        getEM().log("returning: " + lineCookie.getLineSet());                   // NOI18N
         return lineCookie.getLineSet ();
     }    
     
