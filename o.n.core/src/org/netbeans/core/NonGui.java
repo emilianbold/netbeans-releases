@@ -351,8 +351,6 @@ public class NonGui extends NbTopManager implements Runnable {
         String[] sysbisp = Introspector.getBeanInfoSearchPath();
         String[] nbbisp = new String[] {
             "org.netbeans.beaninfo", // NOI18N
-            "org.netbeans.beaninfo.awt", // NOI18N
-            "org.netbeans.beaninfo.swing", // NOI18N
         };
         String[] allbisp = new String[sysbisp.length + nbbisp.length];
         System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);

@@ -285,8 +285,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module webclient..."/>
     <ant dir="../extbrowser/webclient" target="netbeans"/>
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-form" depends="all-openide,all-java,all-core,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution">
+  <target name="all-form" depends="all-openide,all-java,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution">
     <echo message="Building module form..."/>
     <ant dir="../form" target="netbeans"/>
   </target>

@@ -1047,7 +1047,7 @@ public class MetaComponentCreator {
                     && tm.getRowCount() == 0 && tm.getColumnCount() == 0))
             {
                 propValue =
-                    new org.netbeans.beaninfo.editors.TableModelEditor.NbTableModel(
+                    new org.netbeans.modules.form.editors2.TableModelEditor.NbTableModel(
                         new javax.swing.table.DefaultTableModel(
                             new String[] {
                                 "Title 1", "Title 2", "Title 3", "Title 4" }, // NOI18N

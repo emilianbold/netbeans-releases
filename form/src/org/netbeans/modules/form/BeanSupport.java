@@ -362,19 +362,19 @@ public class BeanSupport
     private static Map createImageCache() {
         Map map = new HashMap();
         
-        map.put("java.awt.Label", "/org/netbeans/beaninfo/awt/label.gif"); // NOI18N
-        map.put("java.awt.Button", "/org/netbeans/beaninfo/awt/button.gif"); // NOI18N
-        map.put("java.awt.TextField", "/org/netbeans/beaninfo/awt/textfield.gif"); // NOI18N
-        map.put("java.awt.TextArea", "/org/netbeans/beaninfo/awt/textarea.gif"); // NOI18N
-        map.put("java.awt.Checkbox", "/org/netbeans/beaninfo/awt/checkbox.gif"); // NOI18N
-        map.put("java.awt.Choice", "/org/netbeans/beaninfo/awt/choice.gif"); // NOI18N
-        map.put("java.awt.List", "/org/netbeans/beaninfo/awt/list.gif"); // NOI18N
-        map.put("java.awt.Scrollbar", "/org/netbeans/beaninfo/awt/scrollbar.gif"); // NOI18N
-        map.put("java.awt.ScrollPane", "/org/netbeans/beaninfo/awt/scrollpane.gif"); // NOI18N
-        map.put("java.awt.Panel", "/org/netbeans/beaninfo/awt/panel.gif"); // NOI18N
-        map.put("java.awt.Canvas", "/org/netbeans/beaninfo/awt/canvas.gif"); // NOI18N
-        map.put("java.awt.MenuBar", "/org/netbeans/beaninfo/awt/menubar.gif"); // NOI18N
-        map.put("java.awt.PopupMenu", "/org/netbeans/beaninfo/awt/popupmenu.gif"); // NOI18N
+        map.put("java.awt.Label", "/org/netbeans/modules/form/beaninfo/awt/label.gif"); // NOI18N
+        map.put("java.awt.Button", "/org/netbeans/modules/form/beaninfo/awt/button.gif"); // NOI18N
+        map.put("java.awt.TextField", "/org/netbeans/modules/form/beaninfo/awt/textfield.gif"); // NOI18N
+        map.put("java.awt.TextArea", "/org/netbeans/modules/form/beaninfo/awt/textarea.gif"); // NOI18N
+        map.put("java.awt.Checkbox", "/org/netbeans/modules/form/beaninfo/awt/checkbox.gif"); // NOI18N
+        map.put("java.awt.Choice", "/org/netbeans/modules/form/beaninfo/awt/choice.gif"); // NOI18N
+        map.put("java.awt.List", "/org/netbeans/modules/form/beaninfo/awt/list.gif"); // NOI18N
+        map.put("java.awt.Scrollbar", "/org/netbeans/modules/form/beaninfo/awt/scrollbar.gif"); // NOI18N
+        map.put("java.awt.ScrollPane", "/org/netbeans/modules/form/beaninfo/awt/scrollpane.gif"); // NOI18N
+        map.put("java.awt.Panel", "/org/netbeans/modules/form/beaninfo/awt/panel.gif"); // NOI18N
+        map.put("java.awt.Canvas", "/org/netbeans/modules/form/beaninfo/awt/canvas.gif"); // NOI18N
+        map.put("java.awt.MenuBar", "/org/netbeans/modules/form/beaninfo/awt/menubar.gif"); // NOI18N
+        map.put("java.awt.PopupMenu", "/org/netbeans/modules/form/beaninfo/awt/popupmenu.gif"); // NOI18N
         map.put("java.awt.Menu", "/org/netbeans/modules/form/resources/menu.gif"); // NOI18N
         map.put("java.awt.MenuItem", "/org/netbeans/modules/form/resources/menuItem.gif"); // NOI18N
         map.put("java.awt.CheckboxMenuItem", "/org/netbeans/modules/form/resources/menuItemCheckbox.gif"); // NOI18N

@@ -22,6 +22,7 @@ import org.netbeans.modules.form.palette.BeanInstaller;
 
 import java.beans.*;
 import java.io.File;
+import java.util.*;
 
 /**
  * Module installation class for Form Editor
@@ -31,6 +32,9 @@ import java.io.File;
 public class FormEditorModule extends ModuleInstall
 {
     private static final long serialVersionUID = 1573432625099425394L;
+
+    private static final String BEANINFO_PATH_AWT = "org.netbeans.modules.form.beaninfo.awt"; // NOI18N
+    private static final String BEANINFO_PATH_SWING = "org.netbeans.modules.form.beaninfo.swing"; // NOI18N
 
     private static RepositoryListener repositoryListener = null;
 
@@ -89,6 +93,17 @@ public class FormEditorModule extends ModuleInstall
         FormPropertyEditorManager.registerEditor(
             javax.swing.KeyStroke.class,
             org.netbeans.modules.form.editors.KeyStrokeEditor.class);
+
+        // Add beaninfo search path.
+        String[] sp = Introspector.getBeanInfoSearchPath();
+        List paths = new ArrayList(Arrays.asList(sp));
+        if (!paths.contains(BEANINFO_PATH_AWT)) {
+            paths.add(BEANINFO_PATH_AWT);
+        }
+        if (!paths.contains(BEANINFO_PATH_SWING)) {
+            paths.add(BEANINFO_PATH_SWING);
+        }
+        Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
     }
 
     /** Module was uninstalled. */
@@ -107,5 +122,12 @@ public class FormEditorModule extends ModuleInstall
             if (fs instanceof GlobalJarFileSystem)
                 rep.removeFileSystem(fs);
         }
+
+        // Remove beaninfo search path.
+        String[] sp = Introspector.getBeanInfoSearchPath();
+        List paths = new ArrayList(Arrays.asList(sp));
+        paths.remove(BEANINFO_PATH_AWT);
+        paths.remove(BEANINFO_PATH_SWING);
+        Introspector.setBeanInfoSearchPath((String[])paths.toArray(new String[paths.size()]));
     }
 }
