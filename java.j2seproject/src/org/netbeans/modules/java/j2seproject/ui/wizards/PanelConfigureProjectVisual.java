@@ -38,14 +38,16 @@ public class PanelConfigureProjectVisual extends JPanel {
     private boolean noDir = true;
     
     private SettingsPanel projectLocationPanel;
+    
     private PanelOptionsVisual optionsPanel;
+    
+    private int type;
     
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual( PanelConfigureProject panel, int type ) {
         this.panel = panel;
-        initComponents();
-                
-
+        initComponents();                
+        this.type = type;
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class,"TXT_NameAndLoc")); // NOI18N
         if (type == NewJ2SEProjectWizardIterator.TYPE_APP) {
             projectLocationPanel = new PanelProjectLocationVisual( panel, type );
@@ -80,12 +82,18 @@ public class PanelConfigureProjectVisual extends JPanel {
     }
     
     void read (WizardDescriptor d) {
+        Integer lastType = (Integer) d.getProperty("wizard-type");  //NOI18N        
+        if (lastType == null || lastType.intValue() != this.type) {
+            //bugfix #46387 The type of project changed, reset values to defaults
+            d.putProperty ("name", null);
+            d.putProperty ("projdir",null);
+        }
         projectLocationPanel.read (d);
         optionsPanel.read (d);
     }
     
     void store( WizardDescriptor d ) {
-        
+        d.putProperty("wizard-type", new Integer(this.type));   //NOI18N
         projectLocationPanel.store( d );
         optionsPanel.store( d );        
     }

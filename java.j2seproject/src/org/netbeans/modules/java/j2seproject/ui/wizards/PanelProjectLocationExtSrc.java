@@ -101,8 +101,7 @@ public class PanelProjectLocationExtSrc extends SettingsPanel {
         String path = null;        
         String projectName = null;
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
-        // bugfix #46387, check wrong default overtaken from other project's types
-        if (projectLocation == null || ( !projectLocation.exists () )) {
+        if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();                
             int index = FoldersListSettings.getDefault().getNewProjectCount();
             String formater = NbBundle.getMessage(PanelSourceFolders.class,"TXT_JavaProject");

@@ -233,7 +233,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     
     void read (WizardDescriptor settings) {
         File projectLocation = (File) settings.getProperty ("projdir");  //NOI18N
-        if (projectLocation == null || !projectLocation.isDirectory ()) {
+        if (projectLocation == null || projectLocation.getParentFile() == null || !projectLocation.getParentFile().isDirectory ()) {
             projectLocation = ProjectChooser.getProjectsFolder();
         }
         else {
@@ -241,7 +241,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         this.projectLocationTextField.setText (projectLocation.getAbsolutePath());
         
-        String projectName = (String) settings.getProperty ("displayName"); //NOI18N
+        String projectName = (String) settings.getProperty ("name"); //NOI18N
         if (projectName == null) {
             if (this.type == NewJ2SEProjectWizardIterator.TYPE_APP) {
                 int baseCount = FoldersListSettings.getDefault().getNewApplicationCount() + 1;
