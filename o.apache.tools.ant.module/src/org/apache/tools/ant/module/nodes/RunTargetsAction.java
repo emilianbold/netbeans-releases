@@ -25,6 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -254,9 +255,13 @@ public final class RunTargetsAction extends SystemAction implements ContextAware
             AdvancedActionPanel panel = new AdvancedActionPanel(project, allTargets);
             DialogDescriptor dd = new DialogDescriptor(panel, title);
             dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+            JButton run = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_run"));
+            run.setDefaultCapable(true);
+            JButton cancel = new JButton(NbBundle.getMessage(RunTargetsAction.class, "LBL_run_advanced_cancel"));
+            dd.setOptions(new Object[] {run, cancel});
             dd.setModal(true);
             Object result = DialogDisplayer.getDefault().notify(dd);
-            if (result.equals(NotifyDescriptor.OK_OPTION)) {
+            if (result.equals(run)) {
                 try {
                     panel.run();
                 } catch (IOException x) {
