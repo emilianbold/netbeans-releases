@@ -15,6 +15,7 @@ package com.netbeans.developer.modules.loaders.form;
 
 import java.io.IOException;
 
+import com.netbeans.ide.filesystems.FileLock;
 import com.netbeans.ide.filesystems.FileObject;
 
 /** 
@@ -71,12 +72,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException if any problem occured when saving the form
   */
   public void saveForm (FormDataObject formObject, FormManager2 manager) throws IOException {
+    FileObject formFile = formObject.getFormEntry ().getFile ();
+    FileLock lock = null;
+    java.io.OutputStream os = null;
+    try {
+      lock = formFile.lock ();
+      os = formFile.getOutputStream (lock); // [PENDING - first save to ByteArray for safety]
+    } finally {
+      if (os != null) os.close ();
+      if (lock != null) lock.releaseLock ();
+    }
   }
 
 }
 
 /*
  * Log
+ *  2    Gandalf   1.1         6/7/99   Ian Formanek    
  *  1    Gandalf   1.0         5/30/99  Ian Formanek    
  * $
  */

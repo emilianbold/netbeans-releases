@@ -13,7 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import com.netbeans.ide.options.SystemOption;
 
 /** Settings for form data loader.
@@ -128,8 +128,8 @@ public class FormLoaderSettings extends SystemOption {
     { "double", "sun.beans.editors.DoubleEditor" },
     { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
   };
-  /** HashMap of already installed beans */
-  private static HashMap loadedBeans = new HashMap ();
+  /** ArrayList of already installed beans */
+  private static ArrayList loadedBeans = new ArrayList ();
 
   private static int emptyFormType = 0;
 
@@ -399,13 +399,13 @@ public class FormLoaderSettings extends SystemOption {
   }
 
   /** Getter for the loadedBeans option */
-  public HashMap getLoadedBeans () {
+  public ArrayList getLoadedBeans () {
     return loadedBeans;
   }
 
   /** Setter for the loadedBeans option */
-  public void setLoadedBeans (HashMap value) {
-    HashMap oldValue = loadedBeans;
+  public void setLoadedBeans (ArrayList value) {
+    ArrayList oldValue = loadedBeans;
     loadedBeans = value;
     firePropertyChange (PROP_LOADED_BEANS, oldValue, loadedBeans);
   }
@@ -420,6 +420,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  7    Gandalf   1.6         6/7/99   Ian Formanek    
  *  6    Gandalf   1.5         6/4/99   Ian Formanek    PROP_LOADED_BEANS
  *  5    Gandalf   1.4         5/30/99  Ian Formanek    PropertyEditors 
  *       management options
