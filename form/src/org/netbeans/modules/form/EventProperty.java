@@ -305,8 +305,7 @@ class EventProperty extends PropertySupport.ReadWrite {
             String[] handlers = getEventHandlers();
             if (handlers.length == 0) {
                 String newName = getFormEvents().findFreeHandlerName(
-                                                  getListenerMethod().getName(),
-                                                  getComponent().getName());
+                                                   getEvent(), getComponent());
                 eventCombo.getEditor().setItem(newName);
             }
             else {

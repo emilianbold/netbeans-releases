@@ -174,8 +174,7 @@ class ConnectionPanel1 extends javax.swing.JPanel {
             FormEvents formEvents = wizardPanel.getSourceComponent()
                                        .getFormModel().getFormEvents();
             String defaultName = formEvents.findFreeHandlerName(
-                event.getListenerMethod().getName(),
-                wizardPanel.getSourceComponent().getName());
+                                     event, wizardPanel.getSourceComponent());
 
             eventNameCombo.addItem(defaultName);
 

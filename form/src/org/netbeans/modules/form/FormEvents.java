@@ -112,9 +112,8 @@ public class FormEvents {
             }
             else { // no name provided, find a free one
                 handlerEventList = null;
-                handlerName = findFreeHandlerName(
-                                    event.getListenerMethod().getName(),
-                                    event.getComponent().getName());
+                handlerName = findFreeHandlerName(event,
+                                                  event.getComponent());
             }
 
             if (handlerEventList == null) { // create new handler
@@ -182,7 +181,11 @@ public class FormEvents {
         }
     }
 
-    public String findFreeHandlerName(String methodName, String componentName) {
+    public String findFreeHandlerName(Event event, RADComponent metacomp) {
+        String componentName = metacomp == formModel.getTopRADComponent() ?
+                                           "form" : metacomp.getName(); // NOI18N
+        String methodName = event.getListenerMethod().getName();
+
         return findFreeHandlerName(componentName
                                    + methodName.substring(0, 1).toUpperCase()
                                    + methodName.substring(1));
