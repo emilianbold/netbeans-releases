@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -15,7 +15,6 @@ package org.netbeans.modules.queries;
 
 import java.io.File;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
-
 
 /**
  * Tests whether files are in parent-child relationship. Such files are
@@ -30,7 +29,7 @@ public class ParentChildCollocationQuery implements CollocationQueryImplementati
 
     public boolean areCollocated(File file1, File file2) {
         if (file1.equals(file2)) {
-            return false;
+            return true;
         }
         String f1 = file1.getAbsolutePath();
         if ((file1.isDirectory() || !file1.exists()) && !f1.endsWith(File.separator)) {

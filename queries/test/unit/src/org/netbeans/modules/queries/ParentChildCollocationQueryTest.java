@@ -7,14 +7,13 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.queries;
 
 import java.io.File;
-import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -59,7 +58,7 @@ public class ParentChildCollocationQueryTest extends NbTestCase {
         assertFalse("Cannot be collocated", query.areCollocated(file2, file1));
         
         // passing the same parameter
-        assertFalse("Cannot be collocated", query.areCollocated(proj1, proj1));
+        assertTrue("A file must be collocated with itself", query.areCollocated(proj1, proj1));
     }
 
 }
