@@ -1479,7 +1479,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../tomcatint/tomcat5" target="netbeans"/>
   </target>
-  <target name="all-tomcatint/tomcat5/bundled" depends="init">
+  <target name="all-tomcatint/tomcat5/bundled" depends="init,all-monitor">
     <echo message="Building module tomcatint/tomcat5/bundled..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
