@@ -329,6 +329,20 @@ public final class MainWindow extends JFrame {
         }
     }
     
+    /**
+     * don't allow smaller bounds than the one constructed from preffered sizes, making sure everything is visible when
+     * in SDI. #40063
+     */
+    public void setBounds(Rectangle rect) {
+        Rectangle bounds = rect;
+        if (bounds != null) {
+            if (bounds.height < getPreferredSize().height) {
+                bounds = new Rectangle(bounds.x, bounds.y, bounds.width, getPreferredSize().height);
+            }
+        }
+        super.setBounds(bounds);
+    }
+    
     /** Prepares main window, has to be called after {@link initializeComponents()}. */
     public void prepareWindow() {
         initializeBounds();
@@ -354,7 +368,7 @@ public final class MainWindow extends JFrame {
         
         if(desktop != null) {
             desktopPanel.add(desktop, BorderLayout.CENTER);
-        }
+        } 
         invalidate();
         validate();
         repaint();        
