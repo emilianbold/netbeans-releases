@@ -352,6 +352,15 @@ public final class PropertyPanelTest extends NbTestCase {
         assertEquals("Value change propagated into prop", model, panel.getProperty().getValue());
     }
     
+    
+    /** Tests a truly perverse abuse of PropertyPanel that is needed for backward
+     * compatibility.  The editor colorings dialog and diff engine custom editor
+     * dialogs both can cause the PropertyPanel which invoked them to be removed
+     * from the AWT hierarchy and destroyed.  <strong>But</strong> the code expects
+     * changes to continue being propagated afterward <strong>and</strong> that
+     * this not cause a memory leak(!!!).
+     *
+     * @see org.openide.explorer.propertysheet.CustomEditorDisplayer.Spud */
     public void testPropertyPanelPropagatesChangesEvenWhenItDoesntExist() throws Exception {
         class PM implements PropertyModel {
             private Object value;
