@@ -76,10 +76,8 @@ ToDo:
     </tstamp>
     <taskdef name="cleanall" classname="org.netbeans.nbbuild.CleanAll" classpath="nbantext.jar"/>
     <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge" classpath="nbantext.jar"/>
-    <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules" classpath="nbantext.jar"/>
     <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc" classpath="nbantext.jar"/>
     <taskdef name="for-each" classname="org.netbeans.nbbuild.ForEach" classpath="nbantext.jar"/>
-    <taskdef name="check" classname="org.netbeans.nbbuild.CheckValue" classpath="nbantext.jar"/>
     <taskdef name="validatexml" classname="org.netbeans.nbbuild.XMLValidate" classpath="nbantext.jar;${binroot}/xml/catalog/release/modules/ext/resolver-1_1_nb.jar"/>
 
     <!-- Read the user property file at first -->
@@ -88,11 +86,15 @@ ToDo:
     <!-- Read standard property file -->
     <property file="build.properties"/>
 
-    <!-- Check if we want to build platform -->
-    <check property="moduleconfig" 
-           is="platform" 
-	   set="fixedmodules" 
-	   tovalue="core,openide,core/javahelp,core/compiler,core/execution,core/ui,core/windows"/>
+    <!-- Define modules. -->
+    <!-- The following is not permitted by Ant: -->
+    <!-- <property name="modules" value="${config.modules.${moduleconfig}}"/> -->
+    <!-- So this is a little trick to do it anyway. -->
+    <echo file="moduledefs-tmp.properties">modules=$${config.modules.${moduleconfig}}
+fixedmodules=$${config.fixedmodules.${moduleconfig}}
+</echo>
+    <property file="moduledefs-tmp.properties"/>
+    <property name="allmodules" value="${fixedmodules},${modules}"/>
 
     <!-- We need absolute path to ${netbeans.dest} -->
     <property name="netbeans.dest.abs" location="${netbeans.dest}"/>
@@ -102,39 +104,6 @@ ToDo:
     <property name="sanitystart.args" value=" -J-Dnetbeans.close=true -J-Dnetbeans.debug.exceptions=true ${sanitystart.args.additional}"/>
     <!-- But this it is OK to change: -->
     <property name="tryme.args" value=" -J-Dnetbeans.debug.exceptions=true ${tryme.args.additional}"/>
-
-    <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
-    <property name="moduleconfig" value="stable"/>
-
-    <!-- You can also explicitly set a particular list of modules if you prefer: -->
-    <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
-
-    <configmods property="modules" selectedconfig="${moduleconfig}">
-      <config name="platform" modules="autoupdate"/>
-
-      <config name="superslim" modules="${config.superslim}"/>
-
-      <config name="slim" modules="${config.slim}"/>
-      <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
-
-      <config name="stable" modules="${config.stable}"/>
-
-      <config name="stable-with-apisupport" modules="${config.stable-with-apisupport}"/>
-
-      <config name="bloated" modules="${config.bloated}"/>
-      <!-- You are on your own for getting the binaries for some of these: -->
-
-      <config name="bloated-plus-extrabins" modules="${config.bloated-plus-extrabins}"/>
-
-      <!-- config for making NBMs for Daily Alpha Update Centre -->
-      <config name="daily-alpha-nbms" modules="${config.daily-alpha-nbms}"/>
-
-      <!-- config for javadoc -->
-      <config name="javadoc" modules="${config.javadoc}"/>
-
-      <!-- config for API signature test builds -->
-      <config name="sigtest" modules="${config.sigtest}"/>
-    </configmods>
 
   </target>
 
@@ -636,7 +605,7 @@ ToDo:
       <!-- It's good idea to call merge target before this one.
            NbMerge.java can set property "modules" to the list of realy
            built modules (excluding fixedmodules which must build everytime). -->
-      <for-each startdir=".." target="nbm" locations="${fixedmodules},${modules}"/>
+      <for-each startdir=".." target="nbm" locations="${allmodules}"/>
   </target>
   <target name="nbm" description="Dummy target."/>
 
@@ -1232,18 +1201,24 @@ the ${netbeans.dest}/bin/ directory.
         <include name="**/*.class"/>
       </fileset>
     </delete>
+    <delete file="nbantext.jar" quiet="true"/>
+  </target>
+  
+  <target name="ant-clean">
+    <delete file="nbantext.jar"/>
   </target>
 
   <target name="localclean" depends="init">
     <delete dir="${netbeans.dest}"/>
     <delete dir="${test.user.dir}"/>
     <delete dir="modules_javadoc"/>
+    <delete file="moduledefs-tmp.properties"/>
   </target>
 
   <target name="clean" depends="init,localclean"
           description="Clean out (almost) all build products.">
     <cleanall topdir=".." 
-              modules="${fixedmodules},${modules}" 
+              modules="${allmodules}" 
               targetname="clean"
               resolvedependencies="${resolve.clean.dependencies}"
               deptargetprefix="all-"
@@ -1252,6 +1227,6 @@ the ${netbeans.dest}/bin/ directory.
   </target>
 
   <target name="print-selected-modules" depends="init" description="Prints list of modules to build in selected moduleconfig.">
-    <echo message="modules=${fixedmodules},${modules}"/>
+    <echo message="modules=${allmodules}"/>
   </target>
 </project>
