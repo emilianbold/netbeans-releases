@@ -56,6 +56,7 @@ import org.netbeans.modules.web.project.ui.NoSelectedServerWarning;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
+import org.netbeans.api.project.ProjectInformation;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -130,8 +131,16 @@ class WebActionProvider implements ActionProvider {
             }
             if (isDebugged()) {
                 NotifyDescriptor nd;
+                String text;
+                if (command.equals (COMMAND_RUN)) {
+                    ProjectInformation pi = (ProjectInformation)project.getLookup().lookup(ProjectInformation.class);
+                    text = pi.getDisplayName();
+                } else { //COMMAND_RUN_SINGLE
+                    FileObject[] files = findJsps(context);
+                    text = files[0].getNameExt();
+                }
                 nd = new NotifyDescriptor.Confirmation(
-                            NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning"),
+                            NbBundle.getMessage(WebActionProvider.class, "MSG_SessionRunning", text),
                             NotifyDescriptor.OK_CANCEL_OPTION);
                 Object o = DialogDisplayer.getDefault().notify(nd);
                 if (o.equals(NotifyDescriptor.OK_OPTION)) {            
