@@ -45,19 +45,11 @@ public abstract class OutputWriter extends PrintWriter {
     public abstract void println(String s, OutputListener l) throws IOException;
 
     /** Clear the output pane.
-    * <b>Note on the current implementation (core/output2):</b> After calling
-    * this method, do not try to use the instance of OutputWriter it was called
-    * on again - call <code>IOProvider.getDefault().getIO(name, false).getOut()</code> to 
-    * fetch the new writer created as a result of this call.  Generally it is
-    * preferable not to hold references to either OutputWriter or InputOutput,
-    * but rather to fetch them as needed from <code>IOProvider.getDefault()</code>.  This
-    * avoids memory leaks and ensures that the instance you're calling is 
-    * always the one that is actually represented in the UI.
-    * <p>
-    * Expect this method to be deprecated in a future release and an 
-    * equivalent created in <code>InputOutput</code>.
     * 
     * @throws IOException if there is a problem
+    * @deprecated - ambiguous what it means to reset the stderr but not the stdout.
+    *  use org.openide.io.InputOutput.reset() (org.openide.IO.inputOutput, not
+    * org.openide.WINDOWS.InputOutput).
     */
     public abstract void reset() throws IOException;
 }

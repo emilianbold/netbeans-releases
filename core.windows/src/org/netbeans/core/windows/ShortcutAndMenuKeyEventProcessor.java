@@ -114,6 +114,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
         return res;
     }
 
+    private static boolean wasMacSwap = false;
     public boolean dispatchKeyEvent(KeyEvent ev) {
         // XXX(-ttran) Sun JDK 1.4 on Linux: pressing Alt key produces
         // KeyEvent.VK_ALT, but Alt+<key> produces Meta+<key>
@@ -123,6 +124,40 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                 mods = (mods & ~ InputEvent.META_MASK) | InputEvent.ALT_MASK;
                 ev.setModifiers(mods);
             }
+        }
+        
+        if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+            boolean macSwap = Boolean.getBoolean (
+                "nb.mac.swap.ctrl.and.alt"); //NOI18N
+            if (macSwap) {
+                //Allows international keyboards to use the Alt key as the Compose
+                //key
+                int mods = ev.getModifiers();
+                System.setProperty ("lastKeyModifiers", Integer.toString(mods)); //NOI18N
+                boolean isCtrl = (mods & InputEvent.CTRL_MASK) != 0;
+                boolean isAlt = (mods & InputEvent.ALT_MASK) != 0;
+                int code = ev.getKeyCode();
+                boolean skip = code == KeyEvent.VK_UP || code == KeyEvent.VK_DOWN ||
+                    code == KeyEvent.VK_RIGHT || code == KeyEvent.VK_LEFT || 
+                    code == KeyEvent.VK_ENTER || code == KeyEvent.VK_SPACE;
+                if (isCtrl != isAlt && !skip) {
+                    if (isAlt) {
+                        mods ^= InputEvent.ALT_MASK;
+                        mods |= InputEvent.CTRL_MASK;
+                    }
+                    if (isCtrl) {
+                        mods ^= InputEvent.CTRL_MASK;
+                        mods |= InputEvent.ALT_MASK;
+                    }
+                    ev.setModifiers (mods);
+                }
+            }
+            if (wasMacSwap != macSwap) {
+                if (!macSwap) {
+                    System.getProperties().remove ("lastKeyModifiers"); //NOI18N
+                }
+            }
+            wasMacSwap = macSwap;
         }
 
         if (ev.getID() == KeyEvent.KEY_PRESSED

@@ -144,9 +144,11 @@ Microsystems, Inc. All Rights Reserved.
 	    </file>
             <attr name="Separator2.instance/org-openide-actions-FindAction.instance" boolvalue="true" />
             <file name="org-openide-actions-FindAction.instance"/>
-            <attr name="org-openide-actions-FindAction.instance/org-openide-actions-ReplaceAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-ReplaceAction.instance"/>
-            <attr name="org-openide-actions-ReplaceAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true" />
+            <attr name="org-openide-actions-FindAction.instance/ReplaceAction.shadow" boolvalue="true" />
+            <file name="ReplaceAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
+            </file>
+            <attr name="ReplaceAction.shadow/org-openide-actions-GotoAction.instance" boolvalue="true" />
             <file name="org-openide-actions-GotoAction.instance"/>
         </folder>
         
@@ -301,8 +303,8 @@ Microsystems, Inc. All Rights Reserved.
 	    <attr name="instanceClass" stringvalue="org.openide.actions.CopyAction"/>
 	</file>
     
-        <file name="C-H.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.ReplaceAction"/>
+        <file name="C-H.shadow">
+            <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-ReplaceAction.instance"/>
 	</file>
 
         <file name="D-P.instance">
