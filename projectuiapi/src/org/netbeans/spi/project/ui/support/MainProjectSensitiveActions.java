@@ -50,7 +50,7 @@ public class MainProjectSensitiveActions {
      * be consulted when the main project changes to determine whether the 
      * action should or should not be enabled. If no main project is selected the 
      * project parameters in the callback will be null.
-     * @param perfomer Callback class for enabling and performing the action    
+     * @param performer Callback class for enabling and performing the action    
      * @param name Display name of the action.
      * @param icon Icon of the action may be null in which case the Action will 
      *        not have an icon.

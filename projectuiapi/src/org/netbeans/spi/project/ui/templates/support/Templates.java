@@ -122,7 +122,7 @@ public class Templates {
      * Create a basic target chooser suitable for many kinds of templates.
      * The user is prompted to choose a location for the new file and a (base) name.
      * Instantiation is handled by {@link org.openide.loaders.DataObject#createFromTemplate}.
-     * @param template the file to use as a template
+     * @param project The project to work on.
      * @param folders a list of possible roots to create the new file in
      * @return a wizard panel(s) prompting the user to choose a name and location
      */
@@ -136,7 +136,7 @@ public class Templates {
      * Instantiation is handled by {@link org.openide.loaders.DataObject#createFromTemplate}.
      * Resulting panel can be decorated with additional panel placed below the standard target 
      * chooser.
-     * @param template the file to use as a template
+     * @param project The project to work on.
      * @param folders a list of possible roots to create the new file in
      * @param bottomPanel panel which should be placed underneth the default chooser
      * @return a wizard panel(s) prompting the user to choose a name and location

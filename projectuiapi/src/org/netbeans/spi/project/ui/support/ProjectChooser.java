@@ -40,7 +40,7 @@ public class ProjectChooser {
 
     /**
      * Sets the folder last used for creating a new project.
-     * @param folder, must not be null
+     * @param folder The folder to be set as last used. Must not be null
      */
     public static void setProjectsFolder (File folder) {
         assert folder != null && folder.isDirectory(): "Parameter must be a valid folder."; //NOI18N

@@ -28,9 +28,9 @@ public class ProjectSensitiveActions {
     private ProjectSensitiveActions() {}
         
     /** Creates action sensitive to set of currently selected projects. When
-     * peroformed the action call given command on the ActionProveider of
+     * peroformed the action will call given command on the ActionProvider of
      * given project(s). The action will only be enbled when the exactly one 
-     * prpject is selected.
+     * project is selected and the command is endbled in the project's ActionProbider.
      * @param command The command which should be invoked when the action is
      *        performed.
      * @param namePattern Pattern which should be used for determining the Action's 
@@ -43,6 +43,18 @@ public class ProjectSensitiveActions {
     }
     
     
+    /** Creates action sensitive to set of currently selected projects. When
+     * peroformed the action will call the {@link ProjectActionPerformer#perform} 
+     * method on the ProjectActionPerformer supplied
+     * as parameter. The action will only be enbled when the exactly one 
+     * project is selected and passed in {@link ProjectActionPerformer#enable}
+     * method returns true. 
+     * @param performer ProjectActionPerformer which has to be called back.
+     * @param namePattern Pattern which should be used for determining the Action's 
+     *        name. It takes two parameters {0} - number of selected projects
+     *        {1} - name of the first project.  
+     * @param icon Icon of the action
+     */    
     public static Action projectSensitiveAction( ProjectActionPerformer performer, String namePattern, Icon icon ) {
         return Utilities.getActionsFactory().projectSensitiveAction( performer, namePattern, icon );
     }

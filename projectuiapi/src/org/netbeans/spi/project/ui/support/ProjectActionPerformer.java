@@ -29,7 +29,7 @@ public interface ProjectActionPerformer {
     public boolean enable( Project project ); 
         
     /** Called when the user invokes the action
-     * @param The project this action was invoked for
+     * @param project The project this action was invoked for
      */
     public void perform( Project project ); 
     
