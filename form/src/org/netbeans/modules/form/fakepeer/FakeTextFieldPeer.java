@@ -70,12 +70,7 @@ class FakeTextFieldPeer extends FakeTextComponentPeer implements TextFieldPeer
 
             if (text != null) { // draw the text
                 String textOut = text.substring(target.getCaretPosition());
-                Dimension sz = target.getSize();
-                Color c = getForeground();
-
-                if (c == null)
-                    c = SystemColor.controlText;
-                g.setColor(c);
+//                Dimension sz = target.getSize();
                 g.setFont(target.getFont());
 
                 FontMetrics fm = g.getFontMetrics();

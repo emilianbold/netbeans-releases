@@ -108,9 +108,11 @@ class FakeListPeer extends FakeComponentPeer implements ListPeer
 
             int n = target.getItemCount();
             if (n > 0) { // draw the items of the list...
-                c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
+                if (target.isEnabled()) {
+                    c = getForeground();
+                    if (c == null)
+                        c = SystemColor.controlText;
+                } else c = SystemColor.controlShadow;
                 g.setColor(c);
                 g.setFont(target.getFont());
                 g.setClip(1,1,w-5,h-4);

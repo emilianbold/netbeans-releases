@@ -65,19 +65,26 @@ class FakeCheckboxPeer extends FakeComponentPeer implements CheckboxPeer
             // label
             String label = target.getLabel();
             if (label != null) {
-                c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
-                g.setColor(c);
                 g.setFont(target.getFont());
 
                 FontMetrics fm = g.getFontMetrics();
                 int h = fm.getHeight() - fm.getDescent(),
                     x = 18,
-                    y = (sz.height - h) / 2;
+                    y = (sz.height - h) / 2 + h - 2;
 
-                g.drawString(label, x, y + h - 2);
-                by = y;
+                if (target.isEnabled()) {
+                    c = getForeground();
+                    if (c == null)
+                        c = SystemColor.controlText;
+                    g.setColor(c);
+                } else {
+                    g.setColor(SystemColor.controlLtHighlight);
+                    g.drawString(label, x+1, y+1);
+                    g.setColor(SystemColor.controlShadow);
+                }
+
+                g.drawString(label, x, y);
+                by = y - h + 2;
             }
 
             // the check-box (Windows like - lowered, white background)

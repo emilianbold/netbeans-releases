@@ -32,7 +32,7 @@ class FakePeerContainer extends Container
     }
 
     public void paint(Graphics g) {
-        System.err.println("** FakeContainer.paint()");
+//        System.err.println("** FakeContainer.paint()");
 
         Dimension sz = getSize();
         Shape oldClip = g.getClip();
@@ -65,8 +65,8 @@ class FakePeerContainer extends Container
                     Graphics cg = g.create(cr.x, cr.y, cr.width, cr.height);
                     cg.setFont(comp.getFont());
                     try {
-                        System.err.println("** painting " + comp.getPeer());
-                        System.err.println("**   bounds = " + cr);
+//                        System.err.println("** painting " + comp.getPeer());
+//                        System.err.println("**   bounds = " + cr);
                         comp.getPeer().paint(cg);
                     }
                     finally {

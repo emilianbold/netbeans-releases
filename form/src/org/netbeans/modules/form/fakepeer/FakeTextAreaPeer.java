@@ -73,19 +73,17 @@ class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
             super.paint(g);
 
             TextArea target =(TextArea) _target;
+            Dimension sz = target.getSize();
+            int w = sz.width,
+                h = sz.height;
             String text = target.getText();
 
             if (text != null) { // draw the text
-                Color c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
-                g.setColor(c);
                 g.setFont(target.getFont());
 
                 FontMetrics fm = g.getFontMetrics();
                 int th = fm.getHeight(),
                     ty = th,
-                    h = target.getSize().height,
                     i = target.getCaretPosition(),
                     len = text.length();
                 StringBuffer buf = new StringBuffer(len);
@@ -101,6 +99,23 @@ class FakeTextAreaPeer extends FakeTextComponentPeer implements TextAreaPeer
                     }
                 }
                 g.drawString(buf.toString(),4,ty);
+            }
+
+            if (sz.width > FakePeerUtils.SCROLL_W*2 && 
+                sz.height > FakePeerUtils.SCROLL_H*2) {
+                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                FakePeerUtils.drawScrollbar(g,2,h-FakePeerUtils.SCROLL_H-2,
+                                            w-4-FakePeerUtils.SCROLL_W,FakePeerUtils.SCROLL_H,
+                                            Scrollbar.HORIZONTAL,false,true,0,0,0);
+
+                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                FakePeerUtils.drawScrollbar(g,w-FakePeerUtils.SCROLL_W-2,2,
+                                            FakePeerUtils.SCROLL_W,h-4-FakePeerUtils.SCROLL_H,
+                                            Scrollbar.VERTICAL,false,true,0,0,0);
+
+                g.setColor(SystemColor.controlHighlight); //SystemColor.scrollbar
+                g.fillRect(w-FakePeerUtils.SCROLL_W-2,h-FakePeerUtils.SCROLL_H-2,
+                           FakePeerUtils.SCROLL_W,FakePeerUtils.SCROLL_H);
             }
         }
 

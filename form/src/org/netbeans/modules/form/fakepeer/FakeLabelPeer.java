@@ -59,26 +59,32 @@ class FakeLabelPeer extends FakeComponentPeer implements LabelPeer
                     c = SystemColor.control;
                 g.setColor(c);
                 g.fillRect(0, 0, sz.width, sz.height);
-
-                c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
-                g.setColor(c);
                 g.setFont(target.getFont());
 
-                int alignment = target.getAlignment();
-
                 FontMetrics fm = g.getFontMetrics();
-                int w = fm.stringWidth(label);
-                int h = fm.getHeight() - fm.getDescent();
+                int w = fm.stringWidth(label),
+                    h = fm.getHeight() - fm.getDescent(),
+                    x = 0,
+                    y = (sz.height - h) / 2 + h - 2,
+                    alignment = target.getAlignment();
 
-                int x = 0;
                 if (alignment == Label.RIGHT)
                     x = sz.width - w;
                 else if (alignment == Label.CENTER)
                     x =(sz.width - w) / 2;
 
-                g.drawString(label, x,(sz.height - h) / 2 + h - 2);
+                if (target.isEnabled()) {
+                    c = getForeground();
+                    if (c == null)
+                        c = SystemColor.controlText;
+                    g.setColor(c);
+                } else {
+                    g.setColor(SystemColor.controlLtHighlight);
+                    g.drawString(label, x+1, y+1);
+                    g.setColor(SystemColor.controlShadow);
+                }
+
+                g.drawString(label, x, y);
             }
         }
 

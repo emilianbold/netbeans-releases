@@ -76,9 +76,11 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
             // selected text
             String item = target.getSelectedItem();
             if (item != null) {
-                c = getForeground();
-                if (c == null)
-                    c = SystemColor.controlText;
+                if (target.isEnabled()) {
+                    c = getForeground();
+                    if (c == null)
+                        c = SystemColor.controlText;
+                } else c = SystemColor.controlShadow;
                 g.setColor(c);
                 g.setFont(target.getFont());
 
@@ -91,7 +93,7 @@ class FakeChoicePeer extends FakeComponentPeer implements ChoicePeer
             }
 
             // combo-box button (Windows style)
-            FakePeerUtils.drawArrowButton(g, w-BUT_W-2, y+2, BUT_W, comph-4, 4);
+            FakePeerUtils.drawArrowButton(g, w-BUT_W-2, y+2, BUT_W, comph-4, 4, target.isEnabled());
         }
 
         public Dimension getMinimumSize() {
