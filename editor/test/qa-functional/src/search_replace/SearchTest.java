@@ -135,6 +135,7 @@ public class SearchTest extends EditorTestCase {
             
             // search for an item from history - word "public"
             editor.setCaretPosition(0);
+            new EventTool().waitNoEvent(1000);
             new FindAction().perform();
             Find find3 = new Find();
             JComboBoxOperator cbo = find3.cboFindWhat();
