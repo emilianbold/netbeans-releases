@@ -53,12 +53,13 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,qa,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
 
       <!-- no longer in validation suite
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>   -->
@@ -70,12 +71,13 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
   <config name="qa-functional-nb-jdk13">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,openide,properties,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
   
       <!-- no longer in validation suite
       <module name="corba"   	testtypes="qa-functional"  attributes="validation"/>   -->
@@ -91,15 +93,16 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for Netbeans -->
   <config name="qa-functional-nb-full">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk14"/>
 
       <!-- module name="autoupdate" testtypes="gui"  	   attributes="validation,full"/ -->
@@ -107,15 +110,16 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for Netbeans on jdk 1.3 -->
   <config name="qa-functional-nb-full-jdk13">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
           <property file="../../../nbextra/qa/jndi/jndi.properties"/>
       </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk13"/> 
 
       <!-- temporarily removed because it crashes all testing
@@ -125,23 +129,31 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for FFJ EE -->
   <config name="qa-functional-ffjee">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,core,editor,form,i18n,java,javacvs,junit,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk14"/>
   </config>
   
   <!-- QA functional tests for FFJ EE on jdk 1.3 -->
   <config name="qa-functional-ffjee-jdk13">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
       <testtype name="qa-functional" attributes="validation,full"
-                modules="ant,clazz,core,editor,form,i18n,java,javacvs,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
+                modules="ant,clazz,corba,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation,full"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation,full"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"   attributes="validation,full,jdk13"/>
 
       <!-- removed because it falls with OutOfMemoryError
@@ -151,22 +163,24 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- QA functional tests for FFJ EE -->
   <config name="qa-functional-ffjee-validation">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,java,javacvs,junit,openide,properties,qa,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,qa,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
   </config>
   
   <!-- QA functional tests for FFJ EE on jdk 1.3 -->
   <config name="qa-functional-ffjee-validation-jdk13">
+      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <testtype name="qa-functional" attributes="validation"
-                modules="ant,clazz,core,editor,form,i18n,java,javacvs,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
+                modules="ant,clazz,core,editor,form,i18n,jarpackager,java,javacvs,javadoc,junit,openide,properties,rmi,vcscore,vcsgeneric"/>
       <testtype name="qa-functional" attributes="validation"
                 modules="xml,xml/catalog,xml/core,xml/text-edit,xml/tools,xml/tax/lib,xml/tree-edit"/>
-      <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>  
+      <module name="debuggercore"      testtypes="qa-gui"  attributes="validation"/>
 
       <!-- removed because it falls with OutOfMemoryError
       <module name="qa"       	testtypes="qa-functional"   attributes="validation"/>
