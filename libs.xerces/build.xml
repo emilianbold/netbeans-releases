@@ -19,6 +19,8 @@ Microsystems, Inc. All Rights Reserved.
     <property name="nbroot" location="${libs_root}/.."/>
     <property name="nbext_root" location="${nbroot}/nbbuild"/>
 
+    <property file="${libs_root}/public.properties"/>
+
     <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
     <property name="apache-license.file" location="${nbroot}/nbbuild/external/apache-license.txt"/>
     <property name="homepage.base" value="libs.netbeans.org"/>
@@ -53,7 +55,7 @@ Microsystems, Inc. All Rights Reserved.
         <mkdir dir="netbeans/modules/autoload/ext"/>
         <copy todir="netbeans/modules/autoload/ext">
             <fileset dir="../external">
-                <include name="xerces*.jar"/>
+                <include name="${libs.xerces.jar}"/>
                 <include name="xml-commons-dom-ranges-*.jar"/>
             </fileset>
         </copy>
