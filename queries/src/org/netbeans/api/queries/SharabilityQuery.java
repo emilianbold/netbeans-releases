@@ -16,6 +16,7 @@ package org.netbeans.api.queries;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 // XXX perhaps should be in the Filesystems API instead of here?
@@ -77,10 +78,11 @@ public final class SharabilityQuery {
      */
     public static int getSharability(File file) {
         if (file == null) throw new IllegalArgumentException();
+        File normFile = FileUtil.normalizeFile(file);
         Iterator it = implementations.allInstances().iterator();
         while (it.hasNext()) {
             SharabilityQueryImplementation sqi = (SharabilityQueryImplementation)it.next();
-            int x = sqi.getSharability(file);
+            int x = sqi.getSharability(normFile);
             if (x != UNKNOWN) {
                 return x;
             }
