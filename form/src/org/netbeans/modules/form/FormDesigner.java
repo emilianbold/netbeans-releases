@@ -683,13 +683,17 @@ public class FormDesigner extends TopComponent
                 Object cb = c.cloneBeanInstance();
 
                 if (designer != null) {
-                    if (cb instanceof Component)
+                    if (cb instanceof Component) {
                         if (!(cb instanceof JComponent))
                             FakePeerSupport.attachFakePeer((Component) cb);
                         else {
                             ((JComponent)cb).setRequestFocusEnabled(false);
                             ((JComponent)cb).setNextFocusableComponent((JComponent)cb);
                         }
+                    }
+                    if (cb instanceof java.beans.DesignMode) {
+                        ((java.beans.DesignMode) cb).setDesignTime(true);
+                    }
 
                     designer.metaCompToComp.put(c, cb);
                     designer.compToMetaComp.put(cb, c);
@@ -731,23 +735,6 @@ public class FormDesigner extends TopComponent
             }
         }
     }
-
-/*    static boolean isContainer(Object instance)  {
-        BeanInfo info = BeanSupport.createBeanInfo(instance.getClass());
-
-        if (info != null)  {
-            BeanDescriptor desc = info.getBeanDescriptor();
-            Boolean flag = (Boolean)desc.getValue("isContainer");
-            if (flag != null)  {
-                return flag.booleanValue();
-            }
-        }
-        // The isContainer attribute is not found.
-        if (instance instanceof Container)
-            return true;
-        else
-            return false;
-    } */
 
     private static void addComponentToContainer(RADVisualContainer radcontainer,
                                                 Container container,
