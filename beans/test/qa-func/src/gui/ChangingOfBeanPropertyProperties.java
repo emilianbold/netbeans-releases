@@ -68,7 +68,7 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         // run whole suite
         TestRunner.run(suite());
         // run only selected test case
-        //junit.textui.TestRunner.run(new BeansTemplates("testJavaBean"));
+        //junit.textui.TestRunner.run(new ChangingOfBeanPropertyProperties("testChangeMode"));
     }
     
     /** setUp method  */
@@ -239,18 +239,10 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         explorerOperator.selectPageFilesystems();
         patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"initialName");
         patternsNode.select();
-        Thread thread = new Thread( new java.lang.Runnable() {
-            public void run() {
-                System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);
-                ExplorerOperator explorerOperator = new ExplorerOperator();
-                explorerOperator.selectPageFilesystems();
-                PropertySheetTabOperator propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
-                new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).setValue("requiredName");
-            }
-        });
-        thread.start();
-        // !!!! F U N G U J E,  ALE  JE  TO  H N U S N E !!! //
+
+        propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
+        new TextFieldProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.beaninfo.Bundle", "PROP_Bi_name")).setValue("requiredName");
+
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         nbDialogOperator =new NbDialogOperator(questionTitle);
         new EventTool().waitNoEvent(1500);
@@ -359,8 +351,8 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
-        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
-        //        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(1);
+        //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_ReadOnlyMODE"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(1);
         new EventTool().waitNoEvent(1000);
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         nbDialogOperator =new NbDialogOperator(questionTitle);
@@ -371,7 +363,8 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         patternsNode.select();
         new EventTool().waitNoEvent(1000);
         propertySheetTabOperator = new PropertySheetTabOperator(explorerOperator);
-        new ComboBoxProperty(propertySheetTabOperator, "Mode").setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
+        //new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(Bundle.getString("org.netbeans.modules.beans.Bundle", "LAB_WriteOnlyMODE"));
+        new ComboBoxProperty(propertySheetTabOperator, Bundle.getString("org.netbeans.modules.beans.Bundle", "PROP_mode")).setValue(2);
         new EventTool().waitNoEvent(1000);
         questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         nbDialogOperator =new NbDialogOperator(questionTitle);
@@ -646,43 +639,21 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         
         // Delete nonIndexProperty
         
-        Thread thread = new Thread( new java.lang.Runnable() {
-            public void run() {
-                System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);
-                ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-                explorerOperator.selectPageFilesystems();
-                Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_NON_INDEX_PROPERTY);
-                patternsNode.select();
-                patternsNode.performPopupActionNoBlock(Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete"));
-            }
-        });
-        thread.start();
+        JavaNode patternsNode = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_NON_INDEX_PROPERTY);
+        patternsNode.select();
+        patternsNode.delete();
         
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
-        new EventTool().waitNoEvent(1000);
         new NbDialogOperator(confirmTitle).yes();
-        new EventTool().waitNoEvent(1500);
         String questionTitle = Bundle.getString("org.openide.Bundle", "NTF_QuestionTitle");
         NbDialogOperator nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
-        new EventTool().waitNoEvent(2500);
         
         // Delete indexProperty
-        thread = new Thread( new java.lang.Runnable() {
-            public void run() {
-                System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);
-                ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-                explorerOperator.selectPageFilesystems();
-                Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_INDEX_PROPERTY);
-                patternsNode.select();
-                patternsNode.performPopupActionNoBlock(Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete"));
-            }
-        });
-        thread.start();
+         JavaNode patternsNode2 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+NAME_INDEX_PROPERTY);
+         patternsNode2.select();
+         patternsNode2.delete();
+
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -690,20 +661,12 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
+        
         // Delete action listener
-        thread = new Thread( new java.lang.Runnable() {
-            public void run() {
-                System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);
-                ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-                explorerOperator.selectPageFilesystems();
-                Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"actionListener");
-                patternsNode.select();
-                patternsNode.performPopupActionNoBlock(Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete"));
-            }
-        });
-        thread.start();
+        JavaNode patternsNode3 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"actionListener");
+        patternsNode3.select();
+        patternsNode3.delete();
+        
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
@@ -711,20 +674,12 @@ public class ChangingOfBeanPropertyProperties  extends JellyTestCase {
         nbDialogOperator =new NbDialogOperator(questionTitle);
         nbDialogOperator.yes();
         new EventTool().waitNoEvent(2500);
+
         // Delete focus listener
-        thread = new Thread( new java.lang.Runnable() {
-            public void run() {
-                System.out.println("T H R E A D");
-                new EventTool().waitNoEvent(1000);
-                ExplorerOperator explorerOperator = new ExplorerOperator();
-                Node repositoryRootNode = explorerOperator.repositoryTab().getRootNode();
-                explorerOperator.selectPageFilesystems();
-                Node patternsNode = new Node(repositoryRootNode, sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"focusListener");
-                patternsNode.select();
-                patternsNode.performPopupActionNoBlock(Bundle.getStringTrimmed("org.openide.actions.Bundle", "Delete"));
-            }
-        });
-        thread.start();
+        JavaNode patternsNode4 = new JavaNode(sampleDir+"|"+NAME_TEST_FILE+"|"+"class "+NAME_TEST_FILE+"|"+Bundle.getString("org.netbeans.modules.beans.Bundle", "Patterns")+"|"+"focusListener");
+        patternsNode4.select();
+        patternsNode4.delete();
+
         confirmTitle = Bundle.getString("org.openide.explorer.Bundle", "MSG_ConfirmDeleteObjectTitle");
         new NbDialogOperator(confirmTitle).yes();
         new EventTool().waitNoEvent(1500);
