@@ -611,6 +611,8 @@
     <tocitem text="Adding a Toolbar to the Main Window" target="configure.tbcreate" />
     <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
   </tocitem>
+  <tocitem text="Setting Font Size in the IDE" target="configure.fontsize" />
+
   <tocitem text="Using the Setup Wizard After Startup" target="configure.setup" />
   <tocitem text="Configuring System Settings" target="configure.system.settings" />
   <tocitem text="Keyboard Shortcuts" target="shortcuts.kybd">
@@ -624,7 +626,7 @@
 </tocitem>
 
 <tocitem text="Accessibility" target="accessibility.home">
-    <tocitem text="Setting Fonts and Colors for the Help Viewer" target="accessibility.stylesheet"/>
+    <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
     <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
 
 </tocitem>

@@ -619,6 +619,7 @@
 <mapID target="configure.output" url="configure/output.html" />
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
 <mapID target="configure.welcome" url="configure/welcome_node.html" />
+<mapID target="configure.fontsize" url="configure/font_size.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
 <mapID target="shortcuts.kybd" url="shortcuts/kybdshortcuts.html" />
