@@ -439,7 +439,7 @@ public class HardStringWizardPanel extends JPanel {
                     PropertyPanel panel = i18nString.getSupport().getPropertyPanel();
                     panel.setI18nString(i18nString);
 
-                    DialogDescriptor dd = new DialogDescriptor(panel,"Customize Property");
+                    DialogDescriptor dd = new DialogDescriptor(panel, Util.getString("PROP_cust_dialog_name"));
                     dd.setModal(true);
                     dd.setOptionType(DialogDescriptor.DEFAULT_OPTION);
                     dd.setOptions(new Object[] {DialogDescriptor.OK_OPTION});

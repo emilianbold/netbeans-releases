@@ -149,8 +149,8 @@ public class PropertyPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
         commentLabel.setLabelFor(commentText);
+        commentLabel.setText(I18nUtil.getBundle().getString("LBL_Comment"));
         commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Comment_Mnem")).charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -180,8 +180,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 11);
         add(commentScroll, gridBagConstraints);
 
-        keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
         keyLabel.setLabelFor(keyBundleCombo);
+        keyLabel.setText(I18nUtil.getBundle().getString("LBL_Key"));
         keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Key_Mnem")).charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -190,8 +190,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 12, 0, 0);
         add(keyLabel, gridBagConstraints);
 
-        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
         valueLabel.setLabelFor(valueText);
+        valueLabel.setText(I18nUtil.getBundle().getString("LBL_Value"));
         valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_Value_Mnem")).charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -253,8 +253,8 @@ public class PropertyPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(replaceFormatTextField, gridBagConstraints);
 
-        replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         replaceFormatLabel.setLabelFor(replaceFormatTextField);
+        replaceFormatLabel.setText(I18nUtil.getBundle().getString("LBL_ReplaceFormat"));
         replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString("LBL_ReplaceFormat_Mnem")).charAt(0));
 
         gridBagConstraints = new java.awt.GridBagConstraints();

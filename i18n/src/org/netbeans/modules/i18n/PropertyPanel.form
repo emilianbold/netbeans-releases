@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <SyntheticProperties>
-    <SyntheticProperty name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,2,9"/>
-  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="designerSize" type="java.awt.Dimension" value="-84,-19,0,5,115,114,0,18,106,97,118,97,46,97,119,116,46,68,105,109,101,110,115,105,111,110,65,-114,-39,-41,-84,95,68,20,2,0,2,73,0,6,104,101,105,103,104,116,73,0,5,119,105,100,116,104,120,112,0,0,1,44,0,0,2,9"/>
+  </AuxValues>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
   <SubComponents>
     <Component class="javax.swing.JLabel" name="commentLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Comment" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="commentText" type="code"/>
         </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Comment" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="commentLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Comment_Mnem&quot;)).charAt(0)); "/>
       </AuxValues>
@@ -40,7 +39,6 @@
             <Property name="columns" type="int" value="40"/>
             <Property name="rows" type="int" value="3"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="commentTextFocusLost"/>
           </Events>
@@ -49,14 +47,13 @@
     </Container>
     <Component class="javax.swing.JLabel" name="keyLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Key" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="keyBundleCombo" type="code"/>
         </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Key" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_CreateCodePre" type="java.lang.String" value=""/>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="keyLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Key_Mnem&quot;)).charAt(0));"/>
@@ -69,14 +66,13 @@
     </Component>
     <Component class="javax.swing.JLabel" name="valueLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Value" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="valueText" type="code"/>
         </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_Value" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="valueLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_Value_Mnem&quot;)).charAt(0)); "/>
       </AuxValues>
@@ -100,7 +96,6 @@
             <Property name="columns" type="int" value="40"/>
             <Property name="rows" type="int" value="3"/>
           </Properties>
-
           <Events>
             <EventHandler event="focusLost" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="valueTextFocusLost"/>
           </Events>
@@ -111,7 +106,6 @@
       <Properties>
         <Property name="editable" type="boolean" value="true"/>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keyBundleComboActionPerformed"/>
       </Events>
@@ -126,11 +120,9 @@
         <Property name="columns" type="int" value="40"/>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
-
       <Events>
         <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="replaceFormatTextFieldFocusGained"/>
       </Events>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceFormatTextField.selectAll();"/>
       </AuxValues>
@@ -142,14 +134,13 @@
     </Component>
     <Component class="javax.swing.JLabel" name="replaceFormatLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_ReplaceFormat" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection component="replaceFormatTextField" type="bean"/>
         </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="LBL_ReplaceFormat" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
+        </Property>
       </Properties>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="replaceFormatLabel.setDisplayedMnemonic((I18nUtil.getBundle().getString(&quot;LBL_ReplaceFormat_Mnem&quot;)).charAt(0));&#xa;"/>
       </AuxValues>
@@ -168,11 +159,9 @@
           <ResourceString bundle="org/netbeans/modules/i18n/Bundle.properties" key="CTL_Format" replaceFormat="I18nUtil.getBundle().getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
-
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="replaceFormatButtonActionPerformed"/>
       </Events>
-
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value=""/>
       </AuxValues>
