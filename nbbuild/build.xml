@@ -80,7 +80,7 @@ treefs (complete yet?)
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide">
+  <target name="all-core" depends="all-openide,all-openidex">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
