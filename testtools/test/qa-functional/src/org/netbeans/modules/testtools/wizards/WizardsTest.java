@@ -105,7 +105,9 @@ public class WizardsTest extends JellyTestCase {
         wizard.next();
         new TestWorkspaceSettingsStepOperator().verify();
         wizard.next();
-        new TestTypeTemplateStepOperator().verify();
+        TestTypeTemplateStepOperator template = new TestTypeTemplateStepOperator();
+        template.selectTemplate("Functional");
+        template.verify();
         wizard.next();
         new TestTypeSettingsStepOperator().verify();
         wizard.next();
@@ -114,6 +116,7 @@ public class WizardsTest extends JellyTestCase {
         new TestBagSettingsStepOperator().verify();
         wizard.next();
         TestSuiteTemplateStepOperator suite = new TestSuiteTemplateStepOperator();
+        suite.selectTemplate("Simple");
         suite.setPackage("mypackage1/mypackage2.mypackage3");
         suite.verify();
         wizard.next();

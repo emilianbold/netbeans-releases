@@ -21,7 +21,7 @@
     <!-- ide executor - use this one if you plan to run your tests inside IDE (internally).
                         Similarly as with code executor, you can create your own to 
                         prepare some neccessary stuff before running tests. -->
-	<executor name="ide" antfile="build-qa-functional.xml.xml" target="runidetest"/> 
+	<executor name="ide" antfile="build-qa-functional.xml" target="runidetest"/> 
 
 	<compiler name="default-compiler" default="true" antfile="build-qa-functional.xml" target="default-compiler"/>
 
