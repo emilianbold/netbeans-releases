@@ -18,6 +18,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.*;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.api.web.dd.WebApp;
@@ -70,8 +71,12 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return getFile("web.docbase.dir"); // NOI18N
     }
     
-    public FileObject getJavaSourcesFolder () {
-        return getFile ("src.dir"); //NOI18N
+    public ClassPath getJavaSources () {
+        ClassPathProvider cpp = (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
+        if (cpp != null) {
+            return cpp.findClassPath (getFile ("src.dir"), ClassPath.SOURCE);
+        }
+        return null;
     }
     
     public FileObject getWebInf () {

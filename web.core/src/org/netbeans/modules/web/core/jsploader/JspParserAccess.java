@@ -94,7 +94,7 @@ public class JspParserAccess {
         }
         
         public FileObject[] getPackageRoots() {
-            return new FileObject [] {webModule.getJavaSourcesFolder ()};
+            return webModule.getJavaSources ().getRoots ();
         }
         
         public FileObject[] getLibraries() {

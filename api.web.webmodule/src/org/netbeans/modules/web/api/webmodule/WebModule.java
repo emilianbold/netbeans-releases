@@ -14,6 +14,7 @@
 package org.netbeans.modules.web.api.webmodule;
 
 import java.util.Iterator;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.web.webmodule.WebModuleAccessor;
 import org.netbeans.modules.web.spi.webmodule.*;
 import org.openide.filesystems.FileObject;
@@ -83,8 +84,8 @@ public final class WebModule {
     
     /** Folder that contains Java sources for the web module.
      */
-    public FileObject getJavaSourcesFolder () {
-        return impl.getJavaSourcesFolder ();
+    public ClassPath getJavaSources () {
+        return impl.getJavaSources ();
     }
     
     public String getContextPath () {
