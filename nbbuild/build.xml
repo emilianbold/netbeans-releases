@@ -410,10 +410,7 @@ workspaceswitcher
       <ant dir="../xml/css" target="netbeans"/>
   </target>
 
-  <target name="all-xml" depends="all-xml/tax,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css">
-      <echo message="Building module xml/compat..."/>
-      <ant dir="../xml/compat" target="netbeans"/>
-  </target>
+  <target name="all-xml" depends="all-xml/tax,all-xml/core,all-xml/catalog,all-xml/tools,all-xml/text-edit,all-xml/tree-edit,all-xml/css"/>
 
 
   <target name="build-messaging" depends="init">
