@@ -229,16 +229,16 @@ public class BundleEditPanel extends JPanel {
 
         valuePanel.setLayout(new java.awt.GridBagLayout());
 
-        commentLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel"));
         commentLabel.setLabelFor(textComment);
+        commentLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         valuePanel.add(commentLabel, gridBagConstraints);
 
-        textComment.setEditable(false);
         textComment.setLineWrap(true);
+        textComment.setEditable(false);
         textComment.setRows(3);
         textComment.setEnabled(false);
         jScrollPane2.setViewportView(textComment);
@@ -250,8 +250,8 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 0);
         valuePanel.add(jScrollPane2, gridBagConstraints);
 
-        valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
         valueLabel.setLabelFor(textValue);
+        valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -260,8 +260,8 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 11, 0);
         valuePanel.add(valueLabel, gridBagConstraints);
 
-        textValue.setEditable(false);
         textValue.setLineWrap(true);
+        textValue.setEditable(false);
         textValue.setRows(3);
         textValue.setEnabled(false);
         jScrollPane3.setViewportView(textValue);
@@ -499,20 +499,20 @@ public class BundleEditPanel extends JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JButton addButton;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JPanel buttonPanel;
-    private javax.swing.JTextArea textComment;
-    private javax.swing.JButton removeButton;
-    private javax.swing.JPanel tablePanel;
-    private javax.swing.JLabel commentLabel;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JPanel valuePanel;
+    private javax.swing.JPanel buttonPanel;
     private javax.swing.JTable table;
-    private javax.swing.JCheckBox autoResizeCheck;
-    private javax.swing.JTextArea textValue;
     private javax.swing.JLabel valueLabel;
+    private javax.swing.JTextArea textValue;
+    private javax.swing.JButton addButton;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTextArea textComment;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel tablePanel;
+    private javax.swing.JCheckBox autoResizeCheck;
+    private javax.swing.JLabel commentLabel;
+    private javax.swing.JPanel valuePanel;
+    private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
     
     

@@ -15,7 +15,6 @@
 package org.netbeans.modules.properties;
 
 
-import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -31,16 +30,15 @@ import org.openide.util.NbBundle;
  */
 public class FindPanel extends javax.swing.JPanel {
     
-    /** Resource bundle variable used for i18n os string in this source. */
-    private static ResourceBundle bundle;
-    
-    
     /** Creates new form FindPanel. */
     public FindPanel() {
         initComponents ();
         initAccessibility ();
     }
- 
+
+    private String getBundleString(String s){
+        return NbBundle.getMessage(FindPanel.class, s);
+    }
 
     // Accessor methods.
     
@@ -80,17 +78,17 @@ public class FindPanel extends javax.swing.JPanel {
     }
     
     private void initAccessibility () {
-        this.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_FindPanel"));
+        this.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_FindPanel"));
         
-        findLabel.setDisplayedMnemonic((FindPanel.getBundle().getString("LBL_Find_Mnem")).charAt(0));
-        findButton.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_Find"));
-        rowCheck.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_SearchByRows"));
-        wrapCheck.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_WrapSearch"));
-        matchCaseCheck.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_MatchCaseCheck"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_Cancel"));
-        backwardCheck.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_BackwardCheck"));
-        findCombo.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_FindCombo"));
-        highlightCheck.getAccessibleContext().setAccessibleDescription(FindPanel.getBundle().getString("ACS_CTL_HighlightCheck"));
+        findLabel.setDisplayedMnemonic((getBundleString("LBL_Find_Mnem")).charAt(0));
+        findButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_Find"));
+        rowCheck.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_SearchByRows"));
+        wrapCheck.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_WrapSearch"));
+        matchCaseCheck.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_MatchCaseCheck"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_Cancel"));
+        backwardCheck.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_BackwardCheck"));
+        findCombo.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_FindCombo"));
+        highlightCheck.getAccessibleContext().setAccessibleDescription(getBundleString("ACS_CTL_HighlightCheck"));
         
     }    
     
@@ -114,8 +112,8 @@ public class FindPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        findLabel.setText(FindPanel.getBundle().getString("LBL_Find"));
         findLabel.setLabelFor(findCombo);
+        findLabel.setText(getBundleString("LBL_Find"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -133,7 +131,7 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 0);
         add(findCombo, gridBagConstraints);
 
-        findButton.setText(FindPanel.getBundle().getString("CTL_Find"));
+        findButton.setText(getBundleString("CTL_Find"));
         findButton.setNextFocusableComponent(cancelButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -143,7 +141,7 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 11, 0, 11);
         add(findButton, gridBagConstraints);
 
-        cancelButton.setText(FindPanel.getBundle().getString("CTL_Cancel"));
+        cancelButton.setText(getBundleString("CTL_Cancel"));
         cancelButton.setNextFocusableComponent(findCombo);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -153,8 +151,8 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 11, 0, 11);
         add(cancelButton, gridBagConstraints);
 
-        matchCaseCheck.setMnemonic((FindPanel.getBundle().getString("CTL_MatchCaseCheck_Mnem")).charAt(0));
-        matchCaseCheck.setText(FindPanel.getBundle().getString("CTL_MatchCaseCheck"));
+        matchCaseCheck.setMnemonic((getBundleString("CTL_MatchCaseCheck_Mnem")).charAt(0));
+        matchCaseCheck.setText(getBundleString("CTL_MatchCaseCheck"));
         matchCaseCheck.setNextFocusableComponent(backwardCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -164,8 +162,8 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(matchCaseCheck, gridBagConstraints);
 
-        backwardCheck.setMnemonic((FindPanel.getBundle().getString("CTL_BackwardCheck_Mnem")).charAt(0));
-        backwardCheck.setText(FindPanel.getBundle().getString("CTL_BackwardCheck"));
+        backwardCheck.setMnemonic((getBundleString("CTL_BackwardCheck_Mnem")).charAt(0));
+        backwardCheck.setText(getBundleString("CTL_BackwardCheck"));
         backwardCheck.setNextFocusableComponent(wrapCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -175,8 +173,8 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
         add(backwardCheck, gridBagConstraints);
 
-        wrapCheck.setMnemonic((FindPanel.getBundle().getString("CTL_WrapSearch_Mnem")).charAt(0));
-        wrapCheck.setText(FindPanel.getBundle().getString("CTL_WrapSearch"));
+        wrapCheck.setMnemonic((getBundleString("CTL_WrapSearch_Mnem")).charAt(0));
+        wrapCheck.setText(getBundleString("CTL_WrapSearch"));
         wrapCheck.setNextFocusableComponent(rowCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -185,8 +183,8 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 0);
         add(wrapCheck, gridBagConstraints);
 
-        rowCheck.setMnemonic((FindPanel.getBundle().getString("CTL_SearchByRows_Mnem")).charAt(0));
-        rowCheck.setText(FindPanel.getBundle().getString("CTL_SearchByRows"));
+        rowCheck.setMnemonic((getBundleString("CTL_SearchByRows_Mnem")).charAt(0));
+        rowCheck.setText(getBundleString("CTL_SearchByRows"));
         rowCheck.setNextFocusableComponent(findButton);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -195,8 +193,8 @@ public class FindPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 11, 0, 0);
         add(rowCheck, gridBagConstraints);
 
-        highlightCheck.setMnemonic((FindPanel.getBundle().getString("CTL_HighlightCheck_Mnem")).charAt(0));
-        highlightCheck.setText(FindPanel.getBundle().getString("CTL_HighlightCheck"));
+        highlightCheck.setMnemonic((getBundleString("CTL_HighlightCheck_Mnem")).charAt(0));
+        highlightCheck.setText(getBundleString("CTL_HighlightCheck"));
         highlightCheck.setNextFocusableComponent(matchCaseCheck);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -221,11 +219,4 @@ public class FindPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox highlightCheck;
     // End of variables declaration//GEN-END:variables
 
-    /** Helper variable for lazy <code>bundle</code> initialization. */
-    private static ResourceBundle getBundle() {
-        if(bundle == null)
-            bundle = NbBundle.getBundle(PropertiesModule.class);
-        
-        return bundle;            
-    }
 }

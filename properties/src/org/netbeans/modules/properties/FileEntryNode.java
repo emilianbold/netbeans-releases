@@ -19,7 +19,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ResourceBundle;
 
 import org.openide.actions.InstantiateAction;
 import org.openide.loaders.DataObject;
@@ -41,9 +40,6 @@ public class FileEntryNode extends AbstractNode {
     /** default base for icons for data objects */
     private static final String ICON_BASE = "org/netbeans/core/resources/x"; // NOI18N
 
-    /** Helper field. ResourceBundle for i18n-ing strings in this source. */
-    private static ResourceBundle bundle;
-
     /** FileEntry of this node. */
     private PresentableFileEntry entry;
 
@@ -64,6 +60,10 @@ public class FileEntryNode extends AbstractNode {
         super.setName (entry.getName ());
 
         setIconBase (ICON_BASE);
+    }
+    
+    private String getBundleString(String s){
+        return NbBundle.getMessage(FileEntryNode.class, s);
     }
 
 
@@ -155,8 +155,8 @@ public class FileEntryNode extends AbstractNode {
         p = new PropertySupport.ReadWrite (
                 PROP_NAME,
                 String.class,
-                FileEntryNode.getBundle().getString("PROP_name"),
-                FileEntryNode.getBundle().getString("HINT_name")
+                getBundleString("PROP_name"),
+                getBundleString("HINT_name")
             ) {
                 public Object getValue () {
                     return entry.getName();
@@ -184,8 +184,8 @@ public class FileEntryNode extends AbstractNode {
                     entry, Boolean.TYPE, "isTemplate", "setTemplate" // NOI18N
                 );
             p.setName (DataObject.PROP_TEMPLATE);
-            p.setDisplayName (FileEntryNode.getBundle().getString("PROP_template"));
-            p.setShortDescription (FileEntryNode.getBundle().getString("HINT_template"));
+            p.setDisplayName (getBundleString("PROP_template"));
+            p.setShortDescription (getBundleString("HINT_template"));
             ss.put (p);
         } catch(Exception ex) {
             throw new IllegalStateException();
@@ -217,12 +217,4 @@ public class FileEntryNode extends AbstractNode {
         }
     }
     
-    /** Helper method for lazy initialization of <code>bundle</code> field. */
-    private static ResourceBundle getBundle() {
-        if(bundle == null) {
-            bundle = NbBundle.getBundle(FileEntryNode.class);
-        }
-        
-        return bundle;
-    }
 }

@@ -114,8 +114,8 @@ public class BundleNodeCustomizer extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name"));
         nameLabel.setLabelFor(nameText);
+        nameLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
@@ -140,8 +140,8 @@ public class BundleNodeCustomizer extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 11);
         add(nameText, gridBagConstraints);
 
-        localesLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Locales"));
         localesLabel.setLabelFor(localesList);
+        localesLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Locales"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;

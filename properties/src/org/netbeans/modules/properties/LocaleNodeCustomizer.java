@@ -166,8 +166,8 @@ public class LocaleNodeCustomizer extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        nameLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name"));
         nameLabel.setLabelFor(nameText);
+        nameLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Name"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -175,8 +175,8 @@ public class LocaleNodeCustomizer extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(nameLabel, gridBagConstraints);
 
-        keyLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys"));
         keyLabel.setLabelFor(keyList);
+        keyLabel.setText(NbBundle.getBundle(LocaleNodeCustomizer.class).getString("LBL_Keys"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
