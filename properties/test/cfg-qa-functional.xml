@@ -18,7 +18,6 @@ Microsystems, Inc. All Rights Reserved.
         <testset dir="qa-fuctional/src">
             <patternset>
 		<include name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*"/>
-		<exclude name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*MainWindow2*"/>
             </patternset>
         </testset>
     </testbag>
