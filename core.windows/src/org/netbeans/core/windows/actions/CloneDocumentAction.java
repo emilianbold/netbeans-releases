@@ -18,6 +18,7 @@ package org.netbeans.core.windows.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
@@ -70,5 +71,6 @@ implements PropertyChangeListener {
         setEnabled(tc instanceof TopComponent.Cloneable
             && mode != null && mode.getKind() == Constants.MODE_KIND_EDITOR);
     }
+    
 }
 

@@ -17,7 +17,10 @@ package org.netbeans.core.windows.actions;
 import java.awt.Frame;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -31,6 +34,8 @@ import javax.swing.Action;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
@@ -38,6 +43,7 @@ import org.netbeans.core.windows.WindowManagerImpl;
 
 import org.openide.cookies.SaveCookie;
 import org.openide.ErrorManager;
+import org.openide.actions.SaveAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -52,6 +58,8 @@ import org.openide.windows.TopComponent;
  * @author  Peter Zavadsky
  */
 public abstract class ActionUtils {
+    
+    private static HashMap sharedAccelerators = new HashMap();
 
     private ActionUtils() {}
     
@@ -83,6 +91,29 @@ public abstract class ActionUtils {
         public void actionPerformed(ActionEvent evt) {
             closeAllDocuments();
         }
+        
+        /** Overriden to share accelerator with 
+         * org.netbeans.core.windows.actions.CloseAllDocumentsAction
+         */ 
+        public void putValue(String key, Object newValue) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                putSharedAccelerator("CloseAllDocuments", newValue);
+            } else {
+                super.putValue(key, newValue);
+            }
+        }
+
+        /** Overriden to share accelerator with 
+         * org.netbeans.core.windows.actions.CloseAllDocumentsAction
+         */ 
+        public Object getValue(String key) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                return getSharedAccelerator("CloseAllDocuments");
+            } else {
+                return super.getValue(key);
+            }
+        }
+       
     } // End of class CloseAllDocumentsAction.
     
     private static class CloseWindowAction extends AbstractAction {
@@ -95,19 +126,56 @@ public abstract class ActionUtils {
         public void actionPerformed(ActionEvent evt) {
             closeWindow(tc);
         }
+
+        /** Overriden to share accelerator with 
+         * org.netbeans.core.windows.actions.CloseWindowAction
+         */ 
+        public void putValue(String key, Object newValue) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                putSharedAccelerator("CloseWindow", newValue);
+            } else {
+                super.putValue(key, newValue);
+            }
+        }
+
+        /** Overriden to share accelerator with 
+         * org.netbeans.core.windows.actions.CloseWindowAction
+         */ 
+        public Object getValue(String key) {
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                return getSharedAccelerator("CloseWindow");
+            } else {
+                return super.getValue(key);
+            }
+        }
+        
     } // End of class CloseWindowAction.
-    
-    private static class SaveDocumentAction extends AbstractAction {
+
+    private static class SaveDocumentAction extends AbstractAction implements PropertyChangeListener {
         private final TopComponent tc;
+        private Action saveAction;
+        
         public SaveDocumentAction(TopComponent tc) {
             this.tc = tc;
             putValue(Action.NAME, NbBundle.getMessage(ActionUtils.class, "LBL_SaveDocumentAction"));
+            // share key accelerator with org.openide.actions.SaveAction
+            saveAction = (Action)SaveAction.get(SaveAction.class);
+            putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
+            saveAction.addPropertyChangeListener(this);
             setEnabled(getSaveCookie(tc) != null);
         }
         
         public void actionPerformed(ActionEvent evt) {
             saveDocument(tc);
         }
+
+        /** Keep accelerator key in sync with org.openide.actions.SaveAction */
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (Action.ACCELERATOR_KEY.equals(evt.getPropertyName())) {
+                putValue(Action.ACCELERATOR_KEY, saveAction.getValue(Action.ACCELERATOR_KEY));
+            }
+        }
+        
     } // End of class SaveDocumentAction.
     
     private static class CloneDocumentAction extends AbstractAction {
@@ -121,9 +189,8 @@ public abstract class ActionUtils {
         public void actionPerformed(ActionEvent evt) {
             cloneWindow(tc);
         }
+        
     } // End of class CloneDocumentAction.
-    
-
     
     // Utility methods >>
     static void closeAllDocuments() {
@@ -175,6 +242,13 @@ public abstract class ActionUtils {
         }
     }
     
+    static void putSharedAccelerator (Object key, Object value) {
+        sharedAccelerators.put(key, value);
+    }
+    
+    static Object getSharedAccelerator (Object key) {
+        return sharedAccelerators.get(key);
+    }
 
     // Utility methods <<
 }

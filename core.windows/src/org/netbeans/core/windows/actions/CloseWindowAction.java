@@ -18,6 +18,7 @@ package org.netbeans.core.windows.actions;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -54,5 +55,28 @@ implements PropertyChangeListener {
     private void updateEnabled() {
         setEnabled(TopComponent.getRegistry().getActivated() != null);
     }
+    
+    /** Overriden to share accelerator with 
+     * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
+     */ 
+    public void putValue(String key, Object newValue) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            ActionUtils.putSharedAccelerator("CloseWindow", newValue);
+        } else {
+            super.putValue(key, newValue);
+        }
+    }
+    
+    /** Overriden to share accelerator with 
+     * org.netbeans.core.windows.actions.ActionUtils.CloseWindowAction
+     */ 
+    public Object getValue(String key) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            return ActionUtils.getSharedAccelerator("CloseWindow");
+        } else {
+            return super.getValue(key);
+        }
+    }
+    
 }
 

@@ -16,6 +16,7 @@ package org.netbeans.core.windows.actions;
 
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 
 import org.openide.util.NbBundle;
 
@@ -32,6 +33,28 @@ public class CloseAllDocumentsAction extends AbstractAction {
     /** Perform the action. Sets/unsets maximzed mode. */
     public void actionPerformed(java.awt.event.ActionEvent ev) {
         ActionUtils.closeAllDocuments();
+    }
+
+    /** Overriden to share accelerator with 
+     * org.netbeans.core.windows.actions.ActionUtils.CloseAllDocumentsAction
+     */ 
+    public void putValue(String key, Object newValue) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            ActionUtils.putSharedAccelerator("CloseAllDocuments", newValue);
+        } else {
+            super.putValue(key, newValue);
+        }
+    }
+    
+    /** Overriden to share accelerator with 
+     * org.netbeans.core.windows.actions.ActionUtils.CloseAllDocumentsAction
+     */ 
+    public Object getValue(String key) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            return ActionUtils.getSharedAccelerator("CloseAllDocuments");
+        } else {
+            return super.getValue(key);
+        }
     }
     
 }

@@ -162,5 +162,25 @@ public class MaximizeWindowAction extends AbstractAction {
          }
     }
     
+    /** Overriden to share accelerator between instances of this action.
+     */ 
+    public void putValue(String key, Object newValue) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            ActionUtils.putSharedAccelerator("MaximizeWindow", newValue);
+        } else {
+            super.putValue(key, newValue);
+        }
+    }
+
+    /** Overriden to share accelerator between instances of this action.
+     */ 
+    public Object getValue(String key) {
+        if (Action.ACCELERATOR_KEY.equals(key)) {
+            return ActionUtils.getSharedAccelerator("MaximizeWindow");
+        } else {
+            return super.getValue(key);
+        }
+    }
+    
 }
 
