@@ -20,10 +20,12 @@ Microsystems, Inc. All Rights Reserved.
    <property name="xtest.execute" value="install-ide,checkout,build,execute"/>
 
    <property name="ide.installto" location="../ide" />
+   <property name="ide.copyto" location="${ide.installto}/../cache" />
    <property name="ide.nbm.temp" location="${ide.installto}/nbmtemp"/>
 
    <property name="installer.java.home" location="${java.home}"/>
    <property name="installer.params" value=""/>
+   <property name="installer.args" value=""/>
    
    <property name="xtest.home" location=".."/>
    <property name="xtest.driver.backup" location="backup"/>
@@ -260,19 +262,17 @@ Microsystems, Inc. All Rights Reserved.
      
   <target name="install-from-installer" depends="check-ide-param" if="ide.install.type.installer">
     <antcall target="clean-ide"/>
-    <copy file="${ide.install.path}" todir="${ide.installto}"/>
+    <copy file="${ide.install.path}" todir="${ide.copyto}"/>
     <!-- this hack is for setting 'x' bit on unices, since ant does not preserve 'x' bits :-( -->    
-    <chmod dir="${ide.installto}" perm="ugo+x" includes="*"/>
+    <chmod dir="${ide.copyto}" perm="ugo+x" includes="*"/>
     <!-- hack end -->
     <getfilename file="${ide.install.path}" nameExtProperty="ide.install.path.filenameext" nameProperty="ide.install.path.filename"/>
-    <property name="install.paramfile" value="${ide.installto}/${ide.install.path.filename}.sp"/>
-    <echo message="forteHome=${ide.installto} jdkHome=${installer.java.home} ${installer.params}" file="${install.paramfile}"/>
-    <replace file="${install.paramfile}" token=" " value="&#xA;"/>
-    <exec executable="${ide.installto}/${ide.install.path.filenameext}" failonerror="true">
-      <arg value="-silent"/>
+    <property name="install.paramfile" value="${ide.copyto}/${ide.install.path.filename}.sp"/>
+    <echo message="forteHome=${ide.installto}${line.separator}jdkHome=${installer.java.home}${line.separator}${installer.params}" file="${install.paramfile}"/>
+    <exec executable="${ide.copyto}/${ide.install.path.filenameext}" failonerror="true">
+      <arg line="-silent ${installer.args}"/>
     </exec>
-    <delete file="${ide.installto}/${ide.install.path.filenameext}"/>
-    <delete file="${install.paramfile}"/>
+    <delete dir="${ide.copyto}"/>
   </target>
   
   <target name="install-from-jarinstaller" depends="check-ide-param" if="ide.install.type.jarinstaller">
