@@ -333,7 +333,7 @@ is divided into following sections:
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <webproject:javac xmlns:webproject="http://www.netbeans.org/ns/web-project/1">
                     <customize>
-                        <include name="${{javac.includes}}"/>
+                        <patternset includes="${{javac.includes}}"/>
                     </customize>
                 </webproject:javac>
             </target>

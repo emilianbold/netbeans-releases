@@ -242,9 +242,7 @@ is divided into following sections:
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
                             <batchtest todir="${{build.test.results.dir}}">
-                                <fileset dir="${{test.src.dir}}">
-                                    <include name="@{{includes}}"/>
-                                </fileset>
+                                <fileset dir="${{test.src.dir}}" includes="@{{includes}}"/>
                             </batchtest>
                             <classpath>
                                 <path path="${{run.test.classpath}}"/>
@@ -436,7 +434,7 @@ is divided into following sections:
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject:javac>
                     <customize>
-                        <include name="${{javac.includes}}"/>
+                        <patternset includes="${{javac.includes}}"/>
                     </customize>
                 </j2seproject:javac>
             </target>
@@ -686,7 +684,7 @@ is divided into following sections:
                 <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
                 <j2seproject:javac srcdir="${{test.src.dir}}" destdir="${{build.test.classes.dir}}" debug="true" classpath="${{javac.test.classpath}}">
                     <customize>
-                        <include name="${{javac.includes}}"/>
+                        <patternset includes="${{javac.includes}}"/>
                     </customize>
                 </j2seproject:javac>
             </target>
