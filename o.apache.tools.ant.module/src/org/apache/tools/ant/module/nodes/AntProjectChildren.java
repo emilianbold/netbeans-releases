@@ -19,7 +19,7 @@ import javax.swing.event.*;
 
 import org.w3c.dom.Element;
 
-import org.openide.nodes.Node;
+import org.openide.nodes.*;
 import org.openide.util.NbBundle;
 
 import org.apache.tools.ant.module.AntModule;
@@ -45,8 +45,10 @@ public class AntProjectChildren extends ElementChildren implements ChangeListene
         String type = el.getNodeName ();
         if (type.equals ("target")) { // NOI18N
             return new Node[] { new AntTargetNode (cookie, el) };
-        } else if (type.equals ("property") || type.equals ("taskdef")) { // NOI18N
+        } else if (type.equals ("property") || type.equals ("taskdef") || type.equals ("typedef")) { // NOI18N
             return new Node[] { new AntTaskNode (el) };
+        } else if (type.equals ("description")) { // NOI18N
+            return new Node[] { new DescriptionNode (el) };
         } else {
             // Data type, hopefully.
             String clazz = (String) IntrospectedInfo.getDefaults ().getDefs ("type").get (type); // NOI18N
@@ -75,6 +77,27 @@ public class AntProjectChildren extends ElementChildren implements ChangeListene
 
     public void stateChanged (ChangeEvent ev) {
         refreshKeys ();
+    }
+    
+    /**
+     * Node representing a <code>&lt;description&gt;</code> inside
+     * the project.
+     */
+    private static final class DescriptionNode extends ElementNode {
+        public DescriptionNode(Element el) {
+            super(el, Children.LEAF);
+        }
+        public boolean canRename() {
+            return false;
+        }
+        protected void initDisplay() {
+            setNameSuper(el.getNodeName());
+            setShortDescription(NbBundle.getMessage(AntProjectChildren.class, "LBL_description_element"));
+            setIconBase("org/apache/tools/ant/module/resources/DataTypeIcon");
+        }
+        protected void addProperties(Sheet.Set props) {
+            // do not include id property
+        }
     }
     
 }

@@ -336,6 +336,8 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         return type.equals ("target") || // NOI18N
                type.equals ("property") || // NOI18N
                type.equals ("taskdef") || // NOI18N
+               type.equals ("typedef") || // NOI18N
+               type.equals ("description") || // NOI18N
                IntrospectedInfo.getDefaults ().getDefs ("type").containsKey (type) || // NOI18N
                AntSettings.getDefault ().getCustomDefs ().getDefs ("type").containsKey (type); // NOI18N
     }
@@ -349,6 +351,9 @@ public class AntProjectNode extends DataNode implements ChangeListener {
             names.add (0, "target"); // NOI18N
             names.add (1, "property"); // NOI18N
             names.add (2, "taskdef"); // NOI18N
+            names.add (3, "typedef"); // NOI18N
+            names.add (4, "description"); // NOI18N
+            // XXX in Ant 1.6, *any* task can be used here, so just add them all
             NewType[] types = new NewType[names.size ()];
             for (int i = 0; i < types.length; i++) {
                 types[i] = new ProjectNewType ((String) names.get (i));
@@ -375,18 +380,22 @@ public class AntProjectNode extends DataNode implements ChangeListener {
             if (el == null) throw new IOException ();
             try {
                 Element el2 = el.getOwnerDocument ().createElement (name);
+                ElementNode.appendWithIndent (el, el2);
                 if (name.equals ("target")) { // NOI18N
                     el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_target_name_changeme"));
                 } else if (name.equals ("property")) { // NOI18N
                     el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_property_name_changeme"));
                     el2.setAttribute ("value", NbBundle.getMessage (AntProjectNode.class, "MSG_property_value_changeme"));
-                } else if (name.equals ("taskdef")) { // NOI18N
+                } else if (name.equals ("taskdef") || name.equals("typedef")) { // NOI18N
                     el2.setAttribute ("name", NbBundle.getMessage (AntProjectNode.class, "MSG_taskdef_name_changeme"));
                     el2.setAttribute ("classname", NbBundle.getMessage (AntProjectNode.class, "MSG_taskdef_classname_changeme"));
+                } else if (name.equals("description")) { // NOI18N
+                    ElementNode.appendWithIndent(el2,
+                        el.getOwnerDocument().createTextNode(NbBundle.getMessage(AntProjectNode.class, "MSG_description_changeme")));
                 } else {
+                    // Random data type.
                     el2.setAttribute ("id", NbBundle.getMessage (AntProjectNode.class, "MSG_id_changeme"));
                 }
-                ElementNode.appendWithIndent (el, el2);
             } catch (DOMException dome) {
                 IOException ioe = new IOException ();
                 AntModule.err.annotate (ioe, dome);
