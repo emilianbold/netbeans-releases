@@ -44,7 +44,14 @@ Microsystems, Inc. All Rights Reserved.
   <target name="no-such-luck" depends="check" unless="jpda">
     <echo message="Sorry, JPDA module will not be built unless you are running JDK 1.3"/>
     <echo message="or otherwise have jpda.jar in your classpath when invoking Ant."/>
-    <zip zipfile="debuggerjpda.nbm" includes="no-such-beast" basedir="."/>
   </target>
   <target name="maybe-nbm" depends="check,nbm,no-such-luck"/>
+  <target name="clean">
+    <delete dir="src">
+      <include name="**/*.class"/>
+    </delete>
+    <delete file="manifest-subst.mf"/>
+    <delete file="debuggerjpda.nbm"/>
+    <deltree dir="netbeans"/>
+  </target>
 </project>
