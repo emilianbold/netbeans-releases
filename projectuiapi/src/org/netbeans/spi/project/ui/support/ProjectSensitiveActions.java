@@ -29,7 +29,9 @@ public class ProjectSensitiveActions {
      * Creates an action sensitive to the set of currently selected projects.
      * When performed the action will call the given command on the {@link ActionProvider} of
      * the selected project(s). The action will only be enabled when the exactly one
-     * project is selected and the command is enabled in the project's action provider.
+     * project is selected and the command is enabled in the project's action provider.<BR>
+     * Shorcuts for actions are shared on per command. (I.e. Actions with equals commands
+     * will have eqal shorcuts.)
      * @param command the command which should be invoked when the action is
      *        performed
      * @param namePattern a pattern which should be used for determining the action's

@@ -50,9 +50,21 @@ public class ProjectAction extends LookupSensitiveAction implements ContextAware
     private ProjectAction( String command, ProjectActionPerformer performer, String namePattern, Icon icon, Lookup lookup ) {
         super( icon, lookup, new Class[] { Project.class, DataObject.class } );
         this.command = command;
+        if ( command != null ) {
+            ActionsUtil.SHORCUTS_MANAGER.registerAction( command, this );
+        }
         this.performer = performer;
         this.namePattern = namePattern;
         refresh( getLookup() );
+    }
+    
+    public void putValue( String key, Object value ) {
+        super.putValue( key, value );
+        
+        if ( key == Action.ACCELERATOR_KEY ) {
+            ActionsUtil.SHORCUTS_MANAGER.registerShorcut( command, value );
+        }
+        
     }
        
     protected void actionPerformed( Lookup context ) {

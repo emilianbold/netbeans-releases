@@ -36,10 +36,10 @@ public class FileCommandAction extends ProjectAction {
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {
         super( command, namePattern, icon, lookup );
         this.command = command;
-        assert namePattern != null : "Name patern must not ber null";
+        assert namePattern != null : "Name patern must not be null";
         refresh( getLookup()  );        
     }
-
+    
     protected void refresh( Lookup context ) {
         
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
