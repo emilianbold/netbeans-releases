@@ -80,7 +80,7 @@ Microsystems, Inc. All Rights Reserved.
         <classpath>
           <pathelement path="${lexer.module.root}/gen/antsrc"/>
           <pathelement location="${lexer.module.root}/gen/src"/>
-          <pathelement location="${lexer.module.root}/src"/>
+          <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
           <pathelement location="${grammar.root}"/>
           <pathelement location="${xml-apis}"/>
         </classpath>
@@ -107,7 +107,7 @@ Microsystems, Inc. All Rights Reserved.
              debug="${build.compiler.debug}">
         <classpath>
           <pathelement location="${xml-apis}"/>
-          <pathelement location="${lexer.module.root}/src"/>
+          <pathelement location="${lexer.dir}/${nb.modules.dir}/org-netbeans-modules-lexer.jar"/>
           <pathelement location="${grammar.root}"/>
         </classpath>
       </javac>
