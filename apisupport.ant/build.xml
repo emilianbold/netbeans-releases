@@ -83,6 +83,7 @@ Microsystems, Inc. All Rights Reserved.
             <fileset dir="../..">
                 <include name="nbbuild/external/jhall*.jar"/>
                 <include name="libs/external/xerces*.jar"/>
+                <include name="libs/external/regexp-*.jar"/>
             </fileset>
         </path>
     </target>
