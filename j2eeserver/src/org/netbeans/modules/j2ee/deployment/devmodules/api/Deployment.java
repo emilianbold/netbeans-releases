@@ -13,8 +13,13 @@
 
 package org.netbeans.modules.j2ee.deployment.devmodules.api;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
@@ -34,7 +39,9 @@ public final class Deployment {
     private static boolean alsoStartTargets = true;    //TODO - make it a property? is it really needed?
     
     private static Deployment instance = null;
-    
+
+    private Map progressMonitors = new WeakHashMap();
+
     public static synchronized Deployment getDefault () {
         if (instance == null) {
             instance = new Deployment ();
@@ -56,17 +63,36 @@ public final class Deployment {
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
         return deploy(jmp, debugmode, clientModuleUrl, clientUrlPart, forceRedeploy, null);
     }
+    
     public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
 
         String err;
         TargetModule[] modules = null;
-        DeployProgressMonitor progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
-        progress.startProgressUI(MAX_DEPLOY_PROGRESS);
+        final J2eeModule module = target.getModule();
+        DeployProgressMonitor progress = null;
+        
+        synchronized (progressMonitors) {
+            progress = (DeployProgressMonitor) progressMonitors.get(module);    
 
+            if (progress != null) {
+                if (progress.getUI() != null) {
+                    progress.getUI().toFront();
+                }
+            } else {
+                progress = new DeployProgressMonitor(false, true, logger);  // modeless with stop/cancel buttons
+                progressMonitors.put(module, progress);
+                progress.startProgressUI(MAX_DEPLOY_PROGRESS);
+                progress.getUI().addWindowListener(new WindowAdapter() {
+                    public void windowClosed(WindowEvent evt) {
+                        progressMonitors.remove(module);
+                    }
+                });
+            }
+        }
+        
         try {
             ServerString server = target.getServer(); //will throw exception if bad server id
-            J2eeModule module = target.getModule();
         
             if (module == null) {
                 err = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule"); //NOI18N
