@@ -29,6 +29,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
@@ -41,6 +42,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -50,9 +52,16 @@ import org.openide.util.Utilities;
 public class ProjectChooserAccessory extends javax.swing.JPanel 
     implements ActionListener, PropertyChangeListener {
     
+    private RequestProcessor.Task updateSubprojectsTask;    
+    private ModelUpdater modelUpdater;
+    
     /** Creates new form ProjectChooserAccessory */
     public ProjectChooserAccessory( JFileChooser chooser, boolean isOpenSubprojects, boolean isOpenAsMain ) {
         initComponents();
+        
+        modelUpdater = new ModelUpdater();
+        updateSubprojectsTask = new RequestProcessor( "ProjectChooserAccesoryModelUpdater" ).create( modelUpdater );
+        updateSubprojectsTask.setPriority( Thread.MIN_PRIORITY );
         
         // Listen on the subproject checkbox to change the option accordingly
         jCheckBoxSubprojects.setSelected( isOpenSubprojects );
@@ -186,15 +195,13 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 
                 spListModel.clear();                
                 
-                boolean hasSubprojects = fillSubProjectsModel( project, spListModel );
-                
-                // If no soubprojects checkbox should be disabled
-                jCheckBoxSubprojects.setEnabled( hasSubprojects );
-                
+                modelUpdater.project = project;
+                updateSubprojectsTask.schedule( 100 );                
             }
             else {            
                 // Clear the accessory data if the dir is not project dir
                 jTextFieldProjectName.setText( "" ); // NOI18N
+                modelUpdater.project = null;
                 spListModel.clear();
                 
                 // Disable all components in accessory
@@ -253,48 +260,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         jCheckBoxSubprojects.setEnabled( enable );
         jScrollPaneSubprojects.setEnabled( enable );
     }
-    
-    private boolean fillSubProjectsModel( Project project, DefaultListModel model ) {
         
-        ArrayList subprojects = new ArrayList( 5 );
-        addSubprojects( project, subprojects ); // Find the projects recursively
-        
-        if ( subprojects.isEmpty() ) {
-            return false; // No subprojects => no fun
-        }
-        
-        String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
-        File pDir = FileUtil.toFile( project.getProjectDirectory() );
-                
-        // Replace projects in the list with formated names
-        for ( int i = 0; i < subprojects.size(); i++ ) {
-            Project p = (Project)subprojects.get( i );
-           
-            // Try to compute relative path            
-            FileObject spDir = p.getProjectDirectory();
-            String relPath = relativizePath(pDir, FileUtil.toFile( spDir ));
-                        
-            if (relPath == null) {
-                // Cannot get a relative path; display it as absolute.
-                relPath = FileUtil.getFileDisplayName(spDir);
-            }
-            String displayName = MessageFormat.format( 
-                pattern, 
-                new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
-            subprojects.set( i, displayName );
-        }
-        
-        // Sort the list
-        Collections.sort( subprojects, Collator.getInstance() );
-        
-        // Put all the strings into the list model
-        for( Iterator it = subprojects.iterator(); it.hasNext(); ) {
-            model.addElement( it.next() );
-        }
-                
-        return true;
-    }
-    
     /** Gets all subprojects recursively
      */
     private void addSubprojects( Project p, List result ) {
@@ -533,5 +499,74 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
         
     }
+    
+    private class ModelUpdater implements Runnable {
+
+        volatile Project project;
+        private DefaultListModel subprojectsToSet;
+        
+        public void run() {
+            
+            if ( !SwingUtilities.isEventDispatchThread() ) {
+                Project currentProject = project;
+                if ( currentProject == null ) {
+                    return;
+                }
+                ArrayList subprojects = new ArrayList( 5 );
+                addSubprojects( currentProject, subprojects ); // Find the projects recursively
+                if ( !subprojects.isEmpty() ) {
+                    String pattern = NbBundle.getMessage( ProjectChooserAccessory.class, "LBL_PrjChooser_SubprojectName_Format" ); // NOI18N
+                    File pDir = FileUtil.toFile( currentProject.getProjectDirectory() );
+
+                    // Replace projects in the list with formated names
+                    for ( int i = 0; i < subprojects.size(); i++ ) {
+                        Project p = (Project)subprojects.get( i );
+
+                        // Try to compute relative path            
+                        FileObject spDir = p.getProjectDirectory();
+                        String relPath = relativizePath(pDir, FileUtil.toFile( spDir ));
+
+                        if (relPath == null) {
+                            // Cannot get a relative path; display it as absolute.
+                            relPath = FileUtil.getFileDisplayName(spDir);
+                        }
+                        String displayName = MessageFormat.format( 
+                            pattern, 
+                            new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
+                        subprojects.set( i, displayName );
+                    }
+
+                    // Sort the list
+                    Collections.sort( subprojects, Collator.getInstance() );
+                }
+                if ( currentProject != project ) {
+                    return;
+                }
+                DefaultListModel listModel = new DefaultListModel();
+                // Put all the strings into the list model
+                for( Iterator it = subprojects.iterator(); it.hasNext(); ) {
+                    listModel.addElement( it.next() );
+                }
+                subprojectsToSet = listModel;
+                SwingUtilities.invokeLater( this );
+                return;
+            }
+            else {
+                if ( project == null ) {
+                    ((DefaultListModel)jListSubprojects.getModel()).clear();
+                    jCheckBoxSubprojects.setEnabled( false );
+                }
+                else {
+                    jListSubprojects.setModel(subprojectsToSet);
+                    // If no soubprojects checkbox should be disabled                
+                    jCheckBoxSubprojects.setEnabled( !subprojectsToSet.isEmpty() );
+                }                
+            }
+                        
+        }
+    
+    
+    }
+    
     
 }
