@@ -291,7 +291,7 @@
 <mapID target="comp_jar" url="compile/comp_jar.html" />
 <mapID target="comp_project" url="compile/comp_project.html" />
 
-
+<!--
 <mapID target="run.run" url="run/run.html" />
 <mapID target="run.debugmode" url="run/run_debug.html" />
 <mapID target="run.debug.applet" url="run/run_applet.html" />
@@ -314,7 +314,12 @@
 <mapID target="output.window" url="run/output_window.html" />
 <mapID target="run.execution.directory" url="run/execution_directory.html" />
 <mapID target="run.64bit.jvm" url="run/64bit_jvm_run.html" />
+-->
 
+<mapID target="run_app" url="run/run_app.html" />
+<mapID target="run_args" url="run/run_args.html" />
+<mapID target="run_classpath" url="run/run_classpath.html" />
+<!--<mapID target="run_file" url="run/run_file.html" />-->
 
 <mapID target="editing.intro" url="editing/intro.html" />
 <mapID target="editing.editorwindow" url="editing/editorwindow.html" />

@@ -280,10 +280,10 @@
 
   
   <tocitem text="Running Java Applications" >
-      <tocitem text="Running an Application" target="tbd" />
-      <tocitem text="Running a Single File" target="tbd" />
-      <tocitem text="Setting the Runtime Classpath" target="tbd" />
-      <tocitem text="Setting the Main Class and Arguments" target="tbd" />
+      <tocitem text="Running an Application" target="run_app" />
+<!--      <tocitem text="Running a Single File" target="run_file" />-->
+      <tocitem text="Setting the Runtime Classpath" target="run_classpath" />
+      <tocitem text="Setting the Main Class and Arguments" target="run_args" />
   </tocitem>
 <!-- 
   <tocitem text="Debugging Java Programs">
