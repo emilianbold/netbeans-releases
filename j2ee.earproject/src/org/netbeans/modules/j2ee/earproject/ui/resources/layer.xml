@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">    
         <folder name="Project">
             <attr name="Standard/J2EE" boolvalue="true"/>
+            <attr name="Web/J2EE" boolvalue="true"/>
 
             <folder name="J2EE">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.earproject.ui.wizards.Bundle"/>

@@ -8,7 +8,8 @@
             <attr name="Standard/Samples" boolvalue="true"/>
             <attr name="Mobile/Samples" boolvalue="true"/>
             <folder name="Samples">
-                <attr name="Web/Standard" boolvalue="true"/>
+                <attr name="Standard/Web" boolvalue="true"/>
+                <attr name="Web/Blueprints" boolvalue="true"/>
                 <folder name="Web">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.examples.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/examples/descriptions/webSamplesCategory.html"/>
