@@ -16,6 +16,7 @@ package com.netbeans.developer.modules.loaders.url;
 import java.io.*;
 
 import com.netbeans.ide.*;
+import com.netbeans.ide.awt.HtmlBrowser;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.loaders.*;
 import com.netbeans.ide.util.*;
@@ -83,7 +84,42 @@ public class URLDataObject extends MultiDataObject {
     );
     getCookieSet ().add (new URLNodeCookie () {
         public void openInNewWindow () {
-          //System.out.println("Open In New Window");
+          String urlString = getURLString ();
+          if (urlString == null) return;
+          
+          java.net.URL url = null;
+          try {
+            url = new java.net.URL (urlString);
+          } catch (java.net.MalformedURLException e) {
+            try {
+              url = new java.net.URL ("http://"+urlString); // try to prepend http protocol
+            } catch (java.net.MalformedURLException e2) {
+              if (urlString.length () > 50) { // too long URL
+                TopManager.getDefault ().notify (
+                    new NotifyDescriptor.Message (
+                        NbBundle.getBundle (URLDataObject.class).getString("MSG_MalformedURLError"),
+                        NotifyDescriptor.ERROR_MESSAGE
+                    )
+                );
+              } else {            
+                TopManager.getDefault ().notify (
+                    new NotifyDescriptor.Message (
+                        java.text.MessageFormat.format (
+                            NbBundle.getBundle (URLDataObject.class).getString("MSG_FMT_MalformedURLError"),
+                            new Object[] { urlString }
+                        ),
+                        NotifyDescriptor.ERROR_MESSAGE
+                    )
+                );
+              }
+              return;
+            }
+          }
+
+          HtmlBrowser.BrowserComponent htmlViewer = new HtmlBrowser.BrowserComponent ();
+          htmlViewer.setURL (url);
+          htmlViewer.open ();
+          htmlViewer.requestFocus ();
         }
 
         public void editURL () {
@@ -209,6 +245,8 @@ public class URLDataObject extends MultiDataObject {
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/7/99   Ian Formanek    Fixed bug 1585 - URL 
+ *       action "Open in New window" does not work.
  *  8    Gandalf   1.7         5/8/99   Ian Formanek    Fixed displaying icon
  *  7    Gandalf   1.6         4/27/99  Jesse Glick     new HelpCtx () -> 
  *       HelpCtx.DEFAULT_HELP.
