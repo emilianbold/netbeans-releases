@@ -205,10 +205,8 @@ public class Abbreviations extends JDialogOperator {
     }
     
     public void addAbbreviation(String abbreviation, String expansion) {
-        btAdd().clickMouse();
-        
+        btAdd().pushNoBlock();
         EnterAbbreviation enter = new EnterAbbreviation();
-        
         enter.fillAbbreviation(abbreviation, expansion);
         enter.oK();
     }
@@ -220,7 +218,7 @@ public class Abbreviations extends JDialogOperator {
             return false;
         
         tabAbbreviations().selectCell(row, 0);
-        btEdit().clickMouse();
+        btEdit().pushNoBlock();
         
         EnterAbbreviation enter = new EnterAbbreviation();
         
@@ -243,7 +241,7 @@ public class Abbreviations extends JDialogOperator {
             return false;
         
         tabAbbreviations().selectCell(row, 0);
-        btRemove().push();
+        btRemove().pushNoBlock();
         
         return true;
     }
@@ -320,11 +318,9 @@ public class Abbreviations extends JDialogOperator {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-/*        EnterAbbreviation enter = new EnterAbbreviation();
-        enter.fillAbbreviation("En","Enumeration");
-        enter.btOK();
- */
+        Abbreviations.addAbbreviation("Java Editor","aaa","All abbrev");
         
+        /*
         try {
             //java.io.PrintWriter pw= new java.io.PrintWriter(new java.io.FileWriter("/tmp/abbrevs.java"));
             Map map=Abbreviations.listAbbreviations(java.util.ResourceBundle.getBundle("org/netbeans/modules/editor/options/Bundle").getString("OPTIONS_java"));
@@ -338,7 +334,7 @@ public class Abbreviations extends JDialogOperator {
             //pw.close();
         } catch (Exception ex) {
             ex.printStackTrace();
-        }
+        }*/
         
     }
 }
