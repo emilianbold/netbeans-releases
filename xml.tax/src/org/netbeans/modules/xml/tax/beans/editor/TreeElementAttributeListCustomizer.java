@@ -43,6 +43,8 @@ import org.netbeans.tax.TreeException;
 
 import org.netbeans.modules.xml.tax.beans.TreeObjectListProxyListener;
 import org.netbeans.modules.xml.tax.beans.Lib;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JTextField;
 
 /**
  * Table oriented customizer of TreeElement attribute list.
@@ -84,6 +86,13 @@ public class TreeElementAttributeListCustomizer extends JPanel implements Custom
         
         // Add custom header renderer supporting sorting
         attrTable.getTableHeader().setDefaultRenderer(new HeaderRenderer());
+
+        // Cells should become editable on single mouse click
+        final JTextField editorComponent = new JTextField();
+        editorComponent.getCaret().setVisible(true);
+        final DefaultCellEditor singleClickEditor = new DefaultCellEditor(editorComponent);
+        singleClickEditor.setClickCountToStart(1);
+        attrTable.setDefaultEditor(String.class, singleClickEditor);
         
         // Set ListSelectionModel
         attrTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

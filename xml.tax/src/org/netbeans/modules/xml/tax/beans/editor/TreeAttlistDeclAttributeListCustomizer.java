@@ -28,6 +28,8 @@ import org.openide.util.WeakListener;
 import org.netbeans.tax.TreeNamedObjectMap;
 import org.netbeans.tax.TreeException;
 import org.netbeans.tax.TreeAttlistDeclAttributeDef;
+import javax.swing.JTextField;
+import javax.swing.DefaultCellEditor;
 
 /**
  * 
@@ -65,6 +67,15 @@ public class TreeAttlistDeclAttributeListCustomizer extends JPanel implements Cu
     public TreeAttlistDeclAttributeListCustomizer() {
         initComponents ();
         attrTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Cells should become editable on single mouse click
+        final JTextField editorComponent = new JTextField();
+        editorComponent.getCaret().setVisible(true);
+        final DefaultCellEditor singleClickEditor = new DefaultCellEditor(editorComponent);
+        singleClickEditor.setClickCountToStart(1);
+        attrTable.setDefaultEditor(String.class, singleClickEditor);
+        
+        
         initAccessibility();
     }
 
