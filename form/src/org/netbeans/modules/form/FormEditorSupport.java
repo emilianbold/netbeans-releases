@@ -187,16 +187,6 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
         super.open();
     }
 
-    /* Calls superclass.
-     * @param pos Where to place the caret.
-     * @return always non null editor
-     */
-    protected EditorSupport.Editor openAt(PositionRef pos) {
-//        openForm();
-        return super.openAt(pos);
-
-    }
-
     private boolean isCurrentWorkspaceEditing() {
         String name = TopManager.getDefault().getWindowManager().getCurrentWorkspace().getName();
         if (!("Browsing".equals(name) || "Running".equals(name) || "Debugging".equals(name))) { // NOI18N
@@ -295,14 +285,15 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
     }
 
     protected Task reloadDocumentTask() {
-        if (formLoaded) {
+        boolean reloadForm = formLoaded;
+        if (reloadForm) {
             closeForm();
-            openForm();
         }
 
         Task docLoadTask = super.reloadDocumentTask();
 
-        if (formLoaded) {
+        if (reloadForm) {
+            openForm();
             FormManager2 fm = getFormManager();
             fm.getCodeGenerator().initialize(fm);
         }
