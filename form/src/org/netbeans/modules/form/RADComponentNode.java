@@ -17,11 +17,13 @@ import com.netbeans.ide.actions.*;
 import com.netbeans.ide.cookies.SaveCookie;
 import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.NbBundle;
+import com.netbeans.ide.util.Utilities;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.developer.modules.loaders.form.actions.*;
 
 import java.awt.Image;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 
 /** 
 *
@@ -50,12 +52,12 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   }
 
   void updateName () {
-    String className = component.getComponentClass ().getName ();
+    Class compClass = component.getComponentClass ();
     if (component instanceof FormContainer) {
       // [PENDING - handle this better]
-      setName (component.getName () + " [form]");
+      setDisplayName (getName () + " [form]");
     } else {
-      setName (nameFormat.format (new Object[] {component.getName (), className, className.substring (className.lastIndexOf (".") + 1) } ));
+      setDisplayName (nameFormat.format (new Object[] { getName (), compClass.getName (), Utilities.getShortClassName (compClass) } ));
     }
   }
   
@@ -80,38 +82,55 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
   * @return array of actions for this node, or <code>null</code> to use the default node actions
   */
   protected SystemAction [] createActions () {
+    ArrayList actions = new ArrayList (15);
+
     if (component instanceof RADVisualContainer) {
-      return new SystemAction [] {
-        SystemAction.get(SelectLayoutAction.class),
-        null,
-        SystemAction.get(PasteAction.class),
-        SystemAction.get(CopyAction.class),
-        SystemAction.get(CutAction.class),
-        null,
-        SystemAction.get(RenameAction.class),
-        SystemAction.get(DeleteAction.class),
-        null,
-        SystemAction.get(PropertiesAction.class),
-      };
-    } else {
-      return new SystemAction [] {
-        SystemAction.get(PasteAction.class),
-        SystemAction.get(CopyAction.class),
-        SystemAction.get(CutAction.class),
-        null,
-        SystemAction.get(RenameAction.class),
-        SystemAction.get(DeleteAction.class),
-        null,
-        SystemAction.get(PropertiesAction.class),
-      };
+      actions.add (SystemAction.get(SelectLayoutAction.class));
+      actions.add (null);
     }
+    
+    if (component instanceof ComponentContainer) {
+      actions.add (SystemAction.get(PasteAction.class));
+    }
+    
+    actions.add (SystemAction.get(CopyAction.class));
+    actions.add (SystemAction.get(CutAction.class));
+    actions.add (null);
+    if (!(component instanceof FormContainer)) {
+      actions.add (SystemAction.get(RenameAction.class));
+      actions.add (SystemAction.get(DeleteAction.class));
+      actions.add (null);
+    }
+    actions.add (SystemAction.get(PropertiesAction.class));
+
+    SystemAction[] array = new SystemAction [actions.size ()];
+    actions.toArray (array);
+    return array;
+  }
+
+  /** Set the system name. Fires a property change event.
+  * Also may change the display name according to {@link #displayFormat}.
+  *
+  * @param s the new name
+  */
+  public String getName () {
+    return component.getName ();
+  }
+
+    /** Set the system name. Fires a property change event.
+  * Also may change the display name according to {@link #displayFormat}.
+  *
+  * @param s the new name
+  */
+  public void setName (String s) {
+    component.setName (s);
   }
 
   /** Can this node be renamed?
   * @return <code>false</code>
   */
   public boolean canRename () {
-    return false; // !(component instanceof FormContainer); // [PENDING]
+    return !(component instanceof FormContainer);
   }
 
   /** Can this node be destroyed?
@@ -149,6 +168,42 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     }
     return super.getCookie (type);
   }
+  
+// -----------------------------------------------------------------------------------------
+// Clipboard operations
+
+  /** Test whether this node can be copied.
+  * The default implementation returns <code>true</code>.
+  * @return <code>true</code> if it can
+  */
+  public boolean canCopy () {
+    return !(component instanceof FormContainer);
+  }
+
+  /** Test whether this node can be cut.
+  * The default implementation assumes it can if this node is {@link #writeable}.
+  * @return <code>true</code> if it can
+  */
+  public boolean canCut () {
+    return !(component instanceof FormContainer);
+  }
+
+  /** Accumulate the paste types that this node can handle
+  * for a given transferable.
+  * <P>
+  * The default implementation simply tests whether the transferable supports
+  * {@link NodeTransfer#nodePasteFlavor}, and if so, it obtains the paste types
+  * from the {@link NodeTransfer.Paste transfer data} and inserts them into the set.
+  *
+  * @param t a transferable containing clipboard data
+  * @param s a list of {@link PasteType}s that will have added to it all types
+  *    valid for this node
+  */
+  protected void createPasteTypes (Transferable t, List s) {
+    if (t.isDataFlavorSupported (NodeTransfer.nodePasteFlavor)) {
+      s.add (pasteType);
+    }
+  }
 
 // -----------------------------------------------------------------------------
 // RADComponentCookie implementation
@@ -161,6 +216,9 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/1/99   Ian Formanek    Rename implemented 
+ *       correctly, actions provided according to component type (Rename, 
+ *       Delete, Paste)
  *  10   Gandalf   1.9         5/24/99  Ian Formanek    Non-Visual components
  *  9    Gandalf   1.8         5/20/99  Ian Formanek    
  *  8    Gandalf   1.7         5/16/99  Ian Formanek    No canRename
