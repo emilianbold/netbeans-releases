@@ -99,7 +99,8 @@ public class DatabaseConnection implements DBConnection {
 
         // For Java Studio Enterprise. Create instanceof OpenConnection
         try {
-            openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection")).newInstance();
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            openConnection =  (OpenConnectionInterface) Class.forName(bundle.getString("CLASS_open_connection"), true, cl).newInstance();
         } catch(Exception ex) {
             org.openide.ErrorManager.getDefault().notify(ex);
         }
