@@ -15,6 +15,7 @@ package threaddemo;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.*;
 import java.io.File;
 import javax.swing.*;
@@ -42,8 +43,13 @@ public final class Main extends JFrame {
         mainFrame = new Main(root);
         mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         mainFrame.setLocation(0, 0);
-        mainFrame.pack();
-        mainFrame.show();
+        // #35804: needs to happen in EQ, since it grabs tree lock etc.
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                mainFrame.pack();
+                mainFrame.show();
+            }
+        });
     }
     
     private final File root;

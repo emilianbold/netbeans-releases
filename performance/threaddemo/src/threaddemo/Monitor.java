@@ -35,6 +35,7 @@ final class Monitor extends JPanel implements ActionListener {
     private long last;
     private final javax.swing.Timer t1;
     private final java.util.Timer t2;
+    private final TimerTask task;
     private final JTextField blockageField;
     private final JTextField heapField;
     private static final NumberFormat format = new DecimalFormat("0.00");
@@ -47,7 +48,7 @@ final class Monitor extends JPanel implements ActionListener {
         t1 = new javax.swing.Timer(DELAY_CPU, this);
         t1.setRepeats(true);
         t2 = new java.util.Timer(true);
-        TimerTask task = new TimerTask() {
+        task = new TimerTask() {
             public void run() {
                 updateHeap();
             }
@@ -83,8 +84,17 @@ final class Monitor extends JPanel implements ActionListener {
         });
         sub.add(gc);
         add(sub);
+    }
+    
+    public void addNotify() {
+        super.addNotify();
         t1.start();
         t2.schedule(task, 0L, DELAY_HEAP);
+    }
+    
+    public void removeNotify() {
+        t1.stop();
+        t2.cancel();
     }
     
     public void actionPerformed(ActionEvent e) {
