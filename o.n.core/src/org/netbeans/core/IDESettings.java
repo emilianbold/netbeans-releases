@@ -292,12 +292,17 @@ public class IDESettings extends SystemOption {
         boolean old = getShowFileExtensions ();
         DataNode.setShowFileExtensions (s);
         firePropertyChange (PROP_SHOW_FILE_EXTENSIONS, new Boolean (old), new Boolean (s));
+        
+        /* akemr: following notification removed because of new implemented
+        * runtime refresh of nodes
+        *
         if (SwingUtilities.isEventDispatchThread ()) {
             TopManager.getDefault ().notify
             (new NotifyDescriptor.Message
              (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
               NotifyDescriptor.WARNING_MESSAGE));
         }
+        */
     }
 
     /** Getter for preffered web browser.
