@@ -212,6 +212,7 @@ public final class IntrospectedInfo implements Serializable {
      * @param name name of the task or type as it appears in scripts
      * @param clazz the implementing class
      * @param task true for a task, false for a data type
+     * @throws various errors if the class could not be resolved, e.g. NoClassDefFoundError
      */
     public synchronized void register (String name, Class clazz, boolean task) {
         (task ? tasks : types).put (name, clazz.getName ());
@@ -315,7 +316,18 @@ public final class IntrospectedInfo implements Serializable {
                     registry.put (name, clazz.getName ());
                 }
                 if (! getDefaults ().isKnown (clazz.getName ())) {
-                    analyze (clazz);
+                    try {
+                        analyze (clazz);
+                    } catch (ThreadDeath td) {
+                        throw td;
+                    } catch (NoClassDefFoundError ncdfe) {
+                        // Reasonably normal.
+                        AntModule.err.log ("Skipping " + clazz.getName () + ": " + ncdfe);
+                    } catch (Throwable t) {
+                        // Not so normal.
+                        AntModule.err.annotate (t, ErrorManager.INFORMATIONAL, "Cannot scan class " + clazz.getName (), null, null, null); // NOI18N
+                        AntModule.err.notify (ErrorManager.INFORMATIONAL, t);
+                    }
                 }
             }
         }
