@@ -15,24 +15,16 @@
 
 package gui.debuggercore;
 
-import java.io.File;
-
 import junit.textui.TestRunner;
-
+import org.openide.nodes.Node;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.JavaNode;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
-
 import org.netbeans.junit.NbTestSuite;
 
 public class Watches extends JellyTestCase {
@@ -62,8 +54,6 @@ public class Watches extends JellyTestCase {
         Utilities.deleteAllBreakpoints();
         Utilities.deleteAllWatches();
         Utilities.closeZombieSessions();
-        Utilities.closeTerms();
-        new EventTool().waitNoEvent(750);
     }
     
     /**
@@ -71,87 +61,99 @@ public class Watches extends JellyTestCase {
      */
     public void testAddWatch() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
-        Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
+        org.netbeans.jellytools.nodes.Node projectNode = new org.netbeans.jellytools.nodes.Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupAction("Open");
+        javaNode.performPopupAction(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(1000);
         editorOperator.setCaretPosition(103, 1);
         
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         
         // create new watches
         new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newWatchTitle);
         new JTextFieldOperator(dialog, 0).typeText("free");
         dialog.ok();
-        new EventTool().waitNoEvent(500);
         
         new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
         dialog = new NbDialogOperator(Utilities.newWatchTitle);
         new JTextFieldOperator(dialog, 0).typeText("taken");
         dialog.ok();
-        new EventTool().waitNoEvent(500);
         
         new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
         dialog = new NbDialogOperator(Utilities.newWatchTitle);
         new JTextFieldOperator(dialog, 0).typeText("total");
         dialog.ok();
-        new EventTool().waitNoEvent(500);
 
-        // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-        TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
-        JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
-        
-        int rowNumber = 0;
-        boolean found = false;
-        
-        while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-            if ("Line MemoryView.java:103".equals(jTableOperator.getValueAt(rowNumber, 0).toString()) ) {
-                found = true;
-            };
-            rowNumber++;
-        }
-        assertTrue("Line breakpoint was not created.", found);
-        breakpointsOper.close();
-        
-        // test if debugger stops at an assumed breakpoint line
+        new ActionNoBlock(Utilities.runMenu + "|" + Utilities.newWatchItem, null).perform();
+        dialog = new NbDialogOperator(Utilities.newWatchTitle);
+        new JTextFieldOperator(dialog, 0).typeText("this");
+        dialog.ok();
+
+        // start debugger and wait till breakpoint is hit
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
         
-        // wait till all views are refreshed, ugly!
-        new EventTool().waitNoEvent(1000);
-        
-        Utilities.showDebuggerView(Utilities.watchesViewTitle);
+        // check watches and values
+        Utilities.showWatchesView();
         TopComponentOperator watchesOper = new TopComponentOperator(Utilities.watchesViewTitle);
-        jTableOperator = new JTableOperator(watchesOper);
+        TreeTableOperator jTableOperator = new TreeTableOperator(watchesOper);
+        Node.Property property;
+        int count = 0;
         
-        String [] expectedWatches = {"free", "taken", "total"};
-        
-        for (int i = 0; i < expectedWatches.length; i++) {            
-            rowNumber = 0;
-            found = false;
-            while ((rowNumber < jTableOperator.getRowCount()) && (!found)) {
-                if (expectedWatches[i].equals(jTableOperator.getValueAt(rowNumber,0).toString()) ) {
-                    found = true;
-                };
-                rowNumber++;
-            }
-            assertTrue("Watch \"" + expectedWatches[i] + "\" was not created", found);
-        }                
-
+        try {
+            if (!("free".equals(jTableOperator.getValueAt(count,0).toString())))
+                assertTrue("Watch for expression \'free\' was not created", false);
+            property = (Node.Property)jTableOperator.getValueAt(count,1);
+            if (!("long".equals(property.getValue())))
+                assertTrue("Watch type for expression \'free\' is " + property.getValue() + ", should be long", false);
+            property = (Node.Property)jTableOperator.getValueAt(count++,2);
+            long free = Long.parseLong(property.getValue().toString());
+            
+            if (!("taken".equals(jTableOperator.getValueAt(count,0).toString())))
+                assertTrue("Watch for expression \'taken\' was not created", false);
+            property = (Node.Property)jTableOperator.getValueAt(count,1);
+            if (!("int".equals(property.getValue())))
+                assertTrue("Watch type for expression \'taken\' is " + property.getValue() + ", should be long", false);
+            property = (Node.Property)jTableOperator.getValueAt(count++,2);
+            long taken = Long.parseLong(property.getValue().toString());
+            
+            if (!("total".equals(jTableOperator.getValueAt(count,0).toString())))
+                assertTrue("Watch for expression \'total\' was not created", false);
+            property = (Node.Property)jTableOperator.getValueAt(count,1);
+            if (!("long".equals(property.getValue())))
+                assertTrue("Watch type for expression \'total\' is " + property.getValue() + ", should be long", false);
+            property = (Node.Property)jTableOperator.getValueAt(count++,2);
+            long total = Long.parseLong(property.getValue().toString());
+            
+            assertTrue("Watches values does not seem to be correct (total != free + taken)", total == free + taken);
+            
+            if (!("this".equals(jTableOperator.getValueAt(count,0).toString())))
+                assertTrue("Watch for expression \'this\' was not created", false);
+            property = (Node.Property)jTableOperator.getValueAt(count,1);
+            if (!("MemoryView".equals(property.getValue())))
+                assertTrue("Watch type for expression \'this\' is " + property.getValue() + ", should be MemoryView", false);
+            if (new org.netbeans.jellytools.nodes.Node(jTableOperator.tree(), "this").isLeaf())
+                assertTrue("Watch this has no child nodes", false);
+        }
+        catch (java.lang.IllegalAccessException e1) {
+            assertTrue(e1.getMessage(), false);
+        }
+        catch (java.lang.reflect.InvocationTargetException e2) {
+            assertTrue(e2.getMessage(), false);
+        }
+       
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);

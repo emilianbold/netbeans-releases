@@ -15,41 +15,11 @@
 
 package gui.debuggercore;
 
-import java.io.File;
-
 import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.*;
-import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
-import org.netbeans.jellytools.nodes.JavaNode;
-import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
-import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JTableOperator;
-import org.netbeans.jemmy.operators.JTextFieldOperator;
-
 import org.netbeans.junit.NbTestSuite;
 
 public class Views extends JellyTestCase {
-    
-/*    private String  sampleDir = System.getProperty("netbeans.user") + File.separator + "sampledir";
-    
-    private static String newBreakpointItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_AddBreakpoint");
-    private static String newBreakpointTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Breakpoint_Title");
-    private static String debuggerItem = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Debug");
-    
-    private static String finishSessionsItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Finish_action_name");
-    private static String debuggerFinishedMsg = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Debugger_end");
-    private static String debuggerFinishedTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.multisession.Bundle", "CTL_Finish_debugging_dialog");
-    private static String startSessionItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Debug/StartSession");
-    private static String runInDebuggerItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Start_action_name");
-    
-    private static String newWatchTitle = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "CTL_Watch_Title");
-    private static String newWatchItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.support.actions.Bundle", "AddWatch");*/
     
     public Views(String name) {
         super(name);
@@ -73,14 +43,12 @@ public class Views extends JellyTestCase {
     
     /** tearDown method */
     public void tearDown() {
-        //Utilities.closeTerms();
     }
     
     /**
      *
      */
     public void testViews() {
-        
         String [] actionItems = new String [] { Utilities.localVarsItem, Utilities.watchesItem, 
             Utilities.callStackItem, Utilities.classesItem, Utilities.breakpointsItem, 
             Utilities.sessionsItem, Utilities.threadsItem };
@@ -100,7 +68,6 @@ public class Views extends JellyTestCase {
             for (int j = 0; j < viewsOpers.length; j++) {
                 viewsOpers[j].close();
             }
-        
     }
     
 }

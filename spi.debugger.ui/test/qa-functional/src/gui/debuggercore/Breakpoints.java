@@ -15,22 +15,12 @@
 
 package gui.debuggercore;
 
-import java.io.File;
-import java.awt.Component;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.swing.JTable;
-
 import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
-
-import org.netbeans.jemmy.ComponentChooser;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -38,10 +28,7 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-
 import org.netbeans.junit.NbTestSuite;
-
-//import org.openide.nodes.PropertySupport.Reflection;
 
 public class Breakpoints extends JellyTestCase {
     
@@ -58,7 +45,7 @@ public class Breakpoints extends JellyTestCase {
         suite.addTest(new Breakpoints("testClassBreakpoint"));
         suite.addTest(new Breakpoints("testVariableAccessBreakpoint"));
         suite.addTest(new Breakpoints("testVariableModificationBreakpoint"));
-        //suite.addTest(new Breakpoints("testThreadBreakpoint"));
+        suite.addTest(new Breakpoints("testThreadBreakpoint"));
         suite.addTest(new Breakpoints("testExceptionBreakpoint"));
         return suite;
     }
@@ -77,19 +64,17 @@ public class Breakpoints extends JellyTestCase {
     public void tearDown() {
         Utilities.deleteAllBreakpoints();
         Utilities.closeZombieSessions();
-        Utilities.closeTerms();
-        new EventTool().waitNoEvent(1000);
     }
 
     public void testLineBreakpoint() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         editorOperator.setCaretPosition(52, 1);
@@ -97,7 +82,7 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -128,7 +113,7 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
@@ -139,11 +124,11 @@ public class Breakpoints extends JellyTestCase {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupAction("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         editorOperator.setCaretPosition(103, 40);
@@ -151,7 +136,7 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.toggleBreakpointItem).toString(), null).perform();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -163,7 +148,7 @@ public class Breakpoints extends JellyTestCase {
                 found = true;
                 new JPopupMenuOperator(jTableOperator.callPopupOnCell(rowNumber, 1)).pushMenuNoBlock("Customize");
                 NbDialogOperator dialog = new NbDialogOperator("Customize Breakpoint");
-                new JTextFieldOperator(dialog, 2).setText("taken > 500000");
+                new JTextFieldOperator(dialog, 0).setText("taken > 5000");
                 dialog.ok();
             };
             rowNumber++;
@@ -174,50 +159,14 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");
-/*
-        
-        Utilities.showDebuggerView(Utilities.localVarsViewTitle);
-        TopComponentOperator localVarsOper = new TopComponentOperator(Utilities.localVarsViewTitle);
-        jTableOperator = new JTableOperator(localVarsOper);
-        TreeTableOperator treeTableOperator = new TreeTableOperator((JTable) jTableOperator.getSource());
-        
-        new Node(treeTableOperator.tree(), "this").expand();
-        String [] expectedLocalVariablesColumn_0 = {"counter"};
-        String [] expectedLocalVariablesColumn_1 = {"5"};
-        rowNumber = 0;
-        
-        try {
-            for (int i = 0; i < expectedLocalVariablesColumn_0.length; i++) {
-                rowNumber = -1;
-                found = false;
-                while ((++rowNumber < jTableOperator.getRowCount()) && (!found)) {
-//                    System.out.println(rowNumber + " XXX" + jTableOperator.getValueAt(rowNumber,0).toString()+"\t"+((org.openide.nodes.PropertySupport.Reflection)jTableOperator.getValueAt(rowNumber,1)).getValue().toString());
-                    if ((expectedLocalVariablesColumn_0[i].equals(jTableOperator.getValueAt(rowNumber,0).toString())))  {
-                        if (expectedLocalVariablesColumn_1[i].equals(((Reflection)jTableOperator.getValueAt(rowNumber,1)).getValue().toString())) {
-                            found = true;                     
-                        } else {
-                            assertTrue("A - Expected Variable " + expectedLocalVariablesColumn_0[i] + " (" + 
-                                expectedLocalVariablesColumn_1[i]+") not found - < " + 
-                                ((Reflection)jTableOperator.getValueAt(rowNumber,1)).getValue().toString() + " >", found);                        
-                        }
-                    };
-                }
-                assertTrue("B - Expected Variable "+expectedLocalVariablesColumn_0[i] + " (" + 
-                    expectedLocalVariablesColumn_1[i]+") not found\t", found);
-            }
-        } catch (java.lang.IllegalAccessException iae) {
-            iae.printStackTrace();
-        } catch (java.lang.IllegalArgumentException iae) {
-            iae.printStackTrace();
-        } catch (InvocationTargetException ite) {
-            ite.printStackTrace();
-        }*/
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        mwo.waitStatusText("Thread main stopped at MemoryView.java:103.");      
         
         // finnish bedugging session
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
@@ -228,11 +177,11 @@ public class Breakpoints extends JellyTestCase {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         //new EventTool().waitNoEvent(1000);
@@ -248,7 +197,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.cancel();
 
         editorOperator.setCaretPosition(107, 1);
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
+        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Method");
         assertTrue("Package Name was not set to correct value.", "examples.advanced".equals(new JTextFieldOperator(dialog, 1).getText()));
@@ -257,7 +206,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.ok();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -292,11 +241,11 @@ public class Breakpoints extends JellyTestCase {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         //new EventTool().waitNoEvent(1000);
@@ -337,7 +286,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.ok();
 
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -353,28 +302,33 @@ public class Breakpoints extends JellyTestCase {
         assertTrue("Class breakpoint was not created.", found);
 
         // test if debugger stops at an assumed breakpoint line
-/*        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("Thread main stopped at MemoryView.java:91.");
+        for (int i = 0; i < 6; i++) {
+            mwo.waitStatusText("Thread main stopped at");
+            new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.continueItem).toString(), null).perform();
+        }
+        mwo.waitStatusText(Utilities.runningStatusBarText);
+        
         new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
-        }*/
+        }
     }
     
     public void testVariableAccessBreakpoint() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         //new EventTool().waitNoEvent(1000);
@@ -401,7 +355,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.ok();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -425,7 +379,7 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
@@ -436,11 +390,11 @@ public class Breakpoints extends JellyTestCase {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupActionNoBlock(Utilities.openSourceAction);
         
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         //new EventTool().waitNoEvent(1000);
@@ -457,7 +411,7 @@ public class Breakpoints extends JellyTestCase {
         dialog.ok();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         
@@ -481,7 +435,7 @@ public class Breakpoints extends JellyTestCase {
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
@@ -567,13 +521,13 @@ public class Breakpoints extends JellyTestCase {
         new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.newBreakpointItem).toString(), null).perform();
         NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
         new JComboBoxOperator(dialog, 0).selectItem("Exception");
-        new JTextFieldOperator(dialog, 1).typeText("java.lang");
-        new JTextFieldOperator(dialog, 2).typeText("Exception");
-        new JComboBoxOperator(dialog, 1).selectItem("Catched or Uncatched"); 
+        new JComboBoxOperator(dialog, 2).typeText("java.lang");
+        new JComboBoxOperator(dialog, 3).typeText("Exception");
+        new JComboBoxOperator(dialog, 1).selectItem("Catched or Uncatched");
         dialog.ok();
         
         // test if breakpoint exists in breakpoints view
-        Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+        Utilities.showBreakpointsView();
         TopComponentOperator breakpointsOper = new TopComponentOperator(Utilities.breakpointsViewTitle);
         JTableOperator jTableOperator = new JTableOperator(breakpointsOper);
         

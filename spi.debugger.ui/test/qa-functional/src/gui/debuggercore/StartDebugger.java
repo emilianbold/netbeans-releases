@@ -15,18 +15,11 @@
 
 package gui.debuggercore;
 
-import java.io.File;
-
 import junit.textui.TestRunner;
-
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.JavaNode;
-
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.properties.PropertySheetOperator;
-
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -67,62 +60,60 @@ public class StartDebugger extends JellyTestCase {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
-        mwo.waitStatusText("User program running");
+        mwo.waitStatusText(Utilities.runningStatusBarText);
+        new EventTool().waitNoEvent(2000);
 
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        Utilities.closeTerms();        
     }
     
     public void testRunDebuggerStepInto() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupAction(Utilities.openSourceAction);
 
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:241.");
         
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        Utilities.closeTerms();        
     }
     
     public void testRunDebuggerRunToCursor() {
         ProjectsTabOperator projectsTabOper = new ProjectsTabOperator();
         Node projectNode = new Node(new JTreeOperator(projectsTabOper), Utilities.testProjectName);
         projectNode.select();
-        projectNode.performPopupAction("Set as Main Project");
+        projectNode.performPopupAction(Utilities.setMainProjectAction);
 
         JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
         javaNode.select();
-        javaNode.performPopupActionNoBlock("Open");
+        javaNode.performPopupAction(Utilities.openSourceAction);
 
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
-        //new EventTool().waitNoEvent(1000);
         editorOperator.setCaretPosition(112, 1);
         
         new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
@@ -130,14 +121,13 @@ public class StartDebugger extends JellyTestCase {
         mwo.waitStatusText("Thread main stopped at MemoryView.java:112.");
         
         // finnish bedugging session
-        new ActionNoBlock(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
-            mwo.waitStatusText("User program finished");
+            mwo.waitStatusText(Utilities.finishedStatusBarText);
         } catch (TimeoutExpiredException tee) {
             System.out.println("Debugging session was not killed.");
             throw(tee);
         }
-        Utilities.closeTerms();        
     }
 }
