@@ -97,20 +97,14 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
     public void attachEnv(PropertyEnv env) {
         this.env = env;
         Object newObj = env.getFeatureDescriptor().getValue(PROPERTY_CURRENT_FOLDER);
-        System.out.println("DOArrayE.attachEnv"
-        + " currentFolder:" + currentFolder);
         if (newObj instanceof DataObject) {
             currentFolder = (DataObject)newObj;
         }
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_ROOT_FOLDER);
-        System.out.println("DOArrayE.attachEnv"
-        + " rootFolder:" + rootFolder);
         if (newObj instanceof DataFolder) {
             rootFolder = (DataFolder)newObj;
         }
         newObj = env.getFeatureDescriptor().getValue(PROPERTY_ROOT_NODE);
-        System.out.println("DOArrayE.attachEnv"
-        + " rootNode:" + rootNode);
         if (newObj instanceof Node) {
             rootNode = (Node)newObj;
         }
@@ -173,23 +167,17 @@ public class DataObjectArrayEditor extends PropertyEditorSupport implements ExPr
      * Passes all parameters gathered in method attachEnv.
      */
     private DataObjectPanel getDataObjectPanel() {
-        System.out.println("++");
-        System.out.println("++ DataObjectArrayEditor.getDataObjectPanel");
         if (customEditor == null) {
             // lazy init ...
             if (guiType != null) {
                 if ("TreeView".equals(guiType)) {
-                    System.out.println("++ 1 TreeView");
                     customEditor = new DataObjectTreeView(this);
                 } else if ("ListView".equals(guiType)) {
-                    System.out.println("++ 2 ListView");
                     customEditor = new DataObjectListView(this);
                 } else {
-                    System.out.println("++ 3 ListView");
                     customEditor = new DataObjectListView(this);
                 }
             } else {
-                System.out.println("++ 4 ListView");
                 customEditor = new DataObjectListView(this);
             }
         }
