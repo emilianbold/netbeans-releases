@@ -20,8 +20,8 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src">
       <classpath>
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
-        <pathelement location="../core/release/modules/ext/webserver.jar"/>
-        <pathelement location="../core/release/lib/ext/servlet.jar"/>
+        <pathelement location="${binroot}/core/release/modules/ext/webserver.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/servlet.jar"/>
       </classpath>
     </javac>
   </target>
