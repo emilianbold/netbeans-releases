@@ -35,6 +35,9 @@ public class Testbag implements XMLSerializable {
     private String testattribs;
     private String executor;
     private String compiler;
+    
+    private String pluginName;
+    
     private String resultsprocessor;
     private Integer prio;
     private Integer timeout;
@@ -56,6 +59,7 @@ public class Testbag implements XMLSerializable {
             classMappingRegistry.registerSimpleField("testattribs",ClassMappingRegistry.ATTRIBUTE,"testattribs");
             classMappingRegistry.registerSimpleField("executor",ClassMappingRegistry.ATTRIBUTE,"executor");
             classMappingRegistry.registerSimpleField("compiler",ClassMappingRegistry.ATTRIBUTE,"compiler");
+            classMappingRegistry.registerSimpleField("pluginName",ClassMappingRegistry.ATTRIBUTE,"plugin");
             classMappingRegistry.registerSimpleField("resultsprocessor",ClassMappingRegistry.ATTRIBUTE,"resultsprocessor");
             classMappingRegistry.registerSimpleField("prio",ClassMappingRegistry.ATTRIBUTE,"prio");
             classMappingRegistry.registerSimpleField("timeout",ClassMappingRegistry.ATTRIBUTE,"timeout");
@@ -126,6 +130,10 @@ public class Testbag implements XMLSerializable {
 
     public MTestConfig.AntExecType getResultsprocessor() {
         return ant_resultsprocessor;   
+    }
+    
+    public String getPluginName() {
+        return pluginName;
     }
     
     public Testset[] getTestsets() {

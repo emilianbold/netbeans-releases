@@ -224,6 +224,8 @@ public class MTestConfig implements XMLSerializable {
         if (getName() == null)
             throw new XMLSerializeException("Attribute name is required for root element mconfig.");
 
+        // This is not required when plugin are used !!!
+        /*
         if (executors == null || executors.length == 0)
             throw new XMLSerializeException("At least one element executor is required.");
         //if (compilers == null || compilers.length == 0) 
@@ -233,6 +235,7 @@ public class MTestConfig implements XMLSerializable {
         
         if (testbags == null || testbags.length == 0)
             throw new XMLSerializeException("At least one element testbag is required.");
+        */
         
         defaultExecutor = processAntExecTypes(executors, executors_table, "executor");
         defaultCompiler = processAntExecTypes(compilers, compilers_table, "compiler");
@@ -240,9 +243,9 @@ public class MTestConfig implements XMLSerializable {
 
         for (int i=0; i<testbags.length; i++) {
             testbags[i].setParent(this);
-            testbags[i].setAntExecutor(getTestbagAntExecType(testbags[i].getExecutorName(), defaultExecutor, executors_table, "executor"));
-            testbags[i].setAntCompiler(getTestbagAntExecType(testbags[i].getCompilerName(), defaultCompiler, compilers_table, "compiler"));            
-            testbags[i].setAntResultsprocessor(getTestbagAntExecType(testbags[i].getResultsprocessorName(), defaultResultsprocessor, resultsprocessors_table, "resultsprocessor"));
+            testbags[i].setAntExecutor(getTestbagAntExecType(testbags[i].getExecutorName(), defaultExecutor, executors_table, "executor",testbags[i].getPluginName()));
+            testbags[i].setAntCompiler(getTestbagAntExecType(testbags[i].getCompilerName(), defaultCompiler, compilers_table, "compiler",testbags[i].getPluginName()));            
+            testbags[i].setAntResultsprocessor(getTestbagAntExecType(testbags[i].getResultsprocessorName(), defaultResultsprocessor, resultsprocessors_table, "resultsprocessor",testbags[i].getPluginName()));
             testbags[i].validate(passed_patternset);
         }
         
@@ -271,21 +274,30 @@ public class MTestConfig implements XMLSerializable {
     
     /** Find AntExecType for given type_name or return default i type_name is null.
      */
-    private AntExecType getTestbagAntExecType(String type_name, AntExecType defaultType, Hashtable types_table, String name) throws XMLSerializeException {
+    private AntExecType getTestbagAntExecType(String type_name, AntExecType defaultType, Hashtable types_table, String name, String pluginName) throws XMLSerializeException {
         if (type_name == null) {
-            if (defaultType == null)
-                if (name.equals("compiler"))
+            if (defaultType == null) {
+                if (name.equals("compiler")) {
                     return null;
-                else
+                } else {
                     throw new XMLSerializeException("No default "+name+" was found.");
-            else 
-                return defaultType;
+                }
+            } else {
+                if (pluginName == null) {
+                    // if plugin is not defined - return default
+                    return defaultType;
+                } else {
+                    // else each plugin have to contain at least one default action
+                    return null;
+                }
+            }
         } else {
             AntExecType type = (AntExecType)types_table.get(type_name);
-            if (type == null)
+            if (type == null) {
                 throw new XMLSerializeException("No "+name+" with name "+type_name+" was found.");    
-            else
+            } else {
                 return type;
+            }
         }
     }
     
