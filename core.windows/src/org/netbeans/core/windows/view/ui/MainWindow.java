@@ -85,7 +85,7 @@ public final class MainWindow extends JFrame {
             JComponent c = new JPanel() {
                 public void setVisible(boolean flag) {
                     if (flag != isVisible ()) {
-                        setVisible(flag);
+                        show(flag);
                     }
                 }
             };
