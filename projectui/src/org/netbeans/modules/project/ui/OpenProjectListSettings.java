@@ -85,7 +85,11 @@ public class OpenProjectListSettings extends SystemOption {
     }
     
     public String getLastOpenProjectDir() {
-        return (String)getProperty( LAST_OPEN_PROJECT_DIR );
+        String result = (String)getProperty( LAST_OPEN_PROJECT_DIR );
+        if (result == null) {
+            result = System.getProperty("user.home");   //NOI18N
+        }
+        return result;
     }
     
     public void setLastOpenProjectDir( String path ) {
