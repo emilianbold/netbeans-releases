@@ -18,6 +18,8 @@ import java.awt.Window;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
 
 import org.openide.*;
@@ -55,6 +57,8 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Add")); // NOI18N
         editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Edit")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_MEP_Remove")); // NOI18N
+        enableButtons(false);
+
         macrosTable.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent evt) { 
                 SwingUtilities.getAncestorOfClass(Window.class, MacrosEditorPanel.this).hide();
@@ -62,8 +66,30 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_FOCUSED
         );
+            
+        macrosTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                
+                // XXX - hack because of bugparade's 4801274
+                if (macrosTable.getRowCount() == 0){
+                    enableButtons(false);
+                    return;
+                }
+                
+                // valid fix of #35096
+                ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+                enableButtons(!lsm.isSelectionEmpty());
+            }
+        });
+            
     }
 
+    private void enableButtons(boolean enable){
+        editButton.setEnabled(enable);
+        removeButton.setEnabled(enable);
+    }
+    
     private String getBundleString(String s) {
         return NbBundle.getMessage(MacrosEditorPanel.class, s);
     }        

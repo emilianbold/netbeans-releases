@@ -25,6 +25,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 
 /**
@@ -54,6 +56,8 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         addButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Add")); // NOI18N
         editButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Edit")); // NOI18N
         removeButton.getAccessibleContext().setAccessibleDescription(getBundleString("ACSD_AEP_Remove")); // NOI18N
+        enableButtons(false);
+        
         abbrevsTable.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent evt) { 
                 SwingUtilities.getAncestorOfClass(Window.class, AbbrevsEditorPanel.this).hide();
@@ -61,6 +65,28 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
             KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
             JComponent.WHEN_FOCUSED
         );
+            
+        abbrevsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) return;
+                
+                // XXX - hack because of bugparade's 4801274
+                if (abbrevsTable.getRowCount() == 0){
+                    enableButtons(false);
+                    return;
+                }
+                
+                // valid fix of #35096
+                ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+                enableButtons(!lsm.isSelectionEmpty());
+            }
+        });
+            
+    }
+
+    private void enableButtons(boolean enable){
+        editButton.setEnabled(enable);
+        removeButton.setEnabled(enable);
     }
     
     private String getBundleString(String s) {
