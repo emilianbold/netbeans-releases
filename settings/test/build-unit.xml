@@ -206,8 +206,8 @@ Microsystems, Inc. All Rights Reserved.
 	           <pathelement location="../netbeans/lib/openide.jar"/>
  	      -->
             <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
-            <pathelement location="${netbeans.home}/lib/openide.jar"/>
-            <fileset dir="${netbeans.home}/lib">
+            <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
+            <fileset dir="../../netbeans/lib">
                     <include name="core.jar"/>
                     <include name="ext/*.jar"/>
             </fileset>
@@ -225,8 +225,8 @@ Microsystems, Inc. All Rights Reserved.
  	      -->
             <pathelement location="../src"/>
             <pathelement location="../netbeans/modules/autoload/core-settings.jar"/>
-            <pathelement location="${netbeans.home}/lib/openide.jar"/>
-            <fileset dir="${netbeans.home}/lib">
+            <pathelement location="../../../openide/netbeans/lib/openide.jar"/>
+            <fileset dir="../../netbeans/lib">
                     <include name="core.jar"/>
                     <include name="ext/*.jar"/>
             </fileset>
