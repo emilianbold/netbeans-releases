@@ -12,6 +12,6 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.editor/1 > 1.6,
   org.netbeans.modules.html/1,
   org.openide.execution > 1.0, 
   org.netbeans.modules.web.jspparser/2,
-  org.netbeans.modules.xml.text/2 = ${xml.common.spec.version},
+  org.netbeans.modules.xml.text/2 = ${xml.common.impl.version},
   org.openide.loaders > 4.11
 
