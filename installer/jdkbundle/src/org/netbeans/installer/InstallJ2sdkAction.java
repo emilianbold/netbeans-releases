@@ -906,7 +906,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
                 }
             }
             else {
-                String statusDesc = resolveString("$L(com.sun.installer.InstallerResources,AS_OPERATION_CANCELED)");
+                String statusDesc = resolveString("$L(org.netbeans.installer.Bundle, ProgressPanel.installationCancelled)");
                 mos.setStatusDescription(statusDesc);
                 mos.getProgress().setPercentComplete(0);
             }
