@@ -163,6 +163,8 @@ Microsystems, Inc. All Rights Reserved.
         <file name="C-F5[org-netbeans-modules-debugger-support-actions-ContinueAction].instance" />
         <file name="S-F5[org-netbeans-modules-debugger-support-actions-FinishAction].instance" />
         <file name="A-F5[org-netbeans-modules-debugger-support-actions-StartAction].instance" />
+        <file name="CA-UP[org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction].instance" />
+        <file name="CA-DOWN[org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction].instance" />
 
     </folder>
 
