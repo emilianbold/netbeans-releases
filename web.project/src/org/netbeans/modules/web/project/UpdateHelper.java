@@ -245,10 +245,11 @@ public class UpdateHelper {
         //create conf dir if doesn't exist and copy default manifest inside
         try {
             //I cannot use ${conf.dir} since the PE doesn't know about it
-            String confDir = helper.getStandardPropertyEvaluator().evaluate("${source.root}/conf"); //NOI18N 
+            //String confDir = helper.getStandardPropertyEvaluator().evaluate("${source.root}/conf"); //NOI18N 
             FileObject prjFO = project.getProjectDirectory();
             // folder creation will throw IOE if already exists
-            FileObject confDirFO = prjFO.createFolder(confDir); 
+            // use the hard coded string due to issue #54882 - since the 4.0 supports creation of only jakarta structure projects the conf dir is always in project root
+            FileObject confDirFO = prjFO.createFolder("conf");//NOI18N 
             // copyfile will throw IOE if the file already exists
             FileUtil.copyFile(Repository.getDefault().getDefaultFileSystem().findResource("org-netbeans-modules-web-project/MANIFEST.MF"), confDirFO, "MANIFEST"); //NOI18N
         }catch(IOException e) {
