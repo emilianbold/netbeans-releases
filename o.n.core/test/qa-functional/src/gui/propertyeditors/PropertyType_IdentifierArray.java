@@ -126,8 +126,7 @@ public class PropertyType_IdentifierArray extends PropertyEditorsTest {
         }
         
         if(propertyValue_L.startsWith(REMOVE)){
-            customizer.lstItemList().selectItem(getItem(propertyValue_L,REMOVE));
-            customizer.remove();
+            customizer.remove(getItem(propertyValue_L,REMOVE));
         }
         
         if(propertyValue_L.startsWith(EDIT)){
