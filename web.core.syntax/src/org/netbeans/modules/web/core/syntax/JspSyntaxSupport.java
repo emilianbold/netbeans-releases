@@ -649,15 +649,20 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             helpMap = new HashMap();
             //           The URI from the tld file          URL, where are the files for the library
             helpMap.put("http://java.sun.com/jsp/jstl/core", url + "c/");
+            helpMap.put("http://java.sun.com/jstl/core", url + "c/");
             helpMap.put("http://java.sun.com/jstl/core_rt", url + "c_rt/");
             helpMap.put("http://java.sun.com/jsp/jstl/fmt", url + "fmt/");
+            helpMap.put("http://java.sun.com/jstl/fmt", url + "fmt/");
             helpMap.put("http://java.sun.com/jstl/fmt_rt", url + "fmt_rt/");
             helpMap.put("http://java.sun.com/jsp/jstl/functions", url + "fn/");
+            helpMap.put("http://java.sun.com/jstl/functions", url + "fn/");
             helpMap.put("http://jakarta.apache.org/taglibs/standard/permittedTaglibs", url+"permittedTaglibs/");
             helpMap.put("http://jakarta.apache.org/taglibs/standard/scriptfree", url+ "scriptfree/");
             helpMap.put("http://java.sun.com/jsp/jstl/sql", url + "sql/");
+            helpMap.put("http://java.sun.com/jstl/sql", url + "sql/");
             helpMap.put("http://java.sun.com/jstl/sql_rt", url + "sql_rt/");
             helpMap.put("http://java.sun.com/jsp/jstl/xml", url + "x/");
+            helpMap.put("http://java.sun.com/jstl/xml", url + "x/");
             helpMap.put("http://java.sun.com/jstl/xml_rt", url + "x_rt/")    ;
         }
         
@@ -668,7 +673,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             initHelp();
         String url = "";           // NOI18N
         if (standardJspTagDatas == null) {
-            System.out.println("initCompletionData");
             final String helpFiles = "docs/syntaxref20.zip"; //NoI18N
             File f = InstalledFileLocator.getDefault().locate(helpFiles, null, true); //NoI18N
             if (f != null){
