@@ -28,6 +28,7 @@ public class Param extends BaseBean {
     }
 
     public Param(String name, String value) {
+	super(Param.comparators, new org.netbeans.modules.schema2beans.Version(1, 0, 6));
 	setAttributeValue("name", name); //NOI18N
 	setAttributeValue("value", value); //NOI18N
     }
