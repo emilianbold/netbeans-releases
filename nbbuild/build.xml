@@ -258,12 +258,14 @@ workspaceswitcher
 
   <target name="virgin" depends="init,build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
+    <mkdir dir="virgin"/>
     <nbmerge dest="virgin" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
   <target name="firststart" depends="init,build-messaging">
+    <mkdir dir="firststart"/>
     <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/runide_multiuser.sh" perm="ugo+x"/>
