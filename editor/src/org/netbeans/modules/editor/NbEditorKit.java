@@ -797,7 +797,7 @@ public class NbEditorKit extends ExtKit {
             addAction(target, menu, BaseKit.expandAllFoldsAction);
             // By default add separator before next actions (can be overriden if unwanted)
             setAddSeparatorBeforeNextAction(true);
-            addAdditionalItems(target, menu);
+            if (target != null) addAdditionalItems(target, menu);
             return menu;
         }
     

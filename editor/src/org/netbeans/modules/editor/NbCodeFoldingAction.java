@@ -16,6 +16,7 @@ package org.netbeans.modules.editor;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
@@ -26,6 +27,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Settings;
+import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -39,7 +42,7 @@ import org.openide.util.actions.SystemAction;
  *
  *  @author  Martin Roskanin
  */
-public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu{
+public  class NbCodeFoldingAction extends GlobalContextAction implements Presenter.Menu{
 
     
     /** Creates a new instance of NbCodeFoldingAction */
@@ -55,22 +58,10 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
             "Menu/View/CodeFolds"); //NOI18N
     }        
 
-    private static boolean isOpen(Document doc){
-        if (doc==null) return false;
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        if (dobj==null) return false;
-        EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-        if (ec==null) return false;
-        JEditorPane jep[] = ec.getOpenedPanes();
-        return (jep!=null && jep.length>0);
-    }
+    public void resultChanged(org.openide.util.LookupEvent ev) {
+    }    
     
     public boolean isEnabled() {
-        JTextComponent component = Utilities.getFocusedComponent();
-        if (component!=null){
-            Document doc = component.getDocument();
-            return isOpen(doc);
-        }
         return false;
     }
 
@@ -92,7 +83,24 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
         JTextComponent component = getComponent();
         return (component == null) ? BaseKit.getKit(NbEditorKit.class) : Utilities.getKit(component);
     }
+    
+    private static Object getSettingValue(BaseKit kit, String settingName) {
+        return Settings.getValue(kit.getClass(), settingName);
+    }
 
+    /** Get the value of the boolean setting from the <code>Settings</code>
+     * @param settingName name of the setting to get.
+     */
+    private static boolean getSettingBoolean(BaseKit kit, String settingName) {
+        Boolean val = (Boolean)getSettingValue(kit, settingName);
+        return (val != null) ? val.booleanValue() : false;
+    }
+    
+
+    private boolean isFoldingEnabledInSettings(BaseKit kit){
+        return getSettingBoolean(kit, SettingsNames.CODE_FOLDING_ENABLE);
+    }
+    
     
     public class CodeFoldsMenu extends JMenu{
         public CodeFoldsMenu(){
@@ -115,8 +123,25 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
             if (bKit!=null){
                 Action action = bKit.getActionByName(NbEditorKit.generateFoldPopupAction);
                 if (action instanceof BaseAction){
+                    boolean foldingAvailable = isFoldingEnabledInSettings(bKit);
                     JTextComponent component = Utilities.getFocusedComponent();
-                    JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(component);
+                    if (foldingAvailable){
+                        ActionMap contextActionmap = getContextActionMap();
+                        if (contextActionmap!=null){
+                            foldingAvailable = contextActionmap.get(BaseKit.collapseFoldAction) != null &&
+                                component != null;
+
+                            if (!foldingAvailable){
+                                bKit = BaseKit.getKit(NbEditorKit.class);
+                                if (bKit!=null){
+                                    Action defaultAction = bKit.getActionByName(NbEditorKit.generateFoldPopupAction);
+                                    if (defaultAction instanceof BaseAction) action = defaultAction;
+                                }
+                            }
+                        }
+                    }
+
+                    JMenu menu = (JMenu)((BaseAction)action).getPopupMenuItem(foldingAvailable ? component : null);
                     if (menu!=null){
                         Component comps[] = menu.getMenuComponents();
                         for (int i=0; i<comps.length; i++){
