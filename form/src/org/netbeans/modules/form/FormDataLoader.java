@@ -127,55 +127,18 @@ public class FormDataLoader extends MultiFileLoader {
   protected MultiDataObject.Entry createSecondaryEntry (MultiDataObject obj, FileObject secondaryFile) {
     String ext = secondaryFile.getExt();
     if (ext.equals(CLASS_EXTENSION)) {
-      return new FileEntry.Numb (obj, secondaryFile); // entries for .class file
-    } else {
-      return new FileEntry (obj, secondaryFile) { // .form file entry
-        /** saves the DesignForm into the .form file */
-        public void save (boolean modified) {
-/*          if (modified & !isModified())
-            return;
-          if (!isLoaded ()) // cannot save to the .form file if there is nothing to save
-            return;
-          designForm.getFormManager ().cancelSelection ();
-          FileLock lock = null;
-          java.io.OutputStream os = null;
-          try {
-            lock = takeLock();
-            // we first save into memory to prevent corrupting the form file
-            // if something goes wrong
-            java.io.ByteArrayOutputStream barros = new java.io.ByteArrayOutputStream (10000);
-            NbObjectOutputStream oos = new NbObjectOutputStream(barros);
-            oos.writeObject(designForm);
-            oos.close ();
-
-            // now it is safely written in memory, so we can save it to the file
-            os = getFile().getOutputStream(lock);
-            barros.writeTo(os);
-          }
-          catch (Exception e) {
-            String message = MessageFormat.format(FormLoaderSettings.formBundle.getString("FMT_ERR_SavingForm"),
-                                                  new Object[] {getName(), e.getClass().getName()});
-            TopManager.getDefault().notify(new NotifyDescriptor.Exception(e, message));
-          }
-          finally {
-            if (lock != null)
-              lock.releaseLock();
-            if (os != null) {
-              try {
-                os.close();
-              }
-              catch (IOException e) {
-              }
-            } 
-          } */
-        }
-      };
-    }
+      return new FileEntry.Numb (obj, secondaryFile);             // entries for .class file
+    } else if (ext.equals (FORM_EXTENSION)) {
+      FileEntry formEntry = new FileEntry (obj, secondaryFile);   // entries for .form files
+      ((FormDataObject)obj).formEntry = formEntry;
+      return formEntry;
+    } else return null;
   }
 }
 
 /*
  * Log
+ *  11   Gandalf   1.10        3/24/99  Ian Formanek    
  *  10   Gandalf   1.9         3/24/99  Ian Formanek    Fixed stealing of plain 
  *       Java objects
  *  9    Gandalf   1.8         3/17/99  Ian Formanek    

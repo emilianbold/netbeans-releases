@@ -29,7 +29,6 @@ import com.netbeans.developer.modules.loaders.form.formeditor.util.*;
 
 /** A class that contains utility methods for the formeditor.
 *
-* @author   Ian Formanek
 * @version  1.01, Jul 30, 1998
 */
 public class FormUtils extends Object {
@@ -457,6 +456,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/24/99  Ian Formanek    
  *  1    Gandalf   1.0         3/17/99  Ian Formanek    
  * $
  */

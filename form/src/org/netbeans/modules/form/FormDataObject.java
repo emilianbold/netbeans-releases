@@ -24,6 +24,7 @@ import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.nodes.Node;
 import com.netbeans.ide.nodes.CookieSet;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
+import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.form.*;
 import com.netbeans.developer.modules.loaders.form.formeditor.DesignForm;
 
@@ -35,30 +36,54 @@ public class FormDataObject extends JavaDataObject {
   /** generated Serialized Version UID */
 //  static final long serialVersionUID = 7952143476761137063L;
 
+//--------------------------------------------------------------------
+// Static variables
+
   private static java.util.ResourceBundle formBundle = com.netbeans.ide.util.NbBundle.getBundle (FormDataObject.class);
 
   /** lock for closing window */
   private static final Object OPEN_FORM_LOCK = new Object ();
+
+//--------------------------------------------------------------------
+// Private variables
+
+  /** If true, a postInit method is called after reparsing - used after createFromTemplate */
+  transient private boolean templateInit;
+  /** If true, the form is marked as modified after regeneration - used if created from template */
+  transient private boolean modifiedInit;
+  /** A flag to prevent multiple registration of ComponentRefListener */
+  transient private boolean componentRefRegistered;
+
+
+  /** The entry for the .form file */
+  FileEntry formEntry;
+  
+//--------------------------------------------------------------------
+// Constructors
 
   public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
     super(jfo, loader);
     init ();
   }
 
+//--------------------------------------------------------------------
+// Other methods
+
   /** Initalizes the FormDataObject after deserialization */
   private void init() {
     templateInit = false;
     modifiedInit = false;
     componentRefRegistered = false;
-    
-    MultiDataObject.Entry javaEntry = getPrimaryEntry();
-    CookieSet cookies = getCookieSet();
-
-    FormEditor editorSupport = new FormEditor (javaEntry, formEntry);
-    cookies.add(editorSupport);
-
   }
 
+  protected JavaEditor createEditorSupport () {
+    return new FormEditorSupport (getPrimaryEntry (), this);
+  }
+
+  FileEntry getFormEntry () {
+    return formEntry;
+  }
+  
   /** Help context for this object.
   * @return help context
   */
@@ -66,46 +91,6 @@ public class FormDataObject extends JavaDataObject {
     return new com.netbeans.ide.util.HelpCtx (FormDataObject.class);
   }
 
-  /** returns an editor with the document */
-/*  public JavaEditor prepareEditor (boolean visibility) {
-    final JavaEditor je = super.prepareEditor(visibility);
-    if (!componentRefRegistered) {
-      componentRefRegistered = true;
-      je.addComponentRefListener(new ComponentRefListener() {
-          /** This method is called when number of components changes.
-          * @param evt Adequate event.
-          * /
-          public void componentChanged(ComponentRefEvent evt) {
-            if (evt.getNewValue () == 0) {
-              je.removeComponentRefListener (this);
-              designForm.getFormManager ().disposeFormManager ();
-              designForm.getRADWindow().setVisible (false);
-              designForm.getRADWindow().dispose ();
-              com.netbeans.ide.explorer.ExplorerManager em = FormEditor.getExplorerManager ();
-              if (em.getRootContext ().equals (designForm.getFormManager (). getComponentsRoot ()))
-                FormEditor.formActivated (null);
-              designForm = null;
-              formLoaded = false;
-              templateInit = false;
-              componentRefRegistered = false;
-            }
-          }
-        }
-      );
-    }
-    return je;
-  }
-
-  public DocumentRef getDocument () {
-    return super.getDocument ();
-  }
-
-  protected void discard () {
-    super.discard ();
-    formLoaded = false;
-    templateInit = false;
-  }
-*/
   /** Handles copy of the data object.
   * @param f target folder
   * @return the new data object
@@ -183,44 +168,6 @@ public class FormDataObject extends JavaDataObject {
     return null;
   }
 
-  /** This method is used by ParseManager to set the parsed information. */
-/*  protected void setParsed(JavaFile parsed) {
-    super.setParsed (parsed);
-    synchronized (OPEN_FORM_LOCK) {
-      if (templateInit) {
-        templateInit = false;
-        if (getDesignForm () != null) {
-          getDesignForm ().postCreateInit ();
-          try {
-            save (true); // save only if modified
-          }
-          catch (java.io.IOException e) {
-            TopManager.getDefault().notifyException(e); // [PENDING - notify different way]
-          }
-        }
-      }
-    }
-
-    // update the namespace of global variables in the form
-    JavaFile file = getParsed ();
-    if ((file != null) && (formLoaded)) {
-      ClassElement[] cl = file.getClasses ();
-      for (int i = 0; i < cl.length; i++) {
-        if (cl[i].getName ().getName ().equals(getName ())) { //main class in the java file
-          VarElement[] variables = cl[i].getVariables ();
-          String[] names = new String[variables.length];
-          for (int j = 0; j < variables.length; j++)
-            names[j] = variables[j].getName ().getName ();
-
-          designForm.getFormManager ().getVariablesPool ().updateNameSpace (names);
-
-          break;
-        } // if
-      } // for
-    }
-
-  } */
-
   /** Provides node that should represent this data object. When a node for representation
   * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
   * with only parent changed. This implementation creates instance
@@ -238,7 +185,7 @@ public class FormDataObject extends JavaDataObject {
   }
 
 //--------------------------------------------------------------------
-// serialization
+// Serialization
 
   private void readObject(java.io.ObjectInputStream is)
   throws java.io.IOException, ClassNotFoundException {
@@ -246,23 +193,11 @@ public class FormDataObject extends JavaDataObject {
     init();
   }
 
-//--------------------------------------------------------------------
-// private variables
-
-  /** If true, a postInit method is called after reparsing - used after createFromTemplate */
-  transient private boolean templateInit;
-  /** If true, the form is marked as modified after regeneration - used if created from template */
-  transient private boolean modifiedInit;
-  /** A flag to prevent multiple registration of ComponentRefListener */
-  transient private boolean componentRefRegistered;
-
-
-  /** The entry for the .form file */
-  private FileEntry formEntry;
 }
 
 /*
  * Log
+ *  10   Gandalf   1.9         3/24/99  Ian Formanek    
  *  9    Gandalf   1.8         3/22/99  Ian Formanek    
  *  8    Gandalf   1.7         3/17/99  Ian Formanek    
  *  7    Gandalf   1.6         3/17/99  Ian Formanek    
