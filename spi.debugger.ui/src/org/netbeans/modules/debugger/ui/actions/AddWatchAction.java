@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 import javax.swing.*;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.debugger.ui.WatchPanel;
+import org.netbeans.modules.debugger.ui.views.WatchesView;
 
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -111,6 +112,6 @@ public class AddWatchAction extends CallableSystemAction {
         watchHistory = watch;
         
         // open watches view
-        new WatchesViewAction ().actionPerformed (null);
+        WatchesViewAction.openComponent (WatchesView.class, false);
     }
 }
