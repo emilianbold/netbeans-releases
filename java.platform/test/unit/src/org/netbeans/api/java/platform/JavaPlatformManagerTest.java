@@ -87,6 +87,11 @@ public class JavaPlatformManagerTest extends NbTestCase {
         JavaPlatform p7 = new TestJavaPlatform ("P7", new Specification("CDC",new SpecificationVersion("1.0"), new Profile[] {
             new Profile ("PersonalJava", new SpecificationVersion ("1.0"))
         }));
+        JavaPlatform p8 = new TestJavaPlatform ("P8", new Specification("CDC",new SpecificationVersion("1.0"), new Profile[] {
+            new Profile ("PersonalJava", new SpecificationVersion ("1.0")),
+            new Profile ("JNI", new SpecificationVersion ("1.0")),
+            new Profile ("GIOP", new SpecificationVersion ("1.0"))
+        }));
         provider.addPlatform (p1);
         provider.addPlatform (p2);
         provider.addPlatform (p3);
@@ -94,8 +99,9 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.addPlatform (p5);
         provider.addPlatform (p6);
         provider.addPlatform (p7);
+        provider.addPlatform (p8);
         assertNotNull (manager.getInstalledPlatforms());
-        assertTrue (manager.getInstalledPlatforms().length == 7);
+        assertTrue (manager.getInstalledPlatforms().length == 8);
         JavaPlatform[] r = manager.getPlatforms("P1",null);
         assertNotNull (r);
         assertTrue (r.length == 1);
@@ -123,8 +129,8 @@ public class JavaPlatformManagerTest extends NbTestCase {
         // Test of profiles
         r = manager.getPlatforms (null, new Specification ("CDC", new SpecificationVersion("1.0")));        //Any CDC
         assertNotNull (r);
-        assertTrue (r.length == 3);
-        assertEquivalent (r, new JavaPlatform[] {p5, p6, p7});       
+        assertTrue (r.length == 4);
+        assertEquivalent (r, new JavaPlatform[] {p5, p6, p7, p8});       
         r = manager.getPlatforms (null, new Specification ("CDC", null, new Profile[] {                     // CDC with PersonalJava/* and RMI/*
             new Profile ("PersonalJava",null),
             new Profile ("RMI",null)
@@ -136,15 +142,15 @@ public class JavaPlatformManagerTest extends NbTestCase {
             new Profile (null,null)
         }));        
         assertNotNull (r);
-        assertTrue (r.length == 2);
-        assertEquivalent (r, new JavaPlatform[] {p5,p7});        
+        assertTrue (r.length == 3);
+        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});        
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       // CDC with PersonalJava/* and */*
             new Profile ("PersonalJava",null),
             new Profile (null,null)
         }));
         assertNotNull (r);
-        assertTrue (r.length == 2);
-        assertEquivalent (r, new JavaPlatform[] {p5,p7});                
+        assertTrue (r.length == 3);
+        assertEquivalent (r, new JavaPlatform[] {p5,p7,p8});                
         r = manager.getPlatforms (null, new Specification ("CDC",null,new Profile[] {                       //CDC with PersonalJava/*
             new Profile ("PersonalJava",null)
         }));
@@ -164,6 +170,11 @@ public class JavaPlatformManagerTest extends NbTestCase {
         }));
         assertNotNull (r);
         assertTrue (r.length == 0);        
+        r = manager.getPlatforms(null,null);                                                              //All platforms
+        assertNotNull(r);
+        assertTrue (r.length == 8);
+        assertEquivalent (r, new JavaPlatform[] {p1,p2,p3,p4,p5,p6,p7, p8});
+
         //Done, clean up
         provider.removePlatform (p1);
         provider.removePlatform (p2);
@@ -172,6 +183,7 @@ public class JavaPlatformManagerTest extends NbTestCase {
         provider.removePlatform (p5);
         provider.removePlatform (p6);
         provider.removePlatform (p7);
+        provider.removePlatform (p8);
         assertTrue (manager.getInstalledPlatforms().length == 0); 
     }
     
