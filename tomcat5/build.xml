@@ -40,12 +40,12 @@ Microsystems, Inc. All Rights Reserved.
   <target name="dd2beans_gen" depends="dd2beans_init" unless="dd.generation.uptodate">
       <antcall target="clean-ddgen-src"/>
       <echo message="generating bean graph for Tomcat 5 configuration file" />
-      <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">	
+      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">	
      	<classpath>
           <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
           <pathelement path="${nb_root}/core/external/crimson-1.1.3.jar" />
-          <pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />
-          <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+          <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+          <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
           <fileset dir = "${nb_root}/openide">
             <include name="netbeans/lib/openide*.jar"/>
           </fileset>
@@ -65,7 +65,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/>
         <pathelement path="${nb_root}/core/external/xml-apis-1.0b2.jar" />
-        <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
+        <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
         <pathelement location="${nb_root}/web/core/netbeans/modules/jsp.jar"/>
         <pathelement location="${nb_root}/j2eeserver/netbeans/modules/autoload/j2eeserver.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>

@@ -110,7 +110,7 @@ Microsystems, Inc. All Rights Reserved.
         XXX -->
         <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
         <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
-        <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
+        <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
 <!--        <pathelement location="${nbroot}/projects/core/netbeans/modules/autoload/projects-core.jar"/>
         <pathelement location="${nbroot}/projects/ide/netbeans/modules/projects-ide.jar"/>
         <pathelement location="${nbroot}/projects/compilation/netbeans/modules/autoload/compilation.jar"/>
@@ -175,10 +175,11 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="ddgen" depends="ddinit" if="dd.generation">
      <echo message="Generated schema2beans from ${dtdfile}"/>
-     <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">
+     <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
           <pathelement path="${nbroot}/logger/netbeans/lib/ext/logger.jar" />
-          <pathelement path="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar" />
+          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
           <fileset dir = "${nbroot}/openide">
                 <include name="netbeans/lib/openide*.jar"/>
           </fileset>
@@ -286,7 +287,7 @@ symbols and copy jar file(s)">
 <!--         <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> 
         XXX -->
         <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
-        <pathelement location="${nbroot}/schema2beans/netbeans/modules/schema2beans.jar"/>
+        <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
         <pathelement location="${nbroot}/projects/core/netbeans/modules/autoload/projects-core.jar"/>
         <pathelement location="${nbroot}/projects/ide/netbeans/modules/projects-ide.jar"/>
         <pathelement location="${nbroot}/projects/compilation/netbeans/modules/autoload/compilation.jar"/>

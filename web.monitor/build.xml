@@ -126,7 +126,7 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/schema2beans.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/schema2beans.jar"/>
     <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/lib/httpmonitor.jar"/>
     <copy file="netbeans/modules/ext/monitor-valve.jar"                    tofile="${nb_root}/tomcatint/bundledtomcat/netbeans/tomcat406/server/lib/monitor-valve.jar"/>
   </target>
@@ -150,7 +150,7 @@ Microsystems, Inc. All Rights Reserved.
        <classpath>
          <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
          <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-         <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
+         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
          <fileset dir="${nb_root}/core/external">
            <include name="xml-apis*.jar"/>
          </fileset>
@@ -170,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
          <fileset dir="${nb_root}/core/external">
            <include name="xml-apis*.jar"/>
          </fileset>
-         <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar"/>
+         <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
          <pathelement location="${servlet23}"/>	
        </classpath>
      </javac>

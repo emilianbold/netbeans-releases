@@ -43,14 +43,14 @@ Microsystems, Inc. All Rights Reserved.
    <target name="dd2beansgen" depends="dd2beans_init" unless="dd.generation.uptodate">
      <antcall target="clean-ddgen-src"/>
      <echo message="generating code generation input file information" />
-     <java classname="org.netbeans.modules.schema2beans.GenBeans" fork="yes">
+     <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
      	<classpath>
           <fileset dir="${nb_root}/core/external">
             <include name="crimson*.jar"/>
             <include name="xml-apis*.jar"/>
           </fileset>
-	  <!--<pathelement path="${nb_root}/logger/netbeans/lib/ext/logger.jar" />-->
-	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+	  <pathelement path="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
 	  <fileset dir = "${nb_root}/openide">
 		<include name="netbeans/lib/openide*.jar"/>
 	  </fileset>
@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
         <pathelement location="${nb_root}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
-        <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+        <pathelement location="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX: Needed for compilation ServletDO extends JDO that implements ElementCookie -->
         <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
