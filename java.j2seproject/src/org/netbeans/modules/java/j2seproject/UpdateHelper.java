@@ -41,6 +41,8 @@ import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
  */
 public class UpdateHelper {
 
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
+
     private final Project project;
     private final AntProjectHelper helper;
     private final AuxiliaryConfiguration cfg;
@@ -183,6 +185,9 @@ public class UpdateHelper {
     }
 
     private boolean canUpdate () {
+        if (TRANSPARENT_UPDATE) {
+            return true;
+        }
         //Ask just once under a single write access
         if (alreadyAskedInWriteAccess) {
             return false;
