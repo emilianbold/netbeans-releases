@@ -111,7 +111,8 @@ public final class TransformableSupport implements TransformableCookie {
             
             if ( exc instanceof TransformerException ) {
                 transExcept = (TransformerException)exc;                
-                if ( notifier != null ) {
+                if ( ( notifier != null ) &&
+                     ( exc instanceof TransformerConfigurationException ) ) {
                     detail = new DefaultXMLProcessorDetail (transExcept);
                 }
             } else if ( exc instanceof SAXParseException ) {
@@ -126,15 +127,17 @@ public final class TransformableSupport implements TransformableCookie {
                 }
             }
 
-            if ( notifier != null ) {            
-                CookieMessage message = new CookieMessage(
-                    unwrapException(exc).getLocalizedMessage(), 
-                    CookieMessage.FATAL_ERROR_LEVEL,
-                    detail
-                );                
+            if ( ( notifier != null ) &&
+                 ( detail != null ) ) {
+                CookieMessage message = new CookieMessage
+                    (unwrapException(exc).getLocalizedMessage(), 
+                     CookieMessage.FATAL_ERROR_LEVEL,
+                     detail);
                 notifier.receive (message);
             }
-            
+
+            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> throw transExcept: " + transExcept);
+
             throw transExcept;
         } // catch (Exception exc)
     }
@@ -204,6 +207,8 @@ public final class TransformableSupport implements TransformableCookie {
         
         public void fatalError (TransformerException tex) throws TransformerException {
             report (CookieMessage.FATAL_ERROR_LEVEL, tex);
+
+            throw tex;
         }
         
 
