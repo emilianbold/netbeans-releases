@@ -103,7 +103,7 @@ public final class Method extends Field {
 	    if (exceptions == null)
 		exceptions = new CPClassInfo[0];
 	}
-        return exceptions;
+        return (CPClassInfo[])exceptions.clone();
     }
     
     /**
@@ -177,6 +177,14 @@ public final class Method extends Field {
 
     public String toString() {
         StringBuffer sb = new StringBuffer(super.toString());
+        sb.append(", params (");
+        getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            sb.append(parameters[i].toString());
+            if (i+1 < parameters.length)
+                sb.append(", ");
+        }
+        sb.append(")");
         CPClassInfo[] ec = getExceptionClasses();
         if (ec.length > 0) {
             sb.append(", throws"); //NOI18N
@@ -191,8 +199,10 @@ public final class Method extends Field {
 	    sb.append("\" ");
 	}
 	Code code = getCode();
-	if (code != null)
+	if (code != null) {
+            sb.append(' ');
 	    sb.append(code.toString());
+        }
         return sb.toString();
     }
 

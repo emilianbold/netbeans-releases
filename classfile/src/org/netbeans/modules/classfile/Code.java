@@ -101,11 +101,11 @@ public final class Code {
     }
     
     public final byte[] getByteCodes() {
-        return byteCodes;
+        return (byte[])byteCodes.clone();
     }
     
     public final ExceptionTableEntry[] getExceptionTable() {
-        return exceptionTable;
+        return (ExceptionTableEntry[])exceptionTable.clone();
     }
 
     /**
@@ -114,14 +114,14 @@ public final class Code {
      * [2] = second pc, etc.
      */
     public final int[] getLineNumberTable() {
-        return lineNumberTable;
+        return (int[])lineNumberTable.clone();
     }
 
     /**
      * Returns the local variable table for this code.
      */
     public final LocalVariableTableEntry[] getLocalVariableTable() {
-        return localVariableTable;
+        return (LocalVariableTableEntry[])localVariableTable.clone();
     }
 
     /**
@@ -130,7 +130,7 @@ public final class Code {
      * are generic.
      */
     public final LocalVariableTypeTableEntry[] getLocalVariableTypeTable() {
-        return localVariableTypeTable;
+        return (LocalVariableTypeTableEntry[])localVariableTypeTable.clone();
     }
 
     public String toString() {

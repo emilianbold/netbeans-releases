@@ -21,6 +21,7 @@ package org.netbeans.modules.classfile;
 
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * ArrayElementValue:  the value portion of an annotation element that 
@@ -39,7 +40,7 @@ public final class ArrayElementValue extends ElementValue {
      * Returns the set of ElementValue instances for this component.
      */
     public final ElementValue[] getValues() {
-	return values;
+	return (ElementValue[])values.clone();
     }
 
     public String toString() {

@@ -173,30 +173,27 @@ public final class ClassName implements Comparable, Comparator, Serializable {
      * base classname, such as "java.io.Files[]".
      */
     public String getExternalName(boolean suppressArrays) {
-        if (externalName == null) 
-	    synchronized (this) {
-		if (externalName == null) 
-		    externalName = externalizeClassName();
-	    }
-
+        initExternalName();
         int i;
         if (suppressArrays && (i = externalName.indexOf('[')) != -1)
 	    return externalName.substring(0, i);
         return externalName;
     }
+    
+    private synchronized void initExternalName() {
+        if (externalName == null) 
+            externalName = externalizeClassName();
+    }
 
     /**
      * Return the package portion of this classname.
      */
-    public String getPackage() {
-        if (packageName == null)
-	    synchronized (this) {
-		if (packageName == null) {
-		    int i = internalName.lastIndexOf('/');
-		    packageName = (i != -1) ? 
-			internalName.substring(0, i).replace('/', '.') : "";
-		}
-	    }
+    public synchronized String getPackage() {
+        if (packageName == null) {
+            int i = internalName.lastIndexOf('/');
+            packageName = (i != -1) ? 
+                internalName.substring(0, i).replace('/', '.') : "";
+        }
 	return packageName;
     }
 
