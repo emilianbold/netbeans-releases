@@ -430,7 +430,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject,
                 "<Context path=\"/jsp-examples\" docBase=\""+new File (homeDir, "webapps/jsp-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "<Context path=\"/servlets-examples\" docBase=\""+new File (homeDir, "webapps/servlets-examples").getAbsolutePath ()+"\" debug=\"0\"/>\n"+
                 "</Host>",   // NOI18N
-                "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>",   // NOI18N
+                "<user username=\"ide\" password=\"ide_manager\" roles=\"manager\"/>\n</tomcat-users>",   // NOI18N
                 null, 
                 "docBase=\""+new File (homeDir, "server/webapps/admin").getAbsolutePath ()+"\"",   // NOI18N
                 "docBase=\""+new File (homeDir, "server/webapps/manager").getAbsolutePath ()+"\"",   // NOI18N
