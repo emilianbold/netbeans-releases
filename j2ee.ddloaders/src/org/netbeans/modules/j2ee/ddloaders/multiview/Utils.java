@@ -13,17 +13,47 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
+import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.BrowseFolders;
+import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EjbGenerationUtil;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.EntityAndSessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.entity.EntityGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ejb.wizard.session.SessionGenerator;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CMPFieldNode;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityNode;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.methodcontroller.EntityMethodController;
+import org.netbeans.modules.java.ui.nodes.JavaSourceNodeFactory;
+import org.netbeans.modules.javacore.api.JavaModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
+import org.openide.src.Identifier;
+import org.openide.src.MethodElement;
+import org.openide.src.MethodParameter;
+import org.openide.src.SourceException;
+import org.openide.src.Type;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.StringTokenizer;
 
 /**
@@ -88,10 +118,6 @@ public class Utils {
         return null;
     }
 
-    public static ClassElement getBeanClass(FileObject ejbJarFile, Ejb ejb) {
-        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getBeanClass(ejbJarFile, ejb);
-    }
-
     public static void scrollToVisible(JComponent component) {
         org.netbeans.modules.xml.multiview.Utils.scrollToVisible(component);
     }
@@ -136,22 +162,206 @@ public class Utils {
     }
 
     public static void removeInterface(ClassElement beanClass, String interfaceName) {
-        org.netbeans.modules.j2ee.ejbjarproject.Utils.removeInterface(beanClass, interfaceName);
+        Identifier[] interfaces = beanClass.getInterfaces();
+        for (int i = 0; i < interfaces.length; i++) {
+            if (interfaceName.equals(interfaces[i].getFullName())) {
+                try {
+                    beanClass.removeInterface(Identifier.create(interfaceName));
+                } catch (SourceException ex) {
+                    Utils.notifyError(ex);
+                }
+            }
+        }
     }
 
     public static void removeClassFile(FileObject ejbJarFile, String className) {
-        org.netbeans.modules.j2ee.ejbjarproject.Utils.removeClassFile(ejbJarFile, className);
+        FileObject sourceFile = getSourceFile(ejbJarFile, className);
+        if (sourceFile != null) {
+            try {
+                sourceFile.delete();
+            } catch (IOException e) {
+                notifyError(e);
+            }
+        }
     }
 
     public static FileObject getPackageFile(FileObject ejbJarFile, String packageName) {
-        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getPackageFile(ejbJarFile, packageName);
+        return findSourceResource(ejbJarFile, packageName.replace('.', '/'));
     }
 
     public static String getPackage(String ejbClass) {
-        return org.netbeans.modules.j2ee.ejbjarproject.Utils.getPackage(ejbClass);
+        return ejbClass.substring(0, ejbClass.lastIndexOf('.'));
     }
 
     public static void addInterfaces(FileObject ejbJarFile, EntityAndSession ejb, boolean local) {
-        org.netbeans.modules.j2ee.ejbjarproject.Utils.addInterfaces(ejbJarFile, ejb, local);
+        EntityAndSessionGenerator generator;
+        if (ejb instanceof Entity) {
+            generator = new EntityGenerator();
+        } else {
+            generator = new SessionGenerator();
+        }
+        String packageName = getPackage(ejb.getEjbClass());
+        FileObject packageFile = getPackageFile(ejbJarFile, packageName);
+        String ejbName = ejb.getEjbName();
+        try {
+            String componentInterfaceName;
+            String businessInterfaceName;
+            if (local) {
+                componentInterfaceName = EjbGenerationUtil.getLocalName(packageName, ejbName);
+                componentInterfaceName =
+                        generator.generateLocal(packageName, packageFile, componentInterfaceName, ejbName);
+                String homeInterfaceName = EjbGenerationUtil.getLocalHomeName(packageName, ejbName);
+                homeInterfaceName =
+                        generator.generateLocalHome(packageName, packageFile, homeInterfaceName,
+                                componentInterfaceName, ejbName);
+                ejb.setLocal(componentInterfaceName);
+                ejb.setLocalHome(homeInterfaceName);
+                businessInterfaceName = EjbGenerationUtil.getLocalBusinessInterfaceName(packageName, ejbName);
+            } else {
+                componentInterfaceName = EjbGenerationUtil.getRemoteName(packageName, ejbName);
+                componentInterfaceName =
+                        generator.generateRemote(packageName, packageFile, componentInterfaceName, ejbName);
+                String homeInterfaceName = EjbGenerationUtil.getHomeName(packageName, ejbName);
+                homeInterfaceName =
+                        generator.generateHome(packageName, packageFile, homeInterfaceName, componentInterfaceName,
+                                ejbName);
+                ejb.setRemote(componentInterfaceName);
+                ejb.setHome(homeInterfaceName);
+                businessInterfaceName = EjbGenerationUtil.getBusinessInterfaceName(packageName, ejbName);
+            }
+            ClassElement beanClass = getBeanClass(ejbJarFile, ejb);
+            Identifier[] interfaces = beanClass.getInterfaces();
+            for (int i = 0; i < interfaces.length; i++) {
+                if (businessInterfaceName.equals(interfaces[i].getFullName())) {
+                    ClassElement componentInterface = getClassElement(ejbJarFile, componentInterfaceName);
+                    componentInterface.addInterface(Identifier.create(businessInterfaceName));
+                    SaveCookie sc = (SaveCookie) componentInterface.getCookie(SaveCookie.class);
+                    if (sc != null) {
+                        sc.save();
+                    }
+                    return;
+                }
+            }
+            generator.generateBusinessInterfaces(packageName, packageFile, businessInterfaceName, ejbName,
+                    ejb.getEjbClass(), componentInterfaceName);
+        } catch (IOException e) {
+            notifyError(e);
+        } catch (SourceException e) {
+            notifyError(e);
+        }
+    }
+
+    public static void notifyError(Exception ex) {
+        NotifyDescriptor ndd = new NotifyDescriptor.Message(ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE);
+        DialogDisplayer.getDefault().notify(ndd);
+    }
+
+    public static FileObject findSourceResource(FileObject ejbJarFile, String resourceName) {
+        return getSourceClassPath(ejbJarFile).findResource(resourceName);
+    }
+
+    public static void activateRenameClassUI(String fullClassName) {
+        JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
+//        new RefactoringPanel(new RenameRefactoringUI(javaClass));
+    }
+
+    private static void test(JavaClass javaClass, SourceGroup sourceGroup) {
+        Node node = JavaSourceNodeFactory.getDefault().createClassNode(javaClass);
+//        MoveClassAction moveClassAction = new MoveClassAction();
+//        RenameAction renameAction = new RenameAction();
+        Node[] nodes = new Node[]{node};
+//        renameAction.processContext(nodes, null);
+//        moveClassAction.enable(nodes);
+//        moveClassAction.setJavaClass(javaClass);
+//        moveClassAction.setSourceGroup(sourceGroup);
+//        moveClassAction.performAction();
+        nodes[0].toString();
+    }
+
+    public static void activateMoveClassUI(String fullClassName, SourceGroup sourceGroup) {
+        JavaClass javaClass = (JavaClass) JavaModel.getDefaultExtent().getType().resolve(fullClassName);
+        //new RefactoringPanel(new MoveClassUI(javaClass));
+        test(javaClass, sourceGroup);
+    }
+
+    public static ClassElement getBeanClass(FileObject ejbJarFile, final Ejb ejb) {
+        String ejbClassName = ejb.getEjbClass();
+        return getClassElement(ejbJarFile, ejbClassName);
+    }
+
+    public static CMPFieldNode createFieldNode(FileObject ejbJarFile, Entity entity, CmpField field) {
+        ClassElement beanClass = getBeanClass(ejbJarFile, entity);
+        EntityMethodController ec = (EntityMethodController) EntityMethodController.createFromClass(beanClass);
+        return new CMPFieldNode(field, ec, ejbJarFile);
+    }
+
+    public static FileObject getSourceFile(FileObject ejbJarFile, String className) {
+        return findSourceResource(ejbJarFile, className.replace('.', '/') + ".java");
+    }
+
+    public static EntityNode createEntityNode(FileObject ejbJarFile, Entity entity) {
+        EjbJar ejbJar = null;
+        try {
+            ejbJar = DDProvider.getDefault().getDDRoot(ejbJarFile);
+        } catch (IOException e) {
+            notifyError(e);
+            return null;
+        }
+        return new EntityNode(entity, ejbJar, getSourceClassPath(ejbJarFile), ejbJarFile);
+    }
+
+    public static ClassPath getSourceClassPath(FileObject ejbJarFile) {
+        EjbJarProject enterpriseProject = (EjbJarProject) FileOwnerQuery.getOwner(ejbJarFile);
+        return enterpriseProject.getEjbModule().getJavaSources();
+    }
+
+    public static MethodElement getBusinessMethod(ClassElement interfaceElement, MethodElement method) {
+        if (interfaceElement == null || method == null) {
+            return null;
+        } else {
+            MethodParameter[] parameters = method.getParameters();
+            Type[] paramTypes = new Type[parameters.length];
+            for (int i = 0; i < parameters.length; i++) {
+                paramTypes[i] = parameters[i].getType();
+            }
+            return interfaceElement.getMethod(method.getName(), paramTypes);
+        }
+    }
+
+    public static MethodElement getSetterMethod(ClassElement beanClass, String fieldName, MethodElement getterMethod) {
+        return getterMethod == null? null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
+    }
+
+    public static MethodElement getGetterMethod(ClassElement beanClass, String fieldName) {
+        return EntityMethodController.getGetterMethod(beanClass, fieldName);
+    }
+
+    protected static ClassElement getBusinessInterface(String compInterfaceName, FileObject ejbJarFile,
+            ClassElement beanClass) {
+        ClassElement compInterface = getClassElement(ejbJarFile, compInterfaceName);
+        if (compInterface == null) {
+            return null;
+        }
+        // get method interfaces
+        java.util.List compInterfaces = new LinkedList(Arrays.asList(compInterface.getInterfaces()));
+
+        // look for common candidates
+        compInterfaces.retainAll(Arrays.asList(beanClass.getInterfaces()));
+
+        if (compInterfaces.isEmpty()) {
+            return compInterface;
+        }
+
+        ClassElement business = getClassElement(ejbJarFile, compInterfaces.get(0).toString());
+        return business == null ? compInterface : business;
+    }
+
+    public static ClassElement getClassElement(FileObject ejbJarFile, String className) {
+        if (className == null) {
+            return null;
+        }
+        FileObject src = getSourceFile(ejbJarFile, className);
+        ClassElement classElement = ClassElement.forName(className, src);
+        return classElement;
     }
 }

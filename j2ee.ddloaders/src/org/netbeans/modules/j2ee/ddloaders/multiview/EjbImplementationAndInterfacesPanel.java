@@ -13,7 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
+import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataObject;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.DialogDisplayer;
@@ -22,9 +24,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.src.ClassElement;
 
 import javax.swing.*;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 
@@ -33,6 +39,33 @@ import java.awt.event.FocusListener;
  */
 public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInterfacesForm {
     private EntityAndSession ejb;
+    private NonEditableDocument beanClassDocument = new NonEditableDocument() {
+        protected String retrieveText() {
+            return ejb == null ? null : ejb.getEjbClass();
+        }
+    };
+    private NonEditableDocument localComponentDocument = new NonEditableDocument() {
+        protected String retrieveText() {
+            return ejb == null ? null : ejb.getLocal();
+        }
+    };
+    private NonEditableDocument localHomeDocument = new NonEditableDocument() {
+        protected String retrieveText() {
+            return ejb == null ? null : ejb.getLocalHome();
+        }
+    };
+    private NonEditableDocument remoteComponentDocument = new NonEditableDocument() {
+        protected String retrieveText() {
+            return ejb == null ? null : ejb.getRemote();
+        }
+    };
+    private NonEditableDocument remoteHomeDocument = new NonEditableDocument() {
+        protected String retrieveText() {
+            return ejb == null ? null : ejb.getHome();
+        }
+    };
+
+    private String className = null;
 
     /**
      * Creates new form BeanForm
@@ -40,39 +73,31 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     public EjbImplementationAndInterfacesPanel(final SectionNodeView sectionNodeView, final EntityAndSession ejb) {
         super(sectionNodeView);
         this.ejb = ejb;
-        final JTextField beanClassTextField = getBeanClassTextField();
-        final JTextField localComponentTextField = getLocalComponentTextField();
-        final JTextField localHomeTextField = getLocalHomeTextField();
-        final JTextField remoteComponentTextField = getRemoteComponentTextField();
-        final JTextField remoteHomeTextField = getRemoteHomeTextField();
+        getBeanClassTextField().setDocument(beanClassDocument);
+        getLocalComponentTextField().setDocument(localComponentDocument);
+        getLocalHomeTextField().setDocument(localHomeDocument);
+        getRemoteComponentTextField().setDocument(remoteComponentDocument);
+        getRemoteHomeTextField().setDocument(remoteHomeDocument);
         final JButton moveClassButton = getMoveClassButton();
         final JButton renameClassButton = getRenameClassButton();
-        beanClassTextField.setEditable(false);
-        localComponentTextField.setEditable(false);
-        localHomeTextField.setEditable(false);
-        remoteComponentTextField.setEditable(false);
-        remoteHomeTextField.setEditable(false);
 
         populateFields();
 
-        FocusListener focusListener = new FocusListener() {
+        FocusListener focusListener = new FocusAdapter() {
             public void focusGained(FocusEvent e) {
                 Component component = e.getComponent();
                 if (component instanceof JTextField) {
-                    JTextField textField = ((JTextField) component);
-                    textField.setSelectionStart(0);
-                    textField.setSelectionEnd(textField.getText().length());
+                    className = ((JTextField) component).getText();
                     moveClassButton.setEnabled(true);
                     renameClassButton.setEnabled(true);
                 } else {
-                    moveClassButton.setEnabled(false);
-                    renameClassButton.setEnabled(false);
-                }
-            }
-
-            public void focusLost(FocusEvent e) {
-                Component component = e.getComponent();
-                if (component instanceof JTextField) {
+                    boolean isRefactorButton = component == moveClassButton || component == renameClassButton;
+                    if (moveClassButton.isEnabled()) {
+                        moveClassButton.setEnabled(isRefactorButton);
+                    }
+                    if (renameClassButton.isEnabled()) {
+                        renameClassButton.setEnabled(isRefactorButton);
+                    }
                 }
             }
         };
@@ -83,12 +108,14 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         renameClassButton.setVisible(false);
         moveClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
+                EjbJarMultiViewDataObject ejbJarDataObject = (EjbJarMultiViewDataObject) ((SectionNodeView) getSectionView()).getDataObject();
+                SourceGroup[] sourceGroups = ejbJarDataObject.getSourceGroups();
+                Utils.activateMoveClassUI(className, sourceGroups[0]);
             }
         });
         renameClassButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //To change body of implemented methods use File | Settings | File Templates.
+                Utils.activateRenameClassUI(className);
             }
         });
 
@@ -124,8 +151,11 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             EntityAndSession ejb = this.ejb;
             SectionNodeView sectionNodeView = (SectionNodeView) getSectionView();
             FileObject ejbJarFile = sectionNodeView.getDataObject().getPrimaryFile();
-            Utils.addInterfaces(ejbJarFile, ejb, local);
-            populateFields();
+            try {
+                Utils.addInterfaces(ejbJarFile, ejb, local);
+            } finally {
+                populateFields();
+            }
         }
     }
 
@@ -142,19 +172,22 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
             SectionNodeView sectionNodeView = (SectionNodeView) getSectionView();
             FileObject ejbJarFile = sectionNodeView.getDataObject().getPrimaryFile();
             ClassElement beanClass = Utils.getBeanClass(ejbJarFile, ejb);
-            Utils.removeInterface(beanClass, componentInterface);
-            Utils.removeClassFile(ejbJarFile, componentInterface);
-            Utils.removeInterface(beanClass, homeInterface);
-            Utils.removeClassFile(ejbJarFile, homeInterface);
-            if (local) {
-                ejb.setLocal(null);
-                ejb.setLocalHome(null);
-            } else {
-                ejb.setRemote(null);
-                ejb.setHome(null);
+            try {
+                Utils.removeInterface(beanClass, componentInterface);
+                Utils.removeClassFile(ejbJarFile, componentInterface);
+                Utils.removeInterface(beanClass, homeInterface);
+                Utils.removeClassFile(ejbJarFile, homeInterface);
+                if (local) {
+                    ejb.setLocal(null);
+                    ejb.setLocalHome(null);
+                } else {
+                    ejb.setRemote(null);
+                    ejb.setHome(null);
+                }
+            } finally {
+                populateFields();
             }
         }
-        populateFields();
     }
 
     public void dataFileChanged() {
@@ -162,12 +195,16 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
     }
 
     public void populateFields() {
-        getBeanClassTextField().setText(ejb.getEjbClass());
+        //getBeanClassTextField().setText(ejb.getEjbClass());
+        beanClassDocument.init();
+        localComponentDocument.init();
+        localHomeDocument.init();
+        remoteComponentDocument.init();
+        remoteHomeDocument.init();
 
         String localComponent = ejb.getLocal();
         boolean isLocal = localComponent != null;
         getLocalInterfaceCheckBox().setSelected(isLocal);
-        getLocalComponentTextField().setText(isLocal ? localComponent : null);
         getLocalHomeTextField().setText(isLocal ? ejb.getLocalHome() : null);
 
         String remoteComponent = ejb.getRemote();
@@ -175,6 +212,41 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         getRemoteInterfaceCheckBox().setSelected(isRemote);
         getRemoteComponentTextField().setText(isRemote ? remoteComponent : null);
         getRemoteHomeTextField().setText(isRemote ? ejb.getHome() : null);
+    }
+
+    private abstract class NonEditableDocument extends PlainDocument {
+
+        String text = null;
+
+        protected abstract String retrieveText();
+
+        protected NonEditableDocument() {
+            init();
+        }
+
+        public void init() {
+            String s = retrieveText();
+            if (s == null) {
+                s = "";
+            }
+            if (!s.equals(text)) {
+                text = s;
+                try {
+                    super.remove(0, super.getLength());
+                    super.insertString(0, s, null);
+                } catch (BadLocationException e) {
+
+                }
+            }
+        }
+
+        public void insertString(int offset, String str, AttributeSet a) throws BadLocationException {
+
+        }
+
+        public void remove(int offs, int len) throws BadLocationException {
+
+        }
     }
 
 }

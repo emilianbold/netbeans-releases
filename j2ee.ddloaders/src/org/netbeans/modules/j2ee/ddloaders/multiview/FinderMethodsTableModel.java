@@ -15,7 +15,7 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityHelper;
+import org.netbeans.modules.j2ee.ddloaders.multiview.EntityHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,5 +59,13 @@ class FinderMethodsTableModel extends QueryMethodsTableModel {
                 return query.getDefaultDescription();
         }
         return null;
+    }
+
+    public Class getColumnClass(int columnIndex) {
+        return columnIndex == 1 ? Boolean.class : String.class;
+    }
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return super.isCellEditable(rowIndex, columnIndex);
     }
 }

@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellEditor;
 
 /**
  * @author pfiala
@@ -33,6 +34,10 @@ public abstract class InnerTableModel extends AbstractTableModel {
 
     public String getColumnName(int column) {
         return columnNames[column];
+    }
+
+    public TableCellEditor getCellEditor(int columnIndex) {
+        return null;
     }
 
     public int getColumnCount() {

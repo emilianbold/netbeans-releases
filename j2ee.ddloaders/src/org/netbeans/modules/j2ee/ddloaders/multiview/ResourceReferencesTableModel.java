@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 
 /**
  * @author pfiala

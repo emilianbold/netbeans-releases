@@ -40,7 +40,7 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                         <specification-version>4.20</specification-version>
                     </run-dependency>
-                </dependency>                
+                </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.libs.xerces</code-name-base>
                     <build-prerequisite/>
@@ -148,12 +148,61 @@ Microsystems, Inc. All Rights Reserved.
                         <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-	        <dependency>
-		    <code-name-base>org.openide.src</code-name-base>
+                <dependency>
+                    <code-name-base>org.openide.src</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
-		</dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.jmi.javamodel</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.javacore</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.refactoring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>javax.jmi.reflect</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.java</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2eeserver</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>1.5</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
 <public-packages>
 

@@ -18,17 +18,13 @@ import org.netbeans.modules.xml.multiview.ui.PanelView;
 /**
  * @author pfiala
  */
-public class EjbMultiViewElement extends EjbJarMultiviewElement {
+public class CmpRelationshipsMultiViewElement extends EjbJarMultiviewElement {
 
-    /**
-     * Creates a new instance of DDMultiViewElement
-     */
-    public EjbMultiViewElement(EjbJarMultiViewDataObject dataObject) {
+    public CmpRelationshipsMultiViewElement(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);
     }
 
     protected PanelView createView() {
-        return new EjbJarView(dataObject);
+        return new CmpRelationshipsView(dataObject);
     }
-
 }

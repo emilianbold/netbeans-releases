@@ -112,11 +112,6 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model) {
-        this(sectionNodeView, model, null);
-    }
-
-    public InnerTablePanel(SectionNodeView sectionNodeView, final AbstractTableModel model,
-            TableCellEditor tableCellEditor) {
         super(sectionNodeView);
         this.dataObject = (XmlMultiViewDataObject) sectionNodeView.getDataObject();
         tablePanel = new TablePanel(model);
@@ -131,9 +126,6 @@ public class InnerTablePanel extends SectionInnerPanel {
             }
         });
         table = tablePanel.getTable();
-        if (tableCellEditor != null) {
-            table.setCellEditor(tableCellEditor);
-        }
         model.addTableModelListener(new TableModelListener() {
             public void tableChanged(final TableModelEvent e) {
                 int type = e.getType();
@@ -154,7 +146,19 @@ public class InnerTablePanel extends SectionInnerPanel {
         add(tablePanel, BorderLayout.WEST);
         setColumnWidths();
         if (model instanceof InnerTableModel) {
-            setButtonListeners((InnerTableModel) model);
+            InnerTableModel innerTableModel = (InnerTableModel) model;
+            setButtonListeners(innerTableModel);
+            setColumnEditors(innerTableModel);
+        }
+    }
+
+    private void setColumnEditors(InnerTableModel model) {
+        TableColumnModel columnModel = table.getColumnModel();
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            TableCellEditor cellEditor = model.getCellEditor(i);
+            if (cellEditor != null) {
+                columnModel.getColumn(i).setCellEditor(cellEditor);
+            }
         }
     }
 
@@ -203,15 +207,17 @@ public class InnerTablePanel extends SectionInnerPanel {
     }
 
     protected void editCell(final int row, final int column) {
-        selectCell(row, column);
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                final JTable table = getTable();
-                table.editCellAt(row, column);
-                Component editorComponent = table.getEditorComponent();
-                editorComponent.requestFocus();
-            }
-        });
+        if (table.isCellEditable(row, column)) {
+            selectCell(row, column);
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    final JTable table = getTable();
+                    table.editCellAt(row, column);
+                    Component editorComponent = table.getEditorComponent();
+                    editorComponent.requestFocus();
+                }
+            });
+        }
     }
 
     private void selectCell(final int row, final int column) {

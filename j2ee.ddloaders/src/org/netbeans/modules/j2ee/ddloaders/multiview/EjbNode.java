@@ -41,8 +41,8 @@ class EjbNode extends SectionNode {
             if (Entity.PERSISTENCE_TYPE_CONTAINER.equals(entity.getPersistenceType())) {
                 addChild(new CmpFieldsNode(sectionNodeView, entity));
                 // TODO: uncomment following statement after implementation completion
-                //addChild(new FinderMethodsNode(sectionNodeView, entity));
-                //addChild(new SelectMethodsNode(sectionNodeView, entity));
+                addChild(new FinderMethodsNode(sectionNodeView, entity));
+                addChild(new SelectMethodsNode(sectionNodeView, entity));
             }
             addChild(new BeanDetailNode(sectionNodeView, entity));
         } else if (ejb instanceof MessageDriven) {

@@ -97,17 +97,18 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     private static final int LOCAL_HOME = 30;
     private static final int LOCAL = 40;
     private static final String OVERVIEW = Utils.getBundleMessage("LBL_Overview");
+    private static final String CMP_RELATIONSHIPS = Utils.getBundleMessage("LBL_CmpRelationships");
 
     public EjbJarMultiViewDataObject(FileObject pf, EjbJarDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
-        init(pf);
+        init();
     }
 
     public boolean isRenameAllowed() {
         return false;
     }
 
-    private void init(FileObject fo) {
+    private void init() {
         // added ValidateXMLCookie
         InputSource in = DataObjectAdapters.inputSource(this);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
@@ -777,6 +778,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         return new DesignMultiViewDesc[]{
             new DDView(this, OVERVIEW),
+            new DDView(this, CMP_RELATIONSHIPS),
         };
     }
 
@@ -809,6 +811,8 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             EjbJarMultiViewDataObject dataObject = (EjbJarMultiViewDataObject) getDataObject();
             if (name.equals(OVERVIEW)) {
                 return new EjbMultiViewElement(dataObject);
+            } else if (name.equals(CMP_RELATIONSHIPS)) {
+                return new CmpRelationshipsMultiViewElement(dataObject);
             } else {
                 // This case should not arise
                 return null;

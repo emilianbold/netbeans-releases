@@ -15,8 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.CmpFieldHelper;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityHelper;
 import org.openide.filesystems.FileObject;
 
 import java.util.HashMap;

@@ -13,8 +13,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.dd.api.common.SecurityRoleRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 
 /**
  * @author pfiala

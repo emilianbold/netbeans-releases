@@ -15,8 +15,12 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.entity.EntityHelper;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.action.FieldCustomizer;
+import org.netbeans.modules.j2ee.ddloaders.multiview.EntityHelper;
 import org.openide.filesystems.FileObject;
+
+import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 
 /**
  * @author pfiala
@@ -27,6 +31,8 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
                                                     Utils.getBundleMessage("LBL_Query"),
                                                     Utils.getBundleMessage("LBL_Description")};
     protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 200, 100};
+    private JComboBox returnMethodComboBox = new JComboBox(FieldCustomizer.COMMON_TYPES);
+    private TableCellEditor returnMethodEditor = new DefaultCellEditor(returnMethodComboBox);
 
     public SelectMethodsTableModel(FileObject ejbJarFile, Entity entity) {
         super(COLUMN_NAMES, COLUMN_WIDTHS, ejbJarFile, entity);
@@ -56,5 +62,13 @@ class SelectMethodsTableModel extends QueryMethodsTableModel {
                 return query.getDefaultDescription();
         }
         return null;
+    }
+
+    public TableCellEditor getCellEditor(int columnIndex) {
+        return columnIndex == 1 ? returnMethodEditor : super.getCellEditor(columnIndex);
+    }
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return super.isCellEditable(rowIndex, columnIndex);
     }
 }

@@ -13,22 +13,21 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.xml.multiview.ui.PanelView;
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 
 /**
  * @author pfiala
  */
-public class EjbMultiViewElement extends EjbJarMultiviewElement {
+class CmpRelationshipsView extends SectionNodeView {
 
-    /**
-     * Creates a new instance of DDMultiViewElement
-     */
-    public EjbMultiViewElement(EjbJarMultiViewDataObject dataObject) {
+    CmpRelationshipsView(EjbJarMultiViewDataObject dataObject) {
         super(dataObject);
+        SectionNode rootNode = new SectionNode(this, this, Utils.getBundleMessage("LBL_CmpRelationships"),
+                Utils.ICON_BASE_DD_VALID);
+        EjbJar ejbJar = dataObject.getEjbJar();
+        rootNode.addChild(new CmpRelationShipsNode(this, ejbJar));
+        setRootNode(rootNode);
     }
-
-    protected PanelView createView() {
-        return new EjbJarView(dataObject);
-    }
-
 }

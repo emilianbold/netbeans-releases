@@ -13,9 +13,9 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
+import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.openide.util.NbBundle;
 
 /**
