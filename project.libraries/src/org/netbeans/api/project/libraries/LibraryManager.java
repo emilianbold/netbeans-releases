@@ -43,7 +43,7 @@ public final class LibraryManager {
     private Collection currentStorages = new ArrayList ();
     private PropertyChangeListener plistener;
     private PropertyChangeSupport listeners;
-    private Library[] cache;
+    private Collection cache;
 
 
     private LibraryManager () {
@@ -96,20 +96,20 @@ public final class LibraryManager {
             for (Iterator it = instances.iterator(); it.hasNext();) {
                 LibraryProvider storage = (LibraryProvider) it.next ();
                 this.currentStorages.add (storage);
-                l.addAll(Arrays.asList(storage.getLibraries()));
+                LibraryImplementation[] impls = storage.getLibraries();
+                for (int i=0; i<impls.length; i++) {                    
+                    l.add(new Library (impls[i]));
+                }                
             }
             for (Iterator it = removed.iterator(); it.hasNext();) {
                 ((LibraryProvider)it.next()).removePropertyChangeListener(this.plistener);
             }
             for (Iterator it = added.iterator(); it.hasNext();) {
                 ((LibraryProvider)it.next()).addPropertyChangeListener(this.plistener);
-            }
-            this.cache = new Library[l.size()];
-            for (int i = 0; i < l.size(); i++) {
-                this.cache[i] = new Library((LibraryImplementation)l.get(i));
-            }
+            }            
+            this.cache = l;
         }
-        return this.cache;
+        return (Library[]) this.cache.toArray(new Library[this.cache.size()]);
     }
 
     /**
