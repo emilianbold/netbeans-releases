@@ -287,6 +287,16 @@ Microsystems, Inc. All Rights Reserved.
       <module name="openide" testtypes="unit" attributes="stable"/>
       <module name="openide/compat" testtypes="unit" attributes="stable"/>
       <!-- qa's functional tests -->
+      <module name="qa"       	testtypes="qa-functional"  attributes="validation"/>
+  </config>
+  
+  <config name="re-validation-original">
+      <!-- developer's unit tests -->
+      <module name="core" testtypes="unit" attributes="stable"/>
+      <module name="java" testtypes="unit" attributes="stable"/>
+      <module name="openide" testtypes="unit" attributes="stable"/>
+      <module name="openide/compat" testtypes="unit" attributes="stable"/>
+      <!-- qa's functional tests -->
       <module name="ant"    	testtypes="qa-functional"  attributes="validation"/>
       <module name="beans"  	testtypes="qa-func"        attributes="validation"/>
       <module name="clazz"  	testtypes="qa-functional"  attributes="validation"/>
@@ -311,7 +321,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="xml/tools"		testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tax/lib"	testtypes="qa-functional"  attributes="validation"/>
       <module name="xml/tree-edit"	testtypes="qa-functional"  attributes="validation"/>
-  </config>
+  </config>  
   
   <!-- validation suite for all XML modules -->
   <config name="all-xml">
