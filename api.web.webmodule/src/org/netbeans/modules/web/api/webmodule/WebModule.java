@@ -38,6 +38,9 @@ import org.openide.util.Lookup;
  */
 public final class WebModule {
     
+    public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
+    public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
+    
     private WebModuleImplementation impl;
     private static final Lookup.Result implementations =
         Lookup.getDefault().lookup(new Lookup.Template(WebModuleProvider.class));
@@ -94,5 +97,9 @@ public final class WebModule {
     
     public void setContextPath (String path) {
         impl.setContextPath (path);
+    }
+    
+    public String getJ2eePlatformVersion () {
+        return impl.getJ2eePlatformVersion ();
     }
 }

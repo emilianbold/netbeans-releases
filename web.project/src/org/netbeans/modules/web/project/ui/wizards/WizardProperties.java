@@ -22,7 +22,5 @@ public class WizardProperties {
     
     public static final String SET_AS_MAIN = "setAsMain"; //NOI18N
     public static final String J2EE_LEVEL = "j2eeLevel"; //NOI18N
-    public static final String J2EE_13_LEVEL = "1.3"; //NOI18N
-    public static final String J2EE_14_LEVEL = "1.4"; //NOI18N
     public static final String CONTEXT_PATH = "contextPath"; //NOI18N
 }

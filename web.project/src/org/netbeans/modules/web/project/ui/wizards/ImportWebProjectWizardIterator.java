@@ -37,6 +37,7 @@ import org.openide.loaders.TemplateWizard;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 import org.netbeans.modules.web.project.WebProjectGenerator;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -84,7 +85,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         if (new File (dirF, GeneratedFilesHelper.BUILD_XML_PATH).exists ()) {
             buildfile = "nbbuild.xml";
         }
-        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WizardProperties.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
+        WebProjectGenerator.importProject (dirF, codename, displayName, wmFO, javaRoot, docBase, libFolder, WebModule.J2EE_14_LEVEL, buildfile); //PENDING detect spec level
         FileObject dir = FileUtil.toFileObject (dirF);
         Project p = ProjectManager.getDefault().findProject(dir);
         // Returning set of DataObject of project diretory. 

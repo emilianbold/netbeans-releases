@@ -29,6 +29,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.xml.sax.SAXException;
@@ -206,6 +207,10 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return new String[] {};
     }
 
+    public String getJ2eePlatformVersion () {
+        return helper.getStandardPropertyEvaluator ().getProperty (WebProjectProperties.J2EE_PLATFORM);
+    }
+    
 //    private Set versionListeners() {
 //        if (versionListeners == null) {
 //            versionListeners = new HashSet();

@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
@@ -142,9 +143,9 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         str.append(j2eeSpecComboBox.getSelectedIndex());
         j2eeSpecDescTextPane.setText(NbBundle.getBundle("org/netbeans/modules/web/project/ui/wizards/Bundle").getString(str.toString())); //NOI18N
         switch (j2eeSpecComboBox.getSelectedIndex()) {
-            case 0: j2eeLevel = WizardProperties.J2EE_14_LEVEL;
+            case 0: j2eeLevel = WebModule.J2EE_14_LEVEL;
                     break;
-            case 1: j2eeLevel = WizardProperties.J2EE_13_LEVEL;
+            case 1: j2eeLevel = WebModule.J2EE_13_LEVEL;
         }            
     }//GEN-LAST:event_j2eeSpecComboBoxActionPerformed
     

@@ -29,4 +29,6 @@ public interface WebModuleImplementation {
     public String getContextPath ();
     
     public void setContextPath (String path);
+    
+    public String getJ2eePlatformVersion ();
 }
