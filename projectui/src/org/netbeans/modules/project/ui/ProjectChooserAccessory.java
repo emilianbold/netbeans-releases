@@ -416,6 +416,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         }
                 
         public Icon getIcon(File _f) {
+            if (!_f.exists()) {
+                // Can happen when a file was deleted on disk while project
+                // dialog was still open. In that case, throws an exception
+                // repeatedly from FSV.gSI during repaint.
+                return null;
+            }
             File f = FileUtil.normalizeFile(_f);
             Icon original = fsv.getSystemIcon(f);
             if (original == null) {
