@@ -132,11 +132,11 @@ final class XMLUtil extends Object {
         }        
     }
     
-    static void write(Document doc, Writer out) throws IOException {
+    static void write(Document doc, OutputStream out) throws IOException {
         write( doc, out, "UTF-8" );
     }
         
-    private static void write(Document doc, Object out, String encoding) throws IOException {
+    private static void write(Document doc, OutputStream out, String encoding) throws IOException {
         
         Class dock = doc.getClass();
                         
@@ -173,37 +173,11 @@ final class XMLUtil extends Object {
                 setmet = forka.getMethod("setLineWidth", new Class[] {Integer.TYPE}); //NOI18N                
                 setmet.invoke(forin, new Object[] {new Integer(0)});                  //NOI18N                
                 
-                String detectedEncoding = null;
-                Method init;
-                
-                if (out instanceof OutputStream) {
-                    init = serka.getMethod("setOutputByteStream", new Class[] {OutputStream.class});  //NOI18N
-                    init.invoke(serin, new Object[] {out});                                            
+                Method init = serka.getMethod("setOutputByteStream", new Class[] {OutputStream.class});  //NOI18N
+                init.invoke(serin, new Object[] {out});                                            
                     
-                    // set encoding in output format                                        
-                    detectedEncoding = encoding;
-                    
-                    
-                } else if (out instanceof Writer) {
-                    init = serka.getMethod("setOutputCharStream", new Class[] {Writer.class});  //NOI18N
-                    init.invoke(serin, new Object[] {out});                                                        
-                    
-                    //detect (same as Crimson did) and set encoding
-                    if (out instanceof OutputStreamWriter) {
-                        detectedEncoding = ((OutputStreamWriter)out).getEncoding();  
-                        // no general way how to transorm XML encoding names to Java names
-                        // and vice versa
-//                        detectedEncoding = null;
-                    } else {
-                        detectedEncoding = null;
-                    }
-                    
-                } else {
-                   throw new ClassCastException("OutputStream or Writer expected.");  //NOI18N
-                }
-
                 Method setenc = forka.getMethod("setEncoding", new Class[] {String.class});  //NOI18N              
-                setenc.invoke(forin, new Object[] {detectedEncoding} );                
+                setenc.invoke(forin, new Object[] {encoding} );                
                 
                 Method setout = serka.getMethod("setOutputFormat", new Class[] {forka});     //NOI18N
                 setout.invoke(serin, new Object[] {forin});                
@@ -242,7 +216,9 @@ final class XMLUtil extends Object {
             throw (RuntimeException) t;
         } else if (t instanceof Error) {
             throw (Error) t;
-        } 
+        } else {
+            throw new Error(ex.toString());
+        }
     }
     
     private static void handleImplementationException(Exception ex) throws IOException {

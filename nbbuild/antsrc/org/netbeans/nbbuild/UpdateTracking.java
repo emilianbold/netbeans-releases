@@ -13,18 +13,13 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.io.IOException;
-import java.io.FileFilter;
+import java.io.*;
 import java.util.*;
 
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
+
+import org.apache.tools.ant.BuildException;
 
 /** This class represents module updates tracking
  *
@@ -129,13 +124,13 @@ class UpdateTracking {
         }
         trackingFile = new File(directory, trackingFileName);
         try {
-	    OutputStreamWriter os = new OutputStreamWriter( new FileOutputStream( trackingFile ), "UTF-8" );
-	    //Writer os = new FileWriter( trackingFile );
+	    OutputStream os = new FileOutputStream(trackingFile);
             XMLUtil.write(document, os);
-            //document.write (os);
             os.close();
         } catch (Exception e) {
             e.printStackTrace();
+            trackingFile.delete();
+            throw new BuildException("Could not write update tracking file", e);
         }        
     }
 
