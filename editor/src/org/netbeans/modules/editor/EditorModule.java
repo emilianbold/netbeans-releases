@@ -47,7 +47,7 @@ import org.openide.text.PrintSettings;
 *
 * @author Miloslav Metelka
 */
-public class EditorModule extends ModuleInstall {
+public class EditorModule extends ModuleInstall implements Runnable {
 
     /** Kit replacements that will be installed into JEditorPane */
     KitInfo[] replacements = new KitInfo[] {
@@ -67,7 +67,6 @@ public class EditorModule extends ModuleInstall {
 
     /** Module installed again. */
     public void restored () {
-
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
 
@@ -76,6 +75,9 @@ public class EditorModule extends ModuleInstall {
 
         // Settings
         NbEditorSettingsInitializer.init();
+
+	// defer the rest of initialization, but enable a bit of paralelism
+        org.openide.util.RequestProcessor.postRequest (this, 0, Thread.MIN_PRIORITY);
 
         // Options
         AllOptions ao = (AllOptions) SharedClassObject.findObject(AllOptions.class, true);
@@ -88,13 +90,7 @@ public class EditorModule extends ModuleInstall {
             ao.addOption((SystemOption)SharedClassObject.findObject(replacements[i].optionsClass, true));
             ps.addOption((SystemOption)SharedClassObject.findObject(replacements[i].printOptionsClass, true));
         }
-        
-        // Java completion storage init
-        FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
-        JCStorage.init(rfs.getRoot());
 
-        // Preloading of some classes for faster editor opening
-        BaseKit.getKit(JavaKit.class).createDefaultDocument();
 
         // Registration of the editor kits to JEditorPane
         for (int i = 0; i < replacements.length; i++) {
@@ -107,6 +103,15 @@ public class EditorModule extends ModuleInstall {
 
         org.netbeans.modules.editor.options.ProjectHack.restored();
 
+    }
+
+    public void run () {
+        // Java completion storage init
+        FileSystem rfs = TopManager.getDefault().getRepository().getDefaultFileSystem();
+        JCStorage.init(rfs.getRoot());
+
+        // Preloading of some classes for faster editor opening
+        BaseKit.getKit(JavaKit.class).createDefaultDocument();
     }
 
     public void uninstalled() {
