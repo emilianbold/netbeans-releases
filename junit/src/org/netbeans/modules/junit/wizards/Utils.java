@@ -345,6 +345,10 @@ public final class Utils {
 
         assert isGroup1 || (target1 instanceof FileObject);
         assert isGroup2 || (target2 instanceof FileObject);
+        
+        if (isGroup1 && isGroup2 && target1.equals(target2)) {
+            return target1;
+        }
 
         final FileObject folder1 = isGroup1
                                    ? ((SourceGroup) target1).getRootFolder()
