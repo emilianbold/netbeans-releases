@@ -66,7 +66,7 @@ public class LocalePanel extends JPanel {
         new Locale("ar", "SY", ""), // NOI18N // Arabic Syria 
         new Locale("ar", "TN", ""), // NOI18N // Arabic Tunisia 
         new Locale("ar", "YE", ""), // NOI18N // Arabic Yemen 
-        new Locale("be", "BY", ""), // NOI18N // Byelorussian Byelorussia 
+        new Locale("be", "BY", ""), // NOI18N // Byelorussian Belarus 
         new Locale("bg", "BG", ""), // NOI18N // Bulgarian Bulgaria 
         new Locale("ca", "ES", ""), // NOI18N // Catalan Spain 
         new Locale("cs", "CZ", ""), // NOI18N // Czech Czech Republic 
@@ -126,7 +126,7 @@ public class LocalePanel extends JPanel {
         new Locale("it", "IT", "EURO"), // NOI18N // Italian Italy 
         new Locale("iw", "IL", ""), // NOI18N // Hebrew Israel 
         new Locale("ja", "JP", ""), // NOI18N // Japanese Japan 
-        new Locale("ko", "KR", ""), // NOI18N // Korean Korea 
+        new Locale("ko", "KR", ""), // NOI18N // Korean South Korea 
         new Locale("lt", "LT", ""), // NOI18N // Lithuanian Lithuania 
         new Locale("lv", "LV", ""), // NOI18N // Latvian Latvia 
         new Locale("mk", "MK", ""), // NOI18N // Macedonian Macedonia 
@@ -144,7 +144,7 @@ public class LocalePanel extends JPanel {
         new Locale("ru", "RU", ""), // NOI18N // Russian Russia 
         new Locale("sh", "YU", ""), // NOI18N // Serbo-Croatian Yugoslavia 
         new Locale("sk", "SK", ""), // NOI18N // Slovakian Slovakia 
-        new Locale("sl", "SL", ""), // NOI18N // Slovenian Slovenia 
+        new Locale("sl", "SI", ""), // NOI18N // Slovenian Slovenia 
         new Locale("sq", "AL", ""), // NOI18N // Albanian Albania 
         new Locale("sr", "YU", ""), // NOI18N // Serbian (Cyrillic) Yugoslavia 
         new Locale("sv", "SE", ""), // NOI18N // Swedish Sweden 
