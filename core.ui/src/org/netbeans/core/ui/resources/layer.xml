@@ -533,9 +533,9 @@ SystemFileSystem
         </file>
     </folder>
 	
-	<folder name="Workplace">
+    <!-- folder name="Workplace" -->
          <!-- Workplace of the IDE -->
-    </folder>    
+    <!-- /folder -->    
 
 
     

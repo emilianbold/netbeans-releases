@@ -65,6 +65,11 @@ SystemFileSystem
         </folder>
     </folder>
     
+    <folder name="Workplace">
+         <!-- Workplace of the IDE -->
+    </folder>    
+
+
     <!-- unmounts all global filesystems -->
     <folder name="Mount">
         <file name="AllRoots.instance_hidden" />
