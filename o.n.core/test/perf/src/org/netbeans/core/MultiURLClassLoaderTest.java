@@ -27,12 +27,16 @@ import org.openide.filesystems.multifs.MultiXMLFSTest.FileWrapper;
 import org.openide.filesystems.ReadOnlyFSTest;
 import org.openide.loaders.Utilities;
 
+import org.netbeans.core.modules.ProxyClassLoader;
+
 import org.netbeans.performance.MapArgBenchmark;
 import org.netbeans.performance.DataManager;
 import org.netbeans.performance.DataDescriptor;
 
 /**
- * Performance test for MultiURLClassLoader.
+ * Performance test for <code>ProxyClassLoader</code>
+ * <em>Note:</em> originally it was created for <code>MultiURLClassLoader</code>
+ * therefore the name, now just changed for ProxyClassLoader.
  */
 public class MultiURLClassLoaderTest extends MapArgBenchmark implements DataManager {
     
@@ -91,7 +95,8 @@ public class MultiURLClassLoaderTest extends MapArgBenchmark implements DataMana
             parents[i] = new URLClassLoader(new URL[] { wrappers[i].getMnt().toURL() });
         }
         
-        MultiURLClassLoader multicloader = new MultiURLClassLoader(new URL[] {}, parents);
+//        MultiURLClassLoader multicloader = new MultiURLClassLoader(new URL[] {}, parents);
+        ClassLoader multicloader = new ProxyClassLoader(parents);
         
         instanceObjects = fileObjects2InstanceDataObjects(fileObjects);
         setClassLoader(instanceObjects, multicloader);
