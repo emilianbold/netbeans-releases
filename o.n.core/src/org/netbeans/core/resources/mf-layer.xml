@@ -62,8 +62,7 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
         <folder name="System">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-netbeans-core-actions-AddFSAction.instance"/>
-            <file name="org-netbeans-core-actions-AddJarAction.instance"/>
+            <file name="org-netbeans-core-actions-MountAction.instance"/>
             <file name="org-netbeans-core-actions-ConfigureShortcutsAction.instance"/>
             <file name="org-openide-actions-CustomizeBeanAction.instance"/>
             <file name="org-openide-actions-EditAction.instance"/>
