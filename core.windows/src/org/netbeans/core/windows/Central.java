@@ -1432,6 +1432,11 @@ final class Central implements ControllerHandler {
         ModeImpl mode = wm.getDefaultEditorMode();
         if(mode != null && !mode.getOpenedTopComponents().isEmpty()) {
             setActiveMode(mode);
+        } else {
+            // when someone calls this as a matter of activating editor mode as a fallback, but none is opened,
+            // do unactivate the current selection.
+            // #44389
+            setActiveMode(null);
         }
     }
     
