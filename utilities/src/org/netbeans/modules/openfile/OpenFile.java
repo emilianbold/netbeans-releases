@@ -19,7 +19,7 @@ import java.net.*;
 import java.util.*;
 
 import com.netbeans.ide.*;
-import com.netbeans.ide.cookies.OpenCookie;
+import com.netbeans.ide.cookies.*;
 import com.netbeans.ide.filesystems.*;
 import com.netbeans.ide.filesystems.FileSystem;
 import com.netbeans.ide.loaders.*;
@@ -136,22 +136,26 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           }
         }
         // Try to open the requested file:
-        String fileName = new String (p.getData (), p.getOffset (), p.getLength ());
-        TopManager.getDefault ().setStatusText ("Opening " + fileName);
+        String fileName = new String (p.getData (), p.getOffset () + 1, p.getLength () - 1);
+        boolean wait = (p.getData ()[p.getOffset ()] == (byte) 'Y');
+        TopManager.getDefault ().setStatusText ("Opening " + fileName + (wait ? " (and waiting)" : ""));
         
         byte res;
+        boolean replyAnyway = true;
         try {
-          open (new File (fileName));
-          res = 0;
+          replyAnyway = open (new File (fileName), wait, p.getAddress (), p.getPort ());
+          res = (byte) (replyAnyway ? 1 : 0);
         } catch (IOException ex) {
           TopManager.getDefault ().notifyException (ex);
           res = 1;
         }
         
-        // send reply
-        p.getData ()[0] = res;
-        p.setLength (1);
-        s.send (p);
+        // send reply (unless we are waiting for file to be saved)
+        if (!wait || replyAnyway || res != 0) {
+          p.getData ()[0] = res;
+          p.setLength (1);
+          s.send (p);
+        }
       }
     } finally {
       if (pcl != null) Settings.DEFAULT.removePropertyChangeListener (pcl);
@@ -169,7 +173,29 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
   private static FileObject find (File f) {
     String fileName = f.toString ();
     String fileNameUpper = fileName.toUpperCase ();
-    // First see if it is present in an existing LocalFileSystem.
+    // Handle ZIP/JAR files by mounting and displaying.
+    if (fileName.endsWith (".zip") || fileName.endsWith (".jar") ||
+        fileName.endsWith (".ZIP") || fileName.endsWith (".JAR")) {
+      JarFileSystem jfs = new JarFileSystem ();
+      try {
+        jfs.setJarFile (f);
+      } catch (IOException e5) {
+        TopManager.getDefault ().notifyException (e5);
+        return null;
+      } catch (PropertyVetoException e6) {
+        TopManager.getDefault ().notifyException (e6);
+        return null;
+      }
+      Repository repo2 = TopManager.getDefault ().getRepository ();
+      FileSystem exist = repo2.findFileSystem (jfs.getSystemName ());
+      if (exist == null) {
+        repo2.addFileSystem (jfs);
+        exist = jfs;
+      }
+      // The root folder will be displayed in the Explorer:
+      return exist.getRoot ();
+    }
+    // Next see if it is present in an existing LocalFileSystem.
     // enumeration of file systems
     Enumeration en = TopManager.getDefault ().getRepository ().getFileSystems ();
     while (en.hasMoreElements ()) {
@@ -189,7 +215,7 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
       }
     }
     // Not found. For Java files, it is reasonable to mount the package root.
-    if (fileName.endsWith (".java")) {
+    if (fileName.endsWith (".java") || fileName.endsWith (".JAVA")) {
       // Try to find the package name and then infer a directory to mount.
       BufferedReader rd = null;
       String pkg = null;
@@ -303,27 +329,6 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
         return fs.find (pkgtouse, basename.substring (0, basename.lastIndexOf (".java")), "java");
       }
     }
-    // Handle ZIP/JAR files by mounting and displaying.
-    if (fileName.endsWith (".zip") || fileName.endsWith (".jar")) {
-      JarFileSystem jfs = new JarFileSystem ();
-      try {
-        jfs.setJarFile (f);
-      } catch (IOException e5) {
-        TopManager.getDefault ().notifyException (e5);
-        return null;
-      } catch (PropertyVetoException e6) {
-        TopManager.getDefault ().notifyException (e6);
-        return null;
-      }
-      Repository repo2 = TopManager.getDefault ().getRepository ();
-      FileSystem exist = repo2.findFileSystem (jfs.getSystemName ());
-      if (exist == null) {
-        repo2.addFileSystem (jfs);
-        exist = jfs;
-      }
-      // The root folder will be displayed in the Explorer:
-      return exist.getRoot ();
-    }
     return null;
   }
   
@@ -331,16 +336,28 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
   * showing it in the Explorer.
   * Uses {@link #find} to figure out what the right file object is.
   * @param f file on local disk
+  * @param wait whether to wait until requested to return a status
+  * @param addr address to send reply to, if waiting
+  * @param port port to send reply to, if waiting
+  * @return whether to reply immediately even if should be waiting
   * @exception IOException if the file cannot be found
   */
-  public static void open (File f) throws IOException {
+  public static boolean open (File f, boolean wait, InetAddress addr, int port) throws IOException {
     FileObject fo = find (f);
     
     if (fo != null) {
       DataObject obj = DataObject.find (fo);      
-      OpenCookie open = (OpenCookie)obj.getCookie (OpenCookie.class);
-      if (open != null) {
-        open.open ();
+      OpenCookie open = (OpenCookie) obj.getCookie (OpenCookie.class);
+      ViewCookie view = (ViewCookie) obj.getCookie (ViewCookie.class);
+      if (open != null || view != null) {
+        if (open != null)
+          open.open ();
+        else
+          view.view ();
+        if (wait) {
+          // Could look for a SaveCookie just to see, but need not.
+          waitFor (obj, addr, port);
+        }
       } else {
         Node n = obj.getNodeDelegate ();
         if (fo.isRoot ()) {
@@ -360,12 +377,59 @@ public class OpenFile extends Object implements ModuleInstall, Runnable {
           }
         }
         TopManager.getDefault ().getNodeOperation ().explore (n);
+        if (wait) {
+            TopManager.getDefault ().notify (new NotifyDescriptor.Message ("File cannot be opened, will tell launcher it is closed immediately."));
+            return true;
+        }
       }
+      return false;
     } else {
       throw new FileNotFoundException (f.toString ());
     }
   }
   
+  private static final Map addresses = new HashMap (); // Map<DataObject, InetAddress>
+  private static final Map ports = new HashMap (); // Map<DataObject, Integer>
+  private static final PropertyChangeListener waitingListener = new PropertyChangeListener () {
+    public void propertyChange (PropertyChangeEvent ev) {
+      DataObject obj = (DataObject) ev.getSource ();
+      if (DataObject.PROP_VALID.equals (ev.getPropertyName ())) {
+        // If destroyed, report an error.
+        if (! obj.isValid ()) {
+          unWait (obj, (byte) 1);
+        }
+      } else if (DataObject.PROP_MODIFIED.equals (ev.getPropertyName ())) {
+        // Don't do anything when it *becomes* modified, only when unmodified.
+        if (! obj.isModified ()) {
+          unWait (obj, (byte) 0);
+        }
+      }
+    }
+    private void unWait (DataObject obj, byte status) {
+      obj.removePropertyChangeListener (waitingListener);
+      if (s != null) {
+        InetAddress addr = (InetAddress) addresses.remove (obj);
+        Integer port = (Integer) ports.remove (obj);
+        DatagramPacket p = new DatagramPacket (new byte[] { status }, 1, addr, port.intValue ());
+        try {
+          s.send (p);
+        } catch (IOException e) {
+          TopManager.getDefault ().notifyException (e);
+        }
+      } else {
+        TopManager.getDefault ().notify (new NotifyDescriptor.Message (new String[] {
+          "File " + obj.getName () + " was saved, but the Open File server was not running.",
+          "Manually halt the launcher process."
+        }));
+      }
+    }
+  };
+  public static void waitFor (DataObject obj, InetAddress addr, int port) {
+    addresses.put (obj, addr);
+    ports.put (obj, new Integer (port));
+    obj.addPropertyChangeListener (waitingListener);
+  }
+
   /** Test run. */
   public static void main (String[] args) throws Exception {
     server ();
