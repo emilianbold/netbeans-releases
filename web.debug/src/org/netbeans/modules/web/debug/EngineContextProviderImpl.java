@@ -45,9 +45,9 @@ public class EngineContextProviderImpl implements EngineContextProvider {
      * @return url
      */
     public String getURL (String relativePath) {
-                                                                if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath);
+        if (verbose) System.out.println ("ECPI(JSP): getURL " + relativePath);
         if (virtualFolders.contains (relativePath)) {
-                                                                if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
+            if (verbose) System.out.println ("ECPI(JSP):  fo virtual folder");
             return "virtual folder";
         }
         return null;

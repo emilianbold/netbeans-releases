@@ -57,38 +57,7 @@ public class Utils {
         return err;
     }
     
-//    public static Object[] getJsps() {
-//        
-//        //HashMap sorted = new TreeMap();
-//        List jsps = new Vector();
-//        Enumeration e;
-//
-//        String currentUrl = Context.getCurrentURL();
-//        if (currentUrl == null) {
-//            return null;
-//        }
-//        
-//        Project project = FileOwnerQuery.getOwner(URI.create(currentUrl));
-//        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
-//        e = wmi.getDocumentBase().getChildren(true);
-//        
-//        while (e.hasMoreElements()) {
-//            FileObject ch = (FileObject)e.nextElement();
-//            getEM().log("ch: " + ch);
-//            if (!ch.isFolder() && !ch.isRoot() && !ch.isVirtual() && ch.isValid() && JspLoader.JSP_MIME_TYPE.equals(ch.getMIMEType())) {
-//                String idStr = ch.getPath();
-//                if (!jsps.contains(idStr)) {
-//                    jsps.add(idStr);
-//                }
-//            }
-//        }
-//        getEM().log("jsps : " + jsps);
-//        Object[] sorted = jsps.toArray();
-//        Arrays.sort(sorted);
-//        return sorted;
-//    }
-
-    public static boolean isJsp(String url) {
+    public static File getJspFileFromUrl(String url) {
         if (url != null) {
             URI uri = null;
             try {
@@ -100,52 +69,45 @@ public class Utils {
                     if (f != null) {
                         f = FileUtil.normalizeFile(f);
                     }
-                    FileObject fo = FileUtil.toFileObject(f);
-                    if (fo != null) {
-                       return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
-                    }    
+                    return f;
                 } catch (IllegalArgumentException ex) {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, url);
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
-                    return false;
                 }
             }
+        }
+        return null;
+    }
+    
+    public static FileObject getJspFileObjectFromUrl(String url) {
+        File f = getJspFileFromUrl(url);
+        if (f != null) {
+            return FileUtil.toFileObject(f);
+        }
+        return null;
+    }
+    
+    public static boolean isJsp(String url) {
+        FileObject fo = getJspFileObjectFromUrl(url);
+        if (fo != null) {
+           return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
         }
         return false;
     }
 
     public static String getJspName(String url) {
-        if (url != null) {
-            URI uri = null;
-            try {
-                uri = new URI(url);
-            } catch (Exception e) {};
-            if (uri != null) {
-                try {
-                    File f = new File(uri);
-                    if (f != null) {
-                        f = FileUtil.normalizeFile(f);
-                        return f.getName();
-                    }
-                } catch (IllegalArgumentException ex) {
-                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, ex.toString());
-                }
-            }
+        File f = getJspFileFromUrl(url);
+        if (f != null) {
+            return f.getName();
         }
         return (url == null) ? null : url.toString();
     }
     
-    public static String getServletClass(String jspUrl) {
-        if (jspUrl == null) {
+    public static String getServletClass(String url) {
+        FileObject fo = getJspFileObjectFromUrl(url);
+        if (fo == null) {
             return null;
         }
-        URI jspUri = URI.create(jspUrl);
-
-
-        java.io.File f = new java.io.File(jspUri);
-        f = FileUtil.normalizeFile(f);
-
-        FileObject fo = FileUtil.toFileObject(f);
         JSPServletFinder finder = JSPServletFinder.findJSPServletFinder (fo);
         WebModule wm = WebModule.getWebModule (fo);
         
@@ -165,137 +127,54 @@ public class Utils {
         return filter;
     }
     
-//    public static String getCompoundClassFilter(String url) {
-//        URI jspUri = URI.create(url);
-//        Project project = FileOwnerQuery.getOwner(jspUri);
-//
-//        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
-//        Enumeration files = wmi.getDocumentBase().getChildren(true);
-//
-//        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
-//        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
-//        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
-//        
-//        FindJSPServlet findJspServlet = target.getServer().getServerInstance().getFindJSPServlet();        
-//                
-//        String filter = null; //NOI18N
-//        while (files.hasMoreElements()) {
-//            FileObject fo = (FileObject)files.nextElement();
-//            if (!fo.isFolder() && "text/x-jsp".equals(fo.getMIMEType()) && (fo != null)) {
-//                String jspRelPath = FileUtil.getRelativePath(wmi.getDocumentBase(), fo);
-//                String servletPath = findJspServlet.getServletResourcePath(wmi.getContextPath(), jspRelPath);
-//                if ((servletPath != null) && !servletPath.equals("")) {                
-//                    servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
-//                    servletPath = servletPath.substring(0, servletPath.lastIndexOf('/')); // get package only
-//                    if (filter == null) {
-//                        filter = servletPath;
-//                    } else {
-//                        if (!(servletPath.startsWith(filter))) {
-//                            while (!servletPath.startsWith(filter)) {
-//                                filter = filter.substring(0, filter.lastIndexOf('/'));
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        filter = filter.replace('/', '.') + "."; //NOI18N
-//        return filter;
-//    }
-    
-//    public static ClassLoadUnloadBreakpoint classLoadBreakpointExists(String filter){
-//	Breakpoint[] bps = DebuggerManager.getDebuggerManager().getBreakpoints();
-//        for (int i=0; i<bps.length; i++) {
-//            if ((bps[i] != null) && (bps[i] instanceof ClassLoadUnloadBreakpoint)) {
-//                if (((ClassLoadUnloadBreakpoint)bps[i]).getClassNameFilter().equals(filter)) {
-//                    return (ClassLoadUnloadBreakpoint)bps[i];
-//                }
-//            }
-//        }
-//        return null;
-//    }
-    
-//    public static String getCurrentJspName() {
-//        FileObject fo = getCurrentFileObject();
-//        if (fo == null) {
-//            return "";
-//        }
-//        if (!fo.getMIMEType().equals(JspLoader.JSP_MIME_TYPE)) {
-//            return "";
-//        }
-//        return fo.getPath();
-//    }
+    public static String getCompoundClassFilter(String url) {
 
-//    public static String getCurrentContextRoot() {
-//        FileObject fo = getCurrentFileObject();
-//        String ctx = "";
-//        DataObject data = null;
-//        
-//        if (fo == null) {
-//            return ctx;
-//        }
-//        if (!fo.getMIMEType().equals(JspLoader.JSP_MIME_TYPE)) {
-//            return ctx;
-//        }
-//        
-//        try {
-//            data = DataObject.find(fo);
-//        } catch (Exception excep) {
-//            // don't care
-//        }
-//        
-//        if ((data instanceof JspDataObject) && (data!=null)) {
-//            data = ((JspDataObject)data).getModule();
-//        }
-//        
-//        if ((data instanceof WebContextObject) && (data!=null)) {
-//            ctx = ((WebContextObject)data).getContextPath();
-//        }
-//        
-//        return ctx;
-//    }
+        FileObject wmfo = getJspFileObjectFromUrl(url);
+        if (wmfo == null) {
+            return null;
+        }
+        WebModule wm = WebModule.getWebModule(wmfo);
+        Enumeration files = wm.getDocumentBase().getChildren(true);
+                        
+        String filter = null; //NOI18N
+        while (files.hasMoreElements()) {
+            FileObject fo = (FileObject)files.nextElement();
+            if (!fo.isFolder() && "text/x-jsp".equals(fo.getMIMEType()) && (fo != null)) {
+                String jspRelPath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+                JSPServletFinder finder = JSPServletFinder.findJSPServletFinder(fo);
+                String servletPath = finder.getServletResourcePath(jspRelPath);
+                if ((servletPath != null) && !servletPath.equals("")) {                
+                    servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
+                    servletPath = servletPath.substring(0, servletPath.lastIndexOf('/')); // get package only
+                    if (filter == null) {
+                        filter = servletPath;
+                    } else {
+                        if (!(servletPath.startsWith(filter))) {
+                            while (!servletPath.startsWith(filter)) {
+                                filter = filter.substring(0, filter.lastIndexOf('/'));
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
-//    public static FileObject getCurrentFileObject() {
-//        getEM().log("Utils.getCurrentObject");
-//        AddBreakpointAction aba = (AddBreakpointAction)SystemAction.get(AddBreakpointAction.class);
-//        Node[] nodes = aba.getActivatedNodes();
-//        if (nodes == null) {
-//            return null;
-//        }
-//        if (nodes.length != 1) {
-//            return null;
-//        }
-//        Node n = nodes[0];
-//        DataObject dO = null;
-//        if (dO == null) {
-//            dO = (DataObject) n.getCookie (DataObject.class);
-//        }
-//        if (dO == null) {
-//            return null;
-//        }
-//        if (dO instanceof org.openide.loaders.DataShadow) {
-//            dO = ((org.openide.loaders.DataShadow) dO).getOriginal ();
-//        }
-//        FileObject fo = dO.getPrimaryFile();
-//        getEM().log("Utils.getCurrentObject - returning: " + fo);
-//        return fo;
-//    }
-    
-//    public static String getContextPath(FileObject jsp) {
-//        try {
-//            getEM().log("Utils.getContextPath: " + jsp);
-//            String webRoot = jsp.getFileSystem().getRoot().getPath();
-//            getEM().log("webroot: " + webRoot);
-//            String jspPath = jsp.getPath();
-//            getEM().log("jspPath: " + jspPath);
-//            String contextPath = jspPath.substring(webRoot.length(), jspPath.length());
-//            getEM().log("contextPath: " + contextPath);
-//            return contextPath;
-//        } catch (FileStateInvalidException fe) {
-//            return null;
-//        }
-//    }
+        filter = filter.replace('/', '.') + "."; //NOI18N
+        Utils.getEM().log("compound filter: " + filter);
+        return filter;
+    }
+
+    public static String getContextPath(String url) {
+        FileObject wmfo = getJspFileObjectFromUrl(url);
+        if (wmfo == null) {
+            return null;
+        }
+        WebModule wm = WebModule.getWebModule(wmfo);        
+        if (wm != null) {
+            return wm.getContextPath();
+        }
+        return null;   
+    }
         
     /** 
      * Returns current editor component instance.
@@ -346,82 +225,7 @@ public class Utils {
         prop.setShortDescription(shortDesc);
         return prop;
     }
-    
-    /**
-    * Return line for given params.
-    */
-//    public static Line getLine (String jspName, String ctxRoot, int lineNumber) {
-//        getEM().log("Utils.getLine for: " + jspName + ":" + lineNumber + ", " + ctxRoot);
-//        Line.Set ls = getLineSet (jspName, ctxRoot);
-//        if (ls == null) return null;
-//        try {
-//            //Line l = ls.getOriginal (lineNumber - 1);
-//            Line l = ls.getCurrent(lineNumber - 1);
-//            FileSystem fs = org.openide.text.DataEditorSupport.findDataObject(l).getPrimaryFile ().getFileSystem ();
-//            if (fs.getCapability ().capableOf (GUIManager.DEBUG_SRC))
-//                return l;
-//            //if (fs.isHidden ()) return null;
-//            getEM().log("Utils.getLine returns: " + l);
-//            return l;
-//        } catch (IndexOutOfBoundsException e) {
-//        } catch (FileStateInvalidException ex) {
-//        } catch (IllegalArgumentException e) {
-//        }
-//        return null;
-//    }
         
-    /**
-    * Return line set for given class name.
-    */
-//    public static Line.Set getLineSet (String jspName, String ctxRoot) {
-//        getEM().log("Utils.getLineSet for: " + jspName + ", " + ctxRoot);
-//        Enumeration files = null; //Repository.getDefault().findAllResources(jspName); TODO
-//        if ((files == null) || (!files.hasMoreElements())) {
-//            return null;
-//        }
-//        LineCookie lineCookie = null;
-//        while (files.hasMoreElements()) {
-//            
-//            FileObject file = (FileObject)files.nextElement();
-//            getEM().log("file: " + file);
-//            if (file == null) {
-//                continue;
-//            }
-//            DataObject data = null;
-//            try {
-//                data = DataObject.find(file);
-//            } catch (Exception e) {  
-//                continue;
-//            }
-//            if (data.getCookie(DebuggerCookie.class) == null) {
-//                continue;
-//            }
-//            if ((data == null) || !(data instanceof JspDataObject)) {
-//                continue;
-//            }
-//            WebContextObject wco = (WebContextObject)((JspDataObject)data).getModule();
-//            if (wco == null) {
-//                continue;
-//            }
-//            if (!(((ctxRoot == null) && (wco.getContextPath() == null)) || ctxRoot.equals(wco.getContextPath()))) {
-//                continue;
-//            }
-//            lineCookie = (LineCookie) data.getCookie (LineCookie.class);
-//            if (lineCookie == null) {
-//                continue;
-//            }
-//            
-//        }
-//
-//        if (lineCookie == null) {
-//            getEM().log("returning: null");                                     // NOI18N
-//            return null;
-//        }
-//        
-//        getEM().log("returning: " + lineCookie.getLineSet());                   // NOI18N
-//        return lineCookie.getLineSet ();
-//    }    
-    
     public static String getJavaIdentifier(StyledDocument doc, JEditorPane ep, int offset) {        
         String t = null;
         if ( (ep.getSelectionStart() <= offset) && (offset <= ep.getSelectionEnd())) {

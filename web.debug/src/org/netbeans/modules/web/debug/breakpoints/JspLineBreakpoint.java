@@ -43,9 +43,6 @@ public class JspLineBreakpoint extends Breakpoint {
     public static final String          PROP_URL = LineBreakpoint.PROP_URL;
     public static final String          PROP_CONDITION = LineBreakpoint.PROP_CONDITION;
     
-    //private fields
-    private HashSet                     breakpointListeners = new HashSet ();
-    
     private boolean                     enabled = true;
     private boolean                     hidden = false;
     private int                         suspend = SUSPEND_ALL;
@@ -58,9 +55,7 @@ public class JspLineBreakpoint extends Breakpoint {
     private LineBreakpoint javalb;
         
     /** Creates a new instance of JspLineBreakpoint */
-    public JspLineBreakpoint() {
-        ErrorManager.getDefault().log(ErrorManager.EXCEPTION, "DEFAULT CONSTRUCTOR CALLED ON JSPLINEBREAKPOINT");
-    }
+    public JspLineBreakpoint() { }
     
     /** Creates a new instance of JspLineBreakpoint with url, linenumber*/
     public JspLineBreakpoint(String url, int lineNumber) {
@@ -83,6 +78,12 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb.setSourceName(Utils.getJspName(url));
         javalb.setHidden(true);
         javalb.setPrintText(printText);
+        
+        String context = Utils.getContextPath(url);
+        String condition = "request.getContextPath().equals(\"" + context + "\")"; // NOI18N
+        javalb.setCondition(condition);
+        Utils.getEM().log("condition: " + condition);
+        
         d.addBreakpoint(javalb);
 
         this.setURL(url);
@@ -310,21 +311,4 @@ public class JspLineBreakpoint extends Breakpoint {
         this.javalb = javalb;
     }
     
-//    /**
-//     * Adds a JPDABreakpointListener.
-//     *
-//     * @param listener the listener to add
-//     */
-//    public synchronized void addJPDABreakpointListener(JPDABreakpointListener listener) {
-//        breakpointListeners.add (listener);
-//    }
-//  
-//    /** 
-//     * Removes a JPDABreakpointListener.
-//     *
-//     * @param listener the listener to remove
-//    */
-//    public synchronized void removeJPDABreakpointListener(JPDABreakpointListener listener) {
-//        breakpointListeners.remove (listener);
-//    }
 }
