@@ -341,8 +341,9 @@ class J2SEActionProvider implements ActionProvider {
         
         okButton.setEnabled (false);
         DialogDescriptor desc = new DialogDescriptor (panel,
-                NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", antProjectHelper.getDisplayName ()), // NOI18N
-            true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
+            NbBundle.getMessage (MainClassWarning.class, "CTL_MainClassWarning_Title", antProjectHelper.getDisplayName ()), // NOI18N
+            true, options, options[0], DialogDescriptor.BOTTOM_ALIGN, null, null);
+        desc.setMessageType (DialogDescriptor.INFORMATION_MESSAGE);
         Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
         dlg.setVisible (true);
         if (desc.getValue() != options[0]) {
