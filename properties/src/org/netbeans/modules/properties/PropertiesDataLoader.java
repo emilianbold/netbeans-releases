@@ -104,6 +104,9 @@ public final class PropertiesDataLoader extends MultiFileLoader {
 
     /** */
     protected FileObject findPrimaryFile (FileObject fo) {
+        if (fo.isFolder()) {
+            return null;
+        }
         if (fo.getExt().equalsIgnoreCase(PROPERTIES_EXTENSION)) {
             
             /*
