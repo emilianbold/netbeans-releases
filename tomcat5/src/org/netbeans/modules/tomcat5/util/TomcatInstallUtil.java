@@ -45,6 +45,19 @@ public class TomcatInstallUtil {
     static private final String TOMCAT_TEMP_DIR = "temp";                       //NOI18N
     static private final String SERVER_XML_NAME_EXT = "server.xml";             //NOI18N
     static private final String TOMCAT_CONF_DIR = "conf";//NOI18N
+    
+    /** default value of bundled tomcat server port */
+    private static final Integer BUNDLED_DEFAULT_SERVER_PORT = new Integer(8084);
+    /** default value of bundled tomcat admin port */
+    private static final Integer BUNDLED_DEFAULT_ADMIN_PORT = new Integer(8025);
+    /** default value of bundled tomcat' http connector uri encoding */
+    private static final String BUNDLED_DEFAULT_URI_ENCODING = "utf-8"; // NOI18N
+    
+    private static final String ATTR_URI_ENCODING = "URIEncoding"; // NOI18N
+    private static final String ATTR_PORT = "port"; // NOI18N
+    private static final String ATTR_PROTOCOL = "protocol"; // NOI18N
+    
+    private static final String PROP_CONNECTOR = "Connector"; // NOI18N
 
     /** Creates a new instance of TomcatInstallUtil */
     public TomcatInstallUtil() {
@@ -283,6 +296,39 @@ public class TomcatInstallUtil {
             org.openide.ErrorManager.getDefault ().notify(ex);
         }
         return success;
+    }
+    
+    private static void setServerAttributeValue(Server server, String attribute, String value) {
+        server.setAttributeValue(attribute, value);
+    }
+    
+    private static void setHttpConnectorAttributeValue(Server server, String attribute, String value) {
+        Service service[] = server.getService();
+        if (service != null && service.length > 0) {
+            int sizeConnector = service[0].sizeConnector();
+            for(int i = 0; i < sizeConnector; i++) {
+                String protocol = service[0].getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
+                if ((protocol == null) || protocol.length() == 0 || (protocol.toLowerCase().indexOf("http") > -1)) { // NOI18N
+                    service[0].setAttributeValue(PROP_CONNECTOR, i, attribute, value);
+                    return;
+                }
+            }
+        }
+    }
+    
+    /**
+     * Make some Bundled Tomcat specific changes in server.xml.
+     */
+    public static void patchBundledServerXml(File serverXml) {
+        try {
+            Server server = Server.createGraph(serverXml);
+            setServerAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_ADMIN_PORT.toString());
+            setHttpConnectorAttributeValue(server, ATTR_PORT, BUNDLED_DEFAULT_SERVER_PORT.toString());
+            setHttpConnectorAttributeValue(server, ATTR_URI_ENCODING, BUNDLED_DEFAULT_URI_ENCODING);
+            server.write(serverXml);
+        } catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
     }
     
     public static boolean setAdminPort(Integer port, FileObject tomcatConf) {

@@ -144,12 +144,6 @@ public class TomcatManager implements DeploymentManager {
     /** Tomcat specific Instance property - if this property exists and is set 
        to <code>true</code> Tomcat will be stoped wiht the "-force" option */
     private static final String FORCE_STOP_OPTION = "forceStopOption";
-    
-    /** default value of bundled tomcat server port */
-    private static final Integer BUNDLED_TOMCAT_DEFAULT_SERVER_PORT = new Integer(8084);
-
-    /** default value of bundled tomcat admin port */
-    private static final Integer BUNDLED_TOMCAT_DEFAULT_ADMIN_PORT = new Integer(8025);
 
     /** Manager state. */
     private boolean connected;
@@ -1307,9 +1301,7 @@ public class TomcatManager implements DeploymentManager {
             return null;
         }
         if (isItBundledTomcat()) {
-            File serverFile = new File(baseDir, "conf/server.xml");   // NOI18N
-            TomcatInstallUtil.setServerPort(BUNDLED_TOMCAT_DEFAULT_SERVER_PORT, FileUtil.toFileObject(serverFile));
-            TomcatInstallUtil.setAdminPort(BUNDLED_TOMCAT_DEFAULT_ADMIN_PORT, FileUtil.toFileObject(serverFile));
+            TomcatInstallUtil.patchBundledServerXml(new File(baseDir, "conf/server.xml")); // NOI18N
         }
         return baseDir;
     }
