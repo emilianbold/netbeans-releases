@@ -237,26 +237,13 @@ Microsystems, Inc. All Rights Reserved.
     </target>
 
     <target name="run" depends="init,compile,compile-jsps">
-        <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}">
-<!--            <xsl:call-template name="run-java-body"/>-->
+        <nbdeploy debugmode="false" clientUrlPart="${{client.urlPart}}" forceRedeploy="${{forceRedeploy}}">
         </nbdeploy>
         <nbbrowse url="${{client.url}}"/>
     </target>
 
-<!--    <xsl:template name="run-java-body">
-        <classpath>
-            <path path="${{run.classpath}}"/>
-        </classpath>
-        <arg line="${{application.args}}"/>
-    </xsl:template>
-
-    <target name="debug" depends="init,compile,do-debug">
-    </target>
--->
-
     <target name="debug-nb" depends="init,compile,compile-jsps" if="netbeans.home">
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
-<!--        <xsl:call-template name="debug-java-body"/>-->
         </nbdeploy>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>

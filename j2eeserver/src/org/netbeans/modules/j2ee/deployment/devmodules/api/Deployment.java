@@ -20,6 +20,8 @@ import org.netbeans.modules.j2ee.deployment.impl.*;
 import org.netbeans.modules.j2ee.deployment.impl.projects.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.*;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -51,10 +53,10 @@ public final class Deployment {
      * </div>
      * @return complete URL to be displayed in browser (server part plus the client module and/or client part provided as a parameter)
      */
-    public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart) throws DeploymentException {
-        
+    public String deploy (J2eeModuleProvider jmp, boolean debugmode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy) throws DeploymentException {
         DeploymentTargetImpl target = new DeploymentTargetImpl(jmp, clientModuleUrl);
 
+        String err;
         ServerString server = target.getServer();
         J2eeModule module = target.getModule();
         TargetModule[] modules = null;
@@ -63,12 +65,14 @@ public final class Deployment {
         
         try {
             if (module == null) {
-                progress.addError(getBundle("MSG_NoJ2eeModule"));
-                throw new DeploymentException (getBundle("MSG_NoJ2eeModule"));
+                err = NbBundle.getMessage (Deployment.class, "MSG_NoJ2eeModule"); //NOI18N
+                progress.addError(err);
+                throw new DeploymentException (err);
             }
             if (server == null || server.getServerInstance() == null) {
-                progress.addError(getBundle("MSG_NoTargetServer"));
-                throw new DeploymentException (getBundle("MSG_NoTargetServer"));
+                err = NbBundle.getMessage (Deployment.class, "MSG_NoTargetServer"); //NOI18N
+                progress.addError(err);
+                throw new DeploymentException (err);
             }
             
             progress.recordWork(1);
@@ -82,34 +86,40 @@ public final class Deployment {
                 serverReady = server.getServerInstance().start(progress);
             }
             if (! serverReady) {
-                progress.addError(getBundle("MSG_StartServerFailed"));
-                throw new DeploymentException (getBundle("MSG_StartServerFailed"));
+                err = NbBundle.getMessage (Deployment.class, "MSG_StartServerFailed", target.getServer ().getServerInstance ().getDisplayName ()); //NOI18N
+                progress.addError(err);
+                throw new DeploymentException (err);
             }
             
             progress.recordWork(2);
-            modules = targetserver.deploy(progress);
+            modules = targetserver.deploy(progress, forceRedeploy);
             progress.recordWork(MAX_DEPLOY_PROGRESS-1);
             
         } catch (Exception ex) {
-            throw new DeploymentException (getBundle("MSG_DeployFailed"));
+            err = NbBundle.getMessage (Deployment.class, "MSG_DeployFailed", ex.getLocalizedMessage ());
+            ErrorManager.getDefault ().notify (ex);
+            throw new DeploymentException (err, ex);
         }
         
         if (modules != null && modules.length > 0) {
             target.setTargetModules(modules);
             progress.recordWork(MAX_DEPLOY_PROGRESS);
         } else {
-            throw new DeploymentException ("Some other error.");
+            err = NbBundle.getMessage (Deployment.class, "MSG_AnotherError");
+            throw new DeploymentException (err);
         }
         return target.getClientUrl(clientUrlPart);
-    }
-    
-    private String getBundle(String key) {
-        return java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ant/Bundle").getString(key); // NOI18N
     }
     
     public static final class DeploymentException extends Exception {
         private DeploymentException (String msg) {
             super (msg);
+        }
+        private DeploymentException (Throwable t) {
+            super (t);
+        }
+        private DeploymentException (String s, Throwable t) {
+            super (s, t);
         }
     }
     

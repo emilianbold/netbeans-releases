@@ -39,6 +39,8 @@ public class Deploy extends Task {
      */
     private boolean debugmode = false;
     
+    private boolean forceRedeploy = false;
+    
     /**
      * Holds value of property clientUrl.
      */
@@ -56,17 +58,13 @@ public class Deploy extends Task {
         }
 
         try {
-            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart);
+            String clientUrl = Deployment.getDefault ().deploy (jmp, debugmode, null, clientUrlPart, forceRedeploy);
             getProject().setProperty("client.url", clientUrl);
         } catch (Exception ex) {
-            throw new BuildException(getBundle("MSG_DeployFailed"));
+            throw new BuildException(ex);
         }
     }
 
-    private String getBundle(String key) {
-        return java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ant/Bundle").getString(key); // NOI18N
-    }
-    
     /**
      * Getter for property debugmode.
      * @return Value of property debugmode.
@@ -83,6 +81,14 @@ public class Deploy extends Task {
         this.debugmode = debugmode;
     }
         
+    public boolean getForceRedeploy() {
+        return this.forceRedeploy;
+    }
+    
+    public void setForceRedeploy(boolean forceRedeploy) {
+        this.forceRedeploy = forceRedeploy;
+    }
+    
     /**
      * Getter for property clientUrl.
      * @return Value of property clientUrl.

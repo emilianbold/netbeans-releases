@@ -124,10 +124,6 @@ public class ServerString implements java.io.Serializable {
         return ServerRegistry.getInstance().getServerInstance(instance);
     }
     
-    /*public TargetServer getServerTarget(ModuleType type) {
-        return new TargetServer(this, type);
-    }*/
-    
     public String toString() {
         if (targets == null) return "Server " + plugin + " Instance " + instance + " Targets none"; // NOI18N
         return "Server " + plugin + " Instance " + instance + " Targets " + targets.length; // NOI18N

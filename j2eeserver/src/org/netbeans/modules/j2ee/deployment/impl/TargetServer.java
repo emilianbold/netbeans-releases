@@ -510,8 +510,23 @@ public class TargetServer {
     }
     
     public TargetModule[] deploy(DeployProgressUI ui) throws IOException {
+        return deploy (ui, false);
+    }
+    
+    public TargetModule[] deploy(DeployProgressUI ui, boolean forceRedeploy) throws IOException {
         ProgressObject po = null;
         init(ui);
+        if (forceRedeploy) {
+            if (redeployTargetModules == null) {
+            } else {
+                for (int i = 0; i < redeployTargetModules.length; i++) {
+                    distributeTargets.add(redeployTargetModules [i].findTarget ());
+                    undeployTMIDs.add(redeployTargetModules [i].delegate());
+                    redeployTargetModules [i].remove();
+                }
+                redeployTargetModules = null;
+            }
+        }
         
         File plan = dtarget.getConfigurationFile();
         DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
@@ -528,7 +543,6 @@ public class TargetServer {
                 File dir = initialDistribute(targetz[0], ui);
                 po = incremental.initialDeploy(targetz[0], deployable, cfg, dir);
                 handleDeployProgress(ui, po);
-                
             } else {  // standard DM.distribute
                 if (getApplication() == null) {
                     throw new RuntimeException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
@@ -562,7 +576,7 @@ public class TargetServer {
                 handleDeployProgress(ui, po);
             }
         }
-        
+
         return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
     }
     

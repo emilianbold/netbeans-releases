@@ -79,7 +79,7 @@ public class WebProjectProperties {
     public static final String WAR_CONTENT_EXCLUDES = "war.content.excludes";
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional";
 
-    public static final String LAUNCH_URL_RELATIVE = "launch.url.relative";
+    public static final String LAUNCH_URL_RELATIVE = "client.urlPart";
     public static final String LAUNCH_URL_FULL = "launch.url.full";
     public static final String DISPLAY_BROWSER = "display.browser";
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
