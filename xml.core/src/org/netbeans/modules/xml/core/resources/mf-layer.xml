@@ -31,8 +31,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="XML">
 
-            <file name="XMLWizard.xml">
-                <![CDATA[<empty/>]]>
+            <file name="XMLWizard.xml"> <!-- No Valid URL is necessary - file content is ignored! -->
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
