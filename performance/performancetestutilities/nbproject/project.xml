@@ -49,7 +49,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
                 <package-root>src</package-root>
-                <source-level>1.5</source-level>
+                <source-level>1.4</source-level>
             </compilation-unit>
         </java-data>
     </configuration>

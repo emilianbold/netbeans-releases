@@ -33,7 +33,8 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="." 
                deprecation="${build.compiler.deprecation}" 
                debug="${build.compiler.debug}"
-               destdir="${performance.testutilities.dist.build.dir}">
+               destdir="${performance.testutilities.dist.build.dir}"
+               source="1.4">
             <classpath>
                 <path refid="compiletest.classpath"/>
                 <path refid="jemmy.and.jelly.path"/>
