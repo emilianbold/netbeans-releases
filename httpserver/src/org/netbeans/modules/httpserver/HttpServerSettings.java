@@ -108,7 +108,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** getter for running status */
   public boolean isRunning() {
     if (isWriteExternal()) {
-      return running;
+      if (inited) return running;
+      else        return true;
     }
     if (inited) {
       return running;
@@ -459,6 +460,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  24   Gandalf   1.23        10/9/99  Petr Jiricka    Fixed serialization of 
+ *       running property in the first startup if the server hasn't been 
+ *       launched.
  *  23   Gandalf   1.22        10/7/99  Petr Jiricka    Fixed multiple startup 
  *       and shutdown at deserialization in some cases
  *  22   Gandalf   1.21        10/6/99  Petr Jiricka    Changes caused by module
