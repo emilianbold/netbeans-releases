@@ -58,7 +58,7 @@ public class __NAME__ extends SimpleBeanInfo {
      */
     public PropertyDescriptor[] getPropertyDescriptors() {
         //return properties;
-	return getPdescriptor;
+	return getPdescriptor();
     }
 
     /**
@@ -70,7 +70,7 @@ public class __NAME__ extends SimpleBeanInfo {
      */
     public EventSetDescriptor[] getEventSetDescriptors() {
         //return eventSets;
-	return getEdescriptor;
+	return getEdescriptor();
     }
 
     /**
@@ -82,7 +82,7 @@ public class __NAME__ extends SimpleBeanInfo {
      */
     public MethodDescriptor[] getMethodDescriptors() {
         //return methods;
-	return getMdescriptor;
+	return getMdescriptor();
     }
 
     /**
