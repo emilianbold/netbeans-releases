@@ -14,18 +14,15 @@
 package org.netbeans.modules.ant.freeform.ui;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultCellEditor;
-
 import javax.swing.JComboBox;
 import javax.swing.table.AbstractTableModel;
-
+import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -67,10 +64,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         testCombo.setVisible(projectType.equals("j2se")); // NOI18N
         jLabel3.setVisible(projectType.equals("webapps")); // NOI18N
         redeployCombo.setVisible(projectType.equals("webapps")); // NOI18N
-        showAdvancedPath(false);
+        showAdvancedPart(false);
     }
     
-    private void showAdvancedPath(boolean show) {
+    private void showAdvancedPart(boolean show) {
         jLabel8.setVisible(show);
         jLabel9.setVisible(show);
         jLabel10.setVisible(show);
@@ -285,7 +282,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
 
         setLayout(new java.awt.GridBagLayout());
 
-        setPreferredSize(new java.awt.Dimension(335, 350));
+        setPreferredSize(new java.awt.Dimension(300, 280));
         jLabel1.setText("Specify Ant targets executed by common menu items.");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = 2;
@@ -507,9 +504,10 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         remove.setEnabled(custTargets.size() > 0);
     }
     
-    public void initValues(AntProjectHelper helper, List panels) {
+    /* ProjectCustomizer.Panel init */
+    public void initValues(FreeformProject project, AntProjectHelper helper, ProjectCustomizer.ProjectModel model) {
         if (!initialized) {
-            FileObject as = FreeformProjectGenerator.getAntScript(helper);
+            FileObject as = FreeformProjectGenerator.getAntScript(helper, project.evaluator());
             List l = Util.getAntScriptTargetNames(as);
             if (l != null) {
                 setTargetNames(l);
@@ -523,7 +521,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
             customTargetsModel.fireTableDataChanged();
             
             jLabel1.setVisible(false);
-            showAdvancedPath(true);
+            showAdvancedPart(true);
             
             updateButtons();
             initialized = true;
@@ -531,7 +529,7 @@ public class TargetMappingPanel extends javax.swing.JPanel implements ProjectCus
         }
     }
 
-    public void storeValues(AntProjectHelper helper) {
+    public void storeValues(FreeformProject project, AntProjectHelper helper, ProjectCustomizer.ProjectModel model) {
         if (!initialized) {
             return;
         }

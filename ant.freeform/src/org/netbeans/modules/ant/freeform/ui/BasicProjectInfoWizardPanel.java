@@ -17,11 +17,15 @@ import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import java.util.Collections;
+import org.netbeans.spi.project.support.ant.PropertyProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 
 /**
  * @author  David Konecny
@@ -93,6 +97,12 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
         wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_NAME, component.getProjectName());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); //NOI18N
         wizardDescriptor.putProperty("setAsMain", component.getMainProject()); // NOI18N
+
+        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
+            PropertyUtils.fixedPropertyProvider(
+            Collections.singletonMap(FreeformProjectGenerator.PROP_PROJECT_LOCATION, component.getProjectLocation().getAbsolutePath()))});
+
+        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_EVALUATOR, evaluator); // NOI18N
     }
     
     public void stateChanged(ChangeEvent e) {

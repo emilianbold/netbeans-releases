@@ -24,9 +24,9 @@ import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -39,7 +39,7 @@ import org.openide.util.NbBundle;
  */
 public class ProjectCustomizerProvider implements CustomizerProvider {
     
-    private final Project project;
+    private final FreeformProject project;
     private final AntProjectHelper antProjectHelper;   
     private final PropertyEvaluator evaluator;
     
@@ -54,7 +54,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
     private DialogDescriptor dialogDescriptor;
     private Map customizerPerProject = new WeakHashMap (); // Is is weak needed here?
     
-    public ProjectCustomizerProvider(Project project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator) {
+    public ProjectCustomizerProvider(FreeformProject project, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator) {
         this.project = project;
         this.antProjectHelper = antProjectHelper;
         this.evaluator = evaluator;
@@ -83,7 +83,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
         options[ OPTION_OK ].setActionCommand( COMMAND_OK );
         options[ OPTION_CANCEL ].setActionCommand( COMMAND_CANCEL );
 
-        ProjectCustomizer pc = new ProjectCustomizer(antProjectHelper);
+        ProjectCustomizer pc = new ProjectCustomizer(project, antProjectHelper);
         // RegisterListener
         ActionListener optionsListener = new OptionListener( project, pc);
         options[ OPTION_OK ].addActionListener( optionsListener );

@@ -13,36 +13,28 @@
 
 package org.netbeans.modules.ant.freeform;
 
-import java.awt.Image;
-import java.awt.event.ActionEvent;
-import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
-import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -50,16 +42,11 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.spi.project.ui.support.LogicalViews;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 
@@ -77,7 +64,7 @@ public final class FreeformProject implements Project {
     
     public FreeformProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
-        eval = initEval();
+        eval = new PropertyEvaluatorProxy();
         lookup = initLookup();
     }
     
@@ -285,6 +272,68 @@ public final class FreeformProject implements Project {
             fireChange();
             webModules.readAuxData ();
             sourceForBinQuery.refresh();
+        }
+        
+        public void propertiesChanged(AntProjectEvent ev) {
+            // ignore
+        }
+        
+    }
+
+    /**
+     * XXX: this is HOTFIX to refresh properties after the project creation.
+     */
+    private final class PropertyEvaluatorProxy implements PropertyEvaluator, AntProjectListener {
+        
+        private PropertyEvaluator delegate;
+        private final List/*<ChangeListener>*/ listeners = new ArrayList();
+        
+        public PropertyEvaluatorProxy() throws IOException {
+            delegate = initEval();
+            helper().addAntProjectListener(this);
+        }
+        
+        public String getProperty(String prop) {
+            return delegate.getProperty(prop);
+        }
+
+        public String evaluate(String text) {
+            return delegate.evaluate(text);
+        }
+
+        public Map/*<String,String>*/ getProperties() {
+            return delegate.getProperties();
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            listeners.add(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            listeners.remove(listener);
+        }
+        
+        private void fireChange() {
+            PropertyChangeListener[] _listeners;
+            synchronized (this) {
+                if (listeners.isEmpty()) {
+                    return;
+                }
+                _listeners = (PropertyChangeListener[])listeners.toArray(new PropertyChangeListener[listeners.size()]);
+            }
+            PropertyChangeEvent ev = new PropertyChangeEvent(this, null, null, null);
+            for (int i = 0; i < _listeners.length; i++) {
+                _listeners[i].propertyChange(ev);
+            }
+        }
+        
+        public void configurationXmlChanged(AntProjectEvent ev) {
+            try {
+                delegate = initEval();
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            }
+            fireChange();
         }
         
         public void propertiesChanged(AntProjectEvent ev) {
