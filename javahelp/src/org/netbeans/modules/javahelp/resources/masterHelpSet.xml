@@ -20,12 +20,12 @@ Microsystems, Inc. All Rights Reserved.
     <homeID>org.netbeans.api.javahelp.MASTER_ID</homeID>
     <mapref location="masterHelpMap.jhm"/>
   </maps>
-  <view mergetype="javax.help.UniteAppendMerge">
+  <view>
     <name>TOC</name>
     <label>Contents</label>
     <type>javax.help.TOCView</type>
   </view>
-  <view mergetype="javax.help.SortMerge">
+  <view>
     <name>Index</name>
     <label>Index</label>
     <type>javax.help.IndexView</type>
