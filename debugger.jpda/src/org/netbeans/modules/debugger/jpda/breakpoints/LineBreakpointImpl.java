@@ -14,7 +14,6 @@
 package org.netbeans.modules.debugger.jpda.breakpoints;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.Field;
 import com.sun.jdi.Location;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ReferenceType;
@@ -28,16 +27,17 @@ import com.sun.jdi.request.BreakpointRequest;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.modules.debugger.jpda.util.Executor;
+
 
 
 /**
@@ -175,13 +175,15 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             if (!list.isEmpty ()) {
                 if (bpSourcePath == null)
                     return list;
-                bpSourcePath = bpSourcePath.replace('/', java.io.File.separatorChar);
+                bpSourcePath = bpSourcePath.replace(java.io.File.separatorChar, '/');
                 if (verbose)
                     System.out.println("B   source path: " + bpSourcePath);                
                 ArrayList locations = new ArrayList();
                 for (Iterator it = list.iterator(); it.hasNext();) {
                     Location l = (Location)it.next();
-                    if (l.sourcePath().equals(bpSourcePath))
+                    String lSourcePath = l.sourcePath().replace(java.io.File.separatorChar, '/');
+                    lSourcePath = normalize(lSourcePath);
+                    if (lSourcePath.equals(bpSourcePath))
                         locations.add(l);
                 }
                 if (verbose)
@@ -219,6 +221,34 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             ex.printStackTrace ();
         }
         return new ArrayList();
+    }
+    
+    /**
+     * Normalizes the given path by removing unnecessary "." and ".." sequences.
+     * This normalization is needed because the compiler stores source paths like "foo/../inc.jsp" into .class files. 
+     * Such paths are not supported by our ClassPath API.
+     * TODO: compiler bug? report to JDK?
+     * 
+     * @param path path to normalize
+     * @return normalized path without "." and ".." elements
+     */ 
+    private static String normalize(String path) {
+      Pattern thisDirectoryPattern = Pattern.compile("(/|\\A)\\./");
+      Pattern parentDirectoryPattern = Pattern.compile("(/|\\A)([^/]+?)/\\.\\./");
+      
+      for (Matcher m = thisDirectoryPattern.matcher(path); m.find(); )
+      {
+        path = m.replaceAll("$1");
+        m = thisDirectoryPattern.matcher(path);
+      }
+      for (Matcher m = parentDirectoryPattern.matcher(path); m.find(); )
+      {
+        if (!m.group(2).equals("..")) {
+          path = path.substring(0, m.start()) + m.group(1) + path.substring(m.end());
+          m = parentDirectoryPattern.matcher(path);        
+        }
+      }
+      return path;
     }
 }
 
