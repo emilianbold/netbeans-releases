@@ -180,13 +180,11 @@ public abstract class NbTopManager extends TopManager {
         }
 
         // System property jdk.home points to the JDK root directory. 
-        // This is for JDKs which does not have jre directory (currently OS/2 and Mac OS X)
+        // This is for JDKs which does not have jre directory (currently Mac OS X)
         {   String jdkHome=System.getProperty("java.home");  // NOI18N
         
             if (jdkHome!=null) {
-                int os=Utilities.getOperatingSystem();
-                
-                if (os!=Utilities.OS_MAC && os!=Utilities.OS_OS2) {
+                if (Utilities.getOperatingSystem()!=Utilities.OS_MAC) {
                     jdkHome+=File.separator+"..";  // NOI18N
                 }
                 System.setProperty ("jdk.home",jdkHome);  // NOI18N
