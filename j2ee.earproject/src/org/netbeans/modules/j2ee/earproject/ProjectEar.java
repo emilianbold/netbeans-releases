@@ -102,14 +102,6 @@ public final class ProjectEar extends J2eeAppProvider
         return project.getFileObject (EarProjectProperties.META_INF);
     }
     
-//    public FileObject getModuleFolder() {
-//        return getMetaInf();
-//    }
-    
-    public boolean useDirectoryPath() {
-        return false;
-    }
-    
     public ClassPathProvider getClassPathProvider () {
         return (ClassPathProvider) project.getLookup ().lookup (ClassPathProvider.class);
     }
@@ -440,4 +432,14 @@ public final class ProjectEar extends J2eeAppProvider
         return (J2eeModuleProvider[]) mods.values().toArray(new J2eeModuleProvider[mods.size()]);
     }
     
+    public File getDeploymentConfigurationFile(String name) {
+        FileObject moduleFolder = getMetaInf();
+        File configFolder = FileUtil.toFile(moduleFolder);
+        return new File(configFolder, name);
+    }
+
+    public FileObject findDeploymentConfigurationFile (String name) {
+        FileObject moduleFolder = getMetaInf();
+        return moduleFolder.getFileObject(name);
+    }
 }
