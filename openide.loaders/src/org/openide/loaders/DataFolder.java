@@ -397,7 +397,7 @@ implements Serializable, DataObject.Container {
                 // it provided some node with the same children as
                 // DataFolder would have anyway. Filter the children.
                 return new ClonedFilter (n, filter);
-            } else if (filter != DataFilter.ALL) {
+            } else if (filter != DataFilter.ALL && filter != f) {
                 // Tricky. createNodeDelegate was overridden, and it is
                 // producing FolderChildren with some special filter.
                 // Apply both the subclass's filter and this additional one.
