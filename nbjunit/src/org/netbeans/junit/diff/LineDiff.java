@@ -137,7 +137,7 @@ public class LineDiff implements Diff {
             
             //find path
             IndexValue[] path=new IndexValue[testLines.length];
-            
+            int lastValue=0;
             for (int i=0;i < indiciestest.length;i++) {
                 ArrayList list=indiciestest[i];
                 if (list == null) {
@@ -145,7 +145,7 @@ public class LineDiff implements Diff {
                 }
                 for (int j=0;j < list.size();j++) {
                     IndexValue ind=(IndexValue)(list.get(j));
-                    if (path[i] == null || ind.isBetterThan(path[i])) {
+                    if (path[i] == null || ind.isBetterThan(path[i], lastValue)) {
                         boolean history=false;
                         int lastIndex=-1;
                         for (int k=0;k < i;k++) {
@@ -159,6 +159,7 @@ public class LineDiff implements Diff {
                         }
                         if (!history && lastIndex < ind.passIndex) {
                             path[i]=ind;
+                            lastValue=path[i].value;
                         }
                     }
                 }
@@ -263,15 +264,28 @@ public class LineDiff implements Diff {
             this.index=index;
             this.line=line;
             this.passIndex=srcIndex;
-            value=Math.abs(index-srcIndex);
+            value=index-srcIndex;
         }
         
-        public boolean isBetterThan(IndexValue v) {
+        public boolean isBetterThan(IndexValue v, int lastValue) {
+            if (value >= lastValue && v.value >= lastValue) {
+                return (value < v.value);
+            } else if (value < lastValue && v.value < lastValue) {
+                return (value < v.value);
+            } else if (value < lastValue) {
+                return false;
+            } else if (v.value < lastValue) {
+                return true;
+            }
             return (value < v.value);
         }
         
         public int compareTo(Object o) {
             return (value - ((IndexValue)o).value);
+        }
+        
+        public String toString() {
+            return "["+String.valueOf(index)+", "+String.valueOf(passIndex)+"] = "+String.valueOf(value);
         }
     }
 }
