@@ -23,6 +23,8 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.util.NbBundle;
+import java.awt.Color;
+import java.awt.Dimension;
 
 /**
 * Options for the java editor kit
@@ -43,12 +45,21 @@ public class HTMLOptions extends BaseOptions {
     public static final String COMPLETION_LOWER_CASE_PROP = "completionLowerCase"; // NOI18N    
 
     private static final String HELP_ID = "editing.editor.html"; // !!! NOI18N
+
+    public static final String JAVADOC_AUTO_POPUP_PROP = "javaDocAutoPopup"; //NOI18N
+    
+    public static final String JAVADOC_BGCOLOR = "javaDocBGColor"; // NOI18N
+    
+    public static final String JAVADOC_PREFERRED_SIZE_PROP = "javaDocPreferredSize"; //NOI18N
     
     static final String[] HTML_PROP_NAMES = OptionSupport.mergeStringArrays(BaseOptions.BASE_PROP_NAMES, new String[] {
                                                 COMPLETION_AUTO_POPUP_PROP,
                                                 COMPLETION_AUTO_POPUP_DELAY_PROP,
                                                 COMPLETION_INSTANT_SUBSTITUTION_PROP,
-                                                COMPLETION_LOWER_CASE_PROP
+                                                COMPLETION_LOWER_CASE_PROP,
+                                                JAVADOC_AUTO_POPUP_PROP,
+                                                JAVADOC_PREFERRED_SIZE_PROP,
+                                                JAVADOC_BGCOLOR
                                             });
 
 
@@ -100,6 +111,31 @@ public class HTMLOptions extends BaseOptions {
 
     public HelpCtx getHelpCtx () {
         return new HelpCtx (HELP_ID);
+    }
+    
+    public boolean getJavaDocAutoPopup() {
+        return getSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP);
+    }
+    
+    public void setJavaDocAutoPopup(boolean auto) {
+        setSettingBoolean(ExtSettingsNames.JAVADOC_AUTO_POPUP, auto,
+            JAVADOC_AUTO_POPUP_PROP);
+    }
+    
+    public Color getJavaDocBGColor() {
+        return (Color)getSettingValue(ExtSettingsNames.JAVADOC_BG_COLOR);
+    }
+    public void setJavaDocBGColor(Color c) {
+        setSettingValue(ExtSettingsNames.JAVADOC_BG_COLOR, c,
+            JAVADOC_BGCOLOR);
+    }
+    
+    public Dimension getJavaDocPreferredSize() {
+        return (Dimension)getSettingValue(ExtSettingsNames.JAVADOC_PREFERRED_SIZE);
+    }
+    public void setJavaDocPreferredSize(Dimension d) {
+        setSettingValue(ExtSettingsNames.JAVADOC_PREFERRED_SIZE, d,
+            JAVADOC_PREFERRED_SIZE_PROP);
     }
     
     /**

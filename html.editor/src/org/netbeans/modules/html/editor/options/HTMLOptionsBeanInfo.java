@@ -34,7 +34,10 @@ public class HTMLOptionsBeanInfo extends BaseOptionsBeanInfo {
 
     private static final String[] EXPERT_PROP_NAMES = new String[] {
         HTMLOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
-        HTMLOptions.COMPLETION_LOWER_CASE_PROP
+        HTMLOptions.COMPLETION_LOWER_CASE_PROP,
+        HTMLOptions.JAVADOC_AUTO_POPUP_PROP,
+        HTMLOptions.JAVADOC_PREFERRED_SIZE_PROP,
+        HTMLOptions.JAVADOC_BGCOLOR
     };
 
     public HTMLOptionsBeanInfo() {
