@@ -75,27 +75,26 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
             descs = (String [])o;
         }
         
-        int length = 0;
-        if(imgs != null) {
-            length = imgs.length;
-        } 
+        if (imgs != null && vals != null) {
+            int length = length = imgs.length;
 
-        if(vals != null && vals.length < length)  {
-            length = vals.length;
-        }
-        
-        if (descs != null && descs.length < length) {
-            length = descs.length;
-        }
-        
-        images = new Image [length];
-        values = new Integer [length];
-        descriptions = new String [length];
+            if(vals.length < length)  {
+                length = vals.length;
+            }
 
-        for (int i = 0; i < length; i++) {
-            images [i] = imgs [i];
-            values [i] = vals [i];
-            descriptions [i] = descs == null ? vals [i].toString () : descs [i];
+            if (descs != null && descs.length < length) {
+                length = descs.length;
+            }
+
+            images = new Image [length];
+            values = new Integer [length];
+            descriptions = new String [length];
+
+            for (int i = 0; i < length; i++) {
+                images [i] = imgs [i];
+                values [i] = vals [i];
+                descriptions [i] = descs == null ? vals [i].toString () : descs [i];
+            }
         }
     }
     
@@ -127,13 +126,15 @@ public class ListImageEditor extends PropertyEditorSupport implements ExProperty
     public void paintValue (java.awt.Graphics g, java.awt.Rectangle rectangle) {
         int px;
         Image img = (Image) findObject (images, findIndex (values, getValue ()));
-        
-        g.drawImage (img,
-            rectangle.x + (rectangle.width - img.getWidth (null))/ 2,
-            rectangle.y + (rectangle.height - img.getHeight (null))/ 2, 
-            img.getWidth (null),
-            img.getHeight (null),
-            null);
+    
+        if (img != null) {
+            g.drawImage (img,
+                rectangle.x + (rectangle.width - img.getWidth (null))/ 2,
+                rectangle.y + (rectangle.height - img.getHeight (null))/ 2, 
+                img.getWidth (null),
+                img.getHeight (null),
+                null);
+        }
     }
     
     public String getJavaInitializationString () {
