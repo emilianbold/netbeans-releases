@@ -71,8 +71,6 @@ public class FormCustomEditor extends JPanel
                                         "LAB_SelectMode.mnemonic").charAt(0))); //NOI18N
         jLabel1.setLabelFor(editorsCombo);
         
-        HelpCtx.setHelpIDString(cardPanel, getClass().getName() + ".tabbedPane"); // NOI18N
-
         this.editor = editor;
         preCode = editor.getProperty().getPreCode();
         postCode = editor.getProperty().getPostCode();
@@ -164,6 +162,12 @@ public class FormCustomEditor extends JPanel
                 CardLayout cl2 = (CardLayout) cardPanel.getLayout();
                 cl2.show(cardPanel, (String) editorsCombo.getSelectedItem());
                 FormCustomEditor.this.editor.setModifiedEditor(getCurrentPropertyEditor());
+
+                int i = editorsCombo.getSelectedIndex();
+                HelpCtx helpCtx = i < 0 ? null :
+                                  HelpCtx.findHelp(cardPanel.getComponent(i));
+                String helpID = helpCtx != null ? helpCtx.getHelpID() : ""; // NOI18N
+                HelpCtx.setHelpIDString(FormCustomEditor.this, helpID);
             }
         });
     }
@@ -253,7 +257,7 @@ public class FormCustomEditor extends JPanel
             fcea,
             FormEditor.getFormBundle().getString("CTL_AdvancedInitializationCode")      // NOI18N
             );
-        dd.setHelpCtx(new HelpCtx(FormCustomEditorAdvanced.class));
+        dd.setHelpCtx(new HelpCtx("gui.source.modifying.property")); // NOI18N
         TopManager.getDefault().createDialog(dd).show();
 
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
