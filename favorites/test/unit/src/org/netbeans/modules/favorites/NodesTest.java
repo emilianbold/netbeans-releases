@@ -7,37 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.favorites;
 
-import java.lang.ref.*;
-import java.util.*;
-
-//import junit.framework.*;
-import org.netbeans.junit.*;
-
-import java.util.List;
-import java.awt.Image;
-import java.awt.datatransfer.Transferable;
-import java.beans.*;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.jar.*;
-import java.util.jar.Manifest;
-import java.util.regex.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import java.util.Arrays;
+import java.util.Collection;
+import javax.swing.Action;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.nodes.Node;
-
-//import org.openide.ErrorManager;
-
-
 
 public class NodesTest extends NbTestCase {
     private File userDir, platformDir, clusterDir;
@@ -67,25 +50,36 @@ public class NodesTest extends NbTestCase {
     }
     
     private void doCheckDepth (Node node, int depth) throws Exception {
-        if (depth == 0) return;
-        
-        Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
-        javax.swing.Action add = Actions.add ();
-        javax.swing.Action remove = Actions.remove ();
+        //Limit test to 2 levels
+        if (depth > 2) {
+            return;
+        }
+        Node[] arr = node.getChildren().getNodes(true);
+        Action add = Actions.add();
+        Action remove = Actions.remove();
         
         for (int i = 0; i < arr.length; i++) {
-            if (arr[i].getDisplayName().indexOf ("->") >= 0) {
-                fail ("Node " + arr[i] + " contains shadow indicator");
-            }
-            
             File f = Favorites.fileForNode(arr[i]);
-            // everything else than roots need to have actions 
-            Collection set = Arrays.asList (arr[i].getActions (false));
-            if (!set.contains(add) || !set.contains (remove)) {
-                fail ("Node " + arr[i] + " does not contain actions add and remove, but:\n" + set);
+            //First level (link) has action remove
+            //Further level has action add
+            Collection set = Arrays.asList (arr[i].getActions(false));
+            if (depth == 1) {
+                if (!set.contains (remove)) {
+                    fail ("Node " + arr[i] + " does not contain action remove, but:\n" + set);
+                }
+                if (set.contains(add)) {
+                    fail ("Node " + arr[i] + " contains action add.");
+                }
+            } else {
+                if (!set.contains(add)) {
+                    fail ("Node " + arr[i] + " does not contain action, but:\n" + set);
+                }
+                if (set.contains (remove)) {
+                    fail ("Node " + arr[i] + " contains action remove.");
+                }
             }
             
-            doCheckDepth (arr[i], depth - 1);
+            doCheckDepth (arr[i], depth + 1);
         }
     }
 }

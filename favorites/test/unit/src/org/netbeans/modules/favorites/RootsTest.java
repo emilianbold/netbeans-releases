@@ -7,37 +7,20 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.favorites;
 
-import java.lang.ref.*;
-import java.util.*;
-
-//import junit.framework.*;
-import org.netbeans.junit.*;
-
-import java.util.List;
-import java.awt.Image;
-import java.awt.datatransfer.Transferable;
-import java.beans.*;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.jar.*;
-import java.util.jar.Manifest;
-import java.util.regex.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.Arrays;
+import java.util.HashSet;
+
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-
-//import org.openide.ErrorManager;
-
-
 
 public class RootsTest extends NbTestCase {
     private File userDir, platformDir, clusterDir;
@@ -77,7 +60,8 @@ public class RootsTest extends NbTestCase {
         */
     }
     
-    public void testRootNodeContainsAllFileSystemRoots () throws Exception {
+    /* UI was changed. There are no more FS roots displayed in Favorites tab */
+    /*public void testRootNodeContainsAllFileSystemRoots () throws Exception {
         HashSet roots = new HashSet ();
         {
             File[] arr = File.listRoots();
@@ -103,7 +87,7 @@ public class RootsTest extends NbTestCase {
                 Arrays.asList (arr)
             );
         }
-    }
+    }*/
     
     public void testLinkToHomeDirIsThere () throws Exception {
         Node[] arr = Favorites.getNode ().getChildren ().getNodes (true);
@@ -148,10 +132,6 @@ public class RootsTest extends NbTestCase {
                     assertEquals ("Correct parent for " + nexts[i], f, file.getParentFile());
                 }
             }
-        }
-
-        if (roots.size () == File.listRoots().length) {
-            fail ("Roots shall be present" + roots);
         }
     }
 }
