@@ -77,27 +77,26 @@ public final class Util extends Object {
     /** Assembles a file name for a properties file from its base name and language.
      * @return assembled name */
     public static String assembleName (String baseName, String lang) {
-        if (lang.length() == 0)
+        if(lang.length() == 0)
             return baseName;
         else {
             if (lang.charAt(0) != PRB_SEPARATOR_CHAR) {
                 StringBuffer res = new StringBuffer().append(baseName).append(PRB_SEPARATOR_CHAR).append(lang);
                 return res.toString();
-            }
-            else
+            } else
                 return baseName + lang;
         }
     }
     
     /** Gets a locale part of file name based on the primary file entry for a properties data object,
-     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>_en_US</code>, if Bundle.properties exists.
-     */
+     * e.g. for file <code>Bundle_en_US.properties</code> returns <code>_en_US</code>, if Bundle.properties exists. */
     public static String getLocalePartOfFileName(MultiDataObject.Entry fe) {
         String myName   = fe.getFile().getName();
         String baseName = getPrimaryFileObject(fe).getName();
         
-        if (!myName.startsWith(baseName))
-            throw new IllegalStateException("Resource Bundle: Should never happen - error in Properties loader"); // NOI18N
+        if(!myName.startsWith(baseName))
+            throw new IllegalStateException("Resource Bundle: Should never happen -> " // NOI18N
+                + myName + " doesn't start with " + baseName); // NOI18N
         
         return myName.substring(baseName.length());
     }
@@ -130,8 +129,7 @@ public final class Util extends Object {
 
     /** Gets a variant from a file name based on the primary file entry for a properties data object,
      * e.g. for file <code>Bundle_en_US_POSIX.properties</code> returns <code>POSIX</code> (if Bundle.properties exists).
-     * @return language for this locale or <code>null</code> if no variant is present
-     */
+     * @return language for this locale or <code>null</code> if no variant is present */
     public static String getVariant(MultiDataObject.Entry fe) {
         try {
             String part = getLocalePartOfFileName(fe);
@@ -154,15 +152,15 @@ public final class Util extends Object {
             if(part.length() == 0)
                 return null;
             if(part.charAt(0) != PRB_SEPARATOR_CHAR)
-                throw new IllegalStateException("Resource Bundle: Should never happen - error in Properties loader (" + part + ")"); // NOI18N
+                throw new IllegalStateException("Resource Bundle: Should never happen -> locale suffix " // NOI18N
+                    + part + " doesn't start with " + PRB_SEPARATOR_CHAR); // NOI18N
             
             int end = part.indexOf(PRB_SEPARATOR_CHAR, 1);
             String result;
             result = (end == -1) ? part.substring(1) : part.substring(1, end);
 
             return (result.length() == 0) ? "" : result;
-        }
-        catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (ArrayIndexOutOfBoundsException ex) {
             return null;
         }
     }
@@ -215,6 +213,7 @@ public final class Util extends Object {
             if (temp.length() == 0)
                 temp = variant;
         }
+        
         if (temp.length() != 0) {
             result.append("/"); // NOI18N
             result.append(temp);

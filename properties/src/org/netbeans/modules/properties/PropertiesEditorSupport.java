@@ -880,15 +880,8 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
     } // End of nested class PropertiesEditor.
     
 
-    // PENDING Will be changed soon. This stream wrapping is cumbersome.
     /** This stream is able to filter various new line delimiters and replace them by \n. */
     static class NewLineReader extends BufferedReader {
-        
-        /** Encapsulated input stream */
-//        BufferedInputStream bufis; // TEMP
-        
-        /** Next character to read. */
-//        int nextToRead; // TEMP
         
         /** The count of types new line delimiters used in the file */
         int[] newLineTypes;

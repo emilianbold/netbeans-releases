@@ -107,19 +107,26 @@ public class PropertiesDataNode extends DataNode {
     public void createPasteTypes(Transferable transferable, List types) {
         super.createPasteTypes(transferable, types);
 
+        // Copy/paste mode?
         int mode = NodeTransfer.COPY;
         
         Node node = NodeTransfer.node(transferable, mode);
         
-        if(node == null || !(node instanceof PropertiesLocaleNode))
+        if(node == null || !(node instanceof PropertiesLocaleNode)) {
+            // Cut/paste mode?
             mode = NodeTransfer.MOVE;
         
-        node = NodeTransfer.node(transferable, mode);
-        
-        if(node == null || !(node instanceof PropertiesLocaleNode))
-            return;
+            node = NodeTransfer.node(transferable, mode);
 
-        
+            if(node == null || !(node instanceof PropertiesLocaleNode))
+                return;
+            
+            PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
+            if(((PropertiesDataObject)getDataObject()).files().contains(entry.getFile())) {
+                return;
+            }
+        }
+
         PropertiesFileEntry entry = (PropertiesFileEntry)((PropertiesLocaleNode)node).getFileEntry();
         types.add(new EntryPasteType(entry, mode));
 
@@ -168,10 +175,11 @@ public class PropertiesDataNode extends DataNode {
             String newName = getDataObject().getPrimaryFile().getName() + Util.getLocalePartOfFileName(entry);
             
             int entryIndex = ((PropertiesDataObject)getDataObject()).getBundleStructure().getEntryIndexByFileName(newName);
-
+            
             // Has such item -> find brother.
-            if(entryIndex != -1)
+            if(entryIndex != -1) {
                 newName = FileUtil.findFreeFileName(folder, newName, entry.getFile().getExt());
+            }
             
             if(flag == NodeTransfer.COPY) {
                 FileObject fileObject = entry.getFile();

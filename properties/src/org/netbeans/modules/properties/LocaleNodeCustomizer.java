@@ -1,8 +1,3 @@
-
-
-
-
-
 /*
  *                 Sun Public License Notice
  * 
@@ -76,7 +71,7 @@ public class LocaleNodeCustomizer extends JPanel {
         
         removeKeyButton.setEnabled(false);
         
-        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDING);
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_EDITLOCALE);
     }
 
     /** Updates name of the <code>entry</code>. */

@@ -320,17 +320,16 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
     /** Whether the object may be copied. Implements superclass abstract method.
      * @return <code>true</code> if it may
      */
-    public boolean isCopyAllowed () {
+    public boolean isCopyAllowed() {
         return true;
     }
     // [PENDING] copy should be overridden because e.g. copy and then paste
     // to the same folder creates a new locale named "1"! (I.e. "foo_1.properties")
 
-    /** Getter for move action. Implements superclass abstract method.
-     * @return true if the object can be moved
-     */
+    /** Indicates whether the object can be moved. Implements superclass abstract method.
+     * @return <code>true</code> if the object can be moved */
     public boolean isMoveAllowed() {
-        return !getFile ().isReadOnly ();
+        return (!getFile().isReadOnly()) && (getDataObject().getPrimaryEntry() != this);
     }
 
     /** Getter for rename action. Implements superclass abstract method.

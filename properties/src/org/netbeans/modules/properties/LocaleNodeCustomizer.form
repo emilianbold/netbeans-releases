@@ -2,7 +2,6 @@
 
 <Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <SyntheticProperties>
-    <SyntheticProperty name="encoding" type="java.lang.String" value="UTF-8"/>
   </SyntheticProperties>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
@@ -122,7 +121,7 @@
       <SubComponents>
         <Component class="javax.swing.JTextField" name="nameText">
           <Properties>
-            <Property name="editable" type="boolean" editor="sun.beans.editors.BoolEditor" value="false"/>
+            <Property name="editable" type="boolean" value="false"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -132,7 +131,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="changeNameButton">
           <Properties>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.beaninfo.editors.StringEditor" value="..."/>
+            <Property name="text" type="java.lang.String" value="..."/>
           </Properties>
 
           <Events>
