@@ -79,6 +79,12 @@ public class PatternChildren extends ClassChildren {
     refreshKeys (PatternFilter.ALL);
   }
   
+  /** Updates all the keys with given filter. Overriden to provide package access tothis method.
+  */
+  protected void refreshKeys (int filter) {
+    super.refreshKeys (filter);
+  }
+
   /** @return The class of currently associated filter or null
    * if no filter is associated with these children 
    */
@@ -128,6 +134,9 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  3    Gandalf   1.2         7/3/99   Ian Formanek    Overriden method 
+ *       refreshKeys to provide access to classes in thes package and make it 
+ *       compilable
  *  2    Gandalf   1.1         7/1/99   Jan Jancura     Object Browser support
  *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
  * $ 
