@@ -259,4 +259,29 @@ if (ref != null) ref.flush();
 if (log != null) log.flush();
 }
 }
+
+/**
+ * Call Action: Ternary
+ * Sub Test: Issues
+ * Author:   ehucka, jlahoda
+ * Version:  1.1
+ * Comment:  
+ */
+
+public void testTernary() throws Exception {
+PrintWriter ref = null;
+PrintWriter log = null;
+String[] arguments = new String[] {
+"/org/netbeans/test/editor/app/tests/indentation.xml",
+"Issues.Ternary"
+};
+try {
+ref = new PrintWriter(getRef());
+log = new PrintWriter(getLog());
+new CallTestGeneric().runTest(arguments, log, ref);
+} finally {
+if (ref != null) ref.flush();
+if (log != null) log.flush();
+}
+}
 }
