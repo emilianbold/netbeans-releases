@@ -76,6 +76,12 @@ public class JavadocModule implements ModuleInstall {
     
     TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
+
+        Class jdoClass = JavaDataObject.class;
+        if ( jdoClass == null ) {
+          return;
+        }
+
         Enumeration en = TopManager.getDefault().getLoaderPool().producersOf(JavaDataObject.class);
 
         while ( en.hasMoreElements() ) {
@@ -143,6 +149,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  5    Gandalf   1.4         5/11/99  Petr Hrebejk    
  *  4    Gandalf   1.3         5/7/99   Petr Hrebejk    
  *  3    Gandalf   1.2         4/27/99  Petr Hrebejk    GenerateDocAction for 
  *       all producersOf JavaDataObjects
