@@ -72,7 +72,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
     * Returns the IceBrowserSettings' icon. 
     */
     public Image getIcon (int type) {
-        return loadImage("/org/openide/resources/html/htmlView.gif"); // NOI18N
+        return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
 }
 
