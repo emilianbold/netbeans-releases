@@ -679,16 +679,20 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/servletapi23..."/>
     <ant dir="../web/servletapi23" target="netbeans"/>
   </target>
+  <target name="all-web/servletapi24">
+    <echo message="Building module web/servletapi24..."/>
+    <ant dir="../web/servletapi24" target="netbeans"/>
+  </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
-  <target name="all-web/jspparser" depends="all-web/core,all-web/servletapi23,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io">
+  <target name="all-web/jspparser" depends="all-web/servletapi24,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io">
     <echo message="Building module web/jspparser..."/>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="all-web/core,all-xml/text-edit">
+  <target name="all-web/jspsyntax" depends="all-web/jspparser,all-xml/text-edit">
     <echo message="Building module web/jspsyntax..."/>
     <ant dir="../web/jspsyntax" target="netbeans"/>
   </target>

@@ -15,54 +15,104 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.beans.*;
 import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.io.IOException;
 
 import org.openide.ErrorManager;
-import org.openide.nodes.Node;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
-/**
+import org.openide.filesystems.FileObject;
+
+//import org.netbeans.api.projects.Project;
+//import org.netbeans.api.projects.ProjectMember;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
+import org.netbeans.modules.web.jsps.parserapi.JSPColoringData;
+//import org.netbeans.modules.web.project.WebModuleUtils;
+//import org.netbeans.modules.web.project.WebModule;
+
+/** Support for parsing JSP pages and cooperation between the parser and the editor.
+ * Parsing is not available outside a project, which means that project-less pages 
+ * may not have proper tag library coloring and completion and other webmodule-dependent
+ * features. The support tries to do its best to get good parse results even for
+ * project-less pages, but in this case nothing can be guaranteed.
  *
- * @author  pjiricka
+ * @author Petr Jiricka
  * @version 
  */
-public class TagLibParseSupport implements Node.Cookie {
+public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
 
-    private JspDataObject jspdo;
+    //private Project proj;
+    private FileObject wmRoot;
+    private FileObject jspFile;
+    
+    // request processing stuff
     private boolean documentDirty;
     private RequestProcessor.Task parsingTask = null;
-    private WeakReference tagLibEditorDataRef;
+    private RequestProcessor requestProcessor;
 
-    /** Creates new TagLibParseSupport */
-    public TagLibParseSupport(JspDataObject jspdo) {
-        this.jspdo = jspdo;
+    /** Holds a reference to the JSP coloring data. */
+    private WeakReference jspColoringDataRef;
+    
+    /** Holds a time-based cache of the JspOpenInfo structure. */
+    private TimeReference jspOpenInfoRef;
+    
+    /** Holds the last parse result: JspParserAPI.ParseResult (whether successful or not).
+     * The editor should hold a strong reference to this object. That way, if the editor window
+     * is closed, memory is reclaimed, but important data is kept when it is needed.
+     */
+    private SoftReference parseResultRef;
+
+    /** Holds the last successful parse result: JspParserAPI.ParseResult.
+     * The editor should hold a strong reference to this object. That way, if the editor window
+     * is closed, memory is reclaimed, but important data is kept when it is needed.
+     */
+    private SoftReference parseResultSuccessfulRef;
+    
+    private Object parseResultLock = new Object();
+    private Object openInfoLock = new Object();
+
+    /** Creates new TagLibParseSupport 
+     * @param jspFile the resource to parse
+     */
+    public TagLibParseSupport(FileObject jspFile) {
+        this.jspFile = jspFile;
+        //this.proj = proj;
+        try{
+            this.wmRoot = jspFile.getFileSystem().getRoot();
+        }
+        catch (org.openide.filesystems.FileStateInvalidException e){
+        }
+        requestProcessor = new RequestProcessor("background jsp parsing"); // NOI18N
     }
 
     /** Gets the tag library data relevant for the editor. */
-    public TagLibEditorData getTagLibEditorData() {
-        return getTagLibEditorData(true);
+    public JSPColoringData getJSPColoringData() {
+        return getJSPColoringData(true);
     }
     
-    TagLibEditorData getTagLibEditorData(boolean prepare) {
-        if (tagLibEditorDataRef != null) {
-            Object o = tagLibEditorDataRef.get();
+    JSPColoringData getJSPColoringData(boolean prepare) {
+        if (jspColoringDataRef != null) {
+            Object o = jspColoringDataRef.get();
             if (o != null)
-                return (TagLibEditorData)o;
+                return (JSPColoringData)o;
         }
-        TagLibEditorData tled = new TagLibEditorData(this);
-        tagLibEditorDataRef = new WeakReference(tled);
+        JSPColoringData jcd = new JSPColoringData(this);
+        jspColoringDataRef = new WeakReference(jcd);
         if (prepare) {
             prepare();
         }
-        return tled;
+        return jcd;
     }
 
     /** Sets the dirty flag - if the document was modified after last parsing. */
-    synchronized void setDocumentDirty(boolean b) {
-        documentDirty = b;
+    void setDocumentDirty(boolean b) {
+        synchronized (parseResultLock) {
+            documentDirty = b;
+        }
     }
 
     /** Tests the documentDirty flag. */
@@ -88,161 +138,112 @@ public class TagLibParseSupport implements Node.Cookie {
         return parseObject(Thread.MAX_PRIORITY - 1);
     }
 
-    private synchronized Task parseObject(int priority) {
-        RequestProcessor.Task t = parsingTask;
+    private Task parseObject(int priority) {
+        synchronized (parseResultLock) {
+            RequestProcessor.Task t = parsingTask;
 
-        if (t != null) {
-            t.setPriority(Math.max(t.getPriority(), priority));
-            return t;
-        }
+            if (t != null) {
+                t.setPriority(Math.max(t.getPriority(), priority));
+                return t;
+            }
 
 //System.out.println("[Parsing] Got parse request");
-        setDocumentDirty(false);
-        t = RequestProcessor.postRequest(new ParsingRunnable(), 0, priority);
-        parsingTask = t;
-        return parsingTask;
+            setDocumentDirty(false);
+            t = requestProcessor.post(new ParsingRunnable(), 0, priority);
+            parsingTask = t;
+            return parsingTask;
+        }
     }
-
+    
+    public JspParserAPI.JspOpenInfo getCachedOpenInfo() {
+        synchronized (openInfoLock) {
+            long timestamp = jspFile.lastModified().getTime();
+            if (jspOpenInfoRef == null) {
+                jspOpenInfoRef = new TimeReference();
+            }
+            JspParserAPI.JspOpenInfo info = (JspParserAPI.JspOpenInfo)jspOpenInfoRef.get(timestamp);
+            if (info == null) {
+                info = JspCompileUtil.getJspParser().getJspOpenInfo(wmRoot, jspFile, WebModule.getJspParserWM ());
+                jspOpenInfoRef.put(info, timestamp);
+            }
+            return info;
+        }
+    }
+    
+    /** Returns a cached parse information about the page.
+     * @param successfulOnly if true, and the page has been parsed successfully in the past, returns
+     *  the result of this successful parse. Otherwise returns null.
+     *  If set to false, never returns null.
+     * @param needCurrent if true, attempts to return the result corresponding to the page exactly at this moment<br>
+     *   If both parameters are true, and the page is currently successfully parsable, then returns this result, If it is
+     *   unparsable, returns null.
+     * @return the result of parsing this page
+     */
+    public JspParserAPI.ParseResult getCachedParseResult(boolean successfulOnly, boolean preferCurrent) {
+        boolean needToParse = false;
+        if (preferCurrent && isDocumentDirty()) {
+            // need to get an up to date copy
+            needToParse = true;
+        }
+        if (parseResultRef == null) {
+            // no information available
+            needToParse = true;
+        }
+        
+        JspParserAPI.ParseResult ret = null;
+        SoftReference myRef = successfulOnly ? parseResultSuccessfulRef : parseResultRef;
+        if (myRef != null) {
+            ret = (JspParserAPI.ParseResult)myRef.get();
+        }
+        
+        if ((ret == null) && (!successfulOnly)) {
+            // to comply with the Javadoc regarding not returning null
+            needToParse = true;
+        }
+        
+        if (needToParse) {
+            RequestProcessor.Task t = prepare(); // having the reference is important 
+                                                 // so the SoftReference does not get garbage collected
+            t.waitFinished();
+            myRef = successfulOnly ? parseResultSuccessfulRef : parseResultRef;
+            if (myRef != null) {
+                ret = (JspParserAPI.ParseResult)myRef.get();
+            }
+        }
+        return ret;
+    }
+    
     private class ParsingRunnable implements Runnable {
+        
+        /** Holds the result of parsing. Need to hold it here
+         * to make sure that we have a strong reference and the SoftReference
+         * does not get garbage collected.
+         */
+        JspParserAPI.ParseResult locResult = null;
+        
         public ParsingRunnable () {
         }
         
         public void run() {
-            try {
-                try {
-                    JspParserAPI parser = JspCompileUtil.getJspParser();
-                    if (parser == null) {
-                        ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-                        new NullPointerException());
-                    }
-                    else {
-                        JspParserAPI.ParseResult result = 
-                            parser.parsePage(jspdo, JspCompileUtil.getContextPath(jspdo.getPrimaryFile()));
-                        if (result.isParsingSuccess()) {
-                            JspInfo info = result.getPageInfo();
-                            getTagLibEditorData(false).applyParsedData(info.getTagLibraryData(), 
-                                                                  jspdo.getPrimaryFile().getFileSystem());
-                            getTagLibEditorData(false).setBeanData(info.getBeans());
-                            getTagLibEditorData(false).setErrorPage(info.isErrorPage ());
-                        }
-                        // if failure do nothing
-                    }
+            JspParserAPI parser = JspCompileUtil.getJspParser();
+            // assert parser != null;
+            if (parser == null) {
+                throw new InternalError();
+            }
+            locResult = parser.analyzePage(wmRoot, jspFile, WebModule.getJspParserWM (), JspParserAPI.ERROR_IGNORE);
+            synchronized (TagLibParseSupport.this.parseResultLock) {
+                parseResultRef = new SoftReference(locResult);
+                if (locResult.isParsingSuccess()) {
+                    parseResultSuccessfulRef = new SoftReference(locResult);
                 }
-                catch (IOException e) { 
-                    ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-                }
-            }
-            finally {
-                synchronized (TagLibParseSupport.this) {
-                    parsingTask = null;
-                }
+                PageInfo pageInfo = locResult.getPageInfo();
+                // PENDING - xmlPrefixMapper
+                getJSPColoringData(false).applyParsedData(pageInfo.getTagLibraries(), pageInfo.getJspPrefixMapper(), 
+                                                          pageInfo.isELIgnored(), locResult.isParsingSuccess());
+                // if failure do nothing
+                parsingTask = null;
             }
         }
-    }
-   
-
-    /** Data structure which provides data to JSP syntax coloring and code completion for one page. 
-    * It does not attempt to faithfully represent the tag library as specified by the JSP spec,
-    * it only provides information necessary for syntax coloring and tag completion.
-     * It also provides other information about page such as bean info's and error page
-     * attribute.
-    */
-    public static class TagLibEditorData extends PropertyChangeSupport {
-
-        /** An imaginary property whose change is fired always when the tag library 
-        *  information changes in such a way that recoloring of the document is required. */
-        public static final String PROP_COLORING_CHANGE = "coloringChange"; // NOI18N
-
-        private TreeMap libraryMap = new TreeMap();
-        private JspInfo.BeanData[] beanData = new JspInfo.BeanData[0];
-        private boolean errorPage = false;
-        
-        TagLibEditorData(Object sourceBean) {
-            super(sourceBean);
-        }
-        
-        public void setBeanData(JspInfo.BeanData[] beanData) {
-            this.beanData = beanData;
-        }
-
-        public JspInfo.BeanData[] getBeanData() {
-            return beanData;
-        }
-        
-        public void setErrorPage (boolean errorPage) {
-            this.errorPage = errorPage;
-        }
-        
-        public boolean isErrorPage () {
-            return errorPage;
-        }
-
-        void applyParsedData(JspInfo.TagLibraryData[] taglibs, FileSystem fs) {
-            // pending information from inside the library
-            TreeMap otherMap = new TreeMap();
-            for (int i = 0; i < taglibs.length; i++) {
-                String prefix = taglibs[i].getPrefix();
-                otherMap.put(prefix, createTagLibData(taglibs[i], fs));
-            }
-            boolean coloringChanged = false;
-            if (libraryMap.size() != otherMap.size()) {
-                coloringChanged = true;
-            }
-            else {
-                TagLibData[] myTagLibData = getTagLibData();
-                TagLibData[] otherTagLibData = 
-                    (TagLibData[])otherMap.values().toArray(new TagLibData[otherMap.size()]);
-                for (int i = 0; i < myTagLibData.length; i++) {
-                    if (!myTagLibData[i].equalsColoringInformation(otherTagLibData[i])) {
-                        coloringChanged = true;
-                        break;
-                    }
-                }
-            }
-            libraryMap = otherMap;
-            if (coloringChanged) {
-                firePropertyChange(PROP_COLORING_CHANGE, null, null);
-            }
-        }
-
-        public TagLibData[] getTagLibData() {
-            return (TagLibData[])libraryMap.values().toArray(new TagLibData[libraryMap.size()]);
-        }
-
-        public TagLibData getTagLibData(String prefix) {
-            return (TagLibData)libraryMap.get(prefix);
-        }
-
-        protected void finalize() throws Throwable {
-            super.finalize();
-        }
-
-    }
-    
-    static TagLibData createTagLibData(JspInfo.TagLibraryData info, FileSystem fs) {
-        JspParserAPI parser = JspCompileUtil.getJspParser();
-        if (parser == null) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-            new NullPointerException());
-            return null;
-        }
-        else {
-            return parser.createTagLibData(info, fs);
-        }
-    }
-    
-    /** Information about one tag library, to be implemented by the JSPParser module. */
-    public static abstract class TagLibData {
-        
-        public abstract boolean equalsColoringInformation(TagLibData other);
-        
-        public abstract String getPrefix();
-        
-        /** Should really return javax.servlet.tagext.TagLibraryInfo,
-         * only returning object so we don't depend on servlet.jar.
-         */
-        public abstract Object getTagLibraryInfo();
-            
     }
 
 }

@@ -13,9 +13,12 @@
 
 package org.netbeans.modules.web.jspparser;
 
-
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -24,21 +27,29 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
+import java.net.URL;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.swing.text.EditorKit;
+import javax.swing.text.StyledDocument;
+
+import org.openide.filesystems.FileObject;
 
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 
-import org.netbeans.modules.web.core.jsploader.ContextDescriptor;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  * Simple <code>ServletContext</code> implementation without
  * HTTP-specific methods.
  *
  * @author Peter Rossbach (pr@webapp.de)
- * @author Petr Jiricka
  */
 
 public class ParserServletContext implements ServletContext {
@@ -54,32 +65,35 @@ public class ParserServletContext implements ServletContext {
 
 
     /**
-     * The log writer we will write log messages to.
+     * The base FileObject (document root) for this context.
      */
-    protected PrintWriter myLogWriter;
-
-
-    /**
-     * The descriptor of the base context.
+    protected FileObject wmRoot;
+    
+    
+    protected JspParserAPI.WebModule myWm;
+    
+    /** If true, takes the data from the editor; otherwise 
+     * from the disk.
      */
-    protected ContextDescriptor myContextDescriptor;
-
-
+    protected boolean useEditorVersion;
+    
+    
     // ----------------------------------------------------------- Constructors
 
 
     /**
      * Create a new instance of this ServletContext implementation.
      *
-     * @param aLogWriter PrintWriter which is used for <code>log()</code> calls. May be null.
-     * @param aResourceBaseURL Resource base URL
+     * @param wmRoot Resource base FileObject
+     * @param wm JspParserAPI.WebModule in which we are parsing the file - this is used to 
+     *    find the editor for objects which are open in the editor
      */
-    public ParserServletContext(PrintWriter aLogWriter, ContextDescriptor aContextDescriptor) {
+    public ParserServletContext(FileObject wmRoot, JspParserAPI.WebModule wm, boolean useEditor) {
 
         myAttributes = new Hashtable();
-        myLogWriter = aLogWriter;
-        myContextDescriptor = aContextDescriptor;
-
+        this.wmRoot = wmRoot;
+        this.myWm = wm;
+        this.useEditorVersion = useEditor;
     }
 
 
@@ -186,6 +200,13 @@ public class ParserServletContext implements ServletContext {
 
     }
 
+    /** Returns a FileObject representation of the specified context-relative 
+     * virtual path.
+     */
+    protected FileObject getResourceAsObject(String path) {
+        return ContextUtil.findRelativeFileObject(wmRoot, path);
+    }
+    
 
     /**
      * Return the real path for the specified context-relative
@@ -194,7 +215,19 @@ public class ParserServletContext implements ServletContext {
      * @param path The context-relative virtual path to resolve
      */
     public String getRealPath(String path) {
-        return myContextDescriptor.getRealPath(path);
+        
+        if (!path.startsWith("/")) {
+            return (null);
+        }
+        FileObject fo = getResourceAsObject(path);
+        if (fo != null) {
+            File ff = FileUtil.toFile(fo);
+            if (ff != null) {
+                return ff.getAbsolutePath();
+            }
+        }
+        
+        return null;
     }
             
             
@@ -220,7 +253,17 @@ public class ParserServletContext implements ServletContext {
      *  not properly formed
      */
     public URL getResource(String path) throws MalformedURLException {
-        return myContextDescriptor.getResource(path);
+
+        if (!path.startsWith("/"))
+            throw new MalformedURLException(NbBundle.getMessage(ParserServletContext.class,
+                "EXC_PathMustStartWithSlash", path));
+        
+        FileObject fo = getResourceAsObject(path);
+        if (fo == null) {
+            return null;
+        }
+        return URLMapper.findURL(fo, URLMapper.EXTERNAL);
+
     }
 
 
@@ -231,9 +274,35 @@ public class ParserServletContext implements ServletContext {
      * @param path Context-relative path of the desired resource
      */
     public InputStream getResourceAsStream(String path) {
-        return myContextDescriptor.getResourceAsStream(path);
-    }
 
+        // first try from the opened editor - if fails read from file
+        if (myWm != null) {
+            FileObject fo = getResourceAsObject(path);
+            if ((fo != null) && (useEditorVersion)) {
+                // reading from the editor
+                InputStream result = myWm.getEditorInputStream (fo);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        
+        // read from the file by default
+        try {
+            URL url = getResource(path);
+            if (url == null) {
+                return null;
+            }
+            else {
+                return url.openStream();
+            }
+        } catch (Throwable t) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, t);
+            return (null);
+        }
+
+    }
+    
 
     /**
      * Return the set of resource paths for the "directory" at the
@@ -244,8 +313,8 @@ public class ParserServletContext implements ServletContext {
     public Set getResourcePaths(String path) {
 
         Set thePaths = new HashSet();
-        if (!path.endsWith("/")) // NOI18N
-            path += "/"; // NOI18N
+        if (!path.endsWith("/"))
+            path += "/";
         String basePath = getRealPath(path);
         if (basePath == null)
             return (thePaths);
@@ -258,7 +327,7 @@ public class ParserServletContext implements ServletContext {
             if (testFile.isFile())
                 thePaths.add(path + theFiles[i]);
             else if (testFile.isDirectory())
-                thePaths.add(path + theFiles[i] + "/"); // NOI18N
+                thePaths.add(path + theFiles[i] + "/");
         }
         return (thePaths);
 
@@ -270,7 +339,7 @@ public class ParserServletContext implements ServletContext {
      */
     public String getServerInfo() {
 
-        return ("ParserServletContext/1.0"); // NOI18N
+        return ("NB.ParserServletContext/1.0");
 
     }
 
@@ -329,11 +398,8 @@ public class ParserServletContext implements ServletContext {
      * @param message The message to be logged
      */
     public void log(String message) {
-        
-        if (myLogWriter == null)
-            return;
 
-        myLogWriter.println(message);
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
 
     }
 
@@ -347,12 +413,7 @@ public class ParserServletContext implements ServletContext {
      * @deprecated Use log(String,Throwable) instead
      */
     public void log(Exception exception, String message) {
-        
-        ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, exception);
 
-        if (myLogWriter == null)
-            return;
-        
         log(message, exception);
 
     }
@@ -366,14 +427,9 @@ public class ParserServletContext implements ServletContext {
      */
     public void log(String message, Throwable exception) {
 
-        ErrorManager.getDefault ().notify(ErrorManager.INFORMATIONAL, exception);
-
-        if (myLogWriter == null)
-            return;
+        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, message);
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exception);
         
-        myLogWriter.println(message);
-        exception.printStackTrace(myLogWriter);
-
     }
 
 

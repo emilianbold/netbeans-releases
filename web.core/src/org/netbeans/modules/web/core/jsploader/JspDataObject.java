@@ -67,6 +67,7 @@ import org.openidex.nodes.looks.DefaultLook;
 import org.openidex.nodes.looks.CompositeLook;
 import org.netbeans.modules.web.core.WebExecSupport;
 
+import org.netbeans.modules.web.jsps.parserapi.*;
 /** Object that provides main functionality for internet data loader.
 *
 * @author Petr Jiricka
@@ -300,12 +301,13 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                     ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
                     new NullPointerException());
                 }
-                result = parser.analyzePage(this, JspCompileUtil.getContextPath(getPrimaryFile()), 
-                    true, JspParserAPI.ERROR_REPORT_ACCURATE);
+                result = parser.analyzePage( JspCompileUtil.getContextRoot(getPrimaryFile()), getPrimaryFile(), 
+                    WebModule.getJspParserWM(), JspParserAPI.ERROR_IGNORE );
+                
             }
             if ((result == null) || result.isParsingSuccess()) {
                 // parse success
-                JspInfo jspInfo = (result == null) ? null : result.getPageInfo();
+                PageInfo jspInfo = (result == null) ? null : result.getPageInfo();
                 
                 JspCompilationInfo compInfo = new JspCompilationInfo(jspInfo, getPrimaryFile());
                 // update information about pages included in this page

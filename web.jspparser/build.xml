@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -27,29 +27,40 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
+    <property file="../spec-vers.properties"/>
+    <filter token="CORE_SPEC_VERS_SUBST" value="${web.core.specification.version}"/>
+    <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
+    <filter token="JSPPARSER_SPEC_VERS_SUBST" value="${web.jspparser.specification.version}"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <property name="web.implementation.version" value="${buildnumber}"/>
+    <filter token="WEB_BUILD_NUMBER_SUBST"  value="${web.implementation.version}"/>
   </target>
 
   <target name="compile" depends="init">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <include name="org/netbeans/modules/web/jspparser/"/>
+      <include name="org/netbeans/modules/web/jsps/"/>
+      <include name="org/apache/jasper/"/>
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${core_root}/src/"/>
-        <fileset dir="../external">
-          <include name="*.jar"/>
+        <fileset dir="${nb_root}/core/external">
+          <include name="xml-apis*.jar"/>
         </fileset>
+        <pathelement location="../external/jsp-api-2.0.jar"/>
+        <pathelement location="../external/servlet-api-2.4.jar"/>
+        <pathelement location="../external/jasper-compiler-5.0.9.jar"/>
+        <pathelement location="../external/jasper-runtime-5.0.9.jar"/>
+        <pathelement location="../external/commons-logging-api.jar"/>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
-        <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+	<pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <pathelement location="${nb_root}/openide/io/netbeans/modules/autoload/openide-io.jar"/> <!-- used only indirectly -->
+       <!-- <pathelement location="${nb_root}/openide/registry/netbeans/modules/org-netbeans-modules-registry.jar"/> -->
       </classpath>
     </javac>
   </target>
 
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/modules/eager"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <locjar jarfile="netbeans/modules/eager/jsp-parser.jar"
             manifest="manifest-subst.mf"
@@ -57,6 +68,8 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <include name="org/netbeans/modules/web/jspparser/"/>
+      <include name="org/netbeans/modules/web/jsps/"/>
+      <include name="org/apache/jasper/"/>
       <locale name="ja"/>
     </locjar>
   </target>
@@ -65,8 +78,9 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules/eager/ext"/>
     <copy todir="netbeans/modules/eager/ext">
       <fileset dir="../external">
-        <include name="jasper-compiler-4.0.6.jar"/>
-        <include name="jasper-runtime-4.0.6.jar"/>
+        <include name="jasper-*.jar"/>
+        <include name="commons-logging-api.jar"/>
+        <include name="commons-el.jar"/>
       </fileset>
     </copy>
   </target>
@@ -122,4 +136,3 @@ Microsystems, Inc. All Rights Reserved.
 
 
 </project>
-

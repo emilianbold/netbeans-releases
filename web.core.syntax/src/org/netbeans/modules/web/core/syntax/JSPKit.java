@@ -32,18 +32,16 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.*;
 import org.openide.util.WeakListener;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.web.core.jsploader.JspDataObject;
-import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
-
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.BaseKit;
+import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.CompletionJavaDoc;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.editor.ext.html.HTMLDrawLayerFactory;
 import org.netbeans.editor.ext.java.JavaCompletion;
 import org.netbeans.editor.ext.java.JavaSyntax;
 import org.netbeans.editor.ext.java.JavaDrawLayerFactory;
@@ -52,7 +50,7 @@ import org.netbeans.editor.ext.plain.PlainSyntax;
 import org.netbeans.modules.editor.html.HTMLKit;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.NbEditorUtilities;
-
+import org.netbeans.modules.web.jsps.parserapi.JSPColoringData;
 
 /**
  * Editor kit implementation for JSP content type
@@ -79,29 +77,22 @@ public class JSPKit extends NbEditorKit {
 
     /** Creates a new instance of the syntax coloring parser */
     public Syntax createSyntax(Document doc) {
-        DataObject dobj = NbEditorUtilities.getDataObject(doc);
-        final JspDataObject jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
-        Syntax contentSyntax = (jspdo == null) ? 
-            new HTMLSyntax() : 
-            getSyntaxForLanguage(doc, jspdo.getContentLanguage());
-        Syntax scriptingSyntax = (jspdo == null) ? 
-            new JavaSyntax() : 
-            getSyntaxForLanguage(doc, jspdo.getScriptingLanguage());
+        FileObject fobj = NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        //String mimeType = NbEditorUtilities.getMimeType(doc);
+        
+        Syntax contentSyntax   = getSyntaxForLanguage(doc, JspUtils.getContentLanguage());
+        Syntax scriptingSyntax = getSyntaxForLanguage(doc, JspUtils.getScriptingLanguage());
         final Jsp11Syntax newSyntax = new Jsp11Syntax(contentSyntax, scriptingSyntax);
-        if (jspdo != null) {
-            // get the tag library data
-            TagLibParseSupport parseSupport = (TagLibParseSupport)jspdo.getCookie(TagLibParseSupport.class);
-            TagLibParseSupport.TagLibEditorData data = null;
-            if (parseSupport != null) {
-                data = parseSupport.getTagLibEditorData();
-            }
-            // construct the listener
-            PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
-            // attach the listener
-            jspdo.addPropertyChangeListener(WeakListener.propertyChange(pList, jspdo));
-            if (data != null) {
-                data.addPropertyChangeListener(WeakListener.propertyChange(pList, data));
-            }
+
+        // tag library coloring data stuff
+        JSPColoringData data = JspUtils.getJSPColoringData (doc, fobj);
+        // construct the listener
+        PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
+        // attach the listener
+        // PENDING - listen on the language
+        //jspdo.addPropertyChangeListener(WeakListener.propertyChange(pList, jspdo));
+        if (data != null) {
+            data.addPropertyChangeListener(WeakListener.propertyChange(pList, data));
         }
         return newSyntax;
     }
@@ -118,9 +109,9 @@ public class JSPKit extends NbEditorKit {
         private Object parsedDataRef; // hold a reference to the data we are listening on 
                                       // so it does not get garbage collected
         private Jsp11Syntax syntax;                              
-        private JspDataObject jspdo;
+        //private JspDataObject jspdo;
 
-        public ColoringListener(Document doc, TagLibParseSupport.TagLibEditorData data, Jsp11Syntax syntax) {
+        public ColoringListener(Document doc, JSPColoringData data, Jsp11Syntax syntax) {
             this.doc = doc;
             // we must keep the reference to the structure we are listening on so it's not gc'ed
             this.parsedDataRef = data;
@@ -128,7 +119,7 @@ public class JSPKit extends NbEditorKit {
             // syntax must keep a reference to this object so it's not gc'ed
             syntax.listenerReference = this;
             syntax.data = data;
-            jspdo = (JspDataObject)NbEditorUtilities.getDataObject(doc);
+            /* jspdo = (JspDataObject)NbEditorUtilities.getDataObject(doc);*/
         }
         
         private void recolor() {
@@ -143,15 +134,15 @@ public class JSPKit extends NbEditorKit {
                 syntax = null; // should help garbage collection
                 return;
             }
-            if (JspDataObject.PROP_CONTENT_LANGUAGE.equals(evt.getPropertyName())) {
+           /* if (JspDataObject.PROP_CONTENT_LANGUAGE.equals(evt.getPropertyName())) {
                 syntax.setContentSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getContentLanguage()));
                 recolor();
             }
             if (JspDataObject.PROP_SCRIPTING_LANGUAGE.equals(evt.getPropertyName())) {
                 syntax.setScriptingSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getScriptingLanguage()));
                 recolor();
-            }
-            if (TagLibParseSupport.TagLibEditorData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
+            }*/
+            if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
                 recolor();
             }
         }
@@ -193,8 +184,19 @@ public class JSPKit extends NbEditorKit {
     
     public Completion createCompletion(ExtEditorUI extEditorUI) {
         BaseDocument doc = extEditorUI.getDocument();
-        DataObject dobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc);
-        final JspDataObject jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
+        FileObject fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+        
+        String mimeType = NbEditorUtilities.getMimeType(doc);
+        Completion contentCompletion = (!mimeType.equals(JSP_MIME_TYPE)) ? 
+            null :
+            getCompletionForLanguage(extEditorUI, JspUtils.getContentLanguage());
+        Completion scriptingCompletion = (!mimeType.equals(JSP_MIME_TYPE)) ? 
+            null : 
+            getCompletionForLanguage(extEditorUI, JspUtils.getScriptingLanguage());
+        final JspCompletion completion = 
+            new JspCompletion(extEditorUI, contentCompletion, scriptingCompletion);
+        return completion;
+        /*final JspDataObject jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
         Completion contentCompletion = (jspdo == null) ? 
             null :
             getCompletionForLanguage(extEditorUI, jspdo.getContentLanguage());
@@ -204,7 +206,8 @@ public class JSPKit extends NbEditorKit {
             
         final JspCompletion completion = 
             new JspCompletion(extEditorUI, contentCompletion, scriptingCompletion);
-        return completion;
+        return completion;*/
+        
     }
 
     public CompletionJavaDoc createCompletionJavaDoc(ExtEditorUI extEditorUI) {
@@ -215,6 +218,14 @@ public class JSPKit extends NbEditorKit {
         doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
                 JavaDrawLayerFactory.JAVA_LAYER_VISIBILITY);
         doc.addDocumentListener(new JavaDrawLayerFactory.LParenWatcher());
+	doc.addLayer(new ELDrawLayerFactory.ELLayer(),
+                ELDrawLayerFactory.EL_LAYER_VISIBILITY);
+        doc.addDocumentListener(new ELDrawLayerFactory.LParenWatcher());
+	doc.addDocumentListener(new HTMLDrawLayerFactory.TagParenWatcher());
     }
-
+    
+    public Formatter createFormatter() {        
+        return new JspFormatter(this.getClass());	
+    }
+    
 }

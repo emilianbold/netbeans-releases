@@ -41,6 +41,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.execution.NbClassPath;
 import org.openide.util.NbBundle;
 
+import org.netbeans.modules.web.jsps.parserapi.*;
 // THIS IS THE ONLY ALLOWED IMPORT OF JAKARTA IN THIS PACKAGE
 //import org.netbeans.modules.web.core.jsploader.jakarta.JakartaServerPlugin;
 import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
@@ -52,6 +53,8 @@ import org.netbeans.modules.web.core.WebExecUtil;
 
 import org.netbeans.modules.web.webdata.WebDataFactory;
 import org.netbeans.modules.web.webdata.WebResourceImpl;
+
+import org.netbeans.modules.web.jsps.parserapi.*;
 
 /** JSP compilation utilities
 *
@@ -340,7 +343,7 @@ public class JspCompileUtil {
      * May return null in case of a serious error.
      */
     public static synchronized JspParserAPI getJspParser() {
-        if (parserFactory == null) {
+        /*if (parserFactory == null) {
             FileObject f = Repository.getDefault().findResource("/J2EE/JSPParser"); // NOI18N
             if (f != null) {
                 try {
@@ -354,8 +357,10 @@ public class JspCompileUtil {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, 
                     new Exception(NbBundle.getBundle(JspCompileUtil.class).getString("EXC_JspParserNotInstalled")));
             }
+           
         }
-        return (parserFactory == null) ? null : parserFactory.getJspParser();
+        return (parserFactory == null) ? null : parserFactory.getJspParser();*/
+        return JspParserFactory.getJspParser();
     }
     
     /** Returns a FileObject whose resource path is relativePath relatively to folder rootFolder. 

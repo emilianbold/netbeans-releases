@@ -1,0 +1,666 @@
+--------- JspParserAPI.parseResult(), success: true
+ ---- PAGEINFO
+----- PageInfo -----
+      imports:
+        javax.servlet.*
+        javax.servlet.http.*
+        javax.servlet.jsp.*
+      dependants:
+        /WEB-INF/jsp2/jsp2-example-taglib.tld
+      taglibsMap:
+        tag library: http://jakarta.apache.org/tomcat/jsp2-example-taglib
+            tlibversion : 1.0
+            jspversion  : 2.0
+            shortname   : SimpleTagLibrary
+            urn         : /SimpleTagLibrary
+            info        : A tag library exercising SimpleTag handlers.
+            uri         : http://jakarta.apache.org/tomcat/jsp2-example-taglib
+              tag name     : helloWorld
+                  class    : jsp2.examples.simpletag.HelloWorldSimpleTag
+                  attribs  : []
+              tag name     : repeat
+                  class    : jsp2.examples.simpletag.RepeatSimpleTag
+                  attribs  : [num]
+              tag name     : findBook
+                  class    : jsp2.examples.simpletag.FindBookSimpleTag
+                  attribs  : [var]
+              tag name     : shuffle
+                  class    : jsp2.examples.simpletag.ShuffleSimpleTag
+                  attribs  : [fragment1, fragment2, fragment3]
+              tag name     : tile
+                  class    : jsp2.examples.simpletag.TileSimpleTag
+                  attribs  : [color, label]
+              tag name     : echoAttributes
+                  class    : jsp2.examples.simpletag.EchoAttributesTag
+                  attribs  : []
+              function name     : reverse
+                       class    : jsp2.examples.el.Functions
+                       signature: java.lang.String reverse( java.lang.String )
+              function name     : caps
+                       class    : jsp2.examples.el.Functions
+                       signature: java.lang.String caps( java.lang.String )
+              function name     : countVowels
+                       class    : jsp2.examples.el.Functions
+                       signature: java.lang.String numVowels( java.lang.String )
+      prefixMapper:
+        my -> http://jakarta.apache.org/tomcat/jsp2-example-taglib
+      language            : java
+      xtends              : org.apache.jasper.runtime.HttpJspBase
+      contentType         : text/html
+      session             : true
+      buffer              : 8192
+      autoFlush           : true
+      threadSafe          : true
+      isErrorPage         : false
+      errorPage           : null
+      maxTagNesting       : 0
+      scriptless          : true
+      scriptingInvalid    : false
+      elIgnored           : false
+      omitXmlDecl         : null
+      isJspPrefixHijacked : false
+      doctypeName         : null
+      doctypeSystem       : null
+      doctypePublic       : null
+      hasJspRoot          : false
+      prefixes:
+      includePrelude:
+      includeCoda:
+      pluginDcls:
+      beans:
+ ------- XML View (constructed from the original data structure) -----
+<?xml version="1.0" encoding="UTF-8" ?>
+<jsp:root
+  version="2.0"
+  xmlns:my="http://jakarta.apache.org/tomcat/jsp2-example-taglib"
+  xmlns:jsp="http://java.sun.com/JSP/Page"
+  jsp:id="0"
+>
+<jsp:directive.page
+  jsp:id="1"
+  pageEncoding="UTF-8"
+  contentType="text/html"
+/>
+<jsp:text
+  jsp:id="2"
+>
+<![CDATA[
+
+
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="3"
+>
+<![CDATA[
+<html>
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="4"
+>
+<![CDATA[
+<head>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="5"
+>
+<![CDATA[
+<title>JSP 2.0 Expression Language - Functions]]>
+</jsp:text>
+<jsp:text
+  jsp:id="6"
+>
+<![CDATA[
+</title>
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="7"
+>
+<![CDATA[
+</head>
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="8"
+>
+<![CDATA[
+<body>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="9"
+>
+<![CDATA[
+<h1>JSP 2.0 Expression Language - Functions]]>
+</jsp:text>
+<jsp:text
+  jsp:id="10"
+>
+<![CDATA[
+</h1>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="11"
+>
+<![CDATA[
+<hr>
+    An upgrade from the JSTL expression language, the JSP 2.0 EL also
+    allows for simple function invocation.  Functions are defined
+    by tag libraries and are implemented by a Java programmer as 
+    static methods.
+
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="12"
+>
+<![CDATA[
+<blockquote>
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="13"
+>
+<![CDATA[
+<u>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="14"
+>
+<![CDATA[
+<b>Change Parameter]]>
+</jsp:text>
+<jsp:text
+  jsp:id="15"
+>
+<![CDATA[
+</b>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="16"
+>
+<![CDATA[
+</u>
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="17"
+>
+<![CDATA[
+<form action="functions.jsp" method="GET">
+	  foo = ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="18"
+>
+<![CDATA[
+<input type="text" name="foo" value="]]>
+</jsp:text>
+<jsp:text jsp:id="19">${param['foo']}</jsp:text>
+<jsp:text
+  jsp:id="20"
+>
+<![CDATA[
+">
+          ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="21"
+>
+<![CDATA[
+<input type="submit">
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="22"
+>
+<![CDATA[
+</form>
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="23"
+>
+<![CDATA[
+<br>
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="24"
+>
+<![CDATA[
+<code>
+        ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="25"
+>
+<![CDATA[
+<table border="1">
+          ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="26"
+>
+<![CDATA[
+<thead>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="27"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="28"
+>
+<![CDATA[
+<b>EL Expression]]>
+</jsp:text>
+<jsp:text
+  jsp:id="29"
+>
+<![CDATA[
+</b>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="30"
+>
+<![CDATA[
+</td>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="31"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="32"
+>
+<![CDATA[
+<b>Result]]>
+</jsp:text>
+<jsp:text
+  jsp:id="33"
+>
+<![CDATA[
+</b>]]>
+</jsp:text>
+<jsp:text
+  jsp:id="34"
+>
+<![CDATA[
+</td>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="35"
+>
+<![CDATA[
+</thead>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="36"
+>
+<![CDATA[
+<tr>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="37"
+>
+<![CDATA[
+<td>${param["foo"]}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="38"
+>
+<![CDATA[
+</td>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="39"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text jsp:id="40">${param["foo"]}</jsp:text>
+<jsp:text
+  jsp:id="41"
+>
+<![CDATA[
+&nbsp;]]>
+</jsp:text>
+<jsp:text
+  jsp:id="42"
+>
+<![CDATA[
+</td>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="43"
+>
+<![CDATA[
+</tr>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="44"
+>
+<![CDATA[
+<tr>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="45"
+>
+<![CDATA[
+<td>${my:reverse(param["foo"])}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="46"
+>
+<![CDATA[
+</td>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="47"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text jsp:id="48">${my:reverse(param["foo"])}</jsp:text>
+<jsp:text
+  jsp:id="49"
+>
+<![CDATA[
+&nbsp;]]>
+</jsp:text>
+<jsp:text
+  jsp:id="50"
+>
+<![CDATA[
+</td>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="51"
+>
+<![CDATA[
+</tr>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="52"
+>
+<![CDATA[
+<tr>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="53"
+>
+<![CDATA[
+<td>${my:reverse(my:reverse(param["foo"]))}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="54"
+>
+<![CDATA[
+</td>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="55"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text jsp:id="56">${my:reverse(my:reverse(param["foo"]))}</jsp:text>
+<jsp:text
+  jsp:id="57"
+>
+<![CDATA[
+&nbsp;]]>
+</jsp:text>
+<jsp:text
+  jsp:id="58"
+>
+<![CDATA[
+</td>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="59"
+>
+<![CDATA[
+</tr>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="60"
+>
+<![CDATA[
+<tr>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="61"
+>
+<![CDATA[
+<td>${my:countVowels(param["foo"])}]]>
+</jsp:text>
+<jsp:text
+  jsp:id="62"
+>
+<![CDATA[
+</td>
+	    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="63"
+>
+<![CDATA[
+<td>]]>
+</jsp:text>
+<jsp:text jsp:id="64">${my:countVowels(param["foo"])}</jsp:text>
+<jsp:text
+  jsp:id="65"
+>
+<![CDATA[
+&nbsp;]]>
+</jsp:text>
+<jsp:text
+  jsp:id="66"
+>
+<![CDATA[
+</td>
+	  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="67"
+>
+<![CDATA[
+</tr>
+	]]>
+</jsp:text>
+<jsp:text
+  jsp:id="68"
+>
+<![CDATA[
+</table>
+      ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="69"
+>
+<![CDATA[
+</code>
+    ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="70"
+>
+<![CDATA[
+</blockquote>
+  ]]>
+</jsp:text>
+<jsp:text
+  jsp:id="71"
+>
+<![CDATA[
+</body>
+]]>
+</jsp:text>
+<jsp:text
+  jsp:id="72"
+>
+<![CDATA[
+</html>
+
+]]>
+</jsp:text>
+</jsp:root>
+
+ ---- NODES
+
+Node [/jsp2/el/functions.jsp(1,1), TaglibDirective] <%@ taglib prefix="my" uri="http://jakarta.apache.org/tomcat/jsp2-example-taglib"%>
+Node [/jsp2/el/functions.jsp(1,84), TemplateText] 
+
+
+Node [/jsp2/el/functions.jsp(3,0), TemplateText] <html>
+  
+Node [/jsp2/el/functions.jsp(4,2), TemplateText] <head>
+    
+Node [/jsp2/el/functions.jsp(5,4), TemplateText] <title>JSP 2.0 Expression Language - Functions
+Node [/jsp2/el/functions.jsp(5,50), TemplateText] </title>
+  
+Node [/jsp2/el/functions.jsp(6,2), TemplateText] </head>
+  
+Node [/jsp2/el/functions.jsp(7,2), TemplateText] <body>
+    
+Node [/jsp2/el/functions.jsp(8,4), TemplateText] <h1>JSP 2.0 Expression Language - Functions
+Node [/jsp2/el/functions.jsp(8,47), TemplateText] </h1>
+    
+Node [/jsp2/el/functions.jsp(9,4), TemplateText] <hr>
+    An upgrade from the JSTL expression language, the JSP 2.0 EL also
+    allows for simple function invocation.  Functions are defined
+    by tag libraries and are implemented by a Java programmer as 
+    static methods.
+
+    
+Node [/jsp2/el/functions.jsp(15,4), TemplateText] <blockquote>
+      
+Node [/jsp2/el/functions.jsp(16,6), TemplateText] <u>
+Node [/jsp2/el/functions.jsp(16,9), TemplateText] <b>Change Parameter
+Node [/jsp2/el/functions.jsp(16,28), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(16,32), TemplateText] </u>
+      
+Node [/jsp2/el/functions.jsp(17,6), TemplateText] <form action="functions.jsp" method="GET">
+	  foo = 
+Node [/jsp2/el/functions.jsp(18,9), TemplateText] <input type="text" name="foo" value="
+Node [/jsp2/el/functions.jsp(18,48), ELExpression] ${param['foo']}
+Node [/jsp2/el/functions.jsp(18,61), TemplateText] ">
+          
+Node [/jsp2/el/functions.jsp(19,10), TemplateText] <input type="submit">
+      
+Node [/jsp2/el/functions.jsp(20,6), TemplateText] </form>
+      
+Node [/jsp2/el/functions.jsp(21,6), TemplateText] <br>
+      
+Node [/jsp2/el/functions.jsp(22,6), TemplateText] <code>
+        
+Node [/jsp2/el/functions.jsp(23,8), TemplateText] <table border="1">
+          
+Node [/jsp2/el/functions.jsp(24,10), TemplateText] <thead>
+	    
+Node [/jsp2/el/functions.jsp(25,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(25,9), TemplateText] <b>EL Expression
+Node [/jsp2/el/functions.jsp(25,25), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(25,29), TemplateText] </td>
+	    
+Node [/jsp2/el/functions.jsp(26,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(26,9), TemplateText] <b>Result
+Node [/jsp2/el/functions.jsp(26,18), TemplateText] </b>
+Node [/jsp2/el/functions.jsp(26,22), TemplateText] </td>
+	  
+Node [/jsp2/el/functions.jsp(27,3), TemplateText] </thead>
+	  
+Node [/jsp2/el/functions.jsp(28,3), TemplateText] <tr>
+	    
+Node [/jsp2/el/functions.jsp(29,5), TemplateText] <td>${param["foo"]}
+Node [/jsp2/el/functions.jsp(29,25), TemplateText] </td>
+	    
+Node [/jsp2/el/functions.jsp(30,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(30,11), ELExpression] ${param["foo"]}
+Node [/jsp2/el/functions.jsp(30,24), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(30,30), TemplateText] </td>
+	  
+Node [/jsp2/el/functions.jsp(31,3), TemplateText] </tr>
+	  
+Node [/jsp2/el/functions.jsp(32,3), TemplateText] <tr>
+	    
+Node [/jsp2/el/functions.jsp(33,5), TemplateText] <td>${my:reverse(param["foo"])}
+Node [/jsp2/el/functions.jsp(33,37), TemplateText] </td>
+	    
+Node [/jsp2/el/functions.jsp(34,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(34,11), ELExpression] ${my:reverse(param["foo"])}
+Node [/jsp2/el/functions.jsp(34,36), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(34,42), TemplateText] </td>
+	  
+Node [/jsp2/el/functions.jsp(35,3), TemplateText] </tr>
+	  
+Node [/jsp2/el/functions.jsp(36,3), TemplateText] <tr>
+	    
+Node [/jsp2/el/functions.jsp(37,5), TemplateText] <td>${my:reverse(my:reverse(param["foo"]))}
+Node [/jsp2/el/functions.jsp(37,49), TemplateText] </td>
+	    
+Node [/jsp2/el/functions.jsp(38,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(38,11), ELExpression] ${my:reverse(my:reverse(param["foo"]))}
+Node [/jsp2/el/functions.jsp(38,48), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(38,54), TemplateText] </td>
+	  
+Node [/jsp2/el/functions.jsp(39,3), TemplateText] </tr>
+	  
+Node [/jsp2/el/functions.jsp(40,3), TemplateText] <tr>
+	    
+Node [/jsp2/el/functions.jsp(41,5), TemplateText] <td>${my:countVowels(param["foo"])}
+Node [/jsp2/el/functions.jsp(41,41), TemplateText] </td>
+	    
+Node [/jsp2/el/functions.jsp(42,5), TemplateText] <td>
+Node [/jsp2/el/functions.jsp(42,11), ELExpression] ${my:countVowels(param["foo"])}
+Node [/jsp2/el/functions.jsp(42,40), TemplateText] &nbsp;
+Node [/jsp2/el/functions.jsp(42,46), TemplateText] </td>
+	  
+Node [/jsp2/el/functions.jsp(43,3), TemplateText] </tr>
+	
+Node [/jsp2/el/functions.jsp(44,1), TemplateText] </table>
+      
+Node [/jsp2/el/functions.jsp(45,6), TemplateText] </code>
+    
+Node [/jsp2/el/functions.jsp(46,4), TemplateText] </blockquote>
+  
+Node [/jsp2/el/functions.jsp(47,2), TemplateText] </body>
+
+Node [/jsp2/el/functions.jsp(48,0), TemplateText] </html>
+
+
+Node [/jsp2/el/functions.jsp(1,1), Declaration] <%!static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_0;
+static private org.apache.jasper.runtime.ProtectedFunctionMapper _jspx_fnmap_1;
+%>
+Node [/jsp2/el/functions.jsp(1,1), Declaration] <%!static {
+  _jspx_fnmap_0= org.apache.jasper.runtime.ProtectedFunctionMapper.getMapForFunction("my:reverse", jsp2.examples.el.Functions.class, "reverse", new Class[] {java.lang.String.class});
+  _jspx_fnmap_1= org.apache.jasper.runtime.ProtectedFunctionMapper.getMapForFunction("my:countVowels", jsp2.examples.el.Functions.class, "numVowels", new Class[] {java.lang.String.class});
+}
+%>

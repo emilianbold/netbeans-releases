@@ -118,7 +118,7 @@ public class JspLoader extends UniFileLoader {
 
         JspDataObject obj = createJspObject(primaryFile, this);
         // [PENDING] add these from JspDataObject, not from the loader
-        obj.getCookieSet0 ().add (new TagLibParseSupport(obj));
+        obj.getCookieSet0 ().add (new TagLibParseSupport(primaryFile));
 
         if (isFileBased) {
             Node.Cookie execSupport = obj.createExecSupport();

@@ -228,6 +228,11 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
     <folder name="JSPParser">
     </folder>
+    <folder name="JSPSyntaxColoring">
+        <file name="org-netbeans-modules-web-core-jsploader-JspContextInfoImpl.instance">
+            <attr name="instanceCreate" newvalue="org.netbeans.modules.web.core.jsploader.JspContextInfoImpl" />
+        </file>
+    </folder>
   </folder>
   
     <folder name="Editors">

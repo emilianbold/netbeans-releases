@@ -22,23 +22,19 @@ import javax.swing.text.JTextComponent;
 
 import javax.servlet.jsp.tagext.*;
 
-import org.openide.loaders.DataObject;
-import org.openide.loaders.MultiDataObject;
 import org.openide.filesystems.FileObject;
 import org.openide.ErrorManager;
 
-import org.netbeans.modules.web.core.jsploader.JspDataObject;
-import org.netbeans.modules.web.core.jsploader.JspInfo;
-import org.netbeans.modules.web.core.jsploader.JspParserAPI;
-import org.netbeans.modules.web.core.jsploader.JspCompileUtil;
-import org.netbeans.modules.web.core.jsploader.TagLibParseSupport;
-import org.netbeans.modules.web.core.jsploader.WebXMLSupport;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 
 import org.netbeans.editor.*;
-import org.netbeans.editor.ext.*;
+import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.html.HTMLTokenContext;
 import org.netbeans.editor.ext.java.JavaSyntaxSupport;
 import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
+
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
@@ -76,7 +72,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     private static TagInfo[] standardTagDatas;
     /** Data for completion: TreeMap for JSP directives
     * (directive name, array of attributes). */
-    private static TreeMap directiveData;
+    private static TreeMap directiveJspData;
+    private static TreeMap directiveTagFileData;
     
     private static final TokenID[] JSP_BRACKET_SKIP_TOKENS = new TokenID[] {
                 JavaTokenContext.LINE_COMMENT,
@@ -87,7 +84,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 JspTagTokenContext.COMMENT
             };
 
-    protected DataObject dobj;
+    protected FileObject fobj;
     
     /** Content language SyntaxSupport cached for getContentLanguageSyntaxSupport */
     private ExtSyntaxSupport contentLanguageSyntaxSupport = null;
@@ -98,7 +95,49 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     /** Creates new HTMLSyntaxSupport */
     public JspSyntaxSupport(BaseDocument doc) {
         super(doc);
-        dobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc);
+        fobj = (doc == null) ? null : NbEditorUtilities.getDataObject(doc).getPrimaryFile();
+    }
+    
+    private JspParserAPI.ParseResult getParseResult() {
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, true, false);
+        if (result == null) {
+            result = JspUtils.getCachedParseResult(getDocument(), fobj, false, false);
+        }
+        return result;
+    }
+    
+    private Map getJspPrefixMapper() {
+        // PENDING - must also take xmlPrefixMapper into account
+        JspParserAPI.ParseResult result = getParseResult();
+        if (result != null) {
+            if (result.isParsingSuccess()) {
+                // PENDING - can we somehow get incomplete parsed information ?
+                return result.getPageInfo().getJspPrefixMapper();
+            }
+        }
+        return null;
+    }
+    
+    private Map getTagLibraries() {
+        JspParserAPI.ParseResult result = getParseResult();
+        if (result != null) {
+            return result.getPageInfo().getTagLibraries();
+        }
+        return null;
+    }
+    
+    private TagLibraryInfo getTagLibrary(String prefix) {
+        Map mapper = getJspPrefixMapper();
+        if (mapper != null) {
+            Object uri = mapper.get(prefix);
+            if (uri != null) {
+                Map taglibs = getTagLibraries();
+                if (taglibs != null) {
+                    return (TagLibraryInfo)taglibs.get(uri);
+                }
+            }
+        }
+        return null;
     }
     
     protected SyntaxSupport createSyntaxSupport(Class syntaxSupportClass) {
@@ -108,24 +147,22 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         SyntaxSupport support = super.createSyntaxSupport(syntaxSupportClass);
         if (support != null)
             return support;
-        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-        JspDataObject jspdo = (JspDataObject)dobj.getCookie(JspDataObject.class);
-        if (jspdo != null) {
-            EditorKit kit;
-            // try the content language support
-            kit = JEditorPane.createEditorKitForContentType(jspdo.getContentLanguage());
-            if (kit instanceof BaseKit) {
-                support = ((BaseKit)kit).createSyntaxSupport(getDocument());
-                if (support != null)
-                    return support;
-            }
-            // try the scripting language support
-            kit = JEditorPane.createEditorKitForContentType(jspdo.getScriptingLanguage());
-            if (kit instanceof BaseKit) {
-                support = ((BaseKit)kit).createSyntaxSupport(getDocument());
-                if (support != null)
-                    return support;
-            }
+        //System.out.println("JspSyntaxSupport- createSyntaxSupport - " + NbEditorUtilities.getMimeType(getDocument()) );
+        
+        EditorKit kit;
+        // try the content language support
+        kit = JEditorPane.createEditorKitForContentType(JspUtils.getContentLanguage());
+        if (kit instanceof BaseKit) {
+            support = ((BaseKit)kit).createSyntaxSupport(getDocument());
+            if (support != null)
+                return support;
+        }
+        // try the scripting language support
+        kit = JEditorPane.createEditorKitForContentType(JspUtils.getScriptingLanguage());
+        if (kit instanceof BaseKit) {
+            support = ((BaseKit)kit).createSyntaxSupport(getDocument());
+            if (support != null)
+                return support;
         }
         return null;
     }
@@ -136,17 +173,14 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if (contentLanguageSyntaxSupport != null) {
             return contentLanguageSyntaxSupport;
         }
-        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
-        JspDataObject jspdo = (JspDataObject)dobj.getCookie (JspDataObject.class);
-        if (jspdo != null) {
-            EditorKit kit =
-                JEditorPane.createEditorKitForContentType(jspdo.getContentLanguage());
-            if (kit instanceof BaseKit) {
-                SyntaxSupport support = ((BaseKit)kit).createSyntaxSupport(getDocument());
-                if (support != null && support instanceof ExtSyntaxSupport) {
-                    contentLanguageSyntaxSupport = (ExtSyntaxSupport) support;
-                    return contentLanguageSyntaxSupport;
-                }
+        
+        EditorKit kit =
+            JEditorPane.createEditorKitForContentType(JspUtils.getContentLanguage());
+        if (kit instanceof BaseKit) {
+            SyntaxSupport support = ((BaseKit)kit).createSyntaxSupport(getDocument());
+            if (support != null && support instanceof ExtSyntaxSupport) {
+                contentLanguageSyntaxSupport = (ExtSyntaxSupport) support;
+                return contentLanguageSyntaxSupport;
             }
         }
         return (ExtSyntaxSupport)get( org.netbeans.editor.ext.html.HTMLSyntaxSupport.class );
@@ -161,7 +195,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         }
         if (elem == null) return COMPLETION_HIDE;
 
-        final JspDataObject jspdo;
+        //final JspDataObject jspdo;
         char first = typedText.charAt(0);
         switch (elem.getCompletionContext()) {
                 // TAG COMPLETION
@@ -197,8 +231,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                                         
                 case JspSyntaxSupport.SCRIPTINGL_COMPLETION_CONTEXT :
                     if (err.isLoggable (ErrorManager.INFORMATIONAL)) err.log ("SCRIPTINGL_COMPLETION_CONTEXT" );   // NOI18N
-                    jspdo = (dobj instanceof JspDataObject) ? (JspDataObject)dobj : null;
-                    if (jspdo != null && jspdo.getScriptingLanguage().equals ("text/x-java")) { // NOI18N
+                    if (JspUtils.getScriptingLanguage().equals ("text/x-java")) { // NOI18N
                         return ((ExtSyntaxSupport)get( org.netbeans.editor.ext.java.JavaSyntaxSupport.class )).checkCompletion( target, typedText, visible );
                     }
                     break;
@@ -299,8 +332,15 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         // jsp: prefix
         items.add(STANDARD_JSP_PREFIX);
         
+        Map mapper = getJspPrefixMapper();
+        if (mapper != null) {
+            // sort it
+            TreeSet ts = new TreeSet();
+            ts.addAll(mapper.keySet());
+            items.addAll(ts);
+        }
         // prefixes for tag libraries
-        TagLibParseSupport support = (dobj == null) ? 
+/*        TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
         if (support != null) {
             // add all prefixes from the support
@@ -308,13 +348,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             for (int i = 0; i < tagLibData.length; i++) 
                 items.add(tagLibData[i].getPrefix());
         }
-        
+*/        
         return items;
     }
     
-    /** Should be overriden ny subclasses to support JSP 1.1. 
-    *  Returns a list of strings - tag names available for a particular prefix.
-    */
+    /**  Returns a list of strings - tag names available for a particular prefix.
+     */
     protected List getAllTags(String prefix) {
         List items = new ArrayList();
         
@@ -325,9 +364,18 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 items.add (standardTagDatas[i]);
             }
         }
-        
+
+        TagLibraryInfo info = getTagLibrary(prefix);
+        if (info != null) {
+            TagInfo[] tags = info.getTags();
+            if (tags != null) {
+                for (int i = 0; i < tags.length; i++) {
+                    items.add(tags[i]);
+                }
+            }
+        }
         // tags from tag libraries
-        TagLibParseSupport support = (dobj == null) ? 
+ /*       TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
         if (support != null) {
             // add all tags for the given prefix
@@ -344,7 +392,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
             }
         }
-        
+*/        
         return items;
     }
     
@@ -367,8 +415,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
+        TagLibraryInfo info = getTagLibrary(prefix);
+        if (info != null) {
+            TagInfo tagInfo = info.getTag(tag);
+            if (tagInfo != null) {
+                TagAttributeInfo[] attributes = tagInfo.getAttributes();
+                for (int i = 0; i < attributes.length; i++) 
+                    items.add(attributes[i]);
+            }    
+        }
         // attributes for tags from libraries
-        TagLibParseSupport support = (dobj == null) ? 
+/*        TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
         if (support != null) {
             // add all attributes for the given prefix and tag name
@@ -385,7 +442,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
             }
         }
-        
+*/        
         return items;
     }
     
@@ -393,6 +450,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllDirectives() {
         initCompletionData();
         List items = new ArrayList();
+        TreeMap directiveData;
+        if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
+            directiveData = directiveTagFileData;
+        else 
+            directiveData = directiveJspData;
         for (Iterator it = directiveData.keySet().iterator(); it.hasNext();) {
             items.add(it.next());
         }
@@ -403,6 +465,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     protected List getAllDirectiveAttributes(String directive) {
         initCompletionData();
         List items = new ArrayList();
+        TreeMap directiveData;
+        if(NbEditorUtilities.getMimeType(getDocument()).equals(JspUtils.TAG_MIME_TYPE))
+            directiveData = directiveTagFileData;
+        else
+            directiveData = directiveJspData;
         String[] attributes = (String[])directiveData.get(directive);
         if (attributes != null) {
             for (int i = 0; i < attributes.length; i++)
@@ -411,18 +478,28 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return items;
     }
     
-    public JspInfo.BeanData[] getBeanData() {
-        TagLibParseSupport support = (dobj == null) ? 
+   public PageInfo.BeanData[] getBeanData() {
+       JspParserAPI.ParseResult result = getParseResult();
+       if (result != null) {
+           return result.getPageInfo().getBeans();
+       }
+        /*TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-        return support.getTagLibEditorData().getBeanData();
+        return support.getTagLibEditorData().getBeanData();*/
+       return null;
     }
     
     public boolean isErrorPage() {
-        TagLibParseSupport support = (dobj == null) ? 
+       JspParserAPI.ParseResult result = getParseResult();
+       if (result != null) {
+           return result.getPageInfo().isErrorPage();
+       }
+        /*TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-        return support.getTagLibEditorData().isErrorPage ();
+        return support.getTagLibEditorData().isErrorPage ();*/
+        return false;
     }
-    
+
     
     /**
      * The mapping of the 'global' tag library URI to the location
@@ -433,22 +510,10 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      *        of the tld.
      */
     public Map getTagLibraryMappings() {
-        if (dobj == null)
+        if (fobj == null) {
             return null;
-        try {
-            JspParserAPI parser = JspCompileUtil.getJspParser();
-            if (parser == null) {
-                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, 
-                new NullPointerException());
-            }
-            else {
-                return parser.getTagLibraryMappings(JspCompileUtil.getContextRoot(dobj.getPrimaryFile()));
-            }
         }
-        catch (IOException e) {
-            ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, e);
-        }
-        return null;
+        return JspUtils.getTaglibMap(getDocument(), fobj);
     }
     
     
@@ -498,16 +563,37 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             };
         }
     
-        if (directiveData == null) {
-            directiveData = new TreeMap();
+        if (directiveJspData == null) {
+             directiveJspData = new TreeMap();
             // fill in the data, both directive names and attribute names should be in alphabetical order
-            directiveData.put("include", new String[]   // NOI18N
+            directiveJspData.put("include", new String[]   // NOI18N
                 {"file"});      // NOI18N
-            directiveData.put("page", new String[]      // NOI18N
+            directiveJspData.put("page", new String[]      // NOI18N
                 {"autoFlush", "buffer", "contentType", "errorPage", "extends",  // NOI18N 
                  "import", "info", "isErrorPage", "isThreadSafe", "language", "pageEncoding", "session"});  // NOI18N
-            directiveData.put("taglib", new String[]    // NOI18N
+            directiveJspData.put("taglib", new String[]    // NOI18N
             {"prefix", "uri"}); // NOI18N
+            
+        }
+        
+        if (directiveTagFileData == null){
+            directiveTagFileData = new TreeMap();
+            directiveTagFileData.put("attribute", new String[]      // NOI18N
+                    {"description", "fragment", "name", "required", "rtexprvalue", "type"});// NOI18N 
+            // fill in the data, both directive names and attribute names should be in alphabetical order
+            directiveTagFileData.put("include", new String[]   // NOI18N
+                {"file"});      // NOI18N
+            directiveTagFileData.put("tag", new String[]      // NOI18N
+                    {"body-content", "description", "display-name","dynamic-attributes", // NOI18N
+                     "example",  "import", "isELEnabled", "isScriptingEnabled", // NOI18N
+                     "large-icon", "language", "pageEncoding", "small-icon" //NOI18N
+                      }); 
+            directiveTagFileData.put("taglib", new String[]    // NOI18N
+            {"prefix", "uri"}); // NOI18N
+            directiveTagFileData.put("variable", new String[]      // NOI18N
+                    {"declare", "description", "fragment","name-from-attribute", // NOI18N
+                     "name-given",  "scope", "variable-class" // NOI18N
+                      }); 
         }
     }
     
@@ -980,9 +1066,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
 
-        TagLibParseSupport support = (dobj == null) ? 
+/*        TagLibParseSupport support = (dobj == null) ? 
             null : (TagLibParseSupport)dobj.getCookie(TagLibParseSupport.class);
-            
+*/           
         for( ; elem != null; elem = elem.getPrevious() ) {
             
             if( elem instanceof SyntaxElement.EndTag ) {
@@ -998,7 +1084,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 String name = image.substring (image.indexOf (':')+1);
                 TagInfo ti = null;
 
-                if (support != null) {
+/*                if (support != null) {
                     // add all tags for the given prefix
                     TagLibParseSupport.TagLibData tagLibData = support.getTagLibEditorData().getTagLibData(prefix);
                     if (tagLibData != null) {
@@ -1007,7 +1093,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                             ti = tli.getTag(name);
                         }
                     }
-                }
+                }*/
                 if (STANDARD_JSP_PREFIX.equals (prefix)) { 
                     initCompletionData ();
                     for (int i=0; i<standardTagDatas.length; i++) {
@@ -1048,9 +1134,8 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return result;
     }
     
-    /** package private access to DataObject, used in JspJavaSyntaxSupport */
-    DataObject getDataObject() {
-        return dobj;
+    public FileObject getFileObject() {
+        return fobj;
     }
     
     /** Get the bracket finder that will search for the matching bracket
@@ -1065,8 +1150,9 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             JspSyntaxSupport.BracketFinder bf = new JspSyntaxSupport.BracketFinder (bracketChar);
             return bf.isValid ()? bf: null;
         }
-        else
+	else{
             return super.getMatchingBracketFinder (bracketChar); 
+	}
     }
     
     /** Find matching bracket or more generally block
@@ -1078,17 +1164,155 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * @return array of integers containing starting and ending position
      *  of the block in the document. Null is returned if there's
      *  no matching block.
-     */
-    public int[] findMatchingBlock (int offset,boolean simpleSearch) throws BadLocationException {
-        TokenItem item = getItemAtOrBefore ((offset<getDocument().getLength())?offset+1:offset);
-        if (isScriptingOrContentToken (item)) {
-            useCustomBracketFinder = false;
-        }
-        else {
-            useCustomBracketFinder = true;
-        }
-            
-        return super.findMatchingBlock (offset, simpleSearch);
+     */ 
+    public int[] findMatchingBlock(int offset, boolean simpleSearch)
+	throws BadLocationException {
+	    /* TODO - jsp tag matching
+	     */
+	    int [] r_value = null;
+	    
+	    TokenItem token = getItemAtOrBefore ((offset<getDocument().getLength())?offset+1:offset);
+	    if (token != null){
+		if (token.getTokenContextPath().contains(HTMLTokenContext.contextPath)
+			&& token.getImage().charAt(0) != '>'){
+		    r_value = getContentLanguageSyntaxSupport().findMatchingBlock(offset, simpleSearch);
+		}
+		else {		    		    
+		    if (token.getTokenContextPath().contains(JspTagTokenContext.contextPath)
+			    && token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
+			return findMatchingTag (token);
+		    }
+		    else {
+			if (token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL2_ID){
+			    return findMatchingScripletDelimiter (token);
+			}
+			else{
+			    if (isScriptingOrContentToken (token)) {
+				useCustomBracketFinder = false;
+			    }
+			    else {
+				useCustomBracketFinder = true;
+			    }
+			    r_value =  super.findMatchingBlock (offset, simpleSearch);
+			}
+		    }
+		}
+	    }
+	    
+	    return r_value;
+    }
+    
+    private int [] findMatchingScripletDelimiter(TokenItem token){
+	if (token.getImage().charAt(0) == '<'){
+	    do{
+		token = token.getNext();
+	    } while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL2_ID);
+	}
+	else {
+	    do{
+		token = token.getPrevious();
+	    } while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL2_ID);
+	}
+	if (token != null){
+	    return new int [] {token.getOffset(), token.getOffset() + token.getImage().length()};
+	}
+	return null;
+    }
+    
+    private int[] findMatchingTag (TokenItem token){
+	// TODO - replanning to the other thread. Now it's in awt thread
+	if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID){
+
+	    int start; // possition where the matched tag starts
+	    int end;   // possition where the matched tag ends
+	    int poss = 0; // how many the same tags is inside the mathed tag
+	    String tag = token.getImage().trim();
+
+	    while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID) {				
+		token = token.getPrevious();				
+	    }
+	    if (token == null) 
+		return null;
+	    if ((token.getImage().length() == 2) && token.getImage().charAt(1) == '/'){
+		while ( token != null){
+		    if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID) {
+			if (token.getImage().trim().equals(tag)){
+			    while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID) {				
+				token = token.getPrevious();				
+			    }
+			    if (token != null) {
+				if (token.getImage().length() == 1){
+				    if (poss == 0){
+					start = token.getOffset();
+					end = token.getOffset()+token.getImage().length()+1;
+					token = token.getNext();
+
+					while (token != null && !(token.getTokenID().getNumericID() == JspTagTokenContext.SYMBOL_ID
+						&& (token.getImage().charAt(0)== '>' || token.getImage().charAt(0)== '<'))){
+					    token = token.getNext();
+					}
+					if (token != null)
+					    end = token.getOffset()+1;
+					return new int[] {start, end};
+				    }
+				    else {
+					poss++;
+				    }
+				}
+				if (token.getImage().length() == 2){
+				    poss--;
+				}
+			    }
+
+			}
+		    }				    
+		    token = token.getPrevious();
+		}
+
+	    }
+	    else{
+		if ((token.getImage().length() == 1) && token.getImage().charAt(0) == '<'){
+		    poss = 1;
+		    TokenItem hToken;
+		    while ( token != null){
+			if (token.getTokenID().getNumericID() == JspTagTokenContext.TAG_ID) {
+			    if (token.getImage().trim().equals(tag)){
+				hToken = token;
+				while (token != null && token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID) {				
+				    token = token.getPrevious();				
+				}
+				if (token != null) {
+				    if (token.getImage().length() == 2){
+					if (poss == 0){
+					    start = token.getOffset();
+					    end = hToken.getOffset()+hToken.getImage().length()+1;
+					    token = token.getNext();
+
+					    while (token != null && (token.getTokenID().getNumericID() != JspTagTokenContext.SYMBOL_ID
+						|| token.getImage().charAt(0)!='>')){
+						token = token.getNext();
+					    }
+					    if (token != null)
+						end = token.getOffset()+1;
+					    return new int[] {start, end};
+					}
+					else {
+					    poss++;
+					}
+				    }
+				    if (token.getImage().length() == 1){
+					poss--;
+				    }
+				}
+				token = hToken;
+			    }
+			}				    
+			token = token.getNext();
+		    }
+		}
+	    }
+	}
+	return null;
     }
     
     /** Get the array of token IDs that should be skipped when

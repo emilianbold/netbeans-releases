@@ -27,6 +27,8 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="init">
     <ant dir="../external" target="unscramble"/>
+    <property file="../spec-vers.properties"/>
+    <filter token="SERVLET24_SPEC_VERS_SUBST" value="${web.servletapi24.specification.version}"/>
   </target>
 
   <target name="compile" depends="init">
@@ -35,12 +37,21 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/ext/nb-editor.jar"/>
+        <pathelement location="${nb_root}/editor/netbeans/modules/ext/editor-lib.jar"/>
+        <pathelement location="${nb_root}/java/completion/netbeans/modules/ext/java-completion-lib.jar"/>
+        <pathelement location="${nb_root}/java/editor/netbeans/modules/ext/java-editor-lib.jar"/>
+        <pathelement location="${nb_root}/java/editor/netbeans/modules/java-editor.jar"/>
+        <pathelement location="${nb_root}/html/editor/netbeans/modules/ext/html-editor-lib.jar"/>
+        <pathelement location="${nb_root}/text/editor/netbeans/modules/ext/text-editor-lib.jar"/>
+        <pathelement location="${nb_root}/html/editor/netbeans/modules/html-editor.jar"/>
         <pathelement location="${nb_root}/editor/netbeans/modules/editor.jar"/>
         <pathelement location="${nb_root}/xml/text-edit/netbeans/modules/xml-text-edit.jar"/>
-        <pathelement location="${core_root}/src/"/>
-        <pathelement location="../external/servlet-2.3.jar"/>
+        <pathelement location="../external/servlet-api-2.4.jar"/>
+        <pathelement location="../external/jsp-api-2.0.jar"/>
+        <pathelement location="${nb_root}/web/jspparser/netbeans/modules/eager/jsp-parser.jar"/>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+        <!--<pathelement location="${nb_root}/openide/registry/netbeans/modules/org-netbeans-modules-registry.jar"/>-->
       </classpath>
     </javac>
 
