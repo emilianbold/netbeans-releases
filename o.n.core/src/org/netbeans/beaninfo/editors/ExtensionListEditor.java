@@ -168,7 +168,7 @@ public class ExtensionListEditor extends Object implements PropertyEditor, Strin
     */
 
     public java.awt.Component getCustomEditor() {
-        return new StringArrayCustomEditor (this);
+        return new ExtensionListCustomEditor(this);
     }
 
     /*
