@@ -27,6 +27,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.core.windows.actions.ActionUtils;
+import org.netbeans.core.windows.persistence.PersistenceManager;
 
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
@@ -173,6 +174,14 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
         
         return null;
+    }
+    
+    /** Returns <code>TopComponent</code> for given unique ID.
+     * @param tcID unique <code>TopComponent</code> ID
+     * @return <code>TopComponent</code> instance corresponding to unique ID
+     * @since 4.14 */
+    public TopComponent findTopComponent(String tcID) {
+        return PersistenceManager.getDefault().getTopComponentForID(tcID);
     }
     
     /** Adds listener.
@@ -788,8 +797,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
     
     protected String topComponentID (TopComponent tc, String preferredID) {
-        return org.netbeans.core.windows.persistence.PersistenceManager.
-            getDefault().getGlobalTopComponentID(tc, preferredID);
+        return PersistenceManager.getDefault().getGlobalTopComponentID(tc, preferredID);
     }
     // Manipulating methods (overriding the superclass dummy ones) <<
 
