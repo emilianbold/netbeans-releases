@@ -6,3 +6,4 @@ usersguide/javahelp/org/netbeans/modules/usersguide/**/*.css
 usersguide/javahelp/org/netbeans/modules/usersguide/**/*.gif
 usersguide/src/org/netbeans/modules/usersguide/Bundle.properties
 usersguide/src/org/netbeans/modules/usersguide/tips/*.html
+usersguide/www/shortcuts.sxw
