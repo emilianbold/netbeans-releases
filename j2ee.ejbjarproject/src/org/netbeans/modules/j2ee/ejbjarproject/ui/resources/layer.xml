@@ -66,6 +66,24 @@ Microsystems, Inc. All Rights Reserved.
                       urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/logicalview/ejb/entity/EntityNodeIcon.gif"/>
             
         </file>
+        <file name="CachingServiceLocator.java" url="CachingServiceLocator.template">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.ServiceLocatorWizard" />
+         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/CachingServiceLocator.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.Bundle"/>
+        </file>
+        <file name="ServiceLocator.java" url="ServiceLocator.template">
+         <attr name="template" boolvalue="true"/>
+         <attr name="instantiatingIterator" newvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.ServiceLocatorWizard" />
+         <attr name="templateCategory" stringvalue="java-classes"/>
+         <attr name="templateWizardURL"
+                      urlvalue="nbresloc:/org/netbeans/modules/j2ee/ejbjarproject/ui/resources/ServiceLocator.html"/>
+         <attr name="SystemFileSystem.localizingBundle"
+                      stringvalue="org.netbeans.modules.j2ee.ejbjarproject.patterns.Bundle"/>
+        </file>
         </folder>
     
         <folder name="Project">

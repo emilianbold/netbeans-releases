@@ -204,7 +204,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
                 new RecommendedTemplatesImpl(),
                 refHelper,
-                new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 helper.createSharabilityQuery(evaluator(),
                     new String[] {"${"+EjbJarProjectProperties.SOURCE_ROOT+"}"},
                     new String[] {
@@ -697,6 +696,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             "Templates/J2EE/Message", //NOI18N
             "Templates/J2EE/WebService", // NOI18N
             "Templates/J2EE/MessageHandler", // NOI18N
+            "Templates/J2EE/ServiceLocator.java", // NOI18N
             "Templates/Classes/Class.java" // NOI18N
         };
         
