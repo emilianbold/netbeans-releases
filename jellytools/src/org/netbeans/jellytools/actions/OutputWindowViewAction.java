@@ -24,13 +24,13 @@ public class OutputWindowViewAction extends Action {
         Bundle.getStringTrimmed("org.netbeans.core.Bundle", 
                                 "Menu/Window") +
         "|" +
-        Bundle.getStringTrimmed("org.netbeans.core.output.Bundle", 
+        Bundle.getStringTrimmed("org.netbeans.core.output2.Bundle", 
                                 "OutputWindow");
     private static final Shortcut shortcut = 
         new Shortcut(KeyEvent.VK_4, KeyEvent.CTRL_MASK);
 
     /** Creates new instance. */    
     public OutputWindowViewAction() {
-        super(menu, null, "org.netbeans.core.output.OutputWindowAction", shortcut);
+        super(menu, null, "org.netbeans.core.output2.OutputWindowAction", shortcut);
     }
 }
