@@ -535,18 +535,17 @@ public class XSLGrammarQuery implements GrammarQuery{
             return;
         }
         
-        UserCatalog catalog = UserCatalog.getDefault();
-        EntityResolver resolver = catalog.getEntityResolver();
         InputSource inputSource = null;
-//        System.out.println("setOutputDoctype.resolver: " + resolver);
-        if (resolver != null) {
-            try {
-                inputSource = resolver.resolveEntity(publicId, systemId);
-            } catch(SAXException e) {
-//                System.out.println("setOutputDoctype.SAXException: " + e.getMessage());
-            } catch(IOException e) {
-//                System.out.println("setOutputDoctype.IOException: " + e.getMessage());
-            } // Will be handled below
+        UserCatalog catalog = UserCatalog.getDefault();
+        if (catalog != null) {
+            EntityResolver resolver = catalog.getEntityResolver();
+            if (resolver != null) {
+                try {
+                    inputSource = resolver.resolveEntity(publicId, systemId);
+                } catch(SAXException e) {
+                } catch(IOException e) {
+                } // Will be handled below
+            }
         }
         
         if (inputSource == null) {
