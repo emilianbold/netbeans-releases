@@ -424,10 +424,6 @@
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
     </tocitem>
 
-    <tocitem text="Servers">
-      <tocitem text="About Servers" target="general_about_the_j2eeserver_module_html"/>
-    </tocitem>
-
 </tocitem>
 
 
