@@ -128,11 +128,12 @@ public class JavadocModule implements ModuleInstall {
   public void restored() {
     
     // Install DataFolder action
+    /*
     installActions( TopManager.getDefault().getLoaderPool().firstProducerOf( DataFolder.class ),
       new SystemAction[] { SystemAction.get( GenerateDocAction.class ), null } );
-
+    */
     // Install GenerateDocActon for every producer of JavaDataObject and derived classes.
-    
+    /*
     TopManager.getDefault().getLoaderPool().addChangeListener(new ChangeListener() {
       public void stateChanged(ChangeEvent e) {
 
@@ -150,13 +151,11 @@ public class JavadocModule implements ModuleInstall {
         }
       }
     });
+    */
+    
+    // Assign the Ctrl+F1 to JavaDoc Index Search Action
 
-    //try {
-      map = TopManager.getDefault ().getGlobalKeymap ();
-    //} catch (Throwable t) {
-    //  System.err.println ("Must be executed inside the IDE by internal execution!");
-    //  return;
-    // }
+    map = TopManager.getDefault ().getGlobalKeymap ();
     try {
       assign ("C-F1", "com.netbeans.developer.modules.javadoc.search.SearchDocAction");
     } catch (ClassNotFoundException e) {
@@ -177,6 +176,7 @@ public class JavadocModule implements ModuleInstall {
   * @param dl DataLoadaer object where to install new actions
   * @param sa[] Array of new acrions
   */
+  /*
   private void installActions ( DataLoader dl, SystemAction sa[] ) {
     SystemAction old_sa[], new_sa[]; 
     int i;
@@ -201,11 +201,11 @@ public class JavadocModule implements ModuleInstall {
 
   dl.setActions( new_sa );
   }  
-
+  */
   /** Checks whether an action of type actionClass is already installed in 
   * DataLoader's popup menu
   */
-
+  /*
   private boolean hasGenerateDoc ( DataLoader dl ) {
     SystemAction actions[] = dl.getActions();
     
@@ -215,7 +215,7 @@ public class JavadocModule implements ModuleInstall {
 
     return false;
   }
-
+  */
 
   /** Assigns a key to an action
   * @param key key name
@@ -243,6 +243,7 @@ public class JavadocModule implements ModuleInstall {
 
 /* 
  * Log
+ *  10   Gandalf   1.9         6/8/99   Petr Hrebejk    
  *  9    Gandalf   1.8         5/27/99  Petr Hrebejk    
  *  8    Gandalf   1.7         5/16/99  Petr Hrebejk    
  *  7    Gandalf   1.6         5/14/99  Petr Hrebejk    
