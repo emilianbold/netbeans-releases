@@ -20,13 +20,11 @@
 
 <p>An enterprise application includes two deployment descriptor files:</p>
 <ul>
-	<li>application.xml<br>
-	This J2EE-standard descriptor describes the application, which components it uses,
+	<li><b>application.xml.</b> The general J2EE deployment descriptor that configures deployment settings
+	on any J2EE-compliant implementation. It describes the enterprise application, which components it uses,
 	how the components relate to each other, and which resources they use.</li>
-	<li>sun-application.xml<br>
-	This vendor-specific descriptor defines configuration options that are specific to the
-	SJS Application Server.
-        </li>
+	<li><b>sun-application.xml.</b>	The server-specific deployment descriptor that configures
+       	deployment settings for the SJS Application Server.</li>
 </ul>
 <p>Entries in these files are automatically generated when you 
 <a href="add_modules_to_ent_app.html">add a module to the enterprise Application</a>.
@@ -34,7 +32,7 @@ Both deployment descriptors are XML files that are stored in
 the enterprise application's META-INF folder. You can edit both
 files in the Source Editor. The <tt>sun-application.xml</tt> file can also
  be edited in a visual editor.</p>
-<p><b>To edit the deployment descriptors of an existing enterprise application:</b> </p>
+ <p><b>To edit an enterprise application's deployment descriptors:</b> </p>
 <ol>
   <li>In the Projects window, locate the project and expand its 
   Configuration Files node. Alternatively, in the Files window, 
