@@ -142,7 +142,12 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
             }
             
             if (!removeRevisionTags (answersVersion).equals (removeRevisionTags (questionsVersion))) {
-                throw new BuildException ("Answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"");
+                String msg = "Answers were created for questions version \"" + answersVersion + "\" but current version of questions is \"" + questionsVersion + "\"";
+                if ("true".equals (this.getProject().getProperty("arch.warn"))) {
+                    log (msg);
+                } else {
+                    throw new BuildException (msg);
+                }
             }
         }
         
@@ -161,7 +166,7 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
                     }
                 } else {
                     log (
-                        "Some questions have not been answered" + s + "\n" + 
+                        "Some questions have not been answered " + s + "\n" + 
                         "Run with -Darch.generate=true to add missing questions into the end of question file"
                     );
                 }
