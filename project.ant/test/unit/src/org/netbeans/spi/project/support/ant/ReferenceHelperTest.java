@@ -515,6 +515,26 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("no more ${reference.proj2.dojavadoc}", null,
             props.getProperty("reference.proj2.dojavadoc"));
         // XXX check add ref not coming from project gives IAE
+        
+        // test AA with multiple outputs:
+        AntArtifact aa = new AntBasedTestUtil.TestAntArtifact(new URI[]{new URI("dist/foo.jar"), new URI("dist/bar.jar")}, sisterh);
+        String ref1 = r.addReference(aa, aa.getArtifactLocations()[0]);
+        String ref2 = r.addReference(aa, aa.getArtifactLocations()[1]);
+        assertEquals("correct evaluated ref1",
+            new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "foo.jar"),
+            h.resolveFile(pev.evaluate(ref1)));
+        assertEquals("correct evaluated ref2",
+            new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "bar.jar"),
+            h.resolveFile(pev.evaluate(ref2)));
+        r.destroyReference(ref1);
+        assertEquals("correct evaluated ref2",
+            new File(new File(FileUtil.toFile(sisterprojdir), "dist"), "bar.jar"),
+            h.resolveFile(pev.evaluate(ref2)));
+        assertEquals("ref1 does not exist", ref1, pev.evaluate(ref1));
+        r.destroyReference(ref2);
+        assertEquals("ref1 does not exist", ref1, pev.evaluate(ref1));
+        assertEquals("ref2 does not exist", ref2, pev.evaluate(ref2));
+        pm.saveProject(p);
     }
     
     public void testReferenceEscaping() throws Exception {

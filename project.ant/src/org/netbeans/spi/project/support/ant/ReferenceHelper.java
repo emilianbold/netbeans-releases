@@ -152,7 +152,7 @@ public final class ReferenceHelper {
     
     private void removeOldReferences() {
         assert ProjectManager.mutex().isWriteAccess();
-        aux.removeConfigurationFragment(REFS_NS, REFS_NAME, true);
+        aux.removeConfigurationFragment(REFS_NAME, REFS_NS, true);
     }
     
     /**
@@ -556,12 +556,40 @@ public final class ReferenceHelper {
         return removeReference(foreignProjectName, id, false, null);
     }
     
+    /**
+     * Checks whether this is last reference and therefore the artifact can
+     * be removed from project.xml or not
+     */
+    private boolean isLastReference(String ref) {
+       Object ret[] = findArtifactAndLocation(ref);
+       if (ret[0] == null || ret[1] == null) {
+           return true;
+       }
+       AntArtifact aa = (AntArtifact)ret[0];
+       URI uri = (URI)ret[1];
+       URI uris[] = aa.getArtifactLocations();
+       boolean lastReference = true;
+       // are there any other referenced jars or not:
+       for (int i=0; i<uris.length; i++) {
+           if (uris[i].equals(uri)) {
+               continue;
+           }
+           if (isReferenced(aa, uris[i])) {
+               lastReference = false;
+               break;
+           }
+       }
+       return lastReference;
+    }
+    
     private boolean removeReference(final String foreignProjectName, final String id, final boolean escaped, final String reference) {
         return ((Boolean)ProjectManager.mutex().writeAccess(new Mutex.Action() {
             public Object run() {
-                boolean success;
+                boolean success = false;
                 try {
-                    success = removeRawReference0(foreignProjectName, id, escaped);
+                    if (isLastReference("${"+reference+"}")) {
+                        success = removeRawReference0(foreignProjectName, id, escaped);
+                    }
                 } catch (IllegalArgumentException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     return Boolean.FALSE;
@@ -572,28 +600,31 @@ public final class ReferenceHelper {
                     AntProjectHelper.PROJECT_PROPERTIES_PATH,
                     AntProjectHelper.PRIVATE_PROPERTIES_PATH,
                 };
-                // Check whether there are any other references using foreignProjectName.
-                // If not, we can delete ${project.foreignProjectName}.
-                RawReference[] refs = new RawReference[0];
-                Element references = loadReferences();
-                if (references != null) {
-                    refs = getRawReferences(references);
-                }
-                boolean deleteProjProp = true;
-                for (int i = 0; i < refs.length; i++) {
-                    if (refs[i].getForeignProjectName().equals(foreignProjectName)) {
-                        deleteProjProp = false;
-                        break;
+                // if raw reference was removed then try to clean also project reference property:
+                if (success) {
+                    // Check whether there are any other references using foreignProjectName.
+                    // If not, we can delete ${project.foreignProjectName}.
+                    RawReference[] refs = new RawReference[0];
+                    Element references = loadReferences();
+                    if (references != null) {
+                        refs = getRawReferences(references);
                     }
-                }
-                if (deleteProjProp) {
-                    String projProp = "project." + foreignProjectName; // NOI18N
-                    for (int i = 0; i < PROPS_PATHS.length; i++) {
-                        EditableProperties props = h.getProperties(PROPS_PATHS[i]);
-                        if (props.containsKey(projProp)) {
-                            props.remove(projProp);
-                            h.putProperties(PROPS_PATHS[i], props);
-                            success = true;
+                    boolean deleteProjProp = true;
+                    for (int i = 0; i < refs.length; i++) {
+                        if (refs[i].getForeignProjectName().equals(foreignProjectName)) {
+                            deleteProjProp = false;
+                            break;
+                        }
+                    }
+                    if (deleteProjProp) {
+                        String projProp = "project." + foreignProjectName; // NOI18N
+                        for (int i = 0; i < PROPS_PATHS.length; i++) {
+                            EditableProperties props = h.getProperties(PROPS_PATHS[i]);
+                            if (props.containsKey(projProp)) {
+                                props.remove(projProp);
+                                h.putProperties(PROPS_PATHS[i], props);
+                                success = true;
+                            }
                         }
                     }
                 }

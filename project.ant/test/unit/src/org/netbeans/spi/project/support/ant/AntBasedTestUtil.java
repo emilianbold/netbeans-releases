@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +49,7 @@ import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -208,9 +211,16 @@ public class AntBasedTestUtil {
             TestAntArtifactProvider() {}
             
             public AntArtifact[] getBuildArtifacts() {
+                URI[] uris = null;
+                try {
+                    uris = new URI[]{new URI("dist/foo.jar"), new URI("dist/bar.jar")};
+                } catch (URISyntaxException ex) {
+                    ex.printStackTrace();
+                }
                 return new AntArtifact[] {
                     helper.createSimpleAntArtifact("jar", "build.jar", helper.getStandardPropertyEvaluator(), "dojar", "clean"),
                     helper.createSimpleAntArtifact("javadoc", "build.javadoc", helper.getStandardPropertyEvaluator(), "dojavadoc", "clean"),
+                    new TestAntArtifact(uris, helper),
                 };
             }
             
@@ -532,6 +542,48 @@ public class AntBasedTestUtil {
             return expect();
         }
         
+    }
+
+    public static class TestAntArtifact extends AntArtifact {
+
+        private URI[] uris;
+        private Project p;
+        private AntProjectHelper h;
+
+        public TestAntArtifact(URI[] uris, AntProjectHelper h) {
+            this.uris = uris;
+            try {
+                this.p = ProjectManager.getDefault().findProject(h.getProjectDirectory());
+            } catch ( Exception e) {
+                e.printStackTrace();
+            }
+            this.h = h;
+        }
+
+        public String getType() {
+            return "multi-jar"; // NOI18N
+        }
+
+        public File getScriptLocation() {
+            return h.resolveFile(GeneratedFilesHelper.BUILD_XML_PATH);
+        }
+
+        public String getTargetName() {
+            return "build"; // NOI18N
+        }
+
+        public String getCleanTargetName() {
+            return "clean"; // NOI18N
+        }
+        
+        public URI[] getArtifactLocations() {
+            return uris;
+        }
+
+        public Project getProject() {
+            return p;
+        }
+
     }
     
 }
