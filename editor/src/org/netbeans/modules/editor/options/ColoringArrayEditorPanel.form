@@ -38,11 +38,11 @@
       <SubComponents>
         <Container class="javax.swing.JScrollPane" name="syntaxScroll">
           <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-              <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="1" gridX="5" gridY="1" insetsBottom="8" insetsLeft="8" insetsRight="3" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
-            </Constraint>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
               <BorderConstraints direction="Center"/>
+            </Constraint>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+              <GridBagConstraints anchor="10" fill="1" gridHeight="1" gridWidth="1" gridX="5" gridY="1" insetsBottom="8" insetsLeft="8" insetsRight="3" insetsTop="0" ipadX="0" ipadY="0" weightX="1.0" weightY="1.0"/>
             </Constraint>
           </Constraints>
 

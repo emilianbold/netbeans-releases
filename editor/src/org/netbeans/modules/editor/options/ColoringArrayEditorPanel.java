@@ -26,6 +26,7 @@ import org.openide.explorer.propertysheet.PropertyModel;
 import org.openide.util.HelpCtx;
 
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.SettingsNames;
 
 /**
@@ -139,14 +140,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         }
 
         for( i = 0; i < names.length; i++ ) {
-            visualNames[i] = names[i];
-            try {
-                visualNames[i] = bundle.getString( "NAME_coloring_" /* + typeName + "_" */ + names[i] ); // NOI18N
-            } catch (MissingResourceException e) {
-                try {
-                    visualNames[i] = bundle.getString("NAME_coloring_" + BaseOptions.BASE + "-" + names[i] ); // NOI18N
-                } catch (MissingResourceException e2) {}
-            }
+            visualNames[i] = LocaleSupport.getString( "NAME_coloring_" /* + typeName + "_" */ + names[i] ); // NOI18N
+            if( visualNames[i] == null )
+                visualNames[i] = LocaleSupport.getString("NAME_coloring_" + BaseOptions.BASE + "-" + names[i], names[i] ); // NOI18N
         }
 
         this.names = names;
@@ -159,14 +155,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
     void setEditorValue( int index ) {
         if( index < 0 ) return;
 
-        String example = names[index];
-        try {
-            example = bundle.getString( "EXAMPLE_coloring_" /*+ typeName + "_" */ + names[index] ); // NOI18N
-        } catch (MissingResourceException e) {
-            try {
-                example = bundle.getString("EXAMPLE_coloring_" + BaseOptions.BASE + "-" + names[index] ); // NOI18N
-            } catch (MissingResourceException e2) {}
-        }
+        String example = LocaleSupport.getString( "EXAMPLE_coloring_" /*+ typeName + "_" */ + names[index] ); // NOI18N
+        if( example == null )
+            example = LocaleSupport.getString("EXAMPLE_coloring_" + BaseOptions.BASE + "-" + names[index], names[index] ); // NOI18N
 
         Coloring c = (Coloring)value.get(names[index]);
         ColoringBean bean =
@@ -199,10 +190,9 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         syntaxList = new javax.swing.JList();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-
+        
         detailPanel.setLayout(new java.awt.GridLayout(1, 1));
-
-
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
@@ -211,23 +201,23 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(detailPanel, gridBagConstraints1);
-
+        
+        
         masterPanel.setLayout(new java.awt.GridLayout(1, 1));
         masterPanel.setBorder(new javax.swing.border.CompoundBorder( new javax.swing.border.TitledBorder(bundle.getString( "CAEP_SyntaxLabel" )), new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8))));
-
-  
-            syntaxList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        
+        
+          syntaxList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
                 public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                     syntaxListValueChanged(evt);
                 }
             }
             );
-    
             syntaxScroll.setViewportView(syntaxList);
-    
-          masterPanel.add(syntaxScroll);
-  
-
+            
+            masterPanel.add(syntaxScroll);
+          
+          
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -236,7 +226,7 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         gridBagConstraints1.weighty = 1.0;
         add(masterPanel, gridBagConstraints1);
-
+        
     }//GEN-END:initComponents
 
     private void syntaxListValueChanged (javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_syntaxListValueChanged
