@@ -704,7 +704,7 @@ public class PropertyUtils {
         }
         
         public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            listeners.add(listener);
+            listeners.remove(listener);
         }
         
         public void stateChanged(ChangeEvent e) {
