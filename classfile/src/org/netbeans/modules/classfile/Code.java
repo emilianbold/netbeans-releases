@@ -51,7 +51,7 @@ public class Code {
         maxLocals = in.readUnsignedShort();
         int len = in.readInt();
         byteCodes = new byte[len];
-        in.read(byteCodes);
+        in.readFully(byteCodes);
         exceptionTable = ExceptionTableEntry.loadExceptionTable(in, pool);
         loadCodeAttributes(in, pool);
     }
