@@ -144,7 +144,7 @@
  		<tocitem text="About web.xml" target="webmod_editdd" />  
 		<tocitem text="Editing web.xml" target="concepts_deploydes" />
 	    </tocitem>
-	    <tocitem text="Adding a Web Application Module to a J2EE Application" target="tbd" />
+	    <tocitem text="Adding a Web Application Module to a J2EE Application" target="add_web_to_j2ee_app" />
         </tocitem>
 	<tocitem text="Building and Deploying Web Applications"> 
 	    <tocitem text="About Building Web Applications" target="concepts_war"  />

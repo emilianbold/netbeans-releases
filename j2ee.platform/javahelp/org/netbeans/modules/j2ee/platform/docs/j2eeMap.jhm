@@ -77,7 +77,8 @@
         <mapID target="use_dbcp_in_jsp" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_use_tdcp.html" />
 	<mapID target="password_tomcat_manager" url="nbdocs:/org/netbeans/modules/tomcat5/docs/tomcat/tomcat_edit_tomcatuser.html" />
 	<mapID target="deploying_tasks" url="web/webmod/run_web_quickref.html" />
-	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" /> 
+	<mapID target="proj_webfree_debug" url="nbdocs:/org/netbeans/modules/usersguide/project/proj_webfree_debug.html" />
+	<mapID target="add_web_to_j2ee_app" url="web/warpkg/add_web_to_j2ee_app.html" /> 
 	<mapID target="about_web_service" url="web/webservice/about_jwsd.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
         <mapID target="decide_ws" url="web/webservice/decide_ws.html" />
