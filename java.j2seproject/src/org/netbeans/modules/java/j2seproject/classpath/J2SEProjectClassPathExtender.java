@@ -7,14 +7,16 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.io.IOException;
 import java.io.File;
+import java.net.URI;
 import java.util.List;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -31,7 +33,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.VisualClassPathItem;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.project.ProjectClassPathExtender;
+
 
 
 
@@ -56,7 +58,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addLibrary(final String classPathId, final Library library) throws IOException {
-        assert library != null : "Parameter can not be null";       //NOI18N
+        assert library != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -99,7 +101,7 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
     }
 
     public boolean addArchiveFile(final String classPathId, final FileObject archiveFile) throws IOException {
-        assert archiveFile != null : "Parameter can not be null";       //NOI18N
+        assert archiveFile != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {
@@ -141,12 +143,12 @@ public class J2SEProjectClassPathExtender implements ProjectClassPathExtender {
         }
     }
 
-    public boolean addAntArtifact(final AntArtifact artifact) throws IOException {
-        return addAntArtifact(CP_CLASS_PATH,artifact);
+    public boolean addAntArtifact(final AntArtifact artifact, final URI artifactElement) throws IOException {
+        return addAntArtifact(CP_CLASS_PATH,artifact, artifactElement);
     }
 
-    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact) throws IOException {
-        assert artifact != null : "Parameter can not be null";       //NOI18N
+    public boolean addAntArtifact(final String classPathId, final AntArtifact artifact, final URI artifactElement) throws IOException {
+        assert artifact != null : "Parameter cannot be null";       //NOI18N
         try {
             return ((Boolean)ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction () {

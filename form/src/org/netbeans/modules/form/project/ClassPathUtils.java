@@ -30,7 +30,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.java.project.ProjectClassPathExtender;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 /**
  * Utility methods related to classpath in projects.
@@ -259,7 +259,7 @@ public class ClassPathUtils {
                 AntArtifact artifact =
                     AntArtifactQuery.findArtifactFromFile(jarFile);
                 if (artifact.getProject() != project)
-                    projectClassPath.addAntArtifact(artifact);
+                    projectClassPath.addAntArtifact(artifact, null);    //XXX: David, fix it
             }
         }
 

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -515,7 +515,7 @@ final class LibrariesNode extends AbstractNode {
             if (cpExtender != null) {
                 for (int i=0; i<artifacts.length;i++) {
                     try {
-                        cpExtender.addAntArtifact(classPathId, artifacts[i]);
+                        cpExtender.addAntArtifact(classPathId, artifacts[i], null); //XXX: David, fix it
                     } catch (IOException ioe) {
                         ErrorManager.getDefault().notify(ioe);
                     }

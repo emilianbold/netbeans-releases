@@ -69,13 +69,32 @@ is the proper place.
     <!-- First, a list of API names you may use: -->
     <apidefs>
         <apidef name="general">Java Project API</apidef>
+        <apidef name="classpath">Classpath Support SPI</apidef>
         <!-- etc. -->
     </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change>
+            <api name="classpath"/>
+            <summary>The ProjectClassPathExtender was moved into public SPI package.</summary>
+            <version major="1" minor="3"/>
+            <date day="5" month="1" year="2005"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                The ProjectClassPathExtender was a private contract between j2seproject and form editor
+                which allowed the form editor to extend the compilation classpath of project by new classpath
+                element (archive file, folder, dependent project, library).
+                The ProjectClassPathExtender was moved into public SPI package (org.netbeans.spi.java.project.classpath)
+                to remove the need of the implementation dependency of form editor and j2seproject on java/project module.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.classpath" name="ProjectClassPathExtender"/>
+            <issue number="52998"/>
+        </change>
         <change id="rel-vers-1">
             <api name="general"/>
             <summary>Switched to major release version 1</summary>

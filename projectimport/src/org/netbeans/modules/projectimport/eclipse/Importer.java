@@ -33,7 +33,7 @@ import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
 import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.modules.java.project.ProjectClassPathExtender;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
@@ -174,7 +174,7 @@ final class Importer {
                 J2SEProject nbSubProject = importProject(eclSubProject);
                 AntArtifact[] artifact =
                         AntArtifactQuery.findArtifactsByType(nbSubProject, JavaProjectConstants.ARTIFACT_TYPE_JAR);
-                nbProjectClassPath.addAntArtifact(artifact[0]);
+                nbProjectClassPath.addAntArtifact(artifact[0], null);   //XXX: David, fix this
             }
             
             // set platform used by an Eclipse project

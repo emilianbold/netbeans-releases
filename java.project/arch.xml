@@ -50,7 +50,7 @@ Microsystems, Inc. All Rights Reserved.
   </api>
    </li>
    <li>
-  <api group="java" name="ProjectClassPathExtender" type="export" category="friend">
+  <api group="java" name="ProjectClassPathExtender" type="export" category="devel">
    <p>
     Implemented by <code>java/j2seproject</code> and asked for by
     <code>form</code>. Permits the Form Editor to add JavaBeans archives to the
@@ -389,15 +389,6 @@ Microsystems, Inc. All Rights Reserved.
   <pre>
    OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/1 &gt; @SPECIFICATION-VERSION@
   </pre>
-  <p>
-   For access to <code>ProjectClassPathExtender</code>:
-  </p>
-  <pre>
-   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java.project/1 = ${java.project.impl.version}
-  </pre>
-  <p>
-   with the property taken from <code>java/project/spec-ver.properties</code>.
-  </p>
  </answer>
 
 
@@ -460,8 +451,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   Only API and SPI packages are exported as public.
-   <code>ProjectClassPathExtender</code> requires an implementation dependency.
+   Only API and SPI packages are exported as public.   
   </p>
  </answer>
 
