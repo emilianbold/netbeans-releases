@@ -519,7 +519,7 @@ public class MakeLNBM extends MatchingTask {
 			    if (firstline)
 			        firstline = false;
 			    else
-			      ps.print ("            ");
+			      ps.print ("            "); //NOI18N
 			    ps.println(name + "=\"" + xmlEscape(attr.getValue(name)) + "\""); //NOI18N
 			}
 			ps.println ("  />"); //NOI18N
@@ -532,7 +532,7 @@ public class MakeLNBM extends MatchingTask {
 		      if( langCode != null && !langCode.trim().equals( "")) { //NOI18N
 			ps.println( "        langcode=\"" + xmlEscape(langCode) + "\"") ; //NOI18N
 		      }
-		      if( brandingCode != null && !brandingCode.trim().equals( "")) {
+		      if( brandingCode != null && !brandingCode.trim().equals( "")) { //NOI18N
 			ps.println( "        brandingcode=\"" + xmlEscape(brandingCode) + "\"") ; //NOI18N
 		      }
 
@@ -544,7 +544,7 @@ public class MakeLNBM extends MatchingTask {
 
 		      // Write the spec version if possible. //
 		      specver = getSpecVer( modInfo) ;
-		      if( specver != null && !specver.trim().equals( "")) {
+		      if( specver != null && !specver.trim().equals( "")) { //NOI18N
 			ps.println( "        module_spec_version=\"" + xmlEscape(specver) + "\"") ; //NOI18N
 		      }
 
@@ -584,7 +584,7 @@ public class MakeLNBM extends MatchingTask {
 			    ps.println("/>"); //NOI18N
 			}
 		    }
-		    ps.println ("</module>");
+		    ps.println ("</module>"); //NOI18N
                     ps.flush();
 		} finally {
 		    infoStream.close ();
@@ -647,7 +647,7 @@ public class MakeLNBM extends MatchingTask {
 				signjar.getClass().getDeclaredMethod( "setKeystore", paramsT2 ).invoke( signjar, paramsV1 ); //NOI18N
 				signjar.getClass().getDeclaredMethod( "setJar", paramsT1 ).invoke( signjar, paramsV2 ); //NOI18N
 			    }   catch (NoSuchMethodException ex3) {
-                                throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
+                                throw new BuildException("Unknown ANT version, only ANT 1.6.1 is currently supported.");
                             }
                         }
                     }
