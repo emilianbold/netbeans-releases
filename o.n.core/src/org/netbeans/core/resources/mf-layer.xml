@@ -494,4 +494,13 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
   </folder>
 
+  <folder name="Services">
+    <folder name="Hidden">
+      <attr name="hidden" boolvalue="true" />
+    </folder>
+  </folder>   
+
+  <folder name="ServiceTemplates">    
+  </folder>   
+  
 </filesystem>
