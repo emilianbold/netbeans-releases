@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -186,7 +186,7 @@ public final class AntProjectHelper {
                 xml = loadXml(path);
                 if (xml == null) {
                     // Missing or broken; create a skeleton.
-                    String element = shared ? "project" : "private"; // NOI18N
+                    String element = shared ? "project" : "project-private"; // NOI18N
                     String ns = shared ? PROJECT_NS : PRIVATE_NS;
                     xml = XMLUtil.createDocument(element, ns, null, null);
                     if (shared) {
