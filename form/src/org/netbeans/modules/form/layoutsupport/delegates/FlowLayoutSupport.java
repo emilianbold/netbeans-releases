@@ -80,8 +80,8 @@ public class FlowLayoutSupport extends AbstractLayoutSupport
             if (posX < lastX) {
                 rowStarts[r] = i;
                 rowTops[r] = rowHeight + vgap;
-                if (r > 0)
-                    rowTops[r] += rowTops[r-1];
+                rowTops[r] += r > 0 ? rowTops[r-1] :
+                                      containerDelegate.getInsets().top;
                 r++;
                 rowHeight = 0;
             }

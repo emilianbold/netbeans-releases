@@ -67,15 +67,13 @@ public class GridLayoutSupport extends AbstractLayoutSupport
         int nrows = layout.getRows();
         int ncols = layout.getColumns();
 
-        if (nrows <= 0 && ncols <= 0 || components.length == 0)
+        if ((nrows <= 0 && ncols <= 0) || components.length == 0)
             return components.length;
         
-        if (nrows != 0) {
+        if (nrows != 0)
             ncols = (components.length + nrows - 1) / nrows;
-        }
-        else {
+        else
             nrows = (components.length + ncols - 1) / ncols;
-        }
 
         Dimension sz = containerDelegate.getSize();
         Insets insets = containerDelegate.getInsets();
@@ -85,12 +83,12 @@ public class GridLayoutSupport extends AbstractLayoutSupport
         int colwidth = sz.width / ncols;
         if (colwidth <= 0)
             return components.length;
-        int col = (posInCont.x + colwidth / 2) / colwidth;
+        int col = (posInCont.x - insets.left + colwidth / 2) / colwidth;
         
         int rowheight = sz.height / nrows;
         if (rowheight <= 0)
             return components.length;
-        int row = posInCont.y / rowheight;
+        int row = (posInCont.y - insets.top) / rowheight;
 
         int newIndex = row * ncols + col;
         return newIndex >= components.length ? components.length : newIndex;
