@@ -158,21 +158,17 @@ final class TopComponentSubModel {
     
     public boolean addClosedTopComponent(TopComponent tc) {
         int index = openedTopComponents.indexOf(tc);
-
         String tcID = getID(tc);
-        if(index == -1) {
-            if(!tcIDs.contains(tcID)) {
-                tcIDs.add(tcID);
-            }
-        } else {
+        if (!tcIDs.contains(tcID)) {
+            tcIDs.add(tcID);
+        }
+        if(index != -1) {
             openedTopComponents.remove(tc);
-            if(!tcIDs.contains(tcID)) {
-                tcIDs.add(tcID);
-            }
-            if(selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
+            if (selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
                 adjustSelectedTopComponent(index);
             }
-        }
+        } 
+        
         
         // XXX - should be deleted after TopComponent.isSliding is introduced
         if (kind == Constants.MODE_KIND_SLIDING) {
@@ -196,7 +192,7 @@ final class TopComponentSubModel {
         boolean res;
         String tcID = getID(tc);
         if(openedTopComponents.contains(tc)) {
-            if(selectedTopComponentID != null && selectedTopComponentID.equals(getID(tc))) {
+            if(selectedTopComponentID != null && selectedTopComponentID.equals(tcID)) {
                 int index = openedTopComponents.indexOf(getTopComponent(selectedTopComponentID));
                 openedTopComponents.remove(tc);
                 adjustSelectedTopComponent(index);
