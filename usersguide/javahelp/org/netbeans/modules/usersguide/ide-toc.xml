@@ -508,6 +508,8 @@
   <tocitem text="Configuring the Environment" >
     <tocitem text="Using the Options Window" target="configure.options" />
     <tocitem text="Configuring Java Settings" target="java.java_sources" />
+    <tocitem text="Managing IDE Windows" target="workspace.jump"/>
+    <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
     <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
     <tocitem text="Switching JDK Versions">
       <tocitem text="About" target="java.jdks.jump"/>
@@ -533,18 +535,6 @@
       <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
       <tocitem text="Creating a Bookmark for a Web Page" target="webbrowser.bookmark" />
       <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
-    </tocitem>
-    <tocitem text="Managing IDE Windows">
-      <tocitem text="About" target="workspace.jump"/>
-      <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
-      <tocitem text="Using a Multiple Document Interface" target="workspace.mdi"/>
-      <tocitem text="Workspaces in the IDE" target="workspace.defined"/>
-      <tocitem text="Creating a Workspace" target="workspace.create"/>
-      <tocitem text="Renaming a Workspace" target="workspace.rename"/>
-      <tocitem text="Turning Off the Automatic Loading of a Workspace" target="workspace.auto"/>
-      <tocitem text="Changing the Toolbar Configuration for a Workspace" target="workspace.customize"/>
-      <tocitem text="Deleting a Workspace" target="workspace.delete"/>
-      <tocitem text="Docking and Undocking Views" target="workspace.dock"/>
     </tocitem>
     <tocitem text="Configuring Menus">
       <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
