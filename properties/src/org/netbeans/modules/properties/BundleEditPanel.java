@@ -28,6 +28,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.*;
 import javax.swing.plaf.BorderUIResource;
 import javax.swing.plaf.BorderUIResource.BevelBorderUIResource;
+import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.table.*;
 
 import org.openide.DialogDescriptor;
@@ -725,12 +726,24 @@ public class BundleEditPanel extends JPanel {
 
             setFont(table.getFont());
             
-            if(hasFocus)
+            if(hasFocus) {
                 setBorder(UIManager.getBorder("Table.focusCellHighlightBorder") ); // NOI18N
-            else
+            } else {
                 setBorder(noFocusBorder);
+            }
             
-            setText(sp.getValue() == null ? "" : UtilConvert.unicodesToChars(sp.toString())); // NOI18N
+            String text = null;
+            
+            if(sp.getValue() != null) {
+                text = UtilConvert.unicodesToChars(sp.toString());
+            }
+            
+            // XXX Ugly hack to prevent problems showing 'html-ed' labels.
+            if(BasicHTML.isHTMLString(text)) { // NOI18N
+                text = " " + text; // NOI18N
+            }
+            
+            setValue(text == null ? "" : text); // NOI18N
 
             // Set background color.
             if(sp.isKeyType())
