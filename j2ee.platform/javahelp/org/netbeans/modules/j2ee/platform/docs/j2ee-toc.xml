@@ -55,7 +55,7 @@
 	 <tocitem text="Editing a Servlet" target="servlet_edit"/>
 	 <tocitem text="Adding an Enterprise Resource" >
 	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
-	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 	<tocitem text="Calling an Enterprise Bean" target="call_ejb" />
 	 	<tocitem text="Using a Database" target="use_a_database" />
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
 	 </tocitem> 
@@ -210,7 +210,7 @@
 	 <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	 <tocitem text="Adding an Enterprise Resource" >
 	 <tocitem text="About Adding an Enterprise Resource" target="add_enterprise_resource" />
-	 	<tocitem text="Calling an EJB" target="call_an_ejb" />
+	 <tocitem text="Calling an Enterprise Bean" target="call_ejb" />
 	 	<tocitem text="Using a Database" target="use_a_database" />
 		<tocitem text="Sending a JMS Message" target="send_JMS_message" />
 	 </tocitem>  
