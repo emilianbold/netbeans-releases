@@ -18,6 +18,9 @@ Microsystems, Inc. All Rights Reserved.
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="../nbbuild/standard-nbm-license.txt"/>
+  <property name="javadoc.destdir.default" value="javadoc"/>
+  <property name="javadoc.extra.param" value=""/>
+  <property name="javadoc.private" value="false"/>
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="../nbbuild/nbantext.jar"/>
@@ -81,30 +84,84 @@ Microsystems, Inc. All Rights Reserved.
     <delete file="manifest-subst.mf"/>
     <delete file="utilities.nbm"/>
     <delete dir="netbeans"/>
-    <delete dir="javadoc"/>
+    <delete dir="${javadoc.destdir.default}"/>
     <delete dir="Info"/>
   </target>
 
-  <target name="javadoc" description="Build utilities module API documentation." depends="init">
+  <target name="check-javadoc-destdir-overridden"
+          if="javadoc.destdir">
+    <property name="javadoc.destdir.overridden" value="true"/>
+  </target>
+
+  <target name="set-default-javadoc-destdir"
+          unless="javadoc.destdir.overridden"
+          depends="check-javadoc-destdir-overridden">
+    <property name="javadoc.destdir" value="${javadoc.destdir.default}"/>
+  </target>
+
+  <target name="set-javadoc-destdir"
+          depends="check-javadoc-destdir-overridden,set-default-javadoc-destdir"/>
+
+  <target name="clear-default-javadoc-destdir"
+          unless="javadoc.destdir.overridden"
+          depends="check-javadoc-destdir-overridden,set-javadoc-destdir">
+    <delete dir="${javadoc.destdir}"/>
+    <mkdir dir="${javadoc.destdir}"/>
+  </target>
+
+  <target name="check-javadoc-destdir-exists" depends="set-javadoc-destdir">
+    <available file="${javadoc.destdir}" type="dir" property="javadoc.destdir.exists"/>
+  </target>
+
+  <target name="fail-if-javadoc-destdir-missing"
+          unless="javadoc.destdir.exists"
+          depends="check-javadoc-destdir-exists">
+    <fail message="Destination directory does not exist: ${javadoc.destdir}"/>
+  </target>
+
+  <target name="check-overridden-javadoc-destdir"
+          if="javadoc.destdir.overridden"
+          depends="check-javadoc-destdir-overridden,set-javadoc-destdir,fail-if-javadoc-destdir-missing"/>
+
+  <target name="prepare-javadoc-destdir"
+          depends="check-overridden-javadoc-destdir,clear-default-javadoc-destdir"/>
+
+  <target name="javadoc" description="Build utilities module API documentation."
+          depends="init,prepare-javadoc-destdir">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
-    <echo message="Build utilities module API documentation..."/>
-    <mkdir dir="javadoc"/>
-    <javadoc destdir="javadoc"
+    <echo message="Build Utilities module API documentation..."/>
+    <echo message="Destination directory: ${javadoc.destdir}"/>
+    <javadoc destdir="${javadoc.destdir}"
              packagenames="org.netbeans.modules.*"
-             doctitle="NetBeans utilities module APIs"
-             windowtitle="NetBeans utilities module APIs"
+             doctitle="NetBeans Utilities module APIs"
+             windowtitle="NetBeans Utilities module APIs"
              bottom="${apis-footer}"
              use="true"
              splitindex="true"
+             private="${javadoc.private}"
              author="false"
              version="false"
              maxmemory="384m"
-    >
+             additionalparam="-breakiterator ${javadoc.extra.param}">
       <sourcepath>
         <pathelement location="src"/>
+        <pathelement location="loaderswitcher/src"/>
+        <pathelement location="group/src"/>
       </sourcepath>
       <classpath refid="utilities-cp"/>
+      <classpath>
+        <fileset dir="..">
+          <patternset includes="openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        </fileset>
+      </classpath>
+
+      <group title="Loader Switcher"    packages="org.netbeans.modules.loaderswitcher*"/>
+      <group title="Group"              packages="org.netbeans.modules.group*"/>
+      <group title="Open File"          packages="org.netbeans.modules.openfile*"/>
+      <group title="PDF"                packages="org.netbeans.modules.pdf*"/>
+      <group title="Search"             packages="org.netbeans.modules.search*"/>
+      <group title="URL"                packages="org.netbeans.modules.url*"/>
     </javadoc>    
   </target>
 
