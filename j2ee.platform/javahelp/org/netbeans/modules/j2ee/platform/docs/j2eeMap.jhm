@@ -89,6 +89,7 @@
 	<mapID target="select_wscompile_ws" url="web/webservice/select_wscompile_ws.html" />
 	<mapID target="compile_doc" url="web/webservice/compile_doc.html" />
 	<mapID target="compile_rpc" url="web/webservice/compile_rpc.html" />
+	<mapID target="compile_wsdl" url="web/webservice/compile_wsdl.html" />
         <mapID target="select_wscompile_wsc" url="web/webservice/select_wscompile_wsc.html" />
 	<mapID target="ws_process" url="web/webservice/ws_process.html" />
 	<mapID target="create_ws" url="web/webservice/create_ws.html" />
@@ -104,7 +105,6 @@
 	<mapID target="add_soap_message" url="web/webservice/add_soap_message.html" />
 	<mapID target="test_ws" url="web/webservice/test_ws.html" />
 	<mapID target="test_ws_clientside" url="web/webservice/test_ws_clientside.html" />
-	<mapID target="build_ws" url="web/webservice/build_ws.html" />
 	<mapID target="expose_ws" url="web/webservice/expose_ws.html" />
 	<mapID target="register_ws" url="web/webservice/register_ws.html" />
 	<mapID target="create_wsc" url="web/webserviceclient/create_wsc.html" />

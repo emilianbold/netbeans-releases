@@ -240,13 +240,11 @@
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_soap_message" />
 	</tocitem>
-	<tocitem text="Configuring and Building Web Services" >
-	         <tocitem text="Configuring Web Service Compilation" >
-		      <tocitem text="About Configuring Web Service Compilation" target="select_wscompile_ws" />
-		      <tocitem text="Configuring a Document-Style Web Service" target="compile_doc" />
-		      <tocitem text="Configuring a RPC-Style Web Service" target="compile_rpc" />
-		 </tocitem>
- 		 <tocitem text="Building a Web Service" target="build_ws" />
+	<tocitem text="Building Web Services" >
+		 <tocitem text="About Building Web Services" target="select_wscompile_ws" />
+		 <tocitem text="Building a Web Service from a WSDL File" target="compile_wsdl" />
+		 <tocitem text="Building a Document-Style Web Service" target="compile_doc" />
+		 <tocitem text="Building a RPC-Style Web Service" target="compile_rpc" />
                  <tocitem text="Tweaking the WSDL File by Hand" target="tweak_wsdl" />
 	 </tocitem>
 	 <tocitem text="Exposing and Testing Web Services" >
@@ -259,8 +257,7 @@
 		 <tocitem text="Creating a Web Service Client" target="create_wsc" />
 		 <tocitem text="Testing a Web Service on the Client Side" target="test_ws_clientside" /> 
 		 <tocitem text="Calling a Web Service Operation" target="call_ws_operation" />
-                 <tocitem text="Setting Wscompile Features for a Web Service Client" target="select_wscompile_wsc" />
-		 <tocitem text="Building a Web Service Client" target="tbd" />
+		 <tocitem text="Building a Web Service Client" target="select_wscompile_wsc" />
 		 <tocitem text="Deploying a Web Service Client" target="tbd" />
 	 </tocitem>
 	
