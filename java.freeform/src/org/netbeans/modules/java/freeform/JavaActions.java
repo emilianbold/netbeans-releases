@@ -53,9 +53,11 @@ import org.openide.text.Line;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -283,6 +285,24 @@ final class JavaActions implements ActionProvider {
         "-Xrunjdwp:transport=dt_socket,address=${jpda.address}", // NOI18N
     };
     private void addDebugVMArgs(Element java, Document ownerDocument) {
+        //Add fork="true" if not alredy there
+        NamedNodeMap attrs = java.getAttributes();
+        boolean found = false;
+        for (int i=0; i<attrs.getLength(); i++) {
+            Attr attr = (Attr) attrs.item(i);
+            if ("fork".equals(attr.getName())) {        //NOI18N
+                String value = attr.getValue();
+                if ("on".equalsIgnoreCase (value) ||    //NOI18N
+                    "true".equalsIgnoreCase(value) ||   //NOI18N
+                    "yes".equalsIgnoreCase(value)) {    //NOI18N
+                    found = true;
+                }
+                break;
+            }
+        }
+        if (!found) {
+            java.setAttribute("fork", "true");  //NOI18N
+        }
         for (int i = 0; i < DEBUG_VM_ARGS.length; i++) {
             Element jvmarg = ownerDocument.createElement("jvmarg"); // NOI18N
             jvmarg.setAttribute("value", DEBUG_VM_ARGS[i]); // NOI18N
