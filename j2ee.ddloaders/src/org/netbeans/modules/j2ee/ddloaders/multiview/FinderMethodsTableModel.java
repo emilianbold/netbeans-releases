@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
-import org.netbeans.modules.j2ee.ddloaders.multiview.EntityHelper;
 import org.openide.filesystems.FileObject;
 
 /**

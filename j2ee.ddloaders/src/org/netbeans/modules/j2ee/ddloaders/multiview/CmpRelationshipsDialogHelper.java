@@ -35,51 +35,277 @@ import java.util.Vector;
  * @author pfiala
  */
 class CmpRelationshipsDialogHelper {
-    private static final String[] FILED_TYPE_ITEMS = new String[]{"java.util.Collection", "java.util.Set"};//NOI18N
 
-    private static boolean lastGetter = true;
-    private static boolean lastSetter = true;
-    private static boolean lastGetter2 = true;
-    private static boolean lastSetter2 = true;
+    private static final String CLASS_COLLECTION = "java.util.Collection";  //NOI18N
+    private static final String CLASS_SET = "java.util.Set";                //NOI18N
+    private static final String[] FILED_TYPE_ITEMS = new String[]{CLASS_COLLECTION, CLASS_SET};
 
     private final FileObject ejbJarFile;
     private final EjbJar ejbJar;
 
     private JTextField relationshipNameTextField;
     private JTextArea descriptionTextArea;
-    private JTextField roleNameTextField;
-    private JComboBox ejbComboBox;
-    private JRadioButton multiplicityManyRadioButton;
-    private JRadioButton multiplicityOneRadioButton;
-    private JCheckBox cascadeDeleteCheckBox;
-    private JCheckBox createCmrFieldCheckBox;
-    private JTextField fieldNameTextField;
-    private JComboBox fieldTypeComboBox;
-    private JTextField roleNameTextField2;
-    private JComboBox ejbComboBox2;
-    private JRadioButton multiplicityManyRadioButton2;
-    private JRadioButton multiplicityOneRadioButton2;
-    private JCheckBox cascadeDeleteCheckBox2;
-    private JCheckBox createCmrFieldCheckBox2;
-    private JTextField fieldNameTextField2;
-    private JComboBox fieldTypeComboBox2;
-    private JCheckBox getterCheckBox;
-    private JCheckBox setterCheckBox;
-    private JCheckBox getterCheckBox2;
-    private JCheckBox setterCheckBox2;
+    private Vector entityNames;
+    private RelationshipDialogActionListener listener;
 
-    private String origEjbName2;
-    private String origEjbName;
-    private MethodElement origLocalGetterMethod;
-    private MethodElement origLocalSetterMethod;
-    private MethodElement origLocalGetterMethod2;
-    private MethodElement origLocalSetterMethod2;
-    private ClassElement origLocalInterface2;
-    private ClassElement origLocalInterface;
-    private String origFieldName;
-    private String origFieldType;
-    private String origFieldName2;
-    private String origFieldType2;
+    private class FormRoleHelper {
+        private boolean lastGetter = true;
+        private boolean lastSetter = true;
+
+        private JTextField roleNameTextField;
+        private JComboBox ejbComboBox;
+        private JRadioButton multiplicityManyRadioButton;
+        private JRadioButton multiplicityOneRadioButton;
+        private JCheckBox cascadeDeleteCheckBox;
+        private JCheckBox createCmrFieldCheckBox;
+        private JTextField fieldNameTextField;
+        private JComboBox fieldTypeComboBox;
+        private JCheckBox getterCheckBox;
+        private JCheckBox setterCheckBox;
+        private String origEjbName;
+        private MethodElement origLocalGetterMethod;
+        private MethodElement origLocalSetterMethod;
+        private ClassElement origLocalInterface;
+        private String origFieldName;
+        private String origFieldType;
+        private String lastFieldName;
+        private String lastFieldType = CLASS_COLLECTION;
+        private boolean lastCreateField;
+
+        private void init() {
+            ejbComboBox.setModel(new DefaultComboBoxModel(entityNames));
+            fieldTypeComboBox.setModel(new DefaultComboBoxModel(FILED_TYPE_ITEMS));
+            lastCreateField = isCreateCmrField();
+            multiplicityOneRadioButton.addActionListener(listener);
+            multiplicityManyRadioButton.addActionListener(listener);
+            createCmrFieldCheckBox.addActionListener(listener);
+        }
+
+        private void processResult(RelationshipHelper.RelationshipRoleHelper helper) {
+            String ejbName = getEjbName();
+            String roleName = getRoleName();
+            if (roleName.length() == 0) {
+                roleName = ejbName;
+            }
+            helper.setEjbName(ejbName);
+            helper.setRoleName(ejbName);
+            helper.setMultiple(isMultiple());
+            helper.setCascadeDelete(isCascadeDelete());
+            String fieldName;
+            String fieldType;
+            if (isCreateCmrField()) {
+                fieldName = getFieldName();
+                fieldType = getFieldType();
+                helper.setCmrField(fieldName, fieldType);
+            } else {
+                fieldName = null;
+                fieldType = null;
+                helper.setCmrField(null);
+            }
+            boolean getter = hasGetter();
+            boolean setter = hasSetter();
+            boolean origGetter = origLocalGetterMethod != null;
+            boolean origSetter = origLocalSetterMethod != null;
+            if (origEjbName != ejbName || origFieldName != fieldName || getter != origGetter || setter != origSetter) {
+                if (origGetter) {
+                    try {
+                        origLocalInterface.removeMethod(origLocalGetterMethod);
+                    } catch (SourceException e) {
+                        Utils.notifyError(e);
+                    }
+                }
+                if (origSetter) {
+                    try {
+                        origLocalInterface.removeMethod(origLocalSetterMethod);
+                    } catch (SourceException e) {
+                        Utils.notifyError(e);
+                    }
+                }
+                if (getter || setter) {
+                    Entity entity = getEntity(ejbName);
+                    ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
+                    MethodElement getterMethod = Utils.getGetterMethod(beanClass, fieldName);
+                    MethodElement setterMethod = Utils.getSetterMethod(beanClass, fieldName, getterMethod);
+                    ClassElement localInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
+                    if (getter) {
+                        try {
+                            localInterface.addMethod(getterMethod);
+                        } catch (SourceException e) {
+                            Utils.notifyError(e);
+                        }
+                    }
+                    if (setter) {
+                        try {
+                            localInterface.addMethod(setterMethod);
+                        } catch (SourceException e) {
+                            Utils.notifyError(e);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        private boolean isCascadeDelete() {
+            return cascadeDeleteCheckBox.isSelected();
+        }
+
+        private void setCascadeDelete(boolean cascadeDelete) {
+            cascadeDeleteCheckBox.setSelected(cascadeDelete);
+        }
+
+        private boolean isMultiple() {
+            return multiplicityManyRadioButton.isSelected();
+        }
+
+        private void setMultiple(boolean multiple) {
+            if (multiple) {
+                multiplicityManyRadioButton.setSelected(true);
+            } else {
+                multiplicityOneRadioButton.setSelected(true);
+            }
+        }
+
+        private boolean isCreateCmrField() {
+            return createCmrFieldCheckBox.isSelected();
+        }
+
+        private boolean hasSetter() {
+            return setterCheckBox.isSelected();
+        }
+
+        private boolean hasGetter() {
+            return getterCheckBox.isSelected();
+        }
+
+        private String getFieldType() {
+            return (String) fieldTypeComboBox.getSelectedItem();
+        }
+
+        private void setFieldType(String fieldType) {
+            if (fieldType != null) {
+                lastFieldType = fieldType;
+            }
+            fieldTypeComboBox.setSelectedItem(fieldType);
+        }
+
+        private String getRoleName() {
+            return roleNameTextField.getText().trim();
+        }
+
+        private void setRoleName(String roleName) {
+            roleNameTextField.setText(roleName);
+        }
+
+        private String getEjbName() {
+            return (String) ejbComboBox.getSelectedItem();
+        }
+
+        private void setEjbName(String ejbName) {
+            ejbComboBox.setSelectedItem(ejbName);
+        }
+
+        private void populateFormFields(RelationshipHelper.RelationshipRoleHelper helper) {
+            setRoleName(helper.getRoleName());
+            origEjbName = helper.getEjbName();
+            setEjbName(origEjbName);
+            setMultiple(helper.isMultiple());
+            setCascadeDelete(helper.isCascadeDelete());
+
+            CmrField field = helper.getCmrField();
+            if (field == null) {
+                origFieldName = null;
+                origFieldType = null;
+                setCreateCmrField(false);
+                setFieldName(null);
+                setFieldType(null);
+            } else {
+                origFieldName = field.getCmrFieldName();
+                Entity entity = getEntity(origEjbName);
+                ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
+                MethodElement getterMethod = Utils.getGetterMethod(beanClass, origFieldName);
+                MethodElement setterMethod = Utils.getSetterMethod(beanClass, origFieldName, getterMethod);
+                origLocalInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
+                origLocalGetterMethod = Utils.getBusinessMethod(origLocalInterface, getterMethod);
+                origLocalSetterMethod = Utils.getBusinessMethod(origLocalInterface, setterMethod);
+                lastGetter = origLocalGetterMethod != null;
+                lastSetter = origLocalSetterMethod != null;
+                setLocalGetter(lastGetter);
+                setLocalSetter(lastSetter);
+                setCreateCmrField(true);
+                setFieldName(origFieldName);
+                origFieldType = field.getCmrFieldType();
+                setFieldType(origFieldType);
+            }
+        }
+
+        private void setLocalSetter(boolean setter) {
+            setterCheckBox.setSelected(setter);
+        }
+
+        private void setLocalGetter(boolean getter) {
+            getterCheckBox.setSelected(getter);
+        }
+
+        private void setCreateCmrField(boolean selected) {
+            createCmrFieldCheckBox.setSelected(selected);
+        }
+
+        public String getFieldName() {
+            return fieldNameTextField.getText().trim();
+        }
+
+        private void setFieldName(String fieldName) {
+            if (fieldName != null && fieldName.length() > 0) {
+                lastFieldName = fieldName;
+            }
+            fieldNameTextField.setText(fieldName);
+        }
+
+        public void validate(FormRoleHelper opositeRole) {
+            lastCreateField = isCreateCmrField();
+            String fieldName = getFieldName();
+            if (lastCreateField) {
+                if (fieldName.length() == 0) {
+                    setFieldName(lastFieldName);
+                }
+                fieldNameTextField.setEnabled(true);
+                setLocalGetter(lastGetter);
+                getterCheckBox.setEnabled(true);
+                setLocalSetter(lastSetter);
+                setterCheckBox.setEnabled(true);
+            } else {
+                lastGetter = getterCheckBox.isSelected();
+                lastSetter = setterCheckBox.isSelected();
+                if (fieldName.length() > 0) {
+                    lastFieldName = fieldName;
+                }
+                setFieldName(null);
+                fieldNameTextField.setEnabled(false);
+                setLocalGetter(false);
+                getterCheckBox.setEnabled(false);
+                setLocalSetter(false);
+                setterCheckBox.setEnabled(false);
+            }
+            boolean opositeMultiple = opositeRole.isMultiple();
+            String fieldType = getFieldType();
+            if (lastCreateField && opositeMultiple) {
+                if (fieldType == null) {
+                    setFieldType(lastFieldType);
+                }
+                fieldTypeComboBox.setEnabled(true);
+            } else {
+                if (fieldType != null) {
+                    lastFieldType = fieldType;
+                }
+                setFieldType(null);
+                fieldTypeComboBox.setEnabled(false);
+            }
+        }
+    }
+
+    FormRoleHelper roleA = new FormRoleHelper();
+    FormRoleHelper roleB = new FormRoleHelper();
 
     public CmpRelationshipsDialogHelper(FileObject ejbJarFile, EjbJar ejbJar) {
         this.ejbJarFile = ejbJarFile;
@@ -88,14 +314,9 @@ class CmpRelationshipsDialogHelper {
 
     public boolean showCmpRelationshipsDialog(String title, EjbRelation relation) {
         CmpRelationshipsForm form = initForm();
-
-        Vector entityNames = getEntities();
-
-        ejbComboBox.setModel(new DefaultComboBoxModel(entityNames));
-        ejbComboBox2.setModel(new DefaultComboBoxModel(entityNames));
-
-        fieldTypeComboBox.setModel(new DefaultComboBoxModel(FILED_TYPE_ITEMS));
-        fieldTypeComboBox2.setModel(new DefaultComboBoxModel(FILED_TYPE_ITEMS));
+        entityNames = getEntities();
+        roleA.init();
+        roleB.init();
 
         RelationshipHelper helper;
         if (relation != null) {
@@ -105,15 +326,9 @@ class CmpRelationshipsDialogHelper {
             helper = null;
         }
 
-        RelationshipDialogActionListener listener = new RelationshipDialogActionListener();
-        multiplicityOneRadioButton.addActionListener(listener);
-        multiplicityManyRadioButton.addActionListener(listener);
-        multiplicityManyRadioButton2.addActionListener(listener);
-        multiplicityOneRadioButton2.addActionListener(listener);
-        createCmrFieldCheckBox.addActionListener(listener);
-        createCmrFieldCheckBox2.addActionListener(listener);
+        listener = new RelationshipDialogActionListener();
 
-        listener.updateForm();
+        listener.validate();
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(form, title);
         dialogDescriptor.setOptionType(DialogDescriptor.OK_CANCEL_OPTION);
@@ -143,178 +358,22 @@ class CmpRelationshipsDialogHelper {
     }
 
     private void processResult(RelationshipHelper helper) {
-        String ejbName = (String) ejbComboBox.getSelectedItem();
-        String ejbName2 = (String) ejbComboBox2.getSelectedItem();
         String relationName = relationshipNameTextField.getText().trim();
         if (relationName.length() == 0) {
-            relationName = ejbName + "-" + ejbName2; //NOI18N
+            relationName = roleA.getEjbName() + "-" + roleB.getEjbName(); //NOI18N
         }
-        String roleName = roleNameTextField.getText().trim();
-        if (roleName.length() == 0) {
-            roleName = ejbName;
-        }
-        String roleName2 = roleNameTextField2.getText().trim();
-        if (roleName2.length() == 0) {
-            roleName2 = ejbName2;
-        }
-
         helper.setRelationName(relationName);
         helper.setDescription(descriptionTextArea.getText().trim());
+        roleA.processResult(helper.roleA);
+        roleB.processResult(helper.roleB);
 
-        helper.setEjbName(ejbName);
-        helper.setRoleName(ejbName);
-        helper.setMultiple(multiplicityManyRadioButton.isSelected());
-        helper.setCascadeDelete(cascadeDeleteCheckBox.isSelected());
-        String fieldName;
-        String fieldType;
-        if (createCmrFieldCheckBox.isSelected()) {
-            fieldName = fieldNameTextField.getText().trim();
-            fieldType = (String) fieldTypeComboBox.getSelectedItem();
-            helper.setCmrField(fieldName, fieldType);
-        } else {
-            fieldName = null;
-            fieldType = null;
-            helper.setCmrField(null);
-        }
-
-        helper.setEjbName2(ejbName2);
-        helper.setRoleName2(ejbName2);
-        helper.setMultiple2(multiplicityManyRadioButton2.isSelected());
-        helper.setCascadeDelete2(cascadeDeleteCheckBox2.isSelected());
-        String fieldName2;
-        String fieldType2;
-        if (createCmrFieldCheckBox2.isSelected()) {
-            fieldName2 = fieldNameTextField2.getText().trim();
-            fieldType2 = (String) fieldTypeComboBox2.getSelectedItem();
-            helper.setCmrField2(fieldName2, fieldType2);
-        } else {
-            fieldName2 = null;
-            fieldType2 = null;
-            helper.setCmrField2(null);
-        }
-        boolean getter = getterCheckBox.isSelected();
-        boolean setter = setterCheckBox.isSelected();
-        boolean origGetter = origLocalGetterMethod != null;
-        boolean origSetter = origLocalSetterMethod != null;
-        if (origEjbName != ejbName || origFieldName != fieldName || getter != origGetter || setter != origSetter) {
-            if(origGetter) {
-                try {
-                    origLocalInterface.removeMethod(origLocalGetterMethod);
-                } catch (SourceException e) {
-                    Utils.notifyError(e);
-                }
-            }
-            if(origSetter) {
-                try {
-                    origLocalInterface.removeMethod(origLocalSetterMethod);
-                } catch (SourceException e) {
-                    Utils.notifyError(e);
-                }
-            }
-            if(getter || setter) {
-                Entity entity = getEntity(ejbName);
-                ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-                MethodElement getterMethod = Utils.getGetterMethod(beanClass, fieldName);
-                MethodElement setterMethod = Utils.getSetterMethod(beanClass, fieldName, getterMethod);
-                ClassElement localInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
-                if(getter) {
-                    try {
-                        localInterface.addMethod(getterMethod);
-                    } catch (SourceException e) {
-                        Utils.notifyError(e);
-                    }
-                }
-                if(setter) {
-                    try {
-                        localInterface.addMethod(setterMethod);
-                    } catch (SourceException e) {
-                        Utils.notifyError(e);
-                    }
-                }
-
-            }
-
-
-        }
     }
 
     private void populateFormFields(RelationshipHelper helper) {
         relationshipNameTextField.setText(helper.getRelationName());
         descriptionTextArea.setText(helper.getDescription());
-
-        roleNameTextField.setText(helper.getRoleName());
-        origEjbName = helper.getEjbName();
-        ejbComboBox.setSelectedItem(origEjbName);
-        if (helper.isMultiple()) {
-            multiplicityManyRadioButton.setSelected(true);
-        } else {
-            multiplicityOneRadioButton.setSelected(true);
-        }
-        cascadeDeleteCheckBox.setSelected(helper.isCascadeDelete());
-
-        CmrField field = helper.getCmrField();
-        if (field == null) {
-            origFieldName = null;
-            origFieldType = null;
-            createCmrFieldCheckBox.setSelected(false);
-            fieldNameTextField.setText(null);
-            fieldTypeComboBox.setSelectedItem(null);
-        } else {
-            origFieldName = field.getCmrFieldName();
-            Entity entity = getEntity(origEjbName);
-            ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-            MethodElement getterMethod = Utils.getGetterMethod(beanClass, origFieldName);
-            MethodElement setterMethod = Utils.getSetterMethod(beanClass, origFieldName, getterMethod);
-            origLocalInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
-            origLocalGetterMethod = Utils.getBusinessMethod(origLocalInterface, getterMethod);
-            origLocalSetterMethod = Utils.getBusinessMethod(origLocalInterface, setterMethod);
-            lastGetter = origLocalGetterMethod != null;
-            lastSetter = origLocalSetterMethod != null;
-            getterCheckBox.setSelected(lastGetter);
-            setterCheckBox.setSelected(lastSetter);
-
-
-            createCmrFieldCheckBox.setSelected(true);
-            fieldNameTextField.setText(field.getCmrFieldName());
-            origFieldType = field.getCmrFieldType();
-            fieldTypeComboBox.setSelectedItem(origFieldType);
-        }
-
-        roleNameTextField2.setText(helper.getRoleName2());
-        origEjbName2 = helper.getEjbName2();
-        ejbComboBox2.setSelectedItem(origEjbName2);
-        if (helper.isMultiple2()) {
-            multiplicityManyRadioButton2.setSelected(true);
-        } else {
-            multiplicityOneRadioButton2.setSelected(true);
-        }
-        cascadeDeleteCheckBox2.setSelected(helper.isCascadeDelete2());
-        CmrField field2 = helper.getCmrField2();
-        if (field2 == null) {
-            origFieldName2 = null;
-            origFieldType2 = null;
-            createCmrFieldCheckBox2.setSelected(false);
-            fieldNameTextField2.setText(null);
-            fieldTypeComboBox2.setSelectedItem(null);
-        } else {
-            origFieldName2 = field2.getCmrFieldName();
-            Entity entity = getEntity(origEjbName2);
-            ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
-            MethodElement getterMethod = Utils.getGetterMethod(beanClass, origFieldName2);
-            MethodElement setterMethod = Utils.getSetterMethod(beanClass, origFieldName2, getterMethod);
-            origLocalInterface2 = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
-            origLocalGetterMethod2 = Utils.getBusinessMethod(origLocalInterface2, getterMethod);
-            origLocalSetterMethod2 = Utils.getBusinessMethod(origLocalInterface2, setterMethod);
-            lastGetter2 = origLocalGetterMethod2 != null;
-            lastSetter2 = origLocalSetterMethod2 != null;
-            getterCheckBox2.setSelected(lastGetter2);
-            setterCheckBox2.setSelected(lastSetter2);
-
-            createCmrFieldCheckBox2.setSelected(true);
-            fieldNameTextField2.setText(field2.getCmrFieldName());
-            origFieldType2 = field2.getCmrFieldType();
-            fieldTypeComboBox2.setSelectedItem(origFieldType2);
-        }
+        roleA.populateFormFields(helper.roleA);
+        roleB.populateFormFields(helper.roleB);
     }
 
     private Entity getEntity(String origEjbName) {
@@ -333,133 +392,39 @@ class CmpRelationshipsDialogHelper {
         relationshipNameTextField = form.getRelationshipNameTextField();
         descriptionTextArea = form.getDescriptionTextArea();
 
-        roleNameTextField = form.getRoleNameTextField();
-        ejbComboBox = form.getEjbComboBox();
-        multiplicityManyRadioButton = form.getMultiplicityManyRadioButton();
-        multiplicityOneRadioButton = form.getMultiplicityOneRadioButton();
-        cascadeDeleteCheckBox = form.getCascadeDeleteCheckBox();
-        createCmrFieldCheckBox = form.getCreateCmrFieldCheckBox();
-        fieldNameTextField = form.getFieldNameTextField();
-        fieldTypeComboBox = form.getFieldTypeComboBox();
+        roleA.roleNameTextField = form.getRoleNameTextField();
+        roleA.ejbComboBox = form.getEjbComboBox();
+        roleA.multiplicityManyRadioButton = form.getMultiplicityManyRadioButton();
+        roleA.multiplicityOneRadioButton = form.getMultiplicityOneRadioButton();
+        roleA.cascadeDeleteCheckBox = form.getCascadeDeleteCheckBox();
+        roleA.createCmrFieldCheckBox = form.getCreateCmrFieldCheckBox();
+        roleA.fieldNameTextField = form.getFieldNameTextField();
+        roleA.fieldTypeComboBox = form.getFieldTypeComboBox();
+        roleA.getterCheckBox = form.getGetterCheckBox();
+        roleA.setterCheckBox = form.getSetterCheckBox();
 
-        roleNameTextField2 = form.getRoleNameTextField2();
-        ejbComboBox2 = form.getEjbComboBox2();
-        multiplicityManyRadioButton2 = form.getMultiplicityManyRadioButton2();
-        multiplicityOneRadioButton2 = form.getMultiplicityOneRadioButton2();
-        cascadeDeleteCheckBox2 = form.getCascadeDeleteCheckBox2();
-        createCmrFieldCheckBox2 = form.getCreateCmrFieldCheckBox2();
-        fieldNameTextField2 = form.getFieldNameTextField2();
-        fieldTypeComboBox2 = form.getFieldTypeComboBox2();
-
-        getterCheckBox = form.getGetterCheckBox();
-        setterCheckBox = form.getSetterCheckBox();
-        getterCheckBox2 = form.getGetterCheckBox2();
-        setterCheckBox2 = form.getSetterCheckBox2();
+        roleB.roleNameTextField = form.getRoleNameTextField2();
+        roleB.ejbComboBox = form.getEjbComboBox2();
+        roleB.multiplicityManyRadioButton = form.getMultiplicityManyRadioButton2();
+        roleB.multiplicityOneRadioButton = form.getMultiplicityOneRadioButton2();
+        roleB.cascadeDeleteCheckBox = form.getCascadeDeleteCheckBox2();
+        roleB.createCmrFieldCheckBox = form.getCreateCmrFieldCheckBox2();
+        roleB.fieldNameTextField = form.getFieldNameTextField2();
+        roleB.fieldTypeComboBox = form.getFieldTypeComboBox2();
+        roleB.getterCheckBox = form.getGetterCheckBox2();
+        roleB.setterCheckBox = form.getSetterCheckBox2();
         return form;
     }
 
     private class RelationshipDialogActionListener implements ActionListener {
-        String lastFieldName = fieldNameTextField.getText().trim();
-        String lastFieldType = (String) fieldTypeComboBox.getSelectedItem();
-        String lastFieldName2 = fieldNameTextField2.getText().trim();
-        String lastFieldType2 = (String) fieldTypeComboBox2.getSelectedItem();
-        boolean lastCreateField = createCmrFieldCheckBox.isSelected();
-        boolean lastCreateField2 = createCmrFieldCheckBox2.isSelected();
 
         public void actionPerformed(ActionEvent e) {
-            boolean createField = createCmrFieldCheckBox.isSelected();
-            if (createField != lastCreateField) {
-                updateCreateFieldInfo(createField);
-            }
-            updateCreateFieldType(createField);
-            boolean createField2 = createCmrFieldCheckBox2.isSelected();
-            if (createField2 != lastCreateField2) {
-                updateCreateFieldInfo2(createField2);
-            }
-            updateCreateFieldType2(createField2);
+            validate();
         }
 
-        private void updateCreateFieldType2(boolean createField2) {
-            String fieldType2 = (String) fieldTypeComboBox2.getSelectedItem();
-            if (createField2 && multiplicityManyRadioButton2.isSelected()) {
-                if (fieldType2 == null) {
-                    fieldTypeComboBox2.setSelectedItem(lastFieldType2);
-                }
-                fieldTypeComboBox2.setEnabled(true);
-            } else {
-                if (fieldType2 != null) {
-                    lastFieldType2 = fieldType2;
-                }
-                fieldTypeComboBox2.setSelectedItem(null);
-                fieldTypeComboBox2.setEnabled(false);
-            }
-        }
-
-        private void updateCreateFieldType(boolean createField) {
-            String fieldType = (String) fieldTypeComboBox.getSelectedItem();
-            if (createField && multiplicityManyRadioButton.isSelected()) {
-                if (fieldType == null) {
-                    fieldTypeComboBox.setSelectedItem(lastFieldType);
-                }
-                fieldTypeComboBox.setEnabled(true);
-            } else {
-                if (fieldType != null) {
-                    lastFieldType = fieldType;
-                }
-                fieldTypeComboBox.setSelectedItem(null);
-                fieldTypeComboBox.setEnabled(false);
-            }
-        }
-
-        private void updateCreateFieldInfo2(boolean createField2) {
-            lastCreateField2 = createField2;
-            if (createField2) {
-                fieldNameTextField2.setText(lastFieldName2);
-                fieldNameTextField2.setEnabled(true);
-                getterCheckBox2.setSelected(lastGetter2);
-                getterCheckBox2.setEnabled(true);
-                setterCheckBox2.setSelected(lastSetter2);
-                setterCheckBox2.setEnabled(true);
-            } else {
-                lastFieldName2 = fieldNameTextField2.getText().trim();
-                lastGetter2 = getterCheckBox2.isSelected();
-                lastSetter2 = setterCheckBox2.isSelected();
-                fieldNameTextField2.setText(null);
-                fieldNameTextField2.setEnabled(false);
-                getterCheckBox2.setSelected(false);
-                getterCheckBox2.setEnabled(false);
-                setterCheckBox2.setSelected(false);
-                setterCheckBox2.setEnabled(false);
-            }
-        }
-
-        private void updateCreateFieldInfo(boolean createField) {
-            lastCreateField = createField;
-            if (createField) {
-                fieldNameTextField.setText(lastFieldName);
-                fieldNameTextField.setEnabled(true);
-                getterCheckBox.setSelected(lastGetter);
-                getterCheckBox.setEnabled(true);
-                setterCheckBox.setSelected(lastSetter);
-                setterCheckBox.setEnabled(true);
-            } else {
-                lastFieldName = fieldNameTextField.getText().trim();
-                lastGetter = getterCheckBox.isSelected();
-                lastSetter = setterCheckBox.isSelected();
-                fieldNameTextField.setText(null);
-                fieldNameTextField.setEnabled(false);
-                getterCheckBox.setSelected(false);
-                getterCheckBox.setEnabled(false);
-                setterCheckBox.setSelected(false);
-                setterCheckBox.setEnabled(false);
-            }
-        }
-
-        public void updateForm() {
-            updateCreateFieldInfo(lastCreateField);
-            updateCreateFieldType(lastCreateField);
-            updateCreateFieldInfo2(lastCreateField2);
-            updateCreateFieldType2(lastCreateField2);
+        public void validate() {
+            roleA.validate(roleB);
+            roleB.validate(roleA);
         }
     }
 }

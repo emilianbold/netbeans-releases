@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
+import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -24,8 +25,6 @@ import org.openide.util.NbBundle;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 
 /**
  * A node to represent this ejb-jar.xml object.
@@ -104,17 +103,17 @@ public class EjbJarMultiViewDataNode extends DataNode {
                 NbBundle.getBundle(EjbJarMultiViewDataNode.class).getString("HINT_documentDTD")) {
             public Object getValue() {
                 java.math.BigDecimal version = dataObject.getEjbJar().getVersion();
-                return (version==null?"":version.toString());
+                return (version == null ? "" : version.toString());
             }
-            
+
             public void setValue(Object value) {
-                String val = (String)value;
+                String val = (String) value;
                 if (EjbJar.VERSION_2_1.equals(val) && !val.equals(dataObject.getEjbJar().getVersion().toString())) {
                     dataObject.getEjbJar().setVersion(new java.math.BigDecimal(val));
                     try {
                         dataObject.getEjbJar().write(dataObject.getPrimaryFile());
                     } catch (java.io.IOException ex) {
-                       org.openide.ErrorManager.getDefault().notify(ex);
+                        org.openide.ErrorManager.getDefault().notify(ex);
                     }
                 }
             }

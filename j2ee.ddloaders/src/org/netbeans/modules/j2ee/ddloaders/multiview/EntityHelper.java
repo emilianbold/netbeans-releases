@@ -22,10 +22,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.src.ClassElement;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
 /**
  * @author pfiala
  */

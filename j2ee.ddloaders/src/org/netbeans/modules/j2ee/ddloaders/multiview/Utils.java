@@ -329,7 +329,8 @@ public class Utils {
     }
 
     public static MethodElement getSetterMethod(ClassElement beanClass, String fieldName, MethodElement getterMethod) {
-        return getterMethod == null? null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
+        return getterMethod == null ?
+                null : EntityMethodController.getSetterMethod(beanClass, fieldName, getterMethod);
     }
 
     public static MethodElement getGetterMethod(ClassElement beanClass, String fieldName) {

@@ -62,28 +62,29 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     public Object getValueAt(int rowIndex, int columnIndex) {
         EjbRelation relation = ejbJar.getSingleRelationships().getEjbRelation(rowIndex);
         RelationshipHelper helper = getRelationshipHelper(relation);
+        RelationshipHelper.RelationshipRoleHelper roleA = helper.roleA;
+        RelationshipHelper.RelationshipRoleHelper roleB = helper.roleB;
         switch (columnIndex) {
             case 0:
                 return helper.getRelationName();
             case 1:
-                boolean many2 = helper.isMultiple();
-                if (helper.isMultiple2()) {
-                    return many2 ? "M:N" : "N:1";
+                if (roleA.isMultiple()) {
+                    return roleB.isMultiple() ? "M:N" : "N:1";
                 } else {
-                    return many2 ? "1:N" : "1:1";
+                    return roleB.isMultiple() ? "1:N" : "1:1";
                 }
             case 2:
-                return helper.getEjbName();
+                return roleA.getEjbName();
             case 3:
-                return helper.getRoleName();
+                return roleA.getRoleName();
             case 4:
-                return helper.getFieldName();
+                return roleA.getFieldName();
             case 5:
-                return helper.getEjbName2();
+                return roleB.getEjbName();
             case 6:
-                return helper.getRoleName2();
+                return roleB.getRoleName();
             case 7:
-                return helper.getFieldName2();
+                return roleB.getFieldName();
         }
         return null;
     }

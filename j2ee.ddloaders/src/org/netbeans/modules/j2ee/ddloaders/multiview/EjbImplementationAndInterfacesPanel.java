@@ -15,7 +15,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataObject;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.openide.DialogDisplayer;
