@@ -37,15 +37,19 @@ import org.netbeans.api.diff.Difference;
  */
 public class DiffComponent extends org.openide.windows.TopComponent {
 
-    private static final java.awt.Color colorMissing = new java.awt.Color(255, 160, 180);
-    private static final java.awt.Color colorAdded = new java.awt.Color(180, 255, 180);
-    private static final java.awt.Color colorChanged = new java.awt.Color(160, 200, 255);
+    public static final java.awt.Color COLOR_MISSING = new java.awt.Color(255, 160, 180);
+    public static final java.awt.Color COLOR_ADDED = new java.awt.Color(180, 255, 180);
+    public static final java.awt.Color COLOR_CHANGED = new java.awt.Color(160, 200, 255);
     
     //private AbstractDiff diff = null;
     private Difference[] diffs = null;
     /** The shift of differences */
     private int[][] diffShifts;
     private DiffPanel diffPanel = null;
+    
+    private java.awt.Color colorMissing = COLOR_MISSING;
+    private java.awt.Color colorAdded = COLOR_ADDED;
+    private java.awt.Color colorChanged = COLOR_CHANGED;
     
     //private ArrayList closeListeners = new ArrayList();
     private int currentDiffLine = -1;
@@ -69,6 +73,15 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                          final String sourceName1, final String sourceName2,
                          final String title1, final String title2,
                          final Reader r1, final Reader r2) {
+        this(diffs, mainTitle, mimeType, sourceName1, sourceName2, title1, title2,
+             r1, r2, null);
+    }
+    
+    /** Creates new DiffComponent from list of Difference objects */
+    public DiffComponent(final Difference[] diffs, final String mainTitle, final String mimeType,
+                         final String sourceName1, final String sourceName2,
+                         final String title1, final String title2,
+                         final Reader r1, final Reader r2, java.awt.Color[] colors) {
         this.diffs = diffs;
         diffShifts = new int[diffs.length][2];
         setLayout(new BorderLayout());
@@ -89,8 +102,13 @@ public class DiffComponent extends org.openide.windows.TopComponent {
                 showCurrentLine();
             }
         });
-        
         add(diffPanel, BorderLayout.CENTER);
+        
+        if (colors != null && colors.length >= 3) {
+            colorMissing = colors[0];
+            colorAdded = colors[1];
+            colorChanged = colors[2];
+        }
 //        initComponents ();
         //setTitle(org.openide.util.NbBundle.getBundle(DiffComponent.class).getString("DiffComponent.title"));
         if (mainTitle == null) {
@@ -129,7 +147,7 @@ public class DiffComponent extends org.openide.windows.TopComponent {
         insertEmptyLines(true);
         setDiffHighlight(true);
     }
-
+    
     
 /*    private java.awt.Container getContentPane() {
         return this;

@@ -89,14 +89,19 @@ import org.netbeans.api.diff.Difference;
 public class TextDiffEditorSupport extends CloneableEditorSupport implements EditorCookie, OpenCookie, PrintCookie, CloseCookie {
 
     /** The difference */
-    private final DiffsListWithOpenSupport diff;
+    //private final DiffsListWithOpenSupport diff;
+    private final TextDiffVisualizer.TextDiffInfo diff;
     
+    /*
     public static final class DiffsListWithOpenSupport extends Object {
         
         private Difference[] diffs;
         private final String name;
         private final String tooltip;
         private CloneableOpenSupport openSupport;
+        private boolean contextMode = false;
+        private int contextNumLines;
+        private Reader r1, r2;
         
         public DiffsListWithOpenSupport(Difference[] diffs, String name, String tooltip) {
             this.diffs = diffs;
@@ -108,7 +113,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         public void setOpenSupport(CloneableOpenSupport openSupport) {
             this.openSupport = openSupport;
         }
-         */
+         *
         public Difference[] getDiffs() {
             return diffs;
         }
@@ -127,7 +132,41 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         public String getTooltip() {
             return tooltip;
         }
+        
+        /** Setter for property contextMode.
+         * @param contextMode New value of property contextMode.
+         *
+        public void setContextMode(boolean contextMode, int contextNumLines) {
+            this.contextMode = contextMode;
+            this.contextNumLines = contextNumLines;
+        }
+        
+        /** Getter for property contextMode.
+         * @return Value of property contextMode.
+         *
+        public boolean isContextMode() {
+            return contextMode;
+        }
+        
+        public int getContextNumLines() {
+            return contextNumLines;
+        }
+        
+        public void setReaders(Reader r1, Reader r2) {
+            this.r1 = r1;
+            this.r2 = r2;
+        }
+        
+        public Reader getFirstReader() {
+            return r1;
+        }
+        
+        public Reader getSecondReader() {
+            return r2;
+        }
+        
     }
+     */
             
     
     /** Editor support for a given data object. The file is taken from the
@@ -135,7 +174,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
      * @param obj object to work with
      * @param env environment to pass to 
      */
-    TextDiffEditorSupport(DiffsListWithOpenSupport diff) {
+    TextDiffEditorSupport(TextDiffVisualizer.TextDiffInfo diff) {//DiffsListWithOpenSupport diff) {
         super (new TextDiffEditorSupport.Env(diff));
         this.diff = diff;
     }
@@ -193,7 +232,7 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
      */
     protected String messageToolTip () {
         // update tooltip
-        return diff.getTooltip();
+        return diff.getTitle();
     }
     
     /** Annotates the editor with icon from the data object and also sets 
@@ -253,12 +292,12 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         static final long serialVersionUID = -2945098431098324441L;
 
         /** The difference. */
-        private transient DiffsListWithOpenSupport diff;
+        private transient TextDiffVisualizer.TextDiffInfo diff;
         
         /** Constructor.
         * @param obj this support should be associated with
         */
-        public Env (DiffsListWithOpenSupport diff) {
+        public Env (TextDiffVisualizer.TextDiffInfo diff) {//DiffsListWithOpenSupport diff) {
             this.diff = diff;
         }
         
@@ -272,7 +311,11 @@ public class TextDiffEditorSupport extends CloneableEditorSupport implements Edi
         * @exception IOException if an I/O error occures
         */
         public InputStream inputStream() throws IOException {
-            return TextDiffVisualizer.differenceToLineDiffText(diff.getDiffs());
+            if (diff.isContextMode()) {
+                return TextDiffVisualizer.differenceToContextDiffText(diff);
+            } else {
+                return TextDiffVisualizer.differenceToLineDiffText(diff.getDifferences());
+            }
         }
         
         /** Obtains the output stream.

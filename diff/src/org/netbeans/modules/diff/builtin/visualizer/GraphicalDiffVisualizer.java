@@ -13,10 +13,12 @@
 
 package org.netbeans.modules.diff.builtin.visualizer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Serializable;
 import java.util.List;
 
 import org.openide.filesystems.FileObject;
@@ -30,7 +32,11 @@ import org.netbeans.spi.diff.DiffVisualizer;
  *
  * @author  Martin Entlicher
  */
-public class GraphicalDiffVisualizer extends DiffVisualizer {
+public class GraphicalDiffVisualizer extends DiffVisualizer implements Serializable {
+    
+    private Color colorAdded = DiffComponent.COLOR_ADDED;
+    private Color colorMissing = DiffComponent.COLOR_MISSING;
+    private Color colorChanged = DiffComponent.COLOR_CHANGED;
     
     static final long serialVersionUID =-1135210647457196211L;
     /** Creates a new instance of BuiltInDiffVisualizer */
@@ -50,6 +56,7 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
     public String getShortDescription() {
         return NbBundle.getMessage(GraphicalDiffVisualizer.class, "GraphicalDiffVisualizer.shortDescription");
     }
+    
     
     /**
      * Some diff visualizers may have built-in the diff calculation. In such a case
@@ -104,8 +111,51 @@ public class GraphicalDiffVisualizer extends DiffVisualizer {
                                 String name2, String title2, Reader r2, String MIMEType) {
         DiffComponent diff;
         diff = new DiffComponent(diffs, name1+" <> "+name2, MIMEType,
-            name1, name2, title1, title2, r1, r2);
+            name1, name2, title1, title2, r1, r2,
+            new Color[] { colorMissing, colorAdded, colorChanged });
         return diff;
+    }
+    
+    /** Getter for property colorAdded.
+     * @return Value of property colorAdded.
+     */
+    public java.awt.Color getColorAdded() {
+        return colorAdded;
+    }
+    
+    /** Setter for property colorAdded.
+     * @param colorAdded New value of property colorAdded.
+     */
+    public void setColorAdded(java.awt.Color colorAdded) {
+        this.colorAdded = colorAdded;
+    }
+    
+    /** Getter for property colorMissing.
+     * @return Value of property colorMissing.
+     */
+    public java.awt.Color getColorMissing() {
+        return colorMissing;
+    }
+    
+    /** Setter for property colorMissing.
+     * @param colorMissing New value of property colorMissing.
+     */
+    public void setColorMissing(java.awt.Color colorMissing) {
+        this.colorMissing = colorMissing;
+    }
+    
+    /** Getter for property colorChanged.
+     * @return Value of property colorChanged.
+     */
+    public java.awt.Color getColorChanged() {
+        return colorChanged;
+    }
+    
+    /** Setter for property colorChanged.
+     * @param colorChanged New value of property colorChanged.
+     */
+    public void setColorChanged(java.awt.Color colorChanged) {
+        this.colorChanged = colorChanged;
     }
     
 }

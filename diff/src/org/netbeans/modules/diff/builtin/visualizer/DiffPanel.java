@@ -52,8 +52,8 @@ public class DiffPanel extends org.openide.windows.TopComponent {
     private int additionalHeight = 0;
     private int totalLines = 0;
 
-    private java.awt.Color numBackgroundColor = new java.awt.Color(224, 224, 224);
-    private java.awt.Color numForegroundColor = new java.awt.Color(128, 64, 64);
+    //private java.awt.Color numBackgroundColor = new java.awt.Color(224, 224, 224);
+    //private java.awt.Color numForegroundColor = new java.awt.Color(128, 64, 64);
 
     private int horizontalScroll1ChangedValue = -1;
     private int horizontalScroll2ChangedValue = -1;

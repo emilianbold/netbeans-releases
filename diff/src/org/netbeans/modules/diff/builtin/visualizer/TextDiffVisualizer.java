@@ -17,21 +17,29 @@ import java.awt.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+import org.openide.windows.CloneableOpenSupport;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.spi.diff.DiffVisualizer;
 
+import org.netbeans.modules.diff.builtin.DiffPresenter;
+
 /**
  * The textual visualizer of diffs.
  *
  * @author  Martin Entlicher
  */
-public class TextDiffVisualizer extends DiffVisualizer {
+public class TextDiffVisualizer extends DiffVisualizer implements Serializable {
+    
+    private boolean contextMode = false;
+    private int contextNumLines = 3;
 
     static final long serialVersionUID =-2481513747957146261L;
     /** Creates a new instance of TextDiffVisualizer */
@@ -50,6 +58,34 @@ public class TextDiffVisualizer extends DiffVisualizer {
      */
     public String getShortDescription() {
         return NbBundle.getMessage(TextDiffVisualizer.class, "TextDiffVisualizer.shortDescription");
+    }
+    
+    /** Getter for property contextMode.
+     * @return Value of property contextMode.
+     */
+    public boolean isContextMode() {
+        return contextMode;
+    }
+    
+    /** Setter for property contextMode.
+     * @param contextMode New value of property contextMode.
+     */
+    public void setContextMode(boolean contextMode) {
+        this.contextMode = contextMode;
+    }
+    
+    /** Getter for property contextNumLines.
+     * @return Value of property contextNumLines.
+     */
+    public int getContextNumLines() {
+        return contextNumLines;
+    }
+    
+    /** Setter for property contextNumLines.
+     * @param contextNumLines New value of property contextNumLines.
+     */
+    public void setContextNumLines(int contextNumLines) {
+        this.contextNumLines = contextNumLines;
     }
     
     /**
@@ -79,10 +115,17 @@ public class TextDiffVisualizer extends DiffVisualizer {
      */
     public Component createView(Difference[] diffs, String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2, String MIMEType) throws IOException {
+        /*
         TextDiffEditorSupport.DiffsListWithOpenSupport diff =
             new TextDiffEditorSupport.DiffsListWithOpenSupport(diffs, name1 + " <> " + name2, title1+" <> "+title2);
+        diff.setContextMode(contextMode, contextNumLines);
+        diff.setReaders(r1, r2);
         return ((TextDiffEditorSupport) diff.getOpenSupport()).createCloneableTopComponentForMe();
         //return null;
+         */
+        TextDiffInfo diff = new TextDiffInfo(name1, name2, title1, title2, r1, r2, diffs);
+        diff.setContextMode(contextMode, contextNumLines);
+        return ((TextDiffEditorSupport) diff.getOpenSupport()).createCloneableTopComponentForMe();
     }
     
     static InputStream differenceToLineDiffText(Difference[] diffs) {
@@ -145,4 +188,226 @@ public class TextDiffVisualizer extends DiffVisualizer {
         } while (startLine < text.length());
     }
     
+    private static final String CONTEXT_MARK1B = "*** ";
+    private static final String CONTEXT_MARK1E = " ****\n";
+    private static final String CONTEXT_MARK2B = "--- ";
+    private static final String CONTEXT_MARK2E = " ----\n";
+    private static final String CONTEXT_MARK_DELIMETER = ",";
+    private static final String DIFFERENCE_DELIMETER = "***************\n";
+    private static final String LINE_PREP = "  ";
+    private static final String LINE_PREP_ADD = "+ ";
+    private static final String LINE_PREP_REMOVE = "- ";
+    private static final String LINE_PREP_CHANGE = "! ";
+    
+    static InputStream differenceToContextDiffText(TextDiffInfo diffInfo) throws IOException {
+        StringBuffer content = new StringBuffer();
+        content.append(CONTEXT_MARK1B);
+        content.append(diffInfo.getName1());
+        content.append("\n");
+        content.append(CONTEXT_MARK2B);
+        content.append(diffInfo.getName2());
+        content.append("\n");
+        int n1, n2, n3, n4;
+        int contextNumLines = diffInfo.getContextNumLines();
+        Difference[] diffs = diffInfo.getDifferences();
+        BufferedReader br1 = new BufferedReader(diffInfo.createFirstReader());
+        BufferedReader br2 = new BufferedReader(diffInfo.createSecondReader());
+        int line1 = 1; // Current line read from 1st file
+        int line2 = 1; // Current line read from 2nd file
+        for (int i = 0; i < diffs.length; i++) {
+
+            content.append(DIFFERENCE_DELIMETER);
+
+            int[] cr = getContextRange(diffs, i, contextNumLines);
+
+            int begin = diffs[i].getFirstStart() - contextNumLines;
+            if (diffs[i].getType() == Difference.ADD) begin++;
+            if (begin < 1) begin = 1;
+            StringBuffer context = new StringBuffer();
+            line1 = dumpContext(0, diffs, i, cr[0], context, contextNumLines, br1, line1);
+            if (line1 <= cr[1]) cr[1] = line1 - 1;
+            content.append(CONTEXT_MARK1B);
+            content.append(begin);
+            content.append(CONTEXT_MARK_DELIMETER);
+            content.append(cr[1]);
+            content.append(CONTEXT_MARK1E);
+            content.append(context);
+
+            begin = diffs[i].getSecondStart() - contextNumLines;
+            if (diffs[i].getType() == Difference.DELETE) begin++;
+            if (begin < 1) begin = 1;
+            context = new StringBuffer();
+            line2 = dumpContext(1, diffs, i, cr[0], context, contextNumLines, br2, line2);
+            if (line2 <= cr[2]) cr[2] = line2 - 1;
+            content.append(CONTEXT_MARK2B);
+            content.append(begin);
+            content.append(CONTEXT_MARK_DELIMETER);
+            content.append(cr[2]);
+            content.append(CONTEXT_MARK2E);
+            content.append(context);
+
+            i = cr[0];
+            //i = dumpContext(diffs, 
+            //Difference diff = diffs[i];
+            //Difference nextDiff = ((i + 1) < diffs.length) ? diffs[i + 1] : null;
+            //if (isNew) {
+            //    content.append(DIFFERENCE_DELIMETER);
+            //}
+        }
+        return new ByteArrayInputStream(content.toString().getBytes());
+    }
+    
+    private static int[] getContextRange(Difference[] diffs, int i,
+                                       int contextNumLines) {
+        int line1 = diffs[i].getFirstStart();
+        int line2 = diffs[i].getSecondStart();
+        for ( ; i < diffs.length; i++) {
+            Difference diff = diffs[i];
+            if (line1 + 2*contextNumLines < diff.getFirstStart() &&
+                line2 + 2*contextNumLines < diff.getSecondStart()) break;
+            line1 = diff.getFirstStart();
+            line2 = diff.getSecondStart();
+            int l1 = Math.max(0, diff.getFirstEnd() - diff.getFirstStart());
+            int l2 = Math.max(0, diff.getSecondEnd() - diff.getSecondStart());
+            line1 += l1;
+            line2 += l2;
+        }
+        return new int[] { i - 1, line1 + contextNumLines, line2 + contextNumLines };
+    }
+    
+    private static int dumpContext(int which, Difference[] diffs, int i, int j,
+        StringBuffer content, int contextNumLines, BufferedReader br, int line)
+        throws IOException {
+
+        int startLine;
+        if (which == 0) {
+            startLine = diffs[i].getFirstStart() - contextNumLines;
+            if (diffs[i].getType() == Difference.ADD) startLine++;
+        } else {
+            startLine = diffs[i].getSecondStart() - contextNumLines;
+            if (diffs[i].getType() == Difference.DELETE) startLine++;
+        }
+        for ( ; line < startLine; line++) br.readLine();
+        int position = content.length();
+        boolean isChange = false;
+        for ( ; i <= j; i++) {
+            Difference diff = diffs[i];
+            if (which == 0) startLine = diff.getFirstStart();
+            else startLine = diff.getSecondStart();
+            for ( ; line < startLine; line++) {
+                content.append(LINE_PREP);
+                content.append(br.readLine());
+                content.append("\n");
+            }
+            int length = 0;
+            String prep = null;
+            switch (diffs[i].getType()) {
+                case Difference.ADD:
+                    if (which == 1) {
+                        prep = LINE_PREP_ADD;
+                        length = diff.getSecondEnd() - diff.getSecondStart() + 1;
+                    }
+                    break;
+                case Difference.DELETE:
+                    if (which == 0) {
+                        prep = LINE_PREP_REMOVE;
+                        length = diff.getFirstEnd() - diff.getFirstStart() + 1;
+                    }
+                    break;
+                case Difference.CHANGE:
+                    prep = LINE_PREP_CHANGE;
+                    if (which == 0) {
+                        length = diff.getFirstEnd() - diff.getFirstStart() + 1;
+                    } else {
+                        length = diff.getSecondEnd() - diff.getSecondStart() + 1;
+                    }
+                    break;
+            }
+            if (prep != null) {
+                isChange = true;
+                for (int k = 0; k < length; k++, line++) {
+                    content.append(prep);
+                    content.append(br.readLine());
+                    content.append("\n");
+                }
+            }
+        }
+        if (!isChange) {
+            content.delete(position, content.length());
+        } else {
+            for (int k = 0; k < contextNumLines; k++, line++) {
+                String lineStr = br.readLine();
+                if (lineStr == null) break;
+                content.append(LINE_PREP);
+                content.append(lineStr);
+                content.append("\n");
+            }
+        }
+        return line;
+    }
+    
+    static class TextDiffInfo extends DiffPresenter.Info {
+        
+        private Reader r1;
+        private Reader r2;
+        private Difference[] diffs;
+        private CloneableOpenSupport openSupport;
+        private boolean contextMode;
+        private int contextNumLines;
+        
+        public TextDiffInfo(String name1, String name2, String title1, String title2,
+                            Reader r1, Reader r2, Difference[] diffs) {
+            super(name1, name2, title1, title2, null, false, false);
+            this.r1 = r1;
+            this.r2 = r2;
+            this.diffs = diffs;
+        }
+        
+        public String getName() {
+            return getName1() + " <> " + getName2();
+        }
+        
+        public String getTitle() {
+            return getTitle1() + " <> " + getTitle2();
+        }
+        
+        public Reader createFirstReader() {
+            return r1;
+        }
+        
+        public Reader createSecondReader() {
+            return r2;
+        }
+        
+        public Difference[] getDifferences() {
+            return diffs;
+        }
+        
+        public CloneableOpenSupport getOpenSupport() {
+            if (openSupport == null) {
+                openSupport = new TextDiffEditorSupport(this);
+            }
+            return openSupport;
+        }
+        
+        /** Setter for property contextMode.
+         * @param contextMode New value of property contextMode.
+         */
+        public void setContextMode(boolean contextMode, int contextNumLines) {
+            this.contextMode = contextMode;
+            this.contextNumLines = contextNumLines;
+        }
+        
+        /** Getter for property contextMode.
+         * @return Value of property contextMode.
+         */
+        public boolean isContextMode() {
+            return contextMode;
+        }
+        
+        public int getContextNumLines() {
+            return contextNumLines;
+        }
+        
+    }
 }
