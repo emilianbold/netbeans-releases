@@ -33,6 +33,7 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     private Lookup lookup;    
     private Class[] watch;
     private Lookup.Result[] results;
+    private boolean refreshing = false;
                 
     /** Formats the name with following 
      */    
@@ -84,7 +85,11 @@ public abstract class LookupSensitiveAction extends BasicAction implements Looku
     // Implementation of LookupListener ----------------------------------------
     
     public void resultChanged( LookupEvent e ) {
-        refresh( lookup );
+        if (!refreshing) {
+            refreshing = true;
+            refresh( lookup );
+            refreshing = false;
+        }
     }
     
 }
