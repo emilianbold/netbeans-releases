@@ -73,7 +73,7 @@ public final class DefaultSplitContainer extends AbstractModeContainer {
     protected void updateActive(boolean active) {
         if(active) {
             Window window = SwingUtilities.getWindowAncestor(panel);
-            if(window != null) {
+            if(window != null && !window.isActive()) {
                 window.toFront();
             }
         }

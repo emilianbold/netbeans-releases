@@ -32,6 +32,10 @@ public interface ControllerHandler {
     
     public void userActivatedMode(ModeImpl mode);
     
+    public void userActivatedModeWindow(ModeImpl mode);
+    
+    public void userActivatedEditorWindow();
+    
     public void userActivatedTopComponent(ModeImpl mode, TopComponent selected);
     
     public void userResizedMainWindow(Rectangle bounds);

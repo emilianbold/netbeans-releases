@@ -1313,6 +1313,32 @@ final class Central implements ControllerHandler {
         }
     }
     
+    public void userActivatedModeWindow(ModeImpl mode) {
+        if(mode != null) {
+            setActiveMode(mode);
+        }
+    }
+    
+    public void userActivatedEditorWindow() {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent[] tcs = wm.getRecentViewList(); 
+        for(int i = 0; i < tcs.length; i++) {
+            TopComponent tc = tcs[i];
+            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            if(mode != null 
+            && mode.getKind() == Constants.MODE_KIND_EDITOR
+            && !mode.getOpenedTopComponents().isEmpty()) {
+                setActiveMode(mode);
+                return;
+            }
+        }
+        
+        ModeImpl mode = wm.getDefaultEditorMode();
+        if(mode != null && !mode.getOpenedTopComponents().isEmpty()) {
+            setActiveMode(mode);
+        }
+    }
+    
     public void userActivatedTopComponent(ModeImpl mode, TopComponent selected) {
         if(mode != null) {
             setModeSelectedTopComponent(mode, selected);

@@ -508,6 +508,24 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
         controllerHandler.userActivatedMode(mode);
     }
     
+    public void userActivatedModeWindow(ModeView modeView) {
+        if(DEBUG) {
+            debugLog("User activated mode window, mode=" + modeView); // NOI18N
+        }
+        
+        ModeAccessor modeAccessor = (ModeAccessor)hierarchy.getAccessorForView(modeView);
+        ModeImpl mode = getModeForModeAccessor(modeAccessor);
+        controllerHandler.userActivatedModeWindow(mode);
+    }
+    
+    public void userActivatedEditorWindow() {
+        if(DEBUG) {
+            debugLog("User activated editor window"); // NOI18N
+        }
+        
+        controllerHandler.userActivatedEditorWindow();
+    }
+    
     public void userSelectedTab(ModeView modeView, TopComponent selected) {
         if(DEBUG) {
             debugLog("User selected tab, tc=" + WindowManagerImpl.getInstance().getTopComponentDisplayName(selected)); // NOI18N

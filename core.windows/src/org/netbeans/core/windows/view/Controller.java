@@ -29,6 +29,10 @@ public interface Controller {
 
     public void userActivatedModeView(ModeView modeView);
     
+    public void userActivatedModeWindow(ModeView modeView);
+    
+    public void userActivatedEditorWindow();
+    
     public void userSelectedTab(ModeView modeView, TopComponent selected);
     
     public void userClosingMode(ModeView modeView);

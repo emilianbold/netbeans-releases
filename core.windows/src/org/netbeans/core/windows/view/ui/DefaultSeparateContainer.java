@@ -84,6 +84,10 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
             public void windowClosing(WindowEvent evt) {
                 modeView.getController().userClosingMode(modeView);
             }
+            
+            public void windowActivated(WindowEvent evt) {
+                modeView.getController().userActivatedModeWindow(modeView);
+            }
         });
         
         frame.addWindowStateListener(new WindowStateListener() {
@@ -103,7 +107,7 @@ public final class DefaultSeparateContainer extends AbstractModeContainer {
     }
     
     protected void updateActive(boolean active) {
-        if(active) {
+        if(active && !frame.isActive()) {
             frame.toFront();
         } 
     }

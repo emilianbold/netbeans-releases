@@ -641,6 +641,10 @@ final class ViewHierarchy {
             public void windowClosing(WindowEvent evt) {
                 closeEditorModes();
             }
+            
+            public void windowActivated(WindowEvent evt) {
+                controller.userActivatedEditorWindow();
+            }
         });
         
         frame.addWindowStateListener(new WindowStateListener() {
