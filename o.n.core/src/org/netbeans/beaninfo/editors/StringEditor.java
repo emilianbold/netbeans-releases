@@ -32,6 +32,7 @@ public class StringEditor extends PropertyEditorSupport {
     s = Utilities.replaceString (s, "\\", "\\\\");
     s = Utilities.replaceString (s, "\"", "\\\"");
     s = Utilities.replaceString (s, "\n", "\\n");
+    s = Utilities.replaceString (s, "\t", "\\t");
     return "\""+s+"\"";
   }
   
@@ -47,6 +48,9 @@ public class StringEditor extends PropertyEditorSupport {
 
 /*
  * Log
+ *  3    Gandalf   1.2         9/14/99  Ian Formanek    Fixed bug 3875 - The 
+ *       code generated for tabs in string properties should be "\t" instead of 
+ *       the tab, which is expanded to spaces by the editor.
  *  2    Gandalf   1.1         6/8/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
