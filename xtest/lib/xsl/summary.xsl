@@ -183,7 +183,7 @@
 				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></TD>
 				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></TD>
 				<TD><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></TD>
-				<TD><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@time)"/></TD>
+				<TD><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></TD>
 			</TR>
 		</xsl:for-each>
 	</TABLE>
@@ -232,7 +232,7 @@
 			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsFail)"/></B></TD>
 			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@testsError)"/></B></TD>
 			<TD><B><xsl:value-of select="format-number($testsPass div $testsTotal,'0.00%')"/></B></TD>
-			<TD><B><xsl:value-of select="sum(parent::*/TestBag[@module=$currentModule]/@time)"/></B></TD>
+			<TD><B><xsl:value-of select="(sum(parent::*/TestBag[@module=$currentModule]/@time) div 1000)"/></B></TD>
 		</TR>
 
 		<xsl:for-each select = "parent::*/TestBag[@module=$currentModule]">
