@@ -19,6 +19,8 @@ import java.beans.Customizer;
 
 import org.openide.nodes.*;
 import org.openide.actions.*;
+import org.openide.loaders.*;
+import org.openide.cookies.*;
 import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.actions.*;
@@ -114,5 +116,30 @@ public class LayoutNode extends AbstractNode implements FormLayoutCookie
         SystemAction[] array = new SystemAction[actions.size()];
         actions.toArray(array);
         return array;
+    }
+
+
+    public Node.Cookie getCookie(Class type) {
+        Node.Cookie inh = super.getCookie(type);
+        if (inh != null)
+            return inh;
+        
+        if (CompilerCookie.class.isAssignableFrom(type) ||
+            SaveCookie.class.isAssignableFrom(type) ||
+            DataObject.class.isAssignableFrom(type) ||
+            ExecCookie.class.isAssignableFrom(type) ||
+            DebuggerCookie.class.isAssignableFrom(type) ||
+            CloseCookie.class.isAssignableFrom(type) ||
+            ArgumentsCookie.class.isAssignableFrom(type) ||
+            PrintCookie.class.isAssignableFrom(type))
+        {
+            RADVisualContainer container = layoutSupport.getContainer();
+            if (container == null)
+                return null;
+            
+            return container.getFormModel().getFormDataObject().getCookie(type);
+        }
+        else
+            return null;
     }
 }
