@@ -18,6 +18,7 @@
  * Created: Thursday Feb  15 
  *
  * @author Simran Gleason
+ * @author Ana von Klopp
  * @version
  */
 
@@ -52,17 +53,22 @@ public class NameValueCellEditor extends DefaultCellEditor {
     private static String editNameAndValueTitle;
     private static String editValueOnlyTitle;
 
-    private DisplayTable table;
+    private JTable table;
     private Object[][] data;
     private boolean nameEditable;
     private int row;
     private int type;
     
-    public static NameValueCellEditor createCellEditor(DisplayTable table,
+    public static NameValueCellEditor createCellEditor(JTable table,
 						       Object data [][],
 						       boolean nameEditable,
-						       int row, int type)  {
+						       int row, final int type)  {
+
 	JButton b = new JButton(msgs.getString("MON_Edit_dots")); // NOI18N
+	if(type == DisplayTable.UNEDITABLE) 
+	    b.setToolTipText(msgs.getString("MON_DisplayValue")) ;
+	else 
+	    b.setToolTipText(msgs.getString("MON_EditAttribute")) ;
 	final NameValueCellEditor ed = new NameValueCellEditor(b,
 							       table,
 							       data,
@@ -80,30 +86,20 @@ public class NameValueCellEditor extends DefaultCellEditor {
 
 					
     public NameValueCellEditor(JButton b,
-			       DisplayTable table,
+			       JTable table,
 			       Object data [][],
 			       boolean nameEditable,
 			       int row, 
 			       int type)  {
 	super(new JCheckBox());
 	editorComponent = b;
-	setClickCountToStart(1); //This is usually 1 or 2.
+	setClickCountToStart(1); 
 
 	this.table = table;
 	this.data = data;
 	this.nameEditable = nameEditable;
 	this.row = row;    
 	this.type = type;
-	
-	//Must do this so that editing stops when appropriate.
-	b.addActionListener(new ActionListener() {
-	    public void actionPerformed(ActionEvent e) {
-		// is this screwing us up?
-		//fireEditingStopped();
-	    }
-	});
-	
-
     }
 
     
@@ -126,42 +122,42 @@ public class NameValueCellEditor extends DefaultCellEditor {
 
 
     public void showParamEditor() {
-	ParamEditor pe;
-	boolean modal = true;
-	int currentRow = table.getSelectedRow();
 
+	ParamEditor pe;
+	boolean modal = false;
+	int currentRow = table.getSelectedRow();
+	String title;
+	
 	TableModel model = table.getModel();
+
+	if(debug) 
+	    System.out.println("type = " + String.valueOf(type));
+
+	if(type == DisplayTable.UNEDITABLE) 
+	    title = msgs.getString("MON_ParamValue"); 
+	else if(type == DisplayTable.HEADERS) 
+	    title = msgs.getString("MON_Edit_header"); 
+	else if(type == DisplayTable.PARAMS) 
+	    title = msgs.getString("MON_Edit_param"); 
+	else if(type == DisplayTable.REQUEST) 
+	    title = msgs.getString("MON_Edit_request"); 
+	else if(type == DisplayTable.SERVER) 
+	    title = msgs.getString("MON_Edit_server"); 
+	// This should not happen
+	else 
+	    title = msgs.getString("MON_Edit_value"); 
+	
+
 	String name =  (String)model.getValueAt(currentRow, 0);
 	String value = (String)model.getValueAt(currentRow, 1);
-	String title;
-	if (nameEditable) { 
-	    if(debug) 
-		System.out.println("type = " + String.valueOf(type));
-	     
-	    if(type == DisplayTable.HEADERS) {
-		title = msgs.getString("MON_Edit_header"); 
-	    }
-	    else if(type == DisplayTable.PARAMS) {
-		title = msgs.getString("MON_Edit_param"); 
-	    }
-	    else if(type == DisplayTable.REQUEST) {
-		title = msgs.getString("MON_Edit_request"); 
-	    }
-	    else if(type == DisplayTable.SERVER) {
-		title = msgs.getString("MON_Edit_server"); 
-	    }
-	    // This should not happen
-	    else {
-		title = msgs.getString("MON_Edit_value"); 
-	    }
-	    
-	} else {
-	    title = msgs.getString("MON_Edit_value"); 
-	}
-	pe = new ParamEditor(name, value, nameEditable, title);
-
+	pe = new ParamEditor(name, 
+			     value, 
+			     nameEditable, 
+			     (type > DisplayTable.UNEDITABLE), 
+			     title);
+	
 	pe.showDialog(modal);
-	if (pe.getDialogOK()) {
+	if ((type > DisplayTable.UNEDITABLE) && pe.getDialogOK()) {
 	    if (nameEditable) {
 		model.setValueAt(pe.getName(), currentRow, 0);
 	    }

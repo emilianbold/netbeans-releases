@@ -249,7 +249,7 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		public void actionPerformed(ActionEvent e) {
 
 		    String title = msgs.getString("MON_New_param"); 
-		    ParamEditor pe = new ParamEditor("", "", true,
+		    ParamEditor pe = new ParamEditor("", "", true, true,
 						     title, false);
 
 		    if(debug) System.out.println("Now showing dialog"); // NOI18N

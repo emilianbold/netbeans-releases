@@ -167,7 +167,8 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 	newHeaderB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    String title = msgs.getString("MON_New_header"); 
-		    ParamEditor pe = new ParamEditor("", "", true, title);
+		    ParamEditor pe = new ParamEditor("", "", true,
+						     true, title);
 
 		    if(debug) System.out.println("Now showing dialog");// NOI18N
 		    

@@ -62,6 +62,7 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     //
     // Hold the name and value until the widgets are created.
     //
+    private boolean editable = true;
     private boolean nameEditable;
     private boolean valueRequired = true;
     private String name = "";
@@ -78,16 +79,30 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     //private static boolean repainting = false;
     private boolean repainting = false;
 
-    public ParamEditor(String name, String value, boolean nameEditable,
+    public ParamEditor(String name, 
+		       String value, 
+		       boolean nameEditable,
+		       boolean valueEditable,
 		       String title) { 
-	this(name, value, nameEditable, title, true); 
+	this(name, value, nameEditable, valueEditable, title, true); 
     }
 
-    public ParamEditor(String name, String value, boolean nameEditable,
-		       String title, boolean valueRequired) { 
+    public ParamEditor(String name, 
+		       String value, 
+		       boolean nameEditable,
+		       boolean valueEditable,		       String title, 
+		       boolean valueRequired) { 
 	super();
-	this.nameEditable = nameEditable;
-	this.valueRequired = valueRequired;
+	if(valueEditable) { 
+	    editable = true;
+	    this.nameEditable = nameEditable;
+	    this.valueRequired = valueRequired;
+	}
+	else { 
+	    editable = false;
+	    this.nameEditable = false;
+	    this.valueRequired = false;
+	}
 	this.title = title;
 	setName(name);
 	setValue(value);
@@ -144,7 +159,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
         nameText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_NameTextFieldA11yName"));
         nameText.setToolTipText(msgs.getString("ACS_MON_NameTextFieldA11yDesc"));
 	nameText.setText(name);
-	nameText.setEnabled(nameEditable);
+	nameText.setBackground(java.awt.Color.white);
+	nameText.setEditable(nameEditable);
 	addGridBagComponent(this, nameText, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0,
 			    java.awt.GridBagConstraints.WEST,
@@ -163,10 +179,17 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 			    0, 0);
 
 	valueText = new JTextArea();
-        valueLabel.setLabelFor(valueText);
+	valueLabel.setLabelFor(valueText);
         valueText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ValueTextAreaA11yName"));
         valueText.setToolTipText(msgs.getString("ACS_MON_ValueTextAreaA11yDesc"));
 	valueText.setText(value);
+	if(!editable) {
+	    valueText.setEditable(false);
+	    valueText.setLineWrap(true);
+	    //valueText.setColumns(40);
+	    valueText.setWrapStyleWord(false); 
+	}
+	
 	JScrollPane scrollpane = new JScrollPane(valueText);
 	scrollpane.setMinimumSize(valueSize);
 
@@ -188,9 +211,8 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     }
     public void showDialog(boolean modal) {
 
-	if (dialog == null) {
-	    editDialog = 
-		new DialogDescriptor(this,
+	if(editable) {
+	    editDialog = new DialogDescriptor(this,
 				     title,
 				     modal, 
 				     DialogDescriptor.OK_CANCEL_OPTION,
@@ -198,10 +220,18 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 				     DialogDescriptor.BOTTOM_ALIGN,
 				     null,
 				     this);
-	    
-	    dialog = TopManager.getDefault().createDialog(editDialog);
 	}
-	
+	else {
+	    editDialog = new DialogDescriptor(this,
+				     title,
+				     modal, 
+				     DialogDescriptor.PLAIN_MESSAGE, 
+				     DialogDescriptor.OK_OPTION,
+				     DialogDescriptor.BOTTOM_ALIGN,
+				     null,
+				     this);
+	}
+	dialog = TopManager.getDefault().createDialog(editDialog);
 	dialog.pack();
 	dialog.setSize(size);
 	dialog.show();
@@ -217,7 +247,11 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 	if (debug)System.out.println("Got action from the dialog");
 	if(editDialog.getValue().equals(DialogDescriptor.OK_OPTION)) {
-
+	    if(!editable) {
+		dialog.dispose();
+		return;
+	    }
+	    
 	    inputOK = true;
 	    String str = getName(); 
 	    if(str.equals("")) inputOK = false;

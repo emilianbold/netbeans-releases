@@ -17,7 +17,7 @@
  *
  * Created: Mon Jan 29 16:43:09 2001
  *
- * @author Ana von Klopp Lemon
+ * @author Ana von Klopp
  * @version
  */
 
@@ -53,7 +53,7 @@ public class DisplayTable extends JTable {
 	NbBundle.getBundle(TransactionView.class);  
 
     private int numRows = 0;
-    private int numCols = 2;
+    private int numCols = 3;
 
     // PENDING try not to display any headers... 
     String name = msgs.getString("MON_Name"); 
@@ -89,10 +89,6 @@ public class DisplayTable extends JTable {
 	numRows = names.length;
 	editableNames = false;
 	this.editable = editable;
-
-	// initialize the table data
-	// One extra column for the "..." if editable.
-	numCols = ((editable == UNEDITABLE) ? 2 : 3);
 	
 	data = new Object[numRows][numCols];
 	cellEditors = new TableCellEditor[numRows][numCols];
@@ -103,15 +99,12 @@ public class DisplayTable extends JTable {
 	    } else {
 		data[i][1] = values[i];
 	    }
-	    
-	    if (editable != UNEDITABLE) {
-		data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
-		cellEditors[i][2] =
-		    NameValueCellEditor.createCellEditor(this, data,
-							 false, i, editable);
-	    }
+	    data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
+	    cellEditors[i][2] =
+		NameValueCellEditor.createCellEditor((JTable)this, data,
+						     false, i, editable);
 	}
-	setMyModel((editable == UNEDITABLE) ? false : true);
+	setMyModel(editable > UNEDITABLE);
 	setup();
     }
 
@@ -131,24 +124,17 @@ public class DisplayTable extends JTable {
 
 	this.editable = editable; 
 
-	// initialize the table data 
-	// One extra column for the "..." if editable.
-	numCols = ((editable == UNEDITABLE) ? 2 : 3);
-	
 	data = new Object[numRows][numCols];
 	cellEditors = new TableCellEditor[numRows][numCols];
 	for(int i=0; i<numRows; ++i) {
 	    data[i][0] = params[i].getAttributeValue("name");   // NOI18N
 	    data[i][1] = params[i].getAttributeValue("value");  // NOI18N
-	    if (editable != UNEDITABLE) {
-		data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
-		cellEditors[i][2] =
-		    NameValueCellEditor.createCellEditor(this, data,
-							 true, i, editable);
-	    }
+	    data[i][2] = msgs.getString("MON_Edit_dots"); // NOI18N
+	    cellEditors[i][2] =
+		NameValueCellEditor.createCellEditor((JTable)this, data,
+						     true, i, editable);
 	}
-	
-	setMyModel((editable == UNEDITABLE) ? false : true);
+	setMyModel(editable > UNEDITABLE);
 	setup();
     }
 
@@ -246,7 +232,7 @@ public class DisplayTable extends JTable {
 
     public void noSorting() {
 	if(debug) System.out.println("Neutral sorting selected");
-	setMyModel((editable == UNEDITABLE) ? false : true);
+	setMyModel(editable > UNEDITABLE);
     }
     
 
@@ -264,7 +250,10 @@ public class DisplayTable extends JTable {
 		return data[row][col]; 
 	    }
 	    public boolean isCellEditable(int row, int col) { 
-		if(!editable) return false; 
+		if(!editable) { 
+		    if(col == 2 || col == 5) return true; 
+		    else return false; 
+		}
 		if(editable && col == 0) return editableNames;
 		if(editable && col == 1) {
 		    if(exceptions == null) return true;
@@ -295,10 +284,7 @@ public class DisplayTable extends JTable {
 	if (tcm.getColumnCount() > 0) {
 	    TableColumn column = tcm.getColumn(0);     
 	    column.setPreferredWidth(10);
-	    if (numCols > 2) {
-		TableColumn column2 = tcm.getColumn(2);     
-		column2.setMaxWidth(5);
-	    }
+	    tcm.getColumn(2).setMaxWidth(5);
 	}
     }
 
