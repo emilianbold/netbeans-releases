@@ -27,18 +27,21 @@ import org.openide.nodes.BeanNode;
 public class MIMEOptionNode extends BeanNode {
     
     private String name;
-    private BaseOptions base;
     
     /** Creates new OptionNode */
     public MIMEOptionNode(BaseOptions beanObject) throws IntrospectionException {
         super(beanObject);
-        base = beanObject;
+        name = beanObject.getName();
     }
     
     /** Gets display name of all options node from bundle */
     public String getDisplayName(){
-        return base.getName();
+        return name;
     }
     
+    // #7925
+    public boolean canDestroy() {
+        return false;
+    }    
     
 }

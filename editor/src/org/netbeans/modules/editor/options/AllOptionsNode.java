@@ -68,6 +68,12 @@ public class AllOptionsNode extends FilterNode {
     public String getDisplayName(){
         return NbBundle.getMessage(AllOptionsNode.class, "OPTIONS_all"); //NOI18N
     }
+
+    // #7925
+    public boolean canDestroy() {
+        return false;
+    }        
+    
     
     /** Class representing subnodes of Editor Settings node.*/
     private static class EditorSubnodes extends Children.Keys {
