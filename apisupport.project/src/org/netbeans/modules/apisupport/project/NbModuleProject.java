@@ -28,6 +28,7 @@ import java.util.jar.Manifest;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.GlobFileBuiltQuery;
@@ -317,7 +318,12 @@ final class NbModuleProject implements Project {
         }
         
         protected void projectClosed() {
-            // ignore for now
+            try {
+                ProjectManager.getDefault().saveProject(NbModuleProject.this);
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(e);
+            }
+            
             // XXX could discard caches, etc.
             
             // unregister project's classpaths to GlobalClassPathRegistry
