@@ -14,7 +14,6 @@
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.*;
-import org.openide.util.RequestProcessor;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -57,14 +56,12 @@ class CmpRelationshipsTableModel extends InnerTableModel {
     public int addRow() {
         CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_AddCMPRelationship"), null)) {
-            saveDataObject();
         }
         return getRowCount() - 1;
     }
 
     public void removeRow(int row) {
         ejbJar.getSingleRelationships().removeEjbRelation(ejbJar.getSingleRelationships().getEjbRelation(row));
-        saveDataObject();
     }
 
     public void editRow(int row) {
@@ -72,17 +69,8 @@ class CmpRelationshipsTableModel extends InnerTableModel {
         CmpRelationshipsDialogHelper dialogHelper = new CmpRelationshipsDialogHelper(dataObject, ejbJar);
         if (dialogHelper.showCmpRelationshipsDialog(Utils.getBundleMessage("LBL_Edit_CMP_Relationship"),
                 ejbRelation)) {
-            saveDataObject();
         }
 
-    }
-
-    private void saveDataObject() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                dataObject.saveDocument();
-            }
-        });
     }
 
     public void refreshView() {
