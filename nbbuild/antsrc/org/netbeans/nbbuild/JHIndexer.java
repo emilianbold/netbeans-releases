@@ -155,6 +155,13 @@ public class JHIndexer extends MatchingTask {
         createClasspath().setLocation(f);
     }
 
+    /**  
+     *
+     */
+    public void setClassPath(Path cp) {
+        classpath = cp;
+    }
+    
     public void execute () throws BuildException {
         if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar");
         if (db == null) throw new BuildException ("Must specify the db attribute");
