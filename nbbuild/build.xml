@@ -485,7 +485,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module metrics..."/>
     <ant dir="../metrics" target="netbeans"/>
   </target>
-  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver,all-openide/deprecated,all-tomcatint/bundledtomcat">
+  <target name="all-monitor" depends="all-openide,all-web/core,all-schema2beans,all-html,all-httpserver,all-openide/deprecated,all-tomcatint/tomcat5/bundled">
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
