@@ -24,7 +24,8 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.java/1,
   org.netbeans.api.web.dd/1 = @DDAPI_IMPL_VERSION@,
   org.netbeans.modules.projectapi/0,
   org.netbeans.modules.projectuiapi/0,
-  org.apache.tools.ant.module/3
+  org.apache.tools.ant.module/3,
+  org.netbeans.libs.xerces/1
 
 Name: org/netbeans/modules/web/dd/DDDataLoader.class
 OpenIDE-Module-Class: Loader
