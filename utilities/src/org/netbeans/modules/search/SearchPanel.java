@@ -91,8 +91,12 @@ public class SearchPanel extends JPanel implements PropertyChangeListener {
 
             SearchTypePanel searchTypePanel = new SearchTypePanel(searchType);
             
-            searchTypePanel.addPropertyChangeListener(this);
+            if(orderedSearchTypePanels.contains(searchTypePanel)) {
+                continue;
+            }
             
+            searchTypePanel.addPropertyChangeListener(this);
+                
             orderedSearchTypePanels.add(searchTypePanel);
         }
         
