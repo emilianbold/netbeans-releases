@@ -13,20 +13,65 @@
 
 package org.netbeans.beaninfo.editors;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.IOException;
 import java.beans.PropertyEditorSupport;
+import java.util.Enumeration;
 import java.util.Properties;
+
+import org.openide.TopManager;
+
 
 /** A property editor for Properties class.
 * @author   Ian Formanek
 */
 public class PropertiesEditor extends PropertyEditorSupport {
 
-    public String getAsText(String s) {
-        return org.openide.util.NbBundle.getBundle(PropertiesEditor.class).getString("CTL_TextProperties");
+    /** Overrides superclass method. */
+    public String getAsText() {
+        Object value = getValue();
+        
+        if(value instanceof Properties) {
+            Properties prop = (Properties)value;
+
+            StringBuffer buff = new StringBuffer();
+            
+            for(Enumeration enum = prop.keys(); enum.hasMoreElements(); ) {
+                if(buff.length() > 0) {
+                    buff.append("; "); // NOI18N
+                }
+                
+                Object key = enum.nextElement();
+                
+                buff.append(key + "=" + prop.get(key)); // NOI18N
+            }
+            
+            return buff.toString();
+        }
+        
+        return "" + value; // NOI18N
     }
 
-    /** sets new value */
-    public void setAsText(String s) {
+    /** Overrides superclass method.
+     * @exception IllegalArgumentException if <code>null</code> value
+     * is passes in or some io problem by converting occured */
+    public void setAsText(String text) throws IllegalArgumentException {
+        if(text == null) {
+            throw new IllegalArgumentException("Inserted value can't be null."); // NOI18N
+        }
+        
+        try {
+            Properties prop = new Properties();
+            InputStream is = new ByteArrayInputStream(
+                text.replace(';', '\n').getBytes("8859_1") // NOI18N
+            );
+            prop.load(is);
+            setValue(prop);
+        } catch(IOException ioe) {
+            throw (IllegalArgumentException)TopManager.getDefault()
+                .getErrorManager().annotate(new IllegalArgumentException(), ioe);
+        }
     }
 
     public String getJavaInitializationString () {
@@ -42,12 +87,3 @@ public class PropertiesEditor extends PropertyEditorSupport {
     }
 
 }
-
-/*
- * Log
- *  3    Gandalf   1.2         1/13/00  Petr Jiricka    i18n
- *  2    Gandalf   1.1         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  1    Gandalf   1.0         6/4/99   Ian Formanek    
- * $
- */
