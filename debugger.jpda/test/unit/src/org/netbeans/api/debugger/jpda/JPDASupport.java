@@ -78,7 +78,7 @@ public class JPDASupport implements DebuggerManagerListener {
         return Runtime.getRuntime().exec(cmdArray);
     }
 
-    private void connect(String mainClass) throws IOException, IllegalConnectorArgumentsException, DebuggerStartException {
+    private void connect(String mainClass, boolean stopInMain) throws IOException, IllegalConnectorArgumentsException, DebuggerStartException {
 
         VirtualMachineManager vmm = Bootstrap.virtualMachineManager();
         List lconnectors = vmm.listeningConnectors();
@@ -107,7 +107,7 @@ public class JPDASupport implements DebuggerManagerListener {
             localhostAddres = address;
         }
 
-        addMainMethodBreakpoint(mainClass);
+        if (stopInMain) addMainMethodBreakpoint(mainClass);
 
         JPDADebugger.startListening(connector, args, new Object[] { });
 
@@ -120,7 +120,7 @@ public class JPDASupport implements DebuggerManagerListener {
         if (debugger == null) throw new DebuggerStartException("JPDA debugger was not started");
         debugger.addPropertyChangeListener(this);
 
-        waitDebuggerStarted();
+        if (stopInMain) waitDebuggerStarted();
     }
 
     private void addMainMethodBreakpoint(String mainClass) {
@@ -186,9 +186,13 @@ public class JPDASupport implements DebuggerManagerListener {
 
     public static JPDASupport listen(String mainClass) throws IOException, IllegalConnectorArgumentsException,
             DebuggerStartException {
+        return listen(mainClass, true);
+    }
+
+    public static JPDASupport listen(String mainClass, boolean stopInMain) throws IOException, IllegalConnectorArgumentsException, DebuggerStartException {
 
         JPDASupport jpda = new JPDASupport();
-        jpda.connect(mainClass);
+        jpda.connect(mainClass, stopInMain);
         return jpda;
     }
 
@@ -241,13 +245,35 @@ public class JPDASupport implements DebuggerManagerListener {
         throw new IllegalStateException("Action " + action + " is not enabled");
     }
 
-    public void waitDisconnected() {
+    public void waitDisconnected(int timeoutMillis) {
+        long t0 = System.currentTimeMillis();
         while (debugger.getState() != JPDADebugger.STATE_DISCONNECTED) {
             sleep(100);
+            if (System.currentTimeMillis() - t0 > timeoutMillis) throw new TimeoutException();
+/*
             if (debugger.getState() == JPDADebugger.STATE_STOPPED) {
                 System.out.println("Stopped at " + debugger.getCurrentCallStackFrame().getClassName() + ":" +
                                    debugger.getCurrentCallStackFrame().getLineNumber(null));
             }
+*/
+        }
+    }
+
+    public static class TimeoutException extends RuntimeException {
+        TimeoutException() {
+        }
+
+        TimeoutException(String message) {
+            super(message);
+        }
+    }
+
+    public void waitState(int state, int timeoutMillis) {
+        long t0 = System.currentTimeMillis();
+        while (debugger.getState() != state) {
+            sleep(100);
+            if (System.currentTimeMillis() - t0 > timeoutMillis)
+                throw new TimeoutException("Waitstate timeout: " + debugger.getState());
         }
     }
 
@@ -255,14 +281,18 @@ public class JPDASupport implements DebuggerManagerListener {
         try {
             Thread.sleep(time);
         } catch (InterruptedException e) {
-            doFinish();
             throw new DisconnectedException(e);
         }
     }
 
     public void doFinish() {
+        doFinish(Integer.MAX_VALUE);
+    }
+
+    public void doFinish(int timeoutMillis) {
+        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) return;
         getActionsManager().doAction(DebuggerManager.ACTION_KILL);
-        waitDisconnected();
+        waitDisconnected(timeoutMillis);
     }
 
     private class DisconnectedException extends RuntimeException {

@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="unit-executor" name="Debugger JPDA API">
         <testset dir="unit/src">
             <patternset>
-<!--                <include name="org/netbeans/api/debugger/jpda/CallStackTest.class"/>-->
+<!--                <include name="org/netbeans/api/debugger/jpda/Test.class"/>-->
                 <include name="org/netbeans/api/debugger/jpda/*Test.class"/>
             </patternset>
         </testset>

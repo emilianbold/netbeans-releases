@@ -35,65 +35,74 @@ public class StepTest extends DebuggerJPDAApiTestBase {
     }
 
     public void testStepOver() throws Exception {
+        try {
+            int line;
 
-        int line;
+            line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
+            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
+            assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
+            assertEquals("Execution stopped at wrong line", 24, line);
 
-        line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-        String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-        assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
-        assertEquals("Execution stopped at wrong line", 24, line);
+            stepCheck(STEP_OVER, "basic.StepApp", 25);
+            stepCheck(STEP_OVER, "basic.StepApp", 26);
+            stepCheck(STEP_OVER, "basic.StepApp", 27);
+            stepCheck(STEP_OVER, "basic.StepApp", 28);
+            stepCheck(STEP_OVER, "basic.StepApp", 29);
 
-        stepCheck(STEP_OVER, "basic.StepApp", 25);
-        stepCheck(STEP_OVER, "basic.StepApp", 26);
-        stepCheck(STEP_OVER, "basic.StepApp", 27);
-        stepCheck(STEP_OVER, "basic.StepApp", 28);
-        stepCheck(STEP_OVER, "basic.StepApp", 29);
-
-        support.doContinue();
-        support.waitDisconnected();
+            support.doContinue();
+            support.waitDisconnected(5000);
+        } finally {
+            support.doFinish();
+        }
     }
 
     public void testStepInto() throws Exception {
+        try {
+            support = JPDASupport.listen("basic.StepApp");
 
-        support = JPDASupport.listen("basic.StepApp");
+            int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
+            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
+            assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
+            assertEquals("Execution stopped at wrong line", 24, line);
 
-        int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-        String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-        assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
-        assertEquals("Execution stopped at wrong line", 24, line);
+            stepCheck(STEP_INTO, "basic.StepApp", 32);
+            stepCheck(STEP_INTO, "java.lang.Object", -1);
+            stepCheck(STEP_INTO, "basic.StepApp", 33);
+            stepCheck(STEP_INTO, "basic.StepApp", 24);
+            stepCheck(STEP_INTO, "basic.StepApp", 25);
+            stepCheck(STEP_INTO, "basic.StepApp", 36);
+            stepCheck(STEP_INTO, "basic.StepApp", 37);
+            stepCheck(STEP_INTO, "basic.StepApp", 42);
 
-        stepCheck(STEP_INTO, "basic.StepApp", 32);
-        stepCheck(STEP_INTO, "java.lang.Object", -1);
-        stepCheck(STEP_INTO, "basic.StepApp", 33);
-        stepCheck(STEP_INTO, "basic.StepApp", 24);
-        stepCheck(STEP_INTO, "basic.StepApp", 25);
-        stepCheck(STEP_INTO, "basic.StepApp", 36);
-        stepCheck(STEP_INTO, "basic.StepApp", 37);
-        stepCheck(STEP_INTO, "basic.StepApp", 42);
-
-        support.doContinue();
-        support.waitDisconnected();
+            support.doContinue();
+            support.waitDisconnected(5000);
+        } finally {
+            support.doFinish();
+        }
     }
 
     public void testStepOut() throws Exception {
+        try {
+            support = JPDASupport.listen("basic.StepApp");
 
-        support = JPDASupport.listen("basic.StepApp");
+            int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
+            String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
+            assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
+            assertEquals("Execution stopped at wrong line", 24, line);
 
-        int line = support.getDebugger().getCurrentCallStackFrame().getLineNumber(null);
-        String cls = support.getDebugger().getCurrentCallStackFrame().getClassName();
-        assertEquals("Execution stopped in wrong class", cls, "basic.StepApp");
-        assertEquals("Execution stopped at wrong line", 24, line);
+            stepCheck(STEP_OVER, "basic.StepApp", 25);
+            stepCheck(STEP_INTO, "basic.StepApp", 36);
+            stepCheck(STEP_OVER, "basic.StepApp", 37);
+            stepCheck(STEP_INTO, "basic.StepApp", 42);
 
-        stepCheck(STEP_OVER, "basic.StepApp", 25);
-        stepCheck(STEP_INTO, "basic.StepApp", 36);
-        stepCheck(STEP_OVER, "basic.StepApp", 37);
-        stepCheck(STEP_INTO, "basic.StepApp", 42);
+            stepCheck(STEP_OUT, "basic.StepApp", 37);
+            stepCheck(STEP_OUT, "basic.StepApp", 25);
 
-        stepCheck(STEP_OUT, "basic.StepApp", 37);
-        stepCheck(STEP_OUT, "basic.StepApp", 25);
-
-        support.doContinue();
-        support.waitDisconnected();
+            support.doContinue();
+            support.waitDisconnected(5000);
+        } finally {
+            support.doFinish();
+        }
     }
 
     private void stepCheck(int stepType, String clsExpected, int lineExpected) {

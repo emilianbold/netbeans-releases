@@ -34,24 +34,27 @@ public class EvaluationTest  extends DebuggerJPDAApiTestBase {
     }
 
     public void testStaticEvaluation() throws Exception {
+        try {
+            checkEval("1", 1);
+            checkEval("4.3", 4.3);
+            checkEval("ix", 74);
 
-        checkEval("1", 1);
-        checkEval("4.3", 4.3);
-        checkEval("ix", 74);
-
-        checkEvalFails("this");
-        checkEvalFails("NoSuchClass.class");
-
-        support.doFinish();
+            checkEvalFails("this");
+            checkEvalFails("NoSuchClass.class");
+        } finally {
+            support.doFinish();
+        }
     }
 
     public void testStaticExpressions() throws Exception {
+        try {
+            checkEval("ix * fx", 740.0f);
+            checkEval("sx % 3", 1);
 
-        checkEval("ix * fx", 740.0f);
-        checkEval("sx % 3", 1);
-
-        checkEvalFails("ix * fx ** fx");
-        support.doFinish();
+            checkEvalFails("ix * fx ** fx");
+        } finally {
+            support.doFinish();
+        }
     }
 
     private void checkEval(String expression, int value) throws InvalidExpressionException {
