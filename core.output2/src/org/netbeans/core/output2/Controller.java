@@ -12,6 +12,7 @@
  */
 package org.netbeans.core.output2;
 
+import java.io.CharConversionException;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.core.output2.ui.AbstractOutputTab;
@@ -38,6 +39,7 @@ import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.regex.Matcher;
+import org.openide.xml.XMLUtil;
 
 /**
  * Master controller for an output window, and supplier of the default instance.
@@ -257,8 +259,15 @@ public class Controller { //XXX public only for debug access to logging code
                         "closed is " + t.getIO().isStreamClosed());
                 }
                 if (win.isAncestorOf(t)) {
-                    String name = t.getIO().isStreamClosed() ? t.getIO().getName() + " " :
-                            "<html><b>" + /*XXX escape */t.getIO().getName() 
+                    String escaped;
+                    try {
+                        escaped = XMLUtil.toAttributeValue(t.getIO().getName());
+                    } catch (CharConversionException e) {
+                        escaped = t.getIO().getName();
+                    }
+                    
+                    String name = t.getIO().isStreamClosed() ? escaped + " " :
+                            "<html><b>" + escaped 
                             + " </b>&nbsp;</html>";  //NOI18N
                     win.setTabTitle (t, name);
                 }
