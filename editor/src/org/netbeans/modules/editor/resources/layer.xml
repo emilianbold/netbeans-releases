@@ -20,7 +20,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Actions">
-        <folder name="Tools">
+        <folder name="Edit">
             <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance" />
         </folder>
     </folder>
@@ -34,9 +34,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SeparatorHTMLExp.instance/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
             <file name="org-netbeans-modules-editor-ExportHtmlAction.instance"/>
             <attr name="org-netbeans-modules-editor-ExportHtmlAction.instance/Separator4.instance" boolvalue="true"/>
-        </folder>
-        <folder name="Tools">
-            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance" />
         </folder>
 
         <folder name="Edit">
