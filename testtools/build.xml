@@ -44,7 +44,10 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar" />
         <pathelement location="${nbroot}/ant/netbeans/modules/ant.jar" />
 	<fileset dir="${nbroot}/ant/external">
-	   <include name="ant*.jar"/>
+          <!-- For 1.5.3; XXX delete when ant160 branch is merged: -->
+          <include name="ant-1*.jar"/>
+          <!-- For 1.6: -->
+          <include name="lib/ant.jar"/>
 	</fileset>
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />

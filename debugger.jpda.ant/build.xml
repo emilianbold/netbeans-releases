@@ -18,15 +18,14 @@ Microsystems, Inc. All Rights Reserved.
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
     <property name="license.file" value="../../nbbuild/standard-nbm-license.txt"/>
 
-    <target name="init">
-        <ant dir="../../ant/external"/>
-    </target>
-
-    <target name="compile" depends="init">
+    <target name="compile">
         <javac srcdir="src" destdir="src" debug="true" deprecation="true" source="1.4">
             <classpath>
                 <fileset dir="../../ant/external">
+                    <!-- For 1.5.3; XXX delete when ant160 branch is merged: -->
                     <include name="ant-1*.jar"/>
+                    <!-- For 1.6: -->
+                    <include name="lib/ant.jar"/>
                 </fileset>
                 <pathelement location="${java.home}/../lib/tools.jar"/>
                 <pathelement location="../../openide/netbeans/lib/openide.jar"/>

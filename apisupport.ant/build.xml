@@ -26,7 +26,10 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <fileset dir="../../ant/external">
-                    <include name="ant-1.*.jar"/>
+                    <!-- For 1.5.3; XXX delete when ant160 branch is merged: -->
+                    <include name="ant-1*.jar"/>
+                    <!-- For 1.6: -->
+                    <include name="lib/ant.jar"/>
                 </fileset>
                 <pathelement location="../../openide/netbeans/lib/openide.jar"/>
                 <pathelement location="../../core/netbeans/lib/core.jar"/>
