@@ -30,6 +30,8 @@ import org.openide.util.actions.CallableSystemAction;
 * @author   Jan Jancura, Ian Formanek
 */
 public final class SaveAllAction extends CallableSystemAction {
+    /** to make sure only one instance of this class can run at a time */
+    private static final Object RUNNING = new Object ();
 
     /** Reference to the change listener
     * (we treat it weakly, so we have to to prevent it from
@@ -62,11 +64,29 @@ public final class SaveAllAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        LifecycleManager.getDefault().saveAll();
+        synchronized (RUNNING) {
+            while (getProperty (RUNNING) != null) {
+                try {
+                    RUNNING.wait ();
+                } catch (InterruptedException ex) {
+                    org.openide.ErrorManager.getDefault ().notify (ex);
+                }
+            }
+            putProperty (RUNNING, RUNNING);
+        }
+        try {
+            LifecycleManager.getDefault().saveAll();
+        } finally {
+            synchronized (RUNNING) {
+                putProperty (RUNNING, null);
+                RUNNING.notifyAll ();
+            }
+            
+        }
     }
     
     protected boolean asynchronous() {
-        return false;
+        return true;
     }
 
     /* Listens to the chnages in list of modified data objects
