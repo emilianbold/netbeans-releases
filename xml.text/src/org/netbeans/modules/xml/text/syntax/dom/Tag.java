@@ -168,16 +168,26 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
         String quoteCharString = value.indexOf('"') == -1 ? "\"" : "'";
         String stringToInsert = name + "=" + quoteCharString + value + quoteCharString;
         
+        // Get the document and lock it
+        BaseDocument doc = (BaseDocument)support.getDocument();
+        doc.atomicLock();
+
         if (insertStart == -1) {
             // An attribute with the name was not found for the element
             // Let's add it to the end
             insertStart = offset + length - 1;
+            
+            // Decrese if it is closed element of the form <blu/> 
+            try {
+                System.out.println("Text at insertStart: " + doc.getText(insertStart - 1, 1));
+                if (doc.getText(insertStart - 1, 1).equals("/")) {
+                    insertStart--;
+                }
+            } catch( BadLocationException e) {} // Will never been thrown
             stringToInsert = " " + stringToInsert;
         }
 
         // Update the document
-        BaseDocument doc = (BaseDocument)support.getDocument();
-        doc.atomicLock();
         try {
             if (removeCount != 0) {
                 doc.remove(insertStart, removeCount);
