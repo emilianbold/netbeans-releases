@@ -1,4 +1,23 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 package org.netbeans.modules.testtools;
+
+/*
+ * XTestExecutor.java
+ *
+ * Created on April 29, 2002, 10:54 AM
+ */
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +41,10 @@ import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
 import org.openide.cookies.ViewCookie;
 
+/**
+ *
+ * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
+ */
 public class XTestExecutor extends Executor {
     
     /** Holds value of property netbeansHome. */

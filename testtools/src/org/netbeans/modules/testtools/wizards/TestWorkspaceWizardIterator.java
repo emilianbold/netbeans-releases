@@ -14,7 +14,7 @@
 package org.netbeans.modules.testtools.wizards;
 
 /*
- * WTestWorkspaceWizardIterator.java
+ * TestWorkspaceWizardIterator.java
  *
  * Created on April 11, 2002, 11:46 AM
  */

@@ -14,7 +14,7 @@
 package org.netbeans.modules.testtools.wizards;
 
 /*
- * TestSuiteTargetPanel.java
+ * TestTypeTemplatePanel.java
  *
  * Created on April 10, 2002, 1:46 PM
  */

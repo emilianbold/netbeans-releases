@@ -14,7 +14,7 @@
 package org.netbeans.modules.testtools.wizards;
 
 /*
- * TestTypeSettingsPanel.java
+ * TestTypeAdvancedSettingsPanel.java
  *
  * Created on April 10, 2002, 1:44 PM
  */
