@@ -181,7 +181,8 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
                     }
             );
             DataObject dobj = PlatformConvertor.create(getPlatform(), DataFolder.findFolder(platformsFolder),systemName);
-            return Collections.singleton(dobj);
+            JavaPlatform platform = (JavaPlatform) dobj.getNodeDelegate().getLookup().lookup(JavaPlatform.class);
+            return Collections.singleton(platform);
         } catch (MutexException me) {
             Exception originalException = me.getException();
             if (originalException instanceof RuntimeException) {

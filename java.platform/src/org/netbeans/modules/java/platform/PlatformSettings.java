@@ -24,6 +24,8 @@ import org.openide.util.NbBundle;
  */
 public class PlatformSettings extends SystemOption {
 
+    static final long serialVersionUID = -4636292603494310012L;
+
     private static PlatformSettings instance;
 
     private static final String PROP_PLATFORMS_FOLDER = "platformsFolder"; //NOI18N
