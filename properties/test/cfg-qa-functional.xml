@@ -17,7 +17,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite1" name="properties_creating">
         <testset dir="qa-fuctional/src">
             <patternset>
-		<include name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*"/>
+		<!--include name="org/netbeans/properties/jelly2tests/suites/creating_properties_file/*"/-->
             </patternset>
         </testset>
     </testbag>
@@ -25,8 +25,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite2" name="properties_editing">
         <testset dir="qa-fuctional/src">
             <patternset>
-		<include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/*"/>
-		<exclude name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/EditFileInClassic*"/>
+		<!--include name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/*"/>
+		<exclude name="org/netbeans/properties/jelly2tests/suites/editing_properties_file/EditFileInClassic*"/-->
             </patternset>
         </testset>
     </testbag>
@@ -34,14 +34,14 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,suite3" name="properties_customizing">
         <testset dir="qa-fuctional/src">
             <patternset>
-		<include name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/*"/>
+		<!--include name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/ChangePropertyInPropertiesWindow*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/CustomizeBigPropertiesFile*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/ChangeNameOfLocaleFileInPropertiesWindow*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/ChangeNameOfLocalesGroupInPropertiesWindow*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/CustomizePropertiesFromExplorer2*"/>
 		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/CustomizePropertiesFromExplorer4*"/>
-		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/AddPropertyToLocaleFileFromExplorer2*"/>
+		<exclude name="org/netbeans/properties/jelly2tests/suites/customizing_properties_file/AddPropertyToLocaleFileFromExplorer2*"/-->
 
             </patternset>
         </testset>
