@@ -117,7 +117,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <target name="all" depends="clean,nbm"/>
 
-    <target name="javadoc" depends="apichanges,xml-apis">
+    <target name="javadoc" depends="xml-apis">
         <copy todir="javadoc">
             <fileset dir=".">
                 <include name="XML-APIs/**"/>
@@ -181,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
                out="doc/doc-files/apichanges.html"
                destdir="doc/doc-files/"
                style="${nbroot}/openide/api/doc/changes/apichanges.xsl"
-        />    
+        />
         <echo message="done"/>
     </target>
 
