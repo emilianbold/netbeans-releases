@@ -138,7 +138,7 @@ public class AntProjectDataLoader extends UniFileLoader {
                 // Unmounted FS; maybe a layer, for example. Skip it.
                 return;
             }
-            if (fs == TopManager.getDefault ().getRepository ().getDefaultFileSystem ()) {
+            if (fs == Repository.getDefault ().getDefaultFileSystem ()) {
                 // SystemFileSystem. Skip it. We do not want .nbattrs
                 // being written all over the user's system folder just because
                 // there happen to be some XML files there.

@@ -104,7 +104,7 @@ public class ServiceTypePanel extends ExplorerPanel {
         }
 
         if (i < 0) {
-            TopManager.getDefault().getErrorManager().log(ErrorManager.INFORMATIONAL, "ServiceTypePanel: Unable to add service " + s.getName()); // NOI18N
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "ServiceTypePanel: Unable to add service " + s.getName()); // NOI18N
             i = 0;
         }
         
@@ -116,7 +116,7 @@ public class ServiceTypePanel extends ExplorerPanel {
                                                         nodes[i]
                                                     });
         } catch (java.beans.PropertyVetoException ex) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
 
         firePropertyChange ();
@@ -173,11 +173,11 @@ public class ServiceTypePanel extends ExplorerPanel {
                     services.add (service);
                 }
             } catch (java.beans.IntrospectionException ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (InstantiationException ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             } catch (IllegalAccessException ex) {
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
             }
         }
         try {
@@ -186,7 +186,7 @@ public class ServiceTypePanel extends ExplorerPanel {
                 services.add (none);
             }
         } catch (java.beans.IntrospectionException ex) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
         return l;
     }

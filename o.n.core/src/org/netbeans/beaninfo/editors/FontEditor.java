@@ -401,7 +401,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         if (font == null) {
             IllegalArgumentException iae = new IllegalArgumentException();
-            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            ErrorManager manager = ErrorManager.getDefault();
             manager.annotate(iae, ErrorManager.EXCEPTION, null, 
                 bundle.getString("MSG_FontIsNotInitialized"), null, null); // NOI18N
             manager.notify(iae);

@@ -101,7 +101,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
             int y = Integer.parseInt (yField.getText ());
             if ((x < 0) || (y < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                TopManager.getDefault().getErrorManager().annotate(
+                ErrorManager.getDefault().annotate(
                     ise, ErrorManager.ERROR, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
@@ -112,7 +112,7 @@ public class PointCustomEditor extends javax.swing.JPanel implements EnhancedCus
                 return new Point (x, y);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            TopManager.getDefault().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 ise, ErrorManager.ERROR, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;

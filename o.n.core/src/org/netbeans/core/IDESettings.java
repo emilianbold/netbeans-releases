@@ -28,6 +28,7 @@ import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataNode;
@@ -368,7 +369,7 @@ public class IDESettings extends SystemOption {
                     Object brow = it.next ();
                     
                     // check if it is not set to be hidden
-                    FileObject fo = TopManager.getDefault ().getRepository ()
+                    FileObject fo = Repository.getDefault ()
                         .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
                     DataFolder folder = DataFolder.findFolder (fo);
                     DataObject [] dobjs = folder.getChildren ();
@@ -408,7 +409,7 @@ public class IDESettings extends SystemOption {
             ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, ex);
         }
         catch (Exception ex) {
-            TopManager.getDefault ().notifyException (ex);
+            ErrorManager.getDefault ().notify (ex);
         }
         return null;
     }
@@ -441,7 +442,7 @@ public class IDESettings extends SystemOption {
             // now the backward compatibility stuff for Radim
             // 
             
-            FileObject fo = TopManager.getDefault ().getRepository ()
+            FileObject fo = Repository.getDefault ()
                 .getDefaultFileSystem ().findResource ("Services/Browsers");   // NOI18N
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();
@@ -468,7 +469,7 @@ public class IDESettings extends SystemOption {
             }
         }
         catch (Exception ex) {
-            TopManager.getDefault ().notifyException (ex);
+            ErrorManager.getDefault ().notify (ex);
         }
     }
 

@@ -74,7 +74,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
             int height = Integer.parseInt (heightField.getText ());
             if ((width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                TopManager.getDefault().getErrorManager().annotate(
+                ErrorManager.getDefault().annotate(
                     ise, ErrorManager.ERROR, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
@@ -82,7 +82,7 @@ public class DimensionCustomEditor extends javax.swing.JPanel implements Enhance
             return new Dimension (width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            TopManager.getDefault().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 ise, ErrorManager.ERROR, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;

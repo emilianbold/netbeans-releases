@@ -83,7 +83,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
             int right = Integer.parseInt (rightField.getText ());
             if ((top < 0) || (left < 0) || (bottom < 0) || (right < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                TopManager.getDefault().getErrorManager().annotate(
+                ErrorManager.getDefault().annotate(
                     ise, ErrorManager.ERROR, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
@@ -91,7 +91,7 @@ public class InsetsCustomEditor extends javax.swing.JPanel implements EnhancedCu
             return new Insets (top, left, bottom, right);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            TopManager.getDefault().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 ise, ErrorManager.ERROR, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;

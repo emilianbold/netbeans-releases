@@ -195,7 +195,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
      */
     static DataFolder findFolder (String root, String name, boolean template) {
         try {
-            FileSystem fs = TopManager.getDefault ().getRepository ().getDefaultFileSystem ();
+            FileSystem fs = Repository.getDefault ().getDefaultFileSystem ();
             if (template) {
                 name = '/' + prefTemplates (root) + name;
             } else {
@@ -217,7 +217,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
             return DataFolder.findFolder (fo);
         } catch (java.io.IOException ex) {
             IllegalStateException e = new IllegalStateException (ex.getMessage ());
-            ErrorManager.getDefault ().copyAnnotation (e, ex);
+            ErrorManager.getDefault ().annotate (e, ex);
             throw e;
         }
     }

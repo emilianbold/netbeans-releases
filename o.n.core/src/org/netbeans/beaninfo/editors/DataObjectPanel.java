@@ -155,10 +155,10 @@ public class DataObjectPanel extends JPanel implements EnhancedCustomPropertyEdi
                 expPanel.getExplorerManager().setSelectedNodes
                 (new Node [] { theNode });
             } catch (PropertyVetoException pve) {
-                TopManager.getDefault().getErrorManager().notify(
+                ErrorManager.getDefault().notify(
                 ErrorManager.INFORMATIONAL, pve);
             } catch (IllegalArgumentException iae) {
-                TopManager.getDefault().getErrorManager().notify(
+                ErrorManager.getDefault().notify(
                 ErrorManager.INFORMATIONAL, iae);
             }
         }

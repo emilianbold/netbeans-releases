@@ -89,7 +89,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
             int height = Integer.parseInt (heightField.getText ());
             if ((x < 0) || (y < 0) || (width < 0) || (height < 0)) {
                 IllegalStateException ise = new IllegalStateException();
-                TopManager.getDefault().getErrorManager().annotate(
+                ErrorManager.getDefault().annotate(
                     ise, ErrorManager.ERROR, null, 
                     bundle.getString("CTL_NegativeSize"), null, null);
                 throw ise;
@@ -97,7 +97,7 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
             return new Rectangle (x, y, width, height);
         } catch (NumberFormatException e) {
             IllegalStateException ise = new IllegalStateException();
-            TopManager.getDefault().getErrorManager().annotate(
+            ErrorManager.getDefault().annotate(
                 ise, ErrorManager.ERROR, null, 
                 bundle.getString("CTL_InvalidValue"), null, null);
             throw ise;

@@ -6,7 +6,7 @@ OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Install: org/apache/tools/ant/module/AntModule.class
 OpenIDE-Module-Layer: org/apache/tools/ant/module/resources/AntModuleLayer.xml
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.javahelp/1 > 1.0
-OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.3
+OpenIDE-Module-IDE-Dependencies: IDE/1 > 2.10
 OpenIDE-Module-Package-Dependencies: [org.apache.tools.ant.Location], [org.apache.xerces.parsers.DOMParser], [org.apache.xml.serialize.EncodingInfo]
 Class-Path: ext/ant-1.4.1.jar ext/ant-optional-1.4.1.jar
 

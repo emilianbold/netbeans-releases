@@ -98,7 +98,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
         if (curDir instanceof File) {
             currentDirectory = (File)curDir;
             if(! currentDirectory.isDirectory()) {
-                TopManager.getDefault().getErrorManager().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + baseDirectory); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept currentDir=" + baseDirectory); // NOI18N
                 currentDirectory = null;
             }
         } // XXX else if != null, warn
@@ -108,7 +108,7 @@ public class FileArrayEditor extends PropertyEditorSupport implements ExProperty
             baseDirectory = (File)baseDir;
             // As baseDir accept only directories in their absolute form.
             if(!baseDirectory.isDirectory() || !baseDirectory.isAbsolute()) {
-                TopManager.getDefault().getErrorManager().log(ErrorManager.WARNING, "java.io.File will not accept baseDir=" + baseDirectory); // NOI18N
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "java.io.File will not accept baseDir=" + baseDirectory); // NOI18N
                 baseDirectory = null;
             }
         } // XXX else if != null, warn

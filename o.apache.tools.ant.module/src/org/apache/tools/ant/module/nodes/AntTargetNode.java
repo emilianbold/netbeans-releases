@@ -71,7 +71,7 @@ public class AntTargetNode extends ElementNode {
                             te.setSwitchWorkspace(true);
                             te.execute();
                         } catch (IOException ioe) {
-                            TopManager.getDefault ().notifyException (ioe);
+                            AntModule.err.notify(ioe);
                         }
                     }
                 });

@@ -20,6 +20,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.openide.ErrorManager;
 import org.openide.TopManager;
 
 
@@ -69,8 +70,8 @@ public class PropertiesEditor extends PropertyEditorSupport {
             prop.load(is);
             setValue(prop);
         } catch(IOException ioe) {
-            throw (IllegalArgumentException)TopManager.getDefault()
-                .getErrorManager().annotate(new IllegalArgumentException(), ioe);
+            throw (IllegalArgumentException)ErrorManager.getDefault()
+                .annotate(new IllegalArgumentException(), ioe);
         }
     }
 

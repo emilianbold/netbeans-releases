@@ -162,11 +162,11 @@ implements ExPropertyEditor, PropertyChangeListener {
                 return;
             }
         } catch (ClassNotFoundException ex) {
-            TopManager.getDefault ().getErrorManager ().notify (
+            ErrorManager.getDefault ().notify (
                 ErrorManager.INFORMATIONAL, ex
             );
         } catch (java.io.IOException ex) {
-            TopManager.getDefault ().getErrorManager ().notify (
+            ErrorManager.getDefault ().notify (
                 ErrorManager.INFORMATIONAL, ex
             );
         }
@@ -301,7 +301,7 @@ implements ExPropertyEditor, PropertyChangeListener {
         try {
             em.setSelectedNodes (new Node[] { node });
         } catch (PropertyVetoException ex) {
-            TopManager.getDefault ().getErrorManager ().notify (ex);
+            ErrorManager.getDefault ().notify (ex);
         }
     }
     

@@ -30,9 +30,9 @@ import javax.help.HelpSetException;
 import javax.help.JHelp;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.util.*;
 import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.WindowManager;
 
 // [PENDING] should event dispatch thread be used thruout?
 
@@ -550,7 +550,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
      */
     private JDialog createProgressDialog(Runnable run, Dialog parent) {
         return (parent == null) ?
-        new ProgressDialog(run, TopManager.getDefault().getWindowManager().getMainWindow()) :
+        new ProgressDialog(run, WindowManager.getDefault().getMainWindow()) :
             new ProgressDialog(run, parent);
     }
     private static final class ProgressDialog extends JDialog implements TaskListener, Runnable {

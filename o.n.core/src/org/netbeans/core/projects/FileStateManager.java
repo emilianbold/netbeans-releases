@@ -136,7 +136,7 @@ final class FileStateManager {
             // ignore, will be handled later
         }
 
-        if (fs == null || !TopManager.getDefault ().getRepository ().getDefaultFileSystem ().equals (fs))
+        if (fs == null || !Repository.getDefault ().getDefaultFileSystem ().equals (fs))
             throw new IllegalArgumentException ("FileObject has to be from DefaultFileSystem - " + mfo);
         
         synchronized (info) {

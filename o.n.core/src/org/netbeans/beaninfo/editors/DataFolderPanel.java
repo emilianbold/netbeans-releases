@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 
 import org.openide.TopManager;
 import org.openide.DialogDescriptor;
+import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
@@ -757,7 +758,7 @@ class DataFolderPanel extends TopComponent implements
                     editor.setDataFolder(null);
                 }
             } catch (IOException ex) {
-                 TopManager.getDefault().notifyException(ex);
+                 ErrorManager.getDefault().notify(ex);
             }
         }
     }
@@ -791,7 +792,7 @@ class DataFolderPanel extends TopComponent implements
                 df = getTargetFolder(true);
                 return df;
             } catch (IOException x) {
-                TopManager.getDefault().notifyException(x);
+                ErrorManager.getDefault().notify(x);
                 throw new IllegalStateException();
             }
         } else {

@@ -17,9 +17,11 @@ import java.beans.*;
 import java.awt.Component;
 import java.util.ArrayList;
 
+import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -46,9 +48,9 @@ public class HtmlBrowser extends Object {
             try {
                 org.openide.awt.HtmlBrowser.Factory f = (org.openide.awt.HtmlBrowser.Factory)getValue ();
                 if (f == null)
-                    return NbBundle.getBundle (FactoryEditor.class).getString ("CTL_UnspecifiedBrowser");
+                    return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser");
                 
-                FileObject fo = TopManager.getDefault ().getRepository ()
+                FileObject fo = Repository.getDefault ()
                 .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
                 DataFolder folder = DataFolder.findFolder (fo);
                 DataObject [] dobjs = folder.getChildren ();
@@ -59,9 +61,9 @@ public class HtmlBrowser extends Object {
                 }
             }
             catch (Exception ex) {
-                TopManager.getDefault ().notifyException (ex);
+                ErrorManager.getDefault ().notify (ex);
             }
-            return NbBundle.getBundle (FactoryEditor.class).getString ("CTL_UnspecifiedBrowser");
+            return NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser");
         }
         
         public boolean supportsCustomEditor () {
@@ -70,11 +72,11 @@ public class HtmlBrowser extends Object {
         
         public void setAsText (java.lang.String str) throws java.lang.IllegalArgumentException {
             try {
-                if (NbBundle.getBundle (FactoryEditor.class).getString ("CTL_UnspecifiedBrowser").equals (str)) {
+                if (NbBundle.getMessage (FactoryEditor.class, "CTL_UnspecifiedBrowser").equals (str)) {
                     setValue (null);
                     return;
                 }
-                FileObject fo = TopManager.getDefault ().getRepository ()
+                FileObject fo = Repository.getDefault ()
                 .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
                 DataFolder folder = DataFolder.findFolder (fo);
                 DataObject [] dobjs = folder.getChildren ();
@@ -87,13 +89,13 @@ public class HtmlBrowser extends Object {
                 }
             }
             catch (Exception ex) {
-                TopManager.getDefault ().notifyException (ex);
+                ErrorManager.getDefault ().notify (ex);
                 return;
             }
         }
         
         public java.lang.String[] getTags () {
-            FileObject fo = TopManager.getDefault ().getRepository ()
+            FileObject fo = Repository.getDefault ()
             .getDefaultFileSystem ().findResource (BROWSER_FOLDER);
             DataFolder folder = DataFolder.findFolder (fo);
             DataObject [] dobjs = folder.getChildren ();

@@ -13,6 +13,7 @@
 
 package org.netbeans.core.projects;
 
+import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.InstanceCookie;
@@ -22,6 +23,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -68,7 +70,7 @@ public final class SettingChildren extends FilterNode.Children {
             }
             DataFolder folder = (DataFolder) node.getCookie (DataFolder.class);
             FileSystem fs = d == null || folder != null ? null : d.getPrimaryFile ().getFileSystem ();
-            filter = fs == null ? false : fs.equals (TopManager.getDefault ().getRepository ().getDefaultFileSystem ());
+            filter = fs == null ? false : fs.equals (Repository.getDefault ().getDefaultFileSystem ());
         } catch (FileStateInvalidException e) {
             // ignore
         }
@@ -189,7 +191,7 @@ public final class SettingChildren extends FilterNode.Children {
                         throw new IllegalArgumentException ("Required file state change isn't allowed. Action=" + action); // NOI18N
                 }
             } catch (java.io.IOException e) {
-                TopManager.getDefault ().notifyException (e);
+                ErrorManager.getDefault ().notify (e);
             }
         }
 

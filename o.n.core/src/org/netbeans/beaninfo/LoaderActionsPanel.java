@@ -17,7 +17,7 @@ import java.awt.Component;
 import java.beans.*;
 import javax.swing.*;
 
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
@@ -337,7 +337,7 @@ public class LoaderActionsPanel extends javax.swing.JPanel implements EnhancedCu
             } catch (RuntimeException re) {
                 // May happen if actions are misconfigured, bogus icons, etc.
                 // So best to recover semigracefully.
-                TopManager.getDefault ().notifyException (re);
+                ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, re);
             }
         } else {
             label.setText (NbBundle.getBundle(LoaderActionsPanel.class).getString("LBL_separator_rather_than_action"));

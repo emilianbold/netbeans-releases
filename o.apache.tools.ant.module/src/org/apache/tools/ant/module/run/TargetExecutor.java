@@ -26,8 +26,7 @@ import org.openide.awt.Actions;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
 import org.openide.util.*;
-import org.openide.windows.InputOutput;
-import org.openide.windows.Workspace;
+import org.openide.windows.*;
 
 import org.w3c.dom.Element;
 
@@ -130,7 +129,7 @@ public class TargetExecutor implements Runnable {
             if (switchWorkspace) {
                 Mutex.EVENT.readAccess(new Mutex.Action() {
                     public Object run() {
-                        Workspace w = TopManager.getDefault().getWindowManager().
+                        Workspace w = WindowManager.getDefault().
                             findWorkspace(ExecuteAction.getWorkspace());
                         if (w != null) {
                             w.activate();

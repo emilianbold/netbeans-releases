@@ -855,7 +855,7 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
     public org.w3c.dom.Node storeToXML(org.w3c.dom.Document doc) {
         if (color == null) {
             IllegalArgumentException iae = new IllegalArgumentException();
-            ErrorManager manager = TopManager.getDefault().getErrorManager();
+            ErrorManager manager = ErrorManager.getDefault();
             manager.annotate(iae, ErrorManager.EXCEPTION, null, 
                 getString("MSG_ColorIsNotInitialized"), null, null); // NOI18N
             manager.notify(iae);

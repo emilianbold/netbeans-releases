@@ -35,6 +35,7 @@ import java.awt.Dimension;
 import org.openide.TopManager;
 import javax.swing.KeyStroke;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.Repository;
 import java.io.OutputStream;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
@@ -109,7 +110,7 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
     public Set instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
         //dumpContents ();
         if (showing (PROP_SHOW_KEYB)) {
-            FileObject shortcutsFolder = TopManager.getDefault ().getRepository ().getDefaultFileSystem ().findResource ("Shortcuts"); // NOI18N
+            FileObject shortcutsFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Shortcuts"); // NOI18N
             KeyStroke stroke = (KeyStroke) wiz.getProperty (PROP_STROKE);
             create (DataFolder.findFolder (shortcutsFolder), Utilities.keyToString (stroke));
         }

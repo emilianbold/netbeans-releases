@@ -20,7 +20,6 @@ import java.io.ObjectInputStream;
 import java.util.*;
 
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileSystem; // override java.io.FileSystem
 import org.openide.modules.ModuleInstall;
@@ -33,7 +32,7 @@ public class AntModule extends ModuleInstall {
 
     private static final long serialVersionUID = -8877465721852434693L;
 
-    public static final ErrorManager err = TopManager.getDefault ().getErrorManager ().getInstance ("org.apache.tools.ant.module"); // NOI18N
+    public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.apache.tools.ant.module"); // NOI18N
     
     /*
     public void restored () {
