@@ -390,7 +390,9 @@ public class Property {
                     if(this.property == (Node.Property)table.getValueAt(row, 1)) {
                         // Need to request focus before selection because invokeCustomEditor action works
                         // only when table is focused
+                        table.makeComponentVisible();
                         table.requestFocus();
+                        table.waitHasFocus();
                         // need to select property first
                         ((javax.swing.JTable)table.getSource()).changeSelection(row, 0, false, false);
                         // find action
