@@ -42,6 +42,7 @@ public class SetSystemPropertiesAction extends WizardAction {
         //String msg = resolveString("$L(com.sun.installer.InstallerResources,INIT_PROPS_MSG)");
         //state.setStatusDescription(msg);
         checkStorageBuilder();
+        setDesktopIconName();
         setAdminProperties();
         
         //It is used to create file 'nb4.1/config/productid'
@@ -61,7 +62,27 @@ public class SetSystemPropertiesAction extends WizardAction {
             }
         }
     }
-
+    
+    private void setDesktopIconName () {
+        if (Util.isWindowsOS()) {
+            try {
+                String name = resolveString("$L(org.netbeans.installer.Bundle,Product.desktopIconName)");
+                logEvent(this, Log.DBG,"Set Desktop Icon Name: " + name);
+                ProductService service = (ProductService) getService(ProductService.NAME);
+                service.setRetainedProductBeanProperty
+                (ProductService.DEFAULT_PRODUCT_SOURCE, "desktopicon", "name", name);
+                
+                String folder = resolveString("$L(org.netbeans.installer.Bundle,Product.programsMenuFolderName)");
+                logEvent(this, Log.DBG,"Set Programs Menu Folder Name: " + folder);
+                service.setRetainedProductBeanProperty
+                (ProductService.DEFAULT_PRODUCT_SOURCE, "programsmenu", "folder", folder);
+            } catch (ServiceException ex) {
+                ex.printStackTrace();
+                Util.logStackTrace(this,ex);
+            }
+        }
+    }
+    
     private void setAdminProperties () {
         try {
             boolean isAdmin;

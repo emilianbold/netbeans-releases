@@ -288,15 +288,15 @@ public class PostInstallFixupAction extends ProductAction {
     
     public void deleteFiles(String dir, String[] fileNames) {
         for (int i=0; i< fileNames.length; i++) {
-            if (fileNames[i] == null)  //array bigger than num objs in array.
+            if (fileNames[i] == null) { //array bigger than num objs in array.
                 return;
+            }
             String filename =dir + sep + fileNames[i];
             try {
                 if (fileService.fileExists(filename)) {
                     logEvent(this, Log.DBG, "deleting " + filename);
                     fileService.deleteFile(filename);
-                }
-                else {
+                } else {
                     logEvent(this, Log.DBG, "cannot find " + filename);
                 }
             }
@@ -311,8 +311,9 @@ public class PostInstallFixupAction extends ProductAction {
     void installGnomeIcon() {
         java.io.File appdir = new java.io.File(GNOMEAPPDIR);
         
-        if (!appdir.exists())
+        if (!appdir.exists()) {
             return;
+        }
         
         try {
             String icondir = null;
@@ -327,16 +328,21 @@ public class PostInstallFixupAction extends ProductAction {
                 icondir = desktopdir;
             }
             
-            String iconfile = icondir + sep + "netbeans.desktop";
+            String iconfile = icondir + sep
+            + resolveString("$L(org.netbeans.installer.Bundle,Product.desktopFileName)");
             
             fileService.copyFile(nbInstallDir + sep + "netbeans.desktop", iconfile, true);
             
             String[] content = fileService.readAsciiFile(iconfile);
-            if (content == null )
+            if (content == null) {
                 return;
-            
+            }
+            String desktopIconName = resolveString("$L(org.netbeans.installer.Bundle,Product.desktopIconName)");
+            String productName = resolveString("$L(org.netbeans.installer.Bundle,Product.displayName)");
             for (int i = 0; i < content.length; i++) {
                 content[i] = content[i].replaceAll("@absoluteInstallLocation@", nbInstallDir);
+                content[i] = content[i].replaceAll("@desktopIconName@", desktopIconName);
+                content[i] = content[i].replaceAll("@productName@", productName);
             }
             
             fileService.updateAsciiFile(iconfile, content, 0);
@@ -344,12 +350,13 @@ public class PostInstallFixupAction extends ProductAction {
             logEvent(this, Log.ERROR, ex);
         }
     }
-
+    
     void uninstallGnomeIcon() {
         java.io.File appdir = new java.io.File(GNOMEAPPDIR);
         
-        if (!appdir.exists())
+        if (!appdir.exists()) {
             return;
+        }
         
         try {
             String icondir = null;
@@ -360,7 +367,8 @@ public class PostInstallFixupAction extends ProductAction {
                 icondir = resolveString("$D(home)$J(file.separator)Desktop");
             }
             
-            String iconfile = icondir + sep + "netbeans.desktop";
+            String iconfile = icondir + sep
+            + resolveString("$L(org.netbeans.installer.Bundle,Product.desktopFileName)");
             
             if (fileService.fileExists(iconfile)) {
                 fileService.deleteFile(iconfile);

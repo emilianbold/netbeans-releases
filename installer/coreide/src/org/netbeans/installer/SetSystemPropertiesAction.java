@@ -36,6 +36,7 @@ public class SetSystemPropertiesAction extends WizardAction {
     
     public void execute(WizardBeanEvent evt) {
         checkStorageBuilder();
+        setDesktopIconName();
     }
     
     private void checkStorageBuilder () {
@@ -46,6 +47,26 @@ public class SetSystemPropertiesAction extends WizardAction {
                 service.setRetainedProductBeanProperty
                 (ProductService.DEFAULT_PRODUCT_SOURCE, "storageBuilder", "active", Boolean.FALSE);
             } catch(ServiceException ex) {
+                ex.printStackTrace();
+                Util.logStackTrace(this,ex);
+            }
+        }
+    }
+    
+    private void setDesktopIconName () {
+        if (Util.isWindowsOS()) {
+            try {
+                String name = resolveString("$L(org.netbeans.installer.Bundle,Product.desktopIconName)");
+                logEvent(this, Log.DBG,"Set Desktop Icon Name: " + name);
+                ProductService service = (ProductService) getService(ProductService.NAME);
+                service.setRetainedProductBeanProperty
+                (ProductService.DEFAULT_PRODUCT_SOURCE, "desktopicon", "name", name);
+                
+                String folder = resolveString("$L(org.netbeans.installer.Bundle,Product.programsMenuFolderName)");
+                logEvent(this, Log.DBG,"Set Programs Menu Folder Name: " + folder);
+                service.setRetainedProductBeanProperty
+                (ProductService.DEFAULT_PRODUCT_SOURCE, "programsmenu", "folder", folder);
+            } catch (ServiceException ex) {
                 ex.printStackTrace();
                 Util.logStackTrace(this,ex);
             }
