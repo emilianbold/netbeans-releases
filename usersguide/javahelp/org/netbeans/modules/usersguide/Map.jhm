@@ -18,6 +18,7 @@
 <mapID target="gs.key" url="getstart/keyconcepts.html" />
 <mapID target="gs.tutorials" url="getstart/tutorials.html" />
 
+<!--begin Projects section-->
 <mapID target="proj_about" url="project/proj_about.html" />
 <mapID target="proj_creating" url="project/proj_creating.html" />
 <mapID target="proj_main" url="project/proj_main.html" />
@@ -69,8 +70,8 @@
 
 <mapID target="gui.events.managing" url="gui/gui_manageevents.html" />
 <mapID target="gui.connectionwizard" url="gui/gui_connectionwizard.html" />
+<mapID target="gui.mdi" url="gui/gui_mdi.html" />
 
-<!--<mapID target="gui.mdi" url="gui/gui_mdi.html" />-->
 <!--gui.configuring is also CSH ID for Options | Editing | Form Editor Settings :-->
 <mapID target="gui.configuring" url="gui/gui_configuring.html" />
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
@@ -362,34 +363,39 @@ the Options window:-->
 <!-- New Wizard templates page :-->
 <mapID target="org.netbeans.modules.project.ui.TemplatesPanel" url="project/csh/proj_wiz.html" />
 
-<!-- New J2SE lib, J2SE app, and J2SE project from existing sources :-->
+<!-- New J2SE app Project wizard:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="project/csh/proj_j2se-standapp_wiz.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2se-standclasslib_wiz.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexist_wiz.html" />
 
-<!-- Freeform J2SE and Web Project wizards :-->
+<!-- New J2SE class library Project wizard:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="project/csh/proj_j2se-standclasslib_wiz.html" />
+
+<!-- New J2SE project from existing sources Project wizard:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="project/csh/proj_j2seexistsrc_wiz1.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders" url="project/csh/proj_j2seexistsrc_wiz2.html" />
+
+<!-- Freeform J2SE and Web Project wizards:-->
 <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="project/csh/proj_j2sefree_wiz1.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="project/csh/proj_j2sefree_wiz2.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersWizardPanel" url="project/csh/proj_j2sefree_wiz3.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathWizardPanel" url="project/csh/proj_j2sefree_wiz4.html" />
 <mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsWizardPanel" url="project/csh/proj_j2sefree_wiz5.html" />
 
-<!-- Standard J2SE Project Properties dialog:-->
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerGeneral" url="project/csh/proj_j2sestand_props1.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_props2.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompileTest" url="project/csh/proj_j2sestand_props3.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_props4.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_props5.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_props6.html" />
-<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRunTest" url="project/csh/proj_j2sestand_props7.html" />
+<!-- NEW Standard J2SE Project Properties dialog:-->
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="project/csh/proj_j2sestand_sources.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="project/csh/proj_j2sestand_libraries.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="project/csh/proj_j2sestand_compiling.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="project/csh/proj_j2sestand_packaging.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="project/csh/proj_j2sestand_documenting.html" />
+<mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="project/csh/proj_j2sestand_run.html" />
 
-<!-- Freeform J2SE and Web Project Properties dialog:-->
-<mapID target="org.netbeans.modules.ant.freeform.ui.GeneralPanel" url="project/csh/proj_j2sefree_props1.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props2.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props3.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props4.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props5.html" />
-<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_props6.html" />
+<!-- NEW Freeform J2SE and Web Project Properties dialog:-->
+<mapID target="org.netbeans.modules.ant.freeform.ui.SourceFoldersPanel" url="project/csh/proj_j2sefree_props_sources.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.ClasspathPanel" url="project/csh/proj_j2sefree_props_classpath.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.OutputPanel" url="project/csh/proj_j2sefree_props_output.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="project/csh/proj_j2sefree_props_buildrun.html" />
+<mapID target="org.netbeans.modules.ant.freeform.ui.WebLocationsPanel" url="project/csh/proj_j2sefree_props_websources.html" />
+
+
 
 <!-- Add Libraries dialog box (from Project Properties -> Compiling Classes:-->
 <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser" url="pending.html" />
