@@ -17,8 +17,19 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Editor Test Application's Tests -->
     
     <!-- Validation tests-->
-    
-    <testbag testattribs="all,validation,full,apps" name="TestApplication">
+   <testbag testattribs="validation" name="TestApplication">
+         <testset dir="qa-functional/src">
+             <patternset>
+               <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Find*"/>
+               <include name="org/netbeans/test/editor/suites/keyboard_shortcuts/Replace*"/>
+               <include name="org/netbeans/test/editor/suites/smart_enter/SmartEnter*"/>
+
+             </patternset>
+         </testset>
+     </testbag>
+
+ 
+    <testbag testattribs="all,full,apps" name="TestApplication">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
@@ -31,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     </testbag>
         
     <!-- Code completion Validation tests: -->
-    <testbag testattribs="all,validation,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
+    <testbag testattribs="all,full,completion" name="Completion-Validation" compiler="qa-functional-compiler-completion" >
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
@@ -141,7 +152,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- Programmatic indentation tests: -->
     
-    <testbag testattribs="all,validation,full" name="indentation-programmatic">
+    <testbag testattribs="all,full" name="indentation-programmatic">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/indentation/programmatic/*Performer.class"/>
@@ -159,7 +170,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="all,full,validation,focus" name="FocusTests">
+    <testbag testattribs="all,full,focus" name="FocusTests">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/focus/FocusTestPerformer.class"/>            
@@ -170,7 +181,7 @@ Microsystems, Inc. All Rights Reserved.
             
     <!-- Key bindings tests -->
     
-    <testbag testattribs="all,full,validation" name="KeyBindings-Actions">
+    <testbag testattribs="all,full" name="KeyBindings-Actions">
         <testset dir="qa-functional/src">
             <patternset>            
                 <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
