@@ -353,7 +353,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 final boolean doWrite = this.doWrite;
                 this.doWrite = false;
                 if (doWrite) {
-                    System.out.println("*** save *********************************");
                     try {
                         editor.save(generateDocumentFromModel());
                     } catch (IOException e) {

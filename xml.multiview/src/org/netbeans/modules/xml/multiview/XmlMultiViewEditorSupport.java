@@ -155,7 +155,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
     }
 
     public void save(String s) throws IOException {
-        System.out.println(s);
         notifyUnmodified();
         final OutputStream outputStream = ((Env) env).outputStream();
         outputStream.write(s.getBytes());
