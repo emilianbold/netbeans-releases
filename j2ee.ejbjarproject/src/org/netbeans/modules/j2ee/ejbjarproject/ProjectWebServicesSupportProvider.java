@@ -31,20 +31,20 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
  * @author Peter Williams
  */
 public class ProjectWebServicesSupportProvider implements WebServicesSupportProvider{ //, WebServicesClientSupportProvider {
-	
-	public ProjectWebServicesSupportProvider () {
-	}
-	
-	public WebServicesSupport findWebServicesSupport (FileObject file) {
+
+    public ProjectWebServicesSupportProvider () {
+    }
+
+    public WebServicesSupport findWebServicesSupport (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
             EjbJarProject ejbproject = (EjbJarProject) project;
 
-	    // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
-	    // e.g. from exploring a WAR file for example.
-	    if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
-                return ejbproject.getAPIWebServicesSupport();
-	    }
+            // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
+            // e.g. from exploring a WAR file for example.
+            if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
+                    return ejbproject.getAPIWebServicesSupport();
+            }
 
             // TODO: ma154696: This is just quick fix for multiple source roots, is it OK?
             FileObject[] sourceRoots = ejbproject.getSourceRoots().getRoots();
@@ -54,33 +54,32 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
                     return ejbproject.getAPIWebServicesSupport();
                 }
             }
-            
-            /* FIX-ME: do we need this?
-            FileObject web = wp.getWebModule ().getDocumentBase ();
-            if (web != null && (web.equals (file) || FileUtil.isParentOf (web, file))) {
-                return wp.getAPIWebServicesSupport();
+
+            FileObject metaInf = ejbproject.getEjbModule().getMetaInf();
+            if(metaInf != null && (metaInf.equals (file) || FileUtil.isParentOf (metaInf, file))) {
+                return ejbproject.getAPIWebServicesSupport();
             }
-            */
+
             FileObject build = ejbproject.getEjbModule().getBuildDirectory();
             if (build != null && (build.equals (file) || FileUtil.isParentOf (build, file))) {
                 return ejbproject.getAPIWebServicesSupport();
             }
         }
         return null;
-	}
-        
-	/*  FIX-ME: web service client not yet implemented in EJB module
-	public WebServicesClientSupport findWebServicesClientSupport (FileObject file) {
+    }
+
+    /*  FIX-ME: web service client not yet implemented in EJB module
+    public WebServicesClientSupport findWebServicesClientSupport (FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
             EjbJarProject ejbproject = (EjbJarProject) project;
-			
-	    // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
-	    // e.g. from exploring a WAR file for example.
-	    if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
-                return ejbproject.getAPIWebServicesClientSupport();
-	    }
-			
+
+            // !PW FileUtil.toFile(file) can return null if the FileObject passed in is abstract,
+            // e.g. from exploring a WAR file for example.
+            if(FileUtil.toFile(ejbproject.getProjectDirectory()).equals(FileUtil.toFile(file))) {
+                    return ejbproject.getAPIWebServicesClientSupport();
+            }
+
             FileObject src = ejbproject.getSourceDirectory();
             if (src != null && (src.equals (file) || FileUtil.isParentOf (src, file))) {
                 return ejbproject.getAPIWebServicesClientSupport();
@@ -96,6 +95,6 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
             }
         }
         return null;
-	}
-	*/
+    }
+    */
 }

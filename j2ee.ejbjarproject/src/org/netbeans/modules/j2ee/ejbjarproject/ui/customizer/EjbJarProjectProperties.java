@@ -135,7 +135,7 @@ public class EjbJarProjectProperties {
     
     private static final String TAG_EJB_MODULE__ADDITIONAL_LIBRARIES = "ejb-module-additional-libraries"; //NOI18N
 
-    private static final PropertyParser STRING_PARSER = new StringParser();
+    static final PropertyParser STRING_PARSER = new StringParser();
     private static final BooleanParser BOOLEAN_PARSER = new BooleanParser();
     private static final InverseBooleanParser INVERSE_BOOLEAN_PARSER = new InverseBooleanParser();
     private static final PathParser PATH_PARSER = new PathParser();
@@ -247,7 +247,7 @@ public class EjbJarProjectProperties {
 //        } 
 
         PropertyInfo pi = (PropertyInfo)properties.get( propertyName );
-        return pi.getValue();
+        return pi == null ? null : pi.getValue();
     }
     
     public boolean isModified( String propertyName ) {
@@ -332,6 +332,10 @@ public class EjbJarProjectProperties {
         }
     }
     
+    void initProperty(final String propertyName, final PropertyInfo propertyInfo) {
+        properties.put(propertyName, propertyInfo);
+    }
+
     /** Transforms all the Objects from GUI controls into String Ant 
      * properties and stores them in the project
      */    
@@ -504,30 +508,30 @@ public class EjbJarProjectProperties {
         }
     }
         
-    private class PropertyInfo {
+    class PropertyInfo {
         
-        private PropertyDescriptor propertyDesciptor;
+        private PropertyDescriptor propertyDescriptor;
         private String rawValue;
         private String evaluatedValue;
         private Object value;
         private Object newValue;
         private String newValueEncoded;
         
-        public PropertyInfo( PropertyDescriptor propertyDesciptor, String rawValue, String evaluatedValue ) {
-            this.propertyDesciptor = propertyDesciptor;
+        public PropertyInfo( PropertyDescriptor propertyDescriptor, String rawValue, String evaluatedValue ) {
+            this.propertyDescriptor = propertyDescriptor;
             this.rawValue = rawValue;
             this.evaluatedValue = evaluatedValue;
-            this.value = propertyDesciptor.parser.decode( rawValue, project, antProjectHelper, evaluator, refHelper );
+            this.value = propertyDescriptor.parser.decode( rawValue, project, antProjectHelper, evaluator, refHelper );
             this.newValue = null;
         }
         
         public PropertyDescriptor getPropertyDescriptor() {
-            return propertyDesciptor;
+            return propertyDescriptor;
         }
         
         public void encode() {            
             if ( isModified() ) {
-                newValueEncoded = propertyDesciptor.parser.encode( newValue, project, antProjectHelper, refHelper);                
+                newValueEncoded = propertyDescriptor.parser.encode( newValue, project, antProjectHelper, refHelper);                
             }
             else {
                 newValueEncoded = null;
@@ -555,7 +559,7 @@ public class EjbJarProjectProperties {
         }
     }
     
-    private static class PropertyDescriptor {
+    static class PropertyDescriptor {
         
         final PropertyParser parser;
         final String name;
