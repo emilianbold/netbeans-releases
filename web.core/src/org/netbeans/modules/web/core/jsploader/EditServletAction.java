@@ -60,6 +60,7 @@ public class EditServletAction extends CookieAction {
         for (int i = 0; i < activatedNodes.length; i++) {
             JspDataObject jspdo = (JspDataObject)activatedNodes[i].getCookie(JspDataObject.class);
             if (jspdo != null) {
+                jspdo.refreshPlugin(true);
                 EditorCookie cook = jspdo.getServletEditor();
                 if (cook != null)
                     return true;
@@ -104,4 +105,9 @@ public class EditServletAction extends CookieAction {
             }
         }
     }
+    
+    protected boolean asynchronous() {
+        return false;
+    }
+    
 }

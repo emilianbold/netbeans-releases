@@ -325,10 +325,16 @@ public class JspCompileUtil {
     static FileObject getAsRootOfFileSystem(File intendedRoot) {
         // synchronize on our private lock
         synchronized (repositoryJobLock) {
+            /*
+            FileObject fos[] = FileUtil.fromFile(intendedRoot);
+            if (fos.length > 0) {
+                return fos[0];
+            }
+            */
             // try to find it among current filesystems
             for (Enumeration en = Repository.getDefault().getFileSystems(); en.hasMoreElements(); ) {
                 FileSystem fs = (FileSystem)en.nextElement();
-                File root = NbClassPath.toFile(fs.getRoot());
+                File root = FileUtil.toFile(fs.getRoot());
                 if (root != null) {
                     if (root.equals(intendedRoot))
                         return fs.getRoot();
@@ -366,6 +372,7 @@ public class JspCompileUtil {
             return newFs.getRoot();
         }
     }
+    
 
     /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
     *  @param relativeTo url to which the relative URL is related. Treated as directory iff

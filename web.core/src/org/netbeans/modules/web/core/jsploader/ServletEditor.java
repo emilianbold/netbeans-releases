@@ -25,6 +25,7 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
 import javax.swing.Timer;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
@@ -46,6 +47,9 @@ import org.openide.util.actions.SystemAction;
 import org.openide.cookies.SourceCookie;
 
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.util.WeakListeners;
  
 /*
 /** Editor for servlet files generated from JSP files. Main features:
@@ -57,7 +61,7 @@ import org.netbeans.modules.java.JavaDataObject;
  * @author Petr Jiricka, Yury Kamen
  */
 public class ServletEditor extends CloneableEditorSupport 
-    implements EditorCookie.Observable, CloseCookie, PrintCookie {
+    implements EditorCookie.Observable, CloseCookie, PrintCookie, PropertyChangeListener {
 
     /** Gets the lineset. Returns our lineset, which is a hack because the APIs don't handle dataobjects well. */
     public Line.Set getLineSet() {
@@ -69,6 +73,7 @@ public class ServletEditor extends CloneableEditorSupport
      */
     public ServletEditor(JspDataObject jspdo) {
         super(new JspEnv(jspdo));
+        jspdo.addPropertyChangeListener(WeakListeners.propertyChange(this, jspdo));
     }
     
     protected CloneableEditor createCloneableEditor () {
@@ -176,6 +181,40 @@ public class ServletEditor extends CloneableEditorSupport
         return getServlet().getPrimaryEntry();
     }
 
+    /** Let's the super method create the document and also annotates it
+     * with Title and StreamDescription properities.
+     *
+     * @param kit kit to user to create the document
+     * @return the document annotated by the properties
+     */
+    protected StyledDocument createStyledDocument(EditorKit kit) {
+        StyledDocument doc = super.createStyledDocument(kit);
+        
+        setDocumentProperties(doc);
+        
+        return doc;
+    }
+    
+    /** Sets the correct properties of the given StyledDocument
+     */
+    void setDocumentProperties(Document doc) {
+        DataObject obj = getServlet();
+        if (obj != null) {
+            // set document name property
+            doc.putProperty(javax.swing.text.Document.TitleProperty, obj.getPrimaryFile().getPath());
+            // set dataobject to stream desc property
+            doc.putProperty(javax.swing.text.Document.StreamDescriptionProperty, obj);
+        }
+    }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(JspDataObject.PROP_SERVLET_DATAOBJECT)) {
+            StyledDocument doc = getDocument();
+            if (doc != null) {
+                setDocumentProperties(doc);
+            }
+        }
+    }    
 
     public static class ServletEditorComponent extends CloneableEditor {
 
@@ -346,13 +385,15 @@ public class ServletEditor extends CloneableEditorSupport
 
     } // JspServletEditorComponent
     
-    private static class JspEnv implements CloneableEditorSupport.Env,
+    private static class JspEnv extends FileChangeAdapter implements CloneableEditorSupport.Env,
         java.io.Serializable, PropertyChangeListener {
             
         private static final long serialVersionUID = -5748207023470614141L;
         
         /** JSP page for which we are displaying the servlets. */
         protected JspDataObject jspdo;
+        
+        private DataObject servlet;
         
         /** support for firing of property changes
         */
@@ -361,6 +402,22 @@ public class ServletEditor extends CloneableEditorSupport
         public JspEnv(JspDataObject jspdo) {
             this.jspdo = jspdo;
             init();
+        }
+        
+        private DataObject getServlet() {
+            synchronized (jspdo) {
+                DataObject newServlet = jspdo.getServletDataObject();
+                if (servlet != newServlet) {
+                    if (servlet != null) {
+                        servlet.getPrimaryFile().removeFileChangeListener(this);
+                    }
+                    if (newServlet != null) {
+                        newServlet.getPrimaryFile().addFileChangeListener(this);
+                    }
+                    servlet = newServlet;
+                }
+                return servlet;
+            }
         }
         
         private void readObject (ObjectInputStream ois)
@@ -379,7 +436,7 @@ public class ServletEditor extends CloneableEditorSupport
         
         public void propertyChange(PropertyChangeEvent ev) {
             if (JspDataObject.PROP_SERVLET_DATAOBJECT.equals (ev.getPropertyName())) {
-                DataObject servlet = jspdo.getServletDataObject();
+                DataObject servlet = getServlet();
                 if (servlet == null) {
                     firePropertyChange(PROP_VALID, Boolean.TRUE, Boolean.FALSE);
                 }
@@ -421,7 +478,7 @@ public class ServletEditor extends CloneableEditorSupport
         * @exception IOException if an I/O error occures
         */
         public InputStream inputStream () throws IOException {
-            DataObject servlet = jspdo.getServletDataObject();
+            DataObject servlet = getServlet();
             if (servlet != null)
                 return servlet.getPrimaryFile().getInputStream();
             else
@@ -439,7 +496,7 @@ public class ServletEditor extends CloneableEditorSupport
         /** The time when the data has been modified
         */
         public Date getTime () {
-            /*DataObject servlet = jspdo.getServletDataObject();
+            /*DataObject servlet = getServlet();
             if (servlet != null)
                 return servlet.getPrimaryFile().lastModified();
             else*/
@@ -479,7 +536,7 @@ public class ServletEditor extends CloneableEditorSupport
         * @return true or false depending on its state
         */
         public boolean isValid () {
-            DataObject servlet = jspdo.getServletDataObject();
+            DataObject servlet = getServlet();
             return (servlet != null);
         }
         /** Test whether the object is modified or not.
@@ -510,5 +567,23 @@ public class ServletEditor extends CloneableEditorSupport
         public CloneableOpenSupport findCloneableOpenSupport () {
             return (CloneableOpenSupport)jspdo.getServletEditor();
         }
+        
+        // methods from FileChangeAdapter
+
+        /** Handles <code>FileObject</code> deletion event. */
+        public void fileDeleted(FileEvent fe) {
+            fe.getFile().removeFileChangeListener(this);
+            
+            jspdo.refreshPlugin(true);
+        }
+        
+        /** Fired when a file is changed.
+         * @param fe the event describing context where action has taken place
+         */
+        public void fileChanged(FileEvent fe) {
+            firePropertyChange(PROP_TIME, null, null);
+        }
+        
+        
     }
 }

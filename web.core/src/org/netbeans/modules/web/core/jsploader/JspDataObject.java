@@ -170,12 +170,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         return Boolean.valueOf(System.getProperty("netbeans.jspcompile.shouldparse", "true")).booleanValue();
     }
 
-    public boolean isUpToDate() {
-        if (getServletDataObject() == null)
-            return false;
-        return !getPlugin().isOutDated();
-    }
-    
     public synchronized CompileData getPlugin() {
         if (compileData == null) {
             if ( firstStart ) {
@@ -439,11 +433,12 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
                 servletDataObject = null;
         }
         catch (IOException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             servletDataObject = null;
         }
 
         // editor
-        if ((oldServlet == null)&&(servletDataObject != null)) {
+        if ((oldServlet == null)/*&&(servletDataObject != null)*/) {
         } else {
             RequestProcessor.postRequest(
                 new Runnable() {
@@ -515,47 +510,7 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     * getPlugin() is synchronized.
     */
     private FileObject updateServletFileObject() throws IOException {
-        String servletFileName = compileData.getCurrentServletFileName();
-	if(debug) System.out.println("upd::servletFileName = " + servletFileName); // NOI18N
-        if (servletFileName == null)
-            return null;
-        // now the physical servlet file should exist
-        FileObject servletFo = null;
-        int dotIndex = servletFileName.lastIndexOf('.');
-	if(debug) {
-	    System.out.println("upd::dotIndex = " + dotIndex); // NOI18N
-	    System.out.println("upd::servletDir = " + // NOI18N
-			       compileData.getServletDirectory());
-	}
-	
-        for (int i=0; i<2; i++) {  // try this twice, with refresh between attempts in case of failure
-            if (dotIndex == -1) {
-                servletFo = compileData.getServletDirectory().getFileObject(servletFileName, "java"); // NOI18N
-            }
-            else {
-                servletFo = compileData.getServletDirectory().getFileObject(servletFileName.substring(0, dotIndex),
-                            servletFileName.substring(dotIndex + 1));
-            }
-            // now find out whether we succeeded, if not, retry
-            // failure is if the servlet is either null or outdated
-            if (needsRefresh(servletFo)) {
-                if (debug) {
-                    System.out.println("upd::looking for servlet FO: attempting the second time"); // NOI18N
-                    System.out.println("upd::refreshing " + NbClassPath.toFile(compileData.getServletDirectory())); // NOI18N
-                }
-                if (servletFo != null)
-                    servletFo.refresh();
-                else
-                    compileData.getServletDirectory().refresh();
-            }
-            else {
-                if (debug)
-                    System.out.println("upd::looking for servlet FO: found on the first attempt"); // NOI18N
-                break; // exit the for loop
-            }
-        } // end of the for() cycle
-	if(debug) System.out.println("upd::servletFo = " + servletFo); // NOI18N
-        return servletFo;
+        return compileData.getServletFileObject();
     }
     
     /* Determines whether the FileObject representing the generated servlet

@@ -13,6 +13,9 @@
 
 package org.netbeans.modules.web.core.jsploader;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.text.MessageFormat;
@@ -28,6 +31,8 @@ import org.openide.text.Line;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.compiler.Compiler;
+import org.openide.compiler.CompilerJob;
 
 /** Dataobject representing a servlet generated from a JSP page
 *
@@ -39,17 +44,16 @@ public class JspServletDataObject extends JavaDataObject {
 
     private transient ServletEditorCookie servletEditor;
     
+    private static final CompilerCookie.Build NULL_BUILD   = NullCompiler.INSTANCE;
+    private static final CompilerCookie.Build NULL_COMPILE = NullCompiler.INSTANCE;
+    private static final CompilerCookie.Build NULL_CLEAN   = NullCompiler.INSTANCE;
+    
     /**
      * Helper object that handles execution bits for us. Lazy initialized from
      * {@link #getExecDebugCookie}.
      */
     private transient JspServletExecSupport jspServletExecSupport;
     
-    private transient JspServletCompilerSupport compile;
-    private transient JspServletCompilerSupport clean;
-    private transient JspServletCompilerSupport build;
-    
-
     /** New instance.
     * @param pf primary file object for this data object
     */
@@ -79,14 +83,17 @@ public class JspServletDataObject extends JavaDataObject {
             if (servletEditor != null)
                 return servletEditor;
         }
-        if (c.isAssignableFrom(JspServletCompilerSupport.Build.class)) {
-            return getCompilerCookie(c);
+        if (c.isAssignableFrom(CompilerSupport.Build.class)) {
+            // need to return non-null because of JavaDataObject.checkUpToDate()
+            return NULL_BUILD;
         } 
-        if (c.isAssignableFrom(JspServletCompilerSupport.Compile.class)) {
-            return getCompilerCookie(c);
+        if (c.isAssignableFrom(CompilerSupport.Compile.class)) {
+            // need to return non-null because of JavaDataObject.checkUpToDate()
+            return NULL_COMPILE;
         } 
-        if (c.isAssignableFrom(JspServletCompilerSupport.Clean.class)) {
-            return getCompilerCookie(c);
+        if (c.isAssignableFrom(CompilerSupport.Clean.class)) {
+            // need to return non-null because of JavaDataObject.checkUpToDate()
+            return NULL_CLEAN;
         } 
 	// all execution-related services -> getExecSupport
         if (c.isAssignableFrom(JspServletExecSupport.class)) {
@@ -96,32 +103,6 @@ public class JspServletDataObject extends JavaDataObject {
     }
 
     private void init() {
-    }
-
-    private CompilerCookie getCompilerCookie(Class klass) {
-        DataObject sourceJsp = getSourceJspPage();
-        if (sourceJsp == null)
-            return null;
-        if (CompilerCookie.class.isAssignableFrom(klass)) {
-            if (CompilerCookie.Build.class.isAssignableFrom(klass)) {
-                if (build == null) {
-                    build = new JspServletCompilerSupport.Build(sourceJsp);
-                }
-                return build;
-            } else if (CompilerCookie.Clean.class.isAssignableFrom(klass)) {
-                if (clean == null) {
-                    clean = new JspServletCompilerSupport.Clean(sourceJsp);
-                }
-                return clean;
-            } else {
-                // ASSERT (klass == CompilerCookie.Compile.class)
-                if (compile == null) {
-                    compile = new JspServletCompilerSupport.Compile(sourceJsp);
-                }
-                return compile;
-            }
-        } 
-        return null;
     }
 
     /**
@@ -138,9 +119,6 @@ public class JspServletDataObject extends JavaDataObject {
     }
     
     private void changeCookies() {
-        compile = null;
-        clean = null;
-        build = null;
         jspServletExecSupport = null;
     }
 
@@ -200,18 +178,50 @@ public class JspServletDataObject extends JavaDataObject {
         }
         return null;
     }
+    
+    private static class NullCompiler implements CompilerCookie.Build, CompilerCookie.Clean, CompilerCookie.Compile {
+        
+        public static final NullCompiler INSTANCE = new NullCompiler();
+        
+        public void addToJob(CompilerJob job, Compiler.Depth depth) {
+        }
+        
+        public boolean isDepthSupported(Compiler.Depth depth) {
+            return true;
+        }
+        
+    }
 
-    private static class ServletEditorCookie implements EditorCookie {
+    private static class ServletEditorCookie implements EditorCookie.Observable, PropertyChangeListener {
         
         private EditorCookie original;
         private JspServletDataObject servlet;
+        private EditorCookie currentEditor;
+        private PropertyChangeSupport pcs;
         
         public ServletEditorCookie(EditorCookie original, JspServletDataObject servlet) {
             this.original = original;
             this.servlet = servlet;
+            pcs = new PropertyChangeSupport(this);
         }
 
         private EditorCookie currentEditorCookie() {
+            EditorCookie newCurrent = computeCurrentEditorCookie();
+            if (currentEditor != newCurrent) {
+                // re-register a property change listener to the new editor
+                if ((currentEditor != null) && (currentEditor instanceof EditorCookie.Observable)) {
+                    ((EditorCookie.Observable)currentEditor).removePropertyChangeListener(this);
+                }
+                if ((newCurrent != null) && (newCurrent instanceof EditorCookie.Observable)) {
+                    ((EditorCookie.Observable)newCurrent).addPropertyChangeListener(this);
+                }
+                // remember the new editor
+                currentEditor = newCurrent;
+            }
+            return currentEditor;
+        }
+        
+        private EditorCookie computeCurrentEditorCookie() {
             DataObject jsp = servlet.getSourceJspPage();
             if ((jsp != null) && (jsp instanceof JspDataObject)) {
                 if (((JspDataObject)jsp).getServletDataObject() == servlet) {
@@ -260,6 +270,22 @@ public class JspServletDataObject extends JavaDataObject {
             return currentEditorCookie().getOpenedPanes();
         }
 
+        // implementation of EditorSupport.Observable
+        
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            pcs.addPropertyChangeListener(l);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            pcs.removePropertyChangeListener(l);
+        }
+        
+        // implementation of PropertyChangeListener
+        
+        public void propertyChange(PropertyChangeEvent evt) {
+            pcs.firePropertyChange(evt);
+        }
+        
     }
 
 }

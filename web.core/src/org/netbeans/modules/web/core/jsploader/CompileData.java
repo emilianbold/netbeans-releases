@@ -15,13 +15,16 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
-import org.netbeans.modules.j2ee.server.datamodel.WebStandardData;
-import org.netbeans.modules.j2ee.server.web.FfjJspCompileContext;
 import org.netbeans.modules.j2ee.server.ServerInstance;
+import org.netbeans.modules.web.context.WebContextObject;
+import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 /** Data related to compilation attached to one JSP page.
  *  Basically a copy of the data retrieved from the compilation plugin.
@@ -35,59 +38,173 @@ import org.openide.filesystems.*;
 public class CompileData {
 
     private JspDataObject jspPage;
+    private FileObject docRoot;
     private ServerInstance serverInstance;
-    //private FileObject classesDirectory
-    private FileObject servletDirectory;
-    //private String futureServletClassName, currentServletClassName;
-    //private String targetClassFileName;
-    //private String packageName;
-    private boolean outDated;
     private String servletEncoding;
-    private Vector additionalClassPath;
-    private String servletClassName;
-    private String realServletClassName;
-    private String servletFileName;
-    private String servletFileNameWithoutPackage;
     
     private final static boolean debug = false;
+    
+    private File servletJavaRoot;
+    private String servletResourceName;
      
 
     /** Creates new CompileData */
     public CompileData(JspDataObject jspPage) {
         this.jspPage = jspPage;
-        FileObject jspFileObject = jspPage.getPrimaryFile();
-        WebStandardData.WebResource res = JspCompileUtil.getResourceData(jspFileObject);
-        if (res == null) return; // IZ: 36034
-        WebStandardData.WebJsp jspData = (WebStandardData.WebJsp)res;  // this should be ok
+        this.docRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
+        //FileObject jspFileObject = jspPage.getPrimaryFile();
         serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
-        FfjJspCompileContext comp = JspCompileUtil.getCurrentCompileContext(jspPage);
-        if (comp != null) {
-            // the plugin supports compilation
-            FfjJspCompileContext.DevelopmentCompilation dev = 
-                comp.getDevelopmentCompilation(jspData);
-
-            // now fill the data
-            outDated = dev.isOutDated();
-            servletEncoding = dev.getServletEncoding();
-            servletClassName = comp.getServletClassName(jspData);
-            if (comp instanceof ExCompileContext) {
-                realServletClassName = ((ExCompileContext)comp).getRealClassName(jspData);
-            }
-            else {
-                realServletClassName = servletClassName;
-            }
-            servletFileName = dev.getServletFileName();
-            additionalClassPath = computeAdditionalClassPath(dev.getAdditionalClassPath());
-            if (servletFileName != null) {
-                try {
-                    computeServletData();
+        servletJavaRoot = getServletJavaRootFromServer();
+        servletResourceName = getServletResourceNameFromServer();
+        servletEncoding = getServletEncodingFromServer();
+    }
+    
+    public FileObject getServletJavaRoot() {
+        if ((servletJavaRoot != null) && servletJavaRoot.exists()) {
+            return JspCompileUtil.getAsRootOfFileSystem(servletJavaRoot);
+        }
+        else {
+            return null;
+        }
+    }
+    
+    public String getServletResourceName() {
+        return servletResourceName;
+    }
+    
+    private File getServletFile() {
+        if (servletJavaRoot == null) {
+            return null;
+        }
+        URI rootURI = servletJavaRoot.toURI();
+        URI servletURI = rootURI.resolve(servletResourceName);
+        return new File(servletURI);
+    }
+    
+    public FileObject getServletFileObject() {
+        FileObject root = getServletJavaRoot();
+        if (root == null) {
+            return null;
+        }
+        File servlet = getServletFile();
+        if ((servlet == null) || !servlet.exists()) {
+            return null;
+        }
+        FileObject fo[] = FileUtil.fromFile(servlet);
+        // get a fileobject from the same FS as the root
+        try {
+            FileSystem rootFs = root.getFileSystem();
+            for (int i = 0; i < fo.length; i++) {
+                if (fo[i].getFileSystem() == rootFs) {
+                    return fo[i];
                 }
-                catch (IOException e) {
-                    // pending
-                    e.printStackTrace();
+            }
+            // not found, needs refresh
+            root.getFileSystem().refresh(false);
+            return JspCompileUtil.findRelativeResource(root, getServletResourceName());
+        }
+        catch (FileStateInvalidException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        }
+        return null;
+    }
+    
+    /** Returns the Java resource root from the server.
+     * For now just hardcoded for Tomcat 5, but needs 
+     * to be changed to talk to the plugin through the server integration API.
+     */
+    private File getServletJavaRootFromServer() {
+        // PENDING - Tomcat specific
+        File catalinaBase = getCatalinaBase();
+        if (catalinaBase == null) {
+            return null;
+        }
+        File hostBase = new File(catalinaBase, "work/Tomcat-Internal/localhost".replace('/', File.separatorChar));
+        File workDir = new File(hostBase, getContextRootString());
+        //System.out.println("returning servlet root " + workDir);
+        return workDir;
+    }
+    
+    /** PENDING - remove this, as this is Tomcat-specific.
+     */
+    private File getCatalinaBase() {
+        Class siClass = serverInstance.getClass();
+        if (siClass.getName().equals("org.netbeans.modules.tomcat.tomcat40.Tomcat40Instance")) {
+            try {
+                // this is Tomcat
+                java.lang.reflect.Method getInst = siClass.getMethod("getInstallation", new Class[0]);
+                Object inst = getInst.invoke(serverInstance, new Object[0]);
+                Class instClass = inst.getClass();
+                java.lang.reflect.Method baseMethod = instClass.getMethod("getBaseDirectory", new Class[0]);
+                File baseDirFile = (File)baseMethod.invoke(inst, new Object[0]);
+                if (baseDirFile != null) {
+                    return baseDirFile;
                 }
+                java.lang.reflect.Method homeMethod = instClass.getMethod("getHomeDirectory", new Class[0]);
+                baseDirFile = (File)homeMethod.invoke(inst, new Object[0]);
+                return baseDirFile;
+            }
+            catch (NoSuchMethodException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            catch (IllegalAccessException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+            catch (java.lang.reflect.InvocationTargetException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
             }
         }
+        return null;
+    }
+        
+    /** Finds the context path used by this JSP during deployment.
+     */
+    private String getContextPath() {
+        try {
+            FileObject contextRoot = JspCompileUtil.getContextRoot(jspPage.getPrimaryFile());
+            WebContextObject wco = (WebContextObject)DataObject.find(contextRoot);
+            return wco.getURIParameter();
+        }
+        catch (DataObjectNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            // an ugly fallback
+            return "";
+        }
+    }
+    
+    /** PENDING - remove this, as this is Tomcat-specific.
+     */
+    private String getContextRootString() {
+        String contextRootPath = getContextPath();
+        if (contextRootPath.startsWith("/")) {
+            contextRootPath = contextRootPath.substring(1);
+        }
+        if (contextRootPath.equals("")) {
+            return "_";
+        }
+        else {
+            return contextRootPath;
+        }
+    }
+    
+    /** Returns the resource name of the servlet relative to the base Java root from the server.
+     * For now just hardcoded for Tomcat 5, but needs
+     * to be changed to talk to the plugin through the server integration API.
+     */
+    private String getServletResourceNameFromServer() {
+        // PENDING - Tomcat specific
+        String jspPath = JspCompileUtil.findRelativePath(docRoot, jspPage.getPrimaryFile());
+        int lastDot = jspPath.lastIndexOf('.');
+        return jspPath.substring(0, lastDot) + "$jsp.java";
+    }
+
+    /** Returns the encoding of the servlet from the server.
+     * For now just hardcoded for Tomcat 5, but needs
+     * to be changed to talk to the plugin through the server integration API.
+     */
+    private String getServletEncodingFromServer() {
+        // PENDING - Tomcat specific
+        return "UTF8"; // NOI18N
     }
     
     /** Returns server instance for which this CompileData was created. */
@@ -95,96 +212,9 @@ public class CompileData {
         return serverInstance;
     }
     
-    /** Returns servlet directory for the servlet (including any subpackage directories). */
-    public FileObject getServletDirectory() {
-        return servletDirectory;
-    }
-
-    /** Returns whether the JSP page is outdated */
-    public boolean isOutDated() {
-        return outDated;
-    }
-    
-    /** Returns additional classpath for JSP compilation as an enumeration of Files. */
-    public Vector getAdditionalClassPath() {
-        return additionalClassPath;
-    }
-
-    /** Returns a name of the servlet with extension without package.
-    * Null if does not exist.
-    */
-    public String getCurrentServletFileName() {
-        return servletFileNameWithoutPackage;
-    }
-    
-    public String getCurrentServletClassName() {
-        return servletClassName;
-    }
-    
-    public String getRealServletClassName() {
-        return realServletClassName;
-    }
-    
     /** Returns encoding for the servlet generated from the JSP. */
     public String getServletEncoding() {
         return servletEncoding;
-    }
-    
-    private Vector computeAdditionalClassPath(String classpath) {
-        if (debug)
-            System.out.println("---additional CP---"); // NOI18N
-        Vector v = new Vector();
-        StringTokenizer st = new StringTokenizer(classpath, "" + File.pathSeparatorChar); // NOI18N
-        for (;st.hasMoreTokens();) {
-            File f = new File(st.nextToken());
-            if (debug)
-                System.out.println("plugin returned " + f); // NOI18N
-            v.add(f);
-        }
-        return v;
-    }
-    
-    /** Computes the servlet location in IDE terms, e.g. servlet FileObject. */
-    private void computeServletData() throws IOException {
-        // first determine the root of the servlet package hierarchy
-        // from the servlet file and its class name
-        File serv = new File(servletFileName).getAbsoluteFile();
-        String servName = serv.getAbsolutePath();
-        // compute the servletFileNameWithoutPackage
-        int lastSep = servName.lastIndexOf(File.separatorChar);
-        if (lastSep != -1) {
-            servletFileNameWithoutPackage = servName.substring(lastSep + 1);
-        }
-        else {
-            servletFileNameWithoutPackage = servName;
-        }
-        // compare the file name with the package name
-        int lastDot = servName.lastIndexOf('.');
-        if (lastDot != -1) {
-            servName = servName.substring(0, lastDot);
-        }
-        String classNameFS = servletClassName.replace('.', File.separatorChar);
-        // now servName should end with classNameFs
-        if (servName.endsWith(classNameFS)) {
-            servName = servName.substring(0, servName.length() - classNameFS.length());
-            // now servName contains the package directory root
-            FileObject rootFO = JspCompileUtil.getAsRootOfFileSystem(new File(servName));
-            // find the package name
-	    if(debug) {
-		System.err.println("servletClassName"); // NOI18N
-		System.err.println(servletClassName);
-	    }
-	    
-            lastDot = servletClassName.lastIndexOf('.');
-	    if(debug) System.err.println(lastDot);
-            if (lastDot != -1) {
-                String packageNameSl = servletClassName.substring(0, lastDot).replace('.','/');
-                servletDirectory = FileUtil.createFolder(rootFO, packageNameSl);
-            }
-            else {
-                servletDirectory = rootFO;
-            }
-        }
     }
     
     public String toString() {
@@ -195,21 +225,14 @@ public class CompileData {
         sb.append("\n"); // NOI18N
         sb.append("JSP page        : " + jspPage.getPrimaryFile().getPackageNameExt('/','.')); // NOI18N
         sb.append("\n"); // NOI18N
-        sb.append("servletFile     : " + servletFileName + ", exists= " +  // NOI18N
-            ((servletFileName == null) ? "false" : "" + new File(servletFileName).exists())); // NOI18N
+        sb.append("servletJavaRoot : " + servletJavaRoot + ", exists= " +  // NOI18N
+            ((servletJavaRoot == null) ? "false" : "" + servletJavaRoot.exists())); // NOI18N
         sb.append("\n"); // NOI18N
-        sb.append("servletClass    : " + servletClassName); // NOI18N
+        sb.append("servletResource : " + servletResourceName + ", fileobject exists= " +  // NOI18N
+            (getServletFileObject() != null)); // NOI18N
         sb.append("\n"); // NOI18N
-        sb.append("realServletClass: " + realServletClassName); // NOI18N
-        sb.append("\n"); // NOI18N
-        sb.append("encoding        : " + servletEncoding); // NOI18N
-        sb.append("\n"); // NOI18N
-        sb.append("servletDir (FO) : " +  // NOI18N
-            ((servletDirectory == null) ? "null" : servletDirectory.getPackageName('/'))); // NOI18N
-        sb.append("\n"); // NOI18N
-        sb.append("servlet W/O Pkg : " + servletFileNameWithoutPackage); // NOI18N
-        sb.append("\n"); // NOI18N
-        sb.append("outdated        : " + outDated); // NOI18N
+        sb.append("servletFile : " + getServletFile().getAbsolutePath() + ", exists= " +  // NOI18N
+            getServletFile().exists()); // NOI18N
         sb.append("\n"); // NOI18N
         sb.append("--end COMPILE DATA--"); // NOI18N
         return sb.toString();
