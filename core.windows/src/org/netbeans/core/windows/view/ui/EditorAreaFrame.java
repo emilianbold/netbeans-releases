@@ -36,6 +36,7 @@ public class EditorAreaFrame extends JFrame {
         super(NbBundle.getMessage(EditorAreaFrame.class, "LBL_EditorAreaFrameTitle"));
         
         setIconImage(MainWindow.createIDEImage());
+        
     }
     
     
@@ -54,5 +55,27 @@ public class EditorAreaFrame extends JFrame {
             getContentPane().add(component);
         }
     }
+
+    private long timeStamp = 0; 
+    
+    public void setUserStamp(long stamp) {
+        timeStamp = stamp;
+    }
+    
+    public long getUserStamp() {
+        return timeStamp;
+    }
+    
+    private long mainWindowStamp = 0;
+    
+    public void setMainWindowStamp(long stamp) {
+        mainWindowStamp = stamp;
+    }
+    
+    public long getMainWindowStamp() {
+        return mainWindowStamp;
+    }
+    
+    
     
 }

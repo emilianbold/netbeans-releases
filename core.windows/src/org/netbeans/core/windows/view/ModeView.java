@@ -71,7 +71,16 @@ public class ModeView extends ViewElement {
     
     
     public void setFrameState(int frameState) {
+     // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
         this.frameState = frameState;
+        Component comp = container.getComponent();
+        if(comp instanceof Frame) {
+            if ((frameState & Frame.ICONIFIED) == Frame.ICONIFIED) {
+                timeStamp = System.currentTimeMillis();
+            } else {
+                timeStamp = 0;
+            }
+        }
     }
 
     
@@ -137,6 +146,25 @@ public class ModeView extends ViewElement {
         }
     }
     
+    private long timeStamp = 0; 
+    
+    public void setUserStamp(long stamp) {
+        timeStamp = stamp;
+    }
+    
+    public long getUserStamp() {
+        return timeStamp;
+    }
+    
+    private long mainWindowStamp = 0;
+    
+    public void setMainWindowStamp(long stamp) {
+        mainWindowStamp = stamp;
+    }
+    
+    public long getMainWindowStamp() {
+        return mainWindowStamp;
+    }
     
     public String toString() {
         TopComponent selected = container.getSelectedTopComponent();

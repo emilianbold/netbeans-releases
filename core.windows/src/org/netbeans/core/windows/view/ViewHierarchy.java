@@ -43,6 +43,7 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.netbeans.core.windows.view.ui.EditorAreaFrame;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.openide.ErrorManager;
 
 import org.openide.windows.TopComponent;
 
@@ -234,6 +235,7 @@ final class ViewHierarchy {
         
         throw new IllegalStateException("Unknown accessor type, accessor=" + patternAccessor); // NOI18N
     }
+    
     
     private void updateSeparateViews(ModeAccessor[] separateModeAccessors) {
         Map newViews = new HashMap();
@@ -652,7 +654,19 @@ final class ViewHierarchy {
         
         frame.addWindowStateListener(new WindowStateListener() {
             public void windowStateChanged(WindowEvent evt) {
-                controller.userChangedFrameStateEditorArea(evt.getNewState());
+     // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
+                long currentStamp = System.currentTimeMillis();
+                if (currentStamp > (frame.getUserStamp() + 500) && currentStamp > (frame.getMainWindowStamp() + 1000)) {
+                    controller.userChangedFrameStateEditorArea(evt.getNewState());
+                    long stamp = System.currentTimeMillis();
+                    frame.setUserStamp(stamp);
+                } else {
+                    frame.setUserStamp(0);
+                    frame.setMainWindowStamp(0);
+                    frame.setExtendedState(evt.getOldState());
+                    //frame.setExtendedState(evt.getOldState());
+                }
+                
             }
         });
         
@@ -784,15 +798,32 @@ final class ViewHierarchy {
     }
 
     private void changeStateOfSeparateViews(boolean iconify) {
+     // All the timestamping is a a workaround beause of buggy GNOME and of its kind who iconify the windows on leaving the desktop.
+        long mainStamp = System.currentTimeMillis();
         if(editorAreaFrame != null) {
+            if (iconify) {
+                if (mainStamp < (editorAreaFrame.getUserStamp() + 500)) {
+                    int newState = editorAreaFrame.getExtendedState() &  ~Frame.ICONIFIED;
+                    controller.userChangedFrameStateEditorArea(newState);
+                    editorAreaFrame.setExtendedState(newState);
+                }
+            }
+            editorAreaFrame.setMainWindowStamp(mainStamp);
             editorAreaFrame.setVisible(!iconify);
         }
-
         for(Iterator it = separateModeViews.keySet().iterator(); it.hasNext(); ) {
             ModeView mv = (ModeView)it.next();
             Component comp = mv.getComponent();
             if(comp instanceof Frame) {
                 Frame fr = (Frame)comp;
+                if (iconify) {
+                    if (mainStamp < (mv.getUserStamp() + 500)) {
+                        int newState = fr.getExtendedState() &  ~Frame.ICONIFIED;
+                        controller.userChangedFrameStateMode(mv,  newState);
+                        mv.setFrameState(newState);
+                    }
+                }
+                mv.setMainWindowStamp(mainStamp);
                 fr.setVisible(!iconify);
             }
         }
