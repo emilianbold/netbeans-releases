@@ -19,16 +19,16 @@
     DriverName = "DefaultDriver";
     get_Catalog = true;
     get_Schema = true;
-    
+
     getTables_TableNamePattern = null;
     getTables_Types = true;
-    
+
     getProcedures_ProcedureNamePattern = null;
-    
+
 //    getPrimaryKeys_Table = true;
 
 //    getExportedKeys_Table = true;
-    
+
 //    getIndexInfo_Table = true;
     getIndexInfo_Unique = true;
     getIndexInfo_Approximate = false;
@@ -39,26 +39,34 @@
 //    getProcedureColumns_ProcedureSchemaPattern = true;
     getProcedureColumns_ColumnNamePattern = null;
   };
-  
+
 // ****************************************************
 // Cloudscape Embedded JDBC Driver
 // ****************************************************
   "Cloudscape Embedded JDBC Driver" = {
     DriverName = "Cloudscape Embedded JDBC Driver";
-  };  
+  };
 
 // ****************************************************
 // InstantDB JDBC Driver
 // ****************************************************
   "InstantDB JDBC Driver" = {
     DriverName = "InstantDB JDBC Driver";
-  };  
-  
+  };
+
 // ****************************************************
 // MS SQLServer - Sprinta JDBC driver
 // ****************************************************
   "Sprinta JDBC driver" = {
     DriverName = "Sprinta JDBC driver";
+    get_Schema = null;
+  };
+
+// ****************************************************
+// MS SQLServer - weblogic.jdbc.mssqlserver4.Driver
+// ****************************************************
+  "weblogic.jdbc.mssqlserver4.Driver" = {
+    DriverName = "weblogic.jdbc.mssqlserver4.Driver";
     get_Schema = null;
   };
 
@@ -69,14 +77,14 @@
     DriverName = "JDBC-ODBC Bridge (myodbc.dll)";
     get_Schema = null;
   };
-  
+
 // ****************************************************
 // MySQL Mark Matthews' Driver
 // ****************************************************
   "Mark Matthews' MySQL Driver" = {
     DriverName = "Mark Matthews' MySQL Driver";
   };
-  
+
 // ****************************************************
 // Oracle JDBC driver
 // ****************************************************
@@ -97,14 +105,14 @@
   "JDBC-ODBC Bridge (msorcl32.dll)" = {
     DriverName = "JDBC-ODBC Bridge (msorcl32.dll)";
   };
-  
+
 // ****************************************************
 // PointBase JDBC driver
 // ****************************************************
   "PointBase JDBC Driver" = {
     DriverName = "PointBase JDBC Driver";
   };
-  
+
 // ****************************************************
 // Sybase JDBC-ODBC bridge
 // ****************************************************
@@ -112,7 +120,7 @@
     DriverName = "JDBC-ODBC Bridge (DBODBC6W.DLL)";
     getIndexInfo_Unique = false;
   };
-  
+
 // ****************************************************
 // Sybase jConnect driver
 // ****************************************************
