@@ -760,8 +760,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
 ]]></echo>
 
     </target>
-    
-    
+
     <!-- support for testing under main trunk version of the ide -->
     <target name="test-single" >
         <tempfile property="temp.file" />
@@ -777,6 +776,11 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
         <ant dir="test" inheritall="true" >
             <property name="xtest.attribs" value="empty" />
         </ant>
+    </target>
+    
+    <!-- be able to execute all unit tests -->
+    <target name="test" >
+        <ant dir="test" />
     </target>
 
 </project>
