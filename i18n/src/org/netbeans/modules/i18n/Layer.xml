@@ -29,7 +29,7 @@ Microsystems, Inc. All Rights Reserved.
   
     <folder name="Services">
         <!-- I18N Settings -->
-        <file name="i18n_settings.settings">
+        <file name="org-netbeans-modules-i18n-I18nOptions.settings">
             <![CDATA[<?xml version="1.0"?>
                 <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                 <settings version="1.0">
@@ -47,7 +47,7 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- Locale External Execution -->
         <folder name="Executor">
-            <file name="locale_external_execution.settings">
+            <file name="org-netbeans-modules-i18n-LocaleExecutor.settings">
                 <![CDATA[<?xml version="1.0"?>
                     <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                     <settings version="1.0">
@@ -68,7 +68,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Services">
             <folder name="Executor">
-                <file name="locale_external_execution.xml">
+                <file name="org-netbeans-modules-i18n-LocaleExecutor.settings">
                     <![CDATA[<?xml version="1.0"?>
                         <!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
                         <settings version="1.0">
