@@ -328,6 +328,7 @@ public class DirectoryChooserPanel extends WizardPanel // implements ActionListe
             support.putResourceBundles(ProductResourcesConst.NAME);
             support.putClass(org.netbeans.installer.DirectoryChooserPanel.class.getName());
             support.putClass(org.netbeans.installer.DirectoryChooserPanelSwingImpl.class.getName());
+            support.putClass("org.netbeans.installer.DirectoryChooserPanelSwingImpl$1");
             support.putClass(org.netbeans.installer.DestinationItem.class.getName());
         } 
         catch (java.io.IOException e) {
