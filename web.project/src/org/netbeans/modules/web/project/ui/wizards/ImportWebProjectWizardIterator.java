@@ -174,6 +174,7 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             }
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent)c;
+                jc.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(ImportWebProjectWizardIterator.class, "TXT_WebExtSources")); // NOI18N
                 // Step #.
                 jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
                 // Step name (actually the whole list for reference).
@@ -379,9 +380,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
             // this name is used in NewProjectWizard to modify the title
             Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
-            if (substitute != null) {
+            if (substitute != null)
                 wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); //NOI18N
-            }
         }
         
         public void storeSettings (Object settings) {
@@ -545,6 +545,12 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
         
         public void readSettings (Object settings) {
             presetSecondPanel(moduleLoc);
+            
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+            // this name is used in NewProjectWizard to modify the title
+            Object substitute = ((JComponent) panel).getClientProperty("NewProjectWizard_Title"); //NOI18N
+            if (substitute != null)
+                ((WizardDescriptor) settings).putProperty("NewProjectWizard_Title", substitute); //NOI18N
         }
         
         public void storeSettings (Object settings) {
@@ -553,6 +559,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             d.putProperty(WizardProperties.DOC_BASE, panel.jTextFieldWebPages.getText().trim());
             d.putProperty(WizardProperties.JAVA_ROOT, panel.jTextFieldJavaSources.getText().trim());
             d.putProperty(WizardProperties.LIB_FOLDER, panel.jTextFieldLibraries.getText().trim());
+            
+            d.putProperty("NewProjectWizard_Title", null); //NOI18N
         }
         
         private void presetSecondPanel(String sourceRoot) {
