@@ -29,7 +29,7 @@ public class ImageViewer extends javax.swing.JFrame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
         desktop = new javax.swing.JDesktopPane();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        mainMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         openMenuItem = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
@@ -42,9 +42,15 @@ public class ImageViewer extends javax.swing.JFrame {
             }
         });
 
+        getAccessibleContext().setAccessibleName("Image Viewer Frame");
         getContentPane().add(desktop, java.awt.BorderLayout.CENTER);
+        desktop.getAccessibleContext().setAccessibleName("Image Desktop");
+        desktop.getAccessibleContext().setAccessibleDescription("Image desktop");
 
+        fileMenu.setMnemonic('f');
         fileMenu.setText("File");
+        openMenuItem.setMnemonic('o');
+        openMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openMenuItem.setText("Open");
         openMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -53,7 +59,12 @@ public class ImageViewer extends javax.swing.JFrame {
         });
 
         fileMenu.add(openMenuItem);
+        openMenuItem.getAccessibleContext().setAccessibleName("Open Menu Item");
+        openMenuItem.getAccessibleContext().setAccessibleDescription("Open menu item.");
+
         fileMenu.add(jSeparator1);
+
+        exitMenuItem.setMnemonic('x');
         exitMenuItem.setText("Exit");
         exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -62,8 +73,16 @@ public class ImageViewer extends javax.swing.JFrame {
         });
 
         fileMenu.add(exitMenuItem);
-        jMenuBar1.add(fileMenu);
-        setJMenuBar(jMenuBar1);
+        exitMenuItem.getAccessibleContext().setAccessibleName("Exit Menu Item");
+        exitMenuItem.getAccessibleContext().setAccessibleDescription("Exit menu item.");
+
+        mainMenuBar.add(fileMenu);
+        fileMenu.getAccessibleContext().setAccessibleName("File Menu");
+        fileMenu.getAccessibleContext().setAccessibleDescription("File menu.");
+
+        setJMenuBar(mainMenuBar);
+        mainMenuBar.getAccessibleContext().setAccessibleName("Main Menu Bar");
+        mainMenuBar.getAccessibleContext().setAccessibleDescription("Main menu bar.");
 
     }//GEN-END:initComponents
 
@@ -74,15 +93,19 @@ public class ImageViewer extends javax.swing.JFrame {
 
     private void openMenuItemActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openMenuItemActionPerformed
         // Add your handling code here:
-        java.awt.FileDialog fd = new java.awt.FileDialog (this);
-        fd.show ();
-        if (fd.getFile () == null) return;
-        ImageFrame ifr = new ImageFrame (fd.getDirectory () + fd.getFile ());
-        desktop.add (ifr, javax.swing.JLayeredPane.DEFAULT_LAYER);
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.addChoosableFileFilter(new ImageFileFilter());
+        int option = chooser.showOpenDialog(this);
+        if (option == javax.swing.JFileChooser.APPROVE_OPTION) {
+            java.io.File file = chooser.getSelectedFile();
+            if (file == null) return;
+            ImageFrame ifr = new ImageFrame (file.getAbsolutePath());
+            desktop.add (ifr, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        ifr.setVisible( true );
-        ifr.setSize (200, 200);
-        ifr.setLocation (0, 0);
+            ifr.setVisible( true );
+            ifr.setSize (200, 200);
+            ifr.setLocation (0, 0);
+        }
     }//GEN-LAST:event_openMenuItemActionPerformed
 
     /** Exit the Application */
@@ -96,14 +119,30 @@ public class ImageViewer extends javax.swing.JFrame {
     public static void main (String args[]) {
         new ImageViewer ().show ();
     }
+    
+    /** Define custom file filter for acceptable image files.
+     */
+    private static class ImageFileFilter extends javax.swing.filechooser.FileFilter {
+        
+        public boolean accept(java.io.File file) {
+            if (file == null)
+                return false;
+            return file.isDirectory() || file.getName().toLowerCase().endsWith(".gif") || file.getName().toLowerCase().endsWith(".jpg");
+        }
+        
+        public String getDescription() {
+            return "Image files (*.gif, *.jpg)";
+        }
+        
+    }
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuBar mainMenuBar;
     private javax.swing.JDesktopPane desktop;
     private javax.swing.JMenuItem exitMenuItem;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem openMenuItem;
     // End of variables declaration//GEN-END:variables
 

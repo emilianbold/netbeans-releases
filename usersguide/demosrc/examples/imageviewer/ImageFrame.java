@@ -34,7 +34,11 @@ public class ImageFrame extends javax.swing.JInternalFrame {
         setIconifiable(true);
         setResizable(true);
         setClosable(true);
+        getAccessibleContext().setAccessibleName("Image Internal Frame");
+        getAccessibleContext().setAccessibleDescription("Image internal frame.");
         jScrollPane1.setViewportView(imageLabel);
+        imageLabel.getAccessibleContext().setAccessibleName("Image Label");
+        imageLabel.getAccessibleContext().setAccessibleDescription("Image label.");
 
         getContentPane().add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
