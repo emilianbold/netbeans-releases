@@ -6,6 +6,7 @@
     <folder name="Browsers">
       <file name="Simple External Browser.ser" url="SimpleExtBrowser.ser"/>
       <file name="External Web Browser.ser" url="ExtWebBrowser.ser"/>
+      <attr name="IceBrowser.ser/External Web Browser.ser" boolvalue="true"/>
     </folder>
   </folder>
 
