@@ -14,13 +14,11 @@
 
 package org.netbeans.modules.i18n;
 
-import org.openide.cookies.EditCookie;
-
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.CookieAction;
+import org.openide.util.actions.NodeAction;
 import org.netbeans.api.project.FileOwnerQuery;
 
 
@@ -32,7 +30,7 @@ import org.netbeans.api.project.FileOwnerQuery;
  * @author   Petr Jiricka
  * @see I18nManager
  */
-public class I18nAction extends CookieAction {
+public class I18nAction extends NodeAction {
 
     /** Generated sreial version UID. */
     static final long serialVersionUID =3322896507302889271L;
@@ -43,21 +41,21 @@ public class I18nAction extends CookieAction {
      * @param activatedNodes Currently activated nodes.
      */
     protected void performAction(final Node[] activatedNodes) {
-        // Gets editor cookie.
-        EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
-        
-        if(editorCookie == null) 
+        if (activatedNodes.length == 0)
             return;
 
-//        //!!! #23904 hack
-//        if (editorCookie.getClass().getName().endsWith("FormEditorSupport")) {
-//            ((EditCookie)editorCookie).edit();
-//        } else {            
-            editorCookie.open(); 
-//        }
-        
-        DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-	
+        DataObject dataObject = (DataObject) activatedNodes[0].getCookie(DataObject.class);
+        if (dataObject == null)
+            return;
+
+        EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+        if (editorCookie == null) {
+            editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            if (editorCookie == null)
+                return;
+        }
+
+        editorCookie.open(); 
         I18nManager.getDefault().internationalize(dataObject);
     }
 
@@ -65,41 +63,33 @@ public class I18nAction extends CookieAction {
         return false;
     }
 
-    /** Implements superclass abstract method.
-     * @return MODE_EXACTLY_ONE.
-     */
-    protected int mode() {
-        return MODE_EXACTLY_ONE;
-    }
-
-    /** Implemenst superclass abstract method.
-     * @return <code>EditorCookie<code>.class 
-     * #see org.openide.cookies.EditorCookie */
-    protected Class[] cookieClasses () {
-        return new Class[] {
-            EditorCookie.class // Has documents.
-        };
-    }
-
     /** Overrides superclass method. Adds additional test if i18n module has registered factory
      * for this data object to be able to perform i18n action. */
     protected boolean enable(Node[] activatedNodes) {    
-        if(!super.enable(activatedNodes))
+        if (activatedNodes.length == 0)
             return false;
-        
+
         DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-        
-        if(dataObject == null || dataObject.getPrimaryFile() == null)
+        if (dataObject == null || dataObject.getPrimaryFile() == null)
             return false;
-        
-        if (!FactoryRegistry.hasFactory(dataObject.getClass())) return false;
+
+        EditorCookie editorCookie = (EditorCookie)activatedNodes[0].getCookie(EditorCookie.class);
+        if (editorCookie == null) {
+            editorCookie = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+            if (editorCookie == null)
+                return false;
+        }
+
+        if (!FactoryRegistry.hasFactory(dataObject.getClass()))
+            return false;
 
 	// check that the node has project
-	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) return false;
+	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null)
+            return false;
 
 	return true;
     }
-    
+
     /** Gets localized name of action. Overrides superclass method. */
     public String getName() {
         return I18nUtil.getBundle().getString("CTL_I18nAction");
