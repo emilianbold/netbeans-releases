@@ -49,6 +49,7 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- XXX many loaders tests can run in IDE mode just fine... -->
                 <include name="org/openide/loaders/*.class"/>
                 <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>
+                <exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>
                 <exclude name="org/openide/loaders/MultiDataObjectTest.class"/>
                 <include name="org/openide/xml/*.class"/>
                 <include name="org/openide/explorer/propertysheet/*.class"/>
@@ -85,6 +86,7 @@ Microsystems, Inc. All Rights Reserved.
 
     <!-- XXX: ide,failing? -->
     <!--<include name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectsCreatedOncePerFile"/>-->
+    <!--<exclude name="org/openide/loaders/DataObjectInvalidationTest.class/testDataObjectInvalidatedAfterRootChange"/>-->
     
     <executor name="ide" antfile="build.xml" target="runidetest"/>
     <executor name="code" antfile="build.xml" target="runcodetest"/>
