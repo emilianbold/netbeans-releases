@@ -78,18 +78,16 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
 
         <folder name="Hidden">
-            <!-- Comment reason: because of module separation and cleaning.
-            <file name="org.netbeans-modules-xml-cookies.xml">
-                <![CDATA[
-                    <!DOCTYPE cookies PUBLIC "-//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-classlist-1_0.dtd">
-                    <catalog>
-                        <class name="org.netbeans.modules.xml.core.cookies.CookieManagerCookie" />
-                        <class name="org.netbeans.modules.xml.core.cookies.TreeDocumentCookie" />
-                        <class name="org.netbeans.modules.xml.core.cookies.TreeEditorCookie" />
-                    </catalog>
-                ]]>
+            <file name="org.netbeans-modules-xml-core-cookies.xml">
+                <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE cookies PUBLIC "-//DTD apisupport cookie class list 1.0//EN" "http://www.netbeans.org/dtds/apisupport-cookie-classlist-1_0.dtd">
+<catalog>
+    <class name="org.netbeans.modules.xml.core.cookies.CookieManagerCookie" />
+    <class name="org.netbeans.modules.xml.core.cookies.TreeDocumentCookie" />
+    <class name="org.netbeans.modules.xml.core.cookies.TreeEditorCookie" />
+</catalog>
+]]>
             </file>
-            -->
         </folder> <!-- Hidden -->
 
         <folder name="Looks">
