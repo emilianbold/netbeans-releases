@@ -84,7 +84,8 @@ public class Installer extends ModuleInstall {
     }
     
     private static JavaHelp help = null;
-    public static synchronized Help getHelp() {
+    /** @deprecated only for use from the layer */
+    public static synchronized Help getDefaultHelp() {
         // Does not work to use Lookup: help set processors called too early.
         if (help == null) {
             help = new JavaHelp();

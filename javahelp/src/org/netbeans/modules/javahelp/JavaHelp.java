@@ -568,7 +568,7 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             // XXX poor UI appearance, could use borders, better layout, ...
             getContentPane().setLayout(new GridLayout(2, 2));
             getContentPane().add(new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_parsing_help_sets")));
-            getContentPane().add(new JProgressBar(Installer.getHelp().getParseModel()));
+            getContentPane().add(new JProgressBar(HelpSetProcessor.parseModel));
             getContentPane().add(new JLabel(NbBundle.getMessage(JavaHelp.class, "LBL_merging_help_sets")));
             getContentPane().add(new JProgressBar(mergeModel));
             pack();

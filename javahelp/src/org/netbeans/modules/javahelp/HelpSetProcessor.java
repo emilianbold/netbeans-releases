@@ -16,6 +16,8 @@ package org.netbeans.modules.javahelp;
 import java.io.IOException;
 import java.net.URL;
 import javax.swing.BoundedRangeModel;
+import javax.swing.DefaultBoundedRangeModel;
+import javax.swing.SwingUtilities;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -44,6 +46,8 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
      */    
     public static final String HELPSET_MERGE_ATTR = "mergeIntoMaster"; // NOI18N
 
+    public static final BoundedRangeModel parseModel = new DefaultBoundedRangeModel(0, 0, 0, 0);
+    
     /** the XML file being parsed
      */
     private XMLDataObject xml;
@@ -61,16 +65,12 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
         // XXX this is called way too often, why?
         this.xml = xml;
         Installer.err.log("processing help set ref: " + xml.getPrimaryFile());
-        // XXX event thread?
-        BoundedRangeModel pm = Installer.getHelp().getParseModel();
-        pm.setMaximum(pm.getMaximum() + 1);
+        BPMChanger.invoke(BPMChanger.INC_MAXIMUM);
     }
     
     /** Decrement count of available help sets.  */
     protected void finalize() {
-        BoundedRangeModel pm = Installer.getHelp().getParseModel();
-        pm.setValue(pm.getValue() - 1);
-        pm.setMaximum(pm.getMaximum() - 1);
+        BPMChanger.invoke(BPMChanger.DEC_VALUE_AND_MAXIMUM);
     }
     
     /** The class being produced.
@@ -120,8 +120,7 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
                 Object ignore = NbDocsStreamHandler.class;
                 hs = new HelpSet(TopManager.getDefault().systemClassLoader(), new URL(url));
                 hs.setKeyData(HELPSET_MERGE_CONTEXT, HELPSET_MERGE_ATTR, new Boolean(merge));
-                BoundedRangeModel pm = Installer.getHelp().getParseModel();
-                pm.setValue(pm.getValue() + 1);
+                BPMChanger.invoke(BPMChanger.INC_VALUE);
             } catch (SAXException saxe) {
                 IOException ioe = new IOException(saxe.toString());
                 Installer.err.annotate(ioe, saxe);
@@ -133,6 +132,35 @@ public final class HelpSetProcessor implements XMLDataObject.Processor, Instance
             }
         }
         return hs;
+    }
+    
+    private static final class BPMChanger implements Runnable {
+        public static final int INC_MAXIMUM = 0;
+        public static final int DEC_VALUE_AND_MAXIMUM = 1;
+        public static final int INC_VALUE = 2;
+        public static void invoke(int action) {
+            SwingUtilities.invokeLater(new BPMChanger(action));
+        }
+        private final int action;
+        private BPMChanger(int action) {
+            this.action = action;
+        }
+        public void run() {
+            switch (action) {
+            case INC_MAXIMUM:
+                parseModel.setMaximum(parseModel.getMaximum() + 1);
+                break;
+            case DEC_VALUE_AND_MAXIMUM:
+                parseModel.setValue(parseModel.getValue() - 1);
+                parseModel.setMaximum(parseModel.getMaximum() - 1);
+                break;
+            case INC_VALUE:
+                parseModel.setValue(parseModel.getValue() + 1);
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+        }
     }
     
 }

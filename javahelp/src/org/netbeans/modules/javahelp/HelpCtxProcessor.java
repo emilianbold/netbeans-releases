@@ -14,6 +14,7 @@
 package org.netbeans.modules.javahelp;
 
 import java.awt.Component;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.*;
@@ -31,8 +32,11 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.Presenter;
+
+import org.netbeans.api.javahelp.Help;
 
 /** XML processor for help context links.
  * The associated instance makes it suitable for
@@ -40,6 +44,10 @@ import org.openide.util.actions.Presenter;
  * @author Jesse Glick
  */
 public final class HelpCtxProcessor implements XMLDataObject.Processor, InstanceCookie.Of {
+    
+    private static Help findHelp() {
+        return (Help)Lookup.getDefault().lookup(Help.class);
+    }
     
     /** the XML file being parsed
      */
@@ -184,7 +192,12 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
          * @param actionEvent ignored
          */
         public void actionPerformed(ActionEvent actionEvent) {
-            Installer.getHelp().showHelp(new HelpCtx(helpID), showmaster);
+            Help h = findHelp();
+            if (h != null) {
+                h.showHelp(new HelpCtx(helpID), showmaster);
+            } else {
+                Toolkit.getDefaultToolkit().beep();
+            }
         }
         
         /** Bridge between the data node of the XML file
@@ -207,7 +220,8 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
                 updateIcon();
                 updateEnabled();
                 obj.getNodeDelegate().addNodeListener(this);
-                Installer.getHelp().addChangeListener(WeakListener.change(this, Installer.getHelp()));
+                Help h = findHelp();
+                if (h != null) h.addChangeListener(WeakListener.change(this, h));
             }
             
             /** Called when the node delegate changes somehow,
@@ -242,7 +256,8 @@ public final class HelpCtxProcessor implements XMLDataObject.Processor, Instance
             }
             
             private void updateEnabled() {
-                Boolean valid = Installer.getHelp().isValidID(helpID);
+                Help h = findHelp();
+                Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID);
                 if (valid != null) {
                     b.setEnabled(valid.booleanValue());
                 }

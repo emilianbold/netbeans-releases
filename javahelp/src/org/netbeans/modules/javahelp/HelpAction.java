@@ -22,6 +22,8 @@ import org.openide.TopManager;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 
+import org.netbeans.api.javahelp.Help;
+
 /** Show help for the thing under the cursor.
 * @author Jesse Glick
 */
@@ -80,6 +82,11 @@ public class HelpAction extends SystemAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        Help h = (Help)Lookup.getDefault().lookup(Help.class);
+        if (h == null) {
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
         if (globallySelectedComp instanceof RootPaneContainer) {
             // #17424: in some circumstances an NbDialog will be open with
             // some contents incl. a table and so on--but not completely filled
@@ -97,7 +104,7 @@ public class HelpAction extends SystemAction {
             Installer.err.log(ErrorManager.INFORMATIONAL, help.toString());
         }
         TopManager.getDefault().setStatusText(NbBundle.getMessage(HelpAction.class, "CTL_OpeningHelp"));
-        Installer.getHelp().showHelp(help);
+        h.showHelp(help);
         TopManager.getDefault().setStatusText(""); // NOI18N
         // Copied from MainWindow:
         final MenuSelectionManager msm = MenuSelectionManager.defaultManager();

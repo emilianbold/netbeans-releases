@@ -13,7 +13,6 @@
 
 package org.netbeans.api.javahelp;
 
-import javax.swing.BoundedRangeModel;
 import javax.swing.event.ChangeListener;
 
 import javax.help.HelpSet;
@@ -93,8 +92,5 @@ public abstract class Help {
      * @param l the listener to remove
      */
     public abstract void removeChangeListener(ChangeListener l);
-    
-    /** progress of searching and parsing help sets; min is 0, max is # of helpsets */
-    public abstract BoundedRangeModel getParseModel();
 
 }
