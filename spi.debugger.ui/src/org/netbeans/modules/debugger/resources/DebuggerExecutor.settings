@@ -5,5 +5,6 @@
     <instanceof class="org.openide.ServiceType"/>
     <instanceof class="org.openide.execution.Executor"/>
     <instanceof class="org.openide.execution.ProcessExecutor"/>
+    <instanceof class="org.netbeans.modules.debugger.multisession.DebuggerExecutor"/>
     <instance class="org.netbeans.modules.debugger.multisession.DebuggerExecutor"/>
 </settings>
