@@ -347,7 +347,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <!-- Compiles all tests -->
-    <target name="compile" depends="init" unless="dont-compile">
+    <target name="compile" depends="init" unless="distexec">
         <ant dir="unit/src/org/netbeans/core/modules"/>
         <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
@@ -367,13 +367,12 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
-    <target name="jars" depends="compile">
+    <target name="jars" depends="compile" unless="distexec">
         <mkdir dir="${xtest.build}/${xtest.file.location}"/>
-        <jar basedir="." jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
-            <include name="**/src/**/*.class"/>
-            <include name="**/src/**/*.jar"/>
-            <include name="**/src/**/*.xml"/>
-            <include name="**/src/**/data/**"/>
+        <jar basedir="." 
+             jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}"
+             includesfile="${xtest.home}/standard-test-includes.txt"
+             excludesfile="${xtest.home}/standard-test-excludes.txt">
         </jar>
     </target>
     
