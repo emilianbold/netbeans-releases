@@ -214,7 +214,7 @@ class DataFolderPanel extends TopComponent implements
         createButton.setEnabled(false);
         createButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createButtonActionPerformed(evt);
+                DataFolderPanel.this.createButtonActionPerformed(evt);
             }
         });
 
@@ -245,14 +245,14 @@ class DataFolderPanel extends TopComponent implements
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton createButton;
     private javax.swing.JLabel packageLabel;
-    private org.openide.explorer.view.BeanTreeView beanTreeView;
-    private javax.swing.JTextField packageName;
-    private javax.swing.JTextField directoryName;
     private org.openide.explorer.ExplorerPanel packagesPanel;
-    private javax.swing.JLabel dirLabel;
+    private javax.swing.JButton createButton;
+    private javax.swing.JTextField directoryName;
     private javax.swing.JLabel descriptionLabel;
+    private javax.swing.JLabel dirLabel;
+    private javax.swing.JTextField packageName;
+    private org.openide.explorer.view.BeanTreeView beanTreeView;
     // End of variables declaration//GEN-END:variables
 
     //
@@ -757,6 +757,12 @@ class DataFolderPanel extends TopComponent implements
         if (editor != null) {
             try {
                 DataFolder newF = getTargetFolder(false);
+                //fix for issue 31434, DataFolder may be null if
+                //user used the search popup in the target folder tree
+                if (newF == null) {
+                    editor.setDataFolder (null);
+                    return;
+                }
                 String name = newF.getPrimaryFile ().getPath ();
                 if (name.equals(packageName.getText())) {
                     editor.setDataFolder(df);
