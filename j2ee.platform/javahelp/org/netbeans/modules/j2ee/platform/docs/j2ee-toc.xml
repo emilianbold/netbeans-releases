@@ -111,11 +111,17 @@
           <tocitem text="Defining a Tag Handler's TLD Information" target="taghandler_edit" />
       </tocitem> 
       <tocitem text="Web Application Frameworks" >
-          <tocitem text="About Web Application Frameworks" target="about_framework"  />        
+	  <tocitem text="About Web Application Frameworks" target="about_framework"  />
+	  <tocitem text="JavaServer Faces" >      
 	  <tocitem text="Creating a New Application with JSF Support" target="framework_jsf_create" />
 	  <tocitem text="Adding JSF Support to an Existing Application" target="framework_jsf_add" />
+	  <tocitem text="Testing JSF Support" target="framework_jsf_test" />
+          </tocitem>
+          <tocitem text="Struts" >    
           <tocitem text="Creating a New Application with Struts Support" target="framework_struts_create" />
 	  <tocitem text="Adding Struts Support to an Existing Application" target="framework_struts_add" />
+	  <tocitem text="Testing Struts Support" target="framework_struts_test" />
+	  </tocitem>
       </tocitem>
       </tocitem> 
        <tocitem text="Applets" >
