@@ -18,12 +18,9 @@ import java.io.File;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
+import org.netbeans.jellytools.actions.RefreshFolderAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-
-//TODO temporary
-import gui.action.RefreshFolderAction;
-//TODO import org.netbeans.jellytools.actions.RefreshFolderAction;
 
 import org.netbeans.jemmy.operators.ComponentOperator;
 
