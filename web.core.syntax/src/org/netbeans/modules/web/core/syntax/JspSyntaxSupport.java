@@ -722,7 +722,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                new TagInfo ("scriptlet", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref127.html",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}), 
                new TagInfo ("root", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref123.html",                         // NOI18N
-                  null, null, new TagAttributeInfo[] {})
+                  null, null, new TagAttributeInfo[] {new TagAttributeInfo("version", false, "", false)})
             };
                   
             xmlJspTagDatas = new TagInfo[] {
