@@ -18,7 +18,18 @@
 <a href="#seealso">See Also</a> 
 </small></p> 
 
-<p>An enterprise application includes two deployment descriptor files:</p>
+<p>An enterprise application includes two <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+		      <param name="content" value="../../ejb/glossary/deploymentdesc.html">
+      <param name="viewerActivator" value="javax.help.LinkLabel">
+      <param name="viewerStyle" value="javax.help.Popup">
+      <param name="viewerSize" value="400,220">
+      <param name="text" value="deployment descriptors">
+      <param name="textFontSize" value="small">
+      <param name="textFontFamily" value="SansSerif">
+      <param name="textFontStyle" value="italic">
+      <param name="textFontWeight" value="bold">
+      <param name="textColor" value="blue">
+    </object>:</p>
 <ul>
 	<li><b>application.xml.</b> The general J2EE deployment descriptor that configures deployment settings
 	on any J2EE-compliant implementation. It describes the enterprise application, which components it uses,
@@ -31,13 +42,16 @@
 Both deployment descriptors are XML files that are stored in
 the enterprise application's META-INF folder. You can edit both
 files in the Source Editor. The <tt>sun-application.xml</tt> file can also
- be edited in a visual editor.</p>
+ be edited in a visual editor, as described below.</p>
  <p><b>To edit an enterprise application's deployment descriptors:</b> </p>
 <ol>
   <li>In the Projects window, locate the project and expand its 
   Configuration Files node. Alternatively, in the Files window, 
   expand the project's <tt>src/conf</tt> subfolder. </li>
-  <li>Double-click the node to open the file.</li>
+  <li>Double-click the node to open the file. The <tt>sun-application.xml</tt> file opens
+  in the <a href="nbdocs:/org/netbeans/modules/j2ee/sun/ide/docs/appconfigeditors/sunapplication.html"><tt>sun-application.xml</tt> Visual Editor</a>.
+  To open it in the Source Editor,
+  right-click it in the Projects window and choose Edit.</li>
   <li>Edit the elements. You can use code completion features in the Source Editor
     to ensure that the elements are syntactically correct.</li>
   <li>(Optional) Right-click in the Source Editor and choose Validate from the 
