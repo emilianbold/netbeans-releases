@@ -244,21 +244,11 @@ public class RelativeColor implements UIDefaults.LazyValue {
         //If the target had *some* color, so should our result - if it pretty
         //much doesn't, redistribute some of the brightness to the saturation value
         if (targHSB[1] > 0.1 && resultHSB[1] <= 0.1) {
-//            System.err.println("redistrib");
             resultHSB[1] = resultHSB[2] * 0.25f;
             resultHSB[2] = resultHSB[2] - (resultHSB[2] * 0.25f);
         }
 
         Color result = new Color (Color.HSBtoRGB(finalHSB[0], finalHSB[1], finalHSB[2]));
-        
-//        out ("base", baseHSB);
-//        out ("target", targHSB);
-//        out ("actual", actualHSB);
-//        out ("diff", diff);
-//        out ("result", resultHSB);
-//        out ("final", finalHSB);
-//        
-//        System.err.println(actual + "->" + result);
         return result;
     }
     

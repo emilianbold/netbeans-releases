@@ -89,7 +89,8 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
     public void installUI (JComponent c) {
         super.installUI(c);
         initColors();
-        c.setBackground(UIManager.getColor("workplace_fill"));
+        c.setBackground(UIManager.getColor("nb_workplace_fill")); //NOI18N
+        c.setOpaque(true);
     }
 
     protected AbstractViewTabDisplayerUI.Controller createController() {
@@ -151,7 +152,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                  + BUMP_Y_PAD_UPPER, height - (BUMP_Y_PAD_UPPER
                  + BUMP_Y_PAD_BOTTOM));
         // draw text                            
-        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
+        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, y + fm.getAscent()
             + TXT_Y_PAD,
             width, height, getTxtFont(),
             txtC,
@@ -168,7 +169,7 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         ColorUtil.paintXpTabHeader(isHighlighted ?
                                    ColorUtil.XP_HIGHLIGHTED_TAB :
                                    ColorUtil.XP_REGULAR_TAB, g, 0,
-                                   0, width);
+                                   0, width); 
         Color borderColor = isHighlighted ? selBorderC : borderC;
         g.setColor(borderColor);
         if (isFirst) {
@@ -183,9 +184,6 @@ public final class WinXPViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
 
     protected void paintTabBackground(Graphics g, int index, int x, int y,
                                       int width, int height) {
-        // background in upper part (is partially covered by tab headers)
-        g.setColor(bgFillC);
-        g.fillRect(x, y, width, 2);
         // shrink rectangle - don't affect border and tab header
         y += 3;
         width -= 1;

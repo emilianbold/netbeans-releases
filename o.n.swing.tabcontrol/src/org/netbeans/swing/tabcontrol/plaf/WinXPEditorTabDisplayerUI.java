@@ -47,7 +47,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
 
     public void install() {
         super.install();
-        Color col = UIManager.getColor("workplace_fill"); //NOI18N
+        Color col = UIManager.getColor("nb_workplace_fill"); //NOI18N
         if (col == null) {
             col = new Color(226, 223, 214);
         }

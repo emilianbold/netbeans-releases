@@ -140,9 +140,9 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             int iconWidth = icon.getIconWidth();
             JButton pinButton = getPinButton(index);
             int space4Pin = pinButton != null ? pinButton.getWidth() + 1 : 0;
-            int space4Icon = iconWidth + 2 * ICON_X_PAD + space4Pin;
+            int space4Icon = iconWidth + (2 * ICON_X_PAD) + space4Pin + 4;
             text2Paint = stripTextToFit(text,
-                                        width - 2 * TXT_X_PAD - space4Icon, fm);
+                                        width - space4Icon, fm);
             int txtWidth = BaseTabLayoutModel.textWidth(text2Paint, getTxtFont());
             getCloseIconRect(tempRect, index);
             if (pinButton != null) {
@@ -158,7 +158,7 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
         // draw text in right color
         Color txtC = UIManager.getColor("TabbedPane.foreground"); //NOI18N
         
-        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, y + fm.getAscent()
+        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, y + fm.getAscent()
             + TXT_Y_PAD,
             width, height, getTxtFont(),
             txtC,

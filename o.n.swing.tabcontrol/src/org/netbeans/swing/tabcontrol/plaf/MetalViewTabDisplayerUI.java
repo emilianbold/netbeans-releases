@@ -148,7 +148,7 @@ public final class MetalViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
         } else {
             text2Paint = stripTextToFit(text, width - 2 * TXT_X_PAD, fm);
         }
-        HtmlRenderer.renderString(text, g, x + TXT_X_PAD, height - 
+        HtmlRenderer.renderString(text2Paint, g, x + TXT_X_PAD, height - 
             fm.getDescent() - 4, width, height, getTxtFont(),
             UIManager.getColor("textText"),
             HtmlRenderer.STYLE_CLIP, true);
