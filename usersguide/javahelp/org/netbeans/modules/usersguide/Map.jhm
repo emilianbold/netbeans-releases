@@ -126,18 +126,6 @@
 <mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
 <mapID target="gui.custompalette.removing" url="gui/custompalette/removing.html" />
 
-
-<!-- csh page for Component Palette node in options window -->
-<mapID target="gui.options.component-palette" url="pending.html" />
-<!--TODO need page for options window node -->
-<!-- csh page for event handler dialog box -->
-<mapID target="gui.csh.handlers" url="gui/events/intro.html" />
-<!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) -->
-<mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/modifiers.html" /> 
-<!-- GUI csh page needed; 2003/03/07 can't find this ID in the code-->
-<mapID target="gui.csh.icon" url="pending.html" />
-
-
 <mapID target="beans.intro" url="beans/intro.html" />
 <mapID target="beans.creating" url="beans/creating.html" />
 <mapID target="beans.properties" url="beans/properties.html" />
@@ -153,7 +141,6 @@
 <mapID target="beans.glossary_serialized" url="beans/glossary_serialized.html" />
 <mapID target="beans.csh.serialize" url="pending.html" />
 <mapID target="beans.settings" url="beans/settings.html" />
-<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
 
 
 <mapID target="java.sync.intro" url="java/synchronizing/intro.html" />
@@ -168,17 +155,6 @@
 <mapID target="java.jdks.checklist" url="java/jdks_checklist.html" />
 <mapID target="java.jdks.default" url="java/jdks_default.html" />
 <mapID target="java.jdks.jump" url="java/jdks_jump.html" />
-
-<!--csh page for projects|settings|Java Sources-->
-<mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
-
-<!-- Following csh page hooked to both method and constructor customizer dialogs -->
-<mapID target="java.method.customizer" url="pending.html" />
-<!-- Following csh pages should be for class and field customizer dialogs -->
-<mapID target="java.class.customizer" url="pending.html" />
-<mapID target="java.field.customizer" url="pending.html" />
-<!-- could use a more specific page for this. -->
-<mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
 
 <mapID target="comp_classpath" url="compile/comp_classpath.html" />
 <mapID target="comp_dependencies" url="compile/comp_dependencies.html" />
@@ -242,19 +218,43 @@
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
 <mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
-<!-- Csh page for the Add Keybinding dialog box... -->
-<mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
-<!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes -->
-<mapID target="editing.printing" url="editing/configuring/printing.html" />
-<!-- This is a csh mapping for the indentation node in the Options window -->
-<mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
-<!-- These are csh pages hooked up to Editor Settings nodes of Options window -->
-<mapID target="editing.global" url="editing/configuring/keybindings.html" />
-<mapID target="editing.editor.java" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.html" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
-<mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
+
+
+<mapID target="xml_nodes"   url="xml/xmlnodes.html" />
+<mapID target="xml_createxml"   url="xml/createxml.html" />
+<mapID target="xml_editxml"     url="xml/editxml.html" />
+<mapID target="xml_schemanodes" url="xml/schemanodes.html" />
+<mapID target="xml_schemas" url="xml/schemas.html" />
+<mapID target="xml_parsedentities" url="xml/parsedentities.html" />
+<mapID target="xml_xslnodes" url="xml/xslnodes.html" />
+<mapID target="xml_aboutdtd" url="xml/editviewdtd.html" />
+<mapID target="xml_createdtd"   url="xml/createdtd.html" />
+<mapID target="xml_documentdtd"   url="xml/documentdtd.html" />
+<mapID target="xml_catalogs"     url="xml/xmlcatalogs.html" />
+<mapID target="xml_mountcatalogs"     url="xml/mountcatalog.html" />
+<mapID target="xml_editcatalogs"     url="xml/editcatalog.html" />
+<mapID target="xml_catalogformats"     url="xml/xmlcatalog_formats.html" />
+<mapID target="xml_XCat"     url="xml/XCat_sample.html" />
+<mapID target="xml_XMLCat"     url="xml/XMLCat_sample.html" />
+<mapID target="xml_Oasis"     url="xml/Oasis_sample.html" />
+<mapID target="xml_xsltransform"     url="xml/xsl_transform.html" />
+<mapID target="xml_xslabout"     url="xml/xslabout.html" />
+<mapID target="xml_texteditor"     url="xml/editxml.html" />
+<mapID target="xml_generatedom"     url="xml/generatedom.html" />
+<mapID target="xml_generatesax"     url="xml/generatesax.html" />
+<mapID target="xml_aboutsax"     url="xml/aboutsax.html" />
+<mapID target="xml_validatexml"     url="xml/validatexml.html" />
+<mapID target="xml_checkxml"     url="xml/checkxml.html" />
+<mapID target="xml_settings"     url="xml/xmlsettings.html" />
+
+<!-- CSS Help -->
+
+<mapID target="css_editcss"     url="xml/editcss.html" />
+<mapID target="css_checkcss"     url="xml/checkcss.html" />
+<mapID target="css_copypastecss" url="xml/copypastecss.html" />
+<mapID target="css_createcss"    url="xml/createcss.html" />
+<mapID target="org.netbeans.modules.css.CSSObject"     url="xml/cssnodes.html" />
+
 
 <!-- New debug IDs -->
 
@@ -263,7 +263,6 @@
 <mapID target="debug.local" url="debug/debug_local.html" />
 <mapID target="debug.finish" url="debug/debug_finish.html" />
 <mapID target="debug.context" url="debug/debug_context.html" />
-
 
 <!-- End new debug IDs -->
 
@@ -406,8 +405,6 @@
 <mapID target="vcs.cvscommands" url="vcs-nb/vcs_cvscommands.html" />
 <mapID target="vcs.groups" url="vcs-nb/vcs_groups.html" />
 
-
-
 <mapID target="webbrowser.swing" url="webbrowser/swingbrowser.html" />
 <mapID target="webbrowser" url="webbrowser/webbrowser.html" />
 <mapID target="webbrowser.homepage" url="webbrowser/home_page.html" />
@@ -443,12 +440,10 @@
 <mapID target="internation.custom" url="internationalize/replacingformat.html" />
 <mapID target="internation.singlefile" url="internationalize/autoinsert.html" />
 <mapID target="internation.autoinsert" url="internationalize/autoinsert.html" />
-<mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
 <mapID target="i18n.pe.bundlestring" url="internationalize/bundleformat.html" />
 <mapID target="i18n.pe.replacestring" url="internationalize/i18ncodeformat.html" />
 <mapID target="i18n.pe.testregexp" url="internationalize/i18nkeyformat.html" />
 <mapID target="i18n.pe.i18nregexp" url="internationalize/i18nstringformat.html" />
-
 <mapID target="internation.runlocale" url="run/locale.html" />
 
 <mapID target="ant_docs" url="ant/ant_docs.html" />
@@ -489,11 +484,133 @@
 <mapID target="accessibility.jhshortcuts" url="shortcuts/jhshortcuts.html" />
 <mapID target="accessibility.alternate.browser" url="accessibility/alternate_browser.html" />
 
+<!-- Web apps help -->
+
+<mapID target="overview_IE" url="web/concepts/webmod.html" />
+
+<mapID target="concepts_jspsyn" url="web/concepts/jspsyntax.html" />
+<mapID target="concepts_deploydes" url="web/concepts/deployd.html" />
+<mapID target="concepts_jsp" url="web/concepts/jsp.html" />
+<mapID target="concepts_servlet" url="web/concepts/servlet.html" />
+<mapID target="concepts_tldfile" url="web/concepts/tldfile.html" />
+<mapID target="concepts_webmod" url="web/concepts/webmod.html" />
+<mapID target="concepts_taglib" url="web/concepts/taglib.html" />
+<mapID target="concepts_war" url="web/concepts/concepts_war.html" />
+<mapID target="concepts_filter" url="web/concepts/filter.html" />
+<mapID target="concepts_listener" url="web/concepts/listener.html" />
+<mapID target="spec_version" url="web/concepts/spec_version.html" />
+<mapID target="concepts_html" url="web/concepts/html.html" />
+<mapID target="concepts_jar" url="web/concepts/jar.html" />
+
+<mapID target="ctx_tagattcust" url="web/taglib/ctx_tagattcust.html" />
+<mapID target="taglib_createtaglib" url="web/taglib/createtaglib.html" />
+<mapID target="taglib_generate" url="web/taglib/generate.html" />
+<mapID target="taglib_packlib" url="web/taglib/packlib.html" />
+<mapID target="ctx_taglibcust" url="web/taglib/ctx_taglibcust.html" />
+<mapID target="ctx_tagcust" url="web/taglib/ctx_tagcust.html" />
+<mapID target="ctx_scrvarcust" url="web/taglib/ctx_scrvarcust.html" />
+
+<mapID target="ctx_repaddto" url="web/taglibUI/ctx_repaddto.html" />
+<mapID target="tagsupport_fromrepository" url="web/taglibUI/repaddfrom.html" />
+<mapID target="tagsupport_fromfilesys" url="web/taglibUI/addfilesys.html" />
+
+<mapID target="jsp_create" url="web/create_jsp/jsp_create.html" />
+<mapID target="jsp_edit" url="web/create_jsp/jsp_edit.html" />
+<!-- jsp_run moved to tomcat hs -->
+<mapID target="jsp_queryparams" url="web/create_jsp/jsp_queryparams.html" />
+<mapID target="jsp_props" url="web/create_jsp/jsp_props.html" />
+<mapID target="jsp_validate" url="web/create_jsp/jsp_validate.html" />
+<mapID target="jsp_servletview" url="web/create_jsp/jsp_servletview.html" />
+
+<mapID target="jsp_debug" url="web/jsp/jsp_debug.html" />
+
+<mapID target="servlet_create" url="web/servlet/servlet_create.html" />	
+<mapID target="servlet_edit" url="web/servlet/servlet_edit.html" />	
+<!-- servlet_run moved to tomcat hs -->
+<mapID target="webmod_createnew" url="web/webmod/mod_createnew.html" />
+<mapID target="webmod_cvs" url="web/webmod/mod_cvs.html" />
+<mapID target="webmod_newdir" url="web/webmod/mod_newdir.html" />        
+<mapID target="webmod_reverse" url="web/webmod/mod_reverse.html" />
+<mapID target="webmod_loadexist" url="web/webmod/mod_loadexist.html" />
+<mapID target="webmod_dbggrprops" url="web/webmod/mod_dbggrprops.html" />      
+<mapID target="webmod_addjar" url="web/webmod/mod_addjar.html" />
+<mapID target="webmod_addservlet" url="web/webmod/mod_addservlet.html" />
+<mapID target="webmod_usetags" url="web/webmod/mod_usetags.html" />
+<mapID target="webmod_editdd" url="web/webmod/mod_editdd.html" />
+<mapID target="webmod_placefiles" url="web/webmod/mod_placefiles.html" />
+<mapID target="webmod_servconfig" url="web/webmod/mod_servconfig.html" />
+<!-- singletest moved to tomcat help -->
+<mapID target="webmod_server_set" url="web/webmod/mod_server_set.html" />
+<mapID target="webmod_packagewar" url="web/webmod/mod_packagewar.html" />
+<mapID target="webmod_deploy" url="web/webmod/mod_deploy.html" />
+<mapID target="webmod_webxmlprops" url="web/webmod/mod_webxml_props.html" />
+<mapID target="webmod_webinfprops" url="web/webmod/mod_webinf_props.html" />
+<mapID target="webmod_xml" url="web/webmod/mod_xml.html" />
+<mapID target="webmod_browser" url="web/webmod/mod_browser.html" />
+<mapID target="webmod_addtglb" url="web/webmod/mod_addtglb.html" />
+<mapID target="webmod_jstl" url="web/webmod/mod_jstl.html" />
+<mapID target="webmod_addapplet" url="web/webmod/mod_addapplet.html" />
+<mapID target="webmod_addtagf" url="web/webmod/mod_tagf_add.html" />
+<mapID target="war_delete" url="web/warpkg/war_delete.html" />
+<mapID target="war_editprop" url="web/warpkg/war_editprop.html" />
+<mapID target="war_unpack" url="web/warpkg/war_unpack.html" />
+<mapID target="war_viewcont" url="web/warpkg/war_viewcont.html" />
+<mapID target="war_xtrafiles" url="web/warpkg/war_xtrafiles.html" />
+
+<mapID target="filter_addtodd" url="web/servlet/filter_addtodd.html" />
+<mapID target="filter_create" url="web/servlet/filter_create.html" />
+<mapID target="filter_props" url="web/servlet/filter_props.html" />
+<mapID target="listen_addtodd" url="web/servlet/listen_addtodd.html" />
+<mapID target="listen_props" url="web/servlet/listen_props.html" />
+<mapID target="listen_create" url="web/servlet/listen_create.html" />
+<mapID target="servlet_props" url="web/servlet/servlet_props.html" />
+
+<mapID target="ieglossary_URL_query_string" url="web/glossary/URL_query_string.html" />
 
 <!--Open Image dialog available from icon property editors (and other places?)-->
 <mapID target="csh.openimage" url="pending.html" />
 
 <!--CSH-->
+
+
+<mapID target="org.netbeans.modules.i18n.InsertI18nStringAction" url="internationalize/manualinsert.html" />
+
+<!-- Csh page for the Add Keybinding dialog box... -->
+<mapID target="editing.csh.shortcutseq" url="editing/configuring/shortcut-seq.html" />
+<!-- Csh page (and help topic) for Tools->Options, Printing node and subnodes -->
+<mapID target="editing.printing" url="editing/configuring/printing.html" />
+<!-- This is a csh mapping for the indentation node in the Options window -->
+<mapID target="org.netbeans.core.services.IndentEngines" url="editing/configuring/indentation.html" />
+<!-- These are csh pages hooked up to Editor Settings nodes of Options window -->
+<mapID target="editing.global" url="editing/configuring/keybindings.html" />
+<mapID target="editing.editor.java" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.html" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.plain" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.jsp" url="editing/configuring/editor-props.html" />
+<mapID target="editing.editor.properties" url="editing/configuring/editor-props.html" />
+
+<!--csh page for projects|settings|Java Sources-->
+<mapID target="org.netbeans.modules.java.settings.JavaSettings" url="java/java_sources.html" />
+
+<mapID target="org.netbeans.modules.beans.PropertyActionSettings" url="beans/settings.html" />
+
+<!-- Following csh page hooked to both method and constructor customizer dialogs -->
+<mapID target="java.method.customizer" url="pending.html" />
+<!-- Following csh pages should be for class and field customizer dialogs -->
+<mapID target="java.class.customizer" url="pending.html" />
+<mapID target="java.field.customizer" url="pending.html" />
+<!-- could use a more specific page for this. -->
+<mapID target="org.netbeans.modules.java.settings.JavaSynchronizationSettings" url="java/synchronizing/properties.html" />
+
+<!-- csh page for Component Palette node in options window -->
+<mapID target="gui.options.component-palette" url="pending.html" />
+<!--TODO need page for options window node -->
+<!-- csh page for event handler dialog box -->
+<mapID target="gui.csh.handlers" url="gui/events/intro.html" />
+<!-- csh page for Form Editor property Variables Modifier (also for the Java module's "Modifiers" property) -->
+<mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="gui/csh/modifiers.html" /> 
+<!-- GUI csh page needed; 2003/03/07 can't find this ID in the code-->
+<mapID target="gui.csh.icon" url="pending.html" />
 
 <!-- To Do window help -->
 <mapID target="org.netbeans.modules.tasklist.core.TaskNode" url="editing/tasks_viewing.html" />
@@ -1138,5 +1255,142 @@
    <mapID target="javax.swing.JDesktopPane" url="pending.html" />
    <mapID target="javax.swing.JOptionPane" url="pending.html" />
 
- 
+<!-- Web Apps map ids -->
+
+<!-- map ids to other help sets -->
+<mapID target="org.netbeans.modules.editor.html.HTMIndentEngine" 
+  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+
+<mapID target="org.netbeans.modules.web.core.syntax.JspIndentEngine" 
+  url="/org/netbeans/modules/usersguide/editing/configuring/indentation.html" />
+
+<!-- context sensitive help map IDs -->
+
+<mapID target="org.netbeans.modules.web.html.HtmlDataObject" 
+        url="web/webmod/mod_html_node.html" />
+  <!-- NOTE THE INTENTIONAL EXCLUSION OF .web -->
+  <!-- this might be a generic (not web module) object -->
+<mapID target="org.netbeans.modules.html.HtmlDataNode.PropertySheet" 
+        url="web/webmod/mod_html_props.html" />
+
+<mapID target="org.netbeans.modules.web.dd.DDDataObject" 
+        url="web/webmod/mod_webxml_node.html" />
+<mapID target="org.netbeans.modules.web.dd.DDDataNode.PropertySheet" 
+        url="web/webmod/mod_webxml_props.html" />
+
+
+<mapID target="org.netbeans.modules.web.context.WebInfObject" 
+        url="web/webmod/mod_webinf_node.html" />
+<mapID target="org.netbeans.modules.web.context.WebInfObject.PropertySheet" 
+        url="web/webmod/mod_webinf_props.html" />
+
+<mapID target="org.netbeans.modules.web.context.BaseWizardPanel" 
+    url="web/webmod/mod_newdir.html" />  
+
+<mapID target="org.netbeans.modules.web.dd.wizards.ListenerPanel" 
+        url="web/servlet/listen_addtodd.html" />
+
+<mapID target="org.netbeans.modules.web.war.WarNode" 
+   url="web/warpkg/war_node.html" />
+<!-- called from dialog boxes invoked from WEB-INF property sheet -->
+<mapID target="org.netbeans.modules.web.war.WarNode.PropertySheet" 
+   url="web/warpkg/war_editprop.html" />
+<mapID target="org.netbeans.modules.web.war.ui.ExtraFilesPropertyEditorSupport" 
+        url="web/warpkg/war_xtrafiles.html" />
+  <!-- NOTE: There is no property sheet for WAR files. You edit from
+       WEB-INF property sheet. This was an error -->
+<mapID target="org.netbeans.modules.web.war.ui.WarFilterPropertyEditorSupport" 
+        url="web/warpkg/war_editprop.html" />
+
+<!-- Web Module Node in Projects Window -->
+<mapID target="org.netbeans.modules.web.context.WebAppNode" 
+    url="web/concepts/webmod.html" />
+
+<!-- reference issue 39843 -->
+
+<mapID target="org.netbeans.modules.web.core.jsploader.ServletDataNode" 
+    url="web/concepts/servlet.html" /> <!-- TEMP -->
+<mapID target="org.netbeans.modules.web.core.jsploader.ServletProperties" 
+    url="web/servlet/servlet_props.html" />
+
+<mapID target="org.netbeans.modules.web.core.jsploader.JspNode" 
+    url="web/create_jsp/jsp_node.html" />
+<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.PropertySheet" 
+    url="web/create_jsp/jsp_props.html" />
+
+<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag" 
+    url="web/create_jsp/tag_node.html" />
+<mapID target="org.netbeans.modules.web.core.jsploader.JspNode.Tag.PropertySheet" 
+    url="web/create_jsp/tag_props.html" />
+
+<mapID target="org.netbeans.modules.web.dd.wizards.new.servlet"
+        url="web/servlet/servlet_create.html" /><!-- TEMP -->
+<mapID target="org.netbeans.modules.web.dd.wizards.dd.servlet"
+        url="web/servlet/servlet_create.html" /><!-- TEMP -->
+
+<mapID target="org.netbeans.modules.web.dd.wizards.new.filter"
+        url="web/servlet/filter_create.html" /><!-- TEMP -->
+<mapID target="org.netbeans.modules.web.dd.wizards.dd.filter"
+        url="web/servlet/filter_addtodd.html" /><!-- TEMP -->
+<mapID target="org.netbeans.modules.web.dd.wizards.dd2.filter"
+        url="web/servlet/filter_addtodd.html" /><!-- TEMP -->
+
+  <!-- when implemented -->
+<mapID target="org.netbeans.modules.web.dd.wizards.new.listener"
+        url="web/servlet/listen_create.html" /><!-- TEMP -->
+<mapID target="org.netbeans.modules.web.dd.wizards.dd.listener"
+        url="web/servlet/listen_addtodd.html" /><!-- TEMP -->
+
+<mapID target="org.netbeans.modules.web.dd.wizards.new.jspdoc"
+        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+<mapID target="org.netbeans.modules.web.dd.wizards.new.jspf"
+        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+  <!-- when implemented -->
+<mapID target="org.netbeans.modules.web.dd.wizards.new.jsptag"
+        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+<mapID target="org.netbeans.modules.web.dd.wizards.new.jsp"
+        url="web/create_jsp/jsp_create.html" /> <!-- TEMP -->
+
+<!-- XML Module CSH -->
+<mapID target="org.netbeans.modules.xml.tools.actions.ValidateAction" url="xml/validatexml.html" />
+<mapID target="org.netbeans.modules.xml.tools.doclet.DocletAction" url="xml/documentdtd.html" />
+<mapID target="org.openide.loaders.XMLDataObject"           url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.core.XMLDataObject" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.core.DTDDataObject" url="xml/editviewdtd.html" />
+<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xsl.XSLDataObject" url="xml/xslnodes.html" />
+<mapID target="org.netbeans.modules.xml.schema.SchemaObject" url="xml/schemanodes.html" />
+<mapID target="org.netbeans.modules.xml.core.EntityDataObject" url="xml/parsedentities.html" />
+<!--TODO redo wizard pages in new style guidelines -->
+<mapID target="org.netbeans.modules.xml.core.wizard.DocumentPanel"   url="xml/createxml.html" />
+<mapID target="org.netbeans.modules.xml.core.wizard.DTDPanel"   url="xml/createxml.html" />
+<mapID target="org.netbeans.modules.xml.core.wizard.SchemaPanel"   url="xml/createxml.html" />
+<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$HTML" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.css.actions.CopyStyleAction$XML" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.core.actions.CollectDTDAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.core.actions.CollectXMLAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.tools.actions.CheckAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.tools.actions.CheckDTDAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDOMScannerAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDTDAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xml.tools.generator.XMLGenerateAction$GenerateDocumentHandlerAction" url="xml/xmlnodes.html" />
+<mapID target="org.netbeans.modules.xsl.actions.TransformAction" url="xml/xsl_transform.html" />
+<!--TODO redo wizard pages in new style guidelines -->
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorVersionPanel"     url="xml/generatesax.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorMethodPanel"     url="xml/generatesax.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorParsletPanel"     url="xml/generatesax.html" />    
+<mapID target="org.netbeans.modules.xml.tools.generator.SAXGeneratorFilePanel"     url="xml/generatesax.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel"     url="xml/mountcatalog.html" />    
+<mapID target="org.netbeans.modules.xml.core.settings.CoreSettings"     url="xml/xmlsettings.html" />    
+<mapID target="org.netbeans.modules.xml.core.settings"     url="xml/xmlsettings.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogRootNode" url="xml/xmlcatalogs.html" />
+<mapID target="org.netbeans.modules.xml.catalog.CatalogNode"     url="xml/xmlcatalogs.html" />    
+<mapID target="org.netbeans.modules.xml.catalog.CatalogEntryNode"     url="xml/xmlcatalogs.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.XMLOptions"     url="xml/xmleditor-props.html" />
+<mapID target="org.netbeans.modules.css.text.syntax.CSSEditorOptions"     url="xml/xmleditor-props.html" />
+<mapID target="org.netbeans.modules.xml.text.syntax.DTDOptions"     url="xml/xmleditor-props.html" />
+
 </map>

@@ -10,13 +10,14 @@
 
 <toc version="2.0">
 
-<tocitem text="Core IDE Help" >
-  <tocitem text="Legal Notices" target="ide.credits" />
+<tocitem text="Legal Notices" target="ide.credits" />
+
+<tocitem text="IDE Basics" >
 
   <tocitem text="Getting Started" >
-    <tocitem text="IDE Overview" target="gs.tour" />
-    <tocitem text="Key Concepts" target="gs.key" />
-    <tocitem text="Starting With the Basic IDE Tasks" target="gs.howto" />
+    <tocitem text="IDE Overview" target="tbd" />
+    <tocitem text="Key Concepts" target="tbd" />
+    <tocitem text="Starting With the Basic IDE Tasks" target="tbd" />
   </tocitem>
   
   <tocitem text="Working with Projects" >
@@ -46,6 +47,7 @@
       <tocitem text="Writing Ant Targets for IDE Commands" target="tbd" />
     </tocitem>
   </tocitem>
+
   <tocitem text="Working with Files" >
     <tocitem text="Viewing the Physical Layout of Project Files" target="tbd" />
     <tocitem text="Creating a New File" target="tbd" />
@@ -56,6 +58,32 @@
     <tocitem text="Hiding File Extensions" target="objects.show-extensions" />
   </tocitem>
 
+  <tocitem text="Using Version Control in the IDE" >
+    <tocitem text="About Version Control" target="vcs.about" />
+	<tocitem text="Working with Version Control" target="vcs.overview" />
+	<tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
+	<tocitem text="Viewing Versioning Information" target="vcs.viewing" />
+    <tocitem text="Setting Up VCS" target="vcs.repositorysetup" />
+    <tocitem text="Checking Out Files with CVS" target="vcs.checkout" />
+    <tocitem text="Comparing File Revisions" target="vcs.diff" />
+    <tocitem text="Committing Files to a VCS Repository" target="vcs.commit" />
+    <tocitem text="Merging File Revisions" target="vcs.merge" />
+    <tocitem text="Resolving Merge Conflicts" target="vcs.mergeconflict" />
+    <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
+    <tocitem text="Configuring Version Control Settings" target="vcs.configure" />
+    <tocitem text="Using CVS in the IDE" target="vcs.cvs" />
+    <tocitem text="CVS Command Reference" target="vcs.cvscommands" />
+    <tocitem text="Using VCS Groups" target="vcs.groups" />
+  </tocitem>
+
+  <tocitem text="Accessibility" >
+    <tocitem text="About" target="accessibility.home"/>
+      <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
+      <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
+  </tocitem>
+</tocitem>
+
+<tocitem text="Java Project Basics" >
   <tocitem text="Editing Source Files" >
     <tocitem text="About" target="editing.intro"/>
     <tocitem text="Source Editor" target="editing.editorwindow"/>
@@ -121,6 +149,35 @@
       <tocitem text="Setting a Bean's Icon" target="beans.icon" />
       <tocitem text="Adding a Bean to the Palette Window" target="beans.adding" />
     </tocitem>
+
+    <tocitem text="Editing XML Documents" >
+      <tocitem text="Creating an XML Document" target="xml_createxml" />
+      <tocitem text="Editing an XML Document" target="xml_editxml" />
+      <tocitem text="Creating a DTD" target="xml_createdtd" />
+      <tocitem text="Generating DTD Documentation" target="xml_documentdtd" />
+      <tocitem text="Working With XML Schemas" target="xml_schemas" />
+      <tocitem text="Validating an XML Document" target="xml_validatexml" />
+      <tocitem text="Checking an XML Document for Well-Formedness" target="xml_checkxml" />
+      <tocitem text="XML Catalog Support in the IDE" >
+        <tocitem text="About" target="xml_catalogs" />
+        <tocitem text="Mounting and Unmounting an XML Catalog" target="xml_mountcatalogs" />
+        <tocitem text="XML Catalog Formats" target="xml_catalogformats" />
+        <tocitem text="Creating and Editing an XML Catalog" target="xml_editcatalogs" />
+      </tocitem>
+      <tocitem text="Generating a DOM Tree Scanner" target="xml_generatedom" />
+      <tocitem text="SAX Support in the IDE" target="xml_aboutsax" />
+      <tocitem text="Generating a SAX Document Handler" target="xml_generatesax" />
+      <tocitem text="Creating and Editing an XSL Stylesheet" target="xml_xslabout" />
+      <tocitem text="Performing an XSL Transformation" target="xml_xsltransform" />
+  	  <tocitem text="Global XML Settings" target="xml_settings" />
+ 	  <tocitem text="Cascading Style Sheets in the IDE">
+        <tocitem text="Creating a Cascading Style Sheet" target="css_createcss" />
+        <tocitem text="Editing a Cascading Style Sheet" target="css_editcss" />
+        <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
+        <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
+      </tocitem>
+	</tocitem>   
+
     <tocitem text="Editing Resource Bundles">
       <tocitem text="About" target="propfiles.intro"/>
       <tocitem text="Creating a Properties File" target="propfiles.creating" />
@@ -182,20 +239,20 @@
   <tocitem text="Debugging Java Applications">
     <tocitem text="About Debugging Java Applications" target="tbd"/>
     <tocitem text="Working with Debugging" target="debug.process"/>
-    <tocitem text="Debugging Tasks: Quick Reference" target="debug.quickref"/>
+    <tocitem text="Debugging Tasks: Quick Reference" target="tbd"/>
     <tocitem text="Starting a Local Debugging Session" target="debug.local"/>
-    <tocitem text="Attaching to a Java VM" target="debug.attach" />
-    <tocitem text="Debugging on a 64-Bit Java VM" target="debug.sessions.64bit" />
+    <tocitem text="Attaching to a Java VM" target="tbd" />
+    <tocitem text="Debugging on a 64-Bit Java VM" target="tbd" />
     <tocitem text="Stepping Through Your Program" target="debug.step" />
     <tocitem text="Fixing and Continuing" target="debug.fix"></tocitem>
     <tocitem text="Finishing a Session" target="debug.finish" />
-    <tocitem text="Source Editor Debugging Features" target="debug.source.editor"></tocitem>
+    <tocitem text="Source Editor Debugging Features" target="tbd"></tocitem>
     <tocitem text="Current Context in the Debugger" target="debug.context"></tocitem>
-    <tocitem text="Setting Breakpoints" />
-    <tocitem text="Debugging Threads in the IDE" target="debug.threads.jump"/>
-    <tocitem text="Using the Call Stack" />
-    <tocitem text="Variables and Expressions in the IDE" target="debug.variables.jump" />
-    <tocitem text="Creating a Watch" target="debug.watch" />
+    <tocitem text="Setting Breakpoints" target="tbd"/>
+    <tocitem text="Debugging Threads in the IDE" target="tbd"/>
+    <tocitem text="Using the Call Stack" target="tbd"/>
+    <tocitem text="Variables and Expressions in the IDE" target="tbd" />
+    <tocitem text="Creating a Watch" target="tbd" />
   </tocitem>
 
   <tocitem text="Designing Java GUIs">
@@ -281,75 +338,6 @@
     <tocitem text="Installing Ant Documentation" target="ant_docs" />
   </tocitem>
   
-  <!--OLD VCS IDS :
-  
-  <tocitem text="Using Version Control in the IDE" >
-    <tocitem text="About" target="vcs.overview" />
-    <tocitem text="Mounting a VCS Working Directory" target="vcsgeneric.mounting" />
-    <tocitem text="Setting a Relative Mount Point" target="vcs.mountpoint" />
-    <tocitem text="Calling Version Control Commands" target="vcsgeneric.calling" />
-    <tocitem text="VCS Command Output" target="vcs.output" />
-    <tocitem text="Versioning Window" target="vcs.revexplorer" />
-    <tocitem text="Refreshing VCS File Status Information" target="vcs.refresh" />
-    <tocitem text="Comparing File Revisions Visually" target="vcs.diffs" />
-    <tocitem text="Adding a Binary File to a VCS Repository" target="vcs.binary" />         
-    <tocitem text="Searching for a File by VCS Status" target="search.status" />
-    <tocitem text="VCS Profiles" target="vcsgeneric.newprofile" />
-    <tocitem text="VCS Support on Windows 95, Windows 98, and Windows ME" target="vcs.cygwin" />
-    <tocitem text="Configuring Version Control Settings" target="vcs.globalsettings" />
-    <tocitem text="CVS Support" >
-      <tocitem text="About" target="vcs.cvs-intro" />
-      <tocitem text="Getting Files from a CVS Repository" target="cvs.checkout" />
-      <tocitem text="CVS Commands" target="cvs.commands" />
-      <tocitem text="Merging File Revisions" target="cvs.merge" />
-      <tocitem text="Resolving Merge Conflicts" target="cvs.merge-resolve" />
-      <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
-      <tocitem text="Setting Up a Local CVS Repository" target="cvs.local" />
-      <tocitem text="CVS Command Arguments" >
-        <tocitem text="Add Arguments" target="args_add"/>
-        <tocitem text="Annotate Arguments" target="args_annotate"/>
-        <tocitem text="Checkout Arguments" target="args_checkout"/>
-        <tocitem text="Commit Arguments" target="args_commit"/>
-        <tocitem text="Diff Arguments" target="args_diff"/>
-        <tocitem text="Global Arguments" target="args_global"/>
-        <tocitem text="Log Arguments" target="args_log"/>
-        <tocitem text="Remove Arguments" target="args_remove"/>
-        <tocitem text="Add Tag Arguments" target="args_tag"/>
-        <tocitem text="Update Arguments" target="args_update"/>
-      </tocitem>
-    </tocitem>  
-    <tocitem text="Using VCS Groups" > 
-      <tocitem text="About" target="vcs.groups" />
-      <tocitem text="Adding and Deleting a VCS Group" target="vcs.groupsadd" />
-      <tocitem text="Adding Files to VCS Groups" target="vcs.groupsaddfile" />
-      <tocitem text="Moving and Removing Files From VCS Groups" target="vcs.groupsmovefile" />
-      <tocitem text="Calling VCS Commands on VCS Groups" target="vcs.groupscommands" />
-      <tocitem text="Preparing VCS Groups for Check-In to the Repository" target="vcs.groupsverify" />
-      <tocitem text="Resolving Problems With Grouped Files" target="vcs.groupsresolve" />
-      <tocitem text="Configuring VCS Group Settings" target="vcs.groupsproperties" />
-    </tocitem>
-  </tocitem>-->
-  
-  <!--NEW VCS IDS -->
-  
-  <tocitem text="Using Version Control in the IDE" >
-    <tocitem text="About Version Control" target="vcs.about" />
-	<tocitem text="Working with Version Control" target="vcs.overview" />
-	<tocitem text="VCS Tasks: Quick Reference" target="vcs.quickref" />
-	<tocitem text="Viewing Versioning Information" target="vcs.viewing" />
-    <tocitem text="Setting Up VCS" target="vcs.repositorysetup" />
-    <tocitem text="Checking Out Files with CVS" target="vcs.checkout" />
-    <tocitem text="Comparing File Revisions" target="vcs.diff" />
-    <tocitem text="Committing Files to a VCS Repository" target="vcs.commit" />
-    <tocitem text="Merging File Revisions" target="vcs.merge" />
-    <tocitem text="Resolving Merge Conflicts" target="vcs.mergeconflict" />
-    <tocitem text="Creating and Applying a Patch" target="vcs.patch" />
-    <tocitem text="Configuring Version Control Settings" target="vcs.configure" />
-    <tocitem text="Using CVS in the IDE" target="vcs.cvs" />
-    <tocitem text="CVS Command Reference" target="vcs.cvscommands" />
-    <tocitem text="Using VCS Groups" target="vcs.groups" />
-  </tocitem>
-  
   <tocitem text="Working With Javadoc Documentation">
     <tocitem text="Adding Javadoc to a Project" target="javadoc.add" />
     <tocitem text="Adding the JDK Javadoc to the IDE" target="javadoc.jdk"/>
@@ -358,48 +346,181 @@
     <tocitem text="Entering Javadoc Comments in Source Code" target="javadoc.accuracy"/>
   </tocitem>
 
-  <tocitem text="Web Server Integration">
-    <tocitem text="About" target="general_about_the_j2eeserver_module_html"/>
-    <tocitem text="Server Registry Node" target="nodes_server_registry_node_html" />
+  <tocitem text="Testing with JUnit">
+    <tocitem text="About JUnit" target="junit_about"></tocitem>
+    <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
+    <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
+    <tocitem text="Creating Unit Tests with JUnit" target="junit_creatingtests"></tocitem>
+    <tocitem text="Running JUnit Tests" target="junit_runningtests"></tocitem>
+    <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
   </tocitem>
+</tocitem>
 
-  <tocitem text="Configuring the Environment" >
-    <tocitem text="Using the Options Window" target="configure.options" />
-    <tocitem text="Configuring Java Settings" target="java.java_sources" />
-    <tocitem text="Managing IDE Windows" target="workspace.jump"/>
-    <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
-    <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
-    <tocitem text="Switching JDK Versions">
-      <tocitem text="About" target="java.jdks.jump"/>
-      <tocitem text="Choosing the IDE's Default JDK Version" target="java.jdks.default" />
-      <tocitem text="Target Java Platform Configuration" target="java.jdks.checklist" />
-      <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
-      <tocitem text="Working With Assertions" target="java.assertions" />
-      <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
+<tocitem text="Web Application Projects">
+
+  <tocitem text="Introduction to Web Modules"> 
+    <tocitem text="About Web Modules" target="overview_IE"/>
+	<tocitem text="About JavaServer Pages Technology" target="concepts_jsp" />        
+    <tocitem text="About JSP Syntax" target="concepts_jspsyn" />
+	<tocitem text="About Servlets" target="concepts_servlet" />        
+	<tocitem text="About JAR Files in Web Modules" target="concepts_jar"  />   
+	<tocitem text="About Tag Libraries" target="concepts_taglib" />
+	<tocitem text="About TLD Files" target="concepts_tldfile"  />        
+    <tocitem text="Using the Tag Library Repository" target="ctx_repaddto"/>                 
+	<tocitem text="About Deployment Descriptors" target="concepts_deploydes" />    
+	<tocitem text="About WAR Files" target="concepts_war"  />
+	<tocitem text="About Servlet Filters" target="concepts_filter"  />
+	<tocitem text="About Servlet Listeners" target="concepts_listener"  />       					
+    <tocitem text="Working With XML Files in Web Modules" target="webmod_xml" />
+  </tocitem> <!-- Introduction to Web Modules-->
+
+  <tocitem text="Starting Web Module Projects" > 
+    <tocitem text="Creating Web Modules">
+      <tocitem text="About Creating Web Modules" target="webmod_createnew" />
+      <tocitem text="Creating Web Modules From Scratch" target="webmod_newdir" />
+      <tocitem text="Importing Web Modules" target="webmod_loadexist" />		
+      <tocitem text="Unpacking and Mounting WAR Files" target="war_unpack" />	
+      <tocitem text="Using CVS With Web Modules" target="webmod_cvs"/>		
+      <tocitem text="Changing Web Module Filesystems Into Standard Filesystems" target="webmod_reverse"/>
+    </tocitem> <!-- Creating a Web Module-->
+    <tocitem text="Adding Files and Resources to Web Modules" >
+          <tocitem text="Where to Put Web Module Files" target="webmod_placefiles" />           
+          <tocitem text="Adding JAR Files to a Web Module" target="webmod_addjar" />
+          <tocitem text="Adding Servlets to a Web Module" target="webmod_addservlet" />
+          <tocitem text="Adding Applets to a Web Module" target="webmod_addapplet"/>
+          <tocitem text="Adding HTML files to a Web Module" target="concepts_html" />          
+    </tocitem> <!-- Adding Files -->
+    <tocitem text="Using Tag Libraries" >
+      <tocitem text="Using Tag Libraries" target="webmod_addtglb"/>
+      <tocitem text="Adding a Tag Library From the Filesystem" target="tagsupport_fromfilesys" />        
+      <tocitem text="Adding a Tag Library From the Repository" target="tagsupport_fromrepository" />
+      <tocitem text="Adding Tag Files to a Web Module" target="webmod_addtagf" />
+      <tocitem text="Using the JSTL" target="webmod_jstl" />
+    </tocitem>		
+    <tocitem text="Working With Deployment Descriptors (web.xml)" target="webmod_editdd" />		
+    <tocitem text="Upgrading to JSP 2.0 and Servlet 2.4 Specifications" target="spec_version" />
+  </tocitem> <!-- Starting a Web Module Project -->
+
+  <tocitem text="Developing Web Modules" > 
+    <tocitem text="Working With JSP Pages" > 
+      <tocitem text="Creating a JSP File" target="jsp_create" />
+      <tocitem text="Editing a JSP File" target="jsp_edit" />
+      <tocitem text="Using Tags in JSP Files" target="webmod_usetags"/>
+    </tocitem> <!-- Working With JSP Pages -->
+    <tocitem text="Working With Servlets" > 
+      <tocitem text="Creating a Servlet Source File" target="servlet_create" />
+      <tocitem text="Editing a Servlet Source File" target="servlet_edit"/>
+    </tocitem> <!-- Working With Servlets -->
+    <tocitem text="Working With Filters" > 
+      <tocitem text="Creating a Filter" target="filter_create"/>
+      <tocitem text="Adding a Filter to the Deployment Descriptor" target="filter_addtodd"/>
+    </tocitem> <!-- Working With Filters -->
+    <tocitem text="Working With Listeners" > 		
+      <tocitem text="Creating a Listener" target="listen_create"/>
+      <tocitem text="Adding a Listener to the Deployment Descriptor" target="listen_addtodd"/>
+    </tocitem> <!-- Working With Listeners -->										
+  </tocitem> <!-- Developing Web Modules -->
+
+  <tocitem text="Running and Testing Web Modules" > 
+    <tocitem text="About Running Web Modules" target="webmod_servconfig" />
+    <tocitem text="Changing Web Browsers for Running Web Modules" target="webmod_browser" />
+    <tocitem text="Changing Web Servers" target="webmod_server_set" />
+    <tocitem text="Passing Parameters to a JSP File or Servlet" target="jsp_queryparams"/>									
+  </tocitem> <!-- Running and Testing Web Modules -->
+
+  <tocitem text="Debugging Web Modules" > 
+    <tocitem text="About Debugging Web Modules" target="jsp_debug"/>
+    <tocitem text="Validating JSP Syntax" target="jsp_validate" />
+    <tocitem text="Viewing a JSP's Servlet" target="jsp_servletview" />		
+  </tocitem> <!-- Debugging Web Modules-->
+    
+  <tocitem text="Packaging Web Modules" > 
+    <tocitem text="Creating WAR Files" target="webmod_packagewar" />
+    <tocitem text="Adding External Resources to WAR Files" target="war_xtrafiles" />	
+    <tocitem text="Viewing the Contents of a WAR File" target="war_viewcont" />
+    <tocitem text="Removing WAR Files" target="war_delete"/>        
+  </tocitem> <!-- Packaging Web Modules -->
+  
+  <tocitem text="Deploying Web Modules" > 
+    <tocitem text="About Deploying Web Modules" target="webmod_deploy"/> 
+  </tocitem> <!-- Deploying Web Modules-->
+
+  <tocitem text="Developing Tag Libraries and Tag Files" > 								
+    <tocitem text="Creating TLD Files" target="taglib_createtaglib" />
+    <tocitem text="Editing TLD Files" target="ctx_taglibcust" />
+    <tocitem text="Creating and Editing Tags" target="ctx_tagcust" />
+    <tocitem text="Creating and Editing Tag Attributes" target="ctx_tagattcust" />
+    <tocitem text="Creating and Editing Scripting Variables" target="ctx_scrvarcust"/>
+    <tocitem text="Generating Java Source Tag Handlers" target="taglib_generate"/>
+    <tocitem text="Deploying Tag Libraries"  target="taglib_packlib"/>
+  </tocitem> <!-- Developing Tag Libraries and Tag Files -->
+
+  <!-- Detritus - Removed from TOC, Index, and JHM
+  <tocitem text="DELETEd Adding Items to a Web Module" target="webmod_additems" />  
+  <tocitem text="DELETEdCreating a Web Module Group" target="webmod_multipletest" />         
+  <tocitem text="DELETEd Working with Dreamweaver Files" target="jsp_dwt" />
+  <tocitem text="DELETEdCompiling a JSP Source File" target="jsp_compile" />    
+  <tocitem text="DELETEdViewing Both JSP and Servlet Files" target="jsp_togglebreakpt"/>
+
+  <tocitem text="DELETEd" target="concepts_jump" /> 
+  <tocitem text="DELETEd" target="jsp_jump"/>
+  <tocitem text="DELETEd" target="webmod_jump" />
+  
+          <tocitem text="DELETEd" target="war_import" />	    
+          <tocitem text="DELETEd" target="webmod_chngdir" />  
+  <tocitem text="DELETE" target="jsp_debuggrprops" />            
+  -->
+
+  <!-- No longer in TOC
+  <tocitem text="NOTOCSetting JSP Page Properties" target="jsp_props" />
+  <tocitem text="NOTOCSetting Servlet Properties" target="servlet_props" />
+
+
+
+  <tocitem text="NOTOCSetting Filter Properties" target="filter_props" />
+  <tocitem text="NOTOCSetting Listener Properties" target="listen_props"/>
+  <tocitem text="NOTOCSetting the Compiler for a Servlet File" target="webmod_dbggrprops">  										
+
+
+
+
+
+
+  <tocitem text="NOTOCSetting WEB-INF Properties" target="webmod_webinfprops" />
+
+
+  Not part of core product 
+  <tocitem text="NOTOCEditing Web Module Deployment Properties" target="dd_properties" />
+  <tocitem text="NOTOCEditing Web Module Reference Properties" target="dd_references" />
+  <tocitem text="NOTOCEditing Web Module Security Properties" target="dd_security" />
+
+
+
+
+  <tocitem text="NOTOCEditing Web Module Archive Properties" target="war_editprop" />
+
+  -->
+
+</tocitem> <!-- JSP/Servlet -->
+
+<tocitem text="IDE Configuration">
+  
+    <tocitem text="Configuring IDE-wide Settings" >
+      <tocitem text="Using the Options Window" target="configure.options" />
+      <tocitem text="Configuring Java Settings" target="java.java_sources" />
+      <tocitem text="Managing IDE Windows" target="workspace.jump"/>
+      <tocitem text="Changing Window Modes" target="workspace.window.mode"/>
+      <tocitem text="Setting Character Encoding for Java Files" target="java.encoding" />
+      <tocitem text="Setting Font Size in the IDE" target="configure.fontsize" />
+      <tocitem text="Configuring System Settings" target="configure.system.settings" />
+      <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
     </tocitem>
-    <tocitem text="Managing Modules" >
-      <tocitem text="Updating the IDE" target="ide.autoupdate" />
-      <tocitem text="Installing Modules Offline" target="update.offline" />
-      <tocitem text="Setting the Update Prompt Frequency" target="update.prompt" />
-      <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
-      <tocitem text="Enabling or Disabling a Module" target="configure.module" />
-    </tocitem>
-    <tocitem text="Using a Web Browser With the IDE" >
-      <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
-      <tocitem text="Setting a Proxy" target="proxy" />
-      <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
-      <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" />
-      <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
-      <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
-      <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
-    </tocitem>
-    <tocitem text="Configuring Menus">
+
+    <tocitem text="Configuring Menus and Toolbars">
       <tocitem text="Customizing the Display of Commands in a Menu" target="configure.menucommands" />
       <tocitem text="Customizing the Contextual Menu for an Object" target="configure.popup" />
       <tocitem text="Adding a Menu to the Main Window" target="configure.menucreate" />
       <tocitem text="Removing a Menu From the Main Window" target="configure.menudelete" />
-    </tocitem>
-    <tocitem text="Configuring Toolbars">
       <tocitem text="About" target="configure.toolbar" />
       <tocitem text="Customizing the Display of Commands in a Toolbar" target="configure.tbcommands" />
       <tocitem text="Moving and Hiding a Toolbar" target="configure.tbmove" />
@@ -407,8 +528,7 @@
       <tocitem text="Adding a Toolbar to the Main Window" target="configure.tbcreate" />
       <tocitem text="Removing a Toolbar From the Main Window" target="configure.tbdelete" />
     </tocitem>
-    <tocitem text="Setting Font Size in the IDE" target="configure.fontsize" />
-    <tocitem text="Configuring System Settings" target="configure.system.settings" />
+
     <tocitem text="Keyboard Shortcuts" >
       <tocitem text="About" target="shortcuts.kybd" />
       <tocitem text="Menu Shortcuts" target="shortcuts.menus" />
@@ -418,24 +538,41 @@
       <tocitem text="Window Navigation Shortcuts" target="shortcuts.window" />
       <tocitem text="Help Viewer Shortcuts" target="accessibility.jhshortcuts" />
     </tocitem>
-    <tocitem text="IDE Startup Parameters" target="configure.startup-switches" />
-  </tocitem>
 
-  <tocitem text="Accessibility" >
-    <tocitem text="About" target="accessibility.home"/>
-      <tocitem text="Setting Font and Color for the Help Viewer" target="accessibility.stylesheet"/>
-      <tocitem text="Displaying Help in a Web Browser" target="accessibility.alternate.browser" />
-  </tocitem>
-  
-  <tocitem text="Testing with JUnit">
-    <tocitem text="About JUnit" target="junit_about"></tocitem>
-    <tocitem text="Working with JUnit" target="junit_overview"></tocitem>
-    <tocitem text="JUnit Tasks: Quick Reference" target="junit_quickref"></tocitem>
-    <tocitem text="Creating Unit Tests with JUnit" target="junit_creatingtests"></tocitem>
-    <tocitem text="Running JUnit Tests" target="junit_runningtests"></tocitem>
-    <tocitem text="Configuring JUnit" target="junit_configuring"></tocitem>
-  </tocitem>
-    
+    <tocitem text="Switching JDK Versions">
+      <tocitem text="About" target="java.jdks.jump"/>
+      <tocitem text="Choosing the IDE's Default JDK Version" target="java.jdks.default" />
+      <tocitem text="Target Java Platform Configuration" target="java.jdks.checklist" />
+      <tocitem text="Cross-Compiling Between Java Platforms" target="compile.crosscompile"/>
+      <tocitem text="Working With Assertions" target="java.assertions" />
+      <tocitem text="Setting the JDK for an Ant Script" target="ant.target-jdk" />
+    </tocitem>
+
+    <tocitem text="Managing Modules" >
+      <tocitem text="Updating the IDE" target="ide.autoupdate" />
+      <tocitem text="Installing Modules Offline" target="update.offline" />
+      <tocitem text="Setting the Update Prompt Frequency" target="update.prompt" />
+      <tocitem text="Updating a Multi-User IDE Installation" target="update.globally" />
+      <tocitem text="Enabling or Disabling a Module" target="configure.module" />
+    </tocitem>
+
+    <tocitem text="Using a Web Browser With the IDE" >
+      <tocitem text="Opening a Web Browser From the IDE" target="webbrowser"/>
+      <tocitem text="Setting a Proxy" target="proxy" />
+      <tocitem text="Accessing Local Files Through a Proxy" target="bypass.proxy" />
+      <tocitem text="Specifying the Default Web Browser" target="webbrowser.default" />
+      <tocitem text="Configuring a Web Browser" target="webbrowser.config" />
+      <tocitem text="Configuring HTTP Server Options" target="httpserver-options" />
+      <tocitem text="Setting a Home Page for the Web Browser" target="webbrowser.homepage" />
+    </tocitem>
+
+    <tocitem text="Web Server Integration">
+      <tocitem text="About" target="general_about_the_j2eeserver_module_html"/>
+      <tocitem text="Server Registry Node" target="nodes_server_registry_node_html" />
+    </tocitem>
 </tocitem>
 </toc>
-
+  
+  
+  
+  
