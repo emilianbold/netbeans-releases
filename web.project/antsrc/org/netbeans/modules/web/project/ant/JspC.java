@@ -53,5 +53,8 @@ public class JspC extends org.apache.jasper.JspC {
         return true;
     }
     
+    public boolean getMappedFile() {
+        return true;
+    }
     
 }
