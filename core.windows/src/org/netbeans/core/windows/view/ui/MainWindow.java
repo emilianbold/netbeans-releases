@@ -33,6 +33,7 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -155,6 +156,14 @@ public final class MainWindow extends JFrame {
                 status.setPreferredSize(new Dimension(0, status.getPreferredSize().height));
 
                 JPanel statusLinePanel = new JPanel(new BorderLayout());
+                if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    // on mac there is window resize component in the right most bottom area.
+                    // it paints over our icons..
+                    statusLinePanel.setBorder(BorderFactory.createCompoundBorder(
+                            // 12 is a magic constant
+                            BorderFactory.createEmptyBorder(0, 0, 0, 12), 
+                            statusLinePanel.getBorder()));
+                }
                 statusLinePanel.add(new JSeparator(), BorderLayout.NORTH);
                 statusLinePanel.add(status, BorderLayout.CENTER);
                 
