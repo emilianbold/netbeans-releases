@@ -185,7 +185,7 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         //*will* be an exception later, it just won't contain any useful
         //information. See issue 39914 for what happens if it is deleted.
         assert toSelect != -1 : "Tried to set a selected component that was " +
-            " in the array of open components. ToSelect: " + selected + 
+            " not in the array of open components. ToSelect: " + selected + 
             " open components: " + Arrays.asList(tcs);
         
         getModel().setTabs(data);
