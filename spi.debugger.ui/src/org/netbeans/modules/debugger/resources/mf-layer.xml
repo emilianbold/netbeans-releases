@@ -20,66 +20,67 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-AddWatchAction.instance"/>
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
-            <file name="org-openide-actions-FinishDebuggerAction.instance"/>
-            <file name="org-openide-actions-GoToCursorAction.instance"/>
-            <file name="org-openide-actions-GoAction.instance"/>
-            <file name="org-openide-actions-StartDebuggerAction.instance"/>
-            <file name="org-openide-actions-TraceIntoAction.instance"/>
-            <file name="org-openide-actions-StepOutAction.instance"/>
-            <file name="org-openide-actions-TraceOverAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
+            
+            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions--ContinueAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
 
             <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
-            <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
-            <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
-            <file name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance" />
-            <file name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance" />
+            <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" />
         </folder>
     </folder>
 
     <folder name="Menu">
 
         <folder name="View">
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
         </folder>
 
         <attr name="Build/Debug" boolvalue="true" />
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-            <file name="org-openide-actions-StartDebuggerAction.instance"/>
-            <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-FinishDebuggerAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-FinishDebuggerAction.instance"/>
-            <attr name="org-openide-actions-FinishDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StartAction.instance/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-FinishAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/Separator1[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator1[javax-swing-JSeparator].instance"/>
 
-            <attr name="Separator1[javax-swing-JSeparator].instance/org-openide-actions-GoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GoAction.instance"/>
-            <attr name="org-openide-actions-GoAction.instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="Separator1[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-ContinueAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/org-netbeans-modules-debugger-support-actions-PauseAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-PauseAction.instance/Separator2[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator2[javax-swing-JSeparator].instance"/>
 
-            <attr name="Separator2[javax-swing-JSeparator].instance/org-openide-actions-GoToCursorAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GoToCursorAction.instance"/>
-            <attr name="org-openide-actions-GoToCursorAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceOverAction.instance"/>
-            <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceIntoAction.instance"/>
-            <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-StepOutAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-StepOutAction.instance"/>
-            <attr name="org-openide-actions-StepOutAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="Separator2[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/Separator3[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator3[javax-swing-JSeparator].instance"/>
             
-            <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-CallStackUpAction.instance/org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-CallStackDownAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
+            <attr name="Separator3[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance/org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance/Separator4[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator4[javax-swing-JSeparator].instance"/>
             
             <attr name="Separator4[javax-swing-JSeparator].instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
@@ -91,8 +92,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-openide-actions-AddWatchAction.instance/Separator5[javax-swing-JSeparator].instance" boolvalue="true" />
             <file name="Separator5[javax-swing-JSeparator].instance" />
             
-            <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
+            <attr name="Separator5[javax-swing-JSeparator].instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
 
         </folder>
         <attr name="Debug/Tools" boolvalue="true" />
@@ -103,12 +104,12 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-StartDebuggerAction.instance"/>
-            <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceIntoAction.instance"/>
-            <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceOverAction.instance"/>
-            <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StartAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
@@ -118,24 +119,24 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="DebugFull">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-StartDebuggerAction.instance"/>
-            <attr name="org-openide-actions-StartDebuggerAction.instance/org-openide-actions-GoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GoAction.instance"/>
-            <attr name="org-openide-actions-GoAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StartAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StartAction.instance/org-netbeans-modules-debugger-support-actions-ContinueAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/org-openide-actions-FinishDebuggerAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-FinishDebuggerAction.instance"/>
-            <attr name="org-openide-actions-FinishDebuggerAction.instance/org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-SuspendDebuggerAction.instance/org-openide-actions-TraceIntoAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceIntoAction.instance"/>
-            <attr name="org-openide-actions-TraceIntoAction.instance/org-openide-actions-GoToCursorAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-GoToCursorAction.instance"/>
-            <attr name="org-openide-actions-GoToCursorAction.instance/org-openide-actions-TraceOverAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-TraceOverAction.instance"/>
-            <attr name="org-openide-actions-TraceOverAction.instance/org-openide-actions-StepOutAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-StepOutAction.instance"/>
-            <attr name="org-openide-actions-StepOutAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-FinishAction.instance/org-netbeans-modules-debugger-support-actions-PauseAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-PauseAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-openide-actions-ToggleBreakpointAction.instance" boolvalue="true" />
             <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
             <attr name="org-openide-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
@@ -144,9 +145,9 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
 
         <folder name="View">
-            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerViewAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-OutputWindowAction.instance/org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance" />
+            <attr name="org-netbeans-modules-debugger-support-actions-DebuggerWindowAction.instance/org-netbeans-core-actions-ExecutionViewAction.instance" boolvalue="true" />
         </folder>
 
     </folder>
@@ -154,7 +155,14 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Shortcuts">
 
         <file name="CS-F8[org-netbeans-modules-debugger-support-actions-AddBreakpointAction].instance" />
-        <file name="C-5[org-netbeans-modules-debugger-support-actions-DebuggerViewAction].instance" />
+        <file name="C-5[org-netbeans-modules-debugger-support-actions-DebuggerWindowAction].instance" />
+        <file name="F4[org-netbeans-modules-debugger-support-actions-RunToCursorAction].instance" />
+        <file name="SA-F7[org-netbeans-modules-debugger-support-actions-StepOutAction].instance" />
+        <file name="F7[org-netbeans-modules-debugger-support-actions-StepIntoAction].instance" />
+        <file name="S-F7[org-netbeans-modules-debugger-support-actions-StepOverAction].instance" />
+        <file name="C-F5[org-netbeans-modules-debugger-support-actions-ContinueAction].instance" />
+        <file name="S-F5[org-netbeans-modules-debugger-support-actions-FinishAction].instance" />
+        <file name="A-F5[org-netbeans-modules-debugger-support-actions-StartAction].instance" />
 
     </folder>
 
