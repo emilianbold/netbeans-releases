@@ -145,7 +145,7 @@ class TestUtil extends Object {
                 }
             }
         };
-        TopManager.getDefault().getExecutionEngine ().execute(className,runTestTask,null);
+        ExecutionEngine.getDefault().execute(className,runTestTask,null);
     }
     
     static boolean isSupportedFileSystem(FileSystem fileSystem) {

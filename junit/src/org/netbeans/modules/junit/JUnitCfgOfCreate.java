@@ -23,7 +23,7 @@ import java.awt.*;
 import java.awt.event.*;
 
 import org.openide.*;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.explorer.propertysheet.*;
 import org.openide.util.NbBundle;
@@ -57,7 +57,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             panel = new PropertyPanel(JUnitCfgOfCreate.this, "newFileSystem", PropertyPanel.PREF_CUSTOM_EDITOR); // NOI18N
             descriptor = new DialogDescriptor(panel, bundle.getString("LBL_New_FS_Dialog_Title"));
                 
-            Dialog dialog = TopManager.getDefault().createDialog(descriptor);
+            Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
             dialog.show();
             dialog.dispose();
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
@@ -68,7 +68,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
                 try {
                     selectedFS = (FileSystem)panel.getModel().getValue();
                 } catch (Exception e) {
-                    TopManager.getDefault().notifyException(e);
+                    ErrorManager.getDefault().notify(e);
                     return;
                 }
                 
@@ -92,7 +92,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
                     if (!TestUtil.isSupportedFileSystem(selectedFS)) {
                         String msg = NbBundle.getMessage(JUnitCfgOfCreate.class, "MSG_fs_not_acceptable");
                         NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                        TopManager.getDefault().notify(descr);
+                        org.openide.DialogDisplayer.getDefault().notify(descr);
                         return;
                     }
                     
@@ -123,7 +123,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cboFileSystem.addItem(item);
         cboFileSystem.setSelectedItem(item);
         
-        fss = TopManager.getDefault().getRepository().getFileSystems();
+        fss = Repository.getDefault().getFileSystems();
         while (fss.hasMoreElements()) {
             FileSystem fs = (FileSystem) fss.nextElement();
             if (TestUtil.isSupportedFileSystem(fs)) {
@@ -140,7 +140,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         FileObject  foJUnitTmpl;
         FileObject  foTemplates[];
         
-        foJUnitTmpl = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Templates/JUnit");
+        foJUnitTmpl = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JUnit");
         if (null == foJUnitTmpl) return;
         
         foTemplates = foJUnitTmpl.getChildren();
@@ -192,7 +192,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             bundle.getString("LBL_JUnitCfgOfCreate_Title")
         );
         descriptor.setHelpCtx(new HelpCtx(JUnitCfgOfCreate.class));
-        Dialog dialog = TopManager.getDefault().createDialog(descriptor);
+        Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.show();
         dialog.dispose();
         
@@ -203,8 +203,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             
             // store File System, add it to file systems if neccessary
             if (null != (fs = (FileSystem)((Pair)cfg.cboFileSystem.getSelectedItem()).item)) {
-                if (null == TopManager.getDefault().getRepository().findFileSystem(fs.getSystemName()))
-                    TopManager.getDefault().getRepository().addFileSystem(fs);
+                if (null == Repository.getDefault().findFileSystem(fs.getSystemName()))
+                    Repository.getDefault().addFileSystem(fs);
                 
                 JUnitSettings.getDefault().setFileSystem(fs.getSystemName());
             }

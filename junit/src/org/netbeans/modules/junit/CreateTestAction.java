@@ -67,7 +67,7 @@ public class CreateTestAction extends CookieAction {
     }
 
     protected String iconResource () {
-        return "CreateTestActionIcon.gif";
+        return "org/netbeans/modules/junit/resources/CreateTestActionIcon.gif";
     }
 
     protected int mode () {
@@ -88,29 +88,29 @@ public class CreateTestAction extends CookieAction {
         
         // get the target file system
         temp = JUnitSettings.getDefault().getFileSystem();
-        if (null == (fsTest = TopManager.getDefault().getRepository().findFileSystem(temp))) {
+        if (null == (fsTest = Repository.getDefault().findFileSystem(temp))) {
             String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_file_system_not_found");
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(descr);
+            org.openide.DialogDisplayer.getDefault().notify(descr);
             return;
         }
         
         try {
             // get the Suite class template
             temp = JUnitSettings.getDefault().getSuiteTemplate();
-            fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource(temp);
+            fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doSuiteTempl = DataObject.find(fo);
 
             // get the Test class template
             temp = JUnitSettings.getDefault().getClassTemplate();
-            fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource(temp);
+            fo = Repository.getDefault().getDefaultFileSystem().findResource(temp);
             doTestTempl = DataObject.find(fo);
         }
         catch (DataObjectNotFoundException e) {
             String msg = NbBundle.getMessage(CreateTestAction.class, "MSG_template_not_found");
             msg += " (" + temp + ")";
             NotifyDescriptor descr = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-            TopManager.getDefault().notify(descr);
+            org.openide.DialogDisplayer.getDefault().notify(descr);
             return;
         }
 

@@ -22,25 +22,13 @@
     <folder name="Mount">
         <folder name="Javadoc">
             <!-- JUnit JavaDoc -->
-            <file name="org-netbeans-modules-junit-junit-javadoc.xml">
-	      <![CDATA[
-		<!DOCTYPE Javadoc PUBLIC "-//NetBeans IDE//DTD JavadocLibrary//EN" "http://www.netbeans.org/dtds/JavadocLibrary-1_0.dtd">
-		<Javadoc>
-		    <Archive name="docs/junit-api.zip"/>
-		</Javadoc>
-	      ]]>
+            <file name="org-netbeans-modules-junit-junit-javadoc.xml" url="Mount-Javadoc-JUnit.xml">
                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
             </file>
         </folder>
         <folder name="java">
-            <file name="org-netbeans-modules-junit-junit-library.xml">
-	      <![CDATA[
-	          <!DOCTYPE Library PUBLIC "-//NetBeans IDE//DTD JavaLibrary//EN" "http://www.netbeans.org/dtds/JavaLibrary-1_0.dtd">
-	          <Library>
-	              <Archive name="modules/ext/junit-3.7.jar"/>
-	          </Library>
-	      ]]>
+            <file name="org-netbeans-modules-junit-junit-library.xml" url="Mount-java-JUnit.xml">
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
            </file>
@@ -65,6 +53,16 @@
             <file name="org-netbeans-modules-junit-OpenTestAction.instance" />
             <file name="org-netbeans-modules-junit-RunTestAction.instance" />
         </folder>
+        <folder name="Help">
+            <file name="org-netbeans-modules-junit-mainpage.xml" url="help-main-ref.xml">
+            	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+            	<!--
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.docs.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
+                -->                
+            </file>
+        </folder>        
     </folder>
 
     <!-- shortcuts -->
@@ -89,6 +87,10 @@
                   boolvalue="true"/>
         
         </folder>
+    	<file name="org-netbeans-modules-junit-JUnitSettings.settings" url="JUnitSettings.xml">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
+            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
+    	</file>        
     </folder>
 
     <folder name="Menu">
@@ -107,39 +109,18 @@
         </folder>
     </folder>
     
-    <folder name="Actions">
-        <folder name="Help">
-            <file name="org-netbeans-modules-junit-mainpage.xml" url="help-main-ref.xml">
-            	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-            	<!--
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.docs.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/apache/tools/ant/module/resources/AntIcon.gif"/>
-                -->                
-            </file>
-        </folder>
-    </folder>
     
-    <!-- settings -->
-    <folder name="Services">
-    	<file name="org-netbeans-modules-junit-JUnitSettings.settings" url="JUnitSettings.xml">
-			<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.junit.Bundle"/> 
-        	<attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/junit/resources/JUnitLogo.gif"/>
-    	</file>
-    </folder>
     
     <folder name="UI">
     	<folder name="Services">
-        <!-- Display the system option under the "Testing" category in Options. -->
+                <!-- Display the system option under the "Testing" category in Options. -->
         	<folder name="Testing">
-            <!-- Point to the real settings file (always on the system file system). -->
+                    <!-- Point to the real settings file (always on the system file system). -->
 	            <file name="org-netbeans-modules-junit-JUnitSettings.shadow">
-<![CDATA[Services/org-netbeans-modules-junit-JUnitSettings.settings
-SystemFileSystem
-]]>
+                        <attr name="originalFile" stringvalue="Services/org-netbeans-modules-junit-JUnitSettings.settings"/>
 	            </file>
         	</folder>
     	</folder>
-	</folder>
+    </folder>
 
 </filesystem>

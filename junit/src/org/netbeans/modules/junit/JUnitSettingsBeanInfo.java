@@ -25,7 +25,7 @@ import java.util.Enumeration;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.*;
+import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -143,11 +143,11 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             if (icon == null)
-                icon = loadImage ("JUnitSettingsIcon.gif");
+                icon = loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon.gif");
             return icon;
         } else {
             if (icon32 == null)
-                icon32 = loadImage ("JUnitSettingsIcon32.gif");
+                icon32 = loadImage ("/org/netbeans/modules/junit/resources/JUnitSettingsIcon32.gif");
             return icon32;
         }
     }
@@ -263,7 +263,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             // default value, when no file system is selected
             put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "", SHOW_IN_LIST | IS_DEFAULT);
             
-            Enumeration fss = TopManager.getDefault().getRepository().getFileSystems();
+            Enumeration fss = Repository.getDefault().getFileSystems();
             while (fss.hasMoreElements()) {
                 FileSystem fs = (FileSystem) fss.nextElement();
                 if (TestUtil.isSupportedFileSystem(fs)) {
@@ -278,7 +278,7 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             FileObject  foJUnitTmpl;
             FileObject  foTemplates[];
 
-            foJUnitTmpl = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Templates/JUnit");
+            foJUnitTmpl = Repository.getDefault().getDefaultFileSystem().findResource("Templates/JUnit");
             if (null != foJUnitTmpl) {
                 foTemplates = foJUnitTmpl.getChildren();
                 for(int i = 0; i < foTemplates.length; i++) {

@@ -25,7 +25,6 @@ import java.util.*;
 import javax.swing.text.Element;
 import javax.swing.text.BadLocationException;
 
-import org.openide.TopManager;
 import org.openide.src.*;
 import org.openide.filesystems.*;
 import org.openide.cookies.SourceCookie;
@@ -526,10 +525,18 @@ public class TestCreator extends java.lang.Object {
     }
 
     static private boolean isException(String className) {
+        //System.err.println("!!!! JUNIT !!!! isException !!!!");
         try {
-            Class clazz = TopManager.getDefault().currentClassLoader().loadClass(className);
+            Class clazz = org.openide.TopManager.getDefault().currentClassLoader().loadClass(className);
+            //Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
+            //System.err.println("!!!! clazz1 = "+clazz1+" !!!! clazz2 = "+clazz2);
             return java.lang.Throwable.class.isAssignableFrom(clazz);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            /*
+            System.err.println("!!!! Here goes exception"+e);
+            e.printStackTrace(System.err);
+             */
+        }
         return false;
     }
 
