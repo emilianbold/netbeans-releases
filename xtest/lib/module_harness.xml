@@ -123,6 +123,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ======== -->
     
     <target name="config" depends="init, cleanworkdir">
+        <property name="xtest.executors" value=""/>
         <!-- This task reads config file cfg-${xtest.testtype}.xml and selects all -->
         <!-- testbags, which conforms to ${xtest.attribs} - is subset or equals -->
         <test-configurator testtype="${xtest.testtype}" 
