@@ -282,12 +282,17 @@ abstract class ContentModel {
                     // last model is possibly partially full, it could disapprove
                     // if more food was provided -> move all subsequent automatons
                     // to have accurate possibilities()
-                    
+
+                    int level = food.mark();
                     for (int i = current + 1; i<models.length; i++) {
                         food.reset(store);
                         if (models[i].eat(food)) continue;
                     }
-                    
+                    food.reset(level);
+                    if (food.hasNext()) {
+                        throw new IllegalStateException("Food mark/reset invarint is broken!");
+                    }
+
                     // it accepted and is complete
                     if (models[current].terminated()) current++;
                 }

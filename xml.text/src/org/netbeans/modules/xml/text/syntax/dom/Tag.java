@@ -299,5 +299,42 @@ public abstract class Tag extends SyntaxNode implements Element, XMLTokenIDs {
             throw new DOMException(DOMException.INVALID_STATE_ERR , e.getMessage());
         }
     }
+
+    /**
+     * We guarantee DOM Node equality by using Java Object's equals.
+     * It's potentionally dangerous as it mixes StartTags and EndTags.
+     * Never put this object into vector of so until you assumes DOM Node
+     * equality.
+     * <p>
+     * I would appreciate a methos at DOM that would define
+     * Node equals not Objevt's equals.
+     */
+    public final boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj instanceof Tag) {
+            Tag tag = (Tag) obj;
+            Tag t1 = tag.getStartTag();
+            Tag t2 = getStartTag();
+            if (t1 == null || t2 == null) return false;
+            return t1.superEquals(t2);
+        }
+        return false;
+    }
+
+    private boolean superEquals(Tag tag) {
+        return super.equals(tag);
+    }
+
+    /**
+     * The same as for equals it's DOM node hashcode.
+     */
+    public final int hashCode() {
+        Tag tag = getStartTag();
+        if (tag == null || tag == this) {
+            return super.hashCode();
+        } else {
+            return tag.hashCode();
+        }
+    }
 }
 

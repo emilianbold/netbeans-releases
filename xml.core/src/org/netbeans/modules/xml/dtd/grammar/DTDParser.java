@@ -156,6 +156,7 @@ public class DTDParser {
             }
             
             elements.put(name, modelset);
+            models.put(name, model);
         }
         
         public void externalEntityDecl(String name, String publicId, String systemId) throws SAXException {

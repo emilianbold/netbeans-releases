@@ -25,6 +25,7 @@ import org.netbeans.editor.*;
  * Known differences to DOM specs:
  * <li> <code>getParentNode()</code> may return <code>null</code>
  * <li> NOT_SUPPORTED_ERR is thrown from <code>get_XXX_By_YYY()</code>
+ * <li> implements <code>equals</code>ity at DOM Node level
  * <p>
  * Instances are produced by {@link XMLSyntaxSupport}.
  *

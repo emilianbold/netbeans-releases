@@ -127,6 +127,9 @@ public abstract class SyntaxElement {
         return super.hashCode() ^ offset ^ length;
     }
 
+    /**
+     * DOM Node equals. It's not compatible with Object's equals specs!
+     */
     public boolean equals(Object obj) {
         if (obj instanceof SyntaxElement) {
             if (((SyntaxElement)obj).offset == offset) return true;

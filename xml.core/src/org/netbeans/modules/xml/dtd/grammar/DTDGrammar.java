@@ -35,7 +35,7 @@ public class DTDGrammar implements GrammarQuery {
     // element name keyed
     private Map elementDecls, attrDecls;
     
-    // Map<elementName:String, ContentModel || null>
+    // Map<elementName:String, model:String || model:ContentModel || null>
     // this map is filled asynchronously as it takes some time
     private Map contentModels;
     
@@ -139,20 +139,34 @@ public class DTDGrammar implements GrammarQuery {
         if (elementDecls == null) return EmptyEnumeration.EMPTY;;
         
         Node node = ((Node)ctx).getParentNode();        
-        Set elements;
+        Set elements = null;
         
         if (node instanceof Element) {
             Element el = (Element) node;
             if (el == null) return EmptyEnumeration.EMPTY;;
-            
-            ContentModel model = (ContentModel) contentModels.get(el.getTagName());
-            if (model != null) {                
-                Enumeration en = model.whatCanFollow(new PreviousEnumeration(el, ctx));
+
+            // lazilly parse content model
+            Object model = contentModels.get(el.getTagName());
+            if (model instanceof String) {
+                model = ContentModel.parseContentModel((String)model);
+                contentModels.put(el.getTagName(), model);
+            }
+            if (model instanceof ContentModel) {
+                Enumeration en = ((ContentModel)model).whatCanFollow(new PreviousEnumeration(el, ctx));
                 if (en == null) return EmptyEnumeration.EMPTY;
-                return en;
+                String prefix = ctx.getCurrentPrefix();
+                elements = new TreeSet();
+                while (en.hasMoreElements()) {
+                    String next = (String) en.nextElement();
+                    if (next.startsWith(prefix)) {
+                        elements.add(next);
+                    }
+                }
             }
             // simple fallback
-            elements = (Set) elementDecls.get(el.getTagName());
+            if (elements == null) {
+                elements = (Set) elementDecls.get(el.getTagName());
+            }
         } else if (node instanceof Document) {
             elements = elementDecls.keySet();  //??? should be one from DOCTYPE if exist
         } else {
@@ -282,26 +296,33 @@ public class DTDGrammar implements GrammarQuery {
     }
 
     /**
-     * Lazy evaluated enumeration of previous element siblings.
+     * Lazy evaluated enumeration of previous <b>element</b> sibling
+     * tag names.
      */
     private static class PreviousEnumeration implements Enumeration {
         
         private final Node parent;
-        private final Node last;
+        private final Element lastElement;
         private Node next;
-        
-        PreviousEnumeration(Node parent, Node last) {
+        private boolean eoeSeen = false;
+
+        PreviousEnumeration(Node parent, Node pointer) {
             this.parent = parent;
-            this.last = last;
-            
+            Node last = pointer.getPreviousSibling();
+            while (last != null) {
+                if (last.getNodeType() == Node.ELEMENT_NODE) break;
+                last = last.getPreviousSibling();
+            }
+            lastElement = (Element) last;
+
             // init next
-            
-            next = parent.getFirstChild();
-            while (next != null) {                
-                if (next.getNodeType() == Node.ELEMENT_NODE) break;
-                next = next.getNextSibling();
-            }            
-            if (next == last) next = null;
+
+            if (last != null) {
+                fetchNext(parent.getFirstChild());
+            } else {
+                next = null;
+            }
+
         }
         
         public boolean hasMoreElements() {
@@ -311,13 +332,27 @@ public class DTDGrammar implements GrammarQuery {
         public Object nextElement() {
             if (next == null) throw new NoSuchElementException();
             try {
-                return next;
+                return next.getNodeName();
             } finally {
+                fetchNext(next.getNextSibling());
+            }
+        }
+
+        /**
+         * Load next field being aware if terminating element
+         * @param next candidate
+         */
+        private void fetchNext(Node candidate) {
+            next = candidate;
+            if (eoeSeen) {
+                next = null;
+            } else {
                 while (next != null) {
-                    next = next.getNextSibling();
                     if (next.getNodeType() == Node.ELEMENT_NODE) break;
+                    next = next.getNextSibling();
                 }
-                if (next == last) next = null;
+                //!!! how to properly implement it
+                if (lastElement.equals(next)) eoeSeen = true;
             }
         }
     }
