@@ -23,7 +23,9 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
     
-    <testbag testattribs="libraries,validation" name="Libraries" executor="ide">
+    <!-- For validation run exclude TestLibraries.testDefaultLibraries test, 
+         was intended only between Beta2 and FCS of 4.0 -->
+    <testbag testattribs="libraries" name="Libraries" executor="ide">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="projects/TestLibraries.class"/>
