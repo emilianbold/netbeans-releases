@@ -40,6 +40,7 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.modules.form.compat2.border.*;
 import org.netbeans.modules.form.palette.*;
+import org.netbeans.modules.form.PersistenceObjectRegistry;
 
 /**
  * A property editor for swing border class.
@@ -405,7 +406,8 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
         org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
         try {
             String info = attributes.getNamedItem(ATTR_INFO).getNodeValue();
-            BorderInfo bi =(BorderInfo)org.openide.TopManager.getDefault().currentClassLoader().loadClass(info).newInstance();
+            BorderInfo bi =(BorderInfo) PersistenceObjectRegistry.createInstance(info);
+            //org.openide.TopManager.getDefault().currentClassLoader().loadClass(org.openide.util.Utilities.translate(info)).newInstance();
             org.w3c.dom.NodeList children = element.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
                 if (children.item(i).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
@@ -415,6 +417,7 @@ public final class BorderEditor extends PropertyEditorSupport implements org.ope
             }
             setValue(new DesignBorder(bi));
         } catch (Exception e) {
+            e.printStackTrace(); // XXX
             throw new java.io.IOException();
         }
     }
