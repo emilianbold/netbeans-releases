@@ -195,11 +195,10 @@ public class ProjectsRootNode extends AbstractNode {
             Node nodes[] = null;
                         
             if ( type == PHYSICAL_VIEW ) {
-                nodes = PhysicalViewFactoryImpl.createNodesForProject( project );
-            }
-            
-            else if ( lvp == null || type == PHYSICAL_VIEW ) {
-                nodes = new Node[] { PhysicalViewFactoryImpl.INSTANCE.createPhysicalView( project ).createLogicalView() };
+                nodes = PhysicalView.createNodesForProject( project );
+            }            
+            else if ( lvp == null ) {
+                nodes = new Node[] { Node.EMPTY };
             }
             else {
                 nodes = new Node[] { lvp.createLogicalView() };
@@ -211,7 +210,7 @@ public class ProjectsRootNode extends AbstractNode {
 
             Node[] badgedNodes = new Node[ nodes.length ];
             for( int i = 0; i < nodes.length; i++ ) {
-                if ( type == PHYSICAL_VIEW && !PhysicalViewFactoryImpl.isProjectDirNode( nodes[i] ) ) {
+                if ( type == PHYSICAL_VIEW && !PhysicalView.isProjectDirNode( nodes[i] ) ) {
                     // Don't badge external sources
                     badgedNodes[i] = nodes[i];
                 }

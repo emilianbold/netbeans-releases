@@ -17,7 +17,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.ActionsFactory;
-import org.netbeans.modules.project.uiapi.PhysicalViewFactory;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.util.Lookup;

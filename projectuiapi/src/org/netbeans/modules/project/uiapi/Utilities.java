@@ -32,12 +32,6 @@ public class Utilities {
         return (ActionsFactory)Lookup.getDefault().lookup( ActionsFactory.class );        
     }
     
-    /** Gets the physical view factory from the global Lookup
-     */
-    public static PhysicalViewFactory getPhysicalViewFactory() {
-        return (PhysicalViewFactory)Lookup.getDefault().lookup( PhysicalViewFactory.class );        
-    }
-    
     /** Gets the projectChooser fatory from the global Lookup
      */
     public static ProjectChooserFactory getProjectChooserFactory() {
