@@ -13,8 +13,5 @@ OpenIDE-Module-Class: Service
 Name: org/netbeans/modules/i18n/I18nOptions.class
 OpenIDE-Module-Class: Option
 
-Name: org/netbeans/modules/i18n/I18nAction.class
-OpenIDE-Module-Class: Action
-
-Name: org/netbeans/modules/i18n/InsertI18nStringAction.class
+Name: org/netbeans/modules/i18n/I18nGroupAction.class
 OpenIDE-Module-Class: Action
