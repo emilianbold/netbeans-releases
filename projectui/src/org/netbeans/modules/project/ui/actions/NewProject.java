@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui.actions;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -63,7 +64,11 @@ public class NewProject extends BasicAction {
                 setFirstMain = ((Boolean)mainProperty).booleanValue();
             }
 
-            if ( newObjects != null && !newObjects.isEmpty() ) { // Open all returned projects in the GUI
+            if ( newObjects != null && !newObjects.isEmpty() ) { 
+                // First. Open all returned projects in the GUI.
+                
+                LinkedList filesToOpen = new LinkedList();
+                
                 for( Iterator it = newObjects.iterator(); it.hasNext(); ) {
                     Object obj = it.next ();
                     FileObject newFo = null;
@@ -82,12 +87,17 @@ public class NewProject extends BasicAction {
                                 }
                             }
                         } else {
-                            ProjectUtilities.openAndSelectNewObject (newDo);
+                            filesToOpen.add( newDo );                            
                         }
                     } else {
                         assert false : obj;
                     }
                 }
+                // Second open the files                
+                for( Iterator it = filesToOpen.iterator(); it.hasNext(); ) {
+                    ProjectUtilities.openAndSelectNewObject( (DataObject)it.next() );
+                }
+                
             }
         }
         catch ( IOException e ) {
