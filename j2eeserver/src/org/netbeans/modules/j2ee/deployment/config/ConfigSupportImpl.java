@@ -31,6 +31,7 @@ import javax.enterprise.deploy.spi.*;
 import org.netbeans.modules.j2ee.deployment.config.ConfigurationStorage;
 import org.netbeans.modules.j2ee.deployment.config.ModuleDeploymentSupport;
 import org.netbeans.modules.j2ee.deployment.config.ui.ConfigUtils;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.gen.nbd.WebContextRoot;
@@ -43,17 +44,28 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.util.NbBundle;
 
-/*
+/**
+ * Each J2eeModuleProvider hold a reference to an instance of this config support.
+ * An instance of ConfigDataObject representing the current target configuration
+ * and it is cached for to avoid performance penalty of creating new one for every
+ * access to configuration.
+ *
+ * Whenenver target server of the module changes, a new config support is associate
+ * with the module providing access to the right configuration data object.
+ *
  * @author  nn136682
  */
+//PENDING: cleanup the usage of fakeserver, refresh. Instead, provide UI feedback for
+// case when provider does not associate with any server.
+
 public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport {
     private J2eeModuleProvider provider;
     private String webContextRootXpath;
     private String webContextRootPropName;
-    private Server fakeServer = null;
     private java.util.Map relativePaths = null;
     private String configurationPrimaryFileName = null;
     private Map allRelativePaths = null;
+    private ConfigDataObject configDO = null;
     
     /** Creates a new instance of ConfigSupportImpl */
     public ConfigSupportImpl (J2eeModuleProvider provider) {
@@ -72,10 +84,23 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
     }
     
-    private Server getServer () {
-        if (fakeServer != null) {
-            return fakeServer;
+    private boolean initForWeb() {
+        if (! getProvider().getJ2eeModule().getModuleType().equals(J2eeModule.WAR))
+            return false;
+        
+        if (webContextRootXpath != null && webContextRootPropName != null) {
+            return true;
         }
+        
+        refresh();
+        
+        if (webContextRootXpath != null && webContextRootPropName != null) {
+            return true;
+        }
+        return false;
+    }
+    
+    private Server getServer () {
         Server s = ServerRegistry.getInstance ().getServer (getProvider ().getServerID ());
         if (s == null) {
             //PENDING some ntoifcation.
@@ -85,6 +110,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
     
     private DConfigBean getWebContextDConfigBean() {
+        refresh();
         try {
             DeploymentConfiguration dc = getStorage().getDeploymentConfiguration();
             DeployableObject deployable = dc.getDeployableObject();
@@ -121,31 +147,8 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * Get context root
      * @return string value, null if not set or could not find
      */
-    public String getWebContextRoot(Server server) {
-        fakeServer = server;
-        refresh ();
-        if (webContextRootXpath == null || webContextRootPropName == null) {
-            ErrorManager.getDefault ().log ("Cannot access configuration for server:"+server);
-            fakeServer = null;
-            return null;
-        }
-
-        DConfigBean configBean = getWebContextDConfigBean();
-        fakeServer = null;
-        if (configBean == null) {
-            ErrorManager.getDefault ().log ("ConfigBean for "+webContextRootXpath+" not found"); //NOI18N
-            return null;
-        }
-        return (String) ConfigUtils.getBeanPropertyValue(configBean, webContextRootPropName);
-    }
-    
-    /**
-     * Get context root
-     * @return string value, null if not set or could not find
-     */
     public String getWebContextRoot() {
-        refresh ();
-        if (webContextRootXpath == null || webContextRootPropName == null)
+        if (initForWeb() == false)
             return null;
 
         DConfigBean configBean = getWebContextDConfigBean();
@@ -160,8 +163,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
      * Set context root
      */
     public void setWebContextRoot(String contextRoot) {
-        refresh ();
-        if (webContextRootXpath == null || webContextRootPropName == null)
+        if (initForWeb() == false)
             return;
 
         DConfigBean configBean = getWebContextDConfigBean();
@@ -179,15 +181,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     
     public void resetStorage() {
         try {
-            FileObject fo = findPrimaryConfigurationFO();
-            if (fo != null) {
-                DataObject dobj = DataObject.find(fo);
-                if (dobj instanceof ConfigDataObject) {
-                    ConfigDataObject cdo = (ConfigDataObject) dobj;
-                    cdo.resetStorage();
+            if (configDO == null) {
+                FileObject fo = findPrimaryConfigurationFO();
+                if (fo != null) {
+                    configDO = (ConfigDataObject) DataObject.find(fo);
                 }
             }
-            
+            if (configDO != null) {
+                configDO.resetStorage();
+            }
             relativePaths = null;
             configurationPrimaryFileName = null;
             
@@ -228,13 +230,16 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (moduleFolder == null) {
             throw new IllegalStateException("New J2eeProviderImplementation needs to override this method!"); //NOI18N
         }
-        
+	
+        String path = name;
         if (getProvider().useDirectoryPath()) {
-            name = getContentRelativePath(name);
+            path = getContentRelativePath(name);
+            if (path == null)
+                path = name;
         }
-        FileObject configFO = (name == null) ? null : moduleFolder.getFileObject(name);
+        FileObject configFO = moduleFolder.getFileObject(path);
         if (configFO == null)
-            configFO = FileUtil.createData(moduleFolder, name);
+            configFO = FileUtil.createData(moduleFolder, path);
         return configFO;
     }
 
@@ -253,6 +258,11 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     }
 
     public File getDeploymentPlanFileForDistribution() throws IOException, ConfigurationException {
+        if (getServer() == null) {
+            String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_NoTargetSelected");
+            throw new ConfigurationException(msg);
+        }
+        
         FileLock lock = null;
         OutputStream out = null;
         try {
@@ -296,6 +306,13 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
 
     /** Creates the cache if it does not exist for the selected server */
     public ConfigurationStorage getStorage() {
+        if (getServer() == null) {
+            return null;
+        }
+        if (configDO != null) {
+            return (ConfigurationStorage) configDO.getCookie(ConfigurationStorage.class);
+        }
+        
         FileLock lock = null;
         OutputStream out = null;
         try {
@@ -304,7 +321,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 ServerInstance instance = ServerRegistry.getInstance ().getServerInstance (getProvider ().getServerInstanceID ());
                 ModuleDeploymentSupport mds = new ModuleDeploymentSupport(getProvider().getJ2eeModule());
                 DeploymentConfiguration config;
-                if(instance != null && fakeServer == null) {
+                if(instance != null) {
                     config = instance.getDeploymentManagerForConfiguration().createConfiguration(mds.getDeployableObject());
                 } else {
                     config = getServer ().getDeploymentManager().createConfiguration(mds.getDeployableObject());
@@ -331,10 +348,9 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     getDeploymentPlanSplitter().writeDeploymentPlanFiles(config, mds.getDeployableObject(),  files);
                 }
             }
-            DataFolder folder = DataFolder.findFolder(primary.getParent());
-            DataObject dobj = folder.find(primary);
-            // dobj = DataObject.find(primary);
-            return (ConfigurationStorage) dobj.getCookie(ConfigurationStorage.class);
+
+            configDO = (ConfigDataObject) DataObject.find(primary);
+            return (ConfigurationStorage) configDO.getCookie(ConfigurationStorage.class);
 
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(ConfigSupportImpl.class, "MSG_ConfigStorageFailed",
@@ -351,7 +367,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
         return null;
     }
-    
+
     private DeploymentPlanSplitter getDeploymentPlanSplitter() {
         return getServer ().getDeploymentPlanSplitter();
     }
@@ -361,7 +377,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
     private boolean hasCustomSupport() {
         return hasCustomSupport(getDeploymentPlanSplitter(), getModuleType());
     }
-    private boolean hasCustomSupport(DeploymentPlanSplitter dps, ModuleType type) {
+    private static boolean hasCustomSupport(DeploymentPlanSplitter dps, ModuleType type) {
         if(dps == null) return false;
         return dps.getDeploymentPlanFileNames(type) != null;
     }
@@ -427,5 +443,27 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         return (String) getAllRelativePaths().get(configName);
     }
     
-    
+    public static File[] getDeploymentConfigurationFiles (J2eeModuleProvider provider, Server server) throws IOException {
+        if (provider == null || server == null)
+            return new File[0];
+        
+        ModuleType type = (ModuleType) provider.getJ2eeModule().getModuleType();
+        DeploymentPlanSplitter dps = server.getDeploymentPlanSplitter();
+        String[] fnames;
+        if (hasCustomSupport(dps, type)) {
+            fnames = dps.getDeploymentPlanFileNames(type);
+        } else {
+            fnames = new String[] { ConfigDataLoader.getStandardDeploymentPlanName(server) };
+        }
+        
+        File[] files = new File[fnames.length];
+        for (int i = 0; i < fnames.length; i++) {
+            FileObject fo = provider.findDeploymentConfigurationFile(fnames[i]);
+            if (fo == null) {
+                fo = provider.getDeploymentConfigurationFile(fnames[i]);
+            }
+            files[i] = FileUtil.toFile(fo);
+        }
+        return files;
+    }
 }
