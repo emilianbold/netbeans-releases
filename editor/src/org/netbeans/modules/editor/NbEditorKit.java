@@ -270,7 +270,11 @@ public class NbEditorKit extends ExtKit {
         }
         
         protected void addAction(JTextComponent target, JPopupMenu popupMenu, Action a){
+            // XXX because of #48201 ask for isEnabled - it causes actionName refresh
+            boolean isEnabled = a.isEnabled(); 
+            
             String itemText = (String) a.getValue(Action.NAME);
+
             JMenuItem item = null;
             
             //if (itemText == null){
@@ -289,7 +293,7 @@ public class NbEditorKit extends ExtKit {
                         item.setAccelerator(keys[0]);
                     }
                 }
-                item.setEnabled(a.isEnabled());
+                item.setEnabled(isEnabled);
                 Object helpID = a.getValue ("helpID"); // NOI18N
                 if (helpID != null && (helpID instanceof String))
                     item.putClientProperty ("HelpID", helpID); // NOI18N
