@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
+import javax.swing.KeyStroke;
 import org.netbeans.spi.viewmodel.*;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.*;
@@ -45,6 +46,12 @@ NodeActionsProvider, NodeActionsProviderFilter {
         },
         Models.MULTISELECTION_TYPE_ANY
     );
+    { 
+        DELETE_ACTION.putValue (
+            Action.ACCELERATOR_KEY,
+            KeyStroke.getKeyStroke ("DELETE")
+        );
+    };
     private final Action CREATE_FIXED_WATCH_ACTION = Models.createAction (
         loc("CTL_CreateFixedWatch_Label"),
         new Models.ActionPerformer () {
