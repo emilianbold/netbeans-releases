@@ -24,6 +24,9 @@ import java.util.ResourceBundle;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.SourceRoots;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.LogicalViewChildren;
@@ -63,6 +66,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
  * @author Petr Hrebejk
  */
 public class EjbJarLogicalViewProvider implements LogicalViewProvider {
+    private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("EjbJarLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
     private final EjbJarProject project;
     private final AntProjectHelper helper;    
@@ -70,7 +74,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private final PropertyEvaluator evaluator;
     private final SubprojectProvider spp;
     private final ReferenceHelper resolver;
-    
+    private List changeListeners;
     
     public EjbJarLogicalViewProvider(EjbJarProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, SubprojectProvider spp, ReferenceHelper resolver) {
         this.project = project;
@@ -113,8 +117,42 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
 
         return null;
     }
+    
+    public synchronized void addChangeListener (ChangeListener l) {
+        if (this.changeListeners == null) {
+            this.changeListeners = new ArrayList ();
+        }
+        this.changeListeners.add (l);
+    }
+    
+    public synchronized void removeChangeListener (ChangeListener l) {
+        if (this.changeListeners == null) {
+            return;
+        }
+        this.changeListeners.remove (l);
+    }
+    
+    /**
+     * Used by EjbJarProjectCustomizer to mark the project as broken when it warns user
+     * about project's broken references and advices him to use BrokenLinksAction to correct it.
+     *
+     */
+    public void testBroken () {
+        ChangeListener[] _listeners;
+        synchronized (this) {
+            if (this.changeListeners == null) {
+                return;
+            }
+            _listeners = (ChangeListener[]) this.changeListeners.toArray(
+                    new ChangeListener[this.changeListeners.size()]);
+        }
+        ChangeEvent event = new ChangeEvent (this);
+        for (int i=0; i<_listeners.length; i++) {
+            _listeners[i].stateChanged(event);
+        }
+    }
             
-   private static Lookup createLookup( Project project ) {
+    private static Lookup createLookup( Project project ) {
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
         // XXX Remove root folder after FindAction rewrite
         return Lookups.fixed( new Object[] { project, rootFolder } );
@@ -162,8 +200,8 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             setName( ProjectUtils.getInformation( project ).getDisplayName() );            
             if (hasBrokenLinks()) {
                 broken = true;
-                brokenLinksAction = new BrokenLinksAction();
             }
+            brokenLinksAction = new BrokenLinksAction();            
             brokenServerAction = new BrokenServerAction();
             J2eeModuleProvider moduleProvider = (J2eeModuleProvider)project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener((InstanceListener)WeakListeners.create(
@@ -233,7 +271,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(SystemAction.get( org.openide.actions.FindAction.class ));
             actions.add(null);
-            if (brokenLinksAction != null) {
+            if (brokenLinksAction != null && brokenLinksAction.isEnabled()) {
                 actions.add(brokenLinksAction);
             }
             if (brokenServerAction.isEnabled()) {
@@ -247,37 +285,57 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
-        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener {
+        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, ChangeListener, Runnable {
+
+            private RequestProcessor.Task task = null;
+
+            private PropertyChangeListener weakPCL;
 
             public BrokenLinksAction() {
-                evaluator.addPropertyChangeListener(this);
                 putValue(Action.NAME, NbBundle.getMessage(EjbJarLogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
+                setEnabled(broken);
+                evaluator.addPropertyChangeListener(this);
+                
+                // When evaluator fires changes that platform properties were
+                // removed the platform still exists in JavaPlatformManager.
+                // That's why I have to listen here also on JPM:
+                weakPCL = WeakListeners.propertyChange( this, JavaPlatformManager.getDefault() );                
+                JavaPlatformManager.getDefault().addPropertyChangeListener( weakPCL );
+                EjbJarLogicalViewProvider.this.addChangeListener ((ChangeListener)WeakListeners.change(this, EjbJarLogicalViewProvider.this));
             }
 
             public void actionPerformed(ActionEvent e) {
                 BrokenReferencesSupport.showCustomizer(helper, resolver, getBreakableProperties(), new String[]{EjbJarProjectProperties.JAVA_PLATFORM});
-                if (!hasBrokenLinks()) {
-                    disable();
-                }
+                run();
             }
 
             public void propertyChange(PropertyChangeEvent evt) {
-                if (!broken) {
-                    disable();
-                    return;
-                }
+                refsMayChanged();
+            }
+            
+            public void stateChanged (ChangeEvent evt) {
+                refsMayChanged ();
+            }                       
+            
+            public synchronized void run() {
+                boolean old = broken;
                 broken = hasBrokenLinks();
-                if (!broken) {
-                    disable();
+                if (old != broken) {
+                    setEnabled(broken);
+                    fireIconChange();
+                    fireOpenedIconChange();
+                    fireDisplayNameChange(null, null);
                 }
             }
-
-            private void disable() {
-                broken = false;
-                setEnabled(false);
-                evaluator.removePropertyChangeListener(this);
-                fireIconChange();
-                fireOpenedIconChange();
+            
+            public void refsMayChanged() {
+                // check project state whenever there was a property change
+                // or change in list of platforms.
+                // Coalesce changes since they can come quickly:
+                if (task == null) {
+                    task = BROKEN_LINKS_RP.create(this);
+                }
+                task.schedule(100);
             }
 
         }

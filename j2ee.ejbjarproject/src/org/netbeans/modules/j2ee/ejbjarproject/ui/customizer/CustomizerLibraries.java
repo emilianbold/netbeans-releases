@@ -32,6 +32,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -136,7 +137,9 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
         else {
             jLabelErrorMessage.setText( " " ); // NOI18N
         }
-        
+        EjbJarLogicalViewProvider viewProvider = (EjbJarLogicalViewProvider) uiProperties.getProject().getLookup().lookup(EjbJarLogicalViewProvider.class);
+        //Update the state of project's node if needed
+        viewProvider.testBroken();        
     }
     
     private void initTableVisualProperties(JTable table) {
