@@ -742,7 +742,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/ddapi..."/>
     <ant dir="../web/ddapi" target="netbeans"/>
   </target>
-  <target name="all-web/webapi" depends="all-openide/loaders,all-openide,all-schema2beans/rt">
+  <target name="all-web/webapi" depends="all-openide/loaders,all-openide,all-schema2beans/rt,all-java/api,all-projects/queries">
     <echo message="Building module web/webapi..."/>
     <ant dir="../web/webapi" target="netbeans" />
   </target>
