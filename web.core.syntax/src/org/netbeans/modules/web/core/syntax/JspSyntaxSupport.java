@@ -345,7 +345,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 }
                 //test whether we are still in the tag context
                 if(!tracking.getTokenContextPath().contains(JspTagTokenContext.contextPath)) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("we are out of jsp tag without finding any tag start token!"));
+                    if (err.isLoggable(ErrorManager.INFORMATIONAL)) err.log("We are out of jsp tag without finding any tag start token!");
                     break;
                 }
                 
