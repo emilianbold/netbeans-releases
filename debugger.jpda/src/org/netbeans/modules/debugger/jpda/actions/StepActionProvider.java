@@ -308,7 +308,10 @@ implements Executor {
             if (ssverbose)
                 System.out.println("SS      remove exclusion patterns: " + patterns);
             super.removeExclusionPatterns (patterns);
-            refreshRequest ();
+            if (stepRequest != null) {
+                removeRequest (stepRequest);
+                stepRequest = null;
+            }
         }
         
         private void refreshRequest () {

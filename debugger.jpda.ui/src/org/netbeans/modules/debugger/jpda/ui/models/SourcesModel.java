@@ -56,6 +56,7 @@ NodeActionsProvider {
     private Vector listeners = new Vector ();
     private Set filters = new HashSet ();
     private Set enabledFilters = new HashSet ();
+    private String FILTER_PREFIX = "Do not stop in: ";
     
     
     public SourcesModel (LookupProvider lookupProvider) {
@@ -88,7 +89,7 @@ NodeActionsProvider {
             ep = (String[]) filters.toArray (ep);
             int i, k = ep.length;
             for (i = 0; i < k; i++) {
-                ep [i] = "Do not stop in: " + ep [i];
+                ep [i] = FILTER_PREFIX + ep [i];
             }
             Object[] os = new Object [sr.length + ep.length];
             System.arraycopy (sr, 0, os, 0, sr.length);
@@ -215,7 +216,7 @@ NodeActionsProvider {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node instanceof String) {
-            if (((String) node).startsWith ("D"))
+            if (((String) node).startsWith (FILTER_PREFIX))
                 return new Action[] {
                     NEW_FILTER_ACTION,
                     DELETE_ACTION
@@ -239,9 +240,9 @@ NodeActionsProvider {
     // other methods ...........................................................
     
     private boolean isEnabled (String root) {
-        if (root.startsWith ("D")) {
+        if (root.startsWith (FILTER_PREFIX)) {
             return enabledFilters.contains (root.substring (
-                "Do not stop in: ".length ()
+                FILTER_PREFIX.length ()
             ));
         }
         String[] sr = context.getSourceRoots ();
@@ -252,20 +253,17 @@ NodeActionsProvider {
     }
 
     private void setEnabled (String root, boolean enabled) {
-        if (root.startsWith ("D")) {
+        if (root.startsWith (FILTER_PREFIX)) {
+            String filter = root.substring (FILTER_PREFIX.length ());
             if (enabled) {
-                enabledFilters.add  (root.substring (
-                    "Do not stop in: ".length ()
-                ));
+                enabledFilters.add  (filter);
                 debugger.getSmartSteppingFilter ().addExclusionPatterns (
-                        Collections.singleton (root)
+                        Collections.singleton (filter)
                 );
             } else {
-                enabledFilters.add  (root.substring (
-                    "Do not stop in: ".length ()
-                ));
+                enabledFilters.remove (filter);
                 debugger.getSmartSteppingFilter ().removeExclusionPatterns (
-                        Collections.singleton (root)
+                        Collections.singleton (filter)
                 );
             }
             return;
@@ -312,7 +310,9 @@ NodeActionsProvider {
             public void perform (Object[] nodes) {
                 int i, k = nodes.length;
                 for (i = 0; i < k; i++)
-                    filters.remove (nodes [i]);
+                    filters.remove (((String) nodes [i]).substring (
+                        FILTER_PREFIX.length ()
+                    ));
                 fireTreeChanged ();
             }
         },
