@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
               <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javahelp.resources.Bundle"/>
               <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javahelp/resources/help.gif"/>
           </folder>
-          <attr name="HelpShortcuts/Separator1[javax-swing-JSeparator].instance" boolvalue="true"/>
+          <attr name="HelpShortcuts/Separator1.instance" boolvalue="true"/>
         </folder>
     </folder>
     <folder name="Actions">
