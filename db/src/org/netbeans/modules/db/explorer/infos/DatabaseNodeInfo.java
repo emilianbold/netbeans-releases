@@ -65,6 +65,8 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public static final String UNIONSUP = "unionsupport";
 	public static final String SYSTEM_ACTION = "system";
 	public static final String CHILDREN_ORDERING = "children_ordering";
+	public static final String READONLY = "readOnly";
+	public static final String PERM = "perm";
 	
 	private static Map gtab = null;
 	private static final String gtabfile = "com/netbeans/enterprise/modules/db/resources/explorer.plist";
@@ -128,6 +130,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			}
 			nfo.putAll(data);
 			nfo.put(nodecode, nfo.getName());
+			if (parent != null && parent.isReadOnly()) nfo.setReadOnly(true);
 		} catch (Exception e) {
 			throw new DatabaseException("unable to read key "+key+" from result set, "+e.getMessage());
 		}
@@ -168,6 +171,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		if (ltab != null) putAll(ltab);
 		else throw new DatabaseException("unable to read information for "+sname);
 		put(CODE, sname);
+		if (parent != null && parent.isReadOnly()) setReadOnly(true);
 	}
 	
 	public DatabaseNodeInfo getParent()
@@ -199,6 +203,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	
 	public boolean canWrite(Map propmap, String propname, boolean defa)
 	{
+		if (isReadOnly()) return false;
 		String wflag = (String)propmap.get(DatabaseNodeInfo.WRITABLE);
 		if (wflag != null) return wflag.toUpperCase().equals("YES");
 		return defa;
@@ -333,13 +338,24 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		return (Connection)get(CONNECTION);
 	}
 
-	public void setConnection(Connection con)
+	public void setConnection(Connection con) throws DatabaseException
 	{
 		Connection oldval = getConnection();
 		if (con != null) {
 			if (oldval != null && oldval.equals(con)) return;
 			put(CONNECTION, con);
 		} else remove(CONNECTION);
+		
+		// Check if node is readonly or not.
+		
+		if (con != null && isReadOnly()) {
+			Enumeration enu = getChildren().elements();
+			while(enu.hasMoreElements()) {
+				DatabaseNodeInfo ninfo = (DatabaseNodeInfo)enu.nextElement();
+				ninfo.setReadOnly(true);
+			}
+		}
+		
 		getConnectionPCS().firePropertyChange(CONNECTION, oldval, con);
 	}
 
@@ -519,6 +535,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");		
 		Object xaction = actions.elementAt(0);
 		if (xaction != null && xaction instanceof DatabaseAction) return actions;
+		boolean ro = isReadOnly();
 		for (int i=0; i<actions.size();i++) {
 			
 			Object e_act = actions.elementAt(i);
@@ -526,6 +543,15 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 			if (e_act instanceof Map) {
 				Map e_action = (Map)e_act;
 				try {
+					
+					// Try permissions
+					
+					String perm = (String)e_action.get(PERM);
+					if (ro && perm != null && perm instanceof String && perm.indexOf("write") != -1) {
+						actions.setElementAt(null, i);
+						continue;
+					}
+					
 					boolean systemact = false;
 					String sysactstr = (String)e_action.get(SYSTEM_ACTION);
 					if (sysactstr != null) systemact = sysactstr.toUpperCase().equals("YES");
@@ -577,5 +603,17 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 	public void setDebugMode(boolean mode)
 	{
 		RootNode.getOption().setDebugMode(mode);
+	}
+
+	public boolean isReadOnly()
+	{
+		Boolean roobj = (Boolean)get(READONLY);
+		if (roobj != null) return roobj.booleanValue();
+		return false;
+	}
+	
+	public void setReadOnly(boolean flag)
+	{
+		put(READONLY, new Boolean(flag));
 	}
 }
