@@ -52,7 +52,7 @@ public  class NbCodeFoldingAction extends SystemAction implements Presenter.Menu
     
     public String getName() {
         return NbBundle.getBundle(NbCodeFoldingAction.class).getString(
-            "generate-fold-popup"); //NOI18N
+            "Menu/View/CodeFolds"); //NOI18N
     }        
 
     private static boolean isOpen(Document doc){
