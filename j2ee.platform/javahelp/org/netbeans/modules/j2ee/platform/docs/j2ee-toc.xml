@@ -71,7 +71,7 @@
           <tocitem text="About JSP Syntax" target="about_jsp_syntax" />
           <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Editing a JSP File" target="jsp_edit" />
-          <tocitem text="Folding Code in a JSP File" target="jsp_foldcode" />
+          <tocitem text="Folding Code in a JSP or HTML File" target="jsp_foldcode" />
           <tocitem text="Using a Tag Library in a JSP File" target="jsp_usetaglib"/>
 	  <tocitem text="Tomcat Connection Pooling from a JSP Page" target="jsp_connectionpool_tomcat"/>
           <tocitem text="Compiling a JSP File" target="jsp_compile" />
@@ -133,7 +133,8 @@
       </tocitem>
       </tocitem>
       <tocitem text="HTML Files" >      
-          <tocitem text="Creating an HTML File" target="html_create" />          	
+	  <tocitem text="Creating an HTML File" target="html_create" />  
+          <tocitem text="Folding Code in a JSP or HTML File" target="jsp_foldcode" />
       </tocitem> 
       <tocitem text="Applets" >
               <tocitem text="Creating an Applet" target="applet_create"/>
