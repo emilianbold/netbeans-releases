@@ -1,0 +1,311 @@
+<!--
+   -                 Sun Public License Notice
+   - 
+   - The contents of this file are subject to the Sun Public License
+   - Version 1.0 (the "License"). You may not use this file except in
+   - compliance with the License. A copy of the License is available at
+   - http://www.sun.com/
+   - 
+   - The Original Code is NetBeans. The Initial Developer of the Original
+   - Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
+   - Microsystems, Inc. All Rights Reserved.
+  -->
+
+<html><head>
+<title>Settings API</title>
+<link rel="Stylesheet" href="@OPENAPI@/open-apis.css" type="text/css">
+</head><body>
+
+<p align="right"><a href="../package-summary.html"><b>Overview</b></a></p>
+
+<h1>Javadoc</h1>
+
+The primary class involved is
+
+<a href="../Convertor.html"><code>Convertor</code></a>,
+
+<h1>Contents</h1>
+
+<ul>
+
+<li><a href="#intro">What are Convertors?</a>
+
+<li><a href="#create">Creating own Convertor</a>
+
+<li><a href="#use">Using Existing Convertors</a>
+<ul>
+<li><a href="#use-own">Own Convertor</a>
+<li><a href="#use-xmlprops">XMLProperties Convertor</a>
+</ul>
+<li><a href="#find">Finding Settings</a>
+<li><a href="#version">Versioning Settings</a>
+
+</ul>
+
+<h1>Settings API</h1>
+
+
+<h2><a name="intro">What are Convertors?</a></h2>
+
+Convertors are intended, as the name indicates, to convert objects
+from and to its persistent state. They are supposed to facilitate
+module writers to persist objects in a human readable format.
+
+
+<h2><a name="create">Creating own Convertor</a></h2>
+
+<p>Creating a convertor means creating a new class which subclasses
+the abstract <a href="../Convertor.html"><code>Convertor</code></a> class.</p>
+Methods <code>read</code> and <code>write</code> should contain
+an converting algorithm.
+<p>
+Methods <code>registerSaver</code> and <code>unregisterSaver</code> allow
+to define own logic to detect changes in a setting object and notify the framework
+about these changes via <a href="../Saver.html">Saver</a> interface.
+The framework will store the object automatically or just marked it as
+changed (e.g provide SaveCookie).
+<p>
+E.g. in case your setting object incorporates the property change support you
+can register own listener and filter fired events you want to be notified.
+
+<h2><a name="use">Using Existing Convertors</a></h2>
+
+<h3><a name="use-own">Own Convertor</a></h3>
+If you have already written own convertor class you can use it to define the setting.
+<p>
+First you should write a class of the setting object compatible with your convertor.
+<p>
+Next you should create a <code>.settings</code> file containing default values
+in the format supported by your convertor and place it in the module layer.
+<p>
+Next you should register the public identifier used by that file under <code>xml/entities</code> in the module layer.
+That entity has to be in the shape recognizable by an
+<a href="@OPENAPI@/org/openide/xml/EntityCatalog.html">entity resolver</a>.
+<p>
+Next register the Environment Provider associated with the entity under <code>xml/lookups</code>. The registration
+has to contain following attributes
+<pre>
+&lt;<font class="function-name">file</font> <font class="variable-name">name</font>="entity.instance">
+  <font class="comment">&lt;!--Environment Provider provided by the settings module--></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="instanceCreate" <font class="variable-name">methodvalue</font>="org.netbeans.api.settings.Factory.create"/>
+  <font class="comment">&lt;!--Custom convertor object--></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.convertor" <font class="variable-name">methodvalue</font>="org.netbeans.modules.foo.FooConvertor.create"/>
+  <font class="comment">&lt;!--class name of the setting object--></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.instanceClass" <font class="variable-name">stringvalue</font>="org.netbeans.modules.foo.FooSetting"/>
+  <font class="comment">&lt;!--the setting object; optional attribute; here you can specify
+      a factory producing object into which stored data are read. The produced object
+      should conform the settings.instanceClass attribute--></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.instanceCreate" <font class="variable-name">methodvalue</font>="org.netbeans.modules.foo.FooSetting.create"/>
+  <font class="comment">&lt;!--class name and subclass names of the setting object separated by comma;
+      used for performance reasons; be careful what you include or exclude here to ensure
+      your setting is accessible via the Lookup API --></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.instanceOf" <font class="variable-name">stringvalue</font>="org.netbeans.modules.foo.FooSetting"/>
+  <font class="comment">&lt;!--Entity name; used for performance reason--></font>
+  &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="hint.originalPublicID" <font class="variable-name">stringvalue</font>="-//Vendor org.netbeans.modules.foo//DTD FooSetting 1.0//EN"/>
+  <font class="comment">&lt;!--plus attributes specific to your convertor--></font>
+&lt;/<font class="function-name">file</font>>
+</pre>
+Note: attributes like these should not be part of the .settings file as was usual
+in <a href="@OPENAPI@/org/openide/doc-files/services-api.html#settings">serial data format</a>.
+You will prevent setting version issues in future.
+
+
+<h4><a name="use-memory">Creating instances in the runtime</a></h4>
+Now if you need to create new persistent instances of your setting object in the runtime you have to
+register its class with attribute <code>settings.providerPath</code> under
+<code>xml/memory</code> folder. The attribute has to contain path to the environment provider
+associated with a proper entity registration.
+
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="xml">
+  &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="memory">
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="org">
+      &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="netbeans">
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="modules">
+          &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="foo">
+            <font class="comment">&lt;!--allows to create .settings file from memory via InstanceDataObject.create--></font>
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>="FooSetting">
+              &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.providerPath"
+                 <font class="variable-name">stringvalue</font>="xml/lookups/Vendor_org_netbeans_modules_foo/DTD_FooSetting_1_0.instance"/>
+            &lt;/<font class="function-name">file</font>>
+          &lt;/<font class="function-name">folder</font>>
+        &lt;/<font class="function-name">folder</font>>
+      &lt;/<font class="function-name">folder</font>>
+    &lt;/<font class="function-name">folder</font>>
+  &lt;/<font class="function-name">folder</font>>
+&lt;/<font class="function-name">folder</font>>
+</pre>
+
+To create a persistent instance use method
+<a href="@OPENAPI@/org/openide/loaders/InstanceDataObject.html#create(org.openide.loaders.DataFolder, java.lang.String, java.lang.Object, org.openide.modules.ModuleInfo)">
+org.openide.loaders.InstanceDataObject.create</a>. The framework will
+look up the provider registration for the exact class of the object passed
+into the method.
+
+<h3><a name="use-xmlprops">XMLProperties Convertor</a></h3>
+For some (and maybe many) modules it is sufficient to store its values as
+name, value string pairs. For them the Settings module provides a special
+convertor that handles content of java.util.Properties. The format definition
+is described in <a href="properties-1_0.dtd">properties-1_0.dtd</a>.
+<p>
+To create a setting object class compatible with the XMLProperties convertor
+the class has to contain the property change support
+(like java.beans.ProperyChangeSupport), implement public default constructor
+(if the <code>settings.instanceCreate</code> attribute is not used) and to
+allow to set up data persisted in this format following methods have to be present
+<pre>
+&lt;ANY-ACCESS-MODIFIER> void readProperties(java.util.Properties p)
+</pre>
+and 
+<pre>
+&lt;ANY-ACCESS-MODIFIER> void writeProperties(java.util.Properties p)
+</pre>
+
+It is the setting object concern to collect properties of its possible subclasses. 
+<p>
+The XMLProperties convertor also makes possible to prevent automatic storing
+of the setting object by using file attribute <code>xmlproperties.preventStoring</code>
+in the module layer.
+The attribute can contain the value whether the setting object will be
+stored automatically (<code>xmlproperties.preventStoring==false</code>) or <code>SaveCookie</code>
+will be provided. Default value is <code>false</code>. Usage
+<pre>
+&lt;attr name="xmlproperties.preventStoring" boolvalue="[true|false]"/>
+</pre>
+
+The second additional attribute is <code>xmlproperties.ignoreChanges</code>
+specifying property change events by comma separated list
+of property names which will be ignored. You can use special token <code>all</code>
+to ignore all events. Usage
+<pre>
+&lt;attr name="xmlproperties.ignoreChanges" stringvalue="name[, ...]"/>
+</pre>
+
+<p>
+<a name="use-xmlprops-example">Example of setting definition in a module layer:</a>
+<pre>
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="xml">
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="entities">
+        <font class="comment">&lt;!--the public identifier registration--></font>
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="NetBeans_org_netbeans_modules_foo">
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>="DTD_org_netbeans_modules_foo_FooSetting_1_0" <font class="variable-name">url</font>="nbresboot:/org/netbeans/modules/settings/resources/properties-1_0.dtd"/>
+        &lt;<font class="function-name">/folder</font>>
+    &lt;<font class="function-name">/folder</font>>
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="lookups">
+        <font class="comment">&lt;!--the envirement provider registration--></font>
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="NetBeans_org_netbeans_modules_foo">
+            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>="DTD_org_netbeans_modules_foo_FooSetting_1_0.instance">
+                <font class="comment">&lt;!--env. provider--></font>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="instanceCreate" <font class="variable-name">methodvalue</font>="org.netbeans.api.settings.Factory.create"/>
+                <font class="comment">&lt;!--XMLProperties convertor provided by the settings module--></font>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.convertor" <font class="variable-name">methodvalue</font>="org.netbeans.api.settings.Factory.properties"/>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.instanceClass" <font class="variable-name">stringvalue</font>="org.netbeans.modules.foo.FooSetting"/>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.instanceOf" <font class="variable-name">stringvalue</font>="org.netbeans.modules.foo.FooSetting"/>
+                <font class="comment">&lt;!--changes of propertyName1, propertyName2 will be ignored--></font>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="xmlproperties.ignoreChanges" <font class="variable-name">stringvalue</font>="propertyName1, propertyName2"/>
+                <font class="comment">&lt;!--the setting object will not be stored automatically--></font>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="xmlproperties.preventStoring" <font class="variable-name">boolvalue</font>="true"/>
+                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="hint.originalPublicID" <font class="variable-name">stringvalue</font>="-//NetBeans org.netbeans.modules.foo//DTD FooSetting 1.0//EN"/>
+            &lt;<font class="function-name">/file</font>>
+    &lt;<font class="function-name">/folder</font>>
+    <font class="comment">&lt;!--class to provider mapping (persistent instances created in the runime)--></font>
+    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="memory">
+        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="org">
+            &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="netbeans">
+                &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="modules">
+                    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="foo">
+                        <font class="comment">&lt;!--allows to create .settings file from memory via InstanceDataObject.create--></font>
+                        &lt;<font class="function-name">file</font> <font class="variable-name">name</font>="FooSetting">
+                            &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>="settings.providerPath" <font class="variable-name">stringvalue</font>="xml/lookups/Netbeans_org_netbeans_modules_foo/DTD_FooSetting_1_0.instance"/>
+                        &lt;/<font class="function-name">file</font>>
+                    &lt;/<font class="function-name">folder</font>>
+                &lt;/<font class="function-name">folder</font>>
+            &lt;/<font class="function-name">folder</font>>
+        &lt;/<font class="function-name">folder</font>>
+    &lt;/<font class="function-name">folder</font>>
+&lt;<font class="function-name">/folder</font>>
+
+&lt;<font class="function-name">folder</font> <font class="variable-name">name</font>="Services">
+    <font class="comment">&lt;!--the .settings data file registration--></font>
+    &lt;<font class="function-name">file</font> <font class="variable-name">name</font>="org-netbeans-modules-foo-FooSetting.settings" <font class="variable-name">url</font>="FooSetting.xml">
+        <font class="comment">&lt;!-- SystemFileSystem.localizedName and SystemFileSystem.icon as usual --&gt;</font>
+    &lt;/<font class="function-name">file</font>>
+&lt;<font class="function-name">/folder</font>>
+</pre>
+
+<code>FooSetting.xml</code> containing the persisted setting object:
+<pre>
+&lt;?xml version="1.0" encoding="UTF-8" ?>
+&lt;!DOCTYPE properties PUBLIC "-//NetBeans org.netbeans.modules.foo//DTD FooSetting 1.0//EN" "http://www.netbeans.org/dtds/properties-1_0.dtd"
+&lt;<font class="function-name">properties</font>>
+    &lt;<font class="function-name">property</font> <font class="variable-name">name</font>="property1Name" <font class="variable-name">value</font>="xxx"/>
+    &lt;<font class="function-name">property</font> <font class="variable-name">name</font>="property2Name" <font class="variable-name">value</font>="xxx"/>
+&lt;/<font class="function-name">properties</font>>
+</pre>
+
+<code>FooSetting</code> class would look like:
+<pre>
+<font class="keyword">public final class</font> <font class="type">FooSetting</font> {
+    <font class="keyword">private final static</font> <font class="type">String</font> <font class="variable-name">PROP_PROPERTY1NAME</font> = "property1Name"; //NOI18N
+    ...
+    <font class="keyword">public</font> <font class="type">FooSetting</font>() {...}
+    <font class="comment">//  property change event support</font>
+    <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">addPropertyChangeListener</font>(<font class="type">java.beans.PropertyChangeListener</font> <font class="variable-name">l</font>) {...}
+    <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">removePropertyChangeListener</font>(<font class="type">java.beans.PropertyChangeListener</font> <font class="variable-name">l</font>) {...}
+    <font class="comment">// getters/setters</font>
+    <font class="keyword">public</font> <font class="type">String</font> <font class="function-name">getPropery1</font>() {...}
+    <font class="keyword">public</font> <font class="type">void</font> <font class="function-name">setProperty1</font>(<font class="type">Object</font> <font class="variable-name">property1</font>) {
+        ...
+        <font class="comment">// fire a property change event</font>
+    }
+    <font class="comment">// readProperties/writeProperties called by XMLPropertiesConvertor</font>
+    <font class="keyword">private</font> <font class="type">void</font> <font class="function-name">readProperties</font>(<font class="type">java.util.Properties</font> <font class="variable-name">p</font>) {
+        property1 = p.getProperty(PROP_PROPERTY1NAME);
+        ...
+    }
+    <font class="keyword">private</font> <font class="type">void</font> <font class="function-name">writeProperties</font>(<font class="type">java.util.Properties</font> <font class="variable-name">p</font>) {
+        p.setProperty(PROP_PROPERTY1NAME, property1);
+        ...
+    }
+    ...
+}
+</pre>
+
+
+<h2><a name="find">Finding Settings</a></h2>
+To find out your setting you can use the <a href="@OPENAPI@/org/openide/doc-files/services-api.html#service-lookup">
+lookup system</a>. In such case you have to place your .settings file under
+<code>Services</code> folder. This is useful for settings shared among modules.
+<p>
+Otherwise you can place the file under own folder and use
+<a href="@OPENAPI@/org/openide/loaders/doc-files/api.html">DataSystem API
+</a> to get the object.
+<pre>
+Filesystem fs = Repository.getDefault().getDefaultFilesystem()
+FileObject fo = fs.findResource("YourFolder/YourSetting.settings");
+DataObjec dobj = DataObject.find(fo);
+InstanceCookie ic = (InstanceCookie) dobj.getCookie(InstanceCookie.class);
+Object setting = ic.createInstance();
+</pre>
+
+
+<h2><a name="version">Versioning Settings</a></h2>
+
+<h3>Replacing the setting object class</h3>
+Update the environment provider registration mainly file attributes
+<code>settings.instanceClass</code> and <code>settings.instanceOf</code>. If an old class
+is referenced inside the format use <code>META-INF/netbeans/translate.names</code> file.
+
+<h3>Replacing the setting format</h3>
+Register an entity for the newly introduced format.
+Register your setting class with proper file attribute <code>settings.providerPath</code>
+as was described in the <a href="#use-memory">section</a> about creating settings in the runtime.
+Do not remove the old registation! The framework will read the file via original
+convertor but changes will be stored via new one.
+
+<p>
+
+<hr>@FOOTER@
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE properties PUBLIC
+"-//NetBeans org.netbeans.modules.settings.examples//DTD XML ProxySettings 1.0//EN"
+"http://www.netbeans.org/dtds/properties-1_0.dtd">
+
+<properties>
+    <property name="proxyHost" value="localhost"/>
+</properties>

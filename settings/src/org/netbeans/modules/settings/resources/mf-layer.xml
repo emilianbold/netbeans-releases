@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 2002 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="xml">
+        <folder name="lookups">
+            <folder name="NetBeans">
+            	<!-- Convertor handling session settings; overrides the core definition -->
+                <file name="DTD_Session_settings_1_0.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.settings.convertors.SerialDataConvertor$Provider.create"/>
+                    <attr name="settings.convertor" methodvalue="org.netbeans.modules.settings.convertors.SerialDataConvertor.createWriter"/>
+                    <attr name="hint.originalPublicID" stringvalue="-//NetBeans//DTD Session settings 1.0//EN"/>
+              </file>
+            </folder>
+        </folder>
+        
+        <!-- registered convertors used by InstanceDataObject.create -->
+        <folder name="memory">
+            <folder name="java">
+                <folder name="lang">
+                    <!--default convertor-->
+                    <file name="Object">
+                        <attr name="settings.providerPath" stringvalue="xml/lookups/NetBeans/DTD_Session_settings_1_0.instance"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

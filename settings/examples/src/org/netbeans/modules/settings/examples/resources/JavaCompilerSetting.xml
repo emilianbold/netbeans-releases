@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE properties PUBLIC
+"-//NetBeans org.netbeans.modules.settings.examples//DTD XML JavaCompilerSetting 1.0//EN"
+"http://www.netbeans.org/dtds/properties-1_0.dtd">
+
+<properties>
+    <property name="classPath" value="/home/"/>
+    <property name="path" value="/bin/java"/>
+    <property name="debug" value="true"/>
+</properties>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -130,8 +130,19 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
             id = convertPublicId (id);
             
             return new Lkp (id, xml);
+        } else if (obj instanceof InstanceDataObject) {
+            return getEnvForIDO((InstanceDataObject) obj);
         }
         return null;
+    }
+    
+    private Lookup getEnvForIDO(InstanceDataObject ido) {
+        FileEntityResolver.DTDParser parser = new DTDParser(ido.getPrimaryFile());
+        parser.parse();
+        String id = parser.getPublicId();
+        if (id == null) return null;
+        id = convertPublicId (id);
+        return new Lkp (id, ido);
     }
     
     /** A method that extracts a listener from data object.
@@ -140,7 +151,7 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
      * @param source the obj that provides the environment
      * @return lookup provided by the obj or null if none has been found
      */
-    private static Lookup findLookup (XMLDataObject obj, DataObject source) {
+    private static Lookup findLookup (DataObject obj, DataObject source) {
         if (source == null) {
             return null;
         }
@@ -153,6 +164,8 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
                 if (inst instanceof Environment.Provider) {
                     return ((Environment.Provider)inst).getEnvironment (obj);
                 }
+                
+                if (!(obj instanceof XMLDataObject)) return null;
 
                 if (inst instanceof XMLDataObject.Processor) {
                     // convert provider
@@ -162,7 +175,7 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
                 }
 
                 if (inst instanceof XMLDataObject.Info) {
-                    return createInfoLookup (obj, ((XMLDataObject.Info)inst));
+                    return createInfoLookup ((XMLDataObject)obj, ((XMLDataObject.Info)inst));
                 }
 
             }
@@ -333,6 +346,79 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
         }
     }
     
+    // internally stops documet parsing when looking for public id
+    private static class StopSaxException extends SAXException {
+        public StopSaxException() { super("STOP"); } //NOI18N
+    }
+
+    private static final StopSaxException STOP = new StopSaxException();
+    
+    ////////////////////////////////////////////////////////////////////////
+    // DTDParser
+    ////////////////////////////////////////////////////////////////////////
+    /** resolve the PUBLIC item from the xml header of .settings file */
+    private static class DTDParser extends org.xml.sax.helpers.DefaultHandler
+    implements org.xml.sax.ext.LexicalHandler {
+        
+        private String publicId = null;
+        private FileObject src;
+        
+        public DTDParser(FileObject src) {
+            this.src = src;
+        }
+        
+        public String getPublicId() {
+            return publicId;
+        }
+        
+        public void parse() {
+            try {
+                org.xml.sax.XMLReader reader = org.openide.xml.XMLUtil.createXMLReader(false, false);
+                reader.setContentHandler(this);
+                reader.setEntityResolver(this);
+                InputSource is = new InputSource(src.getURL().toExternalForm());
+                is.setByteStream(src.getInputStream());
+                try {
+                    reader.setFeature("http://xml.org/sax/features/validation", false);  //NOI18N
+                } catch (SAXException sex) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL,
+                    "Warning: XML parser does not support validation feature."); //NOI18N
+                }
+                try {
+                    reader.setProperty("http://xml.org/sax/properties/lexical-handler", this);  //NOI18N
+                } catch (SAXException sex) {
+                    ErrorManager.getDefault().log(ErrorManager.EXCEPTION,
+                    "Warning: XML parser does not support lexical-handler feature.");  //NOI18N
+                }
+                reader.parse(is);
+            } catch (StopSaxException ex) {
+            } catch (Exception ex) { // SAXException, FileNotFoundException, IOException
+                ErrorManager.getDefault().notify(ex);
+            }
+        }
+        
+        public InputSource resolveEntity(String publicId, String systemID) {
+            InputSource ret = new InputSource(new java.io.StringReader("")); // NOI18N
+            ret.setSystemId("StringReader");  //NOI18N
+            return ret;
+        }
+        
+        public void endDTD() throws org.xml.sax.SAXException {
+            throw STOP;
+        }
+        
+        public void startDTD(String name, String publicId, String systemId) throws org.xml.sax.SAXException {
+            this.publicId = publicId;
+        }
+        
+        public void startEntity(String str) throws org.xml.sax.SAXException {}
+        public void endEntity(String str) throws org.xml.sax.SAXException {}
+        public void comment(char[] values, int param, int param2) throws org.xml.sax.SAXException {}
+        public void startCDATA() throws org.xml.sax.SAXException {}
+        public void endCDATA() throws org.xml.sax.SAXException {}
+        
+    }
+    
     
     /** A special lookup associated with id.
      */
@@ -341,7 +427,7 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
         /** converted ID we are associated with */
         private String id;
         /** for this data object we initialized this lookup */
-        private XMLDataObject xml;
+        private DataObject xml;
         
         /** last file folder we are listening on. Initialized lazily */
         private FileObject folder;
@@ -349,7 +435,7 @@ final class FileEntityResolver extends EntityCatalog implements Environment.Prov
         private DataObject obj;
         
         /** @param id the id to work on */
-        public Lkp (String id, XMLDataObject xml) {
+        public Lkp (String id, DataObject xml) {
             super (new Lookup[0]);
             this.id = id;
             this.xml = xml;
