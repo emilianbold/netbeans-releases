@@ -104,11 +104,22 @@ public class Utils {
     }
     
     public static String getJspName(String url) {
+
         File f = getFileFromUrl(url);
         if (f != null) {
             return f.getName();
         }
         return (url == null) ? null : url.toString();
+    }
+    
+    public static String getJspPath(String url) {
+       
+        FileObject fo = getFileObjectFromUrl(url);
+        WebModule wm = WebModule.getWebModule (fo);
+        String jspRelativePath = FileUtil.getRelativePath(wm.getDocumentBase(), fo);
+        
+        return jspRelativePath;
+
     }
     
     public static String getServletClass(String url) {
@@ -138,6 +149,8 @@ public class Utils {
         if (filter != null) {
             // get package only
             filter = filter.substring(0, filter.lastIndexOf('.')) + ".*"; //NOI18N
+            if (filter.startsWith("org.apache.jsp")) 
+                filter = "org.apache.jsp.*";
         }
         return filter;
     }

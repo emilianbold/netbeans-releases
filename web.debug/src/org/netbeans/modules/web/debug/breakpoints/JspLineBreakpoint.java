@@ -75,6 +75,7 @@ public class JspLineBreakpoint extends Breakpoint {
         javalb = LineBreakpoint.create(filter, lineNumber);
         javalb.setStratum("JSP"); // NOI18N
         javalb.setSourceName(Utils.getJspName(url));
+        javalb.setSourcePath(Utils.getJspPath(url));
         javalb.setHidden(true);
         javalb.setPrintText(printText);
         
