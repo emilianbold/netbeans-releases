@@ -344,7 +344,11 @@ public class ServerInstance implements Node.Cookie {
         StartServer thisSS = getStartServer();
         if (thisSS == null) //this case should not occur =>
             return cd; //attempt to start server (serverInstance remains null)
-        ServerDebugInfo thisSDI = thisSS.getDebugInfo(target);
+        ServerDebugInfo thisSDI;
+        if (target == null)
+            thisSDI = getDebugInfo();
+        else 
+            thisSDI = thisSS.getDebugInfo(target);
         //should not occur -> workaround for issue #56714
         if (thisSDI == null)
             return cd;
@@ -356,7 +360,7 @@ public class ServerInstance implements Node.Cookie {
             ServerInstance si = serverInstances[i];
             if (url.equalsIgnoreCase(si.getUrl())) continue;
             if (si.isDebuggable(target)) { //running in debug mode
-                ServerDebugInfo sdi = si.getStartServer().getDebugInfo(target);
+                ServerDebugInfo sdi = si.getDebugInfo();
                 if (sdi == null) continue; //should not occur -> workaround for issue #56714
                 if (thisSDI.getTransport().equals(sdi.getTransport())) { //transport matches
                     if (thisSDI.getTransport() == ServerDebugInfo.TRANSPORT_SOCKET) {
@@ -383,7 +387,7 @@ public class ServerInstance implements Node.Cookie {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
 
         try {
-            sdi = getStartServer().getDebugInfo(null);
+            sdi = getDebugInfo();
         } catch (Exception e) {
             // don't care - just a try
         }
@@ -1112,6 +1116,37 @@ public class ServerInstance implements Node.Cookie {
     
     public ServerStatusBar getServerStatusBar() {
         return serverStatusBar;
+    }
+    
+    public ServerDebugInfo getDebugInfo() {
+        StartServer ss = getStartServer();
+        if (ss == null) {
+            return null;
+        }
+
+        // AS8.1 needs to have server running to get accurate debug info, and also need a non-null target 
+        // But getting targets from AS8.1 require start server which would hang UI, so avoid start server
+        // Note: for debug info after deploy, server should already start.
+        if (! isRunningLastCheck() && ss.needsStartForTargetList()) {
+            if (ss.isAlsoTargetServer(null)) {
+                return ss.getDebugInfo(null);
+            } else {
+                return null;
+            }
+        }
+
+        Target target = null;
+        ServerTarget[] targets = getTargets();
+        for (int i=0; i<targets.length; i++) {
+            if (ss.isAlsoTargetServer(targets[i].getTarget())) {
+                target = targets[i].getTarget();
+                break;
+            }
+        }
+        if (target == null && targets.length > 0) {
+            target = targets[0].getTarget();
+        }
+        return ss.getDebugInfo(target);
     }
     
 }
