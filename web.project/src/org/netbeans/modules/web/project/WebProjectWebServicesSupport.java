@@ -36,6 +36,8 @@ import org.netbeans.api.web.dd.ServletMapping;
 import org.netbeans.api.web.dd.WebApp;
 import org.netbeans.api.web.dd.DDProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 
 /**
  *
@@ -44,18 +46,20 @@ import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
  */
 public class WebProjectWebServicesSupport implements WebServicesSupportImpl, WebServicesClientSupportImpl, WebServicesConstants{
     
-   
+    
     private WebProject project;
     private AntProjectHelper helper;
+    private ReferenceHelper referenceHelper;
     
     /** Creates a new instance of WebProjectWebServicesSupport */
-    public WebProjectWebServicesSupport(WebProject project, AntProjectHelper helper) {
+    public WebProjectWebServicesSupport(WebProject project, AntProjectHelper helper, ReferenceHelper referenceHelper) {
         this.project = project;
         this.helper = helper;
+        this.referenceHelper = referenceHelper;
     }
     
     //implementation of WebServicesSupportImpl
-
+    
     public void addServiceImpl(String serviceName, String serviceEndpointInterface, String servantClassName, FileObject configFile) {
         
         //Add properties to project.properties file
@@ -88,13 +92,13 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         // Update wscompile related properties.  boolean return indicates whether
         // any changes were made.
         updateWsCompileProperties(serviceName);
-        
+
         try {
             ProjectManager.getDefault().saveProject(project);
         }catch(java.io.IOException ioe){
             throw new RuntimeException(ioe.getMessage());
         }
-        
+
         addServiceImplEntry(serviceName, servantClassName);
     }
     
@@ -128,7 +132,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
                 //Hack to save any defaults put in vendor-specific DD
                 //Need a better way to save selectively from server plugins(an api that allows
                 //server plugins to save server configuration in selective manner)
-                org.openide.LifecycleManager.getDefault().saveAll();
+				org.openide.LifecycleManager.getDefault().saveAll();
             }catch(Exception e){
                 e.printStackTrace();
                 throw new RuntimeException(e.getMessage());
@@ -284,7 +288,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
         return helper;
     }
     
-    public String generateImplementationBean(String wsName, FileObject pkg, Project project)
+    public String generateImplementationBean(String wsName, FileObject pkg, Project project, String delegateData)
     throws java.io.IOException {
         return null;
         //FIX-ME: move impl bean generation here
@@ -292,6 +296,10 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     
     public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName) {
         serviceImplBean.setServletLink(WebServiceServlet_PREFIX + wsName);
+    }
+    
+    public ReferenceHelper getReferenceHelper(){
+        return referenceHelper;
     }
     
     private String getPackageName(FileObject file){
@@ -306,7 +314,7 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl, Web
     }
     
     // Implementation of WebServiceClientSupportImpl
-   
+    
     
     
     public void addServiceClient(String serviceName, FileObject configFile) {

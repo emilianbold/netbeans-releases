@@ -232,7 +232,7 @@ final class WebProject implements Project, AntProjectListener, FileChangeListene
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
-        webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper);
+        webProjectWebServicesSupport = new WebProjectWebServicesSupport(this, helper, refHelper);
         apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (webProjectWebServicesSupport);
         apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (webProjectWebServicesSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
