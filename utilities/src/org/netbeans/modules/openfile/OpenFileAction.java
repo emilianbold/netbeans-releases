@@ -43,9 +43,12 @@ static final long serialVersionUID =-3424129228987962529L;
     JFileChooser chooser = new JFileChooser ();
     HelpCtx.setHelpIDString (chooser, getHelpCtx ().getHelpID ());
     chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
+    chooser.setMultiSelectionEnabled (true);
     if (currDir != null) chooser.setCurrentDirectory (currDir);
     if (chooser.showOpenDialog (null) == JFileChooser.APPROVE_OPTION) {
-      OpenFile.open (chooser.getSelectedFile (), false, null, 0, -1);
+      File[] files = chooser.getSelectedFiles ();
+      for (int i = 0; i < files.length; i++)
+        OpenFile.open (files[i], false, null, 0, -1);
     }
     currDir = chooser.getCurrentDirectory ();
   }
@@ -54,6 +57,8 @@ static final long serialVersionUID =-3424129228987962529L;
 
 /*
  * Log
+ *  12   Gandalf-post-FCS1.10.1.0    2/25/00  Jesse Glick     Can handle multiple 
+ *       files selected in chooser.
  *  11   Gandalf   1.10        1/12/00  Jesse Glick     I18N.
  *  10   Gandalf   1.9         1/7/00   Jesse Glick     -line option for line 
  *       numbers.
