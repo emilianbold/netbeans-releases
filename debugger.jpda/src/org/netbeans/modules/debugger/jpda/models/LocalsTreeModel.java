@@ -68,11 +68,9 @@ public class LocalsTreeModel implements TreeModel {
     
     public Object[] getChildren (Object o, int from, int to) 
     throws NoInformationException, UnknownTypeException {
-        System.out.println("getChildren for " + o + " from = " + from + " to " + to);
         try {
             if (o.equals (ROOT)) {
                 Object[] os = getLocalVariables (true, from, to);
-                System.out.println("\treturning local variables");
                 return os;
             } else
 //            if (o instanceof SuperVariable) {
