@@ -224,11 +224,9 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
     }
     
   /* A method to create a new component. Overridden in subclasses.
-   * @return the {@link Editor} for this support
+   * @return the {@link BaseJspEditor} for this support
    */
-    protected CloneableTopComponent createCloneableTopComponent() {
-        // initializes the document if not initialized
-        prepareDocument();
+    protected CloneableEditor createCloneableEditor() {
         return new BaseJspEditor(this);
     }
     
