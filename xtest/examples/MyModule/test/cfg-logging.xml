@@ -43,9 +43,9 @@ Microsystems, Inc. All Rights Reserved.
 
     <resultsprocessor name="logging" antfile="build.xml" target="test_report" default="true"/>
     
-    <executor name="code" antfile="logging-build.xml" target="runloggingcodetest"/>
+    <executor name="code" antfile="build-logging.xml" target="runloggingcodetest"/>
     
-    <compiler name="logging-compiler" default="true" antfile="logging-build.xml" target="logging-compiler"/>
+    <compiler name="logging-compiler" default="true" antfile="build-logging.xml" target="logging-compiler"/>
     
 </mconfig>
 

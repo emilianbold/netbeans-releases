@@ -43,9 +43,9 @@ to use xtest.attribs.
 
     <resultsprocessor name="site-specific" antfile="build.xml" target="test_report" default="true"/>
     
-    <executor name="code" antfile="site-specific-build.xml" target="runcodetest"/>
+    <executor name="code" antfile="build-site-specific.xml" target="runcodetest"/>
 
-    <compiler name="site-specific-compiler" default="true" antfile="site-specific-build.xml" target="site-specific-compiler"/> -->
+    <compiler name="site-specific-compiler" default="true" antfile="build-site-specific.xml" target="site-specific-compiler"/> -->
     
 </mconfig>
 
