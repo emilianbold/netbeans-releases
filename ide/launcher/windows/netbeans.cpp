@@ -67,7 +67,7 @@ int WINAPI
         if (*pc == '#')
             continue;
         if (strstr(pc, "netbeans_default_userdir=") == pc) {
-            char *q = pc + strlen("netbeans_default_userdir=");
+            char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
             while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
                 pc--;
@@ -86,7 +86,7 @@ int WINAPI
                 strcpy(userdir, q);
             }
         } else if (strstr(pc, "netbeans_default_options=") == pc) {
-            char *q = pc + strlen("netbeans_default_options=");
+            char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
             while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
                 pc--;
@@ -99,7 +99,7 @@ int WINAPI
             *(pc+1) = '\0';
             strcpy(options, q);
         } else if (strstr(pc, "netbeans_clusters=") == pc) {
-            char *q = pc + strlen("netbeans_clusters=");
+            char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
             while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
                 pc--;
@@ -111,8 +111,8 @@ int WINAPI
             
             *(pc+1) = '\0';
             strcpy(dirs, q);
-        } else if (strstr(pc, "netbeans_j2sdkhome=") == pc) {
-            char *q = pc + strlen("netbeans_j2sdkhome=");
+        } else if (strstr(pc, "netbeans_jdkhome=") == pc) {
+            char *q = strstr(pc, "=") + 1;
             pc = line + strlen(line) - 1;
             while (*pc == '\n' || *pc == '\r' || *pc == '\t' || *pc == ' ')
                 pc--;

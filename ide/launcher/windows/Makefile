@@ -12,7 +12,7 @@
 # Copyright 1997-2000 Sun Microsystems, Inc. All Rights Reserved.
 #
 
-JDK_HOME = c:\j2sdk1.4.2
+JDK_HOME = c:\j2sdk1.4.2_04
 
 LIBS = advapi32.lib user32.lib
 

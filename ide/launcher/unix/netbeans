@@ -44,7 +44,7 @@ if [ -z "$netbeans_clusters" ] ; then
 fi
 
 jdkhomeswitch=
-if [ ! -z "$netbeans_j2sdkhome" ] ; then
+if [ ! -z "$netbeans_jdkhome" ] ; then
     jdkhomeswitch="--jdkhome \"$netbeans_j2sdkhome\""
 fi
 
