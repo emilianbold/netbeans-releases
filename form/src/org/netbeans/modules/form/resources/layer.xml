@@ -515,7 +515,7 @@ SystemFileSystem
         <attr name="Classes/GUIForms" boolvalue="true"/>
         <folder name="GUIForms">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
-            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/SwingForms.html"/>
+            <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/form/resources/Forms.html"/>
 
             <file name="JApplet.java" url="templates/SwingForms/JApplet_java">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.Bundle"/>
