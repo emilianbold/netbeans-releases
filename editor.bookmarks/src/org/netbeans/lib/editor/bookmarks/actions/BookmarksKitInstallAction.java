@@ -43,6 +43,7 @@ public class BookmarksKitInstallAction extends BaseAction {
     
     BookmarksKitInstallAction() {
         super("bookmarks-kit-install");
+        putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);        
     }
 
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
