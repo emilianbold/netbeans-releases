@@ -470,6 +470,7 @@
 <mapID target="debug.callstack.pop" url="debug/callstack/pop.html" />
 
 <mapID target="debug.fix" url="debug/fix/fix.html" />
+<mapID target="debug.fix.alert" url="debug/fix/old_stack_call.html" />
 
 <mapID target="debug.threads.jump" url="debug/threads/threads_jump.html" />
 <mapID target="debug.threads.suspend" url="debug/threads/suspend.html" />
@@ -487,6 +488,23 @@
 <mapID target="debug.debugger.bootclasspath" url="debug/debugger/bootclasspath.html" />
 <mapID target="debug.debugger.window" url="debug/environment/debug_window.html" />
 
+
+<mapID target="debug.properties.class" url="debug/properties/classes_properties.html" />
+<mapID target="debug.properties.class.field" url="debug/properties/classes_field_properties.html" />
+<mapID target="debug.properties.class.method" url="debug/properties/classes_method_properties.html" />
+<mapID target="debug.properties.class_constructor" url="debug/properties/classes_cons_properties.html" />
+<mapID target="debug.properties.breakpoint.line" url="debug/properties/brkpt_line.html" />
+<mapID target="debug.properties.breakpoint.exception" url="debug/properties/brkpt_exception.html" />
+<mapID target="debug.properties.breakpoint.class" url="debug/properties/brkpt_class.html" />
+<mapID target="debug.properties.breakpoint.thread" url="debug/properties/brkpt_thread.html" />
+<mapID target="debug.properties.breakpoint.variable" url="debug/properties/brkpt_variable.html" />
+<mapID target="debug.properties.breakpoint.method" url="debug/properties/brkpt_method.html" />
+<mapID target="debug.properties.callstack" url="debug/properties/callstack_properties.html" />
+<mapID target="debug.properties.debug_node" url="debug/properties/debug_node_properties.html" />
+<mapID target="debug.properties.session" url="debug/properties/session_properties.html" />
+<mapID target="debug.properties.watch" url="debug/properties/watches_properties.html" />
+<mapID target="debug.properties.thread" url="debug/properties/threads_properties.html" />
+<mapID target="debug.properties.variable" url="debug/properties/locals_properties.html" />
 
 <mapID target="javadoc.jump" url="javadoc/javadoc_jump.html" />
 <mapID target="javadoc.indices" url="javadoc/doc_indices.html"/>
@@ -779,7 +797,7 @@
 <mapID target="NetbeansDebuggerConstructorPropertiesSheet" url="debug/properties/classes_cons_properties.html" />
 <mapID target="NetbeansDebuggerMethodPropertiesSheet" url="debug/properties/classes_method_properties.html" />
 
-<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/fix/fix.html" />
+<mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/fix/old_stack_call.html" />
 
 
 <mapID target="org.netbeans.modules.httpserver.HttpServerNode_properties" url="webbrowser/httpserver_properties.html" />
