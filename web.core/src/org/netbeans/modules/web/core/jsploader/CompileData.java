@@ -57,6 +57,7 @@ public class CompileData {
         this.jspPage = jspPage;
         FileObject jspFileObject = jspPage.getPrimaryFile();
         WebStandardData.WebResource res = JspCompileUtil.getResourceData(jspFileObject);
+        if (res == null) return; // IZ: 36034
         WebStandardData.WebJsp jspData = (WebStandardData.WebJsp)res;  // this should be ok
         serverInstance = JspCompileUtil.getCurrentServerInstance(jspPage);
         FfjJspCompileContext comp = JspCompileUtil.getCurrentCompileContext(jspPage);
