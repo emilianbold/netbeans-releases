@@ -210,8 +210,7 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
     <folder name="Toolbars">
-        <folder name="DebugFull">
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
+        <folder name="Debug">
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
             </file>
