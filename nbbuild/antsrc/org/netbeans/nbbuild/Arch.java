@@ -69,7 +69,12 @@ public class Arch extends Task implements org.xml.sax.EntityResolver {
         
         boolean generateTemplate = !questionsFile.exists();
         
-        if (!generateTemplate && output.exists() && questionsFile.lastModified() <= output.lastModified()) {
+        if (
+            !generateTemplate && 
+            output.exists() && 
+            questionsFile.lastModified() <= output.lastModified() &&
+            this.getProject().getProperty ("arch.generate") == null
+        ) {
             // nothing needs to be generated. everything is up to date
             return;
         }
