@@ -55,6 +55,8 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.reuse.userdir" value="false"/>
         <property name="xtest.ide.winsys" value="mdi"/>
         <property name="xtest.ide.exit" value="true"/>
+        <property name="xtest.ide.mounts" value=""/>
+        
         
         <property name="xtest.ide.use.classloader" value=""/>
         
@@ -207,7 +209,8 @@ Microsystems, Inc. All Rights Reserved.
 -J-Dxtest.sketchpad=&quot;${xtest.sketchpad}&quot;
 -J-Dnbjunit.workdir=&quot;${xtest.workdir}/user&quot;
 -J-Djunit.properties.file=&quot;${junit.properties.file}&quot;
--J-Dxtest.timeout=${xtest.timeout}     
+-J-Dxtest.timeout=${xtest.timeout}
+-J-Dxtest.ide.mounts=${xtest.ide.mounts}
 -J-Dxtest.ide.use.classloader=${xtest.ide.use.classloader}    
 ${xtest.ide.security} ${xtest.ide.commandline.jvmargs} ${xtest.ide.commandline.suffix}"/>
 

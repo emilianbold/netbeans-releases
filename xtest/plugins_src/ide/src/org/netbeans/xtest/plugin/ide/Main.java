@@ -76,8 +76,8 @@ public class Main extends Object {
 
     
     private static void prepareModuleLoaderClassPath() {
-        String moduleLoaderName = System.getProperty("xtest.ide.use.classloader");
-        if (moduleLoaderName != null) {
+        String moduleLoaderName = System.getProperty("xtest.ide.use.classloader","");
+        if (!moduleLoaderName.equals("")) {
             if (!moduleLoaderName.equals("openide")) { // openide is handler in the executor build script	
                 System.out.println("Using module "+moduleLoaderName+" classloader to load tests");
                 String testbagClassPath = System.getProperty("tbag.classpath");
@@ -92,6 +92,8 @@ public class Main extends Object {
             } else {
             	System.out.println("Using openide classlaoder to load the tests");
             }
+        } else {
+            System.out.println("Using system classloader to load the tests");
         }
     }
     
@@ -199,7 +201,7 @@ public class Main extends Object {
     
     
     static final String TEST_CLASS = "test.class";
-    private static final String TEST_CLASSPATH = "test.classpath";
+    //private static final String TEST_CLASSPATH = "test.classpath";
     private static final String TEST_ARGS = "test.arguments";
     static final String TEST_EXECUTOR = "test.executor";
     private static final String TEST_EXIT = "test.exit";
@@ -208,6 +210,8 @@ public class Main extends Object {
     //private static final String TEST_REDIRECT = "test.output.redirect";
     private static final String TEST_REUSE_IDE = "test.reuse.ide";
     private static final long DEFAULT_TIMEOUT = 2400000;
+    
+    private static final String IDE_MOUNTS = "xtest.ide.mounts";
     
     private static void doTestPart() {
         
@@ -263,13 +267,13 @@ public class Main extends Object {
                 try {
                     
                     // setup the repository - should not be needed for tests loaded by system classloader
-                    /*
-                    if (System.getProperty(TEST_CLASSPATH) != null && 
+                    
+                    if ((!System.getProperty(IDE_MOUNTS,"").equals("")) && 
                         System.getProperty(TEST_REUSE_IDE, "false").equals("false")) {
                             mountFileSystems();
                     }
                      
-                     
+                    /* 
                     setNodeProperties();
                     */
                     
@@ -364,21 +368,23 @@ public class Main extends Object {
         }
     }
     
-    /*
+    
     private static void mountFileSystems() {
         Repository repo = Repository.getDefault();
         
         // unmount the currently mounted filesystems
         // (could be more sofisticated some day)
+        /*
         Enumeration all = repo.getFileSystems();
         while (all.hasMoreElements()) {
             FileSystem fs = (FileSystem)all.nextElement();
             // preserve the hidden and default filesystems
             if (!fs.isHidden() && !fs.isDefault())
                 repo.removeFileSystem(fs);
-        }        
-        // mount new filesystems as specified in TEST_CLASSPATH
-        StringTokenizer stok = new StringTokenizer(System.getProperty(TEST_CLASSPATH), System.getProperty("path.separator"));
+        } 
+         */       
+        // mount new filesystems as specified in IDE_MOUNTS
+        StringTokenizer stok = new StringTokenizer(System.getProperty(IDE_MOUNTS), System.getProperty("path.separator"));
         while (stok.hasMoreElements()) {
             String pathelem = stok.nextToken();
             try {
@@ -397,8 +403,13 @@ public class Main extends Object {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
         }
+        // sleep for a while, so the filesystem is mounted for sure
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+        }
     }
-     **/
+    
     
     
     /*
