@@ -38,7 +38,8 @@ public class Expression {
      * @return pre-parsed Java expression
      * @throws ParseException if the expression has wrong syntax
      */
-    public static Expression parse(String expr, String language) throws ParseException {
+    public static Expression parse (String expr, String language) 
+    throws ParseException {
         StringReader reader = new StringReader(expr);
         try {
             JavaParser parser = new JavaParser(reader);

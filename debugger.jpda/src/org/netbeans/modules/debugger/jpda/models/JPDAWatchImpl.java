@@ -49,7 +49,11 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         this.watch = watch;
     }
     
-    JPDAWatchImpl (WatchesModel model, Watch watch, String exceptionDescription) {
+    JPDAWatchImpl (
+        WatchesModel model, 
+        Watch watch, 
+        Exception exception
+    ) {
         super (
             model.getLocalsTreeModel (), 
             null, 
@@ -57,7 +61,7 @@ public class JPDAWatchImpl extends AbstractVariable implements JPDAWatch {
         );
         this.model = model;
         this.watch = watch;
-        this.exceptionDescription = exceptionDescription;
+        this.exceptionDescription = exception.getLocalizedMessage ();
     }
     
     /**

@@ -249,14 +249,16 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
             );
         
         // 2) evaluate expression
-        com.sun.jdi.Value value = getDebugger ().evaluateIn (
-            compiledCondition, 
-            frame
-        );
-        try {
-            return ((com.sun.jdi.BooleanValue) value).booleanValue ();
-        } catch (ClassCastException e) {
-            throw new InvalidExpressionException (e);
+        synchronized (debugger.LOCK) {
+            com.sun.jdi.Value value = getDebugger ().evaluateIn (
+                compiledCondition, 
+                frame
+            );
+            try {
+                return ((com.sun.jdi.BooleanValue) value).booleanValue ();
+            } catch (ClassCastException e) {
+                throw new InvalidExpressionException (e);
+            }
         }
     }
 }

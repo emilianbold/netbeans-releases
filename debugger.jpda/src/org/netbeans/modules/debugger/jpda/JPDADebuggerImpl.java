@@ -245,7 +245,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @param classes a map from class names to be fixed to byte[] 
      */
     public void fixClasses (Map classes) {
-        synchronized (LOCK2) {
+        synchronized (LOCK) {
             Map map = new HashMap ();
             Iterator i = classes.keySet ().iterator ();
             while (i.hasNext ()) {
@@ -352,7 +352,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     // internal interface ......................................................
 
     public void popFrames (ThreadReference thread, StackFrame frame) {
-        synchronized (LOCK2) {
+        synchronized (LOCK) {
             try {
                 thread.popFrames (frame);
                 setState (STATE_RUNNING);
@@ -410,20 +410,23 @@ public class JPDADebuggerImpl extends JPDADebugger {
      */
     public Value evaluateIn (Expression expression) 
     throws InvalidExpressionException {
-        if (getCurrentCallStackFrame () == null) {
-            throw new InvalidExpressionException("No current context (stack frame)");
+        synchronized (LOCK) {
+            CallStackFrameImpl csf = (CallStackFrameImpl) 
+                getCurrentCallStackFrame ();
+            if (csf == null) 
+                throw new InvalidExpressionException
+                    ("No current context (stack frame)");
+            return evaluateIn (
+                expression, 
+                csf.getStackFrame ()
+            );
         }
-        return evaluateIn (
-            expression, 
-            ((CallStackFrameImpl) getCurrentCallStackFrame ()).
-                getStackFrame ()
-        );
     }
 
     /**
      * Used by BreakpointImpl.
      */
-    public Value evaluateIn (Expression expression, StackFrame frame) 
+    public  Value evaluateIn (Expression expression, StackFrame frame) 
     throws InvalidExpressionException {
         if (frame == null)
             throw new InvalidExpressionException ("No current context");

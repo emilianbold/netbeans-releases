@@ -1445,23 +1445,33 @@ public class Evaluator implements JavaParserVisitor {
 
     static int INVOKE_TIMEOUT_MILLIS = 5000;
 
-    public static Value invokeVirtual(ObjectReference objectReference, Method method, ThreadReference evaluationThread, List args)
-            throws TimeoutException, InvalidExpressionException {
+    public static Value invokeVirtual (
+        ObjectReference objectReference, 
+        Method method, 
+        ThreadReference evaluationThread, 
+        List args
+     ) throws TimeoutException, InvalidExpressionException {
 
-        EvaluationThread evalThread = new EvaluationThread(objectReference, evaluationThread, method, args, ObjectReference.INVOKE_SINGLE_THREADED);
+        EvaluationThread evalThread = new EvaluationThread (
+            objectReference, 
+            evaluationThread, 
+            method, 
+            args, 
+            ObjectReference.INVOKE_SINGLE_THREADED
+        );
         synchronized (evalThread) {
             evalThread.start();
             try {
-                evalThread.wait(INVOKE_TIMEOUT_MILLIS);
+                evalThread.wait (INVOKE_TIMEOUT_MILLIS);
             } catch (InterruptedException e) {
             }
-            if (!evalThread.isFinished()) {
-              evalThread.interrupt();
-              throw new TimeoutException();
+            if (!evalThread.isFinished ()) {
+              evalThread.interrupt ();
+              throw new TimeoutException ();
             }
-            if (evalThread.getException() != null) 
+            if (evalThread.getException () != null) 
                 throw new InvalidExpressionException (evalThread.getException ());
-            return evalThread.getValue();
+            return evalThread.getValue ();
         }
     }
 

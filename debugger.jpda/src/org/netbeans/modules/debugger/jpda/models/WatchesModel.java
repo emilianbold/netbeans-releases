@@ -58,8 +58,9 @@ public class WatchesModel implements TreeModel {
     private JPDADebuggerImpl    debugger;
     private Listener            listener;
     private Vector              listeners = new Vector ();
-    private ContextProvider      lookupProvider;
-    WeakHashMap watchToExpression = new WeakHashMap();
+    private ContextProvider     lookupProvider;
+    // Watch to Expression or Exception
+    private WeakHashMap         watchToExpression = new WeakHashMap();
 
     
     public WatchesModel (ContextProvider lookupProvider) {
@@ -88,20 +89,24 @@ public class WatchesModel implements TreeModel {
             int i, k = ws.length;
             JPDAWatch[] jws = new JPDAWatch [k];
             for (i = 0; i < k; i++) {
-                Object expr = watchToExpression.get(ws[i].getExpression());
-                if (expr == null) {
+                Object expression = watchToExpression.get (ws[i].getExpression ());
+                // expression contains Expression or Exception 
+                if (expression == null) {
                     try {
-                        expr = Expression.parse(ws[i].getExpression(), Expression.LANGUAGE_JAVA_1_5);
+                        expression = Expression.parse (
+                            ws[i].getExpression (), 
+                            Expression.LANGUAGE_JAVA_1_5
+                        );
                     } catch (ParseException e) {
-                        expr = e.getMessage();
+                        expression = e;
                     }
-                    watchToExpression.put(ws[i].getExpression(), expr);
+                    watchToExpression.put (ws [i].getExpression (), expression);
                 }
-                if (expr instanceof String) {
-                    jws [i] = new JPDAWatchImpl (this, ws[i], (String) expr);
-                } else {
-                    jws [i] = evaluate (ws[i], (Expression) expr);
-                }
+                if (expression instanceof Exception)
+                    jws [i] = new JPDAWatchImpl 
+                        (this, ws [i], (Exception) expression);
+                else
+                    jws [i] = evaluate (ws[i], (Expression) expression);
             }
             if (listener == null)
                 listener = new Listener (this, debugger);
@@ -159,22 +164,14 @@ public class WatchesModel implements TreeModel {
     }
 
     JPDAWatch evaluate (Watch w, Expression expr) {
-        Value v = null;
-        String exception = null;
         try {
-            v = debugger.evaluateIn(expr);
-        } catch (InvalidExpressionException e) {
-            exception = e.getMessage ();
-        }
-        JPDAWatch wi;
-        if (exception != null)
-            wi = new JPDAWatchImpl (this, w, exception);
-        else
+            Value v = debugger.evaluateIn (expr);
             if (v instanceof ObjectReference)
-                wi = new JPDAObjectWatchImpl (this, w, (ObjectReference) v);
-            else
-                wi = new JPDAWatchImpl (this, w, v);
-        return wi;
+                return new JPDAObjectWatchImpl (this, w, (ObjectReference) v);
+            return new JPDAWatchImpl (this, w, v);
+        } catch (InvalidExpressionException e) {
+            return new JPDAWatchImpl (this, w, e);
+        }
     }
 
 /*

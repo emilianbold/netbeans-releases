@@ -86,7 +86,8 @@ public class LocalsTreeModel implements TreeModel {
     throws NoInformationException, UnknownTypeException {
         try {
             if (o.equals (ROOT)) {
-                return getLocalVariables (true);
+                Object[] os = getLocalVariables (true);
+                return os;
             } else
             if (o instanceof SuperVariable) {
                 SuperVariable mv = (SuperVariable) o;
@@ -154,13 +155,15 @@ public class LocalsTreeModel implements TreeModel {
     
     AbstractVariable[] getLocalVariables (boolean includeThis)
     throws NoInformationException {
-        CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
-            getCurrentCallStackFrame ();
-        if (frame == null) return new AbstractVariable [0];
-        return getLocalVariables (
-            frame,
-            includeThis
-        );
+        synchronized (debugger.LOCK) {
+            CallStackFrameImpl frame = (CallStackFrameImpl) debugger.
+                getCurrentCallStackFrame ();
+            if (frame == null) return new AbstractVariable [0];
+            return getLocalVariables (
+                frame,
+                includeThis
+            );
+        }
     }
     
     AbstractVariable[] getLocalVariables (
