@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -36,20 +37,26 @@ import org.w3c.dom.Element;
  * @author  Jesse Glick, David Konecny
  */
 public class FreeformProjectGenerator {
+
+    // for now let's assume that one Ant script is used by all actions
+    private static final String PROP_ANT_SCRIPT = "ant.script";
     
     private FreeformProjectGenerator() {}
 
     /**
      * Creates new Freeform project at the given folder with the given name,
      * target mappings, source folders, etc.
+     * @param dir project folder; cannot be null
+     * @param name name of new project; cannot be null
+     * @param antScript Ant script file; can be null what means default Ant script location
      * @param mappings map of <String, List> where String is name of the IDE action
      *    and List is list of target names (<String's>)
      * @param sources list of SourceFolder instances
      * @param compUnits list of JavaCompilationUnit instances
      */
-    public static AntProjectHelper createProject(File dir, String name, Map mappings, List sources, List compUnits) throws IOException {
+    public static AntProjectHelper createProject(File dir, String name, File antScript, Map mappings, List sources, List compUnits) throws IOException {
         FileObject dirFO = createProjectDir (dir);
-        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), mappings, sources, compUnits);
+        AntProjectHelper h = createProject(dirFO, PropertyUtils.getUsablePropertyName(name), antScript, mappings, sources, compUnits);
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         return h;
@@ -106,6 +113,7 @@ public class FreeformProjectGenerator {
      *     action and List is list of target names (<String's>)
      */
     public static void putTargetMappings(AntProjectHelper helper, Map/*<String,List>*/ mappings) {
+        boolean useAntScript = getProperties(helper).getProperty(PROP_ANT_SCRIPT) != null;
         Element data = helper.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element actionsEl = Util.findElement(data, "ide-actions", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -126,13 +134,18 @@ public class FreeformProjectGenerator {
                 target.appendChild(doc.createTextNode(value)); // NOI18N
                 action.appendChild(target);
             }
+            if (useAntScript) {
+                Element script = doc.createElementNS(FreeformProjectType.NS_GENERAL, "script"); //NOI18N
+                script.appendChild(doc.createTextNode("${"+PROP_ANT_SCRIPT+"}")); // NOI18N
+                action.appendChild(script);
+            }
             actions.appendChild(action);
         }
         data.appendChild(actions);
         helper.putPrimaryConfigurationData(data, true);
     }
 
-    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final Map mappings, final List sources, final List compUnits) throws IOException {
+    private static AntProjectHelper createProject(final FileObject dirFO, final String name, final File antScript, final Map mappings, final List sources, final List compUnits) throws IOException {
         final AntProjectHelper[] h = new AntProjectHelper[1];
         final IOException[] ioe = new IOException[1];
         ProjectManager.mutex().writeAccess(new Runnable() {
@@ -154,6 +167,14 @@ public class FreeformProjectGenerator {
                     Element nm = doc.createElementNS(FreeformProjectType.NS_GENERAL, "name"); // NOI18N
                     nm.appendChild(doc.createTextNode(name)); // NOI18N
                     data.appendChild(nm);
+                    if (antScript != null) {
+                        Element props = doc.createElementNS(FreeformProjectType.NS_GENERAL, "properties"); // NOI18N
+                        Element property = doc.createElementNS(FreeformProjectType.NS_GENERAL, "property"); // NOI18N
+                        property.setAttribute("name", PROP_ANT_SCRIPT);
+                        property.appendChild(doc.createTextNode(antScript.getAbsolutePath()));
+                        props.appendChild(property);
+                        data.appendChild(props);
+                    }
                     h[0].putPrimaryConfigurationData(data, true);
 
                     putTargetMappings(h[0], mappings);
@@ -413,6 +434,31 @@ public class FreeformProjectGenerator {
             }
         }
         aux.putConfigurationFragment(data, true);
+    }
+
+    //XXX: The <property-file> elements are ignored at the moment.
+    /**
+     * Read all <property> elements and return them as Properties instance.
+     */
+    public static Properties getProperties(AntProjectHelper helper) {
+        Properties props = new Properties();
+        Element data = helper.getPrimaryConfigurationData(true);
+        Element propertiesEl = Util.findElement(data, "properties", FreeformProjectType.NS_GENERAL); // NOI18N
+        if (propertiesEl == null) {
+            return props;
+        }
+        List/*<Element>*/ subElms = Util.findSubElements(propertiesEl);
+        Iterator it = subElms.iterator();
+        while (it.hasNext()) {
+            Element el = (Element)it.next();
+            if (!el.getLocalName().equals("property")) { // NOI18N
+                continue;
+            }
+            String key = el.getAttribute("name");
+            String value = Util.findText(el);
+            props.put(key, value);
+        }
+        return props;
     }
 
     /**
