@@ -119,7 +119,10 @@ final class I18nWizardDescriptor extends WizardDescriptor {
 
         nextButton.setEnabled(next && valid);
         previousButton.setEnabled(prev);
-        finishButton.setEnabled(valid && (!next || (current instanceof FinishPanel)));
+        finishButton.setEnabled(
+                valid && (!next
+                          || ((current instanceof FinishablePanel)
+                              && ((FinishablePanel) current).isFinishPanel())));
 
         if(next)
             setValue(nextButton);
@@ -138,7 +141,9 @@ final class I18nWizardDescriptor extends WizardDescriptor {
         if(root == null)
             return;
         
-        if(panels.current() instanceof WizardDescriptor.FinishPanel) {
+        final WizardDescriptor.Panel panel = panels.current();
+        if ((panel instanceof WizardDescriptor.FinishablePanel)
+                && ((WizardDescriptor.FinishablePanel) panel).isFinishPanel()) {
             root.setDefaultButton(finishButton);
         } else {
             root.setDefaultButton(nextButton);

@@ -480,7 +480,7 @@ final class TestStringWizardPanel extends JPanel {
      * @see I18nWizardDescriptorPanel
      * @see org.openide.WizardDescriptor.Panel*/
     public static class Panel extends I18nWizardDescriptor.Panel 
-    implements WizardDescriptor.FinishPanel, I18nWizardDescriptor.ProgressMonitor {
+    implements WizardDescriptor.FinishablePanel, I18nWizardDescriptor.ProgressMonitor {
 
         /** Empty label component. */
         private final JLabel emptyLabel;        
@@ -516,6 +516,12 @@ final class TestStringWizardPanel extends JPanel {
 
         /** Gets if panel is valid. Overrides superclass method. */
         public boolean isValid() {
+            return true;
+        }
+        
+        /**
+         */
+        public boolean isFinishPanel() {
             return true;
         }
         
