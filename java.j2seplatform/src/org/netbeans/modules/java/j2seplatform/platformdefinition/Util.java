@@ -131,7 +131,11 @@ public class Util {
             File[] files = extFolder.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
-                    if (!FileUtil.isArchiveFile(FileUtil.toFileObject(files[i]))) {
+                    File f = files[i];
+                    assert f.exists() : "File.listFiles returned a nonexistent file " + f + " on " + extFolder;
+                    FileObject fo = FileUtil.toFileObject(f);
+                    assert fo != null : "Must have defined a FileObject for existent file " + f;
+                    if (!FileUtil.isArchiveFile(fo)) {
                         // #42961: Mac OS X has e.g. libmlib_jai.jnilib.
                         continue;
                     }
