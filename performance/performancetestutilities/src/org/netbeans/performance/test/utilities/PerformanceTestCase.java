@@ -101,6 +101,9 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
      * <br><b>default</b> = 0  and measured time will be last paint until WAIT_AFTER_OPEN after user event.*/
     public int MEASURE_PAINT_NUMBER = 0;
     
+    /** Factor for wait_after_open_heuristic timeout */
+    public double HEURISTIC_FACTOR = 1.25;
+    
     /** Count of repeats */
     protected int repeat = Integer.getInteger("org.netbeans.performance.repeat", 1).intValue();
     
@@ -281,7 +284,7 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
                     measuredTime[i] = getMeasuredTime();
                     tr.add(tr.TRACK_APPLICATION_MESSAGE, "measured time "+measuredTime[i]);
                     
-                    wait_after_open_heuristic = waitAfterOpenHeuristic(measuredTime[i],  WAIT_AFTER_OPEN);
+                    wait_after_open_heuristic = (long) (measuredTime[i] * HEURISTIC_FACTOR);
                     
                     log("Measured Time ["+performanceDataName+" | "+i+"] = " +measuredTime[i]);
                     
@@ -342,10 +345,6 @@ public abstract class PerformanceTestCase extends JellyTestCase implements NbPer
         
         compare(measuredTime);
         
-    }
-    
-    private long waitAfterOpenHeuristic(long last, long def) {
-        return (long) (last * 1.25);
     }
     
     /**
