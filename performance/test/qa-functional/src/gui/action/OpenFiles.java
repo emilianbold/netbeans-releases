@@ -13,8 +13,6 @@
 
 package gui.action;
 
-import java.io.File;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
@@ -35,7 +33,7 @@ public class OpenFiles extends testUtilities.PerformanceTestCase {
     /** Folder with data */
     public static String fileProject;
     
-    /** Folder with data "gui/data" */
+    /** Folder with data  */
     public static String filePackage;
     
     /** Name of file to open */

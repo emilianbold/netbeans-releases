@@ -13,8 +13,6 @@
 
 package gui.action;
 
-import java.io.File;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.TopComponentOperator;
