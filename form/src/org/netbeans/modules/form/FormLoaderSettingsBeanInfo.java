@@ -146,7 +146,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
       desc[12].setExpert (true);
       desc[13].setDisplayName (formBundle.getString ("PROP_VARIABLES_MODIFIER"));
       desc[13].setShortDescription (formBundle.getString ("HINT_VARIABLES_MODIFIER"));
-      desc[13].setPropertyEditorClass (ModifierPropertyEditor.class);
+      desc[13].setPropertyEditorClass (org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor.class);
       desc[14].setDisplayName (formBundle.getString ("PROP_EDITOR_SEARCH_PATH"));
       desc[14].setShortDescription (formBundle.getString ("HINT_EDITOR_SEARCH_PATH"));
       desc[15].setDisplayName (formBundle.getString ("PROP_REGISTERED_EDITORS"));
@@ -220,6 +220,8 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  10   Gandalf   1.9         6/30/99  Ian Formanek    Variables modifier 
+ *       property improved
  *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
  *       properties rather than FormSettings
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 

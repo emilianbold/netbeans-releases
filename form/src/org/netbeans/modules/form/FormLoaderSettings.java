@@ -13,7 +13,11 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+
+import org.openide.explorer.propertysheet.editors.ConstrainedModifiersEditor;
+import org.openide.src.nodes.ConstrainedModifiers;
 import org.openide.options.SystemOption;
 
 /** Settings for form data loader.
@@ -60,18 +64,6 @@ public class FormLoaderSettings extends SystemOption {
   /** Property name of the registeredEditors property */
   public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
 
-  /** A constant for using the default modifier set in the variablesModifier property of FormLoaderSettings */
-  public static final int DEFAULT_MODIFIER = -1;
-  /** A constant for "private" access modifier used in variablesModifier property */
-  public static final int PRIVATE = 0;
-  /** A constant for "package private" access modifier used in variablesModifier property */
-  public static final int PACKAGE_PRIVATE = 1;
-  /** A constant for "protected" access modifier used in variablesModifier property */
-  public static final int PROTECTED = 2;
-  /** A constant for "public" access modifier used in variablesModifier property */
-  public static final int PUBLIC = 3;
-
-
 // ------------------------------------------
 // properties
 
@@ -111,8 +103,11 @@ public class FormLoaderSettings extends SystemOption {
   private static boolean applyGridToPosition = true;
   /** True if grid should be applied to size of components, false otherwise. */
   private static boolean applyGridToSize = true;
-  /** The access modifier of variables generated for component in Form Editor */
-  private static int variablesModifier = PRIVATE;
+  /** The modifiers of variables generated for component in Form Editor */
+  private static ConstrainedModifiers variablesModifier = new ConstrainedModifiers (
+    Modifier.PRIVATE,
+    Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL | Modifier.TRANSIENT | Modifier.VOLATILE);
+
   /** If true, only editable properties are displayed in the ComponentInspector */
   private static boolean displayWritableOnly = true;
   /** Array of package names to search for property editors used in Form Editor */
@@ -343,19 +338,15 @@ public class FormLoaderSettings extends SystemOption {
   }
 
   /** Getter for the variablesModifier option */
-  public int getVariablesModifier () {
+  public ConstrainedModifiers getVariablesModifier () {
     return variablesModifier;
   }
 
   /** Setter for the variablesModifier option */
-  public void setVariablesModifier (int value) {
-    if (value < PRIVATE) value = PRIVATE;
-    if (value > PUBLIC) value = PUBLIC;
-    if (value == variablesModifier)
-      return;
-    int oldValue = variablesModifier;
+  public void setVariablesModifier (ConstrainedModifiers value) {
+    ConstrainedModifiers oldValue = variablesModifier;
     variablesModifier = value;
-    firePropertyChange (PROP_VARIABLES_MODIFIER, new Integer (oldValue), new Integer (variablesModifier));
+    firePropertyChange (PROP_VARIABLES_MODIFIER, oldValue, variablesModifier);
   }
 
   /** Getter for the displayWritableOnly option */
@@ -406,6 +397,8 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  11   Gandalf   1.10        6/30/99  Ian Formanek    Variables modifier 
+ *       property improved
  *  10   Gandalf   1.9         6/29/99  Ian Formanek    Individual variable 
  *       modifiers for each component
  *  9    Gandalf   1.8         6/10/99  Ian Formanek    loadedBeans -> 
