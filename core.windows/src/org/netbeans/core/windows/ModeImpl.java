@@ -19,6 +19,7 @@ import java.awt.Image;
 import java.awt.Container;
 import java.awt.Component;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeSupport;
@@ -1008,6 +1009,15 @@ public final class ModeImpl implements Comparable, Mode, FrameTypeListener, Comp
             // due to possibility of 'too much' delayed requests
             // we must perform additional check 
             if (frame != null) {
+                //Bugfix #24877: Make sure main window is focused and fronted. Transfer
+                //focus from another native window to main window.
+                if ((WindowTypesManager.DESKTOP_FRAME.equals(frameType)) || 
+                    (WindowTypesManager.INTERNAL_FRAME.equals(frameType))) {
+                    Window w = SwingUtilities.getWindowAncestor((Component) frame);
+                    if (!w.isFocused()) {
+                        w.toFront();
+                    }
+                }
                 try {
                     frame.setSelected(true);
                 } catch (PropertyVetoException exc) {
