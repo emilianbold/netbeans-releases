@@ -64,7 +64,6 @@ public class ComplexWalkthrough extends JellyTestCase {
         try {
             dataMountPath = Utilities.getPath("data", dlm); // NOI18N
             frameFO=Utilities.findFileObject("data", formName, "java");
-            propertiesFO=Utilities.findFileObject("data"+"."+resources, "properties", "properties");
             goldenFolder=Utilities.findFileObject("data.goldenfiles.ComplexWalkthrough",null,null);
             
         } catch (Exception ex) {
@@ -126,6 +125,8 @@ public class ComplexWalkthrough extends JellyTestCase {
     
     public void compareReferenceFiles() {
         try {
+            propertiesFO=Utilities.findFileObject("data"+"."+resources, "properties", "properties");
+            
             FileObject frameGolden = goldenFolder.getFileObject(name+".pass");
             FileObject propertiesGolden = goldenFolder.getFileObject(name+"properties.pass");
             
