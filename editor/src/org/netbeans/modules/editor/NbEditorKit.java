@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.text;
 
+import java.awt.event.ActionEvent;
 import javax.swing.JEditorPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -22,6 +23,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import com.netbeans.editor.ActionFactory;
 import com.netbeans.editor.EditorUI;
 import com.netbeans.editor.ext.ExtKit;
 import com.netbeans.editor.ext.FindDialogSupport;
@@ -30,6 +32,8 @@ import org.openide.TopManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
+import org.openide.actions.UndoAction;
+import org.openide.actions.RedoAction;
 
 /** 
 * Java editor kit with appropriate document
@@ -65,6 +69,8 @@ public abstract class NbEditorKit extends ExtKit {
       new NbFindAction(),
       new NbReplaceAction(),
       new NbGotoAction(),
+      new NbUndoAction(),
+      new NbRedoAction(),
     };
     return TextAction.augmentList(super.createActions(), nbEditorActions);
   }
@@ -78,9 +84,6 @@ public abstract class NbEditorKit extends ExtKit {
   }
 
   protected void installSystemActionMappings() {
-    addSystemActionMapping(undoAction, org.openide.actions.UndoAction.class);
-    addSystemActionMapping(redoAction, org.openide.actions.RedoAction.class);
-
     addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
     addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
     addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
@@ -171,10 +174,38 @@ public abstract class NbEditorKit extends ExtKit {
 
   }
 
+  public static class NbUndoAction extends ActionFactory.UndoAction {
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+      // Delegate to system undo action
+      UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
+      if (ua != null && ua.isEnabled()) {
+        ua.actionPerformed(evt);
+      }
+    }
+
+  }
+
+  public static class NbRedoAction extends ActionFactory.RedoAction {
+
+    public void actionPerformed(ActionEvent evt, JTextComponent target) {
+      // Delegate to system redo action
+      RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
+      if (ra != null && ra.isEnabled()) {
+        ra.actionPerformed(evt);
+      }
+    }
+
+  }
+
+
+
+
 }
 
 /*
  * Log
+ *  4    Jaga      1.3         4/7/00   Miloslav Metelka 
  *  3    Jaga      1.2         3/24/00  Miloslav Metelka 
  *  2    Jaga      1.1         3/21/00  Miloslav Metelka 
  *  1    Jaga      1.0         3/15/00  Miloslav Metelka 
