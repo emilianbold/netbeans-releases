@@ -59,6 +59,9 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
                 PersistenceManagerInterface persistenceManager =(PersistenceManagerInterface)
                 specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
                 persistenceManager.save(specialLoader);
+            } catch (ClassNotFoundException cnfe){
+                // nothing to do in this case, this server does not support wscompile or web services
+                // see bug 55323 
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             } finally {
@@ -169,6 +172,9 @@ public class WebServiceModuleInstaller extends ModuleInstall implements Instance
                 PersistenceManagerInterface persistenceManager = (PersistenceManagerInterface)
                 specialLoader.loadClass("org.netbeans.modules.websvc.registry.WebServicePersistenceManager").newInstance(); //NOI18N
                 persistenceManager.load(specialLoader);
+            } catch (ClassNotFoundException cnfe){
+                // nothing to do in this case, this server does not support wscompile or web services
+                // see bug 55323 
             } catch(Exception ex) {
                 ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
             }
