@@ -28,6 +28,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
@@ -257,8 +258,17 @@ public final class MultiViewCloneableTopComponent extends CloneableTopComponent
     
     // from CloneableEditor.Pane
     public void updateName() {
+        // ensure to trigger update name from AWT -> #44012 - will ultimately trigger winsys.
         if (peer != null) {
-            peer.updateName();
+            if (SwingUtilities.isEventDispatchThread() ) {
+                peer.updateName();
+            } else {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        peer.updateName();
+                    }
+                });
+            }
         }
     }
     
