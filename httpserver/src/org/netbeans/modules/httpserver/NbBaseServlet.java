@@ -97,10 +97,13 @@ public abstract class NbBaseServlet extends HttpServlet {
     if (hs.contains(request.getRemoteAddr().trim()))
       return true;
     
+    String pathI = request.getPathInfo();
+    if (pathI == null)
+      pathI = "";
     // ask user
     try {
       String address = request.getRemoteAddr().trim();
-      if (HttpServerSettings.OPTIONS.allowAccess(InetAddress.getByName(address))) return true;
+      if (HttpServerSettings.OPTIONS.allowAccess(InetAddress.getByName(address), pathI)) return true;
     } catch (Exception ex) {
       TopManager.getDefault().notifyException(ex);
       return false;
@@ -307,6 +310,8 @@ public abstract class NbBaseServlet extends HttpServlet {
 
 /*
  * Log
+ *  8    Jaga      1.6.1.0     3/24/00  Petr Jiricka    Fixing main servlets, 
+ *       grant access listeners
  *  7    Gandalf   1.6         1/13/00  Petr Jiricka    More i18n
  *  6    Gandalf   1.5         1/12/00  Petr Jiricka    i18n
  *  5    Gandalf   1.4         1/3/00   Petr Jiricka    

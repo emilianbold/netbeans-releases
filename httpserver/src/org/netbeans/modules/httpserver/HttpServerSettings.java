@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import javax.swing.event.EventListenerList;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
@@ -46,6 +47,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   
   private static final int MAX_START_RETRIES = 5;
   private static int currentRetries = 0;
+  
+  protected static EventListenerList listenerList = new EventListenerList();
                  
   /** Has this been initialized ? 
   *  Becomes true if a "running" getter or setter is called
@@ -181,7 +184,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   }
   
   /** Returns a relative directory URL with a leading and a trailing slash */
-  private String getCanonicalRelativeURL(String url) {
+/*  private String getCanonicalRelativeURL(String url) {
     String newURL;
     if (url.length() == 0)
       newURL = ""; // NOI18N
@@ -194,10 +197,10 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         newURL = newURL.substring(0, newURL.length() - 1);
     }      
     return newURL;                               
-  }
+  }*/
   
   /** Returns a relative directory URL with a leading and a trailing slash */
-/*  private String getCanonicalRelativeURL(String url) {
+  private String getCanonicalRelativeURL(String url) {
     String newURL;
     if (url.length() == 0)
       newURL = "/";
@@ -210,7 +213,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         newURL = newURL + "/";
     }      
     return newURL;                               
-  }*/
+  }
   
   /** setter for running status */
   public void setRunning(boolean running) {
@@ -380,52 +383,44 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
     setRunning(true);                                                           
     return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + "/"); // NOI18N
-  }                                   
-  
-/*  public void mapServlet(String urlPath, String className) {
-    lastUsedName++;
-    String name = "NONAME" + lastUsedName;
-    nameMap.put(urlPath, name);
-    mapServlet(className, name, urlPath);
-  }                                       
-  
-  public void unmapServlet(String urlPath) {
-    unmapServlet0((String)nameMap.get(urlPath));
-    nameMap.remove(urlPath);
   }
   
-  private void mapServlet(String className, String name, String urlPath) {
-    if (name.indexOf('.') != -1)
-      throw new IllegalArgumentException("Servlet name may not contain a dot");
-    synchronized (HttpServerSettings.OPTIONS) {
-      mappedServlets.put("SERVLET." + name + ".CLASS", className); 
-      mappedServlets.put("SERVLET." + name + ".PATHS", urlPath); 
-      mappedServlets.put("SERVLET." + name + ".Loader", NbLoader.class.getName()); 
-      restartIfNecessary(false);
-    }  
+  public void addGrantAccessListener(GrantAccessListener l) {
+    listenerList.add(GrantAccessListener.class, l);
   }
-    
-  private void unmapServlet0(String name) {
-    if (name.indexOf('.') != -1)
-      throw new IllegalArgumentException("Servlet name may not contain a dot");
-    synchronized (HttpServerSettings.OPTIONS) {
-      mappedServlets.remove("SERVLET." + name + ".CLASS"); 
-      mappedServlets.remove("SERVLET." + name + ".PATHS"); 
-      mappedServlets.remove("SERVLET." + name + ".Loader"); 
-      restartIfNecessary(false);
-    }  
-  }*/
+
+  public void removeGrantAccessListener(GrantAccessListener l) {
+    listenerList.remove(GrantAccessListener.class, l);
+  }
+
+  /** Returns true if oneof the listeners allowed access */
+  protected boolean fireGrantAccessEvent(InetAddress clientAddress, String resource) {
+    Object[] listeners = listenerList.getListenerList();
+    GrantAccessEvent grantAccessEvent = null;
+    for (int i = listeners.length-2; i>=0; i-=2) {
+      if (listeners[i]==GrantAccessListener.class) {
+        if (grantAccessEvent == null)
+          grantAccessEvent = new GrantAccessEvent(this, clientAddress, resource);
+        ((GrantAccessListener)listeners[i+1]).grantAccess(grantAccessEvent);
+      }	       
+    }
+    return (grantAccessEvent == null) ? false : grantAccessEvent.isGranted();
+  }
+
+  public boolean allowAccess(InetAddress addr) {
+    throw new UnsupportedOperationException();
+  }
 
   /** Requests access for address addr. If necessary asks the user. Returns true it the access 
   * has been granted. */  
-  public boolean allowAccess(InetAddress addr) {
-    if (accessAllowedNow(addr))
+  boolean allowAccess(InetAddress addr, String requestPath) {
+    if (accessAllowedNow(addr, requestPath))
       return true;
 
     Thread askThread = null;
     synchronized (whoAsking) {  
       // one more test in the synchronized block
-      if (accessAllowedNow(addr))
+      if (accessAllowedNow(addr, requestPath))
         return true;
 
       askThread = (Thread)whoAsking.get(addr);
@@ -438,7 +433,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     // now ask the user       
     synchronized (HttpServerSettings.class) {
       if (askThread != Thread.currentThread()) {
-        return accessAllowedNow(addr);
+        return accessAllowedNow(addr, requestPath);
       }
      
       try {
@@ -461,12 +456,15 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   }     
    
   /** Checks whether access to the server is now allowed. */ 
-  private boolean accessAllowedNow(InetAddress addr) {
+  private boolean accessAllowedNow(InetAddress addr, String resource) {
     if (getHost().equals(HttpServerSettings.ANYHOST))
       return true;
       
     HashSet hs = getGrantedAddressesSet();
     if (hs.contains(addr.getHostAddress()))
+      return true;
+    
+    if (fireGrantAccessEvent(addr, resource))
       return true;
       
     return false;
@@ -514,6 +512,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  31   Jaga      1.29.1.0    3/24/00  Petr Jiricka    Fixing main servlets, 
+ *       grant access listeners
  *  30   Gandalf   1.29        1/12/00  Petr Jiricka    i18n
  *  29   Gandalf   1.28        1/11/00  Petr Jiricka    Fixed 5133
  *  28   Gandalf   1.27        1/9/00   Petr Jiricka    Cleanup

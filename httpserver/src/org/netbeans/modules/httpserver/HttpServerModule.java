@@ -180,12 +180,6 @@ ex.printStackTrace();
     HttpServerSettings op = HttpServerSettings.OPTIONS;
 
     ContextManager cm = new ContextManager();
-cm.setDebug(10);
-
-    /*ServerConnector sc = new SimpleTcpConnector();
-    sc.setProperty(SimpleTcpConnector.HANDLER, "org.apache.tomcat.service.http.HttpConnectionHandler");
-    sc.setProperty(SimpleTcpConnector.PORT, "" + op.getPort());
-    cm.addServerConnector(sc);*/
 
     cm.addContextInterceptor(new LogEvents());
     //cm.addContextInterceptor(new AutoSetup());
@@ -201,23 +195,29 @@ cm.setDebug(10);
 
     Context ctxt = new Context();
     ctxt.setContextManager(cm);
+    cm.addContext(ctxt);
 
+    ServletWrapper nf = new ServletWrapper();
+    nf.setServletClass("com.netbeans.developer.modules.httpserver.NotFoundServlet");
+    nf.setServletName("NotFoundServlet");
+    ctxt.addServlet(nf);
+    ctxt.addServletMapping("/", "NotFoundServlet");
+    nf.setContext(ctxt);
+    
     ServletWrapper repo = new ServletWrapper();
     repo.setServletClass("com.netbeans.developer.modules.httpserver.RepositoryServlet");
     repo.setServletName("RepositoryServlet");
     ctxt.addServlet(repo);
-    ctxt.addServletMapping(op.getRepositoryBaseURL(), "RepositoryServlet");
+    ctxt.addServletMapping(op.getRepositoryBaseURL() + "*", "RepositoryServlet");
+    repo.setContext(ctxt);
     
     ServletWrapper claz = new ServletWrapper();
     claz.setServletClass("com.netbeans.developer.modules.httpserver.ClasspathServlet");
     claz.setServletName("ClasspathServlet");
     ctxt.addServlet(claz);
-    ctxt.addServletMapping(op.getClasspathBaseURL(), "ClasspathServlet");
+    ctxt.addServletMapping(op.getClasspathBaseURL() + "*", "ClasspathServlet");
+    claz.setContext(ctxt);
 
-    cm.addContext(ctxt);
-
-System.out.println("workdir " + cm.getWorkDir());
-System.out.println("tomcat home " + cm.getTomcatHome());
     cm.init();
     return cm;
   }
@@ -346,6 +346,8 @@ System.out.println("tomcat home " + cm.getTomcatHome());
 
 /*
  * Log
+ *  41   Jaga      1.37.1.2    3/24/00  Petr Jiricka    Fixing main servlets, 
+ *       grant access listeners
  *  40   Jaga      1.37.1.1    3/24/00  Petr Jiricka    Implemented 
  *       Jakarta-based webserver
  *  39   Jaga      1.37.1.0    3/22/00  Petr Jiricka    Fixed compilation 

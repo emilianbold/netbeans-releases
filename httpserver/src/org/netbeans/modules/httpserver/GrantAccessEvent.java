@@ -35,9 +35,11 @@ import java.net.InetAddress;
 *
 * @author Jaroslav Tulach
 */
-public abstract class GrantAccessEvent extends EventObject {
+public class GrantAccessEvent extends EventObject {
   /** is access granted */
   private boolean granted = false;
+  private InetAddress clientAddress;
+  private String resource;
 
   /** Creates new AccessEvent. Used only in this package by
   * the HttpServer to create new access event when a resource
@@ -45,19 +47,23 @@ public abstract class GrantAccessEvent extends EventObject {
   *
   * @param httpServer the server 
   */
-  GrantAccessEvent(HttpServerModule httpServer) {
-    super (httpServer);
+  GrantAccessEvent(Object source, InetAddress clientAddress, String resource) {
+    super (source);
+    this.clientAddress = clientAddress;
+    this.resource = resource;
   }
   
   /** The Inet address that initiated the connection.
   * @return the inet address
   */
-  public abstract InetAddress getClientAddress ();
+  public InetAddress getClientAddress () {
+    return clientAddress;
+  }
   
-  // JST:
-  // It could be useful to also somehow describe the resource 
-  // requested, like resourceString or FileObject name, etc.
-  // I do not know about all details, so add it if think it is useful
+  /** The resource to which access is requested */
+  public String getResource() {
+    return resource;
+  }
   
   /** Allows access. The listener can use this method to grant
   * access the client and resource.

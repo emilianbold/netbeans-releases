@@ -20,7 +20,7 @@ import java.util.EventListener;
 *
 * @author Jaroslav Tulach
 */
-public interface GrantAccessListener {
+public interface GrantAccessListener extends EventListener {
   /** Listener is notified about a request from a client and
   * can grant access to specified resource. This can be done
   * by calling <CODE>ev.grantAccess ()</CODE>.
