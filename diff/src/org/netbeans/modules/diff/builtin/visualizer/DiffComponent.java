@@ -201,10 +201,29 @@ public class DiffComponent extends org.openide.windows.TopComponent {
     public void requestFocus() {
         super.requestFocus();
         diffPanel.requestFocus();
+    }
+    
+    public void addNotify() {
+        super.addNotify();
         if (currentDiffLine < 0) {
-            diffPanel.open();
-            currentDiffLine = 0;
-            showCurrentLine();
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    diffPanel.open();
+                    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            java.awt.Toolkit.getDefaultToolkit().sync();
+                            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                                public void run() {
+                                    if (currentDiffLine < 0) {
+                                        currentDiffLine = 0;
+                                        showCurrentLine();
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
         }
     }
     
