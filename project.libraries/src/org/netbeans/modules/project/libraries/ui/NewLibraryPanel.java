@@ -136,6 +136,7 @@ public class NewLibraryPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("AD_NewLibraryPanel"));
         jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("MNE_AddLibraryLibraryName").charAt(0));
         jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/project/libraries/ui/Bundle").getString("CTL_LibraryName"));
         jLabel2.setLabelFor(name);
