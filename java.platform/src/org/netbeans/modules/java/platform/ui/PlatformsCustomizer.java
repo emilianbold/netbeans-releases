@@ -19,7 +19,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.*;
+import java.util.List;
+
 import org.openide.ErrorManager;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.FileObject;
@@ -33,6 +35,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Children;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 
@@ -51,17 +54,13 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
     private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
 
-    private PlatformsChildren children;
+    private PlatformCategoriesChildren children;
     private ExplorerManager manager;
 
     /** Creates new form PlatformsCustomizer */
     public PlatformsCustomizer() {
         initComponents();
         postInitComponents ();
-        try {
-            this.getExplorerManager().setSelectedNodes(new Node[]{getChildren().getNodes()[0]});
-        } catch (PropertyVetoException e) {
-        }
     }
 
 
@@ -86,6 +85,11 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         return manager;
     }
 
+    public void addNotify () {
+        super.addNotify();
+        this.expandPlatforms (JavaPlatformManager.getDefault().getDefaultPlatform());
+    }
+
 
     private void postInitComponents () {
         platforms.setPopupAllowed (false);
@@ -107,21 +111,26 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         jLabel1 = new javax.swing.JLabel();
         platformHome = new javax.swing.JTextField();
         clientArea = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        platformName = new javax.swing.JTextField();
 
         setLayout(new java.awt.GridBagLayout());
 
         platforms.setBorder(new javax.swing.border.EtchedBorder());
         platforms.setPreferredSize(new java.awt.Dimension(220, 400));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.gridheight = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 6);
         add(platforms, gridBagConstraints);
 
         addButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_AddPlatform"));
+        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_AddPlatform").charAt(0));
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addNewPlatform(evt);
@@ -130,12 +139,13 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 12, 12, 6);
         add(addButton, gridBagConstraints);
 
         removeButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_Remove"));
+        removeButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_Remove").charAt(0));
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removePlatform(evt);
@@ -144,44 +154,66 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 6);
         add(removeButton, gridBagConstraints);
 
-        jLabel1.setLabelFor(platformHome);
+        jLabel1.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformHome").charAt(0));
         jLabel1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformHome"));
+        jLabel1.setLabelFor(platformHome);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 3);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 3);
         add(jLabel1, gridBagConstraints);
 
-        platformHome.setColumns(25);
         platformHome.setEditable(false);
+        platformHome.setColumns(25);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(12, 3, 6, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 3, 6, 12);
         add(platformHome, gridBagConstraints);
 
         clientArea.setLayout(new java.awt.GridBagLayout());
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 12, 12);
         add(clientArea, gridBagConstraints);
+
+        jLabel2.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("MNE_PlatformName").charAt(0));
+        jLabel2.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/platform/ui/Bundle").getString("CTL_PlatformName:"));
+        jLabel2.setLabelFor(platformName);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 3);
+        add(jLabel2, gridBagConstraints);
+
+        platformName.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(12, 3, 6, 12);
+        add(platformName, gridBagConstraints);
 
     }//GEN-END:initComponents
 
@@ -199,6 +231,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         try {
             dobj.delete();
             this.getChildren().refreshPlatforms();
+            this.expandPlatforms(null);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify (ioe);
         }
@@ -213,6 +246,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     Repository.getDefault().getDefaultFileSystem().findResource(STORAGE));
             wiz.instantiate(template,folder);
             this.getChildren().refreshPlatforms();
+            this.expandPlatforms(null);
         } catch (DataObjectNotFoundException dfne) {
             ErrorManager.getDefault().notify (dfne);
         }
@@ -222,24 +256,31 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }//GEN-LAST:event_addNewPlatform
 
 
-    private synchronized PlatformsChildren getChildren () {
+    private synchronized PlatformCategoriesChildren getChildren () {
         if (this.children == null) {
-            this.children = new PlatformsChildren ();
+            this.children = new PlatformCategoriesChildren ();
         }
         return this.children;
     }
 
     private void selectPlatform (Node pNode) {
         this.clientArea.removeAll();
-        this.platformHome.setText(new String());
+        this.jLabel1.setVisible(false);
+        this.platformHome.setVisible(false);
+        this.jLabel2.setVisible(false);
+        this.platformName.setVisible(false);
         this.removeButton.setEnabled (false);
         if (pNode == null) {
             return;
-        }
+        }        
         JavaPlatform platform = (JavaPlatform) pNode.getLookup().lookup(JavaPlatform.class);
-        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
-        this.removeButton.setEnabled (defaultPlatform!=null && !defaultPlatform.equals(platform));
         if (platform != null) {
+            this.jLabel1.setVisible(true);
+            this.platformHome.setVisible(true);
+            this.jLabel2.setVisible(true);
+            this.platformName.setVisible(true);
+            this.removeButton.setEnabled (isDefaultPLatform(platform));
+            this.platformName.setText(pNode.getDisplayName());
             Iterator it = platform.getInstallFolders().iterator();
             if (it.hasNext()) {
                 File file = FileUtil.toFile ((FileObject)it.next());
@@ -247,10 +288,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     this.platformHome.setText (file.getAbsolutePath());
                 }
             }
-        }
-        else {
-            assert false : "Can not find platform in the node lookup.";     //NOI18N
-        }
+        }        
         if (pNode.hasCustomizer()) {
             Component component = pNode.getCustomizer();
             if (component != null) {
@@ -267,21 +305,106 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         this.clientArea.revalidate();
     }
 
+    private static boolean isDefaultPLatform (JavaPlatform platform) {
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        return defaultPlatform!=null && !defaultPlatform.equals(platform);
+    }
+
+    private void expandPlatforms (JavaPlatform platform) {
+        ExplorerManager mgr = this.getExplorerManager();
+        Node node = mgr.getRootContext();
+        expandAllNodes(this.platforms, node, mgr, platform);
+    }
+
+    private static void expandAllNodes (BeanTreeView btv, Node node, ExplorerManager mgr, JavaPlatform platform) {
+        btv.expandNode (node);
+        Children ch = node.getChildren();
+        if ( ch == Children.LEAF ) {
+            if (platform != null && platform.equals(node.getLookup().lookup(JavaPlatform.class))) {
+                try {
+                    mgr.setSelectedNodes (new Node[] {node});
+                } catch (PropertyVetoException e) {
+                    //Ignore it
+                }
+            }
+            return;
+        }
+        Node nodes[] = ch.getNodes( true );
+        for ( int i = 0; i < nodes.length; i++ ) {
+            expandAllNodes( btv, nodes[i], mgr, platform);
+        }
+
+    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JPanel clientArea;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JTextField platformHome;
+    private javax.swing.JTextField platformName;
     private org.openide.explorer.view.BeanTreeView platforms;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
-    private static class PlatformsChildren extends org.openide.nodes.Children.Keys {
+    
+    private static class PlatformCategoriesDescriptor implements Comparable {
+        private final String categoryName;
+        private final List/*<Node>*/ platforms;
+        
+        public PlatformCategoriesDescriptor (String categoryName) {
+            assert categoryName != null;
+            this.categoryName = categoryName;
+            this.platforms = new ArrayList ();
+        }
+        
+        public String getName () {
+            return this.categoryName;
+        }
+        
+        public List getPlatform () {
+            return Collections.unmodifiableList(this.platforms);
+        }
+        
+        public void add (Node node) {
+            this.platforms.add (node);
+        }
+        
+        public int hashCode () {
+            return this.categoryName.hashCode ();
+        }
+        
+        public boolean equals (Object other) {
+            if (other instanceof PlatformCategoriesDescriptor) {
+                PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) other;
+                return this.categoryName.equals(desc.categoryName) && 
+                this.platforms.size() == desc.platforms.size();
+            }
+            return false;
+        }
+        
+        public int compareTo(Object other) {
+            if (!(other instanceof PlatformCategoriesDescriptor )) {
+                throw new IllegalArgumentException ();
+            }
+            PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) other;
+            return this.categoryName.compareTo (desc.categoryName);
+        }
+        
+    }
+    
+    private static class PlatformsChildren extends Children.Keys {
+        
+        private List platforms;
+        
+        public PlatformsChildren (List/*<Node>*/ platforms) {
+            this.platforms = platforms;
+        }
 
         protected void addNotify() {
             super.addNotify();
-            this.refreshPlatforms ();
+            this.setKeys (this.platforms);
         }
 
         protected void removeNotify() {
@@ -290,23 +413,102 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
 
         protected Node[] createNodes(Object key) {
-            FileObject fo = (FileObject) key;
-            try {
-                DataObject dobj = DataObject.find (fo);
+            return new Node[] {new FilterNode((Node) key, Children.LEAF)};
+        }
+    }
+    
+    private static class PlatformCategoryNode extends AbstractNode {
+        
+        private final PlatformCategoriesDescriptor desc;
+        
+        public PlatformCategoryNode (PlatformCategoriesDescriptor desc) {
+            super (new PlatformsChildren (desc.getPlatform()));
+            this.desc = desc;
+            this.setIconBase("org/netbeans/modules/java/platform/resources/platformList"); //NOI18N
+        }
+        
+        public String getName () {
+            return this.desc.getName ();
+        }
+        
+        public String getDisplayName () {
+            return this.getName ();
+        }
+        
+    }
+    
+    private static class PlatformCategoriesChildren extends Children.Keys {
+        
+        protected void addNotify () {
+            super.addNotify ();
+            this.refreshPlatforms ();
+        }
+        
+        protected void removeNotify () {
+            super.removeNotify ();
+        }
+        
+        protected Node[] createNodes(Object key) {
+            if (key instanceof PlatformCategoriesDescriptor) {
+                PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) key;
                 return new Node[] {
-                    new FilterNode (dobj.getNodeDelegate(), Children.LEAF)
+                    new PlatformCategoryNode (desc)
                 };
-            } catch (DataObjectNotFoundException donf) {
+            }
+            else if (key instanceof Node) {
+                return new Node[] {
+                    new FilterNode ((Node)key,Children.LEAF)
+                };
+            }
+            else {
                 return new Node[0];
             }
-        }
-
+        }       
+        
         private void refreshPlatforms () {
             FileObject storage = Repository.getDefault().getDefaultFileSystem().findResource(STORAGE);
             if (storage != null) {
-                this.setKeys(storage.getChildren());
+                HashMap/*<String,PlatformCategoriesDescriptor>*/ categories = new HashMap ();
+                FileObject[] children = storage.getChildren();
+                for (int i=0; i< children.length; i++) {
+                    try {
+                        DataObject dobj = DataObject.find (children[i]);
+                        Node node = dobj.getNodeDelegate();
+                        JavaPlatform platform = (JavaPlatform) node.getLookup().lookup(JavaPlatform.class);
+                        if (platform != null) {
+                            String platformType = platform.getSpecification().getName();
+                            if (platformType != null) {
+                                PlatformCategoriesDescriptor platforms = (PlatformCategoriesDescriptor) categories.get (platformType);
+                                if (platforms == null ) {
+                                    platforms = new PlatformCategoriesDescriptor (platformType);
+                                    categories.put (platformType, platforms);
+                                }
+                                platforms.add (node);
+                            }
+                            else {
+                                ErrorManager.getDefault().log ("Platform: "+ platform.getDisplayName() +" has invalid specification.");  //NOI18N
+                            }
+                        }
+                        else {                        
+                            ErrorManager.getDefault().log ("Platform node for : "+node.getDisplayName()+" has no platform in its lookup.");   //NOI18N
+                        }                    
+                    }catch (DataObjectNotFoundException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                 }                                    
+                List keys = new ArrayList (categories.values());
+                if (keys.size() == 1) {
+                    PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) keys.get(0);
+                    this.setKeys (desc.getPlatform());
+                }
+                else {
+                    Collections.sort (keys);
+                    this.setKeys(keys);
+                }
             }
         }
+        
+
     }
 
 }
