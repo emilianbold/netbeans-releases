@@ -114,14 +114,14 @@ is the proper place.
 
         <change id="ProjectCustomizer.addition">
             <api name="general"/>
-            <summary>Added open and close methods into <code>OpenProjects</code> class</summary>
+            <summary>Added suport class for creating standard project customizer dialogs.</summary>
             <version major="1" minor="4"/>
             <date day="16" month="1" year="2005"/>
             <author login="phrebejk"/>
             <compatibility addition="yes"/>
             <description>
                 <p>
-                    Added <code>org.netbeans.spi.project.ui.supportProjectCustomizer</code> 
+                    Added <code>org.netbeans.spi.project.ui.support.ProjectCustomizer</code> 
                     containing support methods for creating standard looking project customizer
                     dialogs.
                 </p>
