@@ -621,8 +621,9 @@ public abstract class NbTopManager extends TopManager {
     }
     // Access from ModuleSystem and from subclasses when moduleSystem is created:
     public final void fireSystemClassLoaderChange() {
-        //System.err.println("change: systemClassLoader");
+        //System.err.println("change: systemClassLoader -> " + systemClassLoader());
         firePropertyChange(PROP_SYSTEM_CLASS_LOADER, null, null);
+        Lkp.systemClassLoaderChanged(); // #26245
     }
 
     /** Obtains current up-to data te classloader
@@ -824,7 +825,6 @@ public abstract class NbTopManager extends TopManager {
         */
         public Lkp () {
             super (new Lookup[] {
-                       Lookup.EMPTY,
                        // #14722: pay attention also to META-INF/services/class.Name resources:
                        createMetaInfServicesLookup(false),
                        createInitialErrorManagerLookup(),
@@ -833,6 +833,7 @@ public abstract class NbTopManager extends TopManager {
         
         /** @param modules if true, use module classloader, else not */
         private static Lookup createMetaInfServicesLookup(boolean modules) {
+            //System.err.println("cMISL: modules=" + modules);
             try {
                 Class clazz = Class.forName("org.openide.util.MetaInfServicesLookup"); // NOI18N
                 Constructor c = clazz.getDeclaredConstructor(new Class[] {ClassLoader.class});
@@ -883,23 +884,22 @@ public abstract class NbTopManager extends TopManager {
                 if (lookup instanceof Lkp) {
                     Lkp lkp = (Lkp)lookup;
                     Lookup[] old = lkp.getLookups();
-                    if (old.length !=  6) throw new IllegalStateException();
+                    if (old.length !=  5) throw new IllegalStateException();
                     Lookup[] nue = new Lookup[] {
-                        old[0], // TMLookup
                         // maybe replace it now with module-based lookup, if PROP_ENABLED_MODULES
                         // has not taken care of it yet
-                        propModulesReceived > 0 ? old[1] : createMetaInfServicesLookup(true),
+                        propModulesReceived > 0 ? old[0] : createMetaInfServicesLookup(true),
                         // do NOT include initialErrorManagerLookup; this is now replaced by the layer entry
                         // Services/Hidden/org-netbeans-core-default-error-manager.instance
-                        old[3], // NbTM.instanceLookup
-                        old[4], // FolderLookup
-                        old[5], // moduleLookup
+                        old[2], // NbTM.instanceLookup
+                        old[3], // FolderLookup
+                        old[4], // moduleLookup
                     };
                     lkp.setLookups(nue);
                 }
             }
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ModuleManager.PROP_ENABLED_MODULES.equals(evt.getPropertyName())) {
+                if (evt == null || ModuleManager.PROP_ENABLED_MODULES.equals(evt.getPropertyName())) {
                     //System.err.println("modules changed; changing metaInfServicesLookup");
                     propModulesReceived++;
                     if (propModulesReceived == 1 && folderLookupFinished) {
@@ -914,9 +914,9 @@ public abstract class NbTopManager extends TopManager {
                         Lkp lkp = (Lkp)lookup;
                         Lookup[] old = lkp.getLookups();
                         Lookup[] nue = (Lookup[])old.clone();
-                        nue[1] = createMetaInfServicesLookup(true);
+                        nue[0] = createMetaInfServicesLookup(true);
                         lkp.setLookups(nue);
-                        //System.err.println("lookups: " + java.util.Arrays.asList(arr));
+                        //System.err.println("lookups: " + java.util.Arrays.asList(nue));
                     }
                     /* just testing:
                     {
@@ -958,6 +958,7 @@ public abstract class NbTopManager extends TopManager {
         }
         
         private synchronized void initializeLookup () {
+            //System.err.println("initializeLookup");
             initTask = RequestProcessor.getDefault().post (new Runnable () {
                 public void run () {
                     doInitializeLookup ();
@@ -967,6 +968,7 @@ public abstract class NbTopManager extends TopManager {
         }
             
         final void doInitializeLookup () {
+            //System.err.println("doInitializeLookup");
             FileObject services = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Services");
             Lookup nue;
             if (services != null) {
@@ -981,11 +983,10 @@ public abstract class NbTopManager extends TopManager {
 
             // extend the lookup
             Lookup[] arr = new Lookup[] {
-                getLookups ()[0], // TMLookup
-                getLookups()[1], // metaInfServicesLookup; still keep classpath one till later...
+                getLookups()[0], // metaInfServicesLookup; still keep classpath one till later...
                 // Include initialErrorManagerLookup provisionally, until the folder lookup
                 // is actually ready and usable
-                getLookups()[2], // initialErrorManagerLookup
+                getLookups()[1], // initialErrorManagerLookup
                 NbTopManager.get ().getInstanceLookup (),
                 nue,
                 NbTopManager.get().getModuleSystem().getManager().getModuleLookup(),
@@ -996,7 +997,13 @@ public abstract class NbTopManager extends TopManager {
             StartLog.logProgress ("Lookups set"); // NOI18N
 
             // Also listen for changes in modules, as META-INF/services/ would change:
-            get().getModuleSystem().getManager().addPropertyChangeListener(new ConvertorListener());
+            ModuleManager mgr = get().getModuleSystem().getManager();
+            ConvertorListener l = new ConvertorListener();
+            mgr.addPropertyChangeListener(l);
+            if (!mgr.getEnabledModules().isEmpty()) {
+                // Ready now.
+                l.propertyChange(null);
+            }
             
 	    //StartLog.logEnd ("NbTopManager$Lkp: initialization of FolderLookup"); // NOI18N
             
