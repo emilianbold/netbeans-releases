@@ -15,29 +15,44 @@
 package org.netbeans.modules.openfile;
 
 
-import java.io.*;
-import java.awt.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
+import java.io.File;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.util.List;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListSelectionModel;
 
 
+// XXX This entire class should be refactored using form.
 /**
  * Panel offering mounting points to user, when opening .java file.
  */
-// PENDING This all class has to be refactored using form.
-public class PackagePanel extends javax.swing.JPanel {
+public class PackagePanel extends JPanel {
 
     private File f;
     
     private int pkgLevel;
     
-    private Vector dirs;
+    private List dirs;
     
-    private Vector pkgs;
+    private List pkgs;
+
     
     /** Creates new form PackagePanel */
-    public PackagePanel(File f, int pkgLevel, Vector dirs, Vector pkgs) {
+    public PackagePanel(File f, int pkgLevel, List dirs, List pkgs) {
         this.f = f;
         this.pkgLevel = pkgLevel;
         this.dirs = dirs;
@@ -63,7 +78,7 @@ public class PackagePanel extends javax.swing.JPanel {
     private void initComponents2() {
         okButton = new JButton (SettingsBeanInfo.getString ("LBL_okButton"));
         cancelButton = new JButton (SettingsBeanInfo.getString ("LBL_cancelButton"));
-        list = new JList(pkgs);
+        list = new JList(pkgs.toArray());
         
         setLayout (new BorderLayout (0, 5));
         setBorder (new javax.swing.border.EmptyBorder (8, 8, 8, 8));
@@ -87,7 +102,6 @@ public class PackagePanel extends javax.swing.JPanel {
             
             public Component getListCellRendererComponent (JList lst, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 String pkg2 = (String) value;
-//                JLabel lab = new JLabel (); // TEMP
                 if (pkg2.equals ("")) { // NOI18N
                     lab.setText (SettingsBeanInfo.getString ("LBL_packageWillBeDefault"));
                     lab.setIcon (rootFolderIcon);
@@ -124,13 +138,14 @@ public class PackagePanel extends javax.swing.JPanel {
         updateLabelEtcFromList (label, list, dirs, okButton);
     }
 
-    private static void updateLabelEtcFromList (JLabel label, JList list, Vector dirs, JButton okButton) {
+    /** Updates label and enables/disables ok button. */
+    private static void updateLabelEtcFromList (JLabel label, JList list, List dirs, JButton okButton) {
         int idx = list.getSelectedIndex ();
         if (idx == -1) {
             label.setText (" "); // NOI18N
             okButton.setEnabled (false);
         } else {
-            File dir = (File) dirs.elementAt (idx);
+            File dir = (File) dirs.get(idx);
             label.setText (SettingsBeanInfo.getString ("LBL_dirWillBe", dir.getAbsolutePath ()));
             okButton.setEnabled (true);
         }

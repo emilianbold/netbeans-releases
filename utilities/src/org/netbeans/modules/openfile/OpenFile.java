@@ -15,14 +15,9 @@
 package org.netbeans.modules.openfile;
 
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,6 +46,7 @@ import org.openide.filesystems.JarFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
@@ -163,7 +159,7 @@ class OpenFile extends Object {
                 }
 
                 // PENDING Opening in new explorer window was submitted as bug (#8809).
-                // Here we chcek if the data object is default data one, 
+                // Here we check if the data object is default data one, 
                 // and try to change it to text one. 
                 // 1) We get default data loader,
                 // 2) Compare if oyr data object is of deafult data object type,
@@ -250,69 +246,6 @@ class OpenFile extends Object {
         return existing.getRoot ();
     }
 
-    /** Finds in local already mounted file systems.
-     * @return <code>FileObject</code> or null if not found or error happened. */
-    private static FileObject findInExistingFileSystems(File file) {
-        String fileName = file.toString();
-        String fileNameUpper = fileName.toUpperCase();
-
-        Enumeration mountedFileSystems = TopManager.getDefault().getRepository().getFileSystems();
-
-        // Loop thru all mounted filesystems.
-        while(mountedFileSystems.hasMoreElements()) {
-            FileSystem fileSystem = (FileSystem)mountedFileSystems.nextElement ();
-            
-            if(fileSystem.isHidden())
-                continue;
-
-            // Note: The below line isn't fullproof,  works for file systems supporting FileSystem.Environment only.
-            // At the moment supports all interested filesystems do but would make troubles if not.
-            File root = NbClassPath.toFile(fileSystem.getRoot());
-
-            String rootName = root.toString ().toUpperCase ();
-
-            if (!fileNameUpper.startsWith(rootName))
-                continue;
-            
-            // The filesystem can contain the file.
-            String resource = fileName.substring (rootName.length ()).replace(File.separatorChar, '/');
-
-            if (resource.startsWith ("/")) // NOI18N
-                resource = resource.substring(1);
-            else if (resource.length () > 0)
-                continue;           // e.g. root = /tmp/foo but file = /tmp/foobar
-
-            FileObject fileObject = fileSystem.findResource(resource);
-
-            if(fileObject != null) {
-                return fileObject;
-            } else {
-                // Most likely, file was just created and is not yet in folder cache. Refresh each segment.
-                FileObject currentPoint = fileSystem.getRoot ();
-                StringTokenizer resourceTok = new StringTokenizer (resource, "/"); // NOI18N
-                String currentResource = ""; // NOI18N
-
-                while (resourceTok.hasMoreTokens ()) {
-                    if (currentPoint == null || currentPoint.isData ()) {
-                        return null;
-                    } else {
-                        currentPoint.refresh ();
-                        if (currentResource.length () > 0) currentResource += '/';
-                        currentResource += resourceTok.nextToken ();
-                        currentPoint = fileSystem.findResource (currentResource);
-                    }
-                }
-                if (currentPoint != null && currentPoint.isData ()) {
-                    return currentPoint;
-                } else {
-                    return null;
-                }
-            }
-        }
-        
-        return null;
-    }
-
     /** Find java package in side .java file. 
      * @return package or null if not found */
     private static String findJavaPackage(File file) {
@@ -346,8 +279,6 @@ class OpenFile extends Object {
                     //break;
                     return pkg;
                 }
-
-                t(line); // test the line SourceReader has produced
 
                 pckgPos = line.indexOf(PACKAGE);
                 if (pckgPos == -1) continue;
@@ -412,10 +343,10 @@ class OpenFile extends Object {
     }
     
     /** Try to find the file object corresponding to a given file on disk.
-    * Can produce a folder, mount directories, etc. as needed.
-    * @param f the file on local disk
-    * @return file object or <code>null</code> if not found
-    */
+     * Can produce a folder, mount directories, etc. as needed.
+     * @param f the file on local disk 
+     * @return file object or <code>null</code> if not found
+     */
     private static synchronized FileObject find (File f) {
         String fileName = f.toString ();
         String fileNameUpper = fileName.toUpperCase ();
@@ -425,12 +356,13 @@ class OpenFile extends Object {
             return handleZipJar(f);
         }
         
-        // Next see if it is present in an existing LocalFileSystem.
-        // enumeration of file systems
-        FileObject findFO = findInExistingFileSystems(f);
-        
-        if(findFO != null)
-            return findFO;
+        // Next see if it is present in an existing file systems.
+        FileObject[] fObjects = FileUtil.fromFile(f);
+
+        // Has found something from already mounted filesystems.
+        if(fObjects.length > 0) {
+            return fObjects[0];
+        }
         
         // Not found. For Java files, it is reasonable to mount the package root.
         String pkg = null;
@@ -531,16 +463,16 @@ class OpenFile extends Object {
     }
 
     /** Ask what dir to mount to access a given file.
-    * First may display a dialog asking whether the user wishes to select the default,
-    * or edit the package selection.
-    * @param f the file which should be accessible
-    * @param pkgLevel the suggested depth of the package; 0 = default, 1 = single component, 2 = foo.bar, etc.; -1 if no suggested package
-    * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
-    * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
-    */
+     * First may display a dialog asking whether the user wishes to select the default,
+     * or edit the package selection.
+     * @param f the file which should be accessible
+     * @param pkgLevel the suggested depth of the package; 0 = default, 1 = single component, 2 = foo.bar, etc.; -1 if no suggested package
+     * @param dirToMount 0th elt will contain the directory to mount (null to cancel the mount)
+     * @param mountPackage 0th elt will contain the name of the package (possibly empty, not null) the file will be in
+     */
     private static void askForMountPoint (File f, int pkgLevel, final File[] dirToMount, final String[] mountPackage) {
-        final Vector dirs = new Vector (); // list of mountable dir names; Vector<File>
-        final Vector pkgs = new Vector (); // list of resulting package names; Vector<String>
+        final java.util.List /*Vector*/ dirs = new Vector (); // list of mountable dir names; Vector<File>
+        final java.util.List /*Vector*/ pkgs = new Vector (); // list of resulting package names; Vector<String>
         String pkg = ""; // NOI18N
         for (File dir = f.getParentFile (); dir != null; dir = dir.getParentFile ()) {
             dirs.add (dir);
@@ -551,7 +483,7 @@ class OpenFile extends Object {
 
         // If no guess, always show full dialog.
         if (pkgLevel != -1) {
-            String guessed = (String) pkgs.elementAt (pkgLevel);
+            String guessed = (String) pkgs.get(pkgLevel);
             Object yesOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountYes"));
             Object noOption = new JButton (SettingsBeanInfo.getString ("LBL_quickMountNo"));
             Object cancelOption = new JButton(SettingsBeanInfo.getString("LBL_cancelButton"));
@@ -566,7 +498,7 @@ class OpenFile extends Object {
                              yesOption // initialValue
                             ));
             if (result.equals (yesOption)) {
-                dirToMount[0] = (File) dirs.elementAt (pkgLevel);
+                dirToMount[0] = (File) dirs.get(pkgLevel);
                 mountPackage[0] = guessed;
                 return;
             } else if (! result.equals (noOption)) {
@@ -597,8 +529,8 @@ class OpenFile extends Object {
                       if (evt.getSource () == okButton) {
                           int idx = list.getSelectedIndex ();
                           if (idx != -1) {
-                              dirToMount[0] = (File) dirs.elementAt (idx);
-                              mountPackage[0] = (String) pkgs.elementAt (idx);
+                              dirToMount[0] = (File) dirs.get(idx);
+                              mountPackage[0] = (String) pkgs.get(idx);
                           } else {
                               System.err.println ("Should not have accepted OK button");
                           }
@@ -611,8 +543,8 @@ class OpenFile extends Object {
     }
 
     /** Filtered reader for Java sources - it simply excludes
-      * comments and some useless whitespaces from the original stream.
-      */
+     * comments and some useless whitespaces from the original stream.
+     */
     public static class SourceReader extends InputStreamReader {
         private int preRead = -1;
         private boolean inString = false;
@@ -757,14 +689,6 @@ class OpenFile extends Object {
             }
             return false;
         }
-    }
+    } // End of class SourceReader.
 
-
-    /** For debugging purposes only. */
-    static final boolean TRACE = false;
-    /** For debugging purposes only. */
-    static void t(String str) {
-        if (TRACE)
-            System.out.println("OpenFile> "+str);
-    }
 }
