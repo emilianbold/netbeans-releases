@@ -99,17 +99,25 @@ Microsystems, Inc. All Rights Reserved.
             <classpath refid="jemmy.and.jelly.path"/>
             <classpath refid="performance.testutilities"/>
             
-            <property name="xtest.timeout" value="3600000" />
+            <property name="xtest.timeout" value="2400000" />
             
             <!-- Opens project at specified location -->
             <property name="xtest.ide.open.project" location="${xtest.tmpdir}/jEdit41"/>
     
         </executeTests>
 
+        <!-- TEMPORARY 
+            remove lock file - if setup fails - it will be possible run all tests - this must be solved by XTEST issue 45807 
+            this doesn't solve all our problems if setup fails during parsing of project !
+        -->
+        <delete file="${xtest.workdir}/sys/ide/lock" />
+        <!-- TEMPORARY -->
+        
         <!-- save copy of current Userdir -->
         <copy todir="${xtest.workdir}/sys/ide_backup">
           <fileset dir="${xtest.workdir}/sys/ide"/>
         </copy>
+        
         <antcall target="copy_original_ide_cfg_file"/>
     </target>
 
