@@ -43,6 +43,75 @@ public class ConnectionNode extends DatabaseNode {
 
         setName(info.getName());
 
+        info.put(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_MIXEDCASE_QUOTED_IDENTIFIERS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ALTER_ADD, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ALTER_DROP, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CONVERT, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_TABLE_CORRELATION_NAMES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_TABLE_CORRELATION_NAMES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_EXPRESSIONS_IN_ORDERBY, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ORDER_BY_UNRELATED, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_GROUP_BY, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_UNRELATED_GROUP_BY, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_BEYOND_GROUP_BY, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ESCAPE_LIKE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_MULTIPLE_RS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_MULTIPLE_TRANSACTIONS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_NON_NULL_COLUMNSS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_MINUMUM_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CORE_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_EXTENDED_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ANSI_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_INTERMEDIATE_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_FULL_SQL_GRAMMAR, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_INTEGRITY_ENHANCEMENT, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_OUTER_JOINS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_FULL_OUTER_JOINS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_LIMITED_OUTER_JOINS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SCHEMAS_IN_DML, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SCHEMAS_IN_PROCEDURE_CALL, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SCHEMAS_IN_TABLE_DEFINITION, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SCHEMAS_IN_INDEX, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SCHEMAS_IN_PRIVILEGE_DEFINITION, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOGS_IN_DML, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOGS_IN_PROCEDURE_CALL, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOGS_IN_TABLE_DEFINITION, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOGS_IN_INDEX, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOGS_IN_PRIVILEGE_DEFINITION, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_POSITIONED_DELETE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_POSITIONED_UPDATE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SELECT_FOR_UPDATE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_STORED_PROCEDURES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SUBQUERY_IN_COMPARSIONS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SUBQUERY_IN_EXISTS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SUBQUERY_IN_INS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_SUBQUERY_IN_QUANTIFIEDS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CORRELATED_SUBQUERIES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_UNION, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_UNION_ALL, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_OPEN_CURSORS_ACROSS_COMMIT, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_OPEN_CURSORS_ACROSS_ROLLBACK, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_OPEN_STATEMENTS_ACROSS_COMMIT, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_OPEN_STATEMENTS_ACROSS_ROLLBACK, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_TRANSACTIONS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_DDL_AND_DML_TRANSACTIONS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_DML_TRANSACTIONS_ONLY, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_BATCH_UPDATES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_CATALOG_AT_START, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_COLUMN_ALIASING, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_DDL_CAUSES_COMMIT, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_DDL_IGNORED_IN_TRANSACTIONS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_DIFF_TABLE_CORRELATION_NAMES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_LOCAL_FILES, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_FILE_PER_TABLE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_ROWSIZE_INCLUDING_BLOBS, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_NULL_PLUS_NULL_IS_NULL, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_PROCEDURES_ARE_CALLABLE, Boolean.FALSE);
+        info.put(DefaultAdaptor.PROP_TABLES_ARE_SELECTABLE, Boolean.FALSE);
+        
+        info.put(DefaultAdaptor.PROP_READONLY, info.isReadOnly() ? Boolean.TRUE : Boolean.FALSE);
+
         info.addConnectionListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(DatabaseNodeInfo.DATABASE))
@@ -74,12 +143,13 @@ public class ConnectionNode extends DatabaseNode {
         createPropSupport = value;
     }
     
-    private void update(Connection connection) {
+    private void update(Connection connection) {        
         final boolean connecting = (connection != null);
         RequestProcessor.postRequest(new Runnable() {
             public void run () {
                 DatabaseNodeChildren children = (DatabaseNodeChildren)getChildren();
                 DatabaseNodeInfo info = getInfo();
+                
                 setIconBase((String)info.get(connecting ? "activeiconbase" : "iconbase")); //NOI18N
                 setConnectionName();
                 Sheet.Set set = getSheet().get(Sheet.PROPERTIES);
