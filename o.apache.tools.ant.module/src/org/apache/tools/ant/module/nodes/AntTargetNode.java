@@ -389,7 +389,6 @@ public class AntTargetNode extends ElementNode {
                                 AntTaskNode.helpFor((String)combo.getSelectedItem(), "task")); // NOI18N
                         }
                     });
-            }
             
             help.setFont(new java.awt.Font("Arial", 0, 11));
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -398,6 +397,7 @@ public class AntTargetNode extends ElementNode {
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
             pane.add(help, gridBagConstraints);
+            }
 
             
             combo.setFont(new java.awt.Font("Arial", 0, 12));
