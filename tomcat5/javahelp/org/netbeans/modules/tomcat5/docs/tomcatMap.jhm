@@ -36,6 +36,7 @@ help\
 	<mapID target="tomcat_plugin" url="tomcat/tomcat_plugintro.html" />
 	<mapID target="tomcat_top_node" url="tomcat/tomcat_top_node.html" />
 	<mapID target="tomcat_setup_unsupported" url="tomcat/tomcat_setup_unsupported.html" />
+	<mapID target="tomcat_setup_registered" url="tomcat/tomcat_setup_registered.html" />
  
 
         <!-- CSH topics -->

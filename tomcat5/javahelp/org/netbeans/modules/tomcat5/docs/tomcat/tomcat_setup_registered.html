@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ *     	  Copyright © 2005 Sun Microsystems, Inc. All rights reserved. 
+ *	  Use is subject to license terms.
+-->
+
+<html>
+<head>
+<meta name="lastupdated" content="4Feb04">
+<!-- p1 -->
+
+<title>Deploying to a Registered Tomcat Web Server</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Deploying to a Registered Tomcat Web Server</h2>
+<p><small> 
+<a href="#seealso">See Also</a> 
+</small></p> 
+<p>When you install the IDE, the installer automatically registers the bundled Tomcat 
+Web Server with the IDE. You can also configure the IDE to deploy web applications to other 
+installations of supported versions of the Tomcat Web Server. These versions need to be
+<a href="tomcat_addinstall.html">registered</a> first.</p>
+<p>The bundled Tomcat Web Server is the IDE's default server and is the server that 
+automatically starts when you run web applications, JSP pages, or servlets. 
+Use the following steps to check that the correct server is the 
+target server for the current application.</p>
+<p><b>To check the target server:</b></p>
+<ol>
+  <li>Right-click the project node in the Projects window and choose Properties.</li>
+  <li>Select Run in the Project Properties dialog box.</li>
+  <li>Look at the target server specified in the Server drop-down. Verify that
+  it is the one you want to use. Select a different server if necessary.</li> 
+  <li>Click OK.</li>
+</ol>
+
+<b>To deploy to the target server:</b>
+<ol>
+<li>(Optional) <a href="nbdocs:/org/netbeans/modules/usersguide/web/create/jsp/jsp_queryparams.html">Define parameters to pass to one or more JSP files, servlets, or both</a>.
+  <li>In the Projects window, right-click the project's node.</li>
+  <li>Choose Run Project from the contextual menu.</li>
+</ol>  
+    The IDE sends the web application's URL to the server. The URL is derived from 
+    the server's URL and the web application's context path.
+The server runs through the files listed in the welcome-file-list element 
+  in the deployment descriptor (the <tt>web.xml</tt> file), displaying the 
+  first one it finds.
+If the server does not find a welcome file, the server's default servlet 
+  displays the root of the web application. You can change the behavior of the default 
+  servlet in the <tt>web.xml</tt> file.
+
+<table>
+
+  <tr> 
+
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+
+  </tr>
+
+  <tr> 
+
+    <td width="23"></td>
+
+<td><a href="tomcat_plugintro.html">About the Tomcat Web Server</a><br>
+<a href="tomcat_top_node.html">Viewing the Tomcat Web Server in the IDE</a><br>
+<a href="tomcat_internal_props.html">Customizing the Tomcat Web Server</a><br>
+<a href="tomcat_edit_config.html">Customizing the Tomcat Configuration File</a><br>
+
+  </tr>
+
+</table>
+
+<hr>
+<small><a href="../credits.html">Legal Notices</a> 
+<table cellpadding="20" border="0"> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+<tr><td>&nbsp;</td></tr> 
+</table> 
+
+</small></body></html>
