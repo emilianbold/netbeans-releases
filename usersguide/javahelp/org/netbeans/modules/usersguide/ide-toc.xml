@@ -210,11 +210,10 @@
 	</tocitem>   
 
     <tocitem text="Editing Resource Bundles">
-      <tocitem text="About" target="propfiles.intro"/>
-      <tocitem text="Creating a Properties File" target="propfiles.creating" />
-      <tocitem text="Adding a Property" target="propfiles.adding" />
-      <tocitem text="Modifying a Properties File" target="propfiles.modifying" />
-      <tocitem text="Removing a Property" target="propfiles.removing" />
+      <tocitem text="About Resource Bundles" target="propfiles.intro"/>
+      <tocitem text="Creating and Deleting a Resource Bundle" target="propfiles.creating" />
+      <tocitem text="Editing a Resource Bundle" target="propfiles.modifying" />
+      <tocitem text="Adding and Removing a Property" target="propfiles.adding" />
       <tocitem text="Adding and Removing a Locale" target="propfiles.addlocale" />
       <tocitem text="Editing a Locale" target="propfiles.editlocale" />
     </tocitem>
