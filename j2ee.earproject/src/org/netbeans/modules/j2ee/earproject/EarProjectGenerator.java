@@ -91,7 +91,6 @@ public class EarProjectGenerator {
         fo = FileUtil.toFileObject (FileUtil.normalizeFile(dir));
         assert fo != null : "No such dir on disk: " + dir;
         assert fo.isFolder() : "Not really a dir: " + dir;
-        assert fo.getChildren().length == 0 : "Dir must have been empty: " + dir;
         AntProjectHelper h = setupProject (fo, name, j2eeLevel, serverInstanceId);
         fo = fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         FileObject webInfFO = fo.createFolder(DEFAULT_DOC_BASE_FOLDER); // NOI18N
