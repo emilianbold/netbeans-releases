@@ -56,7 +56,6 @@ public class TemplatesPanel implements WizardDescriptor.Panel, TemplatesPanelGUI
             TemplatesPanelGUI gui = (TemplatesPanelGUI)this.getComponent();
             gui.setTemplatesFolder (templatesFolder);
             if (wd.getProperty(TemplatesPanelGUI.TARGET_TEMPLATE) == null) {
-                //First run
                 String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
                 gui.setSelectedCategoryByName(selectedCategory);
                 String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();

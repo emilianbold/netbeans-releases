@@ -37,6 +37,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -82,8 +83,15 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     
     public TemplateChooserPanelGUI(Project p /* , String[] recommendedTypes */ ) {
         this.builder = new FileChooserBuilder ();
-        initComponents();        
+        initComponents();
+        final TemplatesPanelGUI tempPanel = (TemplatesPanelGUI)this.templatesPanel;
         ((TemplatesPanelGUI)this.templatesPanel).setTemplatesFolder (Repository.getDefault().getDefaultFileSystem().findResource("Templates"));  //NOI18N
+        // select first category
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                tempPanel.setSelectedCategoryByName (null);
+            }
+        });
         initValues( p );        
         setName (org.openide.util.NbBundle.getMessage(TemplateChooserPanelGUI.class, "LBL_TemplateChooserPanelGUI_Name")); // NOI18N
         projectsComboBox.setRenderer( PROJECT_CELL_RENDERER );                

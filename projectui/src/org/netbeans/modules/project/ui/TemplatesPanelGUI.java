@@ -90,16 +90,30 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     }
 
 
-    public void setSelectedCategoryByName (String categoryName) {
-         ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
+    public void setSelectedCategoryByName (final String categoryName) {
+        if (categoryName != null) {
+            ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (categoryName);
+        } else {
+            // if categoryName is null then select fisrt category leastwise
+            ((CategoriesPanel)this.categoriesPanel).selectFirstCategory ();
+        }
     }
     
     public String getSelectedCategoryName () {
         return ((ExplorerProviderPanel)this.categoriesPanel).getSelectionPath ();
     }
     
-    public void setSelectedTemplateByName (String templateName) {
-        ((ExplorerProviderPanel)this.projectsPanel).setSelectedNode (templateName);
+    public void setSelectedTemplateByName (final String templateName) {
+        final TemplatesPanel tempExplorer = ((TemplatesPanel)this.projectsPanel);
+        SwingUtilities.invokeLater (new Runnable () {
+            public void run () {
+                if (templateName != null) {
+                    tempExplorer.setSelectedNode (templateName);
+                } else {
+                    tempExplorer.selectFirstTemplate ();
+                }
+            }
+        });
     }
     
     public String getSelectedTemplateName () {
@@ -135,6 +149,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
                         FileObject fo = template.getPrimaryFile();
                         ((ExplorerProviderPanel)this.projectsPanel).setRootNode(
                             new FilterNode (selectedNodes[0], this.firer.createTemplatesChildren(fo)));
+                        // after change of root select the first template to make easy move in wizard
+                        this.setSelectedTemplateByName (null);
                         URL descURL = getDescription (template);
                         if (descURL != null) {
                             try {
@@ -201,7 +217,6 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         
         categoriesPanel.requestFocus ();
-        ((CategoriesPanel)categoriesPanel).selectFirst ();
     }
     
     /** This method is called from within the constructor to
@@ -412,7 +427,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             JComponent component = this.createComponent ();
             ((GridBagLayout)this.getLayout()).setConstraints(component, c);
             this.add (component);
-        }        
+        }
+        
     }
 
 
@@ -421,14 +437,14 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             super ();
             this.tree.setEditable(false);
         }
-        public void selectFirst () {
+        public void selectFirstCategory () {
             tree.setSelectionRow (0);
         }
     }
 
     private static final class CategoriesPanel extends ExplorerProviderPanel {
 
-        private BeanTreeView btv;
+        private CategoriesBeanTreeView btv;
 
         protected synchronized JComponent createComponent () {
             if (this.btv == null) {
@@ -440,8 +456,8 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             return this.btv;
         }
         
-        public void selectFirst () {
-            ((CategoriesBeanTreeView)btv).selectFirst ();
+        public void selectFirstCategory () {
+            btv.selectFirstCategory ();
         }
         
     }
@@ -457,6 +473,18 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             }
             return this.list;
         }
+        
+        public void selectFirstTemplate () {
+            try {
+                Children ch = getExplorerManager ().getRootContext ().getChildren ();
+                if (ch.getNodesCount () > 0) {
+                    getExplorerManager ().setSelectedNodes (new Node[] { ch.getNodes ()[0] });
+                }
+            } catch (PropertyVetoException pve) {
+                // doesn't matter, can ignore it
+            }
+        }
+        
     }
            
     // Variables declaration - do not modify//GEN-BEGIN:variables
