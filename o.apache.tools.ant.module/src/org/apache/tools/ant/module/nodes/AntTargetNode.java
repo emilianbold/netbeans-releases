@@ -48,6 +48,10 @@ import org.apache.tools.ant.module.xml.ElementSupport;
 import org.apache.tools.ant.module.wizards.properties.*;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.Dimension;
+import javax.swing.border.EmptyBorder;
+import java.awt.Insets;
+import org.openide.util.HelpCtx;
 
 /** A node representing an Ant build target.
  */
@@ -221,7 +225,13 @@ public class AntTargetNode extends ElementNode {
                 return true;
             }
             public Component getCustomEditor () {
-                return new JScrollPane(new DependsPanel ());
+                JPanel pane = new JPanel();
+                pane.setLayout(new javax.swing.BoxLayout(pane, javax.swing.BoxLayout.Y_AXIS));
+                pane.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
+                pane.add(new JScrollPane(new DependsPanel ()));
+                pane.setPreferredSize(new Dimension(250,300));
+                HelpCtx.setHelpIDString (pane, "org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor");
+                return pane;
             }
             private class DependsPanel extends Box implements ActionListener {
                 private final Set on = new HashSet (); // Set<String>
