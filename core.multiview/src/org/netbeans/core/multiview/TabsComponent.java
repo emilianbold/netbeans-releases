@@ -43,6 +43,7 @@ class TabsComponent extends JToolBar {
     public TabsComponent() {
         super();
         setBorder (BorderFactory.createEmptyBorder(0,0,0,0));
+        setBorderPainted(false);
 //        setLayout (new AdaptiveGridLayout());
         setLayout (new OneLineGridLayout());
         setFloatable(false);
@@ -357,7 +358,7 @@ class TabsComponent extends JToolBar {
         }
     }
     
-    static class ButtonMouseListener extends MouseAdapter {
+    class ButtonMouseListener extends MouseAdapter {
         public void mouseEntered(MouseEvent e) {
             AbstractButton b = (AbstractButton)e.getComponent();
             b.getModel().setRollover(true);
@@ -366,6 +367,17 @@ class TabsComponent extends JToolBar {
             AbstractButton b = (AbstractButton)e.getComponent();
             b.getModel().setRollover(false);
         }
+        
+        /** for user triggered clicks, do activate the current element.. */
+        public void mouseClicked(MouseEvent e) {
+            AbstractButton b = (AbstractButton)e.getComponent();
+            MultiViewModel model = TabsComponent.this.model;
+            if (model != null) {
+                model.fireActivateCurrent();
+            }
+
+        }
+        
     }    
     
 

@@ -100,6 +100,7 @@ public final class MultiViewPeer  {
     void initComponents() {
         peer.setLayout(new BorderLayout());
         tabs = new TabsComponent();
+//debug borders        tabs.setBackground(java.awt.Color.MAGENTA);
         peer.add(tabs);
         ActionMap map = peer.getActionMap();
         Action act = new AccessTogglesAction();
@@ -420,6 +421,12 @@ public final class MultiViewPeer  {
         public void selectionChanged(MultiViewDescription oldOne, MultiViewDescription newOne) {
             hideElement(oldOne);
             showCurrentElement();
+        }
+        
+        public void selectionActivatedByButton() {
+            MultiViewElement elem = model.getActiveElement();
+            elem.getVisualRepresentation().requestFocus();
+            elem.componentActivated();
         }
         
     }

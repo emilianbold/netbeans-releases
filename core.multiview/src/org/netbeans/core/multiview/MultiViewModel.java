@@ -214,12 +214,26 @@ class MultiViewModel {
         }
     }
     
+    void fireActivateCurrent() {
+        if (listeners != null) {
+            synchronized (listeners) {
+                Iterator it = listeners.iterator(); 
+                while (it.hasNext()) {
+                    ElementSelectionListener list = (ElementSelectionListener)it.next();
+                    list.selectionActivatedByButton();
+                }
+            }
+        }
+    }
+    
     /**
      * listener for changes in model's selected element.
      */
     static interface ElementSelectionListener  {
         
         public void selectionChanged(MultiViewDescription oldOne, MultiViewDescription newOne);
+        
+        public void selectionActivatedByButton();
     }
     
     /**
