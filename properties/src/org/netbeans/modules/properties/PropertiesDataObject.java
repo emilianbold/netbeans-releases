@@ -172,14 +172,11 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     }
 
     /** Returns open support. It's used by all subentries as open support too. */
-    public PropertiesOpen getOpenSupport() {
+    public synchronized PropertiesOpen getOpenSupport() {
         if(openSupport == null) {
-            synchronized(this) {
-                if(openSupport == null)
-                    openSupport = new PropertiesOpen(this);
-            }
+            openSupport = new PropertiesOpen(this);
         }
-        
+                
         return openSupport;
     }
 
