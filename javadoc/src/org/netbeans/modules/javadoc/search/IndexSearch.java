@@ -474,7 +474,9 @@ public class IndexSearch
     final String sort = ds.getIdxSearchSort();
     final boolean noHtml = ds.isIdxSearchNoHtml();
     final int split = ds.getIdxSearchSplit();
-    
+
+    currentSort = sort;
+
     javax.swing.SwingUtilities.invokeLater( new Runnable() {
     public void run() {
         byNameButton.setSelected( sort.equals( "A" ) ); 
