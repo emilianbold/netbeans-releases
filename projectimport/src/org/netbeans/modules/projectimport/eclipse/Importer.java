@@ -15,6 +15,7 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.J2SEProjectType;
+import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.project.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -39,6 +41,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
+
 
 /**
  * DOCDO
@@ -123,18 +126,32 @@ final class Importer {
         nOfProcessed++;
         progressInfo = "Processing \"" + eclProject.getName() + "\" project...";
         File nbProjectDir = new File(destination + "/" + eclProject.getName());
-        File[] srcDirs = eclProject.getAllSourceRootsFiles();
+        Map eclRoots = eclProject.getAllSourceRoots();
         File[] testDirs = new File[0];
         try {
+            File[] srcFiles = new File[eclRoots.size()];
+            int j = 0;
+            for (Iterator it = eclRoots.keySet().iterator(); it.hasNext(); ) {
+                srcFiles[j++] = (File) it.next();
+            }
             // create basic NB project
             final AntProjectHelper helper = J2SEProjectGenerator.createProject(
-                    nbProjectDir, eclProject.getName(), srcDirs, testDirs, null);
+                    nbProjectDir, eclProject.getName(), srcFiles, testDirs, null);
             // get NB project
             J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                     findProject(FileUtil.toFileObject(nbProjectDir));
             ProjectClassPathExtender nbProjectClassPath =
                     (ProjectClassPathExtender) nbProject.getLookup().lookup(ProjectClassPathExtender.class);
             assert nbProjectClassPath != null : "Cannot lookup ProjectClassPathExtender"; // NOI18N
+            
+            // set labels for source roots
+            SourceRoots roots = nbProject.getSourceRoots();
+            URL[] rootURLs = roots.getRootURLs();
+            String[] labels = new String[rootURLs.length];
+            for (int i = 0; i < rootURLs.length; i++) {
+                labels[i] = (String) eclRoots.get(new File(rootURLs[i].getFile()));
+            }
+            roots.putRoots(rootURLs, labels);
             
             // add libraries to classpath
             File[] eclLibs = eclProject.getAllLibrariesFiles();

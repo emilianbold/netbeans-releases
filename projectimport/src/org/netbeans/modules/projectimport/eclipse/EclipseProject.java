@@ -15,9 +15,11 @@ package org.netbeans.modules.projectimport.eclipse;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -139,20 +141,27 @@ public final class EclipseProject implements Comparable {
         return cp.getSourceRoots();
     }
     
-    /** Convenient delegate to <code>ClassPath</code> */
-    public File[] getAllSourceRootsFiles() {
+    /**
+     * Returns map of file-label(java.io.File-java.lang.String) entries
+     * representing Eclipse project's source roots.
+     */
+    public Map getAllSourceRoots() {
+        Map rootsLabels = new HashMap();
+        
         // internal sources
-        Object[] srcRoots = cp.getSourceRoots().toArray();
+        Collection srcRoots = cp.getSourceRoots();
+        for (Iterator it = srcRoots.iterator(); it.hasNext(); ) {
+            ClassPathEntry cpe = (ClassPathEntry) it.next();
+            rootsLabels.put(new File(cpe.getAbsolutePath()), cpe.getRawPath());
+        }
         // external sources
-        Object[] extSrcRoots = cp.getExternalSourceRoots().toArray();
-        File[] files = new File[srcRoots.length + extSrcRoots.length];
-        for (int i = 0; i < srcRoots.length; i++) {
-            files[i] = new File(((ClassPathEntry)srcRoots[i]).getAbsolutePath());
+        Collection extSrcRoots = cp.getExternalSourceRoots();
+        for (Iterator it = extSrcRoots.iterator(); it.hasNext(); ) {
+            ClassPathEntry cpe = (ClassPathEntry) it.next();
+            rootsLabels.put(new File(cpe.getAbsolutePath()), cpe.getRawPath());
         }
-        for (int i = 0; i < extSrcRoots.length; i++) {
-            files[srcRoots.length + i] = new File(((ClassPathEntry)extSrcRoots[i]).getAbsolutePath());
-        }
-        return files;
+        
+        return rootsLabels;
     }
     
     /** Returns all libraries on the project classpath. */

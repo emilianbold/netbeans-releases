@@ -194,8 +194,6 @@ public final class Workspace {
                 return project.getDirectory().getAbsolutePath();
             }
         }
-        //        System.err.println("Cannot resolve project absolute path for project \""
-        //                + projectName + "\"");
         return null;
     }
     
