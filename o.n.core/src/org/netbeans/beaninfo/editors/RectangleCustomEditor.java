@@ -216,7 +216,6 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
     }    
 
     public void keyReleased(java.awt.event.KeyEvent e) {
-        System.out.println("Key released: " + e.getKeyChar());
         if (checkValues()) {
             updateRectangle();
         }
@@ -254,7 +253,6 @@ public class RectangleCustomEditor extends javax.swing.JPanel implements Enhance
     private void handleInvalid(JTextField c) {
         c.setForeground(getErrorColor());
         findLabelFor(c).setForeground(getErrorColor());
-        System.out.println("Set foreground for " + c + " to " + getErrorColor());
     }
     
     private void handleValid(JTextField c) {
