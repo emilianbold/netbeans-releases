@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.openide.modules.ModuleInstall;
 import org.openide.execution.Executor;
-import org.openide.execution.NbClassPath;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
@@ -120,7 +120,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                                                // If the socket bind fails, log it. NetBeans will continue to loop 
                                                // to find the first open socket
                                                //
-                                               TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, ex);
+                                               ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, ex);
                                                // couldn't start
                                                serverThread = null;
                                                inSetRunning = false;
@@ -145,7 +145,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
                     HttpServerSettings.httpLock ().wait(HttpServerSettings.SERVER_STARTUP_TIMEOUT);
                 }
                 catch (Exception e) {
-                    TopManager.getDefault().getErrorManager().notify( ErrorManager.INFORMATIONAL, e);
+                    ErrorManager.getDefault().notify( ErrorManager.INFORMATIONAL, e);
                 }
             }
             finally {
@@ -216,7 +216,7 @@ public class HttpServerModule extends ModuleInstall implements Externalizable {
 
         EmbededTomcat tc=new EmbededTomcat();
         
-        File wd = NbClassPath.toFile(
+        File wd = FileUtil.toFile (
                       TopManager.getDefault().getRepository().getDefaultFileSystem().getRoot());
         wd = new File(wd, "httpwork"); // NOI18N
         tc.setWorkDir(wd.getAbsolutePath());

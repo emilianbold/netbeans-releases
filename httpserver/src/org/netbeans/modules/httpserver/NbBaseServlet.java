@@ -34,6 +34,7 @@ import org.openide.util.enum.EmptyEnumeration;
 import org.openide.util.enum.RemoveDuplicatesEnumeration;
 import org.openide.util.enum.SequenceEnumeration;
 import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileSystem;
@@ -108,7 +109,7 @@ public abstract class NbBaseServlet extends HttpServlet {
             String address = request.getRemoteAddr().trim();
             if (settings.allowAccess(InetAddress.getByName(address), pathI)) return true;
         } catch (Exception ex) {
-            TopManager.getDefault().notifyException(ex);
+            ErrorManager.getDefault().notify(ex);
             return false;
         }
 
