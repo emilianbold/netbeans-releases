@@ -44,8 +44,7 @@ final class Utils {
                     ((DataFolder) container).getPrimaryFile(),
                     true,                       //recursive
                     new FileObjectFilter[] {
-                            SearchInfoFactory.VISIBILITY_FILTER,
-                            SearchInfoFactory.SHARABILITY_FILTER });
+                            SearchInfoFactory.VISIBILITY_FILTER });
         }
     }
     
