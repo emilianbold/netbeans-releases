@@ -14,12 +14,14 @@
 package org.netbeans.core.windows.actions;
 
 import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.core.windows.view.ui.toolbars.ToolbarConfiguration;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.ToolbarPool;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 
@@ -45,6 +47,9 @@ public class ToolbarsListAction extends AbstractAction
     public JMenuItem getMenuPresenter() {
         String label = NbBundle.getMessage(ToolbarsListAction.class, "CTL_ToolbarsListAction");
         JMenu menu = new JMenu(label);
+        //#40584 fix start setting the empty, transparent icon for the menu item to align it correctly with other items
+        menu.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+        //#40584 fix end
         Mnemonics.setLocalizedText(menu, label);
         ToolbarConfiguration curConf = 
             ToolbarConfiguration.findConfiguration(ToolbarPool.getDefault().getConfiguration());
