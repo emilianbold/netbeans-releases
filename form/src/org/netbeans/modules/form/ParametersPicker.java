@@ -117,7 +117,6 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
         beanButton.setSelected (true);
         selectedComponent = value.getRADComponent ();
         int index = beansList.indexOf (selectedComponent);
-        System.out.println("Index of :"+selectedComponent+", is: "+index);
         if (index == -1) {
           beanCombo.setSelectedIndex (0); 
         } else {
@@ -555,6 +554,7 @@ public class ParametersPicker extends javax.swing.JPanel implements EnhancedCust
 
 /*
  * Log
+ *  14   Gandalf   1.13        10/10/99 Ian Formanek    Removed debug printlns
  *  13   Gandalf   1.12        8/15/99  Ian Formanek    Further finetuned last 
  *       change
  *  12   Gandalf   1.11        8/15/99  Ian Formanek    Extended 

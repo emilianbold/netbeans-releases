@@ -215,7 +215,6 @@ public class RADConnectionPropertyEditor extends Object implements PropertyEdito
 
     RADConnectionDesignValue (Class requiredType, String valueText) {
       this.requiredTypeName = requiredType.getName ();
- System.out.println ("Required type: "+requiredTypeName);
       this.value = valueText;
       type = TYPE_VALUE;
     }
