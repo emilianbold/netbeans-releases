@@ -29,7 +29,7 @@ public class ReflectiveBeanProp extends BeanProp {
     public ReflectiveBeanProp(BaseBean bean, String dtdName, String beanName,
                               int type, Class propClass,
                               Method writer, Method arrayWriter, Method reader, Method arrayReader, Method adder, Method remover) {
-        super(bean, dtdName, beanName, type, propClass);
+        super(bean, dtdName, beanName, type, propClass, -1);
         bindings = null;
         attributes = null;
         this.writer = writer;
@@ -43,7 +43,7 @@ public class ReflectiveBeanProp extends BeanProp {
     public ReflectiveBeanProp(BaseBean bean, String dtdName, String beanName,
                               int type, Class propClass, boolean isRoot,
                               Method writer, Method arrayWriter, Method reader, Method arrayReader, Method adder, Method remover) {
-        super(bean, dtdName, beanName, type, propClass, isRoot);
+        super(bean, dtdName, beanName, type, propClass, isRoot, -1);
         bindings = null;
         attributes = null;
         this.writer = writer;
@@ -170,7 +170,7 @@ public class ReflectiveBeanProp extends BeanProp {
         if (reader == null)
             return bean.nameSelf();
         else
-            return bean.nameSelf()+"/"+bean.nameChild(getValue(index), false);
+            return bean.nameSelf()+"/"+bean.nameChild(getValue(index), false, false);
     }
 
     void buildPathName(DOMBinding binding, StringBuffer str) {

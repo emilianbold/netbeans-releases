@@ -2470,7 +2470,45 @@ public abstract class BaseBean implements Cloneable, Bean {
         return beanProp().getFullName();
     }
 
-    public String nameChild(Object childObj, boolean returnSchemaName) {
-        return findValue(childObj)[0];
+    public String nameChild(Object childObj) {
+        return nameChild(childObj, false, false);
+    }
+
+    public String nameChild(Object childObj, boolean returnConstName,
+                            boolean returnSchemaName) {
+        BeanProp[] props = beanProps();
+        Object propValue;
+        BeanProp prop = null;
+        boolean found = false;
+        int index = -2;
+    propLoop:
+        for (int propPosition = 0; propPosition < props.length; ++propPosition) {
+            prop = props[propPosition];
+            if (prop.isIndexed()) {
+                for (int i = 0; i < prop.size(); ++i) {
+                    propValue = prop.getValue(i);
+                    if (propValue == null ? childObj == null : propValue.equals(childObj)) {
+                        found = true;
+                        index = i;
+                        break propLoop;
+                    }
+                }
+            } else {
+                propValue = prop.getValue(0);
+                if (propValue == null ? childObj == null : propValue.equals(childObj)) {
+                    found = true;
+                    break propLoop;
+                }
+            }
+        }
+        if (found) {
+            if (returnConstName)
+                return prop.getBeanName();
+            else if (returnSchemaName)
+                return prop.dtdName;
+            else
+                return prop.getBeanName()+"."+Integer.toHexString(prop.indexToId(index));
+        }
+        return null;
     }
 }

@@ -133,7 +133,7 @@ public class BeanProp implements BaseProperty {
         public EventMgr(BeanProp bp) {
             this.bp = bp;
             this.delayed = 0;
-            this.events = new ArrayList();
+            this.events = new ArrayList(2);
         }
 	
         boolean isDelayed() {
@@ -258,13 +258,20 @@ public class BeanProp implements BaseProperty {
     
     public BeanProp(BaseBean bean, String dtdName, String beanName,
 		    int type, Class propClass) {
+        this(bean, dtdName, beanName, type, propClass, 10);
+    }
+    
+    public BeanProp(BaseBean bean, String dtdName, String beanName,
+		    int type, Class propClass, int initialCapacity) {
 	this.dtdName = dtdName;
 	this.beanName = beanName;
 	this.type = type;
 	this.propClass = propClass;
 	this.bean = bean;
-	this.bindings = new ArrayList();
-	this.attributes = new ArrayList();
+    if (initialCapacity >= 0) {
+        this.bindings = new ArrayList(initialCapacity);
+        this.attributes = new ArrayList(initialCapacity);
+    }
 	this.changeListeners = null;
 	this.vetoableListeners = null;
 	this.knownValues = null;
@@ -276,6 +283,11 @@ public class BeanProp implements BaseProperty {
     
     public BeanProp(BaseBean bean, String dtdName, String beanName,
 		    int type, Class propClass, boolean isRoot) {
+        this(bean, dtdName, beanName, type, propClass, isRoot, 10);
+    }
+
+    public BeanProp(BaseBean bean, String dtdName, String beanName,
+		    int type, Class propClass, boolean isRoot, int initialCapacity) {
 	this(bean, dtdName, beanName, type, propClass);
 	this.isRoot = isRoot;
     }
