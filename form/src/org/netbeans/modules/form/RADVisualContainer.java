@@ -102,9 +102,14 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
   }
 
+  /** Called to obtain a Java code to be used to generate code to access the container for adding subcomponents.
+  * It is expected that the returned code is either "" (in which case the form is the container) or is a name of variable
+  * or method call ending with "." (e.g. "container.getContentPane ().").
+  * @return the prefix code for generating code to add subcomponents to this container
+  */
   public String getContainerGenName () {
     if (containerDelegate != null) {
-      return getName () + ".getContentPane ()";
+      return getName () + ".getContentPane ().";
     }
     return getName () + ".";
   }
@@ -184,6 +189,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  22   Gandalf   1.21        8/15/99  Ian Formanek    Fixed bug 3289 - Wrong 
+ *       Code Generation in JInternalFrame
  *  21   Gandalf   1.20        8/6/99   Ian Formanek    setComponent is public
  *  20   Gandalf   1.19        7/5/99   Ian Formanek    implemented additions to
  *       ComponentsContainer
