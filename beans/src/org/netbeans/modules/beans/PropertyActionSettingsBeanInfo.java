@@ -16,7 +16,7 @@ package org.netbeans.modules.beans;
 import java.awt.Image;
 import java.beans.*;
 
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -69,7 +69,7 @@ public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
 
     	    return new PropertyDescriptor[] { access, bound, constrained, indexed, inherit, askBefore, propstyle};
         } catch (IntrospectionException ie) {
-	    TopManager.getDefault().getErrorManager().notify(ie);
+	        ErrorManager.getDefault().notify(ie);
             return null;
         }
     }

@@ -155,7 +155,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
 
         optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "optionsPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
         emptyRadioButton.setSelected(true);
-        emptyRadioButton.setLabel("emptyRadioButton");
+        emptyRadioButton.setText("emptyRadioButton");
         emptyRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 emptyRadioButtonActionPerformed(evt);
@@ -170,7 +170,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 4);
         optionsPanel.add(emptyRadioButton, gridBagConstraints);
 
-        alRadioButton.setLabel("alRadioButton");
+        alRadioButton.setText("alRadioButton");
         alRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 alRadioButtonActionPerformed(evt);

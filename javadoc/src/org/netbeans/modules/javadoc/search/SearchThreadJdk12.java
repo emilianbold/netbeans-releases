@@ -25,7 +25,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTML;
 import javax.swing.text.MutableAttributeSet;
 
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
@@ -96,7 +96,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
             in.close();
         }
         catch ( java.io.IOException e ) {
-            TopManager.getDefault().notifyException( e );
+            ErrorManager.getDefault().notify(e);
         }
     }
 
@@ -281,7 +281,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
                         return;
                     }
                     catch ( java.io.IOException e ) {
-                        TopManager.getDefault().notifyException( e );
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 
@@ -300,7 +300,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
                            return;
                         }
                         catch ( java.io.IOException e ) {
-                            TopManager.getDefault().notifyException( e );
+                            ErrorManager.getDefault().notify(e);
                         }
                     }
                     
@@ -319,7 +319,7 @@ class SearchThreadJdk12 extends IndexSearchThread {
                         in.close();
                     }
                     catch ( java.io.IOException e ) {
-                        TopManager.getDefault().notifyException( e );
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 */

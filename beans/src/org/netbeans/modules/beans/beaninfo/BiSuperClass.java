@@ -19,7 +19,7 @@ import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
 import org.openide.src.Type;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 
 /** Singleton - utility class
 
@@ -38,7 +38,7 @@ class BiSuperClass extends Object {
             result.setName( classElement.getName() );
         }
         catch ( org.openide.src.SourceException e ) {
-            TopManager.getDefault().notifyException( e );
+            ErrorManager.getDefault().notify(e);
         }
 
         ClassElement ce = classElement;
@@ -59,7 +59,7 @@ class BiSuperClass extends Object {
                         methodsAdded ++;
                     }
                     catch ( org.openide.src.SourceException e ) {
-                        TopManager.getDefault().notifyException( e );
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
             }

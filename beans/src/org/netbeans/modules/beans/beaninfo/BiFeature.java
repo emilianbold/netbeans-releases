@@ -20,6 +20,7 @@ import java.util.Iterator;
 import org.openide.src.MethodElement;
 import org.openide.src.ClassElement;
 import org.openide.nodes.Node;
+import org.openide.ErrorManager;
 
 import org.netbeans.modules.beans.Pattern;
 import org.netbeans.modules.beans.PropertyPattern;
@@ -606,7 +607,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 org.openide.src.ClassElement listener = org.openide.src.ClassElement.forName(listenerType.getClassName().getFullName());
                 listenerMethods = listener.getMethods();
             } catch (IllegalStateException e) {
-                org.openide.TopManager.getDefault().notifyException( e );
+                ErrorManager.getDefault().notify(e);
                 listenerMethods = new org.openide.src.MethodElement[0];
             }
 
@@ -616,7 +617,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             try {
                 sb.append( pattern.getType().getClassName().getFullName() + ".class, " ); // NOI18N
             } catch (IllegalStateException e) {
-                org.openide.TopManager.getDefault().notifyException( e );
+                ErrorManager.getDefault().notify(e);
                 listenerMethods = new org.openide.src.MethodElement[0];
             }
             sb.append( "new String[] {" ); // NOI18N
@@ -750,7 +751,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
             }
             return sb.toString();
         } catch (Exception e) {
-            org.openide.TopManager.getDefault().notifyException(e);
+            ErrorManager.getDefault().notify(e);
             return "";
         }
       }
@@ -781,7 +782,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
               try {
                   return type.getClassName().getFullName() + ".class";
               } catch (Exception e) {
-                  org.openide.TopManager.getDefault().notifyException(e);
+                  ErrorManager.getDefault().notify(e);
                   return type.toString() + ".class";
               }
           } else /*(type.isArray())*/ {
@@ -822,7 +823,7 @@ public abstract class BiFeature extends Object implements IconBases, Node.Cookie
                 try {
                     sb.append(getTypeClass(parameters[i].getType())); // NOI18N
                 } catch (Exception e) {
-                    org.openide.TopManager.getDefault().notifyException( e );
+                    ErrorManager.getDefault().notify(e);
                 }
                 if (i < (parameters.length - 1)) sb.append(", "); // NOI18N
             }
