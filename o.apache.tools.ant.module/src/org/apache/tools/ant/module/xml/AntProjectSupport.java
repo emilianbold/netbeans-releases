@@ -309,6 +309,21 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
         }
     }
     
+    private static EditorKit findKit(JEditorPane[] panes) {
+        EditorKit kit;
+        if (panes != null) {
+            kit = panes[0].getEditorKit();
+        } else {
+            kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
+            if (kit == null) {
+                // #39301: fallback; can happen if xml/text-edit is disabled
+                kit = new DefaultEditorKit();
+            }
+        }
+        assert kit != null;
+        return kit;
+    }
+    
     private void parseDocument () {
         assert Thread.holdsLock(parseLock); // so it is OK to use documentBuilder
         FileObject fo = getFileObject ();
@@ -323,13 +338,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
             if (editor != null) {
                 final StyledDocument document = editor.openDocument();
                 final StringWriter w = new StringWriter(document.getLength());
-                final EditorKit kit;
-                JEditorPane[] panes = editor.getOpenedPanes();
-                if (panes != null) {
-                    kit = panes[0].getEditorKit();
-                } else {
-                    kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
-                }
+                final EditorKit kit = findKit(editor.getOpenedPanes());
                 final IOException[] ioe = new IOException[1];
                 final BadLocationException[] ble = new BadLocationException[1];
                 document.render(new Runnable() {
@@ -477,12 +486,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, javax.sw
                 // Apache serializer also fails to include trailing newline, sigh.
                 wr.write('\n');
                 final String content = wr.toString();
-                final EditorKit kit;
-                if (panes != null) {
-                    kit = panes[0].getEditorKit();
-                } else {
-                    kit = JEditorPane.createEditorKitForContentType("text/xml"); // NOI18N
-                }
+                final EditorKit kit = findKit(panes);
                 try {
                     final IOException[] ioe = new IOException[1];
                     final BadLocationException[] ble = new BadLocationException[1];
