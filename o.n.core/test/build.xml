@@ -14,19 +14,28 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="core tests" basedir="." default="all">
 
+    <property name="build.sysclasspath" value="ignore"/>
+
     <property name="netbeans.home" location="../../nbbuild/netbeans"/>
     <property name="netbeans.test.home" value="${netbeans.home}"/>
+    
+    <!-- says how to create classpath for code tests --> 
+    <!-- can have values src, jar, ide               -->
+    <property name="xtest.code.classpath" value="src"/>
+    
     <property name="xtest.home" location="../../xtest"/>
     <property name="xtest.results" location="results"/>
+    <property name="xtest.build" location="."/>    
     <property name="xtest.file.name" value="test.jar"/>
-    <property name="xtest.file.location" location="lib"/>
+    <property name="xtest.file.location" value="lib"/>
     
     <!-- default testtypes and attributes -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attributes" value="ide,stable"/>
+    <property name="xtest.attributes" value="stable"/>
     
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
+    <!-- should be default ON, because it helps to find problems -->
     <property name="build.compiler.debug" value="off"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
@@ -34,6 +43,40 @@ Microsystems, Inc. All Rights Reserved.
     <!-- config with empty testbag                           -->
     <property name="xtest.includes" value=""/>
     <property name="xtest.excludes" value=""/>
+    
+    <!-- ============== -->
+    <!-- Set classpaths -->
+    <!-- ============== -->
+    
+    <!-- this classpath will be used for executing tests against jars -->
+    <path id="jar.codetest.classpath">
+        <fileset dir="../netbeans/lib">            
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
+        <pathelement location="../../openide/netbeans/lib/openide.jar"/>        
+    </path>
+    
+    <!-- this classpath will be used for executing tests against sources -->
+    <path id="src.codetest.classpath">
+        <!-- Working sources should take precedence over core.jar: -->
+        <pathelement location="../src"/>
+        <fileset dir="../netbeans/lib">
+            <!-- But loading core.jar means its manifest is available to module system: -->
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
+        <pathelement location="../../openide/netbeans/lib/openide.jar"/>
+    </path>
+    
+    <!-- this classpath will be used for executing tests against installed IDE -->
+    <path id="ide.codetest.classpath">        
+        <fileset dir="${netbeans.home}/lib">            
+            <include name="core.jar"/>
+            <include name="ext/*.jar"/>
+        </fileset>
+        <pathelement location="${netbeans.home}/lib/openide.jar"/>        
+    </path>
     
     <!-- =========== -->
     <!-- Init target -->
@@ -89,6 +132,17 @@ Microsystems, Inc. All Rights Reserved.
         <property name="tbag.classpath.root" location="${xtest.results}"/>
         <property name="tbag.classpath.work" value="work"/>
         
+        <!-- this "switch" will decide how to create classpath for code tests -->
+        <condition property="jarcode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="jar"/>
+        </condition>
+        <condition property="srccode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="src"/>
+        </condition>
+        <condition property="idecode.classpath">
+            <equals arg1="${xtest.code.classpath}" arg2="ide"/>
+        </condition>
+        
     </target>
     
     <target name="all" depends="runtests"/>
@@ -101,7 +155,7 @@ Microsystems, Inc. All Rights Reserved.
         <test-configurator testtype="${xtest.testtype}" testattributes="${xtest.attributes}"/>
     </target>
     
-    <target name="runtests" depends="config,buildtests,cleanresults">
+    <target name="runtests" depends="config,cleanresults">
         <echo message="core tests, test type: ${xtest.testtype}, test attributes: ${xtest.attributes}"/>
         <test-executor paramClasspathProp="tbag.classpath"
                        paramPatternsetInProp="tbag.patternset.include"
@@ -148,7 +202,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- ============== -->
     <target name="code_test_bootstrap" depends="init,code_test_init,junit_test"/>
     
-    <target name="code_test_init">        
+    <target name="code_test_init" depends="prepare-classpath">
         <property name="junit.fork" value="yes"/>
         <pathdef useid="test.classpath">
             <path refid="test.basepath"/>
@@ -157,21 +211,34 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement path="${tbag.classpath}"/>
             </path>
             <!-- additional path elements needed for tests - sources, libs -->
-            <path>
-                <!-- Working sources should take precedence over core.jar: -->
-                <pathelement location="../src"/>
-                <fileset dir="../netbeans/lib">
-                    <!-- But loading core.jar means its manifest is available to module system: -->
-                    <include name="core.jar"/>
-                    <include name="ext/*.jar"/>
-                </fileset>
-                <fileset dir="../../openide/netbeans/lib">
-                    <include name="openide*.jar"/>
-                </fileset>
-            </path>
+            <path refid="codetest.classpath"/>                
+        </pathdef>
+    </target>
+    
+    <target name="prepare-classpath" 
+            depends="jartest-classpath,srctest-classpath,idetest-classpath"/>
+    
+    <target name="jartest-classpath" if="jarcode.classpath">
+        <echo message="Using jars classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path refid="jar.codetest.classpath"/>
         </pathdef>
     </target>
         
+    <target name="srctest-classpath" if="srccode.classpath">
+        <echo message="Using srcs classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path refid="src.codetest.classpath"/>
+        </pathdef>
+    </target>
+    
+    <target name="idetest-classpath" if="idecode.classpath">
+        <echo message="Using IDE classpath."/>
+        <pathdef useid="codetest.classpath">
+            <path refid="ide.codetest.classpath"/>
+        </pathdef>
+    </target>
+    
     <!-- ============= -->
     <!-- IDE test part -->
     <!-- ============= -->
@@ -279,7 +346,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Compiles all tests -->
     <target name="compile" depends="init">
         <ant dir="unit/src/org/netbeans/core/modules"/>
-        <javac srcdir="." 
+        <javac srcdir="unit/src" 
                deprecation="${build.compiler.deprecation}"
                debug="${build.compiler.debug}">
             <classpath>
@@ -289,22 +356,21 @@ Microsystems, Inc. All Rights Reserved.
                 </fileset>
                 <pathelement path="${junit.path}"/>
 		<pathelement path="${xerces.path}"/>
-            </classpath>
-            <include name="**/src/**/*.java"/>
-            <exclude name="unit/src/org/netbeans/core/modules/jars/"/>
-            <exclude name="perf/src/**"/> 
+            </classpath>            
+            <exclude name="org/netbeans/core/windows/data/"/>
+            <exclude name="org/netbeans/core/modules/jars/"/>            
         </javac>
     </target>
     
     <!-- Creates lib/test.jar with all tests for this module,       -->
     <!-- maybe there should be more includes here, not just classes -->
     <target name="jars" depends="compile">
-        <mkdir dir="lib"/>
-        <jar basedir="." jarfile="lib/test.jar">
+        <mkdir dir="${xtest.build}/${xtest.file.location}"/>
+        <jar basedir="." jarfile="${xtest.build}/${xtest.file.location}/${xtest.file.name}">
             <include name="**/src/**/*.class"/>
             <include name="**/src/**/*.jar"/>
             <include name="**/src/**/*.xml"/>
-            <include name="**/data/**"/>
+            <include name="**/src/**/data/**"/>
         </jar>
     </target>
     
@@ -314,7 +380,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="**/src/**/*.class"/>
             </fileset>
         </delete>
-        <delete dir="lib"/>
+        <delete dir="${xtest.file.location}"/>
         <ant dir="unit/src/org/netbeans/core/modules" target="clean"/>
     </target>
     
@@ -326,8 +392,12 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="realclean" depends="clean,cleanresults"
-            description="Deletes classes, lib/test.jar and *all* results.">
+            description="Deletes classes, ${xtest.file.location}/${xtest.file.name} and *all* results.">
         <delete dir="${xtest.results}"/>
+    </target>
+    
+    <target name="printconfig">
+        <echo message="Default config is testtype: ${xtest.testtype}, attributes: ${xtest.attributes}."/>
     </target>
     
 </project>
