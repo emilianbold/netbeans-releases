@@ -283,6 +283,9 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
         return ret;
     }
     
+    // Flag, whether there is already an error in the jsp page. 
+    private boolean hasError = false;
+    
     private class ParsingRunnable implements Runnable {
         
         /** Holds the result of parsing. Need to hold it here
@@ -329,10 +332,13 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                         //motivation: the editor doesn't always hold a strogref to this object
                         //so the SoftRef is sometime cleaned even if there is an editor pane opened.
                         parseResultSuccessfulRefStrongReference = locResult;
-                        //remove all errors
-                        annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
                         //set icon withouth errors
-                        changeIcon(false);
+                        if (hasError){
+                            //remove all errors
+                            annotations.annotate(new ErrorAnnotation.ErrorInfo[] {});
+                            changeIcon(false);
+                            hasError = false;
+                        }
                     }
                     if (!locResult.isParsingSuccess()){
                         for (int i = 0; i < locResult.getErrors().length; i ++){
@@ -345,7 +351,10 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
                             } );
                         }
                         // set icon with error.
-                        changeIcon(true);
+                        if (!hasError){
+                            changeIcon(true);
+                            hasError = true;
+                        }
                         
                     }
                     PageInfo pageInfo = locResult.getPageInfo();
