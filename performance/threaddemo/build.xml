@@ -140,7 +140,7 @@ Microsystems, Inc. All Rights Reserved.
     </target>
     
     <target name="debug-nb" depends="build">
-        <nbj:nbjpdastart transport="dt_socket" addresspropertyname="jpda.address"/>
+        <nbj:nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="threaddemo"/>
         <antcall target="do-debug"/>
     </target>
     
