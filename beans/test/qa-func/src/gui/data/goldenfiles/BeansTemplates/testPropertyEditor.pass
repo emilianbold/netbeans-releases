@@ -7,12 +7,10 @@
 import java.beans.*;
 
 /**
- *
  * @author
  */
 public class MyPropertyEditor extends PropertyEditorSupport {
     
-    /** Creates new MyPropertyEditor */
     public MyPropertyEditor() {
     }
     

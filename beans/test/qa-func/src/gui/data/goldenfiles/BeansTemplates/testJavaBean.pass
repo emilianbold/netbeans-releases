@@ -5,22 +5,21 @@
  */
 
 import java.beans.*;
+import java.io.Serializable;
 
 /**
- *
  * @author
  */
-public class MyBean extends Object implements java.io.Serializable {
+public class MyBean extends Object implements Serializable {
     
-    private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";
+    public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
     
     private String sampleProperty;
     
     private PropertyChangeSupport propertySupport;
     
-    /** Creates new MyBean */
     public MyBean() {
-        propertySupport = new PropertyChangeSupport( this );
+        propertySupport = new PropertyChangeSupport(this);
     }
     
     public String getSampleProperty() {

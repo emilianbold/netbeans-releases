@@ -1,16 +1,15 @@
 import java.beans.*;
-
-public class TestFile extends Object implements java.io.Serializable {
+import java.io.Serializable;
+public class TestFile extends Object implements Serializable {
     
-    private static final String PROP_SAMPLE_PROPERTY = "SampleProperty";
+    public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
     
     private String sampleProperty;
     
     private PropertyChangeSupport propertySupport;
     
-    /** Creates new TestFile */
     public TestFile() {
-        propertySupport = new PropertyChangeSupport( this );
+        propertySupport = new PropertyChangeSupport(this);
     }
     
     public String getSampleProperty() {
