@@ -99,7 +99,7 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         if (getNodeReference() != null) // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
     }
-    
+
     public Dimension getDesignerSize() {
         Dimension size = (Dimension) getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
         if (size == null)
@@ -115,6 +115,9 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
 
         if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value))
             setFormSize(value);
+
+        if (getNodeReference() != null) // propagate the change to node
+            getNodeReference().firePropertyChangeHelper(FormDesigner.PROP_DESIGNER_SIZE, old, value);
     }
 
     public boolean getGeneratePosition() {
