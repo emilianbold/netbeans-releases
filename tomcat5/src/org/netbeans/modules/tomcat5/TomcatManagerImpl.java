@@ -115,7 +115,7 @@ class TomcatManagerImpl implements ProgressObject, Runnable {
             tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
         }
         catch (java.io.FileNotFoundException fnfe) {
-            throw new RuntimeException (fnfe);
+            throw new RuntimeException (fnfe.getMessage ());    // XXX use justt fnfe (since 1.4)
         }
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
