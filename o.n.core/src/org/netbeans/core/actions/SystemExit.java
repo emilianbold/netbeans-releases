@@ -34,7 +34,7 @@ import com.netbeans.ide.DataObject;
 import com.netbeans.ide.TopManager;
 import com.netbeans.ide.NotifyDescriptor;
 import com.netbeans.developer.impl.CoronaDialog;
-import com.netbeans.developer.impl.awt.ButtonBar;
+import com.netbeans.ide.awt.ButtonBar;
 import com.netbeans.ide.util.HelpCtx;
 import com.netbeans.ide.util.actions.ActionPerformer;
 import com.netbeans.ide.util.actions.CallableSystemAction;
@@ -267,6 +267,8 @@ public class SystemExit extends CallableSystemAction {
 
 /*
  * Log
+ *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting changes in 
+ *       location of package "awt"
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  * Beta Change History:
