@@ -46,13 +46,11 @@ public class jemmy_022 extends JemmyTest {
 
 	    Demonstrator.nextStep("Push \"Button 2\"");
 
-	    new JButtonOperator(JButtonOperator.findJButton(frame2Oper.getRootPane(),
-							    "", false, false)).push();
+	    new JButtonOperator(new ContainerOperator(frame2Oper.getRootPane())).push();
 
 	    Demonstrator.nextStep("Push \"Button 1\"");
 
-	    new JButtonOperator(JButtonOperator.findJButton(frame1Oper.getRootPane(),
-							    "", false, false)).push();
+	    new JButtonOperator(new ContainerOperator(frame1Oper.getRootPane())).push();
 
 	    Demonstrator.nextStep("Minimize \"Frame 1\"");
 
