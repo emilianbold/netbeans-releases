@@ -52,7 +52,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   * @exception IOException if any problem occured when loading the form
   */
   public FormManager2 loadForm (FormDataObject formObject) throws IOException {
-    FileObject formFile = formObject.getFormEntry ().getFile ();
+/*    FileObject formFile = formObject.getFormEntry ().getFile ();
     try {
       org.w3c.dom.Document doc = org.openide.loaders.XMLDataObject.parse (
           formFile.getURL (),
@@ -62,7 +62,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       );
     } catch (org.xml.sax.SAXException e) {
       throw new IOException (e.getMessage ());
-    }
+    } */
     return null;
   }
 
@@ -88,6 +88,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  4    Gandalf   1.3         6/24/99  Ian Formanek    
  *  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  2    Gandalf   1.1         6/7/99   Ian Formanek    
