@@ -34,6 +34,7 @@ import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.openide.loaders.DataLoader;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
@@ -201,7 +202,9 @@ public class WebProjectModule extends ModuleInstall {
         
         CompileWrapper() {
             super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_COMPILE_SINGLE, "Compile File", null ) );
+                       ActionProvider.COMMAND_COMPILE_SINGLE,
+                       NbBundle.getMessage(WebProjectModule.class, "LBL_CompileFile_Action"), // NOI18N
+                       null ) );
         }
         
     }
@@ -209,7 +212,9 @@ public class WebProjectModule extends ModuleInstall {
     public static class RunWrapper extends ActionWrapper {
         RunWrapper() {
             super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_RUN_SINGLE, "Run File", null ) );
+                       ActionProvider.COMMAND_RUN_SINGLE, 
+                       NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
+                       null ) );
             
         }
     }
@@ -217,14 +222,18 @@ public class WebProjectModule extends ModuleInstall {
     public static class DebugWrapper extends ActionWrapper {
         DebugWrapper() {
             super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_DEBUG_SINGLE, "Debug File", null ) );
+                       ActionProvider.COMMAND_DEBUG_SINGLE, 
+                       NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
+                       null ) );
         }
     }
     
     public static class HtmlRunWrapper extends ActionWrapper {
         HtmlRunWrapper() {
             super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_RUN_SINGLE, "Run File", null ) );
+                       ActionProvider.COMMAND_RUN_SINGLE, 
+                       NbBundle.getMessage(WebProjectModule.class, "LBL_RunFile_Action"), // NOI18N
+                       null ) );
             
         }
     }
@@ -232,7 +241,9 @@ public class WebProjectModule extends ModuleInstall {
     public static class HtmlDebugWrapper extends ActionWrapper {
         HtmlDebugWrapper() {
             super( FileSensitiveActions.fileCommandAction( 
-                       ActionProvider.COMMAND_DEBUG_SINGLE, "Debug File", null ) );
+                       ActionProvider.COMMAND_DEBUG_SINGLE, 
+                       NbBundle.getMessage(WebProjectModule.class, "LBL_DebugFile_Action"), // NOI18N
+                       null ) );
         }
     }
 }
