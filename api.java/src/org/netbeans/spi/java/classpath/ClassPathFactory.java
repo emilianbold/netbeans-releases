@@ -13,8 +13,11 @@
 
 package org.netbeans.spi.java.classpath;
 
+import java.net.URL;
+import java.util.Iterator;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.classpath.ClassPathAccessor;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Most general way to create {@link ClassPath} instances.
@@ -35,7 +38,22 @@ public final class ClassPathFactory {
      * @return instance of API classpath
      */
     public static ClassPath createClassPath(ClassPathImplementation spiClasspath) {
+//        assert checkEntries (spiClasspath) : "ClassPathImplementation contains invalid root: " + spiClasspath.toString();    //Commented, not to decrease the performance even in the dev build.
         return ClassPathAccessor.DEFAULT.createClassPath(spiClasspath);
+    }
+    
+    
+    private static boolean checkEntries (ClassPathImplementation spiClasspath) {
+        for (Iterator it = spiClasspath.getResources().iterator(); it.hasNext (); ) {
+            PathResourceImplementation impl = (PathResourceImplementation) it.next ();
+            URL[] roots = impl.getRoots();
+            for (int i=0; i< roots.length; i++) {
+                if (FileUtil.isArchiveFile(roots[i])) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
 }
