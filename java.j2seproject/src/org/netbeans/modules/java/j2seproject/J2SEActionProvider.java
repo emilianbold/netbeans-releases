@@ -190,7 +190,7 @@ class J2SEActionProvider implements ActionProvider {
             // check project's main class
             String mainClass = (String)ep.get ("main.class"); // NOI18N
             
-            while (!isSetMainClass (project.getSourceDirectory(), mainClass)) {
+            while (!isSetMainClass (J2SEProjectUtil.getProjectSourceDirectory (project), mainClass)) {
                 // show warning, if cancel then return
                 if (showMainClassWarning (mainClass, ProjectUtils.getInformation(project).getDisplayName(), ep)) {
                     return null;
@@ -222,7 +222,7 @@ class J2SEActionProvider implements ActionProvider {
                 }
                 clazz = clazz.replace('/','.');
 
-                if (!MainClassChooser.hasMainMethod(file)) {
+                if (!J2SEProjectUtil.hasMainMethod (file)) {
                     if (AppletSupport.isApplet(file)) {
                         URL url = generateAppletHTML(file);
                         if (url == null) {
@@ -360,11 +360,8 @@ class J2SEActionProvider implements ActionProvider {
         if (mainClass == null || mainClass.length () == 0) {
             return false;
         }
-        // replace '.' with '/'
-        mainClass = mainClass.replace ('.', '/'); // XXX // NOI18N
-        // find mainclass's FileObject
-        FileObject mainFO = sourcesRoot.getFileObject (mainClass+".java"); // XXX // NOI18N
-        return MainClassChooser.hasMainMethod (mainFO);
+        
+        return J2SEProjectUtil.isMainClass (mainClass, sourcesRoot);
     }
     
     private boolean showMainClassWarning (String mainClass, String projectName, EditableProperties ep) {

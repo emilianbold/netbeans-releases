@@ -13,17 +13,22 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.awt.Mnemonics;
 
 import org.openide.awt.MouseUtils;
@@ -50,7 +55,7 @@ public class MainClassChooser extends JPanel {
     private static final Node NO_CLASSES_NODE = new AbstractNode (Children.LEAF);
     private ChangeListener changeListener;
     private String dialogSubtitle = null;
-    private Set possibleMainClasses;
+    private List/*<String>*/ possibleMainClasses;
             
     /** Creates new form MainClassChooser */
     public MainClassChooser (FileObject sourcesRoot) {
@@ -70,7 +75,9 @@ public class MainClassChooser extends JPanel {
         jMainClassList.setListData (getWarmupList ());
         RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                jMainClassList.setListData (getAllMainClasses (sourcesRoot));
+                //jMainClassList.setListData (getAllMainClasses (sourcesRoot));
+                possibleMainClasses = J2SEProjectUtil.getMainClasses (sourcesRoot);
+                jMainClassList.setListData (possibleMainClasses.toArray ());
             }
         });
         jMainClassList.addListSelectionListener (new ListSelectionListener () {
@@ -105,37 +112,8 @@ public class MainClassChooser extends JPanel {
         return new Object[] {NbBundle.getMessage (MainClassChooser.class, "LBL_ChooseMainClass_WARMUP_MESSAGE")}; // NOI18N
     }
     
-    // XXX temporary obtain the main classes in project's sources
-    // should be used some query to java sources
-    private Object[] getAllMainClasses (FileObject sourcesRoot) {
-        Set result = new HashSet ();
-        // bugfix #43507, check if the sourcesRoot is set
-        if (sourcesRoot == null) {
-            return new Object[0];
-        }
-        Enumeration en = sourcesRoot.getChildren (true);
-        while (en.hasMoreElements ()) {
-            FileObject fo = (FileObject)en.nextElement ();
-            if (hasMainMethod (fo)) {
-                try {
-                    DataObject classDo = DataObject.find (fo);
-                    result.add (getMainMethod (classDo.getCookie (SourceCookie.class), null));
-                } catch (DataObjectNotFoundException ex) {
-                    // already checked, must passed
-                    assert false : fo;
-                }
-            }
-        }
-        possibleMainClasses = result;
-        if (result.isEmpty ()) {
-            return new Object[] {NO_CLASSES_NODE.getDisplayName ()};
-        } else {
-            return result.toArray ();
-        }
-    }
-    
-    private boolean isValidMainClassName (String name) {
-        return (possibleMainClasses != null) && (possibleMainClasses.contains (name));
+    private boolean isValidMainClassName (Object value) {
+        return (possibleMainClasses != null) && (possibleMainClasses.contains (value));
     }
 
 
@@ -144,9 +122,8 @@ public class MainClassChooser extends JPanel {
      * @return name of class or null if no class with the main method is selected
      */    
     public String getSelectedMainClass () {
-        String name = (String)jMainClassList.getSelectedValue ();
-        if (isValidMainClassName (name)) {
-            return name;
+        if (isValidMainClassName (jMainClassList.getSelectedValue ())) {
+            return (String)jMainClassList.getSelectedValue ();
         } else {
             return null;
         }
@@ -196,21 +173,7 @@ public class MainClassChooser extends JPanel {
      * or SourceCookie doesn't contain the main method
      */    
     public static boolean hasMainMethod (FileObject classFO) {
-        if (classFO == null) {
-            return false;
-        }
-        // support for unit testing
-        if (unitTestingSupport_hasMainMethodResult != null) {
-            return unitTestingSupport_hasMainMethodResult.booleanValue();
-        }
-        try {
-            DataObject classDO = DataObject.find (classFO);
-            return getMainMethod (classDO.getCookie (SourceCookie.class), null) != null;
-        } catch (DataObjectNotFoundException ex) {
-            // can ignore it, classFO could be wrongly set
-            return false;
-        }
-        
+        return J2SEProjectUtil.hasMainMethod (classFO);
     }
 
     /** This method is called from within the constructor to
@@ -266,17 +229,19 @@ public class MainClassChooser extends JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
 
-//    // Maybe useless renderer (fit if wanted to reneder Icons)
+    // Maybe useless renderer (fit if wanted to reneder Icons) // XXX
 //    private static final class MainClassRenderer extends DefaultListCellRenderer {
 //        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 //            String displayName;
 //            if (value instanceof String) {
 //                displayName = (String) value;
+//            } if (value instanceof FileObject) {
+//                displayName = ((FileObject)value).getName ();
 //            } else {
 //                displayName = value.toString ();
 //            }
 //            return super.getListCellRendererComponent (list, displayName, index, isSelected, cellHasFocus);
 //        }
 //    }
-
+//
 }
