@@ -187,11 +187,17 @@ Microsystems, Inc. All Rights Reserved.
 
         <!-- zip task not well suited to making final build, as it does not set +x bits -->
         <!-- so on Unix try to use native ZIP first -->
-        <exec executable="zip" dir="." os="Linux SunOS Solaris" failonerror="false">
+        <exec executable="zip" dir="${xtest.distdir}" os="Linux SunOS Solaris" failonerror="false">
+	    <arg value="-9"/>
             <arg value="-r"/>
             <arg value="${xtest.distname}.zip"/>
-            <arg value="${xtest.distdir}"/>
+            <arg value="."/>
+	    <arg value="-i"/>
+	    <arg value="*"/>
         </exec>
+	<move todir=".">
+	    <fileset dir="${xtest.distdir}" includes="${xtest.distname}.zip"/>
+	</move>
 
         <zip zipfile="${xtest.distname}.zip" basedir="${xtest.distdir}"/>
     </target>
