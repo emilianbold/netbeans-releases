@@ -61,7 +61,7 @@ public class LoggerFactory {
     
     private static class BasicFormatter extends Formatter {
         private Date dat = new Date();
-        private final static String format = "yyyyMMdd_HHmmss z";
+        private final static String format = "yyyyMMdd_HHmmss z"; // NOI18N
         private DateFormat formatter = new SimpleDateFormat(format);
         
         public String format(LogRecord record) {
@@ -70,14 +70,14 @@ public class LoggerFactory {
             String name = record.getLevel().getName();
             // indent on the base of severity to have nice and readable output
             for (int i = name.length(); i < MAX_LEVEL_LENGTH; i++) {
-                sb.append(" ");
+                sb.append(" "); // NOI18N
             }
             // append severity
-            sb.append("[" + name + "]: ");
+            sb.append("[" + name + "]: "); // NOI18N
             // append date and time (minimize memory allocations here)
             dat.setTime(record.getMillis());
             sb.append(formatter.format(dat));
-            sb.append(" - ");
+            sb.append(" - "); // NOI18N
             // append class and method names
             if (record.getSourceClassName() != null) {
                 sb.append(record.getSourceClassName());
@@ -85,16 +85,16 @@ public class LoggerFactory {
                 sb.append(record.getLoggerName());
             }
             if (record.getSourceMethodName() != null) {
-                sb.append(".");
+                sb.append("."); // NOI18N
                 sb.append(record.getSourceMethodName());
-                sb.append("()");
+                sb.append("()"); // NOI18N
             }
             // append stacktrace if there is any
-            sb.append(": ");
+            sb.append(": "); // NOI18N
             sb.append(record.getMessage());
             if (record.getThrown() != null) {
                 try {
-                    sb.append("\n  ");
+                    sb.append("\n  "); // NOI18N
                     StringWriter sw = new StringWriter();
                     PrintWriter pw = new PrintWriter(sw);
                     record.getThrown().printStackTrace(pw);
@@ -103,7 +103,7 @@ public class LoggerFactory {
                 } catch (Exception ex) {
                 }
             } else {
-                sb.append("\n");
+                sb.append("\n"); // NOI18N
             }
             return sb.toString();
         }

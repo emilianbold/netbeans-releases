@@ -328,7 +328,7 @@ public final class EclipseProject implements Comparable {
                 }
             }
         }
-        logger.info("Cannot resolve variable for raw path: " + rawPath);
+        logger.info("Cannot resolve variable for raw path: " + rawPath); // NOI18N
         return null;
     }
     
