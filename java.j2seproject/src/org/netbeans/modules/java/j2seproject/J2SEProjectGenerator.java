@@ -137,7 +137,6 @@ public class J2SEProjectGenerator {
         }
         ep.setProperty("javac.source", "${default.javac.source}"); // NOI18N
         ep.setProperty("javac.target", "${default.javac.target}"); // NOI18N
-        ep.setProperty("javac.debug", "true"); // NOI18N
         ep.setProperty("javac.deprecation", "false"); // NOI18N
         ep.setProperty("javac.test.classpath", new String[] { // NOI18N
             "${javac.classpath}:", // NOI18N
@@ -184,6 +183,7 @@ public class J2SEProjectGenerator {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty("application.args", ""); // NOI18N
+        ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, "true");  // NOI18N
         ep.setProperty(J2SEProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         return h;

@@ -130,7 +130,7 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
-        new PropertyDescriptor( JAVAC_DEBUG, PROJECT, BOOLEAN_PARSER ),       
+        new PropertyDescriptor( JAVAC_DEBUG, PRIVATE, BOOLEAN_PARSER ),       
         new PropertyDescriptor( JAVAC_DEPRECATION, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( RUN_TEST_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( SRC_DIR, PROJECT, STRING_PARSER ),
@@ -258,10 +258,10 @@ public class J2SEProjectProperties {
      */    
     private void read() {
         
-        // Read the properties from the project        
+        // Read the properties from the project             
         HashMap eProps = new HashMap( 2 );
         eProps.put( PROJECT, antProjectHelper.getProperties( PROJECT ) ); 
-        eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );
+        eProps.put( PRIVATE, antProjectHelper.getProperties( PRIVATE ) );        
         
         // Initialize the property map with objects
         for ( int i = 0; i < PROPERTY_DESCRIPTORS.length; i++ ) {
@@ -275,7 +275,11 @@ public class J2SEProjectProperties {
             }
             else {
                 // Standard properties
-                String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );
+                String raw = ((EditableProperties)eProps.get( pd.dest )).getProperty( pd.name );                
+                if ( pd.dest == PRIVATE && raw == null ) {
+                    // Can still be found in the project properties
+                    raw = ((EditableProperties)eProps.get( PROJECT )).getProperty( pd.name );
+                }                
                 String eval = evaluator.getProperty(pd.name);
                 properties.put( pd.name, new PropertyInfo( pd, raw, eval ) );            
             }
