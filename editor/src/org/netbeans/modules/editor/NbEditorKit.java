@@ -419,7 +419,6 @@ public class NbEditorKit extends ExtKit {
     
     /** Annotation implementation for bookmarks */
     private static class BookmarkAnnotation extends Annotation {
-        private Line line;
         
         public String getAnnotationType() {
             return BOOKMARK_ANNOTATION_TYPE;
@@ -445,6 +444,11 @@ public class NbEditorKit extends ExtKit {
 
         public Annotation getAnno() {
             return anno;
+        }
+        
+        public void remove() {
+            anno.detach();
+            anno = null;
         }
         
     }
