@@ -126,9 +126,11 @@ public class EditorModule extends ModuleInstall {
       }
     }
 
-    File rootDir = ((LocalFileSystem)rfs).getRootDirectory();
-    File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
-    JCStorage.init(dbDir);
+    File rootDir = org.openide.execution.NbClassPath.toFile (rfs.getRoot ());
+    if (rootDir != null) {
+      File dbDir = new File(rootDir.getAbsolutePath() + File.separator + DB_DIR);
+      JCStorage.init(dbDir);
+    }
 
     // Indentation engines registration
     registerIndents();
@@ -188,6 +190,8 @@ public class EditorModule extends ModuleInstall {
 
 /*
  * Log
+ *  33   Gandalf   1.32        10/29/99 Jaroslav Tulach Does not cast to 
+ *       LocalFileSystem
  *  32   Gandalf   1.31        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  31   Gandalf   1.30        10/10/99 Miloslav Metelka 
