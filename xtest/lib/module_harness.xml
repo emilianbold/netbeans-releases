@@ -460,6 +460,9 @@ Microsystems, Inc. All Rights Reserved.
          <!-- copy the ide.log and the zip -->
         <copy file="${xtest.workdir}/sys/ide.zip" todir="${xtest.current.results}/sys/ide"/>        
         <copy file="${xtest.workdir}/sys/ide/system/ide.log" todir="${xtest.current.results}/sys/ide"/>
+        <copy todir="${xtest.current.results}/sys/ide/output">
+           <fileset dir="${xtest.workdir}/sys/ide/output"/>
+        </copy>
          <!-- delete zip and ide workdir -->
         <delete file="${xtest.workdir}/sys/ide.zip"/>
         <!--
