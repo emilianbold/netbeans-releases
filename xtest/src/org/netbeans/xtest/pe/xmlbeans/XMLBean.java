@@ -91,7 +91,7 @@ public abstract class XMLBean {
     
     
     
-    public static boolean compareObjectsByFields(Object obj1, Object obj2, String[] fieldNames) 
+    public static boolean equalObjectsByFields(Object obj1, Object obj2, String[] fieldNames) 
                 throws NoSuchFieldException {
         debugInfo("compareObjectsByFields(): start");
         if (fieldNames != null) {
@@ -155,7 +155,7 @@ public abstract class XMLBean {
             }
             String[] fieldNames = (String[])(attributeFieldList.toArray(new String[0]));
             debugInfo("equalByAttribues(): got field names -> comparing"); 
-            return compareObjectsByFields(this,obj,fieldNames);
+            return equalObjectsByFields(this,obj,fieldNames);
             // get all fields
         } catch (NoSuchFieldException nsfe) {
             // this should not happen            

@@ -312,8 +312,11 @@ public class TransformXMLTask extends Task{
        File fsInputDir = ResultsUtils.getXMLResultDir(inputRoot);
        File fsInputFile = new File(fsInputDir,PEConstants.TESTREPORT_XML_FILE);
        
-       File fsOutputDir = ResultsUtils.getHTMLResultDir(outputRoot);
-       File fsOutputFile = new File(fsOutputDir,PEConstants.INDEX_HTML_FILE);       
+       outputRoot.mkdirs();
+       if (!outputRoot.isDirectory()) {
+           throw new IOException("Cannot create directory:"+outputRoot);
+       }
+       File fsOutputFile = new File(outputRoot,PEConstants.INDEX_HTML_FILE);       
               
        Transformer transformer = getTransformer(getXSLFile(FRAMESET_XSL));      
         try {
