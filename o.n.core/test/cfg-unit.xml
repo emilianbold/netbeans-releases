@@ -97,6 +97,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/netbeans/core/windows/UIModeManagerTest.class"/>
                 <include name="org/netbeans/lib/terminalemulator/TermTest.class"/>
                 <include name="org/netbeans/core/projects/FileStatePropertyTest.class"/>
+                <include name="org/netbeans/core/BundleKeysTest.class"/>
             </patternset>
         </testset>
     </testbag>
