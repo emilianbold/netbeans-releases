@@ -59,7 +59,7 @@ public class EditorWarmUpTask implements Runnable{
         // Parsing of sampledir, that is mounted by default.
         // The autoupdate of that filesystem cannot start as it starts only after 
         // mount action.
-        sampleDirParsing();
+        //sampleDirParsing();
         if (debug){
             System.out.println("sample dir parsed:"+(System.currentTimeMillis()-startTime));
             startTime = System.currentTimeMillis();

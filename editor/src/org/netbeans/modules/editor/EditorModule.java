@@ -583,6 +583,7 @@ public class EditorModule extends ModuleInstall {
         }
     
         public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getOldValue() == null) return;
             if ("nb-projects-beforeOpenProject".equals(evt.getPropertyName())) { //NOI18N
                 ignoreRepositoryChanges = true;
                 JCStorage.getStorage().ignoreChanges(true, evt.getOldValue() != null);
