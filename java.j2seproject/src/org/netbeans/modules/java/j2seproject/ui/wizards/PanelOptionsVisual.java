@@ -28,7 +28,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel implements ActionList
         this.panel = panel;
         
         if ( isLibrary ) {
-            setAsMainCheckBox.setSelected( false );
+            setAsMainCheckBox.setVisible( false );
             createMainCheckBox.setVisible( false );
             mainClassTextField.setVisible( false );
         }
