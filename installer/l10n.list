@@ -1,1 +1,3 @@
-installer/src/org/netbeans/installer/InstallerResources.java
+installer/coreide/src/org/netbeans/installer/Bundle.properties
+installer/cluster/src/org/netbeans/installer/Bundle.properties
+installer/jdkbundle/src/org/netbeans/installer/Bundle.properties
