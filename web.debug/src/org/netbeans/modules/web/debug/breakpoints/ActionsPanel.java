@@ -15,10 +15,10 @@ import org.openide.util.NbBundle;
  */
 public class ActionsPanel extends javax.swing.JPanel {
     
-    private JPDABreakpoint  breakpoint;
+    private JspLineBreakpoint  breakpoint;
     
     /** Creates new form LineBreakpointPanel */
-    public ActionsPanel (JPDABreakpoint b) {
+    public ActionsPanel (JspLineBreakpoint b) {
         breakpoint = b;
         initComponents ();
         
@@ -26,13 +26,13 @@ public class ActionsPanel extends javax.swing.JPanel {
         cbSuspend.addItem(NbBundle.getMessage(ActionsPanel.class, "LBL_CB_Actions_Panel_Suspend_Current"));
         cbSuspend.addItem(NbBundle.getMessage(ActionsPanel.class, "LBL_CB_Actions_Panel_Suspend_All"));
         switch (b.getSuspend ()) {
-            case JPDABreakpoint.SUSPEND_NONE:
+            case JspLineBreakpoint.SUSPEND_NONE:
                 cbSuspend.setSelectedIndex (0);
                 break;
-            case JPDABreakpoint.SUSPEND_EVENT_THREAD:
+            case JspLineBreakpoint.SUSPEND_EVENT_THREAD:
                 cbSuspend.setSelectedIndex (1);
                 break;
-            case JPDABreakpoint.SUSPEND_ALL:
+            case JspLineBreakpoint.SUSPEND_ALL:
                 cbSuspend.setSelectedIndex (2);
                 break;
         }
@@ -117,13 +117,13 @@ public class ActionsPanel extends javax.swing.JPanel {
         
         switch (cbSuspend.getSelectedIndex ()) {
             case 0:
-                breakpoint.setSuspend (JPDABreakpoint.SUSPEND_NONE);
+                breakpoint.setSuspend (JspLineBreakpoint.SUSPEND_NONE);
                 break;
             case 1:
-                breakpoint.setSuspend (JPDABreakpoint.SUSPEND_EVENT_THREAD);
+                breakpoint.setSuspend (JspLineBreakpoint.SUSPEND_EVENT_THREAD);
                 break;
             case 2:
-                breakpoint.setSuspend (JPDABreakpoint.SUSPEND_ALL);
+                breakpoint.setSuspend (JspLineBreakpoint.SUSPEND_ALL);
                 break;
         }
     }

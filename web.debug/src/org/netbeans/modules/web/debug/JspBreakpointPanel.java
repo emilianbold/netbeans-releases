@@ -22,10 +22,9 @@ import javax.swing.*;
 
 import org.netbeans.spi.debugger.ui.Controller;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
 import org.netbeans.modules.web.debug.util.Utils;
-import org.netbeans.modules.web.debug.breakpoints.ActionsPanel;
+import org.netbeans.modules.web.debug.breakpoints.*;
 
 /**
 * Customizer of JspLineBreakpoint
@@ -37,16 +36,16 @@ public class JspBreakpointPanel extends JPanel implements Controller {
     static final long serialVersionUID =-8164649328980808272L;
 
     private ActionsPanel actionsPanel;
-    private LineBreakpoint breakpoint;
+    private JspLineBreakpoint breakpoint;
     private boolean createBreakpoint = false;
 
     public JspBreakpointPanel() {
-        this(LineBreakpoint.create(Context.getCurrentURL(), Context.getCurrentLineNumber()));
+        this(JspLineBreakpoint.create(Context.getCurrentURL(), Context.getCurrentLineNumber()));
         createBreakpoint = true;
     }        
     
     /** Creates new form JspBreakpointPanel */
-    public JspBreakpointPanel(LineBreakpoint b) {
+    public JspBreakpointPanel(JspLineBreakpoint b) {
 
         System.err.println("JspLineBreakpointPanel constructor: " + b);
 

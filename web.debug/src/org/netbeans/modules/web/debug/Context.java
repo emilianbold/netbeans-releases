@@ -19,12 +19,10 @@ import java.util.List;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.debugger.DebuggerManager;
 
-import org.netbeans.api.debugger.jpda.LineBreakpoint;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-//import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.spi.debugger.jpda.ContextProvider;
-//import org.netbeans.spi.viewmodel.NoInformationException;
+import org.netbeans.api.debugger.jpda.*;
+import org.netbeans.spi.debugger.jpda.*;
 
+import org.netbeans.modules.web.debug.breakpoints.JspLineBreakpoint;
 
 /**
  *
@@ -156,15 +154,15 @@ public class Context {
     
     // utility methods .........................................................
 
-    public static String getFileName (LineBreakpoint b) { 
+    public static String getFileName (JspLineBreakpoint b) { 
         try {
-            return new File (new URL (b.getURL ()).getFile ()).getName ();
+            return new File(new URL(b.getURL()).getFile ()).getName ();
         } catch (MalformedURLException e) {
             return null;
         }
     }
 
-    public static boolean showSource (LineBreakpoint b) {
+    public static boolean showSource (JspLineBreakpoint b) {
         if (b.getLineNumber () < 1)
             return Context.showSource (
                 b.getURL (),
@@ -181,7 +179,7 @@ public class Context {
     }
 
     public static Object annotate (
-        LineBreakpoint b
+        JspLineBreakpoint b
     ) {
         String url = b.getURL ();
         int lineNumber = b.getLineNumber ();

@@ -25,8 +25,12 @@ import org.openide.filesystems.Repository;
 
 import org.netbeans.modules.web.core.jsploader.*;
 import org.netbeans.modules.web.debug.Context;
-import org.netbeans.api.project.*;
+
 import org.netbeans.modules.web.spi.webmodule.*;
+import org.netbeans.modules.j2ee.deployment.impl.projects.*;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.netbeans.api.project.*;
+
 
 import java.net.*;
 
@@ -74,6 +78,31 @@ public class Utils {
         return sorted;
     }
 
+    public static String getServletClass(String jspUrl) {
+        System.err.println("url : " + jspUrl);
+        URI jspUri = URI.create(jspUrl);
+        Project project = FileOwnerQuery.getOwner(jspUri);
+
+        WebModuleImplementation wmi = (WebModuleImplementation)project.getLookup().lookup(WebModuleImplementation.class);
+        
+        J2eeDeploymentLookup jdl = (J2eeDeploymentLookup)project.getLookup().lookup(J2eeDeploymentLookup.class);
+        J2eeProfileSettings settings = jdl.getJ2eeProfileSettings();
+        DeploymentTargetImpl target = new DeploymentTargetImpl(settings, jdl);
+        
+        FindJSPServlet findJspServlet = target.getServer().getServerInstance().getFindJSPServlet();        
+
+        java.io.File f = new java.io.File(jspUri);
+        f = FileUtil.normalizeFile(f);
+                
+        String jspRelativePath = FileUtil.getRelativePath(wmi.getDocumentBase(), FileUtil.toFileObject(f));
+                
+        String servletPath = findJspServlet.getServletResourcePath("", jspRelativePath); //TODO - context path
+        servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
+        servletPath = org.openide.util.Utilities.replaceString(servletPath, "" + java.io.File.separatorChar, "."); //NOI18N
+        Utils.getEM().log("servlet class: " + servletPath);
+        return servletPath;
+    }
+    
     public static String getCurrentJspName() {
         FileObject fo = getCurrentFileObject();
         if (fo == null) {
@@ -169,6 +198,14 @@ public class Utils {
             EditorCookie.class
         );
     }
+    
+    public static JEditorPane getCurrentEditor () {
+        EditorCookie e = getCurrentEditorCookie ();
+        if (e == null) {
+            return null;
+        }
+        return getCurrentEditor(e);
+    }    
     
     /** 
      * Returns current editor component instance.
