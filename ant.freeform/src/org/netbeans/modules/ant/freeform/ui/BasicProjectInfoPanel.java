@@ -19,6 +19,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.ant.freeform.Util;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -407,6 +408,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Location"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
@@ -423,6 +426,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             chooser.setSelectedFile(getProjectFolder());
         } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Project_Folder"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
@@ -439,6 +444,8 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
             chooser.setSelectedFile(getAntScript());
         } else if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
             chooser.setSelectedFile(getProjectLocation());
+        } else {
+            chooser.setSelectedFile(ProjectChooser.getProjectsFolder());
         }
         chooser.setDialogTitle(NbBundle.getMessage(BasicProjectInfoPanel.class, "LBL_Browse_Build_Script"));
         if ( JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
