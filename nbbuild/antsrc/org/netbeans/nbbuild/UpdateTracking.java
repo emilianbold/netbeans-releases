@@ -32,7 +32,7 @@ import org.xml.sax.InputSource;
  */
 public class UpdateTracking {
     private static final String ELEMENT_MODULE = "module"; // NOI18N
-    private static final String ATTR_CODENAMEBASE = "codename"; // NOI18N
+    private static final String ATTR_CODENAME = "codename"; // NOI18N
     private static final String ELEMENT_VERSION = "module_version"; // NOI18N
     private static final String ATTR_VERSION = "specification_version"; // NOI18N
     private static final String ATTR_ORIGIN = "origin"; // NOI18N
@@ -65,9 +65,9 @@ public class UpdateTracking {
         origin = INST_ORIGIN;
     }
     
-    public Version addNewModuleVersion( String codenamebase, String spec_version ) {
+    public Version addNewModuleVersion( String codename, String spec_version ) {
         module = new Module();
-        module.setCodenamebase( codenamebase );
+        module.setCodename( codename );
         Version version = new Version();        
         version.setVersion( spec_version );
         version.setOrigin( origin );
@@ -99,7 +99,7 @@ public class UpdateTracking {
         Element e_version = null;
         Element e_file = null;
         e_module = document.createElement(ELEMENT_MODULE);
-        e_module.setAttribute(ATTR_CODENAMEBASE, module.getCodenamebase());
+        e_module.setAttribute(ATTR_CODENAME, module.getCodename());
         document.appendChild( e_module );
         Iterator it2 = module.getVersions().iterator();
         while ( it2.hasNext() ) {
@@ -177,8 +177,8 @@ public class UpdateTracking {
         org.w3c.dom.NamedNodeMap attrs = element.getAttributes();
         for (int i = 0; i < attrs.getLength(); i++) {
             org.w3c.dom.Attr attr = (org.w3c.dom.Attr)attrs.item(i);
-            if (attr.getName().equals(ATTR_CODENAMEBASE)) { // <module codenamebase="???">
-                module.setCodenamebase( attr.getValue() );
+            if (attr.getName().equals(ATTR_CODENAME)) { // <module codename="???">
+                module.setCodename( attr.getValue() );
             }
         }
         org.w3c.dom.NodeList nodes = element.getChildNodes();
@@ -248,8 +248,8 @@ public class UpdateTracking {
     
     class Module extends Object {        
         
-        /** Holds value of property codenamebase. */
-        private String codenamebase;
+        /** Holds value of property codename. */
+        private String codename;
         
         /** Holds value of property versions. */
         private List versions = new ArrayList();
@@ -258,14 +258,25 @@ public class UpdateTracking {
          * @return Value of property codenamebase.
          */
         String getCodenamebase() {
+	    String codenamebase = new String(codename);
+            int idx = codenamebase.lastIndexOf ('/');
+            if (idx != -1) codenamebase = codenamebase.substring (0, idx);
+
             return codenamebase;
         }
-        
-        /** Setter for property codenamebase.
-         * @param codenamebase New value of property codenamebase.
+
+         /** Getter for property codename.
+         * @return Value of property codename.
          */
-        void setCodenamebase(String codenamebase) {
-            this.codenamebase = codenamebase;
+        String getCodename() {
+            return codename;
+        }
+       
+        /** Setter for property codename.
+         * @param codename New value of property codename.
+         */
+        void setCodename(String codename) {
+            this.codename = codename;
         }
         
         /** Getter for property versions.

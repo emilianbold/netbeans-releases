@@ -69,11 +69,9 @@ public class MakeListOfNBM extends Task {
                     throw new BuildException( "Can't get manifest attributes", ex, location );
                 }
                 
-		String codenamebase = attr.getValue ("OpenIDE-Module");
-		if (codenamebase == null)
+		String codename = attr.getValue ("OpenIDE-Module");
+		if (codename == null)
                     throw new BuildException ("invalid manifest, does not contain OpenIDE-Module", location);
-                int idx = codenamebase.lastIndexOf ('/');
-                if (idx != -1) codenamebase = codenamebase.substring (0, idx);
                 
 		String versionSpecNum = attr.getValue ("OpenIDE-Module-Specification-Version");
 		if (versionSpecNum == null) {
@@ -81,7 +79,7 @@ public class MakeListOfNBM extends Task {
                     return;
                 }
                 
-                UpdateTracking.Version version = track.addNewModuleVersion( codenamebase, versionSpecNum );
+                UpdateTracking.Version version = track.addNewModuleVersion( codename, versionSpecNum );
                 
                 DirectoryScanner ds = fs.getDirectoryScanner( this.getProject() );
 		String excludes[]={"Info/info.xml", "main/**"};
