@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.Toolkit;
 import java.io.*;
 import javax.swing.text.Document;
 import org.netbeans.editor.ext.ExtFormatter;
@@ -114,6 +115,11 @@ public abstract class FormatterIndentEngine extends IndentEngine {
     }
 
     public void setSpacesPerTab(int spacesPerTab) {
+        if (spacesPerTab <= 0) {
+            Toolkit.getDefaultToolkit().beep();
+            return; // value unchanged
+        }
+
         int old = getFormatter().getSpacesPerTab();
         getFormatter().setSpacesPerTab(spacesPerTab);
         if (old != spacesPerTab) {

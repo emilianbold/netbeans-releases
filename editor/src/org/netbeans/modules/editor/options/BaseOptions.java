@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import javax.swing.text.JTextComponent;
+import java.awt.Toolkit;
 
 import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
@@ -158,7 +159,10 @@ public class BaseOptions extends OptionSupport {
         return getSettingInteger(SettingsNames.TAB_SIZE);
     }
     public void setTabSize(int tabSize) {
-        setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
+        if (tabSize > 0)
+            setSettingInteger(SettingsNames.TAB_SIZE, tabSize, TAB_SIZE_PROP);
+        else
+            Toolkit.getDefaultToolkit().beep();
     }
 
 /*    public boolean getExpandTabs() {
@@ -177,7 +181,10 @@ public class BaseOptions extends OptionSupport {
     [Mila] Moved to IndentEngine; Setter must stay here
 */
     public void setSpacesPerTab(int i){
-        setSettingInteger(SettingsNames.SPACES_PER_TAB, i, SPACES_PER_TAB_PROP);
+        if (i > 0)
+            setSettingInteger(SettingsNames.SPACES_PER_TAB, i, SPACES_PER_TAB_PROP);
+        else
+            Toolkit.getDefaultToolkit().beep();
     }
 
     public Map getAbbrevMap() {
