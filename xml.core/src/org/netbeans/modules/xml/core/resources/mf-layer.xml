@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.xml.core.wizard.XMLWizardIterator.singleton" />            
             </file>
 
-            <!-- @deprecated by the wizard -->
+            <!-- @deprecated by the wizard - ->
                         
             <file name="XMLwithDTD.xml" url="templates/XMLwithDTD.xml.template">
                 <attr name="template" boolvalue="true" />
@@ -54,7 +54,7 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/XMLwithROOT.html" />
             </file>
 
-            <!-- eof deprecated -->
+            <!- - eof deprecated -->
             
             <file name="emptyDTD.dtd" url="templates/emptyDTD.dtd.template">
                 <attr name="template" boolvalue="true" />
