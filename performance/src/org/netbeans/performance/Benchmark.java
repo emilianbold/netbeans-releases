@@ -15,6 +15,7 @@ package org.netbeans.performance;
 import java.lang.reflect.Method;
 
 import junit.framework.Test;
+import junit.framework.TestSuite;
 import junit.framework.TestResult;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
@@ -25,16 +26,31 @@ import junit.framework.AssertionFailedError;
  * @version 0.9
  */
 public class Benchmark extends Assert implements Test {
+
+    /** the reporter that will be notified about results of measurements **/
+    private static Reporter reporter;
     
+    /** The name the the actually tested method */
     private String name;
+    
+    /** The name of the actually running Benchmark class */
     private String className;
+    
     private static final Object[] emptyObjectArray = new Object[0];
     private static final Class[] emptyClassArray = new Class[0];
+    
+    /** Tells whether we'return doing sharp measurement or some preliminary
+     * autocalibration runs.
+     */
     private boolean realRun = false;
     
+    /** How many iterations to perform in the test method */
     private int iterations;
+    
+    /** The actual value of the argument */
     private Object argument;
     
+    /** The full set of arguments used for this test */
     private Object[] arguments;
     
     /** ptr to BenchmarkSuite for DataManagers */
@@ -57,11 +73,8 @@ public class Benchmark extends Assert implements Test {
      */    
     public Benchmark( String name, Object[] args ) {
         this.name = name;
+        className = getClass().getName();
         arguments = args; // should we clone it?
-	
-	String fullName = getClass().getName();
-	int idx = fullName.lastIndexOf( "." );
-	className = (idx >= 0) ? fullName.substring( idx+1 ) : fullName;
     }
     
     // things to override by the implementation of a particular Benchmark
@@ -141,7 +154,7 @@ public class Benchmark extends Assert implements Test {
      * {@link #run} method
      */
     public int countTestCases() {
-        return 1;
+        return arguments.length;
     }
 
     public final void run( TestResult result ) {
@@ -170,7 +183,6 @@ public class Benchmark extends Assert implements Test {
     
     private void doOneArgument( Method testMethod, Object argument ) throws Exception {
             setArgument( argument );
-            
             checkSetUpData();
             
             // class loading and so on...
@@ -201,34 +213,37 @@ public class Benchmark extends Assert implements Test {
 		if( time > 200 ) break;
 		iters *= 2;
             }
-	                
+            
             // do the real measurement
             realRun = true;
-            long min=Long.MAX_VALUE;
-            long max=0;
-            long sum=0;
             for( int run = 0; run < 3; run++ ) {
                 time = doOneMeasurement( testMethod, iters );
-                if( time < min ) min = time;
-                if( time > max ) max = time;
-                sum += time;
+                reportSample( ((float)time) / 1000 / iters );
             }
-            
-            // compute time in [s] per iteration
-            float realMin  = ((float)min) / 1000 / iters;
-            float realMax  = ((float)max) / 1000 / iters;
-            float avgTime  = ((float)sum) / 1000 / iters / 3;
-            
-            // PENDING - add real reporting stuff here
-            StringBuffer sb = new StringBuffer(100);
-            argument2String(argument, sb);
-            String argString = sb.toString();
-            if( argString.length() > 0 ) argString = "@" + argString;
-            System.out.println( className + ':'+ name + argString +
-                ": iter=" + iters + 
-                ", min=" + format(1000000f*realMin) + 
-                ", avg=" + format(1000000f*avgTime) +
-                ", max=" + format(1000000f*realMax) );
+    }
+    
+    private void reportSample( float time ) {
+        getReporter().addSample( className, name, argument, time );
+    }
+    
+    private static Reporter getReporter() {
+        if( reporter == null ) reporter = new PlainReporter();
+        return reporter;
+    }
+    
+    /** Set the Reporter to be used by the Benchmark
+     */
+    public static void setReporter( Reporter rep ) {
+        reporter = rep;
+    }
+    
+    /** Helper method to be called from possible main that will take care
+     * of wrapping the test with TestSuite an running all the test methods
+     * of the testClass. It will also flush the reporter at the end.
+     */
+    protected static void simpleRun( Class testClass ) {
+        junit.textui.TestRunner.run( new TestSuite( testClass ) );
+        getReporter().flush();
     }
     
     private void checkSetUpData() throws Exception {
@@ -240,34 +255,7 @@ public class Benchmark extends Assert implements Test {
     final void setSuite(BenchmarkSuite bs) {
         this.bsuite = bs;
     }
-    
-    /** Formats a */
-    private static String format(float val) {
-        if (val < 1000) {
-            return val + "  micro s";
-        } else if (val < 1000000) {
-            return (val / 1000) + " ms";
-        } else {
-            return (val / 1000000) + " s";
-        }        
-    }
-    
-    /** Handles arrays */
-    private static void argument2String(Object argument, StringBuffer sb) {
-        if (argument instanceof Object[]) {
-            Object[] arg = (Object[]) argument;
-            sb.append('[');
-            for (int i = 0; i < arg.length - 1; i++) {
-                argument2String(arg[i], sb);
-                sb.append(',').append(' ');
-            }
-            argument2String(arg[arg.length - 1], sb);
-            sb.append(']');
-        } else {
-            sb.append(argument.toString());
-        }
-    }
-    
+        
     private long doOneMeasurement( Method testMethod, int iterations ) throws Exception {
         setIterationCount( iterations );
         setUp();
@@ -300,10 +288,5 @@ public class Benchmark extends Assert implements Test {
         try {
             Thread.sleep( 300 );
         } catch( InterruptedException exc ) {}
-    }
- 
-    /** Setter for BenchmarkSuite */
-    final void setBenchmarkSuite(BenchmarkSuite bs) {
-        this.bsuite = bs;
     }
 }
