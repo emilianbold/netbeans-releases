@@ -222,16 +222,22 @@ public class AttachWindowAction extends Action {
      * position
      */
     public void performAPI(TopComponentOperator tco) {
-        TopComponent sourceTc = (TopComponent)tco.getSource();
-        TopComponent targetTc = (TopComponent)getTargetTopComponentOperator().getSource();
-        ModeImpl mode = (ModeImpl)WindowManagerImpl.getDefault().findMode(targetTc);
-        if(sideConstant == AS_LAST_TAB) {
-            mode.dockInto(sourceTc);
-            sourceTc.open();
-            sourceTc.requestActive();
-        } else {
-            WindowManagerImpl.getInstance().attachTopComponentToSide(sourceTc, mode, sideConstant);
-        }
+        final TopComponent sourceTc = (TopComponent)tco.getSource();
+        final TopComponent targetTc = (TopComponent)getTargetTopComponentOperator().getSource();
+        final ModeImpl mode = (ModeImpl)WindowManagerImpl.getDefault().findMode(targetTc);
+        // run in dispatch thread
+        tco.getQueueTool().invokeSmoothly(new Runnable() {
+            public void run() {
+                if(sideConstant == AS_LAST_TAB) {
+                    mode.dockInto(sourceTc);
+                    sourceTc.open();
+                    sourceTc.requestActive();
+                } else {
+                    WindowManagerImpl.getInstance().attachTopComponentToSide(sourceTc, mode, sideConstant);
+                }
+            }
+        });
+        
         // wait until TopComponent is in new location, i.e. is showing
         try {
             new Waiter(new Waitable() {
