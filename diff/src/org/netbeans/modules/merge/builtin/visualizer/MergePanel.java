@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -1072,7 +1073,7 @@ public class MergePanel extends javax.swing.JPanel {
         for (int i = 0; i < resultLineNumbers.length; i++) resultLineNumbers[i] = i;
     }
     
-    private static final int EXTRA_CAPACITY = 50;
+    private static final int EXTRA_CAPACITY = 5;
     private void assureResultLineNumbersLength(int length) {
         if (length > resultLineNumbers.length) {
             int[] newrln = new int[length + EXTRA_CAPACITY];
@@ -1425,7 +1426,7 @@ public class MergePanel extends javax.swing.JPanel {
         int startSetLine = -1;
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
         try {
-            for (int i = 1; i <= end; i++) {
+            for (int i = 1; i < end; i++) {
                 if (resultLineNumbers[i] <= resultLineNumbers[i - 1]) {
                     if (startSetLine > 0) {
                         //System.out.println("write("+startSetLine+", "+i+")");
@@ -1528,6 +1529,11 @@ public class MergePanel extends javax.swing.JPanel {
     public void highlightRegion3(int line1, int line2, java.awt.Color color) {
         StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
         setHighlight(doc, line1, line2, color);
+    }
+    
+    public void unhighlightRegion3(int line1, int line2) {
+        StyledDocument doc = (StyledDocument) jEditorPane3.getDocument();
+        setHighlight(doc, line1, line2, jEditorPane3.getBackground());
     }
     
     private void addEmptyLines(StyledDocument doc, int line, int numLines) {

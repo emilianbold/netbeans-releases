@@ -182,27 +182,31 @@ public class MergeDialogComponent extends TopComponent implements ChangeListener
         Object ret;
         if (unsavedPanelNames.size() == 1) {
             ret = TopManager.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(MergeDialogComponent.class,
+            new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
                                                              "SaveFileQuestion",
-                                                             unsavedPanelNames.get(0))));
+                                                             unsavedPanelNames.get(0)),
+                                              NotifyDescriptor.YES_NO_CANCEL_OPTION));
         } else if (unsavedPanelNames.size() > 1) {
             ret = TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(MergeDialogComponent.class,
+                new NotifyDescriptor.Confirmation(NbBundle.getMessage(MergeDialogComponent.class,
                                                                  "SaveFilesQuestion",
-                                                                 new Integer(unsavedPanelNames.size()))));
+                                                                 new Integer(unsavedPanelNames.size())),
+                                                  NotifyDescriptor.YES_NO_CANCEL_OPTION));
         } else {
-            ret = NotifyDescriptor.OK_OPTION;
+            ret = NotifyDescriptor.YES_OPTION;
         }
-        if (ret != NotifyDescriptor.OK_OPTION) return ;
-        try {
-            for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
-                SaveCookie sc = (SaveCookie) it.next();
-                sc.save();
+        if (!NotifyDescriptor.YES_OPTION.equals(ret) && !NotifyDescriptor.NO_OPTION.equals(ret)) return ;
+        if (NotifyDescriptor.YES_OPTION.equals(ret)) {
+            try {
+                for (Iterator it = saveCookies.iterator(); it.hasNext(); ) {
+                    SaveCookie sc = (SaveCookie) it.next();
+                    sc.save();
+                }
+            } catch (java.io.IOException ioEx) {
+                TopManager.getDefault().notify(
+                    new NotifyDescriptor.Message(ioEx.getLocalizedMessage()));
+                return ;
             }
-        } catch (java.io.IOException ioEx) {
-            TopManager.getDefault().notify(
-                new NotifyDescriptor.Message(ioEx.getLocalizedMessage()));
-            return ;
         }
         for (int i = 0; i < panels.length; i++) {
             MergePanel panel = (MergePanel) panels[i];
