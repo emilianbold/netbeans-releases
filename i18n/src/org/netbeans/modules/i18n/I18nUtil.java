@@ -94,12 +94,13 @@ public abstract class I18nUtil {
     /** Gets <code>replaceFormatItems</code>. */
     public static List getReplaceFormatItems() {
         if(replaceFormatItems == null) {
-            replaceFormatItems = new ArrayList(6);
+            replaceFormatItems = new ArrayList(7);
             replaceFormatItems.add("{identifier}.getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("Utilities.getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(\"{key}\")"); // NOI18N
             replaceFormatItems.add("java.text.MessageFormat(java.util.ResourceBundle.getBundle(\"{bundleNameSlashes}\").getString(\"{key}\"), {arguments})"); // NOI18N
+            replaceFormatItems.add("org.openide.util.NbBundle.getMessage({sourceFileName}.class, \"{key}\""); // NOI18N
             replaceFormatItems.add("org.openide.util.NbBundle.getMessage({sourceFileName}.class, \"{key}\", {arguments})"); // NOI18N
         }
             
@@ -124,10 +125,11 @@ public abstract class I18nUtil {
     /** Gets <code>regExpItems</code>. */
     public static List getRegExpItems() {
         if(regExpItems == null) {
-            regExpItems = new ArrayList(3);
-            regExpItems.add("(getString|getBundle)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
+            regExpItems = new ArrayList(4);
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}"); // NOI18N
             regExpItems.add("// NOI18N"); // NOI18N
-            regExpItems.add("((getString|getBundle)([:space:]*)\\(([:space:])*{hardString})|(// NOI18N)"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// NOI18N"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|// NOI18N"); // NOI18N
         }
             
         return regExpItems;
@@ -137,8 +139,8 @@ public abstract class I18nUtil {
     public static List getI18nRegExpItems() {
         if(i18nRegExpItems == null) {
             i18nRegExpItems = new ArrayList(2);
-            i18nRegExpItems.add("(getString)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
-            i18nRegExpItems.add("(getString|getMessage)([:space:]*)\\(([:space:])*{hardString}"); // NOI18N
+            i18nRegExpItems.add("getString[:space:]*\\([:space:]*{hardString}"); // NOI18N
+            i18nRegExpItems.add("(getString[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*){hardString}"); // NOI18N
         }
             
         return i18nRegExpItems;
