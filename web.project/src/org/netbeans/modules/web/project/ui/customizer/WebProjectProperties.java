@@ -741,7 +741,7 @@ public class WebProjectProperties {
             ArrayList /*File*/ dirs = new ArrayList ();
             getFilesForItem (item, files, dirs);
             String key;
-            if (files.size() > 1) {
+            if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
                     File f = (File) files.get(i);
@@ -750,7 +750,7 @@ public class WebProjectProperties {
                     exLibs.remove(key);
                 }
             }
-            if (dirs.size() > 1) {
+            if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
                     File f = (File) dirs.get(i);
