@@ -868,8 +868,6 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             commonXMLTagDatas = new TagInfo[]{
                 new TagInfo ("declaration", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref204.html#10983#10991",                 // NOI18N
                   null, null, new TagAttributeInfo[] {}),
-               new TagInfo ("expression", null, TagInfo.BODY_CONTENT_JSP, url+"syntaxref205.html#1004353#11268",                 // NOI18N
-                  null, null, new TagAttributeInfo[] {}),
                new TagInfo ("output", null, TagInfo.BODY_CONTENT_JSP, url + "syntaxref2022.html#1004130#1007521",                 // NOI18N
                   null, null, new TagAttributeInfo[] {new TagAttributeInfo("doctype-public", false, "url + syntaxref2022.html#1007534#1007521", false),  // NOI18N
                                                       new TagAttributeInfo("doctype-root-element", false, "url + syntaxref2022.html#1007528#1007532", false),    // NOI18N
