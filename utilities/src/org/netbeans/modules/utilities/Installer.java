@@ -13,26 +13,11 @@
 
 package org.netbeans.modules.utilities;
 
-import java.io.IOException;
-
-import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.*;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-import org.openidex.util.Utilities2;
-
-import org.netbeans.modules.url.*;
-
-import org.netbeans.modules.openfile.*;
-
-import org.netbeans.modules.group.CreateGroupAction;
-
+import org.netbeans.modules.openfile.Server;
+import org.netbeans.modules.openfile.Settings;
 import org.netbeans.modules.pdf.LinkProcessor;
 
 /** ModuleInstall class for Utilities module
@@ -51,20 +36,6 @@ public class Installer extends ModuleInstall {
 
     /** Module installed for the first time. */
     public void installed () {
-        //System.err.println("utilities.Installer.installed");
-        // -----------------------------------------------------------------------------
-        // 1. copy Templates
-        copyURLTemplates ();
-        copyGroupTemplates ();
-
-        // -----------------------------------------------------------------------------
-        // 2. copy default bookmarks under system/Bookmarks
-        copyBookmarks ();
-
-        // -----------------------------------------------------------------------------
-        // 3. install Bookmarks action
-        installActions ();
-
         searchInstaller.installed();
 
         // Don't ask:
@@ -79,10 +50,6 @@ public class Installer extends ModuleInstall {
     }
 
     public void uninstalled () {
-        // -----------------------------------------------------------------------------
-        // 1. uninstall Bookmarks action
-        uninstallActions ();
-
         // OpenFile:
         Server.shutdown ();
 
@@ -111,92 +78,4 @@ public class Installer extends ModuleInstall {
                                       
     }
 
-    // -----------------------------------------------------------------------------
-    // Private methods
-
-    private void copyURLTemplates () {
-        try {
-            FileUtil.extractJar (
-                TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-                NbBundle.getLocalizedFile ("org.netbeans.modules.url.templates", "jar").openStream () // NOI18N
-            );
-        } catch (IOException e) {
-            TopManager.getDefault ().notifyException (e);
-        }
-    }
-
-    private void copyGroupTemplates () {
-        try {
-            FileUtil.extractJar (
-                TopManager.getDefault ().getPlaces ().folders().templates ().getPrimaryFile (),
-                NbBundle.getLocalizedFile ("org.netbeans.modules.group.toinstall.templates", "jar").openStream () // NOI18N
-            );
-        } catch (IOException e) {
-            TopManager.getDefault ().notifyException (e);
-        }
-    }
-
-    private void copyBookmarks () {
-        try {
-            FileUtil.extractJar (
-                TopManager.getDefault ().getPlaces ().folders().bookmarks ().getPrimaryFile (),
-                NbBundle.getLocalizedFile ("org.netbeans.modules.url.bookmarks", "jar").openStream () // NOI18N
-            );
-        } catch (IOException e) {
-            TopManager.getDefault ().notifyException (e);
-        }
-    }
-
-    private void installActions () {
-        try {
-            // install into actions pool
-            Utilities2.createAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
-            Utilities2.createAction (OpenInNewWindowAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
-
-            // install into menu
-            Utilities2.createAction (BookmarksAction.class,
-                                     DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help"), // NOI18N
-                                     "JavaIDEResources", true, false, false, false // NOI18N
-                                    );
-
-            // OpenFile:
-            Utilities2.createAction (OpenFileAction.class,
-                                     DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File"), // NOI18N
-                                     "OpenExplorer", true, false, false, false); // NOI18N
-            Utilities2.createAction (OpenFileAction.class,
-                                     DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System"), // NOI18N
-                                     "SaveAction", false, true, false, false); // NOI18N
-            Utilities2.createAction (OpenFileAction.class,
-                                     DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
-
-            // Group:
-            Utilities2.createAction (CreateGroupAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-
-        } catch (Exception e) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
-                e.printStackTrace ();
-            }
-            // ignore failure to install
-        }
-    }
-
-    private void uninstallActions () {
-        try {
-            // remove from actions pool and menu
-            Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Help")); // NOI18N
-            Utilities2.removeAction (OpenInNewWindowAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
-            Utilities2.removeAction (BookmarksAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders().menus (), "Help")); // NOI18N
-            // OpenFile:
-            Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().menus (), "File")); // NOI18N
-            Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().toolbars (), "System")); // NOI18N
-            Utilities2.removeAction (OpenFileAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "System")); // NOI18N
-            // Group:
-            Utilities2.removeAction (CreateGroupAction.class, DataFolder.create (TopManager.getDefault ().getPlaces ().folders ().actions (), "Tools")); // NOI18N
-        } catch (Exception e) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null) { // NOI18N
-                e.printStackTrace ();
-            }
-            // ignore failure to uninstall
-        }
-    }
 }

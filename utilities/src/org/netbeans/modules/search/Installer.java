@@ -13,67 +13,26 @@
 
 package org.netbeans.modules.search;
 
-import org.openide.*;
 import org.openide.modules.ModuleInstall;
-import org.openide.loaders.*;
 
 import org.openidex.search.SearchEngine;
-import org.openidex.util.*;
 
-import org.netbeans.modules.search.res.*;
 import org.netbeans.modules.search.types.*;
 
 /**
 * During restored() hooks SearchPresenter on FindAction. 
 * During uninstalled() frees such hook.
-* Add RepositorySearchAction to Tools menu.
 *
 * @author  Petr Kuzel
-* @version 1.0
 */
 public class Installer extends ModuleInstall {
 
     private final static long serialVersionUID = 1;
 
-    // place itself in
-    private final String MENU = "Edit"; // NOI18N
-    // place itself behind
-    private final String MENUITEM = "Goto"; // NOI18N
-
     /** Holds hooking code. */
     private SearchHook hook;
 
-    /** Install in tools menu. Place after "UnmountFSAction" separated by separator.
-    */
     public void installed() {
-
-        try {
-
-            Utilities2.createAction (
-                RepositorySearchAction.class,
-                DataFolder.create (
-                    TopManager.getDefault ().getPlaces ().folders ().menus (),
-                    MENU
-                ),
-                MENUITEM, true, true, false, false
-            );
-
-
-            // add to action pool
-
-            Utilities2.createAction (
-                RepositorySearchAction.class,
-                DataFolder.create (
-                    TopManager.getDefault ().getPlaces ().folders ().actions (),
-                    MENU
-                )
-            );
-
-        } catch (Exception ex) {
-            if (System.getProperty ("netbeans.debug.exceptions") != null)
-                ex.printStackTrace ();
-        }
-
         restored();
     }
 
@@ -95,31 +54,7 @@ public class Installer extends ModuleInstall {
     /** Unhook listening at SELECTED_NODES and remove itself from menu.
     */
     public void uninstalled () {
-        try {
-            hook.unhook();
-
-            Utilities2.removeAction (
-                RepositorySearchAction.class,
-                DataFolder.create (
-                    TopManager.getDefault ().getPlaces ().folders ().menus (),
-                    MENU
-                )
-            );
-
-            // remove from actions pool
-
-            Utilities2.removeAction (
-                RepositorySearchAction.class,
-                DataFolder.create (
-                    TopManager.getDefault ().getPlaces ().folders ().actions (),
-                    MENU
-                )
-            );
-
-        } catch (Exception ex) {
-            if (Boolean.getBoolean ("netbeans.debug.exceptions")) // NOI18N
-                ex.printStackTrace ();
-        }
+        hook.unhook();
     }
 
 }
