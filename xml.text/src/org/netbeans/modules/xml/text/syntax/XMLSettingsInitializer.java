@@ -21,8 +21,8 @@ import java.util.*;
 import javax.swing.KeyStroke;
 
 import org.openide.actions.ToolsAction;
-import org.openide.actions.OpenAction;
-import org.openide.actions.ViewAction;
+// import org.openide.actions.OpenAction;
+// import org.openide.actions.ViewAction;
 // import org.openide.actions.CustomizeAction;
 // import org.openide.actions.PropertiesAction;
 // import org.openide.actions.NewAction;
@@ -105,7 +105,7 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List dtdActionNames = new ArrayList
                 (Arrays.asList (new String[] {
-                    OpenAction.class.getName(),
+                    "org.netbeans.modules.xml.core.actions.WeakAction$Open", // NOI18N
                     null,
                     "org.netbeans.modules.xml.core.actions.CollectDTDAction", // NOI18N
                     null,
@@ -126,8 +126,10 @@ public class XMLSettingsInitializer extends Settings.AbstractInitializer {
 
             List xmlActionNames = new ArrayList
                 (Arrays.asList (new String[] {
-                    OpenAction.class.getName(),
-                    ViewAction.class.getName(),
+                    "org.netbeans.modules.xml.core.actions.WeakAction$Open", // NOI18N
+                    "org.netbeans.modules.xml.core.actions.WeakAction$View", // NOI18N
+//                     OpenAction.class.getName(),
+//                     ViewAction.class.getName(),
                     null,
                     "org.netbeans.modules.xml.core.actions.CollectXMLAction", // NOI18N
                     null,
