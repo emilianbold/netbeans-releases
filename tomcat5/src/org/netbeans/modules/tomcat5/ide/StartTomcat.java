@@ -34,7 +34,6 @@ import org.netbeans.modules.tomcat5.progress.Status;
 
 import org.openide.ErrorManager;
 import org.openide.execution.NbProcessDescriptor;
-import org.openide.execution.ProcessExecutor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -56,6 +55,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
 {
     public static final String TAG_CATALINA_HOME = "catalina_home"; // NOI18N
     public static final String TAG_CATALINA_BASE = "catalina_base"; // NOI18N
+    /** Tag replaced with separator between filename components */
+    public static final String TAG_SEPARATOR = "/"; // NOI18N
     
     public static final String TAG_JPDA = "jpda"; // NOI18N
     public static final String TAG_JPDA_STARTUP = "jpda_startup"; // NOI18N
@@ -75,8 +76,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
     private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
         return new NbProcessDescriptor (
                 "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
-                ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
-                ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
+                StartTomcat.TAG_SEPARATOR + "}bin{" + // NOI18N
+                StartTomcat.TAG_SEPARATOR + "}{" +     // NOI18N
                 command + "}",  // NOI18N
                 "{" + argCommand + "}" ,  // NOI18N
                 org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
@@ -86,8 +87,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
     private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand) {
         return new NbProcessDescriptor (
                 "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
-                ProcessExecutor.Format.TAG_SEPARATOR + "}bin{" + // NOI18N
-                ProcessExecutor.Format.TAG_SEPARATOR + "}{" +     // NOI18N
+                StartTomcat.TAG_SEPARATOR + "}bin{" + // NOI18N
+                StartTomcat.TAG_SEPARATOR + "}{" +     // NOI18N
                 command + "}",  // NOI18N
                 "{" + StartTomcat.TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
                 org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
@@ -521,7 +522,7 @@ public final class StartTomcat extends StartServer implements ProgressObject
             map.put (TAG_JPDA, "jpda"); // NOI18N
             map.put (TAG_JPDA_STARTUP, "run"); // NOI18N
             map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
-            map.put (ProcessExecutor.Format.TAG_SEPARATOR, File.separator);
+            map.put (TAG_SEPARATOR, File.separator);
         }
     }
     
