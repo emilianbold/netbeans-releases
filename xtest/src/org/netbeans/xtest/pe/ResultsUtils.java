@@ -289,6 +289,10 @@ public class ResultsUtils {
         try {
             return TestBag.loadFromFile(testBag);
         } catch (Exception e) {
+            // move the old testbag file to *.broken file
+            File brokenTestBagFile = new File(testBag.getAbsolutePath()+".broken");
+            FileUtils.moveFile(testBag, brokenTestBagFile);
+            // install a new testbag ...
             TestBag aTestBag = new TestBag();
             String testBagID = testBag.getParentFile().getParentFile().getName();
             aTestBag.setUnexpectedFailure("XTest results reporter installed empty testbag.xml file, because the original one was corrupted. Exception caught :"
@@ -311,6 +315,9 @@ public class ResultsUtils {
             // there was som problem with getting the suite - create the new one
             // and put the message of the exception to the unexpcectedMessage field
             UnitTestSuite aSuite = new UnitTestSuite();
+            // move the old suite file to *.broken file
+            File brokenSuiteFile = new File(suiteFile.getAbsolutePath()+".broken");
+            FileUtils.moveFile(suiteFile, brokenSuiteFile);
             // get the name of the suite (from the filename)
             // assume the suite is always named as TEST-{suitename}.xml
             int beginIndex = "TEST-".length();
