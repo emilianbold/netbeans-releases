@@ -139,9 +139,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 if (ic != null) {
                     Object o = ic.instanceCreate ();
                 }
-            } catch (ClassNotFoundException ex) {
-                errors.add ("\n    File " + fo + " thrown exception " + ex);
-            } catch (java.io.IOException ex) {
+            } catch (Exception ex) {
+                ex.printStackTrace();
                 errors.add ("\n    File " + fo + " thrown exception " + ex);
             }
         }
