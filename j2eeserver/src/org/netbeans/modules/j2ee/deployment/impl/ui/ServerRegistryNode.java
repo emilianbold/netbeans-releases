@@ -74,10 +74,11 @@ public class ServerRegistryNode extends AbstractNode {
                     updateKeys();
                 }
             };
+
             instanceListener = new ServerRegistry.InstanceListener() {
                 public void instanceAdded(ServerString instance) {
                     //                    System.err.println("Adding instance in the node");
-                    addInstance(instance.getServerInstance());
+                    getServerNode(instance.getServer()).refreshChildren();
                 }
                 public void instanceRemoved(ServerString instance) {
                     removeInstance(instance.getServerInstance());
@@ -93,8 +94,8 @@ public class ServerRegistryNode extends AbstractNode {
             
             Collection instances = ServerRegistry.getInstance().getInstances(instanceListener);
             Iterator i = instances.iterator();
-            while(i.hasNext())
-                addInstance((ServerInstance)i.next());
+            /*while(i.hasNext())
+                addInstance((ServerInstance)i.next());*/
             
             //ServerRegistry.addServerRegistryListener(listener);
             //
@@ -105,11 +106,11 @@ public class ServerRegistryNode extends AbstractNode {
         }
     }
     
-    private void addInstance(ServerInstance instance) {
+    /*private void addInstance(ServerInstance instance) {
         Server server = instance.getServer();
         ServerNode node = getServerNode(server);
         node.addInstance(instance);
-    }
+    }*/
     
     private void removeInstance(ServerInstance instance) {
         Server server = instance.getServer();

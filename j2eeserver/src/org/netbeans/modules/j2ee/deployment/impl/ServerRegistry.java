@@ -14,15 +14,16 @@
 package org.netbeans.modules.j2ee.deployment.impl;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.openide.filesystems.*;
 import org.openide.*;
 import org.openide.util.Lookup;
-import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 import java.util.*;
 import java.io.*;
-import java.util.logging.*;
+//import java.util.logging.*;
 
 public final class ServerRegistry implements java.io.Serializable {
 
@@ -32,7 +33,6 @@ public final class ServerRegistry implements java.io.Serializable {
     public static final String USERNAME_ATTR = InstanceProperties.USERNAME_ATTR;
     public static final String PASSWORD_ATTR = InstanceProperties.PASSWORD_ATTR;
     public static final String FILE_DEFAULT_INSTANCE = "DefaultInstance.settings";
-
 
     private static ServerRegistry instance = null;
     public synchronized static ServerRegistry getInstance() {
@@ -69,8 +69,6 @@ public final class ServerRegistry implements java.io.Serializable {
             addInstance(ch[i]);
     }
 
-    
-
     private synchronized void addPlugin(FileObject fo) {
         try {
             if(fo.isFolder()) {
@@ -87,7 +85,6 @@ public final class ServerRegistry implements java.io.Serializable {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Plugin installation failed"));
         }
     }
-
     
     // PENDING should be private
     synchronized void removePlugin(FileObject fo) {
@@ -121,7 +118,7 @@ public final class ServerRegistry implements java.io.Serializable {
     class LayerListener implements FileChangeListener {
         
         public void fileAttributeChanged(FileAttributeEvent fae) {
-            Logger.global.log(Level.FINEST,"Attribute changed event");
+            java.util.logging.Logger.global.log(java.util.logging.Level.FINEST,"Attribute changed event");
         }
         public void fileChanged(FileEvent fe) {
             //
@@ -153,6 +150,17 @@ public final class ServerRegistry implements java.io.Serializable {
     
     public Collection getInstances() {
         return instances.values();
+    }
+
+    public String[] getInstanceURLs() {
+        return (String[]) instances.keySet().toArray(new String[instances.size()]);
+    }
+
+    public void checkInstanceExists(String url) throws InstanceCreationException {
+        if (getServerInstance(url) != null) {
+            String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_InstanceAlreadyExists", url);
+            throw new InstanceCreationException(msg);
+        }
     }
     
     public Server getServer(String name) {
@@ -207,8 +215,21 @@ public final class ServerRegistry implements java.io.Serializable {
         return null;
     }
     
-    public void addInstance(String url, String username, String password) throws IOException {
-        if(addInstanceImpl(url,username,password)) writeInstanceToFile(url,username,password);
+    public void addInstance(String url, String username, String password) throws InstanceCreationException {
+        // should never have empty url; UI should have prevented this
+        if (url == null || url.equals("")) { //NOI18N
+            ErrorManager.getDefault().log(NbBundle.getMessage(ServerRegistry.class, "MSG_EmptyUrl"));
+            return;
+        }
+        
+        try {
+            if (addInstanceImpl(url,username,password)) 
+                writeInstanceToFile(url,username,password);
+        } catch(java.io.IOException e) {
+            String msg = NbBundle.getMessage(ServerRegistry.class, "MSG_ErrorCreateInstance", url);
+            InstanceCreationException ice = new InstanceCreationException(msg);
+            throw (InstanceCreationException) ErrorManager.getDefault().annotate(ice, e);
+        }
     }
     
     private synchronized void writeInstanceToFile(String url, String username, String password) throws IOException {
@@ -267,7 +288,8 @@ public final class ServerRegistry implements java.io.Serializable {
     }
     
     public Collection getInstances(InstanceListener il) {
-        instanceListeners.add(il);
+        if (il != null)
+            instanceListeners.add(il);
         return getInstances();
     }
     

@@ -76,7 +76,7 @@ public class Server implements Node.Cookie {
             }
         }
     }
-        
+    
     
     private DeploymentFactory getFactory() {
         if (factory == null) {
@@ -267,5 +267,19 @@ public class Server implements Node.Cookie {
             ErrorManager.WARNING, NbBundle.getMessage(Server.class, "MSG_InvalidNameMapper", className));
             return null;
         }
+    }
+    
+    public ServerInstance[] getInstances() {
+        Collection ret = new ArrayList();
+        for (Iterator i=ServerRegistry.getInstance().getInstances().iterator(); i.hasNext();) {
+            ServerInstance inst = (ServerInstance) i.next();
+            if (name.equals(inst.getServer().getShortName()))
+                ret.add(inst);
+        }
+        return (ServerInstance[]) ret.toArray(new ServerInstance[ret.size()]);
+    }
+    
+    public WebContextRoot getWebContextRoot() {
+        return dep.getWebContextRoot();
     }
 }

@@ -27,6 +27,7 @@ import org.openide.nodes.Sheet;
 
 import org.netbeans.modules.j2ee.deployment.execution.actions.ConfigureAction;
 import org.netbeans.modules.j2ee.deployment.execution.ServerExecSupport;
+import org.netbeans.modules.j2ee.deployment.config.ConfigSupportImpl;
 
 /**
  *
@@ -66,4 +67,17 @@ public abstract class J2eeModuleProvider implements Node.Cookie {
     public static org.openide.loaders.ExecutionSupport getExecutionSupport (DataObject dobj) {
         return new ServerExecSupport (((MultiDataObject) dobj).getPrimaryEntry ());
     }
-} 
+    
+    /**
+     * Returns current configuration value for web context root.
+     */
+    public static final ConfigSupport getConfigSupport(DataObject obj) {
+        J2eeDeploymentLookup deployment = (J2eeDeploymentLookup) obj.getCookie (J2eeDeploymentLookup.class);
+        return new ConfigSupportImpl(deployment);
+    }
+    
+    public static interface ConfigSupport {
+        public void setWebContextRoot(String contextRoot);
+        public String getWebContextRoot();
+    }
+}

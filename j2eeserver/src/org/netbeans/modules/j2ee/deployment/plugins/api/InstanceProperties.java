@@ -33,6 +33,7 @@ import org.netbeans.modules.j2ee.deployment.impl.InstancePropertiesImpl;
 
 public abstract class InstanceProperties {
 
+    public static final String URL_ATTR = "url"; //NOI18N
     public static final String USERNAME_ATTR = "username"; //NOI18N
     public static final String PASSWORD_ATTR = "password"; //NOI18N
 
@@ -48,6 +49,29 @@ public abstract class InstanceProperties {
         return new InstancePropertiesImpl(inst);
     }
 
+    /**
+     * Returns instance properties for the server instance
+     * @param url the url connection string to get the instance deployment manager
+     * @return the InstanceProperties object, null if instance does not exists
+     */
+    public static InstanceProperties createInstanceProperties(
+        String url, String username, String password) throws InstanceCreationException {
+        
+        ServerRegistry registry = ServerRegistry.getInstance();
+        registry.checkInstanceExists(url);
+        registry.addInstance(url, username, password);
+        ServerInstance inst = registry.getServerInstance(url);
+        return new InstancePropertiesImpl(inst);
+    }
+
+    /**
+     * Returns list of URL strings of all registered instances
+     * @return array of URL strings
+     */
+    public static String[] getInstanceList() {
+        return ServerRegistry.getInstance().getInstanceURLs();
+    }
+    
     /**
      * Set instance property
      * @propname name of property
@@ -71,5 +95,4 @@ public abstract class InstanceProperties {
      * @exception IllegalStateException when instance already removed or not created yet
      */
     public abstract java.util.Enumeration propertyNames() throws IllegalStateException;
-
 }

@@ -57,11 +57,7 @@ public class ServerTarget implements Node.Cookie {
      * @return Management EJB or null if provider plugin does not support it.
      */
     public Management getManagement() {
-        ManagementMapper mapper = instance.getManagementMapper();
-        if (mapper != null)
-            return mapper.getManagement(instance.getDeploymentManager());
-        else
-            return null;
+        return getInstance().getManagement();
     }
     
     public ObjectName getJ2eeServer() {
@@ -86,7 +82,7 @@ public class ServerTarget implements Node.Cookie {
         if (mgmt == null || j2eeServer == null)
             return;
         if (eventLog != null) {
-            eventLog.open();
+            //eventLog.open();
             return;
         }
         try {
@@ -96,7 +92,8 @@ public class ServerTarget implements Node.Cookie {
             ObjectName query = new ObjectName(domain+":*,J2EEServer="+name); //NOI18N
             java.util.Set result = mgmt.queryNames(query, null);
             ObjectName[] objects = (ObjectName[]) result.toArray(new ObjectName[result.size()]);
-            ListenerRegistration registry = mgmt.getListenerRegistry();
+            ListenerRegistration registry = getInstance().getListenerRegistry();
+            if (registry == null) return;
             for (int i=0; i<objects.length; i++) {
                 registry.addNotificationListener(objects[i], eventLog, null, null);
             }
@@ -114,8 +111,7 @@ public class ServerTarget implements Node.Cookie {
         if (isEventProvider  != null)
             return isEventProvider.booleanValue();
         
-        //PENDING: default to FALSE after testing
-        isEventProvider = Boolean.TRUE;
+        isEventProvider = Boolean.FALSE;
         
         Management mgmt = getManagement();
         if (mgmt == null) {
@@ -198,7 +194,7 @@ public class ServerTarget implements Node.Cookie {
         
         try {
             Object value = mgmt.getAttribute(j2eeServer, "state"); //NOI18N
-            System.out.println("J2EEServer state="+value);
+            //System.out.println("J2EEServer state="+value);
             if (STATE_RUNNING.equals(value))
                 return true;
         } catch (Exception e) {
@@ -379,9 +375,23 @@ public class ServerTarget implements Node.Cookie {
     private synchronized void wakeUp() {
         notify();
     }
+    
     private synchronized void sleep() {
         try {        
             wait();
         } catch (Exception e) {}
+    }
+
+    public void showEventWindows() {
+        StartServer ss = getInstance().getStartServer();
+        if (ss == null) return;
+        org.openide.windows.InputOutput[] ios = null;/*ss.getServerOutput(target);
+        
+        if (ios != null && ios.length > 0) {
+            for (int i=0; i<ios.length; i++)
+                ios[i].select();
+        } else if (isEventProvider()) */{
+            this.startEventLog();
+        }
     }
 }
