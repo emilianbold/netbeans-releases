@@ -23,7 +23,7 @@ import com.netbeans.ide.modules.Module;
 * @author Miloslav Metelka
 * @version 1.0
 */
-public class EditorModule implements Module {
+public class EditorModule implements ModuleInstall {
 
   /** Kit replacements that will be installed into JEditorPane */
   KitInfo[] replacements = new KitInfo[] {
@@ -49,6 +49,7 @@ public class EditorModule implements Module {
 
   /** Module installed again. */
   public void restored () {
+    // XXX body of installed() here instead?
   }
 
   /** Module was uninstalled. */
@@ -90,6 +91,8 @@ public class EditorModule implements Module {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/8/99   Jesse Glick     For clarity: Module -> 
+ *       ModuleInstall; NetBeans-Module-Main -> NetBeans-Module-Install.
  *  1    Gandalf   1.0         2/4/99   Miloslav Metelka 
  * $
  */
