@@ -372,6 +372,42 @@ public class InstallApplicationServerAction extends ProductAction implements Fil
                     }
                 }
             }
+            //Delete files created during installation/uninstallation
+            file = new File(instDirPath + File.separator + "as-install.log");
+            if (file.exists()) {
+                if (file.delete()) {
+                    logEvent(this, Log.DBG, "File: " + file + " deleted.");
+                } else {
+                    logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
+                }
+            }
+            file = new File(instDirPath + File.separator + "as-uninstall.log");
+            if (file.exists()) {
+                if (file.delete()) {
+                    logEvent(this, Log.DBG, "File: " + file + " deleted.");
+                } else {
+                    logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
+                }
+            }
+            if (Util.isWindowsOS()) {
+                file = new File(instDirPath + File.separator + "custom-uninstall.bat");
+                if (file.exists()) {
+                    if (file.delete()) {
+                        logEvent(this, Log.DBG, "File: " + file + " deleted.");
+                    } else {
+                        logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
+                    }
+                }
+            } else {
+                file = new File(instDirPath + File.separator + "custom-uninstall.sh");
+                if (file.exists()) {
+                    if (file.delete()) {
+                        logEvent(this, Log.DBG, "File: " + file + " deleted.");
+                    } else {
+                        logEvent(this, Log.DBG, "File: " + file + " could not be deleted.");
+                    }
+                }
+            }
         } catch (Exception ex) {
             logEvent(this, Log.ERROR, ex);
             logEvent(this, Log.DBG, ex);
