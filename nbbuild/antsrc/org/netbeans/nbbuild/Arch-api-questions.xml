@@ -113,12 +113,12 @@
         
     </category>
     
-    <category id="compat" name="Compatiblity with environment">
+    <category id="compat" name="Compatibility with environment">
         <question id="compat-i18n">
             Is your module correctly internationalized?
             <hint>
             Correct internationalization means that it obeys instuctions 
-            at <a href="http://www.netbeans.org/devhome/docs/i18n/index.html">
+            at <a href="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/org/openide/doc-files/i18n-branding.html">
             NetBeans I18N pages</a>.
             </hint>
         </question>
