@@ -106,7 +106,6 @@ public class PropertiesFileEntry extends PresentableFileEntry {
   /** Returns editor support for properties */                       
   protected PropertiesEditorSupport getPropertiesEditor() {
     if (editorSupport == null) {
-System.out.println("creating new editorsupport");  
       editorSupport = new PropertiesEditorSupport(this);
     }  
     return editorSupport;
