@@ -181,6 +181,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         cfg.chkComments.setSelected(JUnitSettings.getDefault().isBodyComments());
         cfg.chkContent.setSelected(JUnitSettings.getDefault().isBodyContent());
         cfg.chkJavaDoc.setSelected(JUnitSettings.getDefault().isJavaDoc());
+        cfg.chkNbJUnit.setSelected(JUnitSettings.getDefault().isGenerateNbJUnit());
+        cfg.chkRegenerateSuite.setSelected(JUnitSettings.getDefault().isRegenerateSuiteMethod());
         
         cfg.chkEnabled.setSelected(JUnitSettings.getDefault().isCfgCreateEnabled());
         
@@ -227,6 +229,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
             JUnitSettings.getDefault().setBodyContent(cfg.chkContent.isSelected());
             JUnitSettings.getDefault().setJavaDoc(cfg.chkJavaDoc.isSelected());
             JUnitSettings.getDefault().setCfgCreateEnabled(cfg.chkEnabled.isSelected());
+            JUnitSettings.getDefault().setGenerateNbJUnit(cfg.chkNbJUnit.isSelected());
+            JUnitSettings.getDefault().setRegenerateSuiteMethod(cfg.chkRegenerateSuite.isSelected());
             return true;
         }
         
@@ -271,21 +275,21 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         chkJavaDoc = new javax.swing.JCheckBox();
         chkExceptions = new javax.swing.JCheckBox();
         chkAbstractImpl = new javax.swing.JCheckBox();
+        chkNbJUnit = new javax.swing.JCheckBox();
+        chkRegenerateSuite = new javax.swing.JCheckBox();
         chkEnabled = new javax.swing.JCheckBox();
+        
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        setPreferredSize(new java.awt.Dimension(500, 300));
-        setMinimumSize(new java.awt.Dimension(500, 300));
-        setMaximumSize(new java.awt.Dimension(500, 300));
         
+        setPreferredSize(new java.awt.Dimension(500, 340));
+        setMinimumSize(new java.awt.Dimension(500, 340));
+        setMaximumSize(new java.awt.Dimension(500, 340));
         lblFileSystem.setText(bundle.getString("JUnitCfgOfCreate.lblFileSystem.text"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 2, 0, 2);
         add(lblFileSystem, gridBagConstraints1);
-        
-        
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -293,24 +297,20 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(cboFileSystem, gridBagConstraints1);
         
-        
         cmdMount.setText(bundle.getString("JUnitCfgOfCreate.cmdMount.text"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints1.insets = new java.awt.Insets(0, 2, 0, 2);
         add(cmdMount, gridBagConstraints1);
         
-        
         jpTemplates.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints2;
-        jpTemplates.setBorder(new javax.swing.border.TitledBorder("Templates"));
         
+        jpTemplates.setBorder(new javax.swing.border.TitledBorder("Templates"));
         lblSuiteClass.setText(bundle.getString("JUnitCfgOfCreate.lblSuiteClass.text"));
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.insets = new java.awt.Insets(0, 2, 0, 2);
         jpTemplates.add(lblSuiteClass, gridBagConstraints2);
-        
         
         lblTestClass.setText(bundle.getString("JUnitCfgOfCreate.lblTestClass.text"));
         gridBagConstraints2 = new java.awt.GridBagConstraints();
@@ -319,13 +319,11 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints2.insets = new java.awt.Insets(0, 2, 0, 2);
         jpTemplates.add(lblTestClass, gridBagConstraints2);
         
-        
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints2.insets = new java.awt.Insets(4, 2, 4, 2);
         gridBagConstraints2.weightx = 1.0;
         jpTemplates.add(cboSuiteClass, gridBagConstraints2);
-        
         
         gridBagConstraints2 = new java.awt.GridBagConstraints();
         gridBagConstraints2.gridx = 1;
@@ -334,7 +332,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints2.insets = new java.awt.Insets(4, 2, 4, 2);
         gridBagConstraints2.weightx = 1.0;
         jpTemplates.add(cboTestClass, gridBagConstraints2);
-        
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -346,18 +343,16 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(jpTemplates, gridBagConstraints1);
         
-        
         jpCodeGen.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints3;
-        jpCodeGen.setBorder(new javax.swing.border.TitledBorder("Code generation"));
         
+        jpCodeGen.setBorder(new javax.swing.border.TitledBorder("Code generation"));
         chkPublic.setText(bundle.getString("JUnitCfgOfCreate.chkPublic.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints3.weightx = 0.5;
         jpCodeGen.add(chkPublic, gridBagConstraints3);
-        
         
         chkProtected.setText(bundle.getString("JUnitCfgOfCreate.chkProtected.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
@@ -367,7 +362,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkProtected, gridBagConstraints3);
         
-        
         chkPackage.setText(bundle.getString("JUnitCfgOfCreate.chkPackage.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.gridx = 0;
@@ -376,14 +370,12 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkPackage, gridBagConstraints3);
         
-        
         chkComments.setText(bundle.getString("JUnitCfgOfCreate.chkComments.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints3.weightx = 0.5;
         jpCodeGen.add(chkComments, gridBagConstraints3);
-        
         
         chkContent.setText(bundle.getString("JUnitCfgOfCreate.chkContent.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
@@ -393,7 +385,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkContent, gridBagConstraints3);
         
-        
         chkJavaDoc.setText(bundle.getString("JUnitCfgOfCreate.chkJavaDoc.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.gridx = 1;
@@ -402,7 +393,6 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkJavaDoc, gridBagConstraints3);
         
-        
         chkExceptions.setText(bundle.getString("JUnitCfgOfCreate.chkExceptions.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.gridx = 0;
@@ -410,7 +400,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkExceptions, gridBagConstraints3);
-
+        
         chkAbstractImpl.setText(bundle.getString("JUnitCfgOfCreate.chkAbstractImpl.text"));
         gridBagConstraints3 = new java.awt.GridBagConstraints();
         gridBagConstraints3.gridx = 1;
@@ -418,6 +408,23 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
         gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
         jpCodeGen.add(chkAbstractImpl, gridBagConstraints3);
+        
+        chkNbJUnit.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.generateNbJUnit.text"));
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 0;
+        gridBagConstraints3.gridy = 4;
+        gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
+        jpCodeGen.add(chkNbJUnit, gridBagConstraints3);
+        
+        chkRegenerateSuite.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/junit/Bundle").getString("JUnitCfgOfCreate.regenerateSuiteMethod.text"));
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 1;
+        gridBagConstraints3.gridy = 4;
+        gridBagConstraints3.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints3.weightx = 0.5;
+        jpCodeGen.add(chkRegenerateSuite, gridBagConstraints3);
         
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
@@ -428,9 +435,7 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(jpCodeGen, gridBagConstraints1);
         
-        
         chkEnabled.setText(bundle.getString("JUnitCfgOfCreate.chkEnabled.text"));
-        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 4;
@@ -460,6 +465,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     private javax.swing.JCheckBox chkJavaDoc;
     private javax.swing.JCheckBox chkExceptions;
     private javax.swing.JCheckBox chkAbstractImpl;
+    private javax.swing.JCheckBox chkNbJUnit;
+    private javax.swing.JCheckBox chkRegenerateSuite;
     private javax.swing.JCheckBox chkEnabled;
     // End of variables declaration//GEN-END:variables
 }

@@ -54,6 +54,8 @@ public class JUnitSettings extends SystemOption {
     public static final String PROP_GENERATE_ABSTRACT_IMPL = "gemerate_abstract_impl";
     public static final String PROP_TEST_RUNNER         = "test_runner";
     public static final String PROP_PROPERTIES          = "properties";
+    public static final String PROP_GENERATE_NBJUNIT    = "generate_nbjunit";
+    public static final String PROP_REGENERATE_SUITE_METHOD = "regenerate_suite_method";
 
     public static final int EXECUTOR_EXTERNAL           = 0;
     public static final int EXECUTOR_INTERNAL           = 1;
@@ -71,8 +73,8 @@ public class JUnitSettings extends SystemOption {
         super.initialize();
         
         putProperty(PROP_FILE_SYSTEM, "", true);
-        putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleTest.java", true);
-        putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleTest.java", true);
+        putProperty(PROP_SUITE_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
+        putProperty(PROP_CLASS_TEMPLATE, "Templates/JUnit/SimpleNbJUnitTest.java", true);
         putProperty(PROP_MEMBERS_PUBLIC, new Boolean(true), true);
         putProperty(PROP_MEMBERS_PROTECTED, new Boolean(true), true);
         putProperty(PROP_MEMBERS_PACKAGE, new Boolean(true), true);
@@ -86,6 +88,9 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, new Boolean(false), true);
         putProperty(PROP_TEST_RUNNER, "org.netbeans.modules.junit.TestRunner", true);
         putProperty(PROP_PROPERTIES, NbBundle.getMessage(JUnitSettings.class, "PROP_properties_default_value"), true);
+        putProperty(PROP_GENERATE_NBJUNIT, new Boolean(true), true);
+        putProperty(PROP_REGENERATE_SUITE_METHOD, new Boolean(true), true);
+        
     }
 
     public void writeExternal (ObjectOutput out) throws IOException {
@@ -105,6 +110,9 @@ public class JUnitSettings extends SystemOption {
         out.writeObject(getProperty(PROP_GENERATE_EXCEPTION_CLASSES));
         out.writeObject(getProperty(PROP_TEST_RUNNER));
         out.writeObject(getProperty(PROP_PROPERTIES));
+        out.writeObject(getProperty(PROP_GENERATE_NBJUNIT));
+        out.writeObject(getProperty(PROP_REGENERATE_SUITE_METHOD));
+        
     }
     
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {
@@ -124,6 +132,9 @@ public class JUnitSettings extends SystemOption {
         putProperty(PROP_GENERATE_EXCEPTION_CLASSES, in.readObject(), true);
         putProperty(PROP_TEST_RUNNER, in.readObject(), true);
         putProperty(PROP_PROPERTIES, in.readObject(), true);
+        putProperty(PROP_GENERATE_NBJUNIT,in.readObject(), true);
+        putProperty(PROP_REGENERATE_SUITE_METHOD,in.readObject(), true);        
+        
     }
 
     public String displayName () {
@@ -271,4 +282,20 @@ public class JUnitSettings extends SystemOption {
     public boolean isGlobal() {
         return false;
     }
+
+    public boolean isGenerateNbJUnit() {
+        return ((Boolean) getProperty(PROP_GENERATE_NBJUNIT)).booleanValue();
+    }
+
+    public void setGenerateNbJUnit(boolean newVal) {
+        putProperty(PROP_GENERATE_NBJUNIT, new Boolean(newVal), true);
+    }
+    
+    public boolean isRegenerateSuiteMethod() {
+        return ((Boolean) getProperty(PROP_REGENERATE_SUITE_METHOD)).booleanValue();
+    }
+
+    public void setRegenerateSuiteMethod(boolean newVal) {
+        putProperty(PROP_REGENERATE_SUITE_METHOD, new Boolean(newVal), true);
+    }    
 }

@@ -115,11 +115,23 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
             PropertyDescriptor propProperties = new PropertyDescriptor ("Properties", JUnitSettings.class);
             propProperties.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_properties"));
             propProperties.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_properties"));
+            
+            PropertyDescriptor propGenerateNbJUnit = new PropertyDescriptor ("GenerateNbJUnit", JUnitSettings.class);
+            propGenerateNbJUnit.setPropertyEditorClass(BoolPropEd.class);
+            propGenerateNbJUnit.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_generate_nbjunit"));
+            propGenerateNbJUnit.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_generate_nbjunit"));
+
+            PropertyDescriptor propRegenerateSuiteMethod = new PropertyDescriptor ("RegenerateSuiteMethod", JUnitSettings.class);
+            propRegenerateSuiteMethod.setPropertyEditorClass(BoolPropEd.class);
+            propRegenerateSuiteMethod.setDisplayName (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "PROP_regenerate_suite_method"));
+            propRegenerateSuiteMethod.setShortDescription (NbBundle.getMessage (JUnitSettingsBeanInfo.class, "HINT_regenerate_suite_method"));
+
 
             return new PropertyDescriptor[] { propFileSystem, propSuiteTemplate, propClassTemplate,
               propMembersPublic, propMembersProtected, propMembersPackage, propBodyComments, propBodyContent, 
               propJavaDoc, propCfgConfigEnabled, propCfgExecEnabled, propInternalExecutor, 
-              propGenerateExceptionClasses, propGenerateAbstractImpl, propTestRunner, propProperties };
+              propGenerateExceptionClasses, propGenerateAbstractImpl,  propGenerateNbJUnit, 
+              propRegenerateSuiteMethod, propTestRunner, propProperties };
         }
         catch (IntrospectionException ie) {
             if (Boolean.getBoolean ("netbeans.debug.exceptions"))

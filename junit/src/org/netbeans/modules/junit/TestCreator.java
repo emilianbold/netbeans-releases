@@ -39,8 +39,11 @@ import org.openide.cookies.SourceCookie.Editor;
 public class TestCreator extends java.lang.Object {
 
     /* attributes - private */
-    static private final String SUPER_CLASS_NAME                = "TestCase";
+    static private final String JUNIT_SUPER_CLASS_NAME                = "TestCase";
     static private final String JUNIT_FRAMEWORK_PACKAGE_NAME    = "junit.framework";
+    
+    static private final String NBJUNIT_SUPER_CLASS_NAME                = "NbTestCase";
+    static private final String NBJUNIT_EXTENSION_PACKAGE_NAME          = "org.netbeans.junit";
     
     static private final String forbidenMethods[]               = {"main", "suite", "setUp"};
     static private final String SUIT_BLOCK_START                = "--JUNIT:";
@@ -54,6 +57,14 @@ public class TestCreator extends java.lang.Object {
     /** Creates new TestCreator */
     public TestCreator() {
     }
+    
+    private static String arrayToString(Object[] array) {
+        String result=array.getClass().getName()+":";
+        for (int i=0; i<array.length; i++) {
+            result+=array[i]+" ";
+        }
+        return result;   
+    }
 
     static public void createTestClass(ClassElement classSource, ClassElement classTarget) throws SourceException {
         SourceElement   srcelSource;
@@ -66,6 +77,15 @@ public class TestCreator extends java.lang.Object {
         srcelTarget.setPackage(srcelSource.getPackage());
         srcelTarget.addImports(srcelSource.getImports());
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
+        // if generate NbJUnit - add appropriate import, if not - remove it
+        Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
+        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
+            srcelTarget.addImport(nbjunitImport);
+        } else {            
+            srcelTarget.removeImport(nbjunitImport);
+        }
+        
+        //System.err.println("TestCreator.createTestClass(): target imports:"+arrayToString(srcelTarget.getImports()));
 
         // construct/update test class from the source class
         fillTestClass(classSource, classTarget);
@@ -76,10 +96,18 @@ public class TestCreator extends java.lang.Object {
 
         // update the source file of the suite class
         srcelTarget = classTarget.getSource();
+        //System.err.println("createTestSuit(): srcelTarget:");
         
         srcelTarget.setPackage(packageName.length() != 0 ? Identifier.create(packageName) : null);
         srcelTarget.addImport(new Import(Identifier.create(JUNIT_FRAMEWORK_PACKAGE_NAME), Import.PACKAGE));
-        
+        // if generate NbJUnit - add appropriate import, if not - remove it
+        Import nbjunitImport = new Import(Identifier.create(NBJUNIT_EXTENSION_PACKAGE_NAME), Import.PACKAGE);
+        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {            
+            srcelTarget.addImport(nbjunitImport);
+        } else {            
+            srcelTarget.removeImport(nbjunitImport);
+        }
+         
         // construct/update test class from the source class
         fillSuitClass(listMembers, packageName, classTarget);
     }
@@ -162,7 +190,15 @@ public class TestCreator extends java.lang.Object {
      */
     static private MethodElement createTestClassSuiteMethod(ClassElement classTest) throws SourceException {
         StringBuffer    body = new StringBuffer(512);
-        ClassElement    innerClasses[];
+        ClassElement    innerClasses[];        
+        
+        // if regenerate suite method - we need to delete the old suite() method
+        // to add a new one - shoudn't it be anywhere else - it seems to me a bit
+        // as a design hack :-(
+        if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {
+            //System.err.println("TestCreator.createTestClassSuiteMethod() - is regenerate ...");
+            removeSuiteMethod(classTest);
+        }         
         
         // create header of function
         MethodElement method = new MethodElement();
@@ -170,8 +206,12 @@ public class TestCreator extends java.lang.Object {
         method.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
         method.setReturn(Type.createClass(Identifier.create("Test")));
         
-        // prepare the body
-        body.append("\nTestSuite suite = new TestSuite(");
+        // prepare the body - if we generate nbjunit - we have to generate NbTestSuite otherwise TestSuite
+        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
+            body.append("\nTestSuite suite = new NbTestSuite(");
+        } else {
+            body.append("\nTestSuite suite = new TestSuite(");            
+        }
         body.append(classTest.getName().getName());
         body.append(".class);\n");
         
@@ -296,8 +336,12 @@ public class TestCreator extends java.lang.Object {
     static private void fillGeneral(ClassElement classTest) throws SourceException {
         ConstructorElement  constr;
         
-        // set explicitly supper class and modifiers
-        classTest.setSuperclass(Identifier.create(SUPER_CLASS_NAME));
+        // set explicitly super class and modifiers
+        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
+            classTest.setSuperclass(Identifier.create(NBJUNIT_SUPER_CLASS_NAME));
+        } else {
+            classTest.setSuperclass(Identifier.create(JUNIT_SUPER_CLASS_NAME));
+        }
         classTest.setModifiers(Modifier.PUBLIC);
 
         // remove default ctor, if exists (shouldn't throw exception)
@@ -316,10 +360,7 @@ public class TestCreator extends java.lang.Object {
     
     static private void fillTestClass(ClassElement classSource, ClassElement classTest) throws SourceException {
         LinkedList      methods;
-        ClassElement    innerClasses[];
-        
-// @@        System.out.println("fillTestClass source : " + classSource.getName().getFullName());
-// @@        System.out.println("fillTestClass test : " + classTest.getName().getFullName());
+        ClassElement    innerClasses[];        
         
         fillGeneral(classTest);
 
@@ -369,7 +410,7 @@ public class TestCreator extends java.lang.Object {
                 e.printStackTrace();
             }
         }
-    }
+    }        
 
     static private void fillSuitClass(LinkedList listMembers, String packageName, ClassElement classTest) throws SourceException {
         LinkedList      methods;
@@ -386,7 +427,11 @@ public class TestCreator extends java.lang.Object {
         methods = new LinkedList();
         methods.add(createMainMethod());
 
-        // create suite method
+        // create suite method  - if regenerate - remove the old suite method
+       if (JUnitSettings.getDefault().isRegenerateSuiteMethod()) {     
+            //System.err.println("TestCreator.cfillSuitClass() - is regenerate ...");
+           removeSuiteMethod(classTest);
+        } 
         method = classTest.getMethod(Identifier.create("suite"), new Type[] {});
         if (null == method) {
             method = new MethodElement();
@@ -434,7 +479,11 @@ public class TestCreator extends java.lang.Object {
         
         body.append("\n//" + SUIT_BLOCK_START + "\n");
         body.append(SUIT_BLOCK_COMMENT);
-        body.append("TestSuite suite = new TestSuite(\"" + testName + "\");\n");
+        if (JUnitSettings.getDefault().isGenerateNbJUnit()) {
+            body.append("\nTestSuite suite = new NbTestSuite(\"" + testName + "\");\n");
+        } else {
+            body.append("\nTestSuite suite = new TestSuite(\"" + testName + "\");\n");
+        }
         li = members.listIterator();
         
         while (li.hasNext()) {
@@ -679,5 +728,14 @@ public class TestCreator extends java.lang.Object {
             if (null != superClassElemenet)
                 removeImplemented(superClassElemenet, methods, true);
         }
+    }
+    
+    private static void removeSuiteMethod(ClassElement classTest) throws SourceException {
+        MethodElement suiteMethod = classTest.getMethod(Identifier.create("suite"),null);
+        if (suiteMethod != null) {
+            //System.err.println("TestCreator.removeSuiteMethod() - suite method found ..");
+            // remove the method
+            classTest.removeMethod(suiteMethod);
+        } 
     }
 }
