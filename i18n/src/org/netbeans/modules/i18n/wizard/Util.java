@@ -24,6 +24,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
+import org.openide.cookies.EditorCookie;
 
 /**
  * Bundle access, ...
@@ -108,8 +109,26 @@ final class Util {
         // No resource found in the same folder.
         sourceMap.put(source, null);
     }
-    
-    /** 
+
+    /** Shared enableness logic. Either DataObject.Container or EditorCookie must be present on all nodes.*/
+    static boolean wizardEnabled(Node[] activatedNodes) {
+        if (activatedNodes == null || activatedNodes.length == 0) {
+            return false;
+        }
+
+        for (int i = 0; i<activatedNodes.length; i++) {
+            Node node = activatedNodes[i];
+            Object container = node.getCookie(DataObject.Container.class);
+            if (container != null) continue;
+            if (node.getCookie(EditorCookie.class) == null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    /**
      * Compare data objects according their package and name. 
      */
     private static class DataObjectComparator implements Comparator {
@@ -143,5 +162,5 @@ final class Util {
                 return false;
         }
     }
-    
+
 }

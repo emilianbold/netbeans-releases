@@ -27,6 +27,8 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
 
 /**
  * Action which runs i18n wizard.
@@ -48,6 +50,11 @@ public class I18nWizardAction extends NodeAction {
      * previous one is closed.
      */
     protected boolean enable(Node[] activatedNodes) {
+
+        if (Util.wizardEnabled(activatedNodes) == false) {
+            return false;
+        }
+        
         Dialog previous = (Dialog) dialogWRef.get();
         if (previous == null) return true;
         return previous.isVisible() == false;

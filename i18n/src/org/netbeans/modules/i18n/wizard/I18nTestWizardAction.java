@@ -48,6 +48,11 @@ public class I18nTestWizardAction extends NodeAction {
      * previous one is closed.
      */
     protected boolean enable(Node[] activatedNodes) {
+
+        if (Util.wizardEnabled(activatedNodes) == false) {
+            return false;
+        }
+        
         Dialog previous = (Dialog) dialogWRef.get();
         if (previous == null) return true;
         return previous.isVisible() == false;
