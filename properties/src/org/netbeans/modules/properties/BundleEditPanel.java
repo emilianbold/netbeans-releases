@@ -110,7 +110,11 @@ public class BundleEditPanel extends JPanel {
         
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent evt) {
-                removeButton.setEnabled(table.getSelectedRow() >= 0);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        removeButton.setEnabled(table.getSelectedRow() >= 0);
+                    }
+                });
             }
         });
         
