@@ -123,11 +123,13 @@ public class CheckLinks extends MatchingTask {
             throw new Error(e);
         }
         String frag = u.getFragment();
-        String basepath;
+        String basepath = base.toString();
         if ("file".equals(base.getScheme())) {
-            basepath = new File(base).getAbsolutePath();
-        } else {
-            basepath = base.getPath();
+            try {
+                basepath = new File(base).getAbsolutePath();
+            } catch (IllegalArgumentException e) {
+                task.log(normalize(referrer, mappers) + referrerLocation + ": malformed URL: " + base + " (" + e.getLocalizedMessage() + ")", Project.MSG_WARN);
+            }
         }
         //task.log("scan: base=" + base + " frag=" + frag, Project.MSG_DEBUG);
         if (badurls.contains(u) || badurls.contains(base)) {
