@@ -33,15 +33,26 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
   /** Shows the dialog.
   */
   public void performAction () {
-    DialogDescriptor dd = new DialogDescriptor (new ShortcutsEditor (), NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
+    ShortcutsEditor se = new ShortcutsEditor ();
+    DialogDescriptor dd = new DialogDescriptor (se, NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts_Title"));
     TopManager.getDefault ().createDialog (dd).show ();
     if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-      // [PENDING]
-      // 1. check whether preset is used
-      // 2. if yes => only update shortucts.properties file
-      // 3. if no:
-      // 3a. store current bindngs into UserDefined.keys
-      // 3b update Shortcuts.properties to point to UserDefined 
+      try {
+        // 1. check whether preset is used
+        // 2. if no:
+        // 2a. store current bindngs into UserDefined.keys
+        // 2b update Shortcuts.properties to point to UserDefined 
+        // 3. if yes => only update shortucts.properties file
+
+        String preset = null; //dd.getUsedPreset ();
+        if (preset == null) { // i.e. user defined is used
+          ShortcutsEditor.saveCustomKeys ();
+          preset = ShortcutsEditor.USER_KEYS_FILE;
+        }
+        ShortcutsEditor.savePreset (preset);
+      } catch (java.io.IOException e) {
+        TopManager.getDefault ().notifyException (e); // [PENDING]
+      }
     } else {
       ShortcutsEditor.installCurrentBindings (); // Cancel the modifications performed in Configure Shortcuts dialog
     }
@@ -66,6 +77,7 @@ public class ConfigureShortcutsAction extends CallableSystemAction {
 
 /*
  * Log
+ *  4    Gandalf   1.3         12/21/99 Ian Formanek    
  *  3    Gandalf   1.2         12/1/99  Ian Formanek    
  *  2    Gandalf   1.1         11/30/99 Ian Formanek    
  *  1    Gandalf   1.0         11/30/99 Ian Formanek    
