@@ -106,7 +106,7 @@ public class TargetExecutor implements Runnable {
             // redirects to the Output Window, but <echo> in Ant 1.2
             // prints to stdout. (Subsequently fixed.)
             // [PENDING] note that calls to System.exit() from tasks
-            // are apparently not trapped!
+            // are apparently not trapped! (#9953)
             task = TopManager.getDefault ().getExecutionEngine ().execute (name, this, null);
             //System.err.println("execute #2: " + this);
             io = task.getInputOutput ();
