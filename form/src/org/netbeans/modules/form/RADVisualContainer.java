@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import com.netbeans.ide.nodes.Node;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.DesignLayout;
 import com.netbeans.developerx.loaders.form.formeditor.layouts.support.DesignSupportLayout;
 
@@ -141,7 +142,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
   public void add (RADVisualComponent comp) {
     subComponents.add (comp);
     comp.initParent (this);
-    getNodeReference ().getChildren ().add (new com.netbeans.ide.nodes.Node[] { new RADComponentNode (comp) });
+    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
   public void remove (RADVisualComponent comp) {
@@ -150,6 +151,7 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     if (index != -1) {
       subComponents.remove (index);
     }
+    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
   }
 
   public int getIndexOf (RADVisualComponent comp) {
@@ -170,6 +172,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  15   Gandalf   1.14        6/3/99   Ian Formanek    Fixed removing 
+ *       components
  *  14   Gandalf   1.13        6/2/99   Ian Formanek    ToolsAction, Reorder
  *  13   Gandalf   1.12        5/26/99  Ian Formanek    toString
  *  12   Gandalf   1.11        5/17/99  Ian Formanek    Fixed bug 1850 - An 
