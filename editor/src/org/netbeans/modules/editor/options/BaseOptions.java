@@ -160,6 +160,7 @@ public class BaseOptions extends OptionSupport {
     
     public BaseOptions() {
         this(BaseKit.class, BASE);
+        optionsVersion = LATEST_OPTIONS_VERSION;
     }
 
     public BaseOptions(Class kitClass, String typeName) {
