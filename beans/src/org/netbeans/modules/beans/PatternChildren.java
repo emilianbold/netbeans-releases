@@ -95,7 +95,6 @@ public class PatternChildren extends ClassChildren {
     reassignFieldListener();
     patternAnalyser.analyzeAll();
     super.refreshKeys (filter);
-    System.out.println ( "Refresh keys" );
     //Thread.dumpStack();
   }
 
@@ -174,7 +173,6 @@ public class PatternChildren extends ClassChildren {
 
   final class MethodElementListener implements PropertyChangeListener {
     public void propertyChange ( PropertyChangeEvent e ) {
-      System.out.println ("Method Element Changed" );
       refreshKeys(PatternFilter.ALL);
       //patternAnalyser.analyzeAll();
     }
@@ -186,7 +184,6 @@ public class PatternChildren extends ClassChildren {
 
   final class FieldElementListener implements PropertyChangeListener {
     public void propertyChange ( PropertyChangeEvent e ) {
-      System.out.println ("Field Element Changed" );
       refreshKeys(PatternFilter.ALL);
       //reassignFieldListener();
       //patternAnalyser.resolveFields();
@@ -196,6 +193,7 @@ public class PatternChildren extends ClassChildren {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         7/21/99  Petr Hrebejk    Debug messages removed
  *  6    Gandalf   1.5         7/21/99  Petr Hrebejk    
  *  5    Gandalf   1.4         7/21/99  Petr Hamernik   some filter bugfix
  *  4    Gandalf   1.3         7/20/99  Petr Hrebejk    

@@ -137,7 +137,6 @@ public class EventSetPattern extends Pattern {
     if ( fire ) {
       ClassElement listener = ClassElement.forName( type.toString() );
 
-      System.out.println ( "THE LISTENER " + listener );
 
       if ( listener != null ) {
         MethodElement methods[] = listener.getMethods();
@@ -493,6 +492,7 @@ public class EventSetPattern extends Pattern {
 
 /* 
  * Log
+ *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Debug messages removed
  *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
  *       bodies, is for boolean etc
  *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
