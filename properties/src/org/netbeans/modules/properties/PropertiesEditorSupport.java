@@ -48,7 +48,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
@@ -806,7 +806,7 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                 }
             };
             this.entry.addPropertyChangeListener(
-            WeakListener.propertyChange(saveCookieLNode, this.entry));
+            WeakListeners.propertyChange(saveCookieLNode, this.entry));
         }
 
         /**

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,7 +24,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /** 
@@ -37,9 +37,6 @@ public class FileEntryNode extends AbstractNode {
 
     /** generated Serialized Version UID */
     static final long serialVersionUID = -7882925922830244768L;
-
-    /** default base for icons for data objects */
-    private static final String ICON_BASE = "org/netbeans/core/resources/x"; // NOI18N
 
     /** FileEntry of this node. */
     private PresentableFileEntry entry;
@@ -58,12 +55,10 @@ public class FileEntryNode extends AbstractNode {
         
         PropL propListener = new PropL ();
         entry.addPropertyChangeListener(
-                WeakListener.propertyChange(propListener, entry));
+                WeakListeners.propertyChange(propListener, entry));
         entry.getDataObject().addPropertyChangeListener (propListener);
         
         super.setName (entry.getName ());
-
-        setIconBase (ICON_BASE);
     }
     
     private String getBundleString(String s){

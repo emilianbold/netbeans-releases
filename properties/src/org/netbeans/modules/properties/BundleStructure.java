@@ -23,7 +23,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /** 
@@ -103,7 +103,7 @@ public class BundleStructure {
             }
         };
         obj.addPropertyChangeListener(
-                WeakListener.propertyChange(propListener, obj));
+                WeakListeners.propertyChange(propListener, obj));
     }
 
     

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -36,7 +36,7 @@ import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -143,7 +143,7 @@ public class FindPerformer extends javax.swing.AbstractAction
         
         settings = TableViewSettings.getDefault();
         settings.addPropertyChangeListener(
-            WeakListener.propertyChange(this, settings)
+            WeakListeners.propertyChange(this, settings)
         );
         
                     registerKeyStrokes();

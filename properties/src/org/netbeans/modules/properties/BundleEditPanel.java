@@ -36,7 +36,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 
@@ -161,7 +161,7 @@ public class BundleEditPanel extends JPanel implements PropertyChangeListener {
                     
                     // Listen on changes of setting settings.
         settings.addPropertyChangeListener(
-            WeakListener.propertyChange(this, settings)
+            WeakListeners.propertyChange(this, settings)
         );
     }
 

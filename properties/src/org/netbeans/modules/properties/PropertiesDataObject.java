@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -30,7 +30,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /** 
@@ -304,7 +304,7 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
                 }; 
 
                 PropertiesDataObject.this.addPropertyChangeListener(
-                    WeakListener.propertyChange(propertyListener, PropertiesDataObject.this));
+                    WeakListeners.propertyChange(propertyListener, PropertiesDataObject.this));
             }
         }
 

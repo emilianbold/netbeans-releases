@@ -36,7 +36,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListener;
+import org.openide.util.WeakListeners;
 
 
 /** 
@@ -97,7 +97,7 @@ public class KeyNode extends AbstractNode implements PropertyChangeListener {
         getCookieSet().add(propStructure.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
 
         Element.ItemElem item = getItem();
-        PropertyChangeListener pcl = WeakListener.propertyChange(this, item);
+        PropertyChangeListener pcl = WeakListeners.propertyChange(this, item);
         item.addPropertyChangeListener(pcl);
     }
     

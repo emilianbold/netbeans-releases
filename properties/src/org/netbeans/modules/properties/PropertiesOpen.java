@@ -75,7 +75,7 @@ public class PropertiesOpen extends CloneableOpenSupport
         
         this.propDataObject = propDataObject;
         
-        this.propDataObject.addPropertyChangeListener(WeakListener.propertyChange(modifL = 
+        this.propDataObject.addPropertyChangeListener(WeakListeners.propertyChange(modifL = 
             new ModifiedListener(), this.propDataObject));
     }
 
@@ -262,8 +262,8 @@ public class PropertiesOpen extends CloneableOpenSupport
          */
         public Environment(PropertiesDataObject dataObject) {
             this.dataObject = dataObject;
-            dataObject.addPropertyChangeListener(WeakListener.propertyChange(this, dataObject));
-            dataObject.addVetoableChangeListener(WeakListener.vetoableChange(this, dataObject));
+            dataObject.addPropertyChangeListener(WeakListeners.propertyChange(this, dataObject));
+            dataObject.addVetoableChangeListener(WeakListeners.vetoableChange(this, dataObject));
         }
 
         
@@ -606,7 +606,7 @@ public class PropertiesOpen extends CloneableOpenSupport
             setToolTipText(messageToolTip());
 
             // Listen to saving and renaming.
-            propDataObject.addPropertyChangeListener(WeakListener.propertyChange(
+            propDataObject.addPropertyChangeListener(WeakListeners.propertyChange(
                 dataObjectListener = new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (!propDataObject.isValid()) return;
