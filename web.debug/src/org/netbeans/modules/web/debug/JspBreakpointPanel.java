@@ -15,18 +15,8 @@ package org.netbeans.modules.web.debug;
 
 import org.openide.*;
 import org.openide.util.NbBundle;
-import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.debugger.support.util.Utils;
-import org.netbeans.modules.debugger.support.java.JavaElementSelector;
-import javax.swing.JComboBox;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
-import org.netbeans.modules.debugger.support.util.SimpleHistory;
-import org.netbeans.modules.debugger.support.java.PackageClassHistory;
 import org.netbeans.modules.debugger.Controller;
-import org.netbeans.modules.debugger.support.util.PackageListLoader;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerProjectSettings;
 import org.openide.text.Line;
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
 
@@ -174,7 +164,7 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
                 try {
                     int i = Integer.parseInt (tfLineNumber.getText ());
                     if (i < 1) {
-                        TopManager.getDefault ().notify (
+                        DialogDisplayer.getDefault().notify (
                             new NotifyDescriptor.Message (
                                 NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
                                 NotifyDescriptor.ERROR_MESSAGE
@@ -183,7 +173,7 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
                     } else
                         if (event != null) event.setLineNumber (i);
                 } catch (NumberFormatException e) {
-                    TopManager.getDefault ().notify (
+                    DialogDisplayer.getDefault().notify (
                         new NotifyDescriptor.Message (
                             NbBundle.getBundle(JspBreakpointPanel.class).getString("CTL_Bad_line_number"),  //NOI18N
                             NotifyDescriptor.ERROR_MESSAGE
