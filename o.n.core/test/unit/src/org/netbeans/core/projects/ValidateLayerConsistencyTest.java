@@ -182,6 +182,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             
             atLeastOne = true;
             URL layerURL = new URL(u, "../" + layer);
+            java.net.URLConnection connect = layerURL.openConnection ();
+            connect.setDefaultUseCaches (false);
             FileSystem fs = new XMLFileSystem(layerURL);
             
             Enumeration/*<FileObject>*/ all = fs.getRoot().getChildren(true);
@@ -196,6 +198,8 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 }
                 list.add (module);
             }
+            // make sure the filesystem closes the stream
+            connect.getInputStream ().close ();
         }
         
         Iterator/*<Map.Entry<String,List<String>>>*/ it = files.entrySet().iterator();
