@@ -38,6 +38,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
 
 
@@ -227,6 +228,7 @@ public class TreeModelNode extends AbstractNode {
         return object;
     }
 
+    private Task task;
     void refresh () {
         
         // 1) empty cache
@@ -239,7 +241,9 @@ public class TreeModelNode extends AbstractNode {
         properties = new HashMap ();
         
         // 2) refresh name, displayName and iconBase
-        getRequestProcessor ().post (new Runnable () {
+        if (task != null)
+            task.cancel ();
+        task = getRequestProcessor ().post (new Runnable () {
             public void run () {
                 try {
                     name = model.getDisplayName (object);
@@ -327,10 +331,13 @@ public class TreeModelNode extends AbstractNode {
             setKeys (Collections.EMPTY_SET);
         }
         
+        private Task task;
         void refreshChildren () {
             if (!initialezed) return;
 
-            getRequestProcessor ().post (new Runnable () {
+            if (task != null)
+                task.cancel ();
+            task = getRequestProcessor ().post (new Runnable () {
                 public void run () {
                     try {
                         refreshChildren (model.getChildrenCount (object));
