@@ -98,9 +98,9 @@ workspaceswitcher
       <!-- [PENDING] A poor name; 'standard' would be more in line with the CVS pseudomodule. -->
       <config name="stable" modules="ant,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcsgeneric,web"/>
       <config name="stable-with-apisupport" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,image,j2eeserver,jarpackager,java,javacvs,javadoc,jndi,objectbrowser,openidex,projects,properties,rmi,scripting,text,usersguide,utilities,vcscore,vcsgeneric,web"/>
-      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
       <!-- You are on your own for getting the binaries for some of these: -->
-      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
+      <config name="bloated-plus-extrabins" modules="ant,apisupport,apisupport/lite,applet,autoupdate,beans,classfile,clazz,cpp,cpplite,debuggercore,debuggerjpda,debuggertools,editor,extbrowser,externaleditor,form,html,httpserver,i18n,icebrowser,image,innertesters,j2eeserver,jarpackager,java,javacvs,javadoc,jini,logger,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,rmi,scripting,serialversion,sysprops,text,usersguide,utilities,vcscore,vcscvs,vcsgeneric,web"/>
     </configmods>
   </target>
 
@@ -325,6 +325,18 @@ workspaceswitcher
   <target name="all-cpplite" depends="all-openide,all-editor">
     <echo message="Building module cpplite..."/>
     <ant dir="../cpplite" target="netbeans"/>
+  </target>
+
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-cpp" depends="all-openide,all-editor,all-core">
+    <echo message="Building module cpp..."/>
+    <ant dir="../cpp" target="netbeans"/>
+  </target>
+
+  <!-- XXX illegal dependence on core! -->
+  <target name="all-externaleditor" depends="all-openide,all-editor,all-core">
+    <echo message="Building module externaleditor..."/>
+    <ant dir="../externaleditor" target="netbeans"/>
   </target>
 
   <target name="build-messaging" depends="init">
