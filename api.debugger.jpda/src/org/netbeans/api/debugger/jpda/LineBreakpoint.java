@@ -39,12 +39,15 @@ public final class LineBreakpoint extends JPDABreakpoint {
     /** Property name constant. */
     public static final String          PROP_SOURCE_NAME = new String ("sourceName"); // NOI18N
     /** Property name constant. */
+    public static final String          PROP_SOURCE_PATH = new String ("sourcePath"); // NOI18N
+    /** Property name constant. */
     public static final String          PROP_STRATUM = new String ("stratum"); // NOI18N
     
     private String                      url = "";
     private int                         lineNumber;
     private String                      condition = ""; // NOI18N
     private String                      sourceName = null; // NOI18N
+    private String                      sourcePath = null; // NOI18N
     private String                      stratum = "Java"; // NOI18N
 
     
@@ -192,6 +195,31 @@ public final class LineBreakpoint extends JPDABreakpoint {
         firePropertyChange (PROP_SOURCE_NAME, old, sourceName);
     }
 
+    /**
+     * Returns source path.
+     *
+     * @return a source path
+     *
+     * @since 1.3
+     */
+    public String getSourcePath() {
+        return sourcePath;
+    }
+
+    /**
+     * Sets source path.
+     *
+     * @param sp a new source path
+     *
+     * @since 1.3
+     */
+    public void setSourcePath (String sp) {
+        if (sp != null) sp = sp.trim();
+        String old = sourcePath;
+        sourcePath = sp;
+        firePropertyChange (PROP_SOURCE_PATH, old, sourcePath);
+    }
+    
     /**
      * Returns a string representation of this object.
      *

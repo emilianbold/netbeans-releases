@@ -276,6 +276,25 @@ Microsystems, Inc. All Rights Reserved.
             </p>
         </description>
     </change>
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>LineBreakpoint supplied with the information about the source path where it is set.</summary>
+        <version major="1" minor="3"/>
+        <date day="15" month="2" year="2005"/>
+        <author login="lkotouc"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <p>
+                A line breakpoint does not contain the information
+                about the source path where it is set. There is no
+                way how to differ between breakpoints in the case
+                when
+                - several JSPs have the same name AND
+                - these JSPs are statically included into one JSP page.
+            </p>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="LineBreakpoint"/>
+    </change>
 
 </changes>
 
