@@ -60,6 +60,9 @@ public abstract class Constants {
     
     /** How many pixels is necessary to drag to start the DnD. */ 
     public static final int DRAG_GESTURE_START_DISTANCE = 10;
+    /** What time inmilliseconds is necessary to hold dragging mouse button for 
+     & DnD to be started */
+    public static final int DRAG_GESTURE_START_TIME = 200;
     
     // DnD drop ratios.
     /** How big portion of the original mode has to be taken (range from 0.0 to 1.0). */

@@ -138,6 +138,7 @@ implements AWTEventListener, DragSourceListener {
 
     private Point startingPoint;
     private Component startingComponent;
+    private long startingTime;
     
     
     /** Creates a new instance of TopComponentDragSupport. */
@@ -163,6 +164,7 @@ implements AWTEventListener, DragSourceListener {
         if(me.getID() == MouseEvent.MOUSE_PRESSED) {
                 startingPoint = me.getPoint();
             startingComponent = me.getComponent();
+            startingTime = me.getWhen();
         } else if(me.getID() == MouseEvent.MOUSE_RELEASED) {
             startingPoint = null;
             startingComponent = null;
@@ -193,6 +195,10 @@ implements AWTEventListener, DragSourceListener {
         currentPoint = SwingUtilities.convertPoint(currentComponent, currentPoint, srcComp);
         if(Math.abs(currentPoint.x - point.x) <= Constants.DRAG_GESTURE_START_DISTANCE
         && Math.abs(currentPoint.y - point.y) <= Constants.DRAG_GESTURE_START_DISTANCE) {
+            return;
+        }
+        // time check, to prevent wild mouse clicks to be considered DnD start
+        if (me.getWhen() - startingTime <= Constants.DRAG_GESTURE_START_TIME) {
             return;
         }
         startingPoint = null;
