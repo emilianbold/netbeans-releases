@@ -133,7 +133,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="bundled-tomcat-check">
     <available property="tomcat-bundled" 
-    file="${nb_root}/tomcatint/netbeans/tomcat40-bundled.jar.jar"/>
+    file="${nb_root}/tomcatint/bundledtomcat/netbeans/modules/tomcat40-bundled.jar"/>
   </target>
 
   <target name="compile"
