@@ -11,13 +11,16 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.io.*;
 import java.util.Iterator;
 import javax.swing.text.BadLocationException;
 
 import org.openide.text.PositionBounds;
+
 
 /** General abstract structure for properties files, in its use similar to source hierarchy.
 *   Interoperates with Document, PropertiesTableModel, Nodes and other display-specific models
@@ -33,7 +36,10 @@ public class PropertiesStructure extends Element {
     /** If active, contains link to its handler (parent) */
     private StructHandler handler;
 
+    /** Generated serial version UID. */
     static final long serialVersionUID =-78380271920882131L;
+    
+    
     /** Constructs a new PropertiesStructure for the given bounds and items. */
     public PropertiesStructure(PositionBounds bounds, ArrayMapList items) {
         super(bounds);
@@ -43,6 +49,7 @@ public class PropertiesStructure extends Element {
         this.items = items;
     }
 
+    
     /** Updates the current structure by the new structure obtained by reparsing the document.
     * Looks for changes between the structures and according to them calls update methods.
     */
@@ -63,8 +70,7 @@ public class PropertiesStructure extends Element {
                 oldItem = getItem(curItem.getKey());
                 if (oldItem == null) {
                     inserted.add(curItem.getKey(), curItem);
-                }
-                else {
+                } else {
                     if (!curItem.equals(oldItem))
                         changed.add(curItem.getKey(), curItem);
                     items.remove(oldItem.getKey());
@@ -74,7 +80,6 @@ public class PropertiesStructure extends Element {
             deleted = items;
             if ((deleted.size() > 0) || (inserted.size() > 0))
                 structChanged = true;
-
 
             // assign the new structure
             items = new_items;
@@ -95,12 +100,15 @@ public class PropertiesStructure extends Element {
         handler = parent;
     }
 
+    /** Gets parent for this properties structure. 
+     * @return <code>StructureHandler</code> instance. */
     public StructHandler getParent() {
         if (handler == null)
             throw new InternalError();
         return handler;
     }
 
+    /** Gets bundle structure of bundles where this .properties file belongs to. */
     private BundleStructure getParentBundleStructure() {
         return ((PropertiesDataObject)getParent().getEntry().getDataObject()).getBundleStructure();
     }
@@ -118,7 +126,6 @@ public class PropertiesStructure extends Element {
         return sb.toString();
     }
 
-
     /** Get a value string of the element.
     * @return the string
     */
@@ -128,7 +135,7 @@ public class PropertiesStructure extends Element {
         for (Iterator it = items.iterator(); it.hasNext(); ) {
             item = (Element.ItemElem)it.next();
             sb.append(item.toString());
-            sb.append("- - -\n");
+            sb.append("- - -\n"); // NOI18N
         }
         return sb.toString();
     }
@@ -170,18 +177,16 @@ public class PropertiesStructure extends Element {
     public boolean deleteItem(String key) {
         synchronized(getParent()) {
             Element.ItemElem item = getItem(key);
-            //System.out.println("-------------item --------------------\n" + item);
+            
             if (item == null)
                 return false;
             try {
-                item.getBounds().setText("");
+                item.getBounds().setText(""); // NOI18N
                 return true;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // PENDING
                 return false;
-            }
-            catch (BadLocationException e) {
+            } catch (BadLocationException e) {
                 // PENDING
                 return false;
             }
@@ -219,7 +224,8 @@ public class PropertiesStructure extends Element {
         }
     }
 
-    /** Returns PositionBounds after which a new item may be inserted by insertAfter(String) */
+    /** @return <code>PositionBounds</code> after which a new item may be inserted by insertAfter method 
+     * @see org.openide.text.PositionBounds#insertAfter */
     private PositionBounds getSuitablePositionBoundsForInsert() {
         Element.ItemElem e = null;
         for (Iterator nonEmpty = nonEmptyItems(); nonEmpty.hasNext();)
@@ -238,42 +244,50 @@ public class PropertiesStructure extends Element {
     */
     public Iterator nonEmptyItems() {
         return new Iterator() {
-                   // iterator which relies on the list's iterator
-                   private Iterator innerIt;
-                   /** Next non-empty element in the underlying iterator */
-                   private Element.ItemElem nextElem;
+            /** Iterator which relies on the list's iterator. */
+            private Iterator innerIt;
+               
+            /** Next non-empty element in the underlying iterator. */
+            private Element.ItemElem nextElem;
+            
+            {
+                innerIt = items.iterator();
+                fetchNext();
+            }
+            
+            /** Fetches internally the next non-empty element */
+            private void fetchNext() {
+                do {
+                    if (innerIt.hasNext())
+                        nextElem = (Element.ItemElem)innerIt.next();
+                    else
+                        nextElem = null;
+                }
+                // Key can be an empty string (!).
+                while (nextElem != null && nextElem.getKeyElem() == null);
+            }
+            
+            /** Implements <code>Iterator</code> interface method.
+             * @return true if has next element */
+            public boolean hasNext() {
+                return nextElem != null;
+            }
 
-                   {
-                       innerIt = items.iterator();
-                       fetchNext();
-                   }
-
-                   /** Fetches internally the next non-empty element */
-                   private void fetchNext() {
-                       do {
-                           if (innerIt.hasNext())
-                               nextElem = (Element.ItemElem)innerIt.next();
-                           else
-                               nextElem = null;
-                       }
-                       while (nextElem != null && nextElem.key == null); // key can be an empty string
-                   }
-
-                   public boolean hasNext() {
-                       return nextElem != null;
-                   }
-
-                   public Object next() {
-                       Object ne = nextElem;
-                       fetchNext();
-                       return ne;
-                   }
-
-                   public void remove() {
-                       throw new UnsupportedOperationException();
-                   }
-
-               };
+            /** Implements <code>Iterator</code> interface method.
+             * Gets next element. */
+            public Object next() {
+                Object ne = nextElem;
+                
+                fetchNext();
+                return ne;
+            }
+            
+            /** Implements <code>Iterator</code> interface method.
+             * Throws <code>UnsupportedOperationException</code>. */
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     /** Returns iterator thropugh all items, including empty ones */

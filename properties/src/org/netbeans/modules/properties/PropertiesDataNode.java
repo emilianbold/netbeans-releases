@@ -40,7 +40,6 @@ import org.openide.actions.OpenAction;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.*;
-import org.openide.text.EditorSupport;
 
 
 /** Standard node representing a data object.
@@ -49,10 +48,10 @@ import org.openide.text.EditorSupport;
 */
 public class PropertiesDataNode extends DataNode {
 
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -7882925922830244768L;
+    /** Generated serialized version UID. */
+    static final long serialVersionUID = -7882925922830244768L;
 
-
+    
     /** Create a data node for a given data object.
     * The provided children object will be used to hold all child nodes.
     * @param obj object to work with
@@ -63,12 +62,14 @@ public class PropertiesDataNode extends DataNode {
         initialize();
     }
 
+    
+    /** Initializes instance. Sets icon base and default action. */
     private void initialize () {
         setIconBase(PropertiesDataObject.PROPERTIES_ICON_BASE);
         setDefaultAction (SystemAction.get(OpenAction.class));
     }
 
-
+    /** Reads object from outppput stream. Used by deserialization. */
     private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
         is.defaultReadObject();
         initialize();
@@ -80,22 +81,20 @@ public class PropertiesDataNode extends DataNode {
     public NewType[] getNewTypes () {
         return new NewType[] { 
             new NewType() {
-                FileObject folder;
-                String newName;
-                PropertiesFileEntry  fe;
-                PropertiesStructure str;
-                MultiDataObject prop;
-
+                
+                /** Overrides superclass method. */
                 public String getName() {
                     return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
                 }
 
+                /** Overrides superclass method.*/
                 public HelpCtx getHelpCtx() {
-                    return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale");
+                    return new HelpCtx (PropertiesDataNode.class.getName () + ".new_locale"); // NOI18N
                 }
 
+                /** Overrides superclass method. */
                 public void create() throws IOException {
-                    prop = (MultiDataObject)getCookie(DataObject.class);
+                    final MultiDataObject prop = (MultiDataObject)getCookie(DataObject.class);
 
                     final java.awt.Dialog[] dialog = new java.awt.Dialog[1];
                     final NewLocalePanel panel = new NewLocalePanel(prop.getPrimaryFile().getName());
@@ -112,44 +111,43 @@ public class PropertiesDataNode extends DataNode {
                                     dialog[0].setVisible(false);
                                     dialog[0].dispose();
 
-                                    newName = panel.getNewLocale();
+                                    String locale = panel.getNewLocale();
+                                    
                                     try {
-                                        if (newName.length() == 0)
+                                        if (locale.length() == 0)
                                             throw new IllegalArgumentException(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"));
-                                        if (newName.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
-                                            newName = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + newName;
-
-                                        // copy the default file to a new file
-                                        //prop = (MultiDataObject)getCookie(DataObject.class);
+                                        if (locale.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+                                            locale = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + locale; // NOI18N
                                         
-                                        if (prop != null) {
-                                            fe = (PropertiesFileEntry)prop.getPrimaryEntry();
-                                            str = fe.getHandler().getStructure();
-                                            folder = prop.getPrimaryFile().getParent();
+                                        final String newName = locale;
 
+                                        if (prop != null) {
+                                            final PropertiesFileEntry entry = (PropertiesFileEntry)prop.getPrimaryEntry();
+                                            final PropertiesStructure structure = entry.getHandler().getStructure();
+                                            final FileObject folder = prop.getPrimaryFile().getParent();
+
+                                            // Actually create new file.
                                             folder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                                                 public void run() throws IOException {
                                                     FileObject newFile = FileUtil.createData(folder, prop.getPrimaryFile().getName() + newName +
-                                                        "." + PropertiesDataLoader.PROPERTIES_EXTENSION);
+                                                        "." + PropertiesDataLoader.PROPERTIES_EXTENSION); // NOI18N
+                                                    
                                                     BufferedWriter bw = null;
                                                     FileLock lock = newFile.lock();
+                                                    
                                                     try {
                                                         bw = new BufferedWriter(new OutputStreamWriter(
-                                                            new PropertiesEditorSupport.NewLineOutputStream(
-                                                                newFile.getOutputStream(lock), fe.getPropertiesEditor().newLineType), "8859_1"));
-                                                            for (Iterator it = str.allItems(); it.hasNext(); ) {
-                                                                Element.ItemElem item1 = (Element.ItemElem)it.next();
-//                                                                Element.ItemElem item2 = new Element.ItemElem(null,
-//                                                                    new Element.KeyElem(null, item1.getKey()),
-//                                                                    new Element.ValueElem(null, item1.getValue()),
-//                                                                    new Element.CommentElem(null, item1.getComment()));
-//                                                               String ps = item2.printString();
-//                                                               bw.write(ps, 0, ps.length());
-                                                                if(item1 != null) {
-                                                                    String ps = item1.printString();
-                                                                    bw.write(ps, 0, ps.length());
-                                                                }
+                                                            new PropertiesEditorSupport.NewLineOutputStream(newFile.getOutputStream(lock), entry.getPropertiesEditor().getNewLineType()),
+                                                            "8859_1" // NOI18N
+                                                        ));
+                                                        
+                                                        for (Iterator it = structure.allItems(); it.hasNext(); ) {
+                                                            Element.ItemElem item1 = (Element.ItemElem)it.next();
+                                                            if(item1 != null) {
+                                                                String ps = item1.printString();
+                                                                bw.write(ps, 0, ps.length());
                                                             }
+                                                        }
                                                     } finally {
                                                         if (bw != null) {
                                                             bw.flush();
@@ -158,25 +156,21 @@ public class PropertiesDataNode extends DataNode {
                                                         lock.releaseLock();
                                                     }
                                                 }
-                                            }); // end of inner class which is run as atomicaction
-
-                                            //FileObject folder = ((DataObject)prop).getPrimaryFile().getParent();
-                                            //FileObject newFo = FileUtil.copyFile(((DataObject)prop).getPrimaryFile(), folder, 
-                                            //((DataObject)prop).getPrimaryFile().getName() + newName);
+                                            }); // End of annonymous inner class extended from FileSystem.AtomicAction.
                                          }
                                     } catch (IllegalArgumentException e) {   
                                         // catch & report badly formatted names
                                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                             java.text.MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                                                    new Object[] {newName}), NotifyDescriptor.ERROR_MESSAGE);
+                                                    new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
                                         TopManager.getDefault().notify(msg);
                                     } catch (IOException e) {
                                         // catch & report IO error
                                         NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                                             java.text.MessageFormat.format(
                                                 NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                                                    new Object[] {newName}), NotifyDescriptor.ERROR_MESSAGE);
+                                                    new Object[] {locale}), NotifyDescriptor.ERROR_MESSAGE);
                                             TopManager.getDefault().notify(msg);
                                     }
                                 // Cancel pressed
@@ -190,7 +184,7 @@ public class PropertiesDataNode extends DataNode {
                     dialog[0] = TopManager.getDefault().createDialog(dd);
                     dialog[0].show();
                 }
-            } // end of inner class
+            } // End of annonymous inner class extended from NewType.
         };
     }
 }

@@ -15,31 +15,31 @@
 package org.netbeans.modules.properties;
 
 
-import java.util.Set;
-import java.util.Iterator;
-import java.util.TreeSet;
-import java.util.Comparator;
-import java.util.ArrayList;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.io.NotActiveException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.openide.*;
-import org.openide.filesystems.*;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.*;
-import org.openide.windows.*;
 import org.openide.actions.OpenAction;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.NodeListener;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.util.actions.*;
-import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.NodeListener;
+import org.openide.windows.*;
 
 
 /** Object that provides main functionality for properties data loader.
@@ -49,30 +49,34 @@ import org.openide.nodes.NodeListener;
 * @author Ian Formanek
 */
 public final class PropertiesDataObject extends MultiDataObject {
-    /** generated Serialized Version UID */
+    
+    /** Generated Serialized Version UID. */
     static final long serialVersionUID = 4795737295255253334L;
 
-    public static final String MIME_PROPERTIES = "text/x-properties";
+    /** Icon base for the <code>PropertiesDataNode</code> node. */
+    static final String PROPERTIES_ICON_BASE = "org/netbeans/modules/properties/propertiesObject"; // NOI18N
+    
+    /** Icon bas2 for the <code>PropertiesDataNode</code> node. */
+    static final String PROPERTIES_ICON_BASE2 = "org/netbeans/modules/properties/propertiesLocale"; // NOI18N
+    
+    /** MIME type for properties. */
+    public static final String MIME_PROPERTIES = "text/x-properties"; // NOI18N
 
     /** Structural view of the dataobject */
     protected transient BundleStructure bundleStructure;
 
-    /** Icon base for the PropertiesNode node */
-    static final String PROPERTIES_ICON_BASE =
-        "org/netbeans/modules/properties/propertiesObject";
-    static final String PROPERTIES_ICON_BASE2 =
-        "org/netbeans/modules/properties/propertiesLocale";
 
-    /** Constructor */
+    /** Constructor. */
     public PropertiesDataObject (final FileObject obj, final MultiFileLoader loader)
     throws DataObjectExistsException {
         super(obj, loader);
         // use editor support
-        init();
+        initialize();
     }
 
-    /** Initializes the object after it is created or deserialized */
-    private void init() {
+    
+    /** Initializes the object. Used by construction and deserialized. */
+    private void initialize() {
         bundleStructure = null;
         getCookieSet().add(new PropertiesOpen(this));
         getCookieSet().add(((PropertiesFileEntry)getPrimaryEntry()).getPropertiesEditor());
@@ -139,52 +143,37 @@ public final class PropertiesDataObject extends MultiDataObject {
     /** Deserialization. */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
-        init();
+        initialize();
     }
 
-    /** listener for changes in the cookie set */
-    /*  private PropertyChangeListener propL = new PropertyChangeListener () {
-        public void propertyChange (PropertyChangeEvent ev) {
-          if (ev.getPropertyName().equals(PROP_VALID)) {
-    //        myReaction();
-    //        PropertiesDataObject.this.dispose();
-          }  
-          if (ev.getPropertyName().equals(PROP_NAME)) {                  
-    //        myReaction();
-    //        PropertiesDataObject.this.dispose();
-          }  
-        }
-      };*/
-
-    /** Registers itself as a PropertyChangeListener for a given entry */
-    /*  void registerEntryListener (PropertiesFileEntry pfe) {
-        pfe.addPropertyChangeListener (propL);
-      }*/
-
+    
+    /** <code>Children</code> for <code>PropertiesDataNode</code>. */
     class PropertiesChildren extends Children.Keys {
 
         /** Listens to changes on the dataobject */
         private PropertyChangeListener pcl = null;
 
+        
+        /** Constructor.*/
         PropertiesChildren() {
             super();
         }
 
+        
         /** Sets all keys in the correct order */
         protected void mySetKeys() {
 
             TreeSet ts = new TreeSet(new Comparator() {
-                                         public int compare(Object o1, Object o2) {
-                                             if (o1 == o2)
-                                                 return 0;
-                                             if (o1 instanceof MultiDataObject.Entry && o2 instanceof MultiDataObject.Entry)
-                                                 return getSecondaryFilesComparator().compare(((MultiDataObject.Entry)o1).getFile().getName(),
-                                                         ((MultiDataObject.Entry)o2).getFile().getName());
-                                             else
-                                                 return 0;
-                                         }
-                                     }
-                                    );
+                public int compare(Object o1, Object o2) {
+                    if (o1 == o2)
+                        return 0;
+                    if (o1 instanceof MultiDataObject.Entry && o2 instanceof MultiDataObject.Entry)
+                        return getSecondaryFilesComparator().compare(((MultiDataObject.Entry)o1).getFile().getName(),
+                            ((MultiDataObject.Entry)o2).getFile().getName());
+                    else
+                        return 0;
+                }
+            });
 
             ts.add(getPrimaryEntry());
             for (Iterator it = secondaryEntries().iterator();it.hasNext();) {
@@ -202,14 +191,12 @@ public final class PropertiesDataObject extends MultiDataObject {
             mySetKeys();
             // listener
             pcl = new PropertyChangeListener () {
-
-                      public void propertyChange(PropertyChangeEvent evt) {
-                          if (evt.getPropertyName().equals(PROP_FILES)) {
-                              mySetKeys();
-                          }
-                      }
-
-                  }; // end of inner class
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(PROP_FILES)) {
+                        mySetKeys();
+                    }
+                }
+            }; 
 
             PropertiesDataObject.this.addPropertyChangeListener (new WeakListener.PropertyChange(pcl));
         }
@@ -222,10 +209,11 @@ public final class PropertiesDataObject extends MultiDataObject {
             setKeys(new ArrayList());
         }
 
+        /** Creates nodes. */
         protected Node[] createNodes (Object key) {
             return new Node[] { ((PropertiesFileEntry)key).getNodeDelegate() };
         }
 
-    } // end of class PropertiesChildren
+    } // End of inner class PropertiesChildren.
 
 }

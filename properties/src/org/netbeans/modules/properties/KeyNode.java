@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.properties;
 
+
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.*;
@@ -28,12 +29,14 @@ import org.openide.actions.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.*;
+import org.openide.NotifyDescriptor;
+import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.nodes.*;
-import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
+
 
 /** Standard node representing a key-value-comment item in the properties file.
 *
@@ -41,17 +44,18 @@ import org.openide.NotifyDescriptor;
 */
 public class KeyNode extends AbstractNode {
 
-    /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -7882925922830244768L;
-
-    /** Icon base for the KeyNode node */
-    static final String ITEMS_ICON_BASE =
-        "org/netbeans/modules/properties/propertiesKey";
-
-    /** Structure on top of which this element lives */
+    /** Structure on top of which this element lives. */
     private PropertiesStructure struct;
-    /** Key for the element */
+    
+    /** Key for the element. */
     private String itemKey;
+    
+    /** Generated Serialized Version UID. */
+    static final long serialVersionUID = -7882925922830244768L;
+
+    /** Icon base for the KeyNode node. */
+    static final String ITEMS_ICON_BASE = "org/netbeans/modules/properties/propertiesKey"; // NOI18N
+
 
     /** Create a data node for a given key.
     * The provided children object will be used to hold all child nodes.
@@ -84,8 +88,9 @@ public class KeyNode extends AbstractNode {
 
         // edit as a viewcookie
         PropertiesDataObject pdo = ((PropertiesDataObject)struct.getParent().getEntry().getDataObject());
-        getCookieSet().add(pdo.getOpenSupport().getOpenerForKey(struct.getParent().getEntry(), itemKey));
-        getCookieSet().add(struct.getParent().getEntry().getPropertiesEditor().getViewerAt(itemKey));
+
+        getCookieSet().add(pdo.getOpenSupport().new PropertiesOpenAt(itemKey));
+        getCookieSet().add(struct.getParent().getEntry().getPropertiesEditor().new PropertiesEditAt(itemKey));
     }
 
     /** Get the represented item.
@@ -272,7 +277,7 @@ public class KeyNode extends AbstractNode {
     */
     void fireChange (PropertyChangeEvent ev) {
         firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
-        if (ev.getPropertyName ().equals (PresentableFileEntry.PROP_NAME)) {
+        if (ev.getPropertyName ().equals (DataObject.PROP_NAME)) {
             super.setName (itemKey);
             return;
         }

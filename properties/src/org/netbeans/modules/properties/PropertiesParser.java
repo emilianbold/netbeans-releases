@@ -11,31 +11,34 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
+
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.*;
-import java.beans.PropertyChangeListener;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.Position;
 
-import org.openide.TopManager;
-import org.openide.text.NbDocument;
-import org.openide.text.PositionRef;
-import org.openide.text.PositionBounds;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
+import org.openide.text.PositionRef;
+import org.openide.text.PositionBounds;
+import org.openide.TopManager;
 import org.openide.util.io.NullOutputStream;
 
-/** Parser of Java source code. It generates the hierarchy
-* of the implementations of elements.
-*
-* @author Petr Jiricka, Petr Hamernik
-*/
-class PropertiesParser {
 
-    // ===================== Fields ==============================
+/** 
+ * Parser of Java source code. It generates the hierarchy
+ * of the implementations of elements.
+ *
+ * @author Petr Jiricka, Petr Hamernik
+ */
+class PropertiesParser {
 
     /** PropertiesFileEntry for which source is this parser created. */
     PropertiesFileEntry pfe;
@@ -43,57 +46,55 @@ class PropertiesParser {
     /** Appropriate properties editor - used for creating the PositionRefs */
     PropertiesEditorSupport editor;
 
+    /** Properties file reader. Input stream. */
+    PropertiesReader input;
+
     /** Properties element */
     PropertiesStructure propStruct;
 
-    /** Input stream */
-    PropertiesRead input;
-
-    // ===================== Main methods and constructors ==================
-
-    /** Private constructor.
-    * @param pfe FileEntry where the properties file is stored.
-    * @exception IOException if any i/o problem occured during reading
-    */
+    
+    /** 
+     * Constructor.
+     * @param pfe FileEntry where the properties file is stored.
+     * @exception IOException if any i/o problem occured during reading
+     */
     public PropertiesParser(PropertiesFileEntry pfe) throws IOException {
-        input = createReader(pfe);
-
         this.pfe   = pfe;
-        editor = pfe.getPropertiesEditor();
+
+        editor = pfe.getPropertiesEditor();        
+        input = createReader();        
     }
 
+    
     /** Creates new input stream from the file object.
     * Finds the properties data object, checks if the document is loaded
     * and creates the stream either from the file object or from the document.
-    * @param fo fileobject with the source
-    * @param store if there is required the building and storing the elements
-    *              hierarchy
     * @exception IOException if any i/o problem occured during reading
     */
-    private static PropertiesRead createReader(PropertiesFileEntry pfe) throws IOException {
-        PropertiesEditorSupport editor = pfe.getPropertiesEditor();
-
+    private PropertiesReader createReader() throws IOException {
         if (editor.isDocumentLoaded()) {
-            // loading from the memory (Document)
-            final javax.swing.text.Document doc = editor.getDocument();
+            // Loading from the memory (Document)
+            final Document doc = editor.getDocument();
             final String[] str = new String[1];
+            
             // safely take the text from the document
             doc.render(new Runnable() {
-                           public void run() {
-                               try {
-                                   str[0] = doc.getText(0, doc.getLength());
-                               }
-                               catch (javax.swing.text.BadLocationException e) {
-                                   // impossible
-                               }
-                           }
-                       });
-            return new PropertiesRead(str[0]);
-        }
-        else {
-            // loading from the file
+                public void run() {
+                    try {
+                        str[0] = doc.getText(0, doc.getLength());
+                    } catch (javax.swing.text.BadLocationException e) {
+                        // impossible
+                    }
+                }
+            });
+            
+            return new PropertiesReader(str[0]);
+            
+        } else {
+            // Loading from the file.
             InputStream is = new PropertiesEditorSupport.NewLineInputStream(pfe.getFile().getInputStream());
-            return new PropertiesRead(is);
+            
+            return new PropertiesReader(is);
         }
     }
 
@@ -114,10 +115,11 @@ class PropertiesParser {
         }
     }
 
-
-    private PropertiesStructure parseFileMain(PropertiesRead in) throws IOException {
+    /** Parses .properties file and creates <code>PropertiesStruture</code>. */
+    private PropertiesStructure parseFileMain(PropertiesReader in) throws IOException {
 
         ArrayMapList aml = new ArrayMapList();
+        
         while (true) {
             Element.ItemElem elem = readNextElem(in);
             if (elem == null)
@@ -128,11 +130,10 @@ class PropertiesParser {
             }
         }
         return new PropertiesStructure(createBiasBounds(0, in.position), aml);
-
     }
 
-    /** Returns the next element or <code>null</code> if the end of the stream occurred */
-    private Element.ItemElem readNextElem(PropertiesRead in) throws IOException {
+    /** @return next element or null if the end of the stream occurred */
+    private Element.ItemElem readNextElem(PropertiesReader in) throws IOException {
         Element.CommentElem commE;
         Element.KeyElem keyE;
         Element.ValueElem valueE;
@@ -176,8 +177,7 @@ class PropertiesParser {
         if (fl == null) {
             keyE = null;
             valueE = null;
-        }
-        else {
+        } else {
             // read the key and the value
             // list of
             ArrayList lines = new ArrayList(2);
@@ -213,6 +213,7 @@ class PropertiesParser {
                 if(UtilConvert.whiteSpaceChars.indexOf(line.charAt(keyStart)) == -1)
                     break;
             }
+            
             // Find separation between key and value
             int separatorIndex;
             for(separatorIndex=keyStart; separatorIndex<len; separatorIndex++) {
@@ -241,15 +242,11 @@ class PropertiesParser {
                 valueIndex++;
             }
             String key = line.substring(keyStart, separatorIndex);
-            String value = (separatorIndex < len) ? line.substring(valueIndex, len) : "";
+            String value = (separatorIndex < len) ? line.substring(valueIndex, len) : ""; // NOI18N
 
             if (key == null)
                 // PENDING - should join with the next comment
                 ;
-
-            // Convert then store key and value
-//            key   = UtilConvert.loadConvert(key); // TEMP
-//            value = UtilConvert.loadConvert(value); // TEMP
 
             int currentPos = in.position;
             int valuePosFile = 0;
@@ -265,10 +262,6 @@ class PropertiesParser {
         return new Element.ItemElem(createBiasBounds(begPos, in.position), keyE, valueE, commE);
     }
 
-    // ======================== PARSER METHODS ===============================
-
-    // ----------------------- utilities -----------------------------------
-
     /** Computes the real offset from the long value representing position
     * in the parser.
     * @return the offset
@@ -279,8 +272,8 @@ class PropertiesParser {
 
     /** Creates position bounds. For obtaining the real offsets is used
     * previous method position()
-    * @param begin The begin in the internal position form.
-    * @param end The end in the internal position form.
+    * @param begin the begin in the internal position form
+    * @param end the end in the internal position form
     * @return the bounds
     */
     PositionBounds createBiasBounds(long begin, long end) {
@@ -289,95 +282,45 @@ class PropertiesParser {
         return new PositionBounds(posBegin, posEnd);
     }
 
-
-    // ==================== Position Map ==========================
-
-    /** Class which maps positions in a string to positions in the underlying file */
-    private static class PositionMap {
-
-        private ArrayList list;
-        /** constructor - expects a list of FlaggedLine */
-        PositionMap(ArrayList lines) {
-            list = lines;
-        }
-
-        /** Returns the string represented by the object */
-        public String getString() {
-            String allLines = ((FlaggedLine)list.get(0)).stringValue;
-            for (int part=1; part<list.size(); part++)
-                allLines += ((FlaggedLine)list.get(part)).stringValue;
-            return allLines;
-        }
-
-        /** Returns position in the file for a position in a string
-        * @param posString position in the string to find file position for
-        * @return position in the file 
-        * @exception ArrayIndexOutOfBoundsException if the requested position is outside 
-        *  the area represented by this object
-        */                  
-        public int getFilePosition(int posString) throws ArrayIndexOutOfBoundsException {
-            // get the part
-            int part;
-            int lengthSoFar = 0;
-            int lastLengthSoFar = 0;
-            for (part=0; part < list.size(); part++) {
-                lastLengthSoFar = lengthSoFar;
-                lengthSoFar += ((FlaggedLine)list.get(part)).stringValue.length();
-                // brute patch - last (cr)lf should not be the part of the thing, other should
-                if (part == list.size() - 1)
-                    if (lengthSoFar >= posString)
-                        break;
-                    else;
-                else
-                    if (lengthSoFar > posString)
-                        break;
-            }
-            if (posString > lengthSoFar)
-                throw new ArrayIndexOutOfBoundsException("not in scope");
-
-            return ((FlaggedLine)list.get(part)).startPosition + posString - lastLengthSoFar;
-        }
-
-    }
-
-    // ==================== The properties reader ==========================
-    /** A reader which allows reading from an input stream or from a string and remembers
-    *   its position in the document.
-    */
-    private static class PropertiesRead {
+    /** 
+     * A properties reader which allows reading from an input stream or from a string and remembers
+     * its position in the document.
+     */
+    private static class PropertiesReader {
 
         /** The underlaying reader. */
         private Reader reader;
 
-        /** Position after the last character read */
+        /** Position after the last character read. */
         public int position;
 
-        /** The character that someone peeked */
+        /** The character that someone peeked. */
         private int peekChar;
 
+        
         /** Does the initialization */
-        private PropertiesRead() {
+        private PropertiesReader() {
             peekChar = -1;
             position = 0;
         }
-
+        
         /** Creates the reader from the text. */
-        PropertiesRead(String text) {
+        private PropertiesReader(String text) {
             this();
             reader = new StringReader(text);
         }
 
         /** Creates the reader from the another stream. */
-        PropertiesRead(InputStream stream) {
+        private PropertiesReader(InputStream stream) {
             this();
             try {
-                reader = new BufferedReader(new InputStreamReader(stream, "8859_1"));
-            }
-            catch (UnsupportedEncodingException e) {
-                // impossible - this encoding is always supported
+                reader = new BufferedReader(new InputStreamReader(stream, "8859_1")); // NOI18N
+            } catch (UnsupportedEncodingException e) {
+                // Impossible - this encoding is always supported.
             }
         }
 
+        
         /** Read one character from the stream and increases the position.
         * @return the character or -1 if the end of the stream has been reached
         */
@@ -431,15 +374,15 @@ class PropertiesParser {
             if (charRead == (int)'\r')
                 if (peek() == (int)'\n') {
                     charRead = read();
-                    fl.lineSep = "\r\n";
+                    fl.lineSep = "\r\n"; // NOI18N
                 }
                 else
-                    fl.lineSep = "\r";
+                    fl.lineSep = "\r"; // NOI18N
             else
-                if (charRead == (int)'\n')
-                    fl.lineSep = "\n";
+                if (charRead == (int)'\n') 
+                    fl.lineSep = "\n"; // NOI18N
                 else
-                    fl.lineSep = System.getProperty("line.separator");
+                    fl.lineSep = System.getProperty("line.separator"); // NOI18N
 
             return fl;
         }
@@ -463,15 +406,15 @@ class PropertiesParser {
             if (charRead == (int)'\r')
                 if (peek() == (int)'\n') {
                     charRead = read();
-                    fl.lineSep = "\r\n";
+                    fl.lineSep = "\r\n"; // NOI18N
                 }
                 else
-                    fl.lineSep = "\r";
+                    fl.lineSep = "\r"; // NOI18N
             else
-                if (charRead == (int)'\n')
-                    fl.lineSep = "\n";
+                if (charRead == (int)'\n') // NOI18N
+                    fl.lineSep = "\n"; // NOI18N
                 else
-                    fl.lineSep = System.getProperty("line.separator");
+                    fl.lineSep = System.getProperty("line.separator"); // NOI18N
 
             return fl;
         }
@@ -480,46 +423,87 @@ class PropertiesParser {
         public void close() throws IOException {
             reader.close();
         }
+    } // End of inner class PropertiesReader.
 
+    
+    /** Inner  class which maps positions in a string to positions in the underlying file.
+     * @see FlaggedLine */
+    private static class PositionMap {
 
-    }
+        /** List of <code>FlaggedLine</code>'s. */
+        private ArrayList list;
+        
+        
+        /** Constructor - expects a list of FlaggedLine */
+        PositionMap(ArrayList lines) {
+            list = lines;
+        }
+        
 
+        /** Returns the string represented by the object */
+        public String getString() {
+            String allLines = ((FlaggedLine)list.get(0)).stringValue;
+            for (int part=1; part<list.size(); part++)
+                allLines += ((FlaggedLine)list.get(part)).stringValue;
+            return allLines;
+        }
 
-    /** Helper class */
+        /** Returns position in the file for a position in a string
+        * @param posString position in the string to find file position for
+        * @return position in the file 
+        * @exception ArrayIndexOutOfBoundsException if the requested position is outside 
+        *  the area represented by this object
+        */                  
+        public int getFilePosition(int posString) throws ArrayIndexOutOfBoundsException {
+            // get the part
+            int part;
+            int lengthSoFar = 0;
+            int lastLengthSoFar = 0;
+            for (part=0; part < list.size(); part++) {
+                lastLengthSoFar = lengthSoFar;
+                lengthSoFar += ((FlaggedLine)list.get(part)).stringValue.length();
+                // brute patch - last (cr)lf should not be the part of the thing, other should
+                if (part == list.size() - 1)
+                    if (lengthSoFar >= posString)
+                        break;
+                    else;
+                else
+                    if (lengthSoFar > posString)
+                        break;
+            }
+            if (posString > lengthSoFar)
+                throw new ArrayIndexOutOfBoundsException("not in scope"); // NOI18N
+
+            return ((FlaggedLine)list.get(part)).startPosition + posString - lastLengthSoFar;
+        }
+    } // End of inner class PositionMap.
+
+    
+    /** Helper inner class */
     private static class FlaggedLine {
 
+        /** Line buffer. */
+        StringBuffer line;
+        
+        /** Flag. */
+        boolean flag;
+        
+        /** Line separator. */
+        String lineSep;
+        
+        /** STart position. */
+        int startPosition;
+        
+        /** Value. */
+        String stringValue;
+
+        
+        /** Construtor. */
         FlaggedLine() {
             line = new StringBuffer();
             flag = false;
-            lineSep = "\n";
+            lineSep = "\n"; // NOI18N
             startPosition = 0;
         }
-
-        StringBuffer line;
-        boolean flag;
-        String lineSep;
-        int startPosition;
-        String stringValue;
-    }
+    } // End of inner class FlaggedLine.
 }
-
-
-/*
- * <<Log>>
- *  12   Gandalf   1.11        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  11   Gandalf   1.10        10/4/99  Petr Jiricka    Fixed bug #4178
- *  10   Gandalf   1.9         8/18/99  Petr Jiricka    Fixed bug in parsing 
- *       multiline values
- *  9    Gandalf   1.8         8/9/99   Petr Jiricka    Removed debug prints
- *  8    Gandalf   1.7         7/27/99  Petr Jiricka    
- *  7    Gandalf   1.6         6/10/99  Petr Jiricka    
- *  6    Gandalf   1.5         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  5    Gandalf   1.4         6/6/99   Petr Jiricka    
- *  4    Gandalf   1.3         5/16/99  Petr Jiricka    
- *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
- *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */

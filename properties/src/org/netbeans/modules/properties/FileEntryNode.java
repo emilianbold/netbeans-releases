@@ -41,13 +41,17 @@ import org.openide.loaders.*;
 public class FileEntryNode extends AbstractNode {
 
     /** generated Serialized Version UID */
-    //  static final long serialVersionUID = -7882925922830244768L;
+    static final long serialVersionUID = -7882925922830244768L;
 
     /** default base for icons for data objects */
-    private static final String ICON_BASE = "/org/netbeans/core/resources/x";
+    private static final String ICON_BASE = "/org/netbeans/core/resources/x"; // NOI18N
+
+    /** Helper field. ResourceBundle for i18n-ing strings in this source. */
+    private static final ResourceBundle bundle = NbBundle.getBundle(PropertiesModule.class);
 
     /** FileEntry of this node. */
     private PresentableFileEntry entry;
+
 
     /** Create a data node for a given file entry.
     * The provided children object will be used to hold all child nodes.
@@ -66,13 +70,13 @@ public class FileEntryNode extends AbstractNode {
         setIconBase (ICON_BASE);
     }
 
+
     /** Get the represented entry.
      * @return the entry
     */
     public PresentableFileEntry getFileEntry() {
         return entry;
     }
-
 
     /** Indicate whether the node may be destroyed.
      * @return tests {@link DataObject#isDeleteAllowed}
@@ -157,8 +161,8 @@ public class FileEntryNode extends AbstractNode {
         p = new PropertySupport.ReadWrite (
                 PROP_NAME,
                 String.class,
-                PresentableFileEntry.getString("PROP_name"),
-                PresentableFileEntry.getString("HINT_name")
+                bundle.getString("PROP_name"),
+                bundle.getString("HINT_name")
             ) {
                 public Object getValue () {
                     return entry.getName();
@@ -178,16 +182,16 @@ public class FileEntryNode extends AbstractNode {
                     return entry.isRenameAllowed();
                 }
             };
-        p.setName (PresentableFileEntry.PROP_NAME);
+        p.setName (DataObject.PROP_NAME);
         ss.put (p);
 
         try {
             p = new PropertySupport.Reflection (
-                    entry, Boolean.TYPE, "isTemplate", "setTemplate"
+                    entry, Boolean.TYPE, "isTemplate", "setTemplate" // NOI18N
                 );
-            p.setName (PresentableFileEntry.PROP_TEMPLATE);
-            p.setDisplayName (PresentableFileEntry.getString("PROP_template"));
-            p.setShortDescription (PresentableFileEntry.getString("HINT_template"));
+            p.setName (DataObject.PROP_TEMPLATE);
+            p.setDisplayName (bundle.getString("PROP_template"));
+        p.setShortDescription (bundle.getString("HINT_template"));
             ss.put (p);
         } catch (Exception ex) {
             throw new InternalError ();
@@ -201,12 +205,12 @@ public class FileEntryNode extends AbstractNode {
     */
     void fireChange (PropertyChangeEvent ev) {
         firePropertyChange (ev.getPropertyName (), ev.getOldValue (), ev.getNewValue ());
-        if (ev.getPropertyName ().equals (PresentableFileEntry.PROP_NAME)) {
+        if (ev.getPropertyName().equals(DataObject.PROP_NAME)) {
             super.setName (entry.getName ());
             return;
         }
-        if (ev.getPropertyName ().equals (PresentableFileEntry.PROP_COOKIE)) {
-            fireCookieChange ();
+        if (ev.getPropertyName().equals(Node.PROP_COOKIE)) {
+            fireCookieChange();
         }
     }
 

@@ -11,7 +11,9 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
+
 
 import java.beans.*;
 import java.io.*;
@@ -20,13 +22,13 @@ import javax.swing.text.BadLocationException;
 import org.openide.nodes.Node;
 import org.openide.text.PositionBounds;
 
+
 /** Base class for representations of elements in the
 * properties files.
 *
 * @author Petr Jiricka
 */
-public abstract class Element extends Object
-    implements Serializable {
+public abstract class Element extends Object implements Serializable {
 
     /** Property change support */
     private transient PropertyChangeSupport support;
@@ -34,11 +36,14 @@ public abstract class Element extends Object
     /** Position of the begin and the end of the element. */
     protected PositionBounds bounds;
 
+    
     /** Create a new element. */
     protected Element(PositionBounds bounds) {
         this.bounds = bounds;
     }
 
+    
+    /** Getter for bounds property. */
     public PositionBounds getBounds() {
         return bounds;
     }
@@ -96,23 +101,20 @@ public abstract class Element extends Object
         }
     }
 
-
     /** Get a string representation of the element for printing.
     * @return the string
     */
     public abstract String printString();
 
-
     /** Get a value string of the element.
     * @return the string
     */
     public String toString() {
-        return (bounds == null) ? "(no bounds)" : "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")";
+        return (bounds == null) ? "(no bounds)" : "(" + bounds.getBegin().getOffset() + ", " + bounds.getEnd().getOffset() + ")"; // NOI18N
     }
 
-    // -------------------- INNER CLASSES ----------------------
-
-    /** General class for basic elements, which contain value directly */
+    
+    /** Nested class, general for basic elements, which contain value directly */
     public static abstract class Basic extends Element {
 
         /** Parsed value of the element */
@@ -136,7 +138,7 @@ public abstract class Element extends Object
         * @return the string + bounds
         */
         public String toString() {
-            return value + "   " + super.toString();
+            return value + "   " + super.toString(); // NOI18N
         }
 
         /** Get a value of the element.
@@ -151,19 +153,22 @@ public abstract class Element extends Object
             this.value = value;
             this.print();
         }
+    } // End of nested class Basic.
 
-    }
 
-
-    /** Class for key elements */
+    /** Nested class for key elements. */
     public static class KeyElem extends Basic {
 
+        /** Generated serial version UID. */
         static final long serialVersionUID =6828294289485744331L;
+        
+        
         /** Create a new key element. */
         protected KeyElem(PositionBounds bounds, String value) {
             super(bounds, value);
         }
 
+        
         /** Get a string representation of the key for printing. Treats the '=' sign as a part of the key
         * @return the string
         */
@@ -171,13 +176,15 @@ public abstract class Element extends Object
             //return UtilConvert.saveConvert(value) + "=";
             return getValue()+"="; // no converting to unicode back and forth
         }
+    } // End of nested class KeyElem.
+    
 
-    }
-
-    /** Class for value elements */
+    /** Nested class for value elements. */
     public static class ValueElem extends Basic {
 
+        /** Generated serial version UID. */
         static final long serialVersionUID =4662649023463958853L;
+        
         /** Create a new value element. */
         protected ValueElem(PositionBounds bounds, String value) {
             super(bounds, value);
@@ -188,27 +195,30 @@ public abstract class Element extends Object
         */
         public String printString() {
             //return UtilConvert.saveConvert(value) + "\n";
-            return getValue()+"\n"; // no converting to unicode back and forth
+            return getValue()+"\n"; // NOI18N // no converting to unicode back and forth
         }
+    } // End of nested class ValueElem.
 
-    }
-
-    /** Class for comment elements. <code>null</code> values of the string are legal and indicate that the comment is empty. */
+    /** Nested class for comment elements. <code>null</code> values of the string are legal and indicate that the comment is empty. */
     public static class CommentElem extends Basic {
 
+        /** Genererated serial version UID. */
         static final long serialVersionUID =2418308580934815756L;
+        
+        
         /** Create a new comment element. */
         protected CommentElem(PositionBounds bounds, String value) {
             super(bounds, value);
         }
 
+        
         /** Get a string representation of the comment for printing. Makes sure every non-empty line starts with a # and
         * that the last line is terminated with an end of line marker.
         * @return the string
         */
         public String printString() {
             if (value == null || value.length() == 0)
-                return "";
+                return ""; // NOI18N
             else {
                 // insert #s at the beginning of the lines which contain non-blank characters
                 // holds the last position where we might have to insert a # if this line contains non-blanks
@@ -238,42 +248,47 @@ public abstract class Element extends Object
                 return sb.toString();
             }
         }
-    }
+    } // End of nested CommentElem.
 
 
-    /** Class properties file elements, each of them contains a comment (preceding the property),
-    *   a key and a value
+    /** 
+    * Nested class properties file elements, each of them contains a comment (preceding the property),
+    * a key and a value.
     */
     public static class ItemElem extends Element implements Node.Cookie {
 
-        KeyElem     key;
-        ValueElem   value;
-        CommentElem comment;
-        boolean     justComment; // comment after the last property in a prop. file
-        // is represented by a ItemElem with justComment set to true
-
+        /** Key element.  */
+        private KeyElem     key;
+        
+        /** Value element. */        
+        private ValueElem   value;
+        
+        /** Comment element. */
+        private CommentElem comment;
+        
         /** Parent of this element - active element has a non-null parent. */
         private PropertiesStructure parent;
 
         /** Name of the Key property */
-        public static final String PROP_ITEM_KEY     = "key";
+        public static final String PROP_ITEM_KEY     = "key"; // NOI18N
         /** Name of the Value property */
-        public static final String PROP_ITEM_VALUE   = "value";
+        public static final String PROP_ITEM_VALUE   = "value"; // NOI18N
         /** Name of the Comment property */
-        public static final String PROP_ITEM_COMMENT = "comment";
+        public static final String PROP_ITEM_COMMENT = "comment"; // NOI18N
 
+        /** Generated serial version UID. */
         static final long serialVersionUID =1078147817847520586L;
-        /** Create a new basic element. <code>key</code> and <code>value</code> may be null,
-        *  then <code>justComment</code> will be set to true.
-        */
+
+        
+        /** Create a new basic element. <code>key</code> and <code>value</code> may be null. */
         protected ItemElem(PositionBounds bounds, KeyElem key, ValueElem value, CommentElem comment) {
             super(bounds);
             this.key     = key;
             this.value   = value;
             this.comment = comment;
-            justComment  = (key == null);
         }
 
+        
         /** Sets the parent of this element. */
         void setParent(PropertiesStructure ps) {
             parent = ps;
@@ -290,9 +305,9 @@ public abstract class Element extends Object
         * @return the string
         */
         public String toString() {
-            return comment.toString() + '\n' +
-                   ((key   == null) ? "" : key.toString()) + '\n' +
-                   ((value == null) ? "" : value.toString()) + '\n';
+            return comment.toString() + "\n" + // NOI18N
+                ((key   == null) ? "" : key.toString()) + "\n" + // NOI18N
+                ((value == null) ? "" : value.toString()) + "\n"; // NOI18N
         }
 
         /** Returns the key element for this item. */
@@ -326,7 +341,6 @@ public abstract class Element extends Object
                 this.value.update(((ItemElem)elem).value);
 
             this.comment.update(((ItemElem)elem).comment);
-            this.justComment = ((ItemElem)elem).justComment;
         }
 
         /** Get a string representation of the element for printing.
@@ -334,8 +348,8 @@ public abstract class Element extends Object
         */
         public String printString() {
             return comment.printString() +
-                   ((key   == null) ? "" : key.printString()) +
-                   ((value == null) ? "" : value.printString());
+                ((key   == null) ? "" : key.printString()) + // NOI18N
+                ((value == null) ? "" : value.printString()); // NOI18N
         }
 
         /** Get a key by which to identify this record */
@@ -400,24 +414,5 @@ public abstract class Element extends Object
                 return true;
             return false;
         }
-
-    } // end of inner class ItemElem
+    } // End of nested class ItemElem.
 }
-
-/*
- * <<Log>>
- *  11   Gandalf   1.10        11/27/99 Patrik Knakal   
- *  10   Gandalf   1.9         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  9    Gandalf   1.8         8/18/99  Petr Jiricka    Nothing
- *  8    Gandalf   1.7         8/9/99   Petr Jiricka    Removed debug prints
- *  7    Gandalf   1.6         6/16/99  Petr Jiricka    
- *  6    Gandalf   1.5         6/10/99  Petr Jiricka    
- *  5    Gandalf   1.4         6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  4    Gandalf   1.3         6/6/99   Petr Jiricka    
- *  3    Gandalf   1.2         5/14/99  Petr Jiricka    
- *  2    Gandalf   1.1         5/13/99  Petr Jiricka    
- *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
- * $
- */

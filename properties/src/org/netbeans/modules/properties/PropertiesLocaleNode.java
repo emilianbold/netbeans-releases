@@ -133,9 +133,9 @@ public class PropertiesLocaleNode extends FileEntryNode {
     }
 
     /** Returns a string from my bundle. */
-    private String getString(String what) {
+/*    private String getString(String what) {
         return NbBundle.getBundle(PropertiesLocaleNode.class).getString(what);
-    }
+    }*/
 
     /** Returns all the item in addition to "normal" cookies. */
     public Node.Cookie getCookie(Class cls) {

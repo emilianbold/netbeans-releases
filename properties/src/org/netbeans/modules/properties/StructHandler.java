@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.properties;
 
+
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.LinkedList;
@@ -25,17 +26,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.util.*;
 import org.openide.nodes.Children;
-import org.openide.text.PositionRef;
-import org.openide.text.PositionBounds;
 
 
 /* Handling of properties structure files
 *
 * @author Petr Hamernik, Petr Jiricka
 */
-public class StructHandler extends Element /*implements TaskListener*/ {
-
-    public static final String PROP_PARSE = "parse";
+public class StructHandler extends Element {
 
     /** Appropriate properties file entry. */
     private PropertiesFileEntry pfe;
@@ -45,12 +42,13 @@ public class StructHandler extends Element /*implements TaskListener*/ {
 
     /** Soft reference to the data */
     SoftReference dataRef;
+
     /** SoftReference is GC-ed too often, I wonder if I should keep a hard reference */
     DataRef hardReference;
 
-    // ======================== Public part ====================================
-
+    /** Generated serialized version UID. */
     static final long serialVersionUID =-3367087822606643886L;
+
     /** Constructs the implementation of source element for the given
     * java data object.
     */
@@ -66,10 +64,6 @@ public class StructHandler extends Element /*implements TaskListener*/ {
         return getReferenceData() != null;
     }
 
-    /** runs something under Children.MUTEX.writeAccess and then reparses the structure. */
-    /*  public Object doUpdate(Mutex.Action action) {
-      }*/
-
     /** If necessary parses the file, blocks until the thing is finished */
     private synchronized void getParsedDataBlocking() {
         if (getReferenceData() == null) {
@@ -81,8 +75,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
         try {
             PropertiesParser parser = new PropertiesParser(pfe);
             parser.parseFile();
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             setPropertiesStructure(null);
         }
     }
@@ -92,42 +85,17 @@ public class StructHandler extends Element /*implements TaskListener*/ {
         return pfe;
     }
 
-    /** Method that instructs the implementation of the source element
-    * to prepare the element. It is non blocking method that returns
-    * task that can be used to control if the operation finished or not.
-    *
-    * @return task to control the preparation of the elemement
-    */
-    /*  public Task prepare () {
-        return (Task) Children.MUTEX.writeAccess(new Mutex.Action() {
-          public Object run() {
-            if (parsingTask == null) {
-              DataRef d = getReferenceData();
-              if (d != null) {
-                return new DataTask(d);
-              }  
-              
-              parsingTask = createParsingTask(Thread.MAX_PRIORITY);
-            }
-            return parsingTask;
-          }
-        });
-      }*/
-
     /** Get a string representation of the element for printing.
     * @return the string
     */
     public String printString() {
         try {
             return getData().ps.printString();
-        }
-        catch (PropertiesException e) {
+        } catch (PropertiesException e) {
             // PENDING - handle it
             return "";
         }
     }
-
-    // ======================== Package private part ================================
 
     /** Starts the parsing task if the status is true
     * and cancels previous parsing task if it is not running yet.
@@ -187,7 +155,7 @@ public class StructHandler extends Element /*implements TaskListener*/ {
                 });
     }
 
-    /** Returns the structure */
+    /** Returns the structure. */
     public PropertiesStructure getStructure() {
         try {
             return getData().ps;
@@ -199,7 +167,6 @@ public class StructHandler extends Element /*implements TaskListener*/ {
     }
 
     /**
-    *
     * @return the DataRef object holding the parsing information
     * @exception SourceException if parsing failed.
     */
@@ -208,41 +175,36 @@ public class StructHandler extends Element /*implements TaskListener*/ {
         if (d != null)
             return d;
 
-        /*    Task t = prepare();
-            t.waitFinished();*/
         getParsedDataBlocking();
 
         d = getReferenceData();
         if (d != null)
             return d;
 
-        throw new PropertiesException("Document cannot be modified. Impossible to parse it.");
+        throw new PropertiesException("Document cannot be modified. Impossible to parse it."); // NOI18N
     }
 
-    /** Informs the SourceElement about releasing data (classes, imports,...)
+    /** Informs the <code>StructHandler</code> instance about releasing data (classes, imports,...)
     * from the memory. This method gets as the parameter DataRef which will be
     * garbage collected and should swap them to the disk.
     */
     private void dataRefReleased(DataRef data) {
-        Object oldValue = Children.MUTEX.writeAccess(new Mutex.Action() {
-                              public Object run() {
-                                  dataRef = null;
-                                  return new Boolean(true);
-                              }
-                          });
-        // PENDING
-        //firePropertyChange (PROP_STATUS, null, null);
+        Children.MUTEX.writeAccess(new Mutex.Action() {
+            public Object run() {
+                dataRef = null;
+                return new Boolean(true);
+            }
+        });
     }
 
-    // ======================== The real data holder ==========================
-
-    /** Class which is used for holding the parsed information.
+    /** 
+    * Real data holder. Class which is used for holding the parsed information.
     * It is serializable and could be swapped to the disk.
     * The struct handler holds only soft reference to this object.
     */
     private static class DataRef extends Object {
         /** A serial version UID */
-        //static final long serialVersionUID = 697350931687937673L;
+        static final long serialVersionUID = 697350931687937673L;
 
         /** Appropriate file entry. */
         PropertiesFileEntry pfe;
@@ -258,7 +220,8 @@ public class StructHandler extends Element /*implements TaskListener*/ {
             this.ps  = ps;
         }
 
-        /** Informs the SourceElementImpl about the releasing
+        /** 
+        * Informs the StructHandler about the releasing
         * of this class from the memory.
         */
         public void finalize() throws Throwable {

@@ -73,7 +73,8 @@ public class PropertiesTableModel extends AbstractTableModel {
         //PENDING move the column corresponding to curNode to the beginning
     }
 
-    class TablePropertyBundleListener implements PropertyBundleListener {
+    /** Inner class. Listener for changes on bundle structure. */
+    private class TablePropertyBundleListener implements PropertyBundleListener {
         public void bundleChanged(PropertyBundleEvent evt) {
             // PENDING - should be maybe even finer
             switch (evt.getChangeType()) {
@@ -128,18 +129,18 @@ public class PropertiesTableModel extends AbstractTableModel {
                     break;
                 }
                 cancelEditingInTables(new CancelSelector() {
-                                          public boolean doCancelEditing(int row, int column) {
-                                              if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
-                                                  return false;
-                                              return (column == index2 + 1 && row == keyIndex);
-                                          }
-                                      });
+                    public boolean doCancelEditing(int row, int column) {
+                        if (!(row >= 0 && row < getRowCount() && column >= 0 && column < getColumnCount()))
+                            return false;
+                        return (column == index2 + 1 && row == keyIndex);
+                    }
+                });
                 fireTableCellUpdated(keyIndex, index2 + 1);
                 //System.out.println(PropertiesTableModel.this.toString());
                 break;
             }
         }
-    }  // endof inner class TablePropertyBundleListener
+    }  // end of inner class TablePropertyBundleListener
 
     /** Returns the class for a model. */
     public Class getColumnClass(int columnIndex) {
@@ -275,8 +276,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                     }
                 }
             }
-        }
-        else {
+        } else {
             // property value
             PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(columnIndex - 1);
             String key = obj.getBundleStructure().getNthKey(rowIndex);
@@ -290,8 +290,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                         // this resorting is necessary only if this column index is same as
                         // column according the sort is performed, REFINE
                         obj.getBundleStructure().sort(-1);
-                    }
-                    else {
+                    } else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
                             ps.addItem(key, UtilConvert.escapeLineContinuationChar(((StringPair)aValue).getValue()), ((StringPair)aValue).getComment());
                             // this resorting is necessary only if this column index is same as
@@ -328,23 +327,24 @@ public class PropertiesTableModel extends AbstractTableModel {
         fireTableChanged(new TableModelEvent(this, 0, getRowCount() - 1, index));
     }
 
+    /** Overrides superclass method. */
     public String toString() {
         StringBuffer result = new StringBuffer();
-        result.append("------------------------------ TABLE MODEL DUMP -----------------------\n");
+        result.append("------------------------------ TABLE MODEL DUMP -----------------------\n"); // NOI18N
         for (int row = 0; row < getRowCount(); row ++) {
             for (int column = 0; column < getColumnCount(); column ++) {
                 StringPair sp = (StringPair)getValueAt(row, column);
-                result.append("[" /*+ sp.getComment() + "," */+ sp.getValue() + "]");
+                result.append("[" /*+ sp.getComment() + "," */+ sp.getValue() + "]"); // NOI18N
                 if (column == 0)
-                    result.append(" : ");
+                    result.append(" : "); // NOI18N
                 else
                     if (column == getColumnCount() - 1)
-                        result.append("\n");
+                        result.append("\n"); // NOI18N
                     else
-                        result.append(",");
+                        result.append(","); // NOI18N
             }
         }
-        result.append("---------------------------- END TABLE MODEL DUMP ---------------------\n");
+        result.append("---------------------------- END TABLE MODEL DUMP ---------------------\n"); // NOI18N
         return result.toString();
     }
 
