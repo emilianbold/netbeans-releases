@@ -45,6 +45,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.web.project.WebProjectType;
 
 import org.w3c.dom.Element;
@@ -651,8 +652,8 @@ public class WebProjectProperties {
                         if ( raw == null ) {
                             // New file
                             File file = (File)vcpi.getObject();
-                            // XXX Relativize using collocation query
-                            sb.append( file.getPath() );
+                            String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                            sb.append(reference);
                         }
                         else {
                             // Existing property
@@ -868,8 +869,8 @@ public class WebProjectProperties {
                     if ( raw == null ) {
                         // New file
                         File file = (File)vcpi.getObject();
-                        // XXX Relativize using collocation query
-                        library_tag_value = file.getPath ();
+                        String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        library_tag_value = reference;
                     }
                     else {
                         // Existing property
@@ -934,8 +935,8 @@ public class WebProjectProperties {
                     if ( raw == null ) {
                         // New file
                         File file = (File)vcpi.getObject();
-                        // XXX Relativize using collocation query
-                        library_tag_value = file.getPath ();
+                        String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                        library_tag_value = reference;
                     }
                     else {
                         // Existing property
