@@ -22,14 +22,15 @@ package org.netbeans.modules.testtools;
 
 import java.beans.*;
 import java.awt.Image;
+
 import org.openide.loaders.DataLoader;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+/** Bean Info for XTestDataLoader class
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestDataLoaderBeanInfo extends SimpleBeanInfo {
 
+    /** returns Bean Info of ancestor class
+     * @return BeanInfo */    
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (DataLoader.class) };
@@ -38,6 +39,8 @@ public class XTestDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
     
+    /** returns Property Descriptors of XTestDataLoader properties
+     * @return array of PropertyDescriptor */    
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             PropertyDescriptor extensions = new PropertyDescriptor("extensions", XTestDataLoader.class, "getExtensions", null);
@@ -49,6 +52,9 @@ public class XTestDataLoaderBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    /** returns icon of XTestDataLoader
+     * @param type int icon type
+     * @return Image XTestIcon */    
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return org.openide.util.Utilities.loadImage ("org/netbeans/modules/testtools/XTestIcon.gif");

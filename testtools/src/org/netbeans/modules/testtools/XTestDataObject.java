@@ -22,28 +22,33 @@ package org.netbeans.modules.testtools;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.openide.cookies.DebuggerCookie;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.*;
-import org.openide.nodes.CookieSet;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.nodes.Node;
+import org.openide.nodes.CookieSet;
+import org.openide.execution.Executor;
+import org.openide.compiler.CompilerType;
+import org.openide.filesystems.FileObject;
+import org.openide.cookies.SaveCookie;
+import org.openide.cookies.DebuggerCookie;
+import org.openide.cookies.CompilerCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.ExecSupport;
+import org.openide.loaders.MultiDataObject;
+import org.openide.loaders.DataObjectExistsException;
 
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.nodes.AntProjectNode;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.apache.tools.ant.module.loader.AntCompilerSupport;
-import org.openide.execution.Executor;
-import org.openide.compiler.CompilerType;
-import org.openide.cookies.CompilerCookie;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+/** Data Object class representing XTest Workspace Build Script
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestDataObject extends MultiDataObject implements PropertyChangeListener {
 
+    /** creates new XTestDataObject
+     * @param pf FileObject
+     * @param loader XTestDataLoader
+     * @throws DataObjectExistsException when XTestDataObject already exists */    
     public XTestDataObject(FileObject pf, XTestDataLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         CookieSet cookies = getCookieSet();
@@ -62,6 +67,9 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         addPropertyChangeListener(this);
     }
     
+    /** returns requested cookie except DebuggerCookie
+     * @return Node.Cookie
+     * @param clazz Cookie Class */    
     public Node.Cookie getCookie(Class clazz) {
         if(clazz == DebuggerCookie.class) {
             return null;
@@ -69,24 +77,26 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         return super.getCookie(clazz);
     }
     
+    /** returns Help Context
+     * @return HelpCtx */    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(XTestDataObject.class);
     }
 
+    /** creates Node delagate of XTestDataObject
+     * @return XTestNode */    
     protected Node createNodeDelegate() {
         return new XTestNode(this);
     }
 
-    /** Helper method. Adds save cookie to the data object. */
-    public void addSaveCookie(SaveCookie saveCookie) {
+    void addSaveCookie(SaveCookie saveCookie) {
         if(getCookie(SaveCookie.class) == null) {
             getCookieSet().add(saveCookie);
             setModified(true);
         }
     }
 
-   /** Helper method. Removes save cookie from the data object. */
-    public void removeSaveCookie(SaveCookie saveCookie) {
+    void removeSaveCookie(SaveCookie saveCookie) {
         Node.Cookie cookie = getCookie(SaveCookie.class);
 
         if(cookie != null && cookie.equals(saveCookie)) {
@@ -95,6 +105,8 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         }
     }
 
+    /** handles change of some property
+     * @param ev PropertyChangeEvent */    
     public void propertyChange(PropertyChangeEvent ev) {
         String prop = ev.getPropertyName();
         if(prop == null || prop.equals(DataObject.PROP_PRIMARY_FILE)) {
@@ -102,55 +114,83 @@ public class XTestDataObject extends MultiDataObject implements PropertyChangeLi
         }
     }
     
+    /** Execution Support class for XTestDataObject */    
     public static class XTestExecSupport extends ExecSupport {
+        /** creates new XTestExecSupport
+         * @param entry MultiDataObject.Entry */        
         public XTestExecSupport (MultiDataObject.Entry entry) {
             super (entry);
         }
         
+        /** returns default Executor
+         * @return XTestExecutor */        
         protected Executor defaultExecutor () {
             return new XTestExecutor();
         }
     }
     
+    /** Compiler Support class for XTestDataObject */    
     public static class XTestCompilerSupport extends AntCompilerSupport {
 
+        /** creates new XTestCompilerSupport
+         * @param entry MultiDataObject.Entry
+         * @param cookie Cookie Class */        
         protected XTestCompilerSupport (MultiDataObject.Entry entry, Class cookie) {
             super (entry, cookie);
         }
 
+        /** returns default Compiler Type for XTestDataObject
+         * @return XTestCompilerType */        
         protected CompilerType defaultCompilerType () {
             return new XTestCompilerType();
         }
     }
     
+    /** CompilerCookie.Compile implemntation class for XTestDataObject */    
     public static class Compile extends XTestCompilerSupport implements CompilerCookie.Compile {
+        /** creates new Compile
+         * @param entry MultiDataObject.Entry */        
         public Compile(MultiDataObject.Entry entry) {
             super(entry, CompilerCookie.Compile.class);
         }
     }
     
+    /** CompilerCookie.Build implemntation class for XTestDataObject */    
     public static class Build extends XTestCompilerSupport implements CompilerCookie.Build {
+        /** creates new Build
+         * @param entry MultiDataObject.Entry */        
         public Build (MultiDataObject.Entry entry) {
             super(entry, CompilerCookie.Build.class);
         }
     }
     
+    /** CompilerCookie.Build implemntation class for XTestDataObject */    
     public static class Clean extends XTestCompilerSupport implements CompilerCookie.Clean {
+        /** creates new Clean
+         * @param entry MultiDataObject.Entry */        
         public Clean(MultiDataObject.Entry entry) {
             super(entry, CompilerCookie.Clean.class);
         }
     }
     
+    /** CleanResults Cookie class for XTestDataObject */    
     public static class CleanResults extends XTestCompilerSupport {
+        /** creates new CleanResults
+         * @param entry MultiDataObject.Entry */        
         public CleanResults(MultiDataObject.Entry entry) {
             super(entry, CleanResults.class);
         }
     }
     
+    /** Node class representing XTEstDataObject */    
     public static class XTestNode extends AntProjectNode {
+        /** creates new XTestNode for given DataObject
+         * @param obj DataObject */        
             public XTestNode (DataObject obj) {
                 super(obj);
             }
+            /** changes Icon of XTestNode
+             * @param base String icon base */            
             public void setIconBase(String base) {
                 if (base.indexOf("Error")>=0) 
                     super.setIconBase("org/netbeans/modules/testtools/XTestIconError");

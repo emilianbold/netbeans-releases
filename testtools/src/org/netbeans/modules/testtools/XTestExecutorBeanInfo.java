@@ -19,23 +19,24 @@ package org.netbeans.modules.testtools;
  * Created on April 29, 2002, 10:54 AM
  */
 
-import java.beans.SimpleBeanInfo;
-import java.beans.PropertyDescriptor;
+import java.awt.Image;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
-import java.beans.IntrospectionException;
+import java.beans.SimpleBeanInfo;
 import java.beans.BeanDescriptor;
-import java.awt.Image;
+import java.beans.PropertyDescriptor;
+import java.beans.PropertyEditorSupport;
+import java.beans.IntrospectionException;
+
 import org.openide.util.Utilities;
 import org.openide.execution.Executor;
-import java.beans.PropertyEditorSupport;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+/** Bean Info class for XTestExecutor
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestExecutorBeanInfo extends SimpleBeanInfo {
 
+    /** returns Bean Info of ancestor class
+     * @return BeanInfo */    
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] {
@@ -48,6 +49,8 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    /** returns Bean Descriptors of XTestExecutor class
+     * @return BeanDescriptor */    
     public BeanDescriptor getBeanDescriptor () {
         BeanDescriptor desc = new BeanDescriptor (XTestExecutor.class);
         desc.setDisplayName ("XTest Execution");
@@ -56,6 +59,8 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
         return desc;
     }
 
+    /** returns Bean Descriptors of XTestExecutor properties
+     * @return array of BeanDescriptor */    
     public PropertyDescriptor[] getPropertyDescriptors () {
         try {
             PropertyDescriptor[] properties=new PropertyDescriptor[7];
@@ -93,6 +98,9 @@ public class XTestExecutorBeanInfo extends SimpleBeanInfo {
         }
     }
 
+    /** return icon of XTestExecutor
+     * @param type int icon type
+     * @return Image XTestIcon */    
     public Image getIcon (int type) {
         if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
             return Utilities.loadImage ("org/netbeans/modules/testtools/XTestIcon.gif");

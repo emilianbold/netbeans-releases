@@ -19,38 +19,37 @@ package org.netbeans.modules.testtools;
  * Created on April 29, 2002, 10:47 PM
  */
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.openide.util.Task;
+import org.openide.TopManager;
+import org.openide.ServiceType;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
-import org.openide.loaders.DataObject;
 import org.openide.compiler.Compiler;
 import org.openide.compiler.CompilerType;
 import org.openide.compiler.CompilerJob;
 import org.openide.cookies.CompilerCookie;
-
-import org.apache.tools.ant.module.api.AntProjectCookie;
-import java.util.Properties;
-import java.io.File;
-import org.netbeans.modules.testtools.wizards.WizardIterator;
-import org.openide.TopManager;
-import org.openide.ServiceType;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.ExecSupport;
 import org.openide.loaders.MultiDataObject;
-import org.apache.tools.ant.module.run.AntCompiler;
 import org.openide.compiler.CompilerGroup;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
 import org.openide.compiler.ProgressEvent;
-import org.apache.tools.ant.module.run.TargetExecutor;
-import org.openide.ErrorManager;
-import org.openide.util.Task;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+import org.apache.tools.ant.module.run.AntCompiler;
+import org.apache.tools.ant.module.run.TargetExecutor;
+import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.netbeans.modules.testtools.wizards.WizardIterator;
+
+
+/** class representing Compiler Type for XTest Workspace Build Script
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestCompilerType extends CompilerType {
 
     private static final String compileTarget = "buildtests";
@@ -72,6 +71,7 @@ public class XTestCompilerType extends CompilerType {
     /** Holds value of property testType. */
     private String testType="";
     
+    /** creates new XTestCompilerType */    
     public XTestCompilerType() {
         String home=System.getProperty("netbeans.home");
         if (!new File(home+File.separator+"xtest-distribution").exists()) 
@@ -81,16 +81,24 @@ public class XTestCompilerType extends CompilerType {
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
     }
     
+    /** creates new XTestCompilerType, fills and returns propper Handler
+     * @return ServiceType.Handler with XTestCompilerType */    
     public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestCompilerType());
     }
     
+    /** returns Help Context
+     * @return HelpCtx */    
     public HelpCtx getHelpCtx () {
         return new HelpCtx (XTestCompilerType.class);
     }
 
     final static File netHome=new File(System.getProperty("netbeans.home"));
     
+    /** fills Compiler Job with propper compilers
+     * @param job CompilerJob to be filled
+     * @param type compilation type
+     * @param obj DataObject to be compiled */    
     public void prepareJob (CompilerJob job, Class type, DataObject obj) {
         AntProjectCookie cookie = (AntProjectCookie) obj.getCookie (AntProjectCookie.class);
         if (cookie == null) { 
@@ -224,27 +232,38 @@ public class XTestCompilerType extends CompilerType {
         return props;
     }        
 
+    /** class representing Compiler for XTest Workspace Build Script */    
     public static  class XTestCompiler extends AntCompiler {
         private Properties props;
 
+        /** creates new XTestCompiler
+         * @param cookie AntProjectCookie of compiled Data Object
+         * @param target String name of target to be called for compilation
+         * @param props additional Properties for compilation */        
         public XTestCompiler (AntProjectCookie cookie, String target, Properties props) {
             super(cookie, target);
             this.props=props;
         }
 
+        /** returns class of related Compiler Group
+         * @return XTestCompilerGroup.class */        
         public Class compilerGroupClass () {
             return XTestCompilerGroup.class;
         }
 
-        public Properties getProperties() {
+        Properties getProperties() {
             return props;
         }
     }
     
+    /** class representing Compiler Group for XTest Workspace Build Script */    
     public static class XTestCompilerGroup extends CompilerGroup {
 
         private Map torun = new HashMap();
 
+        /** add Compiler to Compiler Group
+         * @param c Compiler
+         * @throws IllegalArgumentException when Compiler is not instance of XTestCompiler */        
         public void add(Compiler c) throws IllegalArgumentException {
             if(!(c instanceof XTestCompiler)) throw new IllegalArgumentException();
             XTestCompiler comp=(XTestCompiler) c;
@@ -257,6 +276,8 @@ public class XTestCompilerType extends CompilerType {
             targets.put(comp.getTarget(), comp.getProperties());
         }
 
+        /** starts compilation
+         * @return boolean result of compilation */        
         public boolean start() {
             Iterator scripts = torun.entrySet().iterator();
             while(scripts.hasNext()) {

@@ -19,40 +19,46 @@ package org.netbeans.modules.testtools;
  * Created on May 2, 2002, 4:07 PM
  */
 
-import org.openide.actions.*;
-import org.openide.util.actions.SystemAction;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import org.openide.actions.*;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.compiler.Compiler;
 import org.openide.filesystems.FileObject;
+import org.openide.util.actions.SystemAction;
 import org.openide.loaders.UniFileLoader;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.DataObjectExistsException;
-import java.io.IOException;
-import org.apache.tools.ant.module.loader.AntCompilerSupport;
-import org.openide.compiler.Compiler;
-import org.openide.util.HelpCtx;
-import org.openide.nodes.Node;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+import org.apache.tools.ant.module.loader.AntCompilerSupport;
+
+/** Data Loader class for XTest Workspace Script Data Object
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestDataLoader extends UniFileLoader {
 
+    /** creates new XTestDataLoader */    
     public XTestDataLoader () {
         super (XTestDataObject.class);
     }
 
+    /** returns default display name of XTestDataObject
+     * @return String default display name of XTestDataObject */    
     protected String defaultDisplayName () {
         return "XTest Build Script";
     }
 
+    /** performs initialization of Data Loader */    
     protected void initialize () {
         super.initialize ();
         getExtensions().addMimeType("text/x-ant+xml");
     }
 
     
+    /** returns default System Actions supported by XTestDataObject
+     * @return array of SystemAction */    
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
             SystemAction.get(OpenAction.class),
@@ -86,6 +92,9 @@ public class XTestDataLoader extends UniFileLoader {
         };
     }
 
+    /** performs recognition of XTestDataObject
+     * @param fo tested FileObject
+     * @return given FileObject or null when XTestDataObject not recognized */    
     protected FileObject findPrimaryFile (FileObject fo) {
         fo = super.findPrimaryFile (fo);
         if (fo==null) return null;
@@ -101,23 +110,37 @@ public class XTestDataLoader extends UniFileLoader {
         return null;
     }
 
+    /** creates instance of XTestDataObject for given FileObject
+     * @param primaryFile FileObject
+     * @throws DataObjectExistsException when Data Object already exists
+     * @throws IOException when some IO problems
+     * @return new XTestDataObject for given FileObject */    
     protected MultiDataObject createMultiObject (FileObject primaryFile) throws DataObjectExistsException, IOException {
         return new XTestDataObject(primaryFile, this);
     }
 
+    /** Action performing cleanup of XTest results */    
     public static class CleanResultsAction extends AbstractCompileAction {
+        /** returns Depth of Compiler
+         * @return Compiler.DEPTH_ONE */        
         protected Compiler.Depth depth () {
             return Compiler.DEPTH_ONE;
         }
 
+        /** returns Cookie for this Action
+         * @return XTestDataObject.CleanResults.class */        
         protected final Class cookie () {
             return XTestDataObject.CleanResults.class;
         }
 
+        /** returns name of the Action
+         * @return String Action name */        
         public String getName() {
             return "Clean Results";
         }
         
+        /** returns Help Context of the Action
+         * @return HelpCtx */        
         public HelpCtx getHelpCtx() {
             return new HelpCtx(CleanResultsAction.class);
         }

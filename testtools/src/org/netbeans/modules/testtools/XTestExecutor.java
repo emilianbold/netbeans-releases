@@ -19,32 +19,30 @@ package org.netbeans.modules.testtools;
  * Created on April 29, 2002, 10:54 AM
  */
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.openide.TopManager;
+import org.openide.ServiceType;
+import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
 import org.openide.windows.InputOutput;
 import org.openide.execution.Executor;
 import org.openide.execution.ExecInfo;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 
 import org.apache.tools.ant.module.run.TargetExecutor;
 import org.apache.tools.ant.module.api.AntProjectCookie;
-import java.util.Properties;
-import java.io.File;
 import org.netbeans.modules.testtools.wizards.WizardIterator;
-import org.openide.TopManager;
-import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
-import org.openide.ServiceType;
 
-/**
- *
- * @author  <a href="mailto:adam.sotona@sun.com">Adam Sotona</a>
- */
+/** Executor for XTest Workspace Build Script Data Object
+ * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class XTestExecutor extends Executor {
     
     /** Holds value of property netbeansHome. */
@@ -68,6 +66,7 @@ public class XTestExecutor extends Executor {
     /** Holds value of property showResults. */
     private boolean showResults=true;
     
+    /** creates new XTestExecutor */    
     public XTestExecutor() {
         String home=System.getProperty("netbeans.home");
         if (!new File(home+File.separator+"xtest-distribution").exists()) 
@@ -77,14 +76,24 @@ public class XTestExecutor extends Executor {
         jellyHome=new File(home+File.separator+"lib"+File.separator+"ext");
     }
     
+    /** creates new XTestEecutor, fills and returns propper Handler
+     * @return ServiceType.Handle */    
     public static ServiceType.Handle getHandle() {
         return new ServiceType.Handle(new XTestExecutor());
     }
     
+    /** throws "Not yet implemented" IOException
+     * @param info ExecInfo
+     * @throws IOException "Not yet implemented" IOException
+     * @return never returns value */    
     public ExecutorTask execute(ExecInfo info) throws IOException {
         throw new IOException("Not yet implemented.");
     }
     
+    /** performs execution of given DataObject
+     * @param obj DataObject
+     * @throws IOException when some IO problems
+     * @return ExecutorTask */    
     public ExecutorTask execute(DataObject obj) throws IOException {
         AntProjectCookie cookie=(AntProjectCookie)obj.getCookie(AntProjectCookie.class);
         if (cookie==null) {
@@ -124,6 +133,8 @@ public class XTestExecutor extends Executor {
         return task;
     }
     
+    /** returns Help Context
+     * @return HelpCtx */    
     public HelpCtx getHelpCtx() {
         return new HelpCtx (XTestExecutor.class);
     }
