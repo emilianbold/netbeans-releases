@@ -134,6 +134,7 @@ public abstract class NbTopManager extends TopManager {
     /** initializes properties about builds etc. */
     static {
         // Set up module-versioning properties, which logger prints.
+        /*
         // IMPORTANT: must use an unlocalized resource here.
         java.util.Properties versions = new java.util.Properties ();
         try {
@@ -146,6 +147,12 @@ public abstract class NbTopManager extends TopManager {
         System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
         // For TopLogging and MainWindow only:
         System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
+        */
+        Package p = Package.getPackage ("org.openide"); // NOI18N
+        System.setProperty ("org.openide.specification.version", p.getSpecificationVersion ());
+        System.setProperty ("org.openide.version", p.getImplementationVersion ());
+        System.setProperty ("org.openide.major.version", p.getSpecificationTitle ());
+        System.setProperty ("netbeans.buildnumber", p.getImplementationVersion ());
     }
 
     /** Constructs a new manager.
@@ -692,59 +699,3 @@ public abstract class NbTopManager extends TopManager {
         }
     }
 }
-/*
-* Log:
-*  32   Corona    1.31        07/28/98 Miloslav Metelka No longer
-*                                                      getEditorSettings... static
-*                                                      method
-*  31   Corona    1.30        07/27/98 Miloslav Metelka EditorSettingsTxt instead
-*                                                      of EditorSettings
-*  30   Corona    1.29        07/27/98 Jaroslav Tulach TopManager.getDefault
-*                                                      ().getDefaultMultiFrame ()
-*                                                      added
-*
-*  29   Corona    1.28        07/24/98 Ian Formanek    init in separate thread
-*                                                      commented out
-*  28   Corona    1.27        07/23/98 Jaroslav Tulach Lazy initialization of
-*                                                      Output Window
-*  27   Corona    1.26        07/22/98 Petr Hamernik   logging directory changed
-*  26   Corona    1.25        07/22/98 Ales Novak
-*  25   Corona    1.24        07/22/98 Ales Novak
-*  24   Corona    1.23        07/22/98 Ales Novak
-*  23   Corona    1.22        07/21/98 Jaroslav Tulach
-*  22   Corona    1.21        07/20/98 Jaroslav Tulach Initializes in EventQueue
-*  21   Corona    1.20        07/20/98 Jan Jancura     Customize forWindows
-*                                                      customizers
-*  20   Corona    1.19        07/13/98 Ales Novak
-*  19   Corona    1.18        07/13/98 Ian Formanek    fixed bug in setStatusText
-*                                                      - it was called before the
-*                                                      main window was initialized
-*                                                      and caused a
-*                                                      NullPointerException
-*  18   Corona    1.17        07/07/98 Petr Hamernik   bugfix
-*  17   Corona    1.16        07/07/98 Ales Novak
-*  16   Corona    1.15        07/07/98 Petr Hamernik   inputLine in Confirmation
-*  15   Corona    1.14        07/02/98 Ales Novak
-*  14   Corona    1.13        06/29/98 Jan Jancura     PropertySheet settings.
-*  13   Corona    1.12        06/29/98 Ian Formanek    Fixed bug with setDefault()
-*                                                      in ButtonBar
-*  12   Corona    1.11        06/26/98 David Peroutka  Large icons for frames on
-*                                                      Solaris
-*  11   Corona    1.10        06/26/98 Jaroslav Tulach
-*  10   Corona    1.9         06/22/98 Miloslav Metelka
-*  9    Corona    1.8         06/19/98 Ales Novak
-*  8    Corona    1.7         06/19/98 Ales Novak
-*  7    Corona    1.6         06/18/98 Ales Novak
-*  6    Corona    1.5         06/17/98 Ian Formanek    improved title behaviour of
-*                                                      the SheetFrame
-*  5    Corona    1.4         06/17/98 Ales Novak
-*  4    Corona    1.3         06/17/98 Ian Formanek    Fixed bug 238 -
-*                                                      Serialization does not work
-*                                                      when "Properties" are
-*                                                      opened.
-*  3    Corona    1.2         06/15/98 Ian Formanek    Fixed bug 177 (Updating
-*                                                      Look&Feel of menus)
-*  2    Corona    1.1         06/15/98 Ian Formanek
-*  1    Corona    1.0         06/11/98 David Peroutka
-* $
-*/

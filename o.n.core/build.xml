@@ -32,18 +32,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   <target name="jars" depends="compile">
     <mkdir dir="netbeans/lib/ext"/>
-    <mkdir dir="versioning-tmp/org/netbeans/core"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="src/org/netbeans/core/Versioning.properties"
-          tofile="versioning-tmp/org/netbeans/core/Versioning.properties"
-	  filtering="on"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
     <locjar jarfile="netbeans/lib/core.jar"
+            basedir="src"
+            excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <exclude name="org/netbeans/core/Versioning.properties"/>
-      </fileset>
-      <fileset dir="versioning-tmp"/>
       <locale name="ja"/>
     </locjar>
     <!-- XXX does this really need to be built? -->
@@ -76,7 +69,6 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete dir="netbeans"/>
-    <delete dir="versioning-tmp"/>
   </target>
 </project>
 

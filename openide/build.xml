@@ -137,9 +137,10 @@ Microsystems, Inc. All Rights Reserved.
     <!-- Create binary compatibility kit. NOBODY should compile against it unless they -->
     <!-- are trying to make their code obsolete! -->
     <mkdir dir="netbeans/lib/patches"/>
-    <!-- [PENDING] some sort of manifest? -->
+    <!-- Use the same manifest to ensure that packages are defined correctly. -->
     <jar jarfile="netbeans/lib/patches/openide-compat.jar"
          basedir="compatkit-work"
+         manifest="manifest-subst.mf"
 	 excludesfile="../nbbuild/standard-jar-excludes.txt"
 	 compress="false"/>
   </target>
