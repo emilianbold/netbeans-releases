@@ -15,21 +15,24 @@ package org.netbeans.spi.project.ui.support;
 
 import org.netbeans.api.project.Project;
 
-/** Callback interface for project/main project sensitive actions.
+/**
+ * Callback interface for project- and main project-sensitive actions.
  * @author Petr Hrebejk
  */
 public interface ProjectActionPerformer {
     
-    /** Called when context of the action changes and the action should
-     * be enabled/disabled within the new context (according to the newly
+    /**
+     * Called when the context of the action changes and the action should
+     * be enabled or disabled within the new context, according to the newly
      * selected project.
-     * @param project The currently selected project.
-     * @return true or false to enable/disable the action
+     * @param project the currently selected project, or null if no project is selected
+     * @return true to enable the action, false to disable it
      */
     public boolean enable( Project project ); 
         
-    /** Called when the user invokes the action
-     * @param project The project this action was invoked for
+    /**
+     * Called when the user invokes the action.
+     * @param project the project this action was invoked for (XXX can this be null or not?)
      */
     public void perform( Project project ); 
     

@@ -26,8 +26,10 @@ import org.netbeans.modules.project.uiapi.Utilities;
  * For example, you may wish to display a chooser letting the user select a
  * file from among the top-level source folders of any open project.
  * For many cases, however, this API is not the correct approach, so use it as
- * a last resort. Consider <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html"><code>GlobalPathRegistry</code></a>
- * and {@link org.netbeans.spi.project.ui.ProjectOpenedHook}
+ * a last resort. Consider <a href="@JAVA/API@/org/netbeans/api/java/classpath/GlobalPathRegistry.html"><code>GlobalPathRegistry</code></a>,
+ * {@link org.netbeans.spi.project.ui.ProjectOpenedHook},
+ * and {@link org.netbeans.spi.project.ui.support.ProjectSensitiveActions}
+ * (or {@link org.netbeans.spi.project.ui.support.MainProjectSensitiveActions})
  * first. Only certain operations should actually be aware of which projects
  * are "open"; by default, all project functionality should be available whether
  * it is open or not.
