@@ -687,19 +687,9 @@ public class PropertiesOpen extends CloneableOpenSupport
         public void setName(String name) {
             String saveAwareName = name;
             if (propDataObject != null) {
-                if (propDataObject.getCookie(SaveCookie.class) != null) {
-                    saveAwareName = NbBundle.getMessage(
-                        PropertiesOpen.class,
-                        "LBL_EditorName_Modified", // NOI18N
-                        name
-                    );
-                } else {
-                    saveAwareName = NbBundle.getMessage(
-                        PropertiesOpen.class,
-                        "LBL_EditorName_Uptodate", // NOI18N
-                        name
-                    );
-                }
+                boolean modified = (propDataObject.getCookie(SaveCookie.class) != null);
+                saveAwareName = NbBundle.getMessage (PropertiesOpen.class, "LBL_EditorName", // NOI18N
+                    new Integer (modified ? 1 : 3), name );
             }
 
             super.setName(saveAwareName);

@@ -302,21 +302,17 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
      * @return name of the editor
      */
     protected String messageName () {
-        String name = myEntry.getDataObject().getPrimaryFile().getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
+        FileObject entry = myEntry.getDataObject().getPrimaryFile();
+        String name = entry.getName()+"("+Util.getLocaleLabel(myEntry)+")"; // NOI18N
+        int version;
         
         if(isModified()) {
-            return NbBundle.getMessage (
-                PropertiesEditorSupport.class,
-                "LBL_EditorName_Modified", // NOI18N
-                name
-            );
+            version = entry.canWrite() ? 1 : 2;
         } else {
-            return NbBundle.getMessage (
-                PropertiesEditorSupport.class,
-                "LBL_EditorName_Uptodate", // NOI18N
-                name
-            );
+            version = entry.canWrite() ? 3 : 0;
         }
+        return NbBundle.getMessage (PropertiesEditorSupport.class, "LBL_EditorName", // NOI18N
+            new Integer (version), name );
     }
     
     /** 
