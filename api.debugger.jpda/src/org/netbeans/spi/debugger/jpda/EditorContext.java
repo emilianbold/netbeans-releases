@@ -24,26 +24,20 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 public abstract class EditorContext {
     
     /** Annotation type constant. */
-    public static final String BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("Breakpoint");
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("DisabledBreakpoint");
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE = "DisabledBreakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("CondBreakpoint");
+    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "CondBreakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = 
-        new String ("DisabledCondBreakpoint");
+    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE = "DisabledCondBreakpoint"; // NOI18N
     /** Annotation type constant. */
-    public static final String CURRENT_LINE_ANNOTATION_TYPE =
-        new String ("CurrentPC");
+    public static final String CURRENT_LINE_ANNOTATION_TYPE = "CurrentPC"; // NOI18N
     /** Annotation type constant. */
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =
-        new String ("CallSite");
+    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite"; // NOI18N
 
     /** Property name constant. */
-    public static final String PROP_LINE_NUMBER = new String ("lineNumber");
+    public static final String PROP_LINE_NUMBER = "lineNumber"; // NOI18N
 
 
     /**
