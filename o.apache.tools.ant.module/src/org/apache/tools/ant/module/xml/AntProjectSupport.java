@@ -243,11 +243,9 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
             } finally {
                 rd.close ();
             }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             // leave projDoc the way it is...
-            exception = t;
+            exception = e;
         }
         parsed = true;
     }

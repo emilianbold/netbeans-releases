@@ -284,9 +284,9 @@ public class TargetExecutor implements Runnable {
             // generated when killing process in Execution Window
             //throw td;
             return;
-        } catch (Throwable t) {
+        } catch (Exception e) {
             BuildEvent ev = new BuildEvent (project);
-            ev.setException (t);
+            ev.setException (e);
             logger.buildFinished (ev);
         } finally {
             System.setOut(sysout);

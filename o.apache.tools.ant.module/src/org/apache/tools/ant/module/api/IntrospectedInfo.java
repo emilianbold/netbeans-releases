@@ -303,12 +303,10 @@ public final class IntrospectedInfo implements Serializable {
             } catch (NoClassDefFoundError ncdfe) {
                 // Normal for e.g. optional tasks which we cannot resolve against.
                 AntModule.err.log ("IntrospectedInfo: skipping " + clazzname + ": " + ncdfe);
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable t) {
+            } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
-                IOException ioe = new IOException ("Could not load class " + clazzname); // NOI18N
-                AntModule.err.annotate (ioe, t);
+                IOException ioe = new IOException ("Could not load class " + clazzname + ": " + e); // NOI18N
+                AntModule.err.annotate (e, e);
                 throw ioe;
             }
         }
@@ -495,10 +493,10 @@ public final class IntrospectedInfo implements Serializable {
                     } catch (NoClassDefFoundError ncdfe) {
                         // Reasonably normal.
                         AntModule.err.log ("Skipping " + clazz.getName () + ": " + ncdfe);
-                    } catch (Throwable t) {
+                    } catch (LinkageError e) {
                         // Not so normal.
-                        AntModule.err.annotate (t, ErrorManager.INFORMATIONAL, "Cannot scan class " + clazz.getName (), null, null, null); // NOI18N
-                        AntModule.err.notify (ErrorManager.INFORMATIONAL, t);
+                        AntModule.err.annotate (e, ErrorManager.INFORMATIONAL, "Cannot scan class " + clazz.getName (), null, null, null); // NOI18N
+                        AntModule.err.notify (ErrorManager.INFORMATIONAL, e);
                     }
                 }
             }

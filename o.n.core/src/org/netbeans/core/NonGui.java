@@ -583,7 +583,7 @@ public class NonGui extends NbTopManager implements Runnable {
         try {
             secman.checkRead("xxx"); // NOI18N
         }
-        catch (Throwable ex) {
+        catch (RuntimeException ex) {
             // ignore
         }
         

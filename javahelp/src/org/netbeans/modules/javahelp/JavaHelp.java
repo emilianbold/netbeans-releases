@@ -682,10 +682,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
             } else if (url != null) {
                 jh.setCurrentURL(url);
             }
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            Installer.err.notify(t);
+        } catch (RuntimeException e) {
+            Installer.err.notify(e);
         }
     }
 
@@ -711,10 +709,8 @@ public final class JavaHelp extends AbstractHelp implements AWTEventListener {
         }
         try {
             jh = new JHelp(hs);
-        } catch (ThreadDeath td) {
-            throw td;
-        } catch (Throwable t) {
-            Installer.err.notify(t);
+        } catch (RuntimeException e) {
+            Installer.err.notify(e);
             return new JHelp();
         }
         synchronized (availableJHelps) {
