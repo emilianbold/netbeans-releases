@@ -180,17 +180,36 @@ public class URLDataObject extends MultiDataObject {
   * @see DataNode
   */
   protected Node createNodeDelegate () {
-    DataNode node = new DataNode (this, Children.LEAF);
-    node.setIconBase(URL_ICON_BASE);
-    node.setDefaultAction (SystemAction.get (com.netbeans.ide.actions.OpenAction.class));
-    return node;
+    return new URLNode (this);
   }
 
+  /** URL Node implementation.
+  * Leaf node, default action opens editor or instantiates template.
+  * Icons redefined.
+  */
+  public static final class URLNode extends DataNode {
+
+    /** Default constructor, constructs node */
+    public URLNode (final DataObject dataObject) {
+      super(dataObject, Children.LEAF);
+      setIconBase(URL_ICON_BASE);
+    }
+
+    /** Overrides default action from DataNode.
+    * Instantiate a template, if isTemplate() returns true.
+    * Opens otherwise.
+    */
+    public SystemAction getDefaultAction () {
+      SystemAction result = super.getDefaultAction();
+      return result == null ? SystemAction.get(com.netbeans.ide.actions.OpenAction.class) : result;
+    }
+  } // end of URLNode inner class
 }
 
 
 /*
  * Log
+ *  8    Gandalf   1.7         5/8/99   Ian Formanek    Fixed displaying icon
  *  7    Gandalf   1.6         4/27/99  Jesse Glick     new HelpCtx () -> 
  *       HelpCtx.DEFAULT_HELP.
  *  6    Gandalf   1.5         4/8/99   Ian Formanek    Removed debug prints
