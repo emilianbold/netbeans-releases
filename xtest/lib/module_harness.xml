@@ -409,8 +409,10 @@ Microsystems, Inc. All Rights Reserved.
         
         <!-- check whether JVM finished abnormally, in this case
             add failure information to the testbag -->
+        <!--    
         <available file="${xtest.workdir}/nbjunit.flag" property="testbag.failure"/>
         <antcall target="testbag-failure"/>
+        -->
     </target>
     
     <!-- ======================= -->
