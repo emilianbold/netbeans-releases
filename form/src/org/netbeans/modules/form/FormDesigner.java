@@ -400,7 +400,9 @@ public class FormDesigner extends TopComponent implements MultiViewElement
 
     void repaintSelection() {
         Rectangle r = componentLayer.getDesignerOuterBounds();
-        handleLayer.repaint(0, r.x, r.y, r.width, r.height);
+        int borderSize = FormLoaderSettings.getInstance().getSelectionBorderSize();
+        handleLayer.repaint(0, r.x - borderSize, r.y - borderSize,
+                            r.width + 2*borderSize, r.height + 2*borderSize);
     }
 
     /** Finds out what component follows after currently selected component
@@ -1017,12 +1019,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             }
 
             if (updateDone) {
-                Component comp = (Component) getComponent(topDesignComponent);
-                if (comp != null && (comp=comp.getParent()) != null) {
-                    comp.invalidate();
-                    comp.validate();
-                    comp.repaint();
-                }
+                componentLayer.revalidate();
+                repaintSelection();
             }
         }
     }
