@@ -80,7 +80,9 @@ public class ModeConfig {
         if ((state != modeCfg.state) || (kind != modeCfg.kind)) {
             return false;
         }
-        if (side != modeCfg.side) {
+        if (null != side && !side.equals( modeCfg.side ) ) {
+            return false;
+        } else if( null == side && null != modeCfg.side ) {
             return false;
         }
         //Order of constraints array is defined
