@@ -135,8 +135,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     try {
       formInfo = (FormInfo)TopManager.getDefault ().currentClassLoader ().loadClass (infoClass).newInstance ();
     } catch (Exception e) {
-      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-      e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
       throw new IOException (java.text.MessageFormat.format (
         FormEditor.getFormBundle ().getString ("FMT_ERR_FormInfoNotFound"),
         new String[] { infoClass }
@@ -213,6 +212,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           compClass = TopManager.getDefault ().currentClassLoader ().loadClass (className);
         } catch (Exception e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           FormEditor.fileError (java.text.MessageFormat.format (
             FormEditor.getFormBundle ().getString ("FMT_ERR_ClassNotFound"),
             new Object [] {
@@ -256,8 +256,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
   
       return true;
     } catch (Exception e) {
-      // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-      e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
       return false; // [PENDING - undo already processed init?]
     }
   }
@@ -289,8 +288,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               }
               comp.setConstraints (layoutClass, cd);
             } catch (Exception e) {
-              // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-              e.printStackTrace ();
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
               // ignore and try another constraints // [PENDING - add to errors list]
             }
           }
@@ -371,6 +369,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 propsMap.put (propName, propValue);
               }
             } catch (Exception e) {
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
               // ignore property with problem
               // [PENDING - notify problem]
             }
@@ -381,7 +380,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ((RADVisualContainer)comp).setDesignLayout (dl);
       } catch (Exception e) {
         // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-        e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
         return false; // [PENDING - notify]
       }
     }
@@ -396,6 +395,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           propValue = getEncodedPropertyValue (propNodes[i], comp);
         } catch (Exception e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // [PENDING - notify error]
           continue; // ignore this property
         }
@@ -412,14 +412,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
             PropertyEditor ed = FormEditor.createPropertyEditor (editorClass, propertyClass, comp, prop);
             ((RADComponent.RADProperty)prop).setCurrentEditor (ed);
           } catch (Exception e) {
+            if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
             // ignore
           }
         }
         try {
           prop.setValue (propValue);
         } catch (java.lang.reflect.InvocationTargetException e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // ignore this property // [PENDING]
         } catch (IllegalAccessException e) {
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           // ignore this property // [PENDING]
         }
       }
@@ -464,8 +467,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
               Object auxValueDecoded = decodeValue (auxValue);
               auxTable.put (auxName, auxValueDecoded);
             } catch (IOException e) {
-              // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-              e.printStackTrace ();
+              if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
               // [PENDING - handle error]
             }
           }
@@ -945,7 +947,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
 
     Class propertyType = findPropertyType (typeNode.getNodeValue ());
-    RADComponent.RADProperty prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
+    RADComponent.RADProperty prop = null;
+    if (radComponent != null) prop = radComponent.getPropertyByName (nameNode.getNodeValue ());
 
     PropertyEditor ed = null;
     if (editorNode != null) {
@@ -960,11 +963,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
     }
     Object value = null;
 
-    if (preCodeNode != null) {
-      prop.setPreCode (preCodeNode.getNodeValue ());
-    }
-    if (postCodeNode != null) {
-      prop.setPostCode (postCodeNode.getNodeValue ());
+    if (prop != null) {
+      if (preCodeNode != null) {
+        prop.setPreCode (preCodeNode.getNodeValue ());
+      }
+      if (postCodeNode != null) {
+        prop.setPostCode (postCodeNode.getNodeValue ());
+      }
     }
 
     if (valueNode != null) {
@@ -1046,8 +1051,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       try {
         return TopManager.getDefault ().currentClassLoader ().loadClass (encoded);
       } catch (ClassNotFoundException e) {
-        // if (System.getProperty ("netbeans.debug.exceptions") != null) // [PENDING]
-        e.printStackTrace ();
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
         // will return null as the notification of failure
       }
     }
@@ -1103,7 +1107,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
           bytes[count++] = Byte.parseByte (singleNum);
         } catch (NumberFormatException e) {
-          e.printStackTrace ();
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
           throw new IOException ();
         }
         singleNum = "";
@@ -1120,7 +1124,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       Object ret = ois.readObject ();
       return ret;
     } catch (Exception e) {
-      e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
       throw new IOException ();
     }
   }
@@ -1135,7 +1139,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
       oos.writeObject (value);
       oos.close ();
     } catch (Exception e) {
-      e.printStackTrace ();
+      if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
       return null; // problem during serialization
     }
     byte[] bosBytes = bos.toByteArray ();
@@ -1316,6 +1320,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
 /*
  * Log
+ *  35   Gandalf   1.34        9/15/99  Ian Formanek    Fixes bug introduced in 
+ *       Build 388, which caused layouts not to save their properties, improved 
+ *       errors notification
  *  34   Gandalf   1.33        9/14/99  Ian Formanek    RADProperty pre/postCode
  *       is persistent
  *  33   Gandalf   1.32        9/14/99  Ian Formanek    Fixed bug 3287 - Form 
