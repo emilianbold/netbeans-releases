@@ -67,34 +67,43 @@ public class NbPresenterTest extends NbTestCase {
         JButton erase = new JButton ("Erase all my data");
         JButton rescue = new JButton ("Rescue");
         JButton cancel = new JButton ("Cancel");
-        JButton [] options = new JButton [] {rescue, erase, cancel};
+        JButton [] options = new JButton [] {erase, rescue, cancel};
         DialogDescriptor dd = new DialogDescriptor (new JLabel ("Something interesting"), "My dialog", modal,
                 // options
                 options,
-                rescue,
+                erase,
                 // align
                 DialogDescriptor.RIGHT_ALIGN,
                 null, null);
                 
-        dd.setClosingOptions (null);
+        dd.setClosingOptions (new Object[0]);
                 
-        NbPresenter presenter = new NbPresenter (dd, (JFrame)null, modal);
+        NbPresenter presenter = new NbDialog (dd, (JFrame)null);
         presenter.setVisible (true);
+        
         erase.doClick ();
-
         assertEquals ("Erase was invoked.", erase.getText (), ((JButton)dd.getValue ()).getText ());
-
-        presenter = new NbPresenter (dd, (JFrame)null, modal);
-        presenter.setVisible (true);
         erase.doClick ();
+        assertEquals ("Erase was invoked again on same dialog.", erase.getText (), ((JButton)dd.getValue ()).getText ());
+        presenter.dispose ();
 
-        assertEquals ("Erase was invoked again.", erase.getText (), ((JButton)dd.getValue ()).getText ());
-
-        presenter = new NbPresenter (dd, (JFrame)null, modal);
+        presenter = new NbDialog (dd, (JFrame)null);
         presenter.setVisible (true);
-        rescue.doClick ();
 
-        assertEquals ("Rescue was invoked.", rescue.getText (), ((JButton)dd.getValue ()).getText ());
+        erase.doClick ();
+        assertEquals ("Erase was invoked of reused dialog.", erase.getText (), ((JButton)dd.getValue ()).getText ());
+        erase.doClick ();
+        assertEquals ("Erase was invoked again on reused dialog.", erase.getText (), ((JButton)dd.getValue ()).getText ());
+        presenter.dispose ();
+
+        presenter = new NbDialog (dd, (JFrame)null);
+        presenter.setVisible (true);
+        
+        rescue.doClick ();
+        assertEquals ("Rescue was invoked of reused dialog.", rescue.getText (), ((JButton)dd.getValue ()).getText ());
+        rescue.doClick ();
+        assertEquals ("Rescue was invoked again on reused dialog.", rescue.getText (), ((JButton)dd.getValue ()).getText ());
+        presenter.dispose ();
     }
     
 }

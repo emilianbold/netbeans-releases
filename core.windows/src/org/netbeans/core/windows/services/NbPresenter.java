@@ -461,7 +461,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
         
         currentPrimaryButtons = null;
         currentSecondaryButtons = null;
-        
+
         boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()) || //NOI18N
                         "true".equalsIgnoreCase (System.getProperty ("xtest.looks_as_mac"));
         if (isAqua) {
@@ -991,6 +991,9 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     private class ButtonListener implements ActionListener, ComponentListener, PropertyChangeListener {
         ButtonListener() {}
         public void actionPerformed(ActionEvent evt) {
+            boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()) || //NOI18N
+                            "true".equalsIgnoreCase (System.getProperty ("xtest.looks_as_mac"));
+            
             Object pressedOption = evt.getSource();
             // handle ESCAPE
             if (evt.getActionCommand() == CANCEL_COMMAND) {
@@ -1002,7 +1005,6 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 }
                 
                 Object[] options = descriptor.getOptions();
-                boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID()); //NOI18N
                 if (isAqua && options != null) {
                     Arrays.sort (options, NbPresenter.this);
                 }
@@ -1013,7 +1015,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
                 options.length == (currentPrimaryButtons.length - 
                     ((currentHelp != null) ? 1 : 0))
                 ) {
-                    int offset = currentHelp != null && "Aqua".equals(UIManager.getLookAndFeel().getID()) ?
+                    int offset = currentHelp != null && isAqua ?
                         -1 : 0;
                     for (int i = 0; i < currentPrimaryButtons.length; i++) {
                         if (evt.getSource() == currentPrimaryButtons[i]) {
