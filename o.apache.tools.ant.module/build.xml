@@ -28,6 +28,7 @@ Contributor(s): Jayme C. Edwards, Jesse Glick.
 
   <target name="init">
     <ant dir="external" target="unscramble"/>
+    <ant dir="../libs/external" target="unscramble"/>
   </target>
   
   <path id="cp">
