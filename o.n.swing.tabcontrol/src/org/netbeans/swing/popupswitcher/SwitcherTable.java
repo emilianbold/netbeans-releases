@@ -257,9 +257,6 @@ public class SwitcherTable extends JTable {
      */
     public Dimension getPreferredSize() {
         if (prefSize == null) {
-            Insets ins = getInsets();
-            
-            prefSize = new Dimension(ins.left + ins.top, ins.right + ins.bottom);
             int cols = getColumnCount();
             int rows = getRowCount();
             
@@ -269,8 +266,9 @@ public class SwitcherTable extends JTable {
                 for (int j = 0; j < rows; j++) {
                     TableCellRenderer ren = getCellRenderer(j,i);
                     Component c = prepareRenderer(ren, j, i);
+                    // sometime adding of one pixel is needed to prevent "..." truncating
                     columnWidth = Math.max(
-                            c.getPreferredSize().width, columnWidth);
+                            c.getPreferredSize().width + 1, columnWidth);
                 }
             }
             columnWidth = Math.min(columnWidth, 250);
@@ -279,8 +277,7 @@ public class SwitcherTable extends JTable {
                 getColumnModel().getColumn(i).setPreferredWidth(columnWidth);
             }
             // Rows will be fixed height, so just multiply it out
-            prefSize.width += columnWidth * cols;
-            prefSize.height += rows * getRowHeight();
+            prefSize = new Dimension(columnWidth * cols, rows * getRowHeight());
         }
         return prefSize;
     }
@@ -291,18 +288,6 @@ public class SwitcherTable extends JTable {
     
     public SwitcherTableItem getSelectedItem() {
         return (SwitcherTableItem) getValueAt(getSelectedRow(), getSelectedColumn());
-    }
-    
-    public void addNotify() {
-        super.addNotify();
-        // Set initial selection if there is any field in table
-        if ((getRowCount() > 1) && (getColumnCount() > 0)) {
-            changeSelection(1, 0, false, false);
-        }
-    }
-    
-    public void removeNotify() {
-        super.removeNotify();
     }
     
     public void paint(Graphics g) {

@@ -90,7 +90,7 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
      * specified time (<code>TIME_TO_SHOW</code>) expires the popup won't show
      * at all and switch to the last used document will be performed
      * immediately.
-     * 
+     *
      * A popup appears on <code>x</code>, <code>y</code> coordinates.
      */
     public static void selectItem(SwitcherTableItem items[], int releaseKey,
@@ -183,12 +183,16 @@ public final class KeyboardPopupSwitcher implements AWTEventListener {
     
     /** Creates a new instance of TabListPanel */
     private KeyboardPopupSwitcher(SwitcherTableItem[] items) {
-        this.pTable = new SwitcherTable(items);
+        pTable = new SwitcherTable(items);
         // Compute coordinates for popup to be displayed in center of screen
         Dimension popupDim = pTable.getPreferredSize();
         Rectangle screen = Utilities.getUsableScreenBounds();
         this.x = screen.x + ((screen.width / 2) - (popupDim.width / 2));
         this.y = screen.x + ((screen.height / 2) - (popupDim.height / 2));
+        // Set initial selection if there are at least two items in table
+        if ((pTable.getRowCount() > 1) && (pTable.getColumnCount() > 0)) {
+            pTable.changeSelection(1, 0, false, false);
+        }
     }
     
     private void showPopup() {
