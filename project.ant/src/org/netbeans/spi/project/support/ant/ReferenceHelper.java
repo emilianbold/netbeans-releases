@@ -16,6 +16,7 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -187,7 +188,13 @@ public final class ReferenceHelper {
                     forProjName = generateUniqueID(projName, "project.", forProjDir.getAbsolutePath());
                 }
                 File scriptFile = artifact.getScriptLocation();
-                URI scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
+                URI scriptLocation;
+                String rel = PropertyUtils.relativizeFile(forProjDir, scriptFile);
+                try {
+                    scriptLocation = new URI(null, null, rel, null);
+                } catch (URISyntaxException ex) {
+                    scriptLocation = forProjDir.toURI().relativize(scriptFile.toURI());
+                }
                 RawReference ref = new RawReference(forProjName, artifact.getType(), scriptLocation, artifact.getTargetName(), artifact.getCleanTargetName(), artifact.getID());
                 Element references = loadReferences(true);
                 boolean success;
