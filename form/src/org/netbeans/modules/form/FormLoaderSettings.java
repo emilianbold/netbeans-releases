@@ -13,6 +13,7 @@
 
 package com.netbeans.developer.modules.loaders.form;
 
+import java.util.HashMap;
 import com.netbeans.ide.options.SystemOption;
 
 /** Settings for form data loader.
@@ -58,6 +59,9 @@ public class FormLoaderSettings extends SystemOption {
   public static final String PROP_EDITOR_SEARCH_PATH = "editorSearchPath";
   /** Property name of the registeredEditors property */
   public static final String PROP_REGISTERED_EDITORS = "registeredEditors";
+
+  /** Property name of the loadedBeans property */
+  public static final String PROP_LOADED_BEANS = "loadedBeans";
 
   /** A constant for "private" access modifier used in variablesModifier property */
   public static final int PRIVATE = 0;
@@ -124,6 +128,8 @@ public class FormLoaderSettings extends SystemOption {
     { "double", "sun.beans.editors.DoubleEditor" },
     { String[].class.getName (), "com.netbeans.developer.editors.StringArrayEditor.class"},
   };
+  /** HashMap of already installed beans */
+  private static HashMap loadedBeans = new HashMap ();
 
   private static int emptyFormType = 0;
 
@@ -392,6 +398,18 @@ public class FormLoaderSettings extends SystemOption {
     firePropertyChange (PROP_REGISTERED_EDITORS, oldValue, registeredEditors);
   }
 
+  /** Getter for the loadedBeans option */
+  public HashMap getLoadedBeans () {
+    return loadedBeans;
+  }
+
+  /** Setter for the loadedBeans option */
+  public void setLoadedBeans (HashMap value) {
+    HashMap oldValue = loadedBeans;
+    loadedBeans = value;
+    firePropertyChange (PROP_LOADED_BEANS, oldValue, loadedBeans);
+  }
+
   /** This method must be overriden. It returns display name of this options.
   */
   public String displayName () {
@@ -402,6 +420,7 @@ public class FormLoaderSettings extends SystemOption {
 
 /*
  * Log
+ *  6    Gandalf   1.5         6/4/99   Ian Formanek    PROP_LOADED_BEANS
  *  5    Gandalf   1.4         5/30/99  Ian Formanek    PropertyEditors 
  *       management options
  *  4    Gandalf   1.3         5/24/99  Ian Formanek    
