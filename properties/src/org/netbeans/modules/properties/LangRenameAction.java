@@ -64,7 +64,7 @@ public class LangRenameAction extends RenameAction {
         dlg.setInputText(lang);
         if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
             try {
-                pln.setName(Util.assembleName (((PropertiesFileEntry)pln.getFileEntry()).basicName, dlg.getInputText()));
+                pln.setName(Util.assembleName (pln.getFileEntry().getDataObject().getPrimaryFile().getName(), dlg.getInputText()));
             }
             catch (IllegalArgumentException e) {
                 // catch & report badly formatted names

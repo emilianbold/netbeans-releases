@@ -111,8 +111,8 @@ public class PropertiesLocaleNode extends FileEntryNode {
     * @param name the new name
     */
     public void setName (String name) {
-        if(!name.startsWith(((PropertiesFileEntry)getFileEntry()).basicName)) {
-            name = Util.assembleName (((PropertiesFileEntry)getFileEntry()).basicName, name);
+        if(!name.startsWith(getFileEntry().getDataObject().getPrimaryFile().getName())) {
+            name = Util.assembleName (getFileEntry().getDataObject().getPrimaryFile().getName(), name);
         }
         
         // new name is same as old one, do nothing
