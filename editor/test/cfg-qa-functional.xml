@@ -18,25 +18,42 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="all,validation,full" name="validation">
         <testset dir="qa-functional/src">
             <patternset>
+                <include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>            
 		<include name="org/netbeans/test/editor/completion/*Performer.class"/>
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testcomplexunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIunsorted" />
 		<exclude name="org/netbeans/test/editor/completion/*Performer.class/testequalSignIsorted" />
-<!--		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>-->
             </patternset>
         </testset>
     </testbag>
         
-
-    <!-- Code completion non-validation tests: -->
+    
+    <!-- Editor Test Application's Tests
+    -->
+    
+    <testbag testattribs="all,full" name="apps-all">
+        <testset dir="qa-functional/src">
+            <patternset>
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
+		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>                                
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <!-- Code completion non-validation tests: (and three from test editor application) -->
 
     <testbag testattribs="all,failing" name="completion-failing">
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
 		<include name="org/netbeans/test/editor/completion/*Performer.class/testcomplexsorted" />
+                
+                <include name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>                
+		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>                
             </patternset>
         </testset>
     </testbag>
@@ -50,27 +67,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <!-- Editor test application non-validation tests: -->
-    
-<!--    <testbag testattribs="all,full" name="app-all-full">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testRoundAdd"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testCompoundNext"/>
-		<exclude name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
-            </patternset>
-        </testset>
-    </testbag>-->
-
-<!--    <testbag testattribs="all,failing" name="app-all-failing">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/app/tests/*Performer.class/testIfWhile"/>
-            </patternset>
-        </testset>
-    </testbag>-->
-
 
     <!-- Programmatic indentation tests: -->
     
@@ -81,18 +77,7 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-
-    <!-- Key Bindings actions test - to compare state befor and after editor split-->
-    
-    <testbag testattribs="all,full" name="keybindings">
-        <testset dir="qa-functional/src">
-            <patternset>
-		<include name="org/netbeans/test/editor/suites/keybindings/*Performer.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-    
-    
+        
     <!-- Experimental tests (not to be runned automaticaly): -->
     <testbag testattribs="all,exper" name="abbrev-gui">
         <testset dir="qa-functional/src">
@@ -102,7 +87,6 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
         
-    
     <resultsprocessor name="qa-functional" antfile="build.xml" target="test_report" default="true"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     
