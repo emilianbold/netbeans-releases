@@ -304,8 +304,10 @@ public class NbTopManager extends TopManager {
   */
   public void exit () {
     NbProjectOperation.exit ();
-
-    Runtime.getRuntime().exit (0);
+    
+    if (ModuleInstaller.exit ()) {
+      Runtime.getRuntime().exit (0);
+    }
   }
 
   /** @return the desktop pool for this manager
