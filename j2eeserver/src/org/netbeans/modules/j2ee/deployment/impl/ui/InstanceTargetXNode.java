@@ -59,6 +59,13 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         instanceProperties.addPropertyChangeListener(this);
     }
     
+    // this should preven customizer action from being displayed in server instance
+    // context menu in the server registry - customizer should be accessible only 
+    // through the server manager
+    public boolean hasCustomizer() {
+        return false;
+    }
+    
     public String getDisplayName() {
         return instance.getDisplayNameWithState();
     }

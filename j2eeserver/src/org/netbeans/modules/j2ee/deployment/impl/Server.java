@@ -234,6 +234,10 @@ public class Server implements Node.Cookie {
         return nodeProvider;
     }
     
+    public RegistryNodeFactory getRegistryNodeFactory() {
+        return (RegistryNodeFactory) lkp.lookup(RegistryNodeFactory.class);
+    }
+    
     /** returns OptionalDeploymentManagerFactory or null it is not provided by the plugin */
     public OptionalDeploymentManagerFactory getOptionalFactory () {
         OptionalDeploymentManagerFactory o = (OptionalDeploymentManagerFactory) lkp.lookup (OptionalDeploymentManagerFactory.class);
