@@ -126,6 +126,9 @@ public class TomcatManager implements DeploymentManager {
     
     /** path to default web.xml */
     public static final String WEBXML_PATH = File.separator + "conf" + File.separator + "web.xml";  // NOI18N
+    
+    /** some bundled tomcat settings are stored here */
+    private static final String BUNDLED_TOMCAT_SETTING = "J2EE/BundledTomcat/Setting"; // NOI18N
 
     /** Manager state. */
     private boolean connected;
@@ -178,6 +181,21 @@ public class TomcatManager implements DeploymentManager {
             catalinaHome= uri.substring (homeOffset, homeEnd);
             if (baseOffset > 0) {
                 catalinaBase = uri.substring (baseOffset + base.length (), baseEnd);
+            }
+            // Bundled Tomcat home and base dirs can be specified as attributes
+            // specified in BUNDLED_TOMCAT_SETTING file. Tomcat manager URL can 
+            // then look like "tomcat:home=$bundled_home:base=$bundled_base" and
+            // therefore remains valid even if Tomcat version changes. (issue# 40659)
+            if (catalinaHome.length() > 0 && catalinaHome.charAt(0) == '$') {
+                FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+                FileObject fo = fs.findResource(BUNDLED_TOMCAT_SETTING);
+                if (fo != null) {
+                    catalinaHome = fo.getAttribute(catalinaHome.substring(1)).toString();
+                    if (catalinaBase != null && catalinaBase.length() > 0 
+                        && catalinaBase.charAt(0) == '$') {
+                        catalinaBase = fo.getAttribute(catalinaBase.substring(1)).toString();
+                    }
+                }
             }
         }
         

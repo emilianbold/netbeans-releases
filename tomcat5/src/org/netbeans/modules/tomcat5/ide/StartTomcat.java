@@ -227,45 +227,43 @@ public final class StartTomcat extends StartServer implements ProgressObject
         
         public synchronized void run () {
             // PENDING check whether is runs or not
-            String home = tm.getCatalinaHome ();
-            String base = tm.getCatalinaBase ();
-            if (home == null) {
-                // no home - start not supported
-                pes.fireHandleProgressEvent (
-                    null, new Status (ActionType.EXECUTE, command, 
-                        NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_notStarting" : "MSG_notStopping"),
-                        StateType.COMPLETED));
+            File homeDir = tm.getCatalinaHomeDir();
+            if (homeDir == null || !homeDir.exists()) {
+                fireCmdExecProgressEvent(
+                    command == CommandType.START ? "MSG_NoHomeDirStart" : "MSG_NoHomeDirStop",
+                    StateType.FAILED);
                 return;
             }
+            String base = tm.getCatalinaBase();
+            File baseDir = null;
             if (base == null) {
-                base = home;
-            }
-
-            InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
-            File homeDir = new File (home);
-            if (!homeDir.isAbsolute ()) {
-                homeDir = ifl.locate (home, null, false);
-            }
-
-            File baseDir = new File (base);
-            if (!baseDir.isAbsolute ()) {
-                File baseDir2 = ifl.locate (base, null, false);
-                if (baseDir2 == null) {
-                    baseDir = createBaseDir (baseDir, homeDir);
-                } else {
-                    baseDir = baseDir2;
-                }
+                baseDir = homeDir;
             } else {
-                if ((baseDir != null)) {
-                    if ((!baseDir.exists()) || 
-                        (baseDir.isDirectory() && baseDir.listFiles().length <= 0)) {
-                            baseDir = tm.createBaseDir(baseDir, homeDir);
+                baseDir = new File(base);
+                if (!baseDir.isAbsolute ()) {
+                    InstalledFileLocator ifl = InstalledFileLocator.getDefault();
+                    File baseDir2 = ifl.locate (base, null, false);
+                    if (baseDir2 == null) {
+                        baseDir = createBaseDir(baseDir, homeDir);
+                    } else {
+                        baseDir = baseDir2;
                     }
+                } else {
+                    if ((baseDir != null)) {
+                        if ((!baseDir.exists()) || 
+                            (baseDir.isDirectory() && baseDir.listFiles().length <= 0)) {
+                                baseDir = tm.createBaseDir(baseDir, homeDir);
+                        }
+                    }
+                }
+                if (baseDir == null) {
+                    fireCmdExecProgressEvent(
+                        command == CommandType.START ? "MSG_NoBaseDirStart" : "MSG_NoBaseDirStop",
+                        StateType.FAILED);
+                    return;
                 }
             }
             
-            // XXX check for null's
-
             // install the monitor
             if (command == CommandType.START) {
                 try {
@@ -285,17 +283,9 @@ public final class StartTomcat extends StartServer implements ProgressObject
             if ((debug) && (command == CommandType.START)) {
 
                 NbProcessDescriptor pd  = defaultDebugStartDesc (StartTomcat.TAG_DEBUG_CMD, StartTomcat.TAG_JPDA_STARTUP);
-                try { 
-                    pes.fireHandleProgressEvent (
-                        null, 
-                        new Status (
-                            ActionType.EXECUTE, 
-                            command,
-                            NbBundle.getMessage (StartTomcat.class, "MSG_startProcess"), 
-                            StateType.RUNNING
-                        )
-                    );
-                    Process p;
+                try {
+                    fireCmdExecProgressEvent("MSG_startProcess", StateType.RUNNING);
+                    Process p = null;
                     String transportStr = "JPDA_TRANSPORT=dt_socket";         // NOI18N
                     String addressStr = "JPDA_ADDRESS=11555";                 // NOI18N
 
@@ -324,37 +314,29 @@ public final class StartTomcat extends StartServer implements ProgressObject
                             "CATALINA_BASE="+baseDir.getAbsolutePath ()     // NOI18N
                         },
                         true,
-                        new File (homeDir, "bin")
+                        new File (homeDir, "bin") // NOI18N
                     );        
                     ProcessSupport.connectProcessToOutputWindow(p, tm.getDisplayName());
                 } catch (java.io.IOException ioe) {
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
                     }
-                    pes.fireHandleProgressEvent (
-                        null, 
-                        new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
-                    );
-                }        
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed",
+                            StateType.FAILED);
+                    return;
+                }
             } else {
                 NbProcessDescriptor pd  = defaultExecDesc (StartTomcat.TAG_EXEC_CMD, 
-                                                           command == CommandType.START ? StartTomcat.TAG_EXEC_STARTUP : StartTomcat.TAG_EXEC_SHUTDOWN);
-                try { 
-                    pes.fireHandleProgressEvent (
-                        null, 
-                        new Status (
-                            ActionType.EXECUTE, 
-                            command,
-                            NbBundle.getMessage (StartTomcat.class, command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess"), 
-                            StateType.RUNNING
-                        )
-                    );
+                        command == CommandType.START ? StartTomcat.TAG_EXEC_STARTUP : StartTomcat.TAG_EXEC_SHUTDOWN);
+                try {
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess",
+                            StateType.RUNNING);
                     Process p = pd.exec (
                         new TomcatFormat (homeDir.getAbsolutePath ()), 
                         new String[] { 
                             "JAVA_HOME="+System.getProperty ("jdk.home"),  // NOI18N 
-                            "CATALINA_HOME="+homeDir.getAbsolutePath (), 
-                            "CATALINA_BASE="+baseDir.getAbsolutePath ()
+                            "CATALINA_HOME="+homeDir.getAbsolutePath (),   // NOI18N
+                            "CATALINA_BASE="+baseDir.getAbsolutePath ()    // NOI18N
                         },
                         true,
                         new File (homeDir, "bin")
@@ -366,33 +348,61 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     if (TomcatFactory.getEM ().isLoggable (ErrorManager.INFORMATIONAL)) {
                         TomcatFactory.getEM ().notify (ErrorManager.INFORMATIONAL, ioe);    // NOI18N
                     }
-                    pes.fireHandleProgressEvent (
-                        null, 
-                        new Status (ActionType.EXECUTE, command, ioe.getLocalizedMessage (), StateType.FAILED)
-                    );
-                }        
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed",
+                            StateType.FAILED);
+                    return;
+                }
             }
+            
+            fireCmdExecProgressEvent("MSG_waiting", StateType.RUNNING);
+            if (!hasCommandSucceeded()) {
+                    fireCmdExecProgressEvent(command == CommandType.START ? "MSG_StartFailed" : "MSG_StopFailed", 
+                            StateType.FAILED);
+                    return;
+            }
+            fireCmdExecProgressEvent(command == CommandType.START ? "MSG_Started" : "MSG_Stopped", 
+                    StateType.COMPLETED);
+        }
+        
+        /**
+         * Fires command progress event of action type <code>ActionType.EXECUTE</code>.
+         *
+         * @param resName event status message from the bundle, specified by the 
+         *        resource name.
+         * @param stateType event state type.
+         */
+        private void fireCmdExecProgressEvent(String resName, StateType stateType) {
+            String msg = NbBundle.getMessage(StartTomcat.class, resName);
+            pes.fireHandleProgressEvent(
+                null,
+                new Status(ActionType.EXECUTE, command, msg, stateType));
+        }
+        
+        /** For how long should we keep trying to get response from the server. */
+        private static final long TIMEOUT_DELAY = 180000;
+        
+        /**
+         * Try to get response from the server, whether the START/STOP command has 
+         * succeeded.
+         *
+         * @return <code>true</code> if START/STOP command completion was verified,
+         *         <code>false</code> if time-out ran out.
+         */
+        private boolean hasCommandSucceeded() {
             boolean isRunning = isRunning();
+            long startTime = System.currentTimeMillis();
             while ((command == CommandType.START && !isRunning) ||  //still no feedback when starting
                    (command == CommandType.STOP && isRunning)) {    //still getting feedback when stopping
-                pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, NbBundle.getMessage (StartTomcat.class, "MSG_waiting"), StateType.RUNNING));
+                // if time-out ran out, suppose command failed
+                if (System.currentTimeMillis() > startTime + TIMEOUT_DELAY) {
+                    return false;
+                }
                 try {
                     Thread.sleep(500); // take a nap before next retry
                 } catch(InterruptedException ie) {}
                 isRunning = isRunning();
             }
-/*            running = command.equals (CommandType.START);
-            if (debug) {
-                if (running) {
-                    isDebugModeUri.put(tm.getUri(), new Object());
-                } else {
-                    isDebugModeUri.remove(tm.getUri());
-                }
-            } else {
-                isDebugModeUri.remove(tm.getUri());
-            }
-*/
-            pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, command, "", StateType.COMPLETED));
+            return true;
         }
     }
     

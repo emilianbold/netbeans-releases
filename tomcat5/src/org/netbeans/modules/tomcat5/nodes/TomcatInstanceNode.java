@@ -14,22 +14,17 @@
 package org.netbeans.modules.tomcat5.nodes;
 
 import java.beans.PropertyEditor;
-import java.util.*;
+import java.io.File;
 import org.netbeans.modules.tomcat5.TomcatManager;
 import org.openide.nodes.*;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.*;
-import org.openide.loaders.*;
 import org.netbeans.modules.tomcat5.util.TomcatInstallUtil;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-
-import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.SharedContextLogAction;
 import org.netbeans.modules.tomcat5.ide.MonitorSupport;
 import org.openide.actions.PropertiesAction;
@@ -197,10 +192,11 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     
     private String getHome() {
         TomcatManager m = getTomcatManager();
-        if (m != null){
-            return m.getCatalinaHomeDir().getAbsolutePath();
+        if (m != null) {
+            File homeDir = m.getCatalinaHomeDir();
+            if (homeDir != null) return homeDir.getAbsolutePath();
         }
-        return "";
+        return ""; // NOI18N
     }
     
     private String getBase() {
@@ -212,7 +208,7 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                 return m.getCatalinaHomeDir().getAbsolutePath();
             }
         }
-        return "";
+        return ""; // NOI18N
     }
 
     /** Getter for property userName.
