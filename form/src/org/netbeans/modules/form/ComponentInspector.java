@@ -133,6 +133,8 @@ public class ComponentInspector extends TopComponent
 
     private void createComponents() {
         treeView = new BeanTreeView();
+        treeView.setDragSource(true);
+        treeView.setDropTarget(true);
         treeView.getAccessibleContext().setAccessibleName(
             FormUtils.getBundleString("ACS_ComponentTree")); // NOI18N
         treeView.getAccessibleContext().setAccessibleDescription(
