@@ -95,8 +95,8 @@ public class NoProjectNew extends javax.swing.JPanel implements  ActionListener,
         nameLabel.setText("Folders:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(nameLabel, gridBagConstraints);
 
         nameTextField.setColumns(25);
