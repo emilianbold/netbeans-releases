@@ -299,6 +299,7 @@
 <mapID target="editing.indentation" url="editing/configuring/indentation.html" />
 <mapID target="editing.configuring.annotations" url="editing/configuring/annotations.html" />
 <mapID target="editing.fontsandcolors" url="editing/configuring/fontsandcolors.html" />
+<mapID target="editing.colorchooser" url="editing/configuring/colorchooser.html" />
 <mapID target="editing.keybindings" url="editing/configuring/keybindings.html" />
 <!-- Need csh page for the Add Shortcut Sequent dialog box... -->
 <mapID target="editing.csh.shortcutseq" url="shortcuts/kybdshortcuts.html" />
