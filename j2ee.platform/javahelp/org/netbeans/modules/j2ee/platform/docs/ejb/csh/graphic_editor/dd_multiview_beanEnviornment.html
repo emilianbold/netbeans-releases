@@ -1,0 +1,154 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 2005 Sun Microsystems, Inc. All rights reserved.
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<title>ejb-jar.xml Visual Editor: Bean Environment</title>
+<link rel="StyleSheet" href="../../../../../../usersguide/ide.css" type="text/css">
+</head>
+<body>
+<h2><tt>ejb-jar.xml</tt> Visual Editor: Bean Environment</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
+<p>The <tt>ejb-jar.xml</tt> visual editor lets you edit the general <object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+    <param name="content" value="../../glossary/deploymentdesc.html">
+    <param name="viewerActivator" value="javax.help.LinkLabel">
+    <param name="viewerStyle" value="javax.help.Popup">
+    <param name="viewerSize" value="400,220">
+    <param name="text" value="deployment descriptor">
+    <param name="textFontSize" value="small">
+    <param name="textFontFamily" value="SansSerif">
+    <param name="textFontStyle" value="italic">
+    <param name="textFontWeight" value="bold">
+    <param name="textColor" value="blue">
+  </object> for an EJB module. You open the editor by expanding the project's 
+  Configuration Files node in the Projects window and double-clicking <tt>ejb-jar.xml</tt>. 
+  The Enterprise Beans section of the General view contains a section for each 
+  of your EJB module's enterprise beans. </p>
+<p>The section for each enterprise bean has a Bean Environment section. The Bean 
+  Environment section lets you specify the following information:</p>
+<h3><b>Enterprise Bean References</b> </h3>
+<p>Lists all of the enterprise beans that your bean references. When you add a 
+  bean reference, the IDE creates lookup code for in the bean class of the enterprise 
+  that is doing the calling, and adds a reference to the bean in the deployment 
+  descriptor. </p>
+<p>The easiest way to create a bean reference is to open a bean class in the Source 
+  Editor, right-click in the bean class, choose Enterprise Resources <img src="../../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Call 
+  Enterprise Bean. </p>
+<h3><b>Environment Entries</b></h3>
+<p>In the Environment Entries section, you can define properties in the deployment 
+  descriptor that you can then access in the code of your EJB module. For example, 
+  an entry name of a enterprise bean that calculates money exchanges might be 
+  <tt>PoundToDollar</tt> and the value for this entry might be <tt>1.55</tt>, 
+  which indicates the pound-to-dollar exchange rate. </p>
+<p>The environment entry values may be one of the following Java types: <tt>String</tt>, 
+  <tt>Character</tt>, <tt>Integer</tt>, <tt>Boolean</tt>, <tt>Double</tt>, <tt>Byte</tt>, 
+  <tt>Short</tt>, <tt>Long</tt>, and <tt>Float</tt>. Make sure that each entry's 
+  value matches its type. Also make sure that the name for each entry is unique 
+  in the entire deployment descriptor.</p>
+<h3><b>Resource References</b></h3>
+<p>In the Resource References section, you can define references that your bean 
+  needs to access resources such as the following:</p>
+<ul>
+  <li>JMS data sources</li>
+  <li>JDBC data sources</li>
+  <li>Connectors to enterprise information systems</li>
+  <li>Connectors to message ques</li>
+  <li>JavaMail resources</li>
+</ul>
+<p>JMS data sources and JDBC data sources are registered automatically when you 
+  use the Send JMS Message and Use Database commands.</p>
+<p>For each resource reference, you need to do the following:</p>
+<ul>
+  <li>Type the name of the resource, prepended with either <tt>jdbc/</tt>, <tt>mail/</tt>, 
+    <tt>jms/</tt>, <tt>env/</tt> or <tt>url/</tt>, in the Name column.</li>
+  <li>Type <tt>Application</tt> or <tt>Container</tt> in the Authentication column 
+    to indicate whether you want the authentication of resource users to be managed 
+    by the enterprise bean or the container.</li>
+  <li>Type one of the following resource types in the Resource Type column: 
+    <ul>
+      <li><tt>javax.sql.DataSource. </tt>Represents a data store like a database.</li>
+      <li><tt>javax.mail.Session</tt>. One of the following: 
+        <ul>
+          <li>A mail store, where mail messages are stored in folders</li>
+          <li>A mail transport used to send a mail message</li>
+        </ul>
+      <li><tt>java.net.URL</tt>. Represents a file resource.</li>
+      <li><tt>javax.jms.QueueConnectionFactory</tt>. Rrepresents a connection 
+        factory for connecting to a Queue destination.</li>
+      <li><tt>javax.jms.TopicConnectionFactory</tt>. Represents a connection factory 
+        for connecting to a Topic destination.</li>
+      <li><tt>javax.jms.ConnectionFactory</tt>. Rrepresents a connection factory 
+        for connecting to a JMS provider. </li>
+      <li><tt>javax.resource.cci.ConnectionFactory</tt>. Represents a connection 
+        factory for connecting to an EIS.</li>
+      <li><tt>javax.xml.registry.ConnectionFactory</tt>. Represents a connection 
+        factory for connecting to a JAXR registry. </li>
+    </ul>
+  </li>
+  <li>(Optional) Type <tt>Shareable</tt> or <tt>Unshareable</tt> in the Shareable 
+    column to specify whether connections obtained through the given resource 
+    manager connection factory reference can be shared.</li>
+  <li>(Optional) Type a description of the resource refenerence in the description 
+    column. </li>
+</ul>
+<h3><b>Resource Environment References</b></h3>
+<p>Resource environment references are another type of environment entries. They 
+  allow you to refer to administered objects that are associated with resources 
+  (for example, JMS Destinations), by using logical names. You can type the name, 
+  resource type, and optionally a description for each resource environment reference.</p>
+<h3><b>Security Roles References</b></h3>
+<p>In the Security Roles References section, you can link a reference name used 
+  in your code to a security role defined on the application server. The value 
+  in the Name column must be the security role name that is used as a parameter 
+  to the <tt>isCallerInRole(String roleName)</tt> method in your enterprise bean. 
+  You can also optionally link the role name to a security role that is defined 
+  ... (where? in the bean or on the server?)</p>
+<p>All enterprise beans also have the following sections in the <tt>ejb-jar.xml</tt> 
+  visual editor:</p>
+<ul>
+  <li><a href="dd_multiview_beanImp.html">Enterprise Bean Implementation and Interfaces</a></li>
+  <li><a href="dd_multiview_beanDetails.html">Bean Details</a></li>
+</ul>
+<table>
+<tr>
+    <th colspan=2 align=left><a name="seealso">See Also</a></th>
+</tr>
+<tr>
+    <td width="23">&nbsp;</td>
+    <td> 
+      <p><a href="../../configuring/config_ejb_about.html">About Configuring EJB 
+        Modules</a> <br>
+        <a href="../../../enterprise/general/ent_app_verify.html">Verifying an 
+        Enterprise Application</a><br>
+        <tt>ejb-jar.xml</tt> Visual Editor:<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_moduleDetails.html">Module 
+        Details</a> <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Entity.html">Entity 
+        Bean</a><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Session.html">Session 
+        Bean</a><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="dd_multiview_MDB.html">Message-Driven 
+        Beans</a><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="dd_multiview_Relationship.html">CMP 
+        Relationships</a></p>
+      </td>
+</tr>
+</table> 
+<hr>
+<font size=-2><a href="../../../credits.html">Legal Notices</a></font> 
+<table border="0" cellpadding="20">
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>
+

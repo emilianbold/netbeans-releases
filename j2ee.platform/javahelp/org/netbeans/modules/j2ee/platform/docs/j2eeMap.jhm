@@ -325,6 +325,20 @@
 
     <!-- Free-form EJB Module project properties dialog box: -->
     <mapID target="org.netbeans.modules.j2ee.ejbfreeform.ui.EJBLocationsPanel" url="ejb/csh/freeform_ejb_properties.html" />
+
+    <!-- ejb-jar.xml editor csh: -->
+    <mapID target="temp1" url="ejb/csh/ dd_multiview_Session.html" />
+    <mapID target="temp2" url="ejb/csh/dd_multiview_Entity.html" />
+    <mapID target="temp3" url="ejb/csh/dd_multiview_MDB.html" />
+    <mapID target="temp4" url="ejb/csh/dd_multiview_Relationship.html" />
+    <mapID target="temp5" url="ejb/csh/dd_multiview_moduleDetails.html" />
+    <mapID target="dd_multiview_beanDetails" url="ejb/csh/dd_multiview_beanDetails.html" />
+    <mapID target="dd_multiview_beanEnviornment" url="ejb/csh/dd_multiview_beanEnviornment.html" />
+    <mapID target="dd_multiview_beanImp.html" url="ejb/csh/dd_multiview_beanImp.html.html" />
+    <mapID target="dd_multiview_CMPField" url="ejb/csh/dd_multiview_CMPField.html" />
+	<mapID target="dd_multiview_Finders" url="ejb/csh/dd_multiview_Finders.html" />
+	<mapID target="dd_multiview_Selects" url="ejb/csh/dd_multiview_Selects.html" />
+
     
     <!-- End of EJB help -->
 
