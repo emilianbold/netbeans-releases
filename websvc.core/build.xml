@@ -74,6 +74,7 @@ Microsystems, Inc. All Rights Reserved.
 				<attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
 				<attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
 				<attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
+				<attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
 				<attribute name="OpenIDE-Module-Module-Dependencies" 
 					value="${wscore.openide.deps}, ${wscore.project.deps}, ${wscore.xml.deps}, ${wscore.web.deps}, ${wscore.j2ee.deps}"/>
 			</manifest>
