@@ -132,26 +132,33 @@ public class JavaEditorModule extends ModuleInstall {
             );
         }
         
-        private JavaIndentEngine indentEng = null;
+        private JavaIndentEngine indentEngine = null;
 
         private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         
         public JavaIndentationSettingsProvider(){
-            BaseOptions javaOptions = BaseOptions.getOptions(JavaKit.class);
-            if (javaOptions instanceof JavaOptions) {
-                IndentEngine eng = javaOptions.getIndentEngine();
-                if (eng instanceof JavaIndentEngine) {
-                    indentEng = (JavaIndentEngine)eng;
-                    indentEng.addPropertyChangeListener(this);
+        }
+        
+        private synchronized JavaIndentEngine getIndentEngine() {
+            if (indentEngine == null) {
+                BaseOptions javaOptions = BaseOptions.getOptions(JavaKit.class);
+                if (javaOptions instanceof JavaOptions) {
+                    IndentEngine eng = javaOptions.getIndentEngine();
+                    if (eng instanceof JavaIndentEngine) {
+                        indentEngine = (JavaIndentEngine)eng;
+                        indentEngine.addPropertyChangeListener(this);
+                    }
                 }
             }
+            return indentEngine;
         }
 
         public Object getPropertyValue(String propertyName) {
-            if (indentEng != null){
+            JavaIndentEngine eng = getIndentEngine();
+            if (eng != null){
                 String settingsPropertyName = (String)indentSettings2propertyName.get(propertyName);
                 if (settingsPropertyName != null) {
-                    return indentEng.getValue(settingsPropertyName);
+                    return eng.getValue(settingsPropertyName); 
                 }
             }
 
@@ -159,10 +166,12 @@ public class JavaEditorModule extends ModuleInstall {
         }
 
         public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
+            getIndentEngine(); // possibly init engine to listen on it
             pcs.removePropertyChangeListener(l);
         }
 
         public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
+            getIndentEngine(); // possibly init engine to listen on it
             pcs.addPropertyChangeListener(l);
         }
 
@@ -171,9 +180,9 @@ public class JavaEditorModule extends ModuleInstall {
             pcs.firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
         }
 
-        public void release() {
-            if (indentEng != null) {
-                indentEng.removePropertyChangeListener(this);
+        public synchronized void release() {
+            if (indentEngine != null) {
+                indentEngine.removePropertyChangeListener(this);
             }
         }
 
