@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.io.*;
 import java.util.*;
 
+import org.xml.sax.SAXParseException;
+
 import org.openide.ErrorManager;
 import org.openide.TopManager;
 import org.openide.util.NbBundle;
@@ -159,8 +161,9 @@ final class NbErrorManager extends ErrorManager {
         
         if (prefix != null)
             log.print ("[" + prefix + "] "); // NOI18N
-        log.println ("*********** Exception occurred ************"); // NOI18N
+        log.println ("*********** Exception occurred ************ at " + new Date()); // NOI18N
         ex.printStackTrace(log);
+        log.flush();
 
         if (ex.getSeverity () > INFORMATIONAL) {
             NotifyException.notify (ex);
@@ -337,6 +340,28 @@ final class NbErrorManager extends ErrorManager {
                     l = new ArrayList(l);
                 }
                 l.add(new Ann(UNKNOWN, null, null, t2, null));
+            }
+        }
+        if (t instanceof SAXParseException) {
+            // For some reason these fail to come with useful data, like location.
+            SAXParseException spe = (SAXParseException)t;
+            String pubid = spe.getPublicId();
+            String sysid = spe.getSystemId();
+            if (pubid != null || sysid != null) {
+                int col = spe.getColumnNumber();
+                int line = spe.getLineNumber();
+                String msg;
+                if (col != -1 || line != -1) {
+                    msg = NbBundle.getMessage(NbErrorManager.class, "EXC_sax_parse_col_line", new Object[] {String.valueOf(pubid), String.valueOf(sysid), new Integer(col), new Integer(line)});
+                } else {
+                    msg = NbBundle.getMessage(NbErrorManager.class, "EXC_sax_parse", String.valueOf(pubid), String.valueOf(sysid));
+                }
+                if (l == null) {
+                    l = new ArrayList(1);
+                } else {
+                    l = new ArrayList(l);
+                }
+                l.add(new Ann(UNKNOWN, msg, null, null, null));
             }
         }
         Annotation[] arr;
@@ -521,7 +546,7 @@ final class NbErrorManager extends ErrorManager {
                 log(ErrorManager.WARNING, "Be sure not to annotate an exception with itself, directly or indirectly."); // NOI18N
                 return;
             }
-            /*Heaeder */
+            /*Heaeder
             pw.print (getDate ());
             pw.print (": "); // NOI18N
             pw.print (getClassName ());
@@ -533,7 +558,7 @@ final class NbErrorManager extends ErrorManager {
                 pw.print("<no message>"); // NOI18N
             }
             pw.println ();
-            
+            */
             /*Annotations */
           for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == null) continue;
@@ -542,13 +567,16 @@ final class NbErrorManager extends ErrorManager {
                 String annotation = arr[i].getLocalizedMessage();
                 
                 if (annotation == null) annotation = arr[i].getMessage();
+                /*
                 if (annotation == null && thr != null) annotation = thr.getLocalizedMessage();
                 if (annotation == null && thr != null) annotation = thr.getMessage();
+                 */
                 
                 if (annotation != null) {
-                    if (thr != null)
-                        pw.println ("Nested annotation: "+annotation);// NOI18N
-                    else pw.println ("Annotation: "+annotation);// NOI18N
+                    if (thr == null) {
+                        pw.println ("Annotation: "+annotation);// NOI18N
+                    }
+                    //else pw.println ("Nested annotation: "+annotation);// NOI18N
                 }                
             }            
             
@@ -585,7 +613,7 @@ final class NbErrorManager extends ErrorManager {
                 if (thr != null) {
                     Annotation[] ans = findAnnotations (thr);
                     Exc ex = new Exc (thr, 0, ans);
-                    pw.println();
+                    pw.println("==>"); // NOI18N
                     ex.printStackTrace(pw, nestingCheck);
                 }
             }
