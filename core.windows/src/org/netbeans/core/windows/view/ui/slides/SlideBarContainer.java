@@ -15,6 +15,7 @@ package org.netbeans.core.windows.view.ui.slides;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
@@ -140,6 +141,7 @@ public final class SlideBarContainer extends AbstractModeContainer {
             this.modeContainer = modeContainer;
             // To be able to activate on mouse click.
             enableEvents(java.awt.AWTEvent.MOUSE_EVENT_MASK);
+            setMinimumSize(new Dimension(1,1));
         }
         
         public ModeView getModeView() {
