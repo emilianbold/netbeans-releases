@@ -285,7 +285,10 @@ public class JUnitTestRunner {
                     // ok, we have the suite - everything is ok
                     TestSuite aTestSuite = (TestSuite)aTest;
                     if (aTestSuite.getName() == null) {
+                        /*
                         String newSuiteName = testClass.getName();
+                        */
+                        String newSuiteName = className;
                         out.println("Suite name is null, installing "+newSuiteName);
                         aTestSuite.setName(newSuiteName);
                     }                    
@@ -293,7 +296,10 @@ public class JUnitTestRunner {
                 } else {
                     // we need to construct or own suite
                     TestSuite suite;
+                    /*
                     String suiteName = aTest.getClass().getName();
+                     */
+                    String suiteName = className;
                     if (aTest instanceof NbTest) {
                         // need to create NbTestSuite for NbTests -> we can use filter
                         suite = new NbTestSuite(suiteName);
@@ -353,6 +359,19 @@ public class JUnitTestRunner {
         } else {
             return testLoader.loadClass(className);
         }
+    }
+    
+    private String getClassnameFromFilename(String filename) {
+        String shortFilename;
+        if (filename.endsWith(".java")) {
+            shortFilename = filename.substring(0, filename.length() - 5);
+        } else if (filename.endsWith(".class")) {
+            shortFilename = filename.substring(0, filename.length() - 6);              
+        } else {
+            shortFilename = filename;
+        }
+        // now convert separator chars to dots (fully qualified java name)
+        return shortFilename.replace(File.separatorChar, '.');
     }
     
     private Test instintiateTestFromClass(Class testClass) throws ClassCastException {
