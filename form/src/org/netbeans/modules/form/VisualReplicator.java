@@ -204,6 +204,13 @@ public class VisualReplicator {
 
         if (laysup.supportsArranging())
             laysup.arrangeContainer(cont, contDelegate);
+
+        // workaround for JTabbedPane bug 4190719
+        if (cont instanceof JTabbedPane) {
+            Component comp = ((JTabbedPane)cont).getSelectedComponent();
+            if (comp != null)
+                comp.setVisible(true);
+        }
     }
 
     public void addComponent(RADComponent metacomp) {
