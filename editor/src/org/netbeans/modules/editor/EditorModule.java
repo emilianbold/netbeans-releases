@@ -98,9 +98,6 @@ public class EditorModule extends ModuleInstall {
         HTMLPrintOptions.class
     };
 
-    /** Listener on <code>DataObject.Registry</code>. */
-    private DORegistryListener rl;
-    
     /** Module installed again. */
     public void restored () {
 
@@ -187,13 +184,6 @@ public class EditorModule extends ModuleInstall {
 //        }
 
         TopManager.getDefault().getLoaderPool().addOperationListener(new RepositOperations());
-        
-        
-        // Start listening on DataObject.Registry
-        if (rl == null) {
-            rl = new DORegistryListener();
-            DataObject.getRegistry().addChangeListener((ChangeListener)(WeakListener.change(rl, DataObject.getRegistry())));
-        }
         
         if (repoListen==null){
             repoListen=new RepositListener();
