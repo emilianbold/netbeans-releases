@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="Debug">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
                 <file name="org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance" />
+                <file name="org-netbeans-modules-debugger-support-actions-AllInOneAction.instance" />
                 <file name="org-netbeans-modules-debugger-support-actions-WatchesAction.instance" />
                 <file name="org-netbeans-modules-debugger-support-actions-CallStackAction.instance" />
                 <file name="org-netbeans-modules-debugger-support-actions-ClassesAction.instance" />
@@ -63,7 +64,11 @@ Microsystems, Inc. All Rights Reserved.
                 <file name="LocalVariablesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-LocalVariablesAction.instance"/>
                 </file>
-                <attr name="LocalVariablesAction.shadow/WatchesAction.shadow" boolvalue="true" />
+                <attr name="LocalVariablesAction.shadow/AllInOneAction.shadow" boolvalue="true" />
+                <file name="AllInOneAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-AllInOneAction.instance"/>
+                </file>
+                <attr name="AllInOneAction.shadow/WatchesAction.shadow" boolvalue="true" />
                 <file name="WatchesAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/Debug/org-netbeans-modules-debugger-support-actions-WatchesAction.instance"/>
                 </file>
@@ -437,6 +442,7 @@ Microsystems, Inc. All Rights Reserved.
             <!-- PENDING Debugger console is not yet fully defined from UI.
             <file name="console.settings" url="components/console.settings" />-->
             <file name="variables.settings" url="components/variables.settings" />
+            <file name="allinone.settings" url="components/allinone.settings" />
             <file name="watches.settings" url="components/watches.settings" />
             <file name="sessions.settings" url="components/sessions.settings" />
             <file name="threads.settings" url="components/threads.settings" />
@@ -448,6 +454,8 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Modes">
             <file name="debugger.wsmode" url="modes/debugger.wsmode" />
             <folder name="debugger">
+                <file name="allinone.wstcref" url="modes/debugger/allinone.wstcref" />
+                <attr name="allinone.wstcref/watches.wstcref" boolvalue="true"/>
                 <file name="watches.wstcref" url="modes/debugger/watches.wstcref" />
                 <attr name="watches.wstcref/variables.wstcref" boolvalue="true"/>
                 <file name="variables.wstcref" url="modes/debugger/variables.wstcref" />
@@ -473,6 +481,7 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="debugger">
                 <!--<file name="console.wstcgrp" url="groups/debugger/console.wstcgrp" />-->
                 <file name="variables.wstcgrp" url="groups/debugger/variables.wstcgrp" />
+                <file name="allinone.wstcgrp" url="groups/debugger/allinone.wstcgrp" />
                 <file name="watches.wstcgrp" url="groups/debugger/watches.wstcgrp" />
                 <file name="sessions.wstcgrp" url="groups/debugger/sessions.wstcgrp" />
                 <file name="threads.wstcgrp" url="groups/debugger/threads.wstcgrp" />
