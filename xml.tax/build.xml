@@ -14,21 +14,21 @@ Microsystems, Inc. All Rights Reserved.
 
 <project name="xml" default="jars" basedir=".">
 
-  <property name="xmlroot" location=".."/>
+  <property name="xml_root" location=".."/>
 
-  <property name="nbroot" location="${xmlroot}/.."/>
-  <property name="binroot" location="${nbroot}/../nbextra"/>
-  <property name="nbext" location="${nbroot}/nbbuild"/>
+  <property name="nb_root" location="${xml_root}/.."/>
+  <property name="bin_root" location="${nb_root}/../nbextra"/>
+  <property name="nbext_root" location="${nb_root}/nbbuild"/>
 
-  <property name="parserimpl" value="${binroot}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
+  <property name="parserimpl" value="${bin_root}/xml/tax/release/modules/ext/xerces2.jar"/> <!-- parser implementation used internally by module -->
 
-  <property name="license.file" location="${nbroot}/nbbuild/standard-nbm-license.txt"/>
+  <property name="license.file" location="${nb_root}/nbbuild/standard-nbm-license.txt"/>
   <property name="homepage.base" value="netbeans.org"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="storepass" value="?"/>
 
-  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext}/nbantext.jar"/>
-  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar"/>
+  <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
 
 
   <target name="init">
@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
     <echo message="Compiling TAX module classes..."/>
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>        
-	<fileset dir="${nbroot}/openide/netbeans/lib">
+	<fileset dir="${nb_root}/openide/netbeans/lib">
 	  <include name="openide*.jar"/>
 	</fileset>
         <pathelement location="libsrc"/>
@@ -60,7 +60,7 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules/ext"/>
     <jar jarfile="netbeans/modules/ext/tax.jar"
     	 compress="false">
-      <fileset dir="libsrc" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="libsrc" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
     </jar>
 
     <mkdir dir="netbeans/modules/autoload"/>   
@@ -69,14 +69,14 @@ Microsystems, Inc. All Rights Reserved.
     <locjar jarfile="netbeans/modules/autoload/xml-tax.jar"
             manifest="manifest-subst.mf"
     	    compress="false">
-      <fileset dir="src" excludesfile="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="src" excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"/>
       <locale name="ja"/>
     </locjar>
   </target>
 
   <target name="release">
     <copy todir="netbeans">
-      <fileset dir="${binroot}/xml/tax/release"/>
+      <fileset dir="${bin_root}/xml/tax/release"/>
     </copy>
   </target>
 
@@ -141,11 +141,11 @@ Microsystems, Inc. All Rights Reserved.
       </classpath>
       <link href="${jdk-docs-location}"
             offline="true"
-            packagelistLoc="${nbroot}/openide/api/doc"
+            packagelistLoc="${nb_root}/openide/api/doc"
       />
       <link href="${xml-docs-location}"
             offline="true"
-            packagelistLoc="${nbroot}/openide/api/doc/org/openide/xml"
+            packagelistLoc="${nb_root}/openide/api/doc/org/openide/xml"
       />
     </javadoc>
   </target>
