@@ -481,7 +481,7 @@ java.util.jar.Manifest;
       <TestLogAction Name="insert-break" Command="\0C" />
       <TestStringAction Name="string23" String="\0C1);" />
     </TestStep>
-    <TestCallAction Name="CCAfterMethods" Call="CCAfterMethodsActions" Set="Settings1" Enable="true" Repeat="1" Delay="400">
+    <TestCallAction Name="CCAfterMethods" Call="CCAfterMethodsActions" Set="Settings1" Enable="true" Repeat="2" Delay="200">
       <Input>
         <![CDATA[""]]>
       </Input>
