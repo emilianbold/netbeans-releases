@@ -387,25 +387,26 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	
 // readonly	
 
-	public boolean isReadOnly() throws SQLException
-	{
+	public boolean isReadOnly() throws SQLException {
 		Boolean readonly = (Boolean)properties.get(PROP_READONLY);
 		if (readonly == null) {
-			if (dmd != null) readonly = new Boolean(dmd.isReadOnly());
-			else throw new SQLException("no database metadata available");
+			if (dmd != null)
+        readonly = new Boolean(dmd.isReadOnly());
+      else
+        throw new SQLException("no database metadata available");
 			properties.put(PROP_READONLY, readonly);
 		}
 
 		return readonly.booleanValue();
 	}
 
-	public int getReadOnly()
-	{
+//	public int getReadOnly() {
+	public int getreadOnly() {
 		return getBoolean(PROP_READONLY);	
 	}
 
-	public void setReadOnly(int flag)
-	{
+//	public void setReadOnly(int flag) {
+	public void setreadOnly(int flag) {
 		setBoolean(PROP_READONLY, flag);
 	}
 
@@ -1773,25 +1774,27 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	* @return true if it appears at the start 
 	* @exception SQLException if a database access error occurs
 	*/
-	public boolean isCatalogAtStart() throws SQLException
-	{
+
+	public boolean isCatalogAtStart() throws SQLException {
 		Boolean catalogAtStart = (Boolean)properties.get(PROP_CATALOG_AT_START);
 		if (catalogAtStart == null) {
-			if (dmd != null) catalogAtStart = new Boolean(dmd.isCatalogAtStart());
-			else throw new SQLException("no database metadata available");
+			if (dmd != null)
+        catalogAtStart = new Boolean(dmd.isCatalogAtStart());
+			else
+        throw new SQLException("no database metadata available");
 			properties.put(PROP_CATALOG_AT_START, catalogAtStart);
 		}
 
 		return catalogAtStart.booleanValue();
 	}
 
-	public int getCatalogAtStart()
-	{
+//	public int getCatalogAtStart() {
+	public int getcatalogAtStart() {
 		return getBoolean(PROP_CATALOG_AT_START);
 	}
 
-	public void setCatalogAtStart(int value)
-	{
+//	public void setCatalogAtStart(int value) {
+	public void setcatalogAtStart(int value) {
 		setBoolean(PROP_CATALOG_AT_START, value);
 	}
 
@@ -3935,6 +3938,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 
 /*
  * <<Log>>
+ *  9    Gandalf   1.8         3/6/00   Radko Najman    fixed bug #4447
  *  8    Gandalf   1.7         11/27/99 Patrik Knakal   
  *  7    Gandalf   1.6         11/1/99  Radko Najman    dmd.getDatabaseProductName().trim()
  *       

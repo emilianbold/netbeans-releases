@@ -34,7 +34,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 				
 				new PropertyDescriptor(DefaultAdaptor.PROP_PROCEDURES_ARE_CALLABLE, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_TABLES_ARE_SELECTABLE, DefaultAdaptor.class),
-				new PropertyDescriptor(DefaultAdaptor.PROP_READONLY, DefaultAdaptor.class),
+				new PropertyDescriptor(DefaultAdaptor.PROP_READONLY, DefaultAdaptor.class, "getreadOnly", "setreadOnly"),
 				new PropertyDescriptor(DefaultAdaptor.PROP_LOCAL_FILES, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_FILE_PER_TABLE, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_MIXEDCASE_IDENTIFIERS, DefaultAdaptor.class),
@@ -68,7 +68,7 @@ public class DefaultAdaptorBeanInfo extends SimpleBeanInfo
 				new PropertyDescriptor(DefaultAdaptor.PROP_OUTER_JOINS, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_FULL_OUTER_JOINS, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_LIMITED_OUTER_JOINS, DefaultAdaptor.class),
-				new PropertyDescriptor(DefaultAdaptor.PROP_CATALOG_AT_START, DefaultAdaptor.class),
+				new PropertyDescriptor(DefaultAdaptor.PROP_CATALOG_AT_START, DefaultAdaptor.class, "getcatalogAtStart", "setcatalogAtStart"),
 				new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_DML, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_PROCEDURE_CALL, DefaultAdaptor.class),
 				new PropertyDescriptor(DefaultAdaptor.PROP_SCHEMAS_IN_TABLE_DEFINITION, DefaultAdaptor.class),
