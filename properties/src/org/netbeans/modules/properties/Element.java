@@ -187,7 +187,7 @@ public abstract class Element implements Serializable {
         * @return the string
         */
         public String getDocumentString() {
-            return UtilConvert.saveConvert(value) + "=";
+            return UtilConvert.saveConvert(value, true) + "=";
         }
     } // End of nested class KeyElem.
     

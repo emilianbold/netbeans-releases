@@ -344,6 +344,10 @@ public class UtilConvert {
      * Differs from Sun's implementation in that it does not save ' ' as '\ '.
      */
     public static String saveConvert(String theString) {
+        return saveConvert(theString, false);
+    }
+
+    public static String saveConvert(String theString, boolean escapeSpace) {
         char aChar;
         int len = theString.length();
         StringBuffer outBuffer = new StringBuffer(len*2);
@@ -369,8 +373,9 @@ public class UtilConvert {
                     outBuffer.append(toHex((aChar >> 8) & 0xF));
                     outBuffer.append(toHex((aChar >> 4) & 0xF));
                     outBuffer.append(toHex((aChar >> 0) & 0xF));
-                }
-                else {
+                } else if (escapeSpace && (aChar == ' ')) {
+                    outBuffer.append('\\').append(' ');
+                } else {
                     if (specialSaveChars.indexOf(aChar) != -1)
                         outBuffer.append('\\');
                     outBuffer.append(aChar);
