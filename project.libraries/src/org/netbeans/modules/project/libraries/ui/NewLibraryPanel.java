@@ -65,8 +65,13 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     public String getLibraryName () {
         return this.name.getText();
     }
-    
-    
+
+    public void addNotify() {
+        super.addNotify();
+        this.name.selectAll();
+    }
+
+
     private void initModel () {
         this.typeMap = new HashMap ();
         this.name.setText (NbBundle.getMessage (NewLibraryPanel.class,"TXT_NewLibrary"));
