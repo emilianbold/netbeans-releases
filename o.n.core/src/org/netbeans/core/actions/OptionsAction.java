@@ -26,6 +26,7 @@ import java.beans.PropertyChangeEvent;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListener;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.ActionPerformer;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.TopManager;
@@ -130,6 +131,7 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.gridwidth = 2;
             add (split, gridBagConstraints);
 
             javax.swing.JButton close = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_close_button"));
@@ -137,16 +139,43 @@ public class OptionsAction extends CallableSystemAction {
             gridBagConstraints = new GridBagConstraints ();
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = 1;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 0;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
             gridBagConstraints.insets.bottom = 11;
             gridBagConstraints.insets.top = 11;
-            gridBagConstraints.insets.right = 11;
+            gridBagConstraints.insets.right = 0;
             close.addActionListener (new ActionListener () {
                 public void actionPerformed (ActionEvent e) {
                     singleton ().close ();
                 }
             });
             add (close, gridBagConstraints);
+
+            javax.swing.JButton help = new javax.swing.JButton (NbBundle.getMessage (OptionsAction.class, "CTL_help_button"));
+            help.setMinimumSize (close.getMinimumSize ());
+            help.setMaximumSize (close.getMaximumSize ());
+            help.setPreferredSize (close.getPreferredSize ());
+            help.setSize (close.getSize ());
+            gridBagConstraints = new GridBagConstraints ();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = 1;
+            gridBagConstraints.weightx = 0;
+            gridBagConstraints.weighty = 0;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+            gridBagConstraints.insets.bottom = 11;
+            gridBagConstraints.insets.top = 11;
+            gridBagConstraints.insets.right = 11;
+            gridBagConstraints.insets.left = 5;
+            help.addActionListener (new ActionListener () {
+                public void actionPerformed (ActionEvent e) {
+                    TopManager.getDefault ().getActionManager ().invokeAction (
+                        SystemAction.get (org.openide.actions.HelpAction.class),
+                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null)
+                    );
+                }
+            });
+            add (help, gridBagConstraints);
 
             return view;
         }
