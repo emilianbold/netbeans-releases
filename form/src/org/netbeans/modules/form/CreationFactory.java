@@ -15,6 +15,7 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import java.lang.reflect.*;
+import javax.swing.*;
 
 /** Factory for creating objects, registering CreationDescriptor classes
  * and related utility methods.
@@ -59,9 +60,15 @@ public class CreationFactory {
     public static Object createDefaultInstance(Class cls)
         throws InstantiationException, IllegalAccessException,
                IllegalArgumentException, InvocationTargetException {
-
         CreationDescriptor cd = getDescriptor(cls);
-        return cd != null ? cd.createDefaultInstance() : cls.newInstance();
+        try {
+            //FormLAF.useLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
+            FormLAF.useLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
+            return cd != null ? cd.createDefaultInstance() : cls.newInstance();
+        }
+        finally {
+            FormLAF.useIDELookAndFeel();
+        }
     }
 
     public Object createInstance(Class cls, FormProperty[] props, int style)
@@ -71,8 +78,16 @@ public class CreationFactory {
         CreationDescriptor cd = getDescriptor(cls);
         if (cd != null) {
             CreationDescriptor.Creator creator = cd.findBestCreator(props, style);
-            if (creator != null)
-                return creator.createInstance(props);
+            if (creator != null) {
+                try {
+                    //FormLAF.useLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); // NOI18N
+                    FormLAF.useLookAndFeel(UIManager.getLookAndFeel().getClass().getName());
+                    return creator.createInstance(props);
+                }
+                finally {
+                    FormLAF.useIDELookAndFeel();
+                }
+            }
         }
         return null;
     }
