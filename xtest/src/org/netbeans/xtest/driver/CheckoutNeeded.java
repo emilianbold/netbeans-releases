@@ -115,7 +115,15 @@ public class CheckoutNeeded extends Task {
                         del.init();
                         del.execute();
                         log("Trying to checkout for the third time.");
-                        cvs.execute();
+                        try { cvs.execute(); }
+                        catch (BuildException e3) {
+                            log("Third attempt to checkout failed: " + e3);
+                            log("Waiting 5 minutes");
+                            try { Thread.currentThread().sleep(5 * 60 * 1000); }
+                            catch (InterruptedException e4) {}
+                            log("Trying to checkout for the third time.");
+                            cvs.execute();
+                        }
                     }
                 }
                 
