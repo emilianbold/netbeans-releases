@@ -151,10 +151,17 @@ public class PaletteItem implements java.io.Serializable {
   public boolean isContainer () {
     return isContainer;
   }
+
+  public boolean isMenu () {
+    return java.awt.MenuBar.class.isAssignableFrom (beanClass) || 
+           javax.swing.JMenuBar.class.isAssignableFrom (beanClass) || 
+           javax.swing.JPopupMenu.class.isAssignableFrom (beanClass);
+  }
 }
 
 /*
  * Log
+ *  9    Gandalf   1.8         7/3/99   Ian Formanek    isMenu added
  *  8    Gandalf   1.7         6/10/99  Ian Formanek    Fixed usage of 
  *       InstanceCookie as source for the PaletteItem
  *  7    Gandalf   1.6         6/9/99   Ian Formanek    ---- Package Change To 
