@@ -295,6 +295,11 @@ public final class IntrospectedInfo implements Serializable {
         while (it.hasNext ()) {
             Map.Entry entry = (Map.Entry) it.next ();
             String name = (String) entry.getKey ();
+            if (!tasks && name.equals("description")) { // NOI18N
+                // Not a real data type; handled specially.
+                AntModule.err.log("Skipping pseudodef of <description>");
+                continue;
+            }
             String clazzname = (String) entry.getValue ();
             try {
                 Class clazz = cl.loadClass (clazzname);
