@@ -26,10 +26,7 @@ import org.openide.windows.OutputWriter;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
@@ -46,7 +43,7 @@ import org.openide.util.Utilities;
  *
  * @author  Tim Boudreau
  */
-class OutWriter extends OutputWriter implements Runnable {
+class OutWriter extends PrintWriter implements Runnable {
     /** A flag indicating an io exception occured */
     private boolean trouble = false;
     /** A flag that indicates some characters have been written */
@@ -82,44 +79,33 @@ class OutWriter extends OutputWriter implements Runnable {
      */
     OutWriter() {
         super (new DummyWriter());
-        getStorage();
-        init();
     }
 
-    private boolean unused = true;
-    private synchronized void init() {
-        storage = null;
-        trouble = false;
-        closesRequired = 0;
-        if (lines != null) {
-            lines.clear();
+    Storage getStorage() {
+        if (disposed) {
+            throw new IllegalStateException ("Output file has been disposed!");
         }
-    }
-
-    private Storage getStorage() {
         if (storage == null) {
             storage = OutWriter.USE_HEAP_STORAGE ? (Storage)new HeapStorage() : (Storage)new FileMapStorage();
         }
         return storage;
     }
-
-    private synchronized void updateCloseCount () {
-        closesRequired = Math.max (1, closesRequired);
+    
+    boolean hasStorage() {
+        return storage != null;
     }
-
-    private int closesRequired = 0;
-    private ErrWriter err = null;
-    public synchronized ErrWriter getErr() {
-        if (err == null) {
-            err = new ErrWriter(this);
-            closesRequired++;
-            closesRequired = Math.max(2, closesRequired);
-        }
-        return err;
+    
+    boolean isDisposed() {
+        return disposed;
+    }
+    
+    boolean isEmpty() {
+        return storage == null ? true : lines == null ? true : 
+            lines.getLineCount() == 0;
     }
 
     public String toString() {
-        return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " unused=" + unused + " closed " + " listener=" + System.identityHashCode(listener);
+        return "OutWriter@" + System.identityHashCode(this) + " for " + owner + " closed " + " listener=" + System.identityHashCode(listener);
     }
 
     public void run() {
@@ -157,7 +143,9 @@ class OutWriter extends OutputWriter implements Runnable {
     }
     
     private void fire() {
-        if (disposed || trouble) return;
+        if (checkError()) {
+            return;
+        }
         if (Controller.log) Controller.log (this + ": Writer firing " + getStorage().size() + " bytes written");
         if (listener != null) {
             Mutex.EVENT.readAccess(this);
@@ -166,34 +154,6 @@ class OutWriter extends OutputWriter implements Runnable {
 
     boolean peekDirty() {
         return dirty;
-    }
-
-
-    synchronized void errClosed() {
-        closesRequired--;
-        if (Controller.log) {
-            Controller.log (this + ": Error close");
-        }
-        if (closesRequired == 0) {
-            doClose();
-        }
-    }
-
-    public synchronized void doClose() {
-        try {
-            if (Controller.log) {
-                Controller.log (this + ": DO CLOSE: both streams closed, OutWriter is defunct");
-            }
-            getStorage().close();
-            closesRequired = 0;
-            markDirty();
-            fire();
-            if (owner != null) {
-                owner.setStreamClosed(true);
-            }
-        } catch (IOException ioe) {
-            handleException (ioe);
-        }
     }
 
 
@@ -234,7 +194,9 @@ class OutWriter extends OutputWriter implements Runnable {
      * notifications for small writes.
      */
     public boolean checkDirty() {
-        if (disposed || trouble) return false;
+        if (checkError()) {
+            return false;
+        }
         boolean wasDirty = dirty;
         dirty = false;
         return wasDirty;
@@ -248,10 +210,7 @@ class OutWriter extends OutputWriter implements Runnable {
      * @param cl A change listener
      * @throws TooManyListenersException If more than one listener is added
      */
-    public void addChangeListener (ChangeListener cl) throws TooManyListenersException {
-        if (listener != null && listener != cl) {
-//            throw new TooManyListenersException();
-        }
+    public void addChangeListener (ChangeListener cl) {
         this.listener = cl;
     }
 
@@ -263,7 +222,7 @@ class OutWriter extends OutputWriter implements Runnable {
     public void removeChangeListener (ChangeListener cl) {
         if (listener == cl) {
             listener = null;
-        }
+        } 
     }
 
     /**
@@ -277,12 +236,22 @@ class OutWriter extends OutputWriter implements Runnable {
         if (checkError()) {
             return;
         }
-        unused = false;
         markDirty();
         int lineLength = bb.limit();
-
+        closed = false;
+        int start = -1;
         try {
-            int start = getStorage().write(bb);
+            start = getStorage().write(bb);
+        } catch (java.nio.channels.ClosedByInterruptException cbie) {
+            //Execution termination has sent ThreadDeath to the process in the
+            //middle of a write
+            threadDeathClose();
+        } catch (java.nio.channels.AsynchronousCloseException ace) {
+            //Execution termination has sent ThreadDeath to the process in the
+            //middle of a write
+            threadDeathClose();
+        }
+        if (start >= 0 && !terminated) {
             if (Controller.verbose) Controller.log (this + ": Wrote " +
                     ((ByteBuffer)bb.flip()).asCharBuffer() + " at " + start);
 
@@ -294,27 +263,22 @@ class OutWriter extends OutputWriter implements Runnable {
                 if (Controller.log) Controller.log ("Firing initial write event");
                 fire();
             }
-        } catch (java.nio.channels.ClosedByInterruptException cbie) {
-            //Execution termination has sent ThreadDeath to the process in the
-            //middle of a write
-            close();
+            if (owner != null && owner.isStreamClosed()) {
+                owner.setStreamClosed(false);
+            }
         }
     }
-
-    public boolean isCleared() {
-        return cleared;
-    }
-
-    private boolean cleared = false;
-    public void clear() {
-        if (Controller.log) Controller.log ("OutWriter.clear " + this);
-        clearListeners();
-        cleared = true;
-        if (storage != null) {
-            storage.dispose();
+    private boolean terminated = false;
+    
+    private void threadDeathClose() {
+        terminated = true;
+        if (Controller.log) Controller.log (this + " Close due to termination");
+        ErrWriter err = owner.writer().err();
+        if (err != null) {
+            err.closed=true;
         }
-        listener = null;
-        init();
+        owner.setStreamClosed(true);
+        close();
     }
 
     /**
@@ -322,14 +286,19 @@ class OutWriter extends OutputWriter implements Runnable {
      * OutWriter will still be usable.  If reuse if false, note that any current ChangeListener is cleared.
      *
      */
-    public void dispose() {
+    public synchronized void dispose() {
+        if (disposed) {
+            throw new IllegalStateException ("Trying to dispose an OutWriter twice");
+        }
         if (Controller.log) Controller.log (this + ": OutWriter.dispose - owner is " + (owner == null ? "null" : owner.getName()));
         clearListeners();
         if (storage != null) {
             storage.dispose();
+            storage = null;
         }
         if (lines != null) {
             lines.clear();
+            lines = null;
         }
         trouble = true;
         listener = null;
@@ -346,24 +315,30 @@ class OutWriter extends OutputWriter implements Runnable {
             //Somebody called reset() twice
             return;
         }
-        if (lines != null && lines.hasHyperlinks()) {
-            int[] listenerLines = lines.allListenerLines();
-            Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
-            for (int i=0; i < listenerLines.length; i++) {
-                OutputListener ol = (OutputListener) lines.getListenerForLine(listenerLines[i]);
-                if (Controller.log) {
-                    Controller.log("Clearing listener " + ol);
+        synchronized (this) {
+            if (lines != null && lines.hasHyperlinks()) {
+                int[] listenerLines = lines.allListenerLines();
+                Controller.ControllerOutputEvent e = new Controller.ControllerOutputEvent(owner, 0);
+                for (int i=0; i < listenerLines.length; i++) {
+                    OutputListener ol = (OutputListener) lines.getListenerForLine(listenerLines[i]);
+                    if (Controller.log) {
+                        Controller.log("Clearing listener " + ol);
+                    }
+                    e.setLine(listenerLines[i]);
+                    ol.outputLineCleared(e);
                 }
-                e.setLine(listenerLines[i]);
-                ol.outputLineCleared(e);
+            } else {
+                if (Controller.log) Controller.log (this + ": No listeners to clear");
             }
-        } else {
-            if (Controller.log) Controller.log (this + ": No listeners to clear");
         }
     }
 
     public synchronized boolean isClosed() {
-        return disposed || storage == null || (storage.isClosed() && closesRequired == 0);
+        if (checkError() || storage == null || storage.isClosed()) {
+            return true;
+        } else {
+            return closed;
+        }
     }
 
     public Lines getLines() {
@@ -373,57 +348,16 @@ class OutWriter extends OutputWriter implements Runnable {
         return lines;
     }
 
-    /**
-     * Reset this OutWriter, disposing of the backing storage.  Will call NbIO.reset() on the owning
-     * instance of NbIO if not null, and fire a change event.
-     *
-     * @throws java.io.IOException
-     */
-    public synchronized void reset() throws IOException {
-        if (unused) {
-            if (Controller.log) Controller.log ("Reset on an unused IO.  Ignoring - " + this);
-            return;
-        }
-        if (Controller.log) Controller.log (this + ": OutWriter reset for " + owner.getName());
-        clearListeners();
-        int oldSize;
-        cleared = false;
-        if (lines != null) {
-            lines.clear();
-        }
-
-        if (OutWriter.this.storage != null) {
-            closesRequired = err != null ? 2 : 1;
-            oldSize = OutWriter.this.storage.size();
-            if (oldSize > 0) {
-                if (owner != null) {
-                    owner.reset(false);
-                }
-                OutWriter.this.storage.dispose();
-                OutWriter.this.storage = null;
-            }
-            init();
-        }
-    }
-
+    private boolean closed = false;
     public synchronized void close() {
-        if (unused) {
-            doClose();
-            return;
+        closed = true;
+        if (listener == null) {
+//            dispose();
         }
-        if (checkError() || disposed || trouble) {
-            return;
-        }
-        closesRequired--;
-        if (Controller.log) {
-            Controller.log (this + ": Output close - remaining streams to close: " + closesRequired);
-        }
-        if (closesRequired == 0) {
-            if (Controller.log) {
-                Controller.log (this + ": OUTPUT CLOSE ");
-                Controller.logStack();
-            }
-            doClose();
+        try {
+            storage.close();
+        } catch (IOException ioe) {
+            handleException (ioe);
         }
     }
 
@@ -435,7 +369,7 @@ class OutWriter extends OutputWriter implements Runnable {
         }
 
         public synchronized void flush() {
-            if (disposed || trouble) {
+            if (checkError()) {
                 return;
             }
             try {
@@ -448,8 +382,7 @@ class OutWriter extends OutputWriter implements Runnable {
 
 
         public boolean checkError() {
-            updateCloseCount();
-            return trouble | cleared;
+            return disposed || trouble;
         }
 
         protected void setError() {
@@ -507,7 +440,7 @@ class OutWriter extends OutputWriter implements Runnable {
 
 
         public synchronized void println(String s, OutputListener l) throws IOException {
-            if (checkError() || disposed || trouble) {
+            if (checkError()) {
                 return;
             }
             int addedCount = doPrintln (s);

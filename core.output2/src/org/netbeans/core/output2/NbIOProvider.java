@@ -36,21 +36,21 @@ public final class NbIOProvider extends IOProvider {
             Controller.log("NbIOProvider.getStdOut");
         }
         InputOutput stdout = getIO (STDOUT, false, null);
-        OutWriter out = ((NbIO)stdout).out();
+        NbWriter out = ((NbIO)stdout).writer();
         
         Controller.ensureViewInDefault ((NbIO) stdout, true);
         //ensure it is not closed
         if (out != null && out.isClosed()) {
             try {
                 out.reset();
-                out = (OutWriter) stdout.getOut();
+                out = (NbWriter) stdout.getOut();
             } catch (IOException e) {
                 ErrorManager.getDefault().notify(e);
                 stdout = getIO (STDOUT, true, null);
-                out = (OutWriter) stdout.getOut();
+                out = (NbWriter) stdout.getOut();
             }
         } else {
-            out = (OutWriter) stdout.getOut();
+            out = (NbWriter) stdout.getOut();
         }
         return out;
     }

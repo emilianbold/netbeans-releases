@@ -39,8 +39,8 @@
         for (int i=0; i < 1000; i++) {
             io.getErr().println("Scroll me " + i);
             if (i %20 == 0) {
-                io.getErr().println("This is a longer line.  A much longer line.  A very long line.  You'd be surprised how long it would be - maybe long enought to wrap - or at least that's the idea and the master plan, right?  Well, we'll hope so");
-                io.getErr().println("This Well, this one isn't so bad.  But it could be long too.  I mean, then we'd have more long lines.  Are we sure that's a good idea?  I'm not.  So just go away, why don't you!  I don't want to do this anyways!");
+                io.getOut().println("STDOUT: This is a longer line.  A much longer line.  A very long line.  You'd be surprised how long it would be - maybe long enought to wrap - or at least that's the idea and the master plan, right?  Well, we'll hope so");
+                io.getErr().println("STDERR: This Well, this one isn't so bad.  But it could be long too.  I mean, then we'd have more long lines.  Are we sure that's a good idea?  I'm not.  So just go away, why don't you!  I don't want to do this anyways!");
             }
             if (i % 73 == 0) {
                 io.getErr().println("Grumble, grumble, I am a multiple of 73");
@@ -72,7 +72,7 @@
 
     private OutputWindow win;
     private NbIO io;
-    private OutWriter out = null;
+    private NbWriter out = null;
     private void init() {
         win = new OutputWindow();
         OutputWindow.DEFAULT = win;
@@ -85,7 +85,7 @@
     private static int ct = 0;
     public void run () {
         if (SwingUtilities.isEventDispatchThread()) {
-            out = (OutWriter) io.getOut();
+            out = ((NbWriter) io.getOut());
            Thread t = new Thread(this);
            t.setName ("Thread " + ct + " - ");
            t.start();

@@ -50,22 +50,29 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
             Controller.log ("Creating a Document for " + writer);
         }
         this.writer = writer;
-        try {
-            writer.addChangeListener (this);
-        } catch (TooManyListenersException e) {
-            e.printStackTrace();
-        }
+        writer.addChangeListener (this);
     }
 
     public void dispose() {
         if (Controller.log) Controller.log ("Disposing document for " + writer);
         if (timer != null) {
             timer.stop();
-            dlisteners.clear();
-            lastEvent = null;
-            writer.removeChangeListener(this);
-            writer = null;
+            timer = null;
         }
+        dlisteners.clear();
+        lastEvent = null;
+        writer.removeChangeListener(this);
+        writer.dispose();
+        writer = null;
+    }
+
+    public void disposeQuietly() {
+        writer.removeChangeListener(this);
+        if (timer != null) {
+            timer.stop();
+            timer = null;
+        }
+        writer = null;
     }
 
     public synchronized void addDocumentListener(DocumentListener documentListener) {
@@ -174,7 +181,8 @@ class OutputDocument implements Document, Element, ChangeListener, ActionListene
     }
 
     public Lines getLines() {
-        return writer.getLines();
+        //Unit test will check for null to determine if dispose succeeded
+        return writer != null ? writer.getLines() : null;
     }
 
     boolean stillGrowing() {

@@ -43,7 +43,7 @@ import java.util.Arrays;
  *
  * @author Tim Boudreau
  */
-class IOEvent extends AWTEvent implements ActiveEvent {
+final class IOEvent extends AWTEvent implements ActiveEvent {
     static final int IO_EVENT_MASK = 0xF0000;
     /**
      * Command instructing the controller to create a new view for the IO.
@@ -147,6 +147,11 @@ class IOEvent extends AWTEvent implements ActiveEvent {
     private Object data = null;
 
     /**
+     * Used by unit tests to ensure all pending events have been processed before
+     * continuing.
+     */
+    static int pendingCount = 0;
+    /**
      * Create an IOEvent with the specified source, command and boolean state for the command.
      *
      * @param source An instance of NbIO which something of interest has happened to; can be null
@@ -161,6 +166,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
         assert Arrays.binarySearch (IDS, command) >= 0 : "Unknown command: " + command; //NOI18N
         consumed = false;
         this.value = value;
+        pendingCount++;
     }
 
     /**
@@ -248,6 +254,7 @@ class IOEvent extends AWTEvent implements ActiveEvent {
             //Can be null after CMD_DETACH
             OutputWindow.DEFAULT.eventDispatched(this);
         }
+        pendingCount--;
     }
 
     public static String cmdToString (int cmd) {

@@ -131,6 +131,7 @@ abstract class AbstractLines implements Lines {
         }
     }
 
+    private int lastErrLineMarked = -1;
     void markErr() {
         if (isTrouble() || getStorage().isClosed()) {
             return;
@@ -138,7 +139,12 @@ abstract class AbstractLines implements Lines {
         if (errLines == null) {
             errLines = new IntList(20);
         }
-        errLines.add(getLineCount() == 0 ? 0 : getLineCount()-1);
+        int linecount = getLineCount();
+        //Check this - for calls to OutputWriter.write(byte b), we may still be on the same line as last time
+        if (linecount != lastErrLineMarked) {
+            errLines.add(linecount == 0 ? 0 : linecount-1);
+            lastErrLineMarked = linecount;
+        }
     }
 
     public boolean isErr(int line) {
@@ -565,7 +571,7 @@ abstract class AbstractLines implements Lines {
     }
 
     public void lineWritten(int start, int lineLength) {
-        if (Controller.log) Controller.log ("AbstractLines.lineWritten " + start + " to " + lineLength);
+        if (Controller.verbose) Controller.log ("AbstractLines.lineWritten " + start + " length:" + lineLength); //NOI18N
         synchronized (readLock()) {
             setLastWrappedLineCount(-1);
             setLastCharCountForWrapAboveCalculation(-1);

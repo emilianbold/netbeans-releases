@@ -216,11 +216,15 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         lastLength = -1;
         Document old = textView.getDocument();
         old.removeDocumentListener(this);
-        textView.setDocument(doc);
-        doc.addDocumentListener(this);
-        lockScroll();
-        recentlyReset = true;
-        pendingCaretLine = -1;
+        if (doc != null) {
+            textView.setDocument(doc);
+            doc.addDocumentListener(this);
+            lockScroll();
+            recentlyReset = true;
+            pendingCaretLine = -1;
+        } else {
+            textView.setDocument (new PlainDocument());
+        }
     }
     
     protected void setEditorKit(EditorKit kit) {
@@ -568,7 +572,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         
         public void paint(Graphics g) {
             JTextComponent component = textView;
-            if(isVisible()) {
+            if(isVisible() && y >= 0) {
                 try {
                     TextUI mapper = component.getUI();
                     Rectangle r = mapper.modelToView(component, getDot(), Position.Bias.Forward);

@@ -55,7 +55,7 @@ class HeapStorage implements Storage {
     }
 
     public synchronized void dispose() {
-        bytes = new byte[2048];
+        bytes = new byte[0];
         size = 0;
     }
 

@@ -90,7 +90,6 @@ public class WrappedTextViewTest extends TestCase {
                 win.getSelectedTab().getOutputPane().setWrapped(true);
             }
         });
-        
     }
     
     private final void sleep() {

@@ -32,12 +32,19 @@ import java.io.IOException;
  */
 class ErrWriter extends OutputWriter {
     private OutWriter wrapped;
+    private NbWriter parent;
     /** Creates a new instance of ErrWriter */
-    ErrWriter(OutWriter wrapped) {
+    ErrWriter(OutWriter wrapped, NbWriter parent) {
         super (new OutWriter.DummyWriter());
         this.wrapped = wrapped;
+        this.parent = parent;
     }
-    
+
+    synchronized void setWrapped (OutWriter wrapped) {
+        this.wrapped = wrapped;
+        closed = true;
+    }
+
     public void println(String s, OutputListener l) throws java.io.IOException {
         closed = false;
         synchronized (wrapped) {
@@ -53,11 +60,13 @@ class ErrWriter extends OutputWriter {
     }
     
     public void close() {
-        closed = true;
-        wrapped.errClosed();
+        if (!closed) {
+            closed = true;
+            parent.notifyErrClosed();
+        }
     }
 
-    boolean closed;
+    boolean closed = true;
     boolean isClosed() {
         return closed;
     }

@@ -74,6 +74,7 @@ public class Controller { //XXX public only for debug access to logging code
     private static final int ACTION_NAVTOLINE = 9;
     private static final int ACTION_POSTMENU = 10;
     private static final int ACTION_FINDPREVIOUS = 11;
+    private static final int ACTION_CLEAR = 12;
 
     private Action copyAction = new ControllerAction (ACTION_COPY,
             "ACTION_COPY", CopyAction.class); //NOI18N
@@ -99,11 +100,12 @@ public class Controller { //XXX public only for debug access to logging code
             KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
     private Action postMenuAction = new ControllerAction (ACTION_POSTMENU, "postMenu", //NOI18N
             KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK));
+    private Action clearAction = new ControllerAction (ACTION_CLEAR, "ACTION_CLEAR");
 
     private Object[] popupItems = new Object[] {
         copyAction, new JSeparator(), findAction, findNextAction,
-        /*new JSeparator(), nextErrorAction, prevErrorAction, */new JSeparator(),
-        wrapAction, new JSeparator(), saveAsAction, closeAction, 
+        new JSeparator(),
+        wrapAction, new JSeparator(), saveAsAction, clearAction, closeAction,
     };
     
     private Action[] kbdActions = new Action[] {
@@ -326,6 +328,22 @@ public class Controller { //XXX public only for debug access to logging code
                 if (log) log ("Action POSTMENU received");
                 postPopupMenu(win, tab, new Point(0,0), tab);
                 break;
+            case ACTION_CLEAR :
+                NbIO io = tab.getIO();
+
+                if (io != null) {
+                    NbWriter writer = io.writer();
+                    if (writer != null) {
+                        try {
+                            writer.reset();
+                        } catch (IOException ioe) {
+                            ErrorManager.getDefault().notify(ioe);
+                        }
+                    }
+                }
+                break;
+            default :
+                assert false;
         }
     }
 
@@ -499,12 +517,7 @@ public class Controller { //XXX public only for debug access to logging code
         Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getPermanentFocusOwner();
         boolean hadFocus = focusOwner != null && (focusOwner == win || win.isAncestorOf(focusOwner));
 
-        win.remove(tab);
-        if (log) log ("Close received, removing " + tab + " from component");
-        tab.getIO().setClosed(true);
-        tab.setDocument(null);
-        tab.setIO(null);
-
+        win.remove(tab);  //Triggers a call to notifyRemoved()
         boolean winClosed = false;
         if (!programmatic && win.getTabs().length == 0) {
             if (log) log ("Last tab closed by user, closing output window.");
@@ -517,6 +530,7 @@ public class Controller { //XXX public only for debug access to logging code
                 win.getSelectedTab().requestFocus();
             }
         }
+        if (log) log ("Close received, removing " + tab + " from component");
     }
 
     /**
@@ -705,8 +719,14 @@ public class Controller { //XXX public only for debug access to logging code
     public void notifyRemoved(OutputTab tab) {
         if (log) log ("Tab " + tab + " has been CLOSED.  Disposing its IO.");
         NbIO io = tab.getIO();
-        io.setClosed(true);
-        tab.getIO().dispose();
+        NbWriter w = io.writer();
+        if (w != null && w.isClosed()) {
+            tab.getDocument().dispose();
+        } else if (w != null) {
+            //Something is still writing to the stream, but we're getting rid of the tab.  Don't dispose
+            //the writer, just kill the tab's document
+            tab.getDocument().disposeQuietly();
+        }
     }
 
     /**
@@ -906,10 +926,6 @@ public class Controller { //XXX public only for debug access to logging code
         }
 
         OutWriter out = io.out();
-        if (out != null && out.isCleared() && command != IOEvent.CMD_RESET) {
-            if (log) log (" *** Command called on a user-closed tab.  Ignoring");
-            return;
-        }
 
         switch (command) {
             case IOEvent.CMD_CREATE :
@@ -955,8 +971,9 @@ public class Controller { //XXX public only for debug access to logging code
             case IOEvent.CMD_STREAM_CLOSED :
                 if (value) {
                     if (tab == null) {
+                        //The tab was already closed, throw away the storage.
                         if (io.out() != null) {
-                            io.out().clear();
+                            io.out().dispose();
                         }
                     } else if (tab != null) {
                         if (tab.getParent() != null) {
@@ -968,9 +985,10 @@ public class Controller { //XXX public only for debug access to logging code
                                 updateActions (win, tab);
                             }
                         } else {
+                            //The tab had been kept around to be re-shown, but now the stream is closed, dispose it
                             win.removeHiddenView(tab);
                             if (io.out() != null) {
-                                io.out().clear();
+                                io.out().dispose();
                             }
                         }
                     }
@@ -1243,7 +1261,7 @@ public class Controller { //XXX public only for debug access to logging code
 
     public static boolean log = Boolean.getBoolean("nb.output.log") || Boolean.getBoolean("nb.output.log.verbose"); //NOI18N
     public static boolean verbose = Boolean.getBoolean("nb.output.log.verbose");
-    private static final boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
+    static boolean logStdOut = Boolean.getBoolean("nb.output.log.stdout"); //NOI18N
     public static void log (String s) {
         s = Long.toString(System.currentTimeMillis()) + ":" + s + "(" + Thread.currentThread() + ")  ";
         if (logStdOut) {

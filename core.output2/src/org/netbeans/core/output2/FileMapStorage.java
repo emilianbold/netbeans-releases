@@ -108,6 +108,10 @@ class FileMapStorage implements Storage {
             }
         }
     }
+    
+    public String toString() {
+        return outfile == null ? "[unused or disposed FileMapStorage]" : outfile.getPath();
+    }
 
     /**
      * Get a FileChannel opened for writing against the output file.
@@ -178,8 +182,10 @@ class FileMapStorage implements Storage {
      * the write methods, writing its contents to the file.
      */
     public int write (ByteBuffer bb) throws IOException {
-        if (bb == buffer) {
-            buffer = null;
+        synchronized (this) {
+            if (bb == buffer) {
+                buffer = null;
+            }
         }
         int position = size();
         int byteCount = bb.position();
@@ -203,6 +209,7 @@ class FileMapStorage implements Storage {
         if (writeChannel != null && writeChannel.isOpen()) {
             try {
                 writeChannel.close();
+                writeChannel = null;
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -210,6 +217,7 @@ class FileMapStorage implements Storage {
         if (readChannel != null && readChannel.isOpen()) {
             try {
                 readChannel.close();
+                readChannel = null;
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }
@@ -217,12 +225,11 @@ class FileMapStorage implements Storage {
         if (outfile != null && outfile.exists()) {
             try {
                 outfile.delete();
+                outfile = null;
             } catch (Exception e) {
                 ErrorManager.getDefault().notify(e);
             }
         }
-        outfile = null;
-        readChannel = null;
         buffer = null;
         contents = null;
     }

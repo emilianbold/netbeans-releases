@@ -30,20 +30,26 @@ final class OutputTab extends AbstractOutputTab {
     OutputTab (NbIO io) {
         this.io = io;
         if (Controller.log) Controller.log ("Created an output component for " + io);
-        setDocument (new OutputDocument((OutWriter) io.getOut()));
+        OutputDocument doc = new OutputDocument (((NbWriter) io.getOut()).out());
+        setDocument (doc);
     }
 
     public void setDocument (Document doc) {
         if (Controller.log) Controller.log ("Set document on " + this + " with " + io);
+        assert SwingUtilities.isEventDispatchThread();
+        Document old = getDocument();
         hasOutputListeners = false;
         firstNavigableListenerLine = -1;
         super.setDocument(doc);
+        if (old != null && old instanceof OutputDocument) {
+            ((OutputDocument) old).dispose();
+        }
     }
 
     public void setIO (NbIO io) {
         if (Controller.log) Controller.log ("Replacing io on " + this + " with " + io + " out is " + (io != null ? io.getOut() : null));
         if (io != null) {
-            setDocument (new OutputDocument((OutWriter) io.getOut()));
+            setDocument (new OutputDocument(((NbWriter) io.getOut()).out()));
         } else {
             this.io = null;
             setDocument(null);

@@ -42,7 +42,7 @@ class NbIO implements CallbackInputOutput {
     
     private Action[] actions;
 
-    private OutWriter out = null;
+    private NbWriter out = null;
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
      * @param toolbarActions an optional set of toolbar actions
@@ -72,14 +72,18 @@ class NbIO implements CallbackInputOutput {
     }
     
     public OutputWriter getErr() {
-        return ((OutWriter)getOut()).getErr();
+        return ((NbWriter) getOut()).getErr();
     }
-    
+
+    NbWriter writer() {
+        return out;
+    }
+
     void dispose() {
         if (Controller.log) Controller.log (this + ": IO " + getName() + " is being disposed");
         if (out != null) {
             if (Controller.log) Controller.log (this + ": Still has an OutWriter.  Disposing it");
-            out.dispose();
+            out().dispose();
             out = null;
             if (in != null) {
                 in.eof();
@@ -91,23 +95,22 @@ class NbIO implements CallbackInputOutput {
     }
         
     public OutputWriter getOut() {
-        if (out == null) {
-            out = new OutWriter(this);
+        synchronized (this) {
+            if (out == null) {
+                OutWriter realout = new OutWriter(this);
+                out = new NbWriter(realout, this);
+            }
         }
         return out;
     }
     
     /** Called by the view when polling */
     OutWriter out() {
-        return out;
+        return out == null ? null : out.out();
     }
     
     public boolean isClosed() {
         return Boolean.TRUE.equals(closed);
-    }
-
-    void setClosed (boolean val) {
-        closed = val ? Boolean.TRUE : Boolean.FALSE;
     }
 
     public boolean isErrSeparated() {
@@ -148,9 +151,13 @@ class NbIO implements CallbackInputOutput {
     public void setOutputVisible(boolean value) {
         //do nothing
     }
-    
+
+    private boolean streamClosed = true;
     public void setStreamClosed(boolean value) {
-        post (this, IOEvent.CMD_STREAM_CLOSED, value);
+        if (streamClosed != isStreamClosed()) {
+            streamClosed = value;
+            post (this, IOEvent.CMD_STREAM_CLOSED, value);
+        }
     }
 
     public void setToolbarActions(Action[] a) {
@@ -162,16 +169,15 @@ class NbIO implements CallbackInputOutput {
         return actions;
     }
 
-    public void reset(final boolean dispose) {
+    public void reset() {
         if (Controller.log) Controller.log (this + ": reset");
         closed = null;
-        out.dispose();
-        out = null;
+
         if (in != null) {
             in.eof();
             in = null;
         }
-        post (this, IOEvent.CMD_RESET, dispose);
+        post (this, IOEvent.CMD_RESET, true);
     }
     
     private static void post (NbIO io, int command, boolean val) {
