@@ -42,6 +42,7 @@ public class BeanSupport
     private static HashMap errorEmptyMap = new HashMap(3);
     private static HashMap valuesCache = new HashMap(30);
     private static HashMap instancesCache = new HashMap(30);
+    private static HashMap deviationsCache = new HashMap();
 
     // -----------------------------------------------------------------------------
     // Public methods
@@ -98,6 +99,31 @@ public class BeanSupport
                     FakePeerSupport.attachFakePeerRecursively(
                                                     (Container)defInstance);
             }
+
+            // hack for JTextField - default background depends on whether
+            // the component is editable or not
+            if (defInstance instanceof javax.swing.JTextField) {
+                Object[] values = new Object[2];
+                javax.swing.JTextField jtf = (javax.swing.JTextField) defInstance;
+                values[0] = jtf.getBackground();
+                jtf.setEditable(false);
+                values[1] = jtf.getBackground();
+                jtf.setEditable(true);
+
+                Map deviationMap = new HashMap();
+                deviationMap.put(
+                    "background", // NOI18N
+                    new DefaultValueDeviation(values) {
+                        Object getValue(Object beanInstance) {
+                            return ((javax.swing.JTextField)beanInstance).isEditable() ?
+                                   this.values[0] : this.values[1];
+                        }
+                    }
+                );
+
+                deviationsCache.put(beanClass, deviationMap);
+            }
+
             instancesCache.put(beanClass, defInstance);
         }
         return defInstance;
@@ -149,12 +175,29 @@ public class BeanSupport
      * JavaBean class
      * @see #getDefaultPropertyValues
      */
-    public static Object getDefaultPropertyValue(Class beanClass, String propertyName) {
-        Map values = getDefaultPropertyValues(beanClass);
-        Object val = values.get(propertyName);
-        if (val == null && !values.containsKey(propertyName))
-            val = NO_VALUE;
-        return val;
+//    public static Object getDefaultPropertyValue(Class beanClass, String propertyName) {
+//        Map values = getDefaultPropertyValues(beanClass);
+//        Object val = values.get(propertyName);
+//        if (val == null && !values.containsKey(propertyName))
+//            val = NO_VALUE;
+//        return val;
+//    }
+
+    public static Object getDefaultPropertyValue(Object bean,
+                                                 String propertyName)
+    {
+        Map deviationMap = (Map) deviationsCache.get(bean.getClass());
+        if (deviationMap != null) {
+            DefaultValueDeviation deviation = (DefaultValueDeviation)
+                                              deviationMap.get(propertyName);
+            if (deviation != null)
+                return deviation.getValue(bean);
+        }
+
+        Map valuesMap = getDefaultPropertyValues(bean.getClass());
+        Object value = valuesMap.get(propertyName);
+        return value != null || valuesMap.containsKey(propertyName) ?
+               value : NO_VALUE;
     }
 
     /**
@@ -349,4 +392,12 @@ public class BeanSupport
 //            ret.put(compos[i], icons[i]);
 //        }
 //    }
+
+    private static abstract class DefaultValueDeviation {
+        protected Object[] values;
+        DefaultValueDeviation(Object[] values) {
+            this.values = values;
+        }
+        abstract Object getValue(Object beanInstance);
+    }
 }

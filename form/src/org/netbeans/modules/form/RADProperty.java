@@ -141,11 +141,13 @@ public class RADProperty extends FormProperty {
 
     public boolean supportsDefaultValue() {
         return BeanSupport.NO_VALUE != BeanSupport.getDefaultPropertyValue(
-                                         component.getBeanClass(), getName());
+                                                   component.getBeanInstance(),
+                                                   getName());
     }
 
     public Object getDefaultValue() {
-        return BeanSupport.getDefaultPropertyValue(component.getBeanClass(), getName());
+        return BeanSupport.getDefaultPropertyValue(component.getBeanInstance(),
+                                                   getName());
     }
 
     // ----------
