@@ -187,7 +187,7 @@
 
     CreateIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
+      Format = "create {index.unique}index {index.name} on [{object.owner}.]{object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = ColumnName;
       };
@@ -720,7 +720,7 @@
 
     CreateIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
+      Format = "create {index.unique}index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
       };
@@ -1338,7 +1338,7 @@
 
     CreateIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
+      Format = "create {index.unique}index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
       };
@@ -1532,7 +1532,7 @@
 
     CreateIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
+      Format = "create {index.unique}index {index.name} on [{object.owner}.]{object.name}[\n(\n\t{columns}\n)]";
       Binding = {
         COLUMN = ColumnName;
       };
@@ -1610,7 +1610,7 @@
     
     CreateIndexCommand = {
       Class = org.netbeans.lib.ddl.impl.CreateIndex;
-      Format = "create index {index.name} on {object.name}\n(\n\t{columns}\n)";
+      Format = "create {index.unique}index {index.name} on {object.name}\n(\n\t{columns}\n)";
       Binding = {
         COLUMN = ColumnName;
       };

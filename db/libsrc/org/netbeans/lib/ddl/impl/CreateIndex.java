@@ -29,7 +29,10 @@ public class CreateIndex extends ColumnListCommand
 {
     /** Index name */
     private String tablename;
-
+    
+    /** Index type */
+    private String unique;
+    
     static final long serialVersionUID =1899024699690380782L;
     public String getIndexName()
     {
@@ -39,6 +42,16 @@ public class CreateIndex extends ColumnListCommand
     public void setIndexName(String tname)
     {
         tablename = tname;
+    }
+
+    public String getIndexType()
+    {
+        return unique;
+    }
+
+    public void setIndexType(String idx_type)
+    {
+        unique = idx_type;
     }
 
     public TableColumn specifyColumn(String name)
@@ -51,7 +64,8 @@ public class CreateIndex extends ColumnListCommand
     throws DDLException
     {
         Map args = super.getCommandProperties();
-        args.put("index.name", tablename);
+        args.put("index.name", tablename); // NOI18N
+        args.put("index.unique", unique); // NOI18N
         return args;
     }
 }

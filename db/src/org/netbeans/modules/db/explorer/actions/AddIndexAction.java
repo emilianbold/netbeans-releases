@@ -67,6 +67,7 @@ public class AddIndexAction extends DatabaseAction {
             if (dlg.run()) {
                 CreateIndex icmd = spec.createCommandCreateIndex(tablename);
                 icmd.setIndexName(dlg.getIndexName());
+                icmd.setIndexType(dlg.getIndexType());
                 Iterator enu = dlg.getSelectedColumns().iterator();
                 while (enu.hasNext())
                     icmd.specifyColumn((String)enu.next());

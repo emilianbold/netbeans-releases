@@ -29,7 +29,8 @@ public class AddIndexDialog {
     Dialog dialog = null;
     JTextField namefld;
     CheckBoxListener cbxlistener;
-
+    JCheckBox cbx_uq;
+    
     public AddIndexDialog(Collection columns)
     {
         try {
@@ -61,6 +62,26 @@ public class AddIndexDialog {
             layout.setConstraints(namefld, con);
             pane.add(namefld);
 
+            // Unique/Non-unique
+
+            JLabel label_uq = new JLabel(bundle.getString("AddUniqueIndex")); //NOI18N
+            con.weightx = 0.0;
+            con.anchor = GridBagConstraints.WEST;
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
+            con.gridx = 0;
+            con.gridy = 1;
+            layout.setConstraints(label_uq, con);
+            pane.add(label_uq);
+
+            con.fill = GridBagConstraints.HORIZONTAL;
+            con.weightx = 1.0;
+            con.gridx = 1;
+            con.gridy = 1;
+            con.insets = new java.awt.Insets (2, 2, 2, 2);
+            cbx_uq = new JCheckBox(bundle.getString("Unique"));
+            layout.setConstraints(cbx_uq, con);
+            pane.add(cbx_uq);
+
             // Items list title
 
             label = new JLabel(bundle.getString("AddIndexLabel")); //NOI18N
@@ -68,7 +89,7 @@ public class AddIndexDialog {
             con.anchor = GridBagConstraints.WEST;
             con.insets = new java.awt.Insets (2, 2, 2, 2);
             con.gridx = 0;
-            con.gridy = 1;
+            con.gridy = 2;
             con.gridwidth = 2;
             layout.setConstraints(label, con);
             pane.add(label);
@@ -98,7 +119,7 @@ public class AddIndexDialog {
             con.fill = GridBagConstraints.BOTH;
             con.insets = new java.awt.Insets (0, 0, 0, 0);
             con.gridx = 0;
-            con.gridy = 2;
+            con.gridy = 3;
             JScrollPane spane = new JScrollPane(subpane);
             layout.setConstraints(spane, con);
             pane.add(spane);
@@ -145,6 +166,11 @@ public class AddIndexDialog {
     public String getIndexName()
     {
         return namefld.getText();
+    }
+
+    public String getIndexType()
+    {
+        return (cbx_uq.isSelected())?ColumnItem.UNIQUE:""; // NOI18N
     }
 
     class CheckBoxListener implements ActionListener
