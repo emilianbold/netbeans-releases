@@ -81,7 +81,10 @@ public class JspRunToCursorActionProvider extends ActionsProviderSupport {
     
     private boolean shouldBeEnabled () {
 
-        if (!Utils.isJsp(editorContext.getCurrentURL())) {
+        if (!Utils.isJsp(editorContext.getCurrentURL()) &&
+            !Utils.isTag(editorContext.getCurrentURL())
+           ) 
+        {
             return false;
         }
         

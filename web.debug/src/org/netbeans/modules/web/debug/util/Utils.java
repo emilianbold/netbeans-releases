@@ -57,7 +57,7 @@ public class Utils {
         return err;
     }
     
-    public static File getJspFileFromUrl(String url) {
+    public static File getFileFromUrl(String url) {
         if (url != null) {
             URI uri = null;
             try {
@@ -79,8 +79,8 @@ public class Utils {
         return null;
     }
     
-    public static FileObject getJspFileObjectFromUrl(String url) {
-        File f = getJspFileFromUrl(url);
+    public static FileObject getFileObjectFromUrl(String url) {
+        File f = getFileFromUrl(url);
         if (f != null) {
             return FileUtil.toFileObject(f);
         }
@@ -88,15 +88,23 @@ public class Utils {
     }
     
     public static boolean isJsp(String url) {
-        FileObject fo = getJspFileObjectFromUrl(url);
+        FileObject fo = getFileObjectFromUrl(url);
         if (fo != null) {
            return "text/x-jsp".equals(fo.getMIMEType());   //NOI18N
         }
         return false;
     }
 
+    public static boolean isTag(String url) {
+        FileObject fo = getFileObjectFromUrl(url);
+        if (fo != null) {
+           return "text/x-tag".equals(fo.getMIMEType());   //NOI18N
+        }
+        return false;
+    }
+    
     public static String getJspName(String url) {
-        File f = getJspFileFromUrl(url);
+        File f = getFileFromUrl(url);
         if (f != null) {
             return f.getName();
         }
@@ -104,7 +112,7 @@ public class Utils {
     }
     
     public static String getServletClass(String url) {
-        FileObject fo = getJspFileObjectFromUrl(url);
+        FileObject fo = getFileObjectFromUrl(url);
         if (fo == null) {
             return null;
         }
@@ -115,9 +123,8 @@ public class Utils {
         String contextPath = wm.getContextPath();
 
         String servletPath = finder.getServletResourcePath(jspRelativePath);      
-        if (servletPath == null) { // we don't have class name, so assume we are debugging tomcat or appsrv
-            servletPath = JspNameUtil.getServletResourcePath(contextPath, jspRelativePath);
-        }
+        if (servletPath == null) // we don't have class name, so assume we are debugging tomcat or appsrv
+                servletPath = JspNameUtil.getServletResourcePath(contextPath, jspRelativePath);
         if (servletPath != null) {
             servletPath = servletPath.substring(0, servletPath.length()-5); // length of ".java"
             servletPath = servletPath.replace('/', '.'); //NOI18N
@@ -173,7 +180,7 @@ public class Utils {
 //    }
 
     public static String getContextPath(String url) {
-        FileObject wmfo = getJspFileObjectFromUrl(url);
+        FileObject wmfo = getFileObjectFromUrl(url);
         if (wmfo == null) {
             return null;
         }
