@@ -342,6 +342,10 @@ implements ExPropertyEditor, PropertyChangeListener {
                         for (int i = 0; i < arr.length; i++) {
                             if (arr[i].getName ().equals (next)) {
                                 n = arr[i].getNodeDelegate ();
+                                // fix of #28701, sometimes FilterNode of n is child of root, but n isn't
+                                Node n2 = root.getChildren ().findChild ( n.getName() );
+                                if (n2 != null)
+                                    n = n2;
                                 break;
                             }
                         }
