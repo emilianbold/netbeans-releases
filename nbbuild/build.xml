@@ -24,14 +24,13 @@ ToDo:
 - see how many JARs can actually be moved from lib/ext/ (or modules/patches/) to modules/ext/
 - delete obsolete jars.cfg (from trunk anyway)
 - tasks to create: source zip
-- refine the license text for various modules, esp. those with
-  binaries with specific license requirements
 Modules:
 ant (only provisional integration)
 emacs (currently will conflict with editor if installed)
 javacvs (is it stable enough to include?)
 scripting (bins may not be available yet)
 treefs (complete yet?)
+workspaceswitcher
 -->
 
 <project name="nbbuild" default="depucelee" basedir=".">
@@ -48,13 +47,13 @@ treefs (complete yet?)
   <!-- -Dmodules=foo,bar,... (do not include core or openide) -->
   <target name="init">
     <configmods property="modules" selectedconfig="${moduleconfig}">
-      <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,openidex,projects,text,utilities"/>
-      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,openidex,projects,text,utilities"/>
-      <config name="stable" modules="applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
-      <config name="stable-with-apisupport" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,text,usersguide,utilities,vcscvs,web"/>
-      <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,openidex,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
-      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,java,javadoc,openidex,projects,properties,serialversion,sysprops,text,utilities"/>
-      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,makefile,multicompile,objectbrowser,openidex,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
+      <config name="superslim" modules="clazz,editor,html,icebrowser,image,java,projects,text,utilities"/>
+      <config name="slim" modules="autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,icebrowser,image,java,objectbrowser,projects,text,utilities"/>
+      <config name="stable" modules="applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+      <config name="stable-with-apisupport" modules="apisupport,applet,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,text,usersguide,utilities,vcscvs,web"/>
+      <config name="ide-hacker" modules="apisupport,autoupdate,beans,clazz,debuggercore,debuggerjpda,debuggertools,editor,form,html,i18n,icebrowser,image,jarpackager,java,javadoc,objectbrowser,projects,properties,serialversion,sysprops,text,utilities,vcscvs"/>
+      <config name="jesses-pick" modules="ant,apisupport,beans,clazz,editor,html,icebrowser,image,java,javadoc,projects,properties,serialversion,sysprops,text,utilities"/>
+      <config name="bloated" modules="ant,apisupport,applet,autoupdate,beans,clazz,crosscompile,debuggercore,debuggerjpda,debuggertools,editor,form,html,httpserver,i18n,icebrowser,image,innertesters,jarpackager,java,javadoc,makefile,multicompile,objectbrowser,projects,properties,remotefs,serialversion,sysprops,text,usersguide,utilities,vcscvs,web"/>
     </configmods>
   </target>
 
@@ -79,6 +78,10 @@ treefs (complete yet?)
   <target name="all-openide" depends="check-for-binaries">
     <echo message="Building Open APIs..."/>
     <ant dir="../openide" target="netbeans"/>
+  </target>
+  <target name="all-openidex" depends="all-openide">
+    <echo message="Building module openidex..."/>
+    <ant dir="../openidex" target="netbeans"/>
   </target>
   <target name="all-core" depends="all-openide,all-openidex">
     <echo message="Building IDE core implementation..."/>
@@ -184,10 +187,6 @@ treefs (complete yet?)
     <echo message="Building module objectbrowser..."/>
     <ant dir="../objectbrowser" target="netbeans"/>
   </target>
-  <target name="all-openidex" depends="all-openide">
-    <echo message="Building module openidex..."/>
-    <ant dir="../openidex" target="netbeans"/>
-  </target>
   <target name="all-projects" depends="all-openide,all-openidex,all-java">
     <echo message="Building module projects..."/>
     <ant dir="../projects" target="netbeans"/>
@@ -247,13 +246,13 @@ treefs (complete yet?)
 
   <target name="virgin" depends="init,build-messaging">
     <!-- Automatically include openide and core, these are mandatory -->
-    <nbmerge dest="virgin" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+    <nbmerge dest="virgin" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <zip zipfile="NetBeans-${buildnumber}-virgin.zip" basedir="virgin"/>
     <echo message="Virgin build created; see NetBeans-${buildnumber}-virgin.zip (in nbbuild/)."/>
   </target>
 
   <target name="firststart" depends="init,build-messaging">
-    <nbmerge dest="firststart" topdir=".." modules="openide,core,${modules}" targetprefix="all-"/>
+    <nbmerge dest="firststart" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
     <chmod file="firststart/bin/runide.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/runide_multiuser.sh" perm="ugo+x"/>
     <chmod file="firststart/bin/fastjavac/fastjavac.linux" perm="ugo+x"/>
