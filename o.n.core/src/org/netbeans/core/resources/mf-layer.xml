@@ -61,7 +61,11 @@ Microsystems, Inc. All Rights Reserved.
 
         <folder name="Hidden">
             <attr name="hidden" boolvalue="true" />
-
+            <file name="org-openide-filesystems-urlmapper.instance">
+                <attr name="instanceClass" stringvalue="org.openide.filesystems.URLMapper$DefaultURLMapper"/>
+                <attr name="instanceOf" stringvalue="org.openide.filesystems.URLMapper"/>
+                <attr name="instanceCreate" methodvalue="org.openide.filesystems.URLMapper.getDefault"/>                
+            </file>
             <!-- in memory EntityCalalog intance (it serves for deprecated method implementations) -->
             <file name="org-openide-loaders-XMLDataObject-compat.instance" >
                 <attr name="instanceClass" stringvalue="org.openide.xml.EntityCatalog" />
