@@ -182,15 +182,18 @@ public class KeyNode extends AbstractNode {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_key")
             ) {
                 public Object getValue () {
-                    return itemKey;
+                    return UtilConvert.unicodesToChars(itemKey);
                 }
 
                 public void setValue (Object val) throws IllegalAccessException,
                     IllegalArgumentException, InvocationTargetException {
                     if (!(val instanceof String))
                         throw new IllegalArgumentException();
-
-                    KeyNode.this.setName((String)val);
+                    
+                    String keyValue = UtilConvert.charsToUnicodes(
+                                        UtilConvert.escapeJavaSpecialChars(
+                                        UtilConvert.escapePropertiesSpecialChars((String)val)));
+                    KeyNode.this.setName(keyValue);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_KEY);
@@ -204,7 +207,7 @@ public class KeyNode extends AbstractNode {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_value")
             ) {
                 public Object getValue () {
-                    return getItem().getValue();
+                    return UtilConvert.unicodesToChars(getItem().getValue());
                 }
 
                 public void setValue (Object val) throws IllegalAccessException,
@@ -212,7 +215,10 @@ public class KeyNode extends AbstractNode {
                     if (!(val instanceof String))
                         throw new IllegalArgumentException();
 
-                    getItem().setValue((String)val);
+                    String valueValue = UtilConvert.charsToUnicodes(
+                                        UtilConvert.escapeJavaSpecialChars(
+                                        UtilConvert.escapeLineContinuationChar((String)val)));
+                    getItem().setValue(valueValue);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_VALUE);
@@ -226,7 +232,7 @@ public class KeyNode extends AbstractNode {
                 NbBundle.getBundle(KeyNode.class).getString("HINT_item_comment")
             ) {
                 public Object getValue () {
-                    return getItem().getComment();
+                    return UtilConvert.unicodesToChars(getItem().getComment());
                 }
 
                 public void setValue (Object val) throws IllegalAccessException,
@@ -234,7 +240,8 @@ public class KeyNode extends AbstractNode {
                     if (!(val instanceof String))
                         throw new IllegalArgumentException();
 
-                    getItem().setComment((String)val);
+                    String commentValue = UtilConvert.charsToUnicodes((String)val);
+                    getItem().setComment(commentValue);
                 }
             };
         property.setName(Element.ItemElem.PROP_ITEM_COMMENT);
@@ -270,14 +277,14 @@ public class KeyNode extends AbstractNode {
         setShortDescription(description);
     }
 
-    /** Overrides superclass method. 
-     * @return true */
+    /** Indicates whether has customizer. Overrides superclass method. 
+     * @return <code>true</code> */
     public boolean hasCustomizer() {
         return true;
     }
     
-    /** Overrides superclass method. 
-     * @return customizer for this key node */
+    /** Gets customizer. Overrides superclass method. 
+     * @return customizer for this key node, <code>PropertyPanel</code> instance */
     public Component getCustomizer() {
         return new PropertyPanel(getItem());
     }
