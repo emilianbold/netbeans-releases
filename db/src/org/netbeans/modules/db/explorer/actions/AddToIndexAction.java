@@ -43,26 +43,15 @@ public class AddToIndexAction extends DatabaseAction
 			String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
 			Connection con = nfo.getConnection();
-//			DatabaseMetaData dmd = con.getMetaData();
 			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
       DriverSpecification drvSpec = info.getDriverSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
 
 			// List columns used in current index (do not show)
-
 			HashSet ixrm = new HashSet();
-//			ResultSet rs = dmd.getIndexInfo(catalog,nfo.getUser(),tablename, true, false);
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-//ResultSet rs;
-//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-//	rs = dmd.getIndexInfo(catalog, null, tablename, true, false);
-//else
-//	rs = dmd.getIndexInfo(catalog, dmd.getUserName(), tablename, true, false);
       
 	    drvSpec.getIndexInfo(catalog, dmd, tablename, true, false);
-	
 			while (drvSpec.rs.next()) {
 				String ixname = drvSpec.rs.getString("INDEX_NAME");
 				if (ixname != null) {
@@ -73,18 +62,9 @@ public class AddToIndexAction extends DatabaseAction
 			drvSpec.rs.close();
 
 			// List columns not present in current index
-
 			Vector cols = new Vector(5);
-//			rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
-
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-//	rs = dmd.getColumns(catalog, null, tablename, null);
-//else
-//	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
 	
       drvSpec.getColumns(catalog, dmd, tablename, null);
-      
 			while (drvSpec.rs.next()) {
 				String colname = drvSpec.rs.getString("COLUMN_NAME");
 				if (!ixrm.contains(colname)) cols.add(colname);
@@ -118,6 +98,7 @@ public class AddToIndexAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  12   Gandalf   1.11        3/3/00   Radko Najman    
  *  11   Gandalf   1.10        2/16/00  Radko Najman    driver adaptor
  *  10   Gandalf   1.9         11/27/99 Patrik Knakal   
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS

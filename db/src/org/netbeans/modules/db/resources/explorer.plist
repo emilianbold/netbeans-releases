@@ -14,7 +14,7 @@
 {
 	/** 
 	* Root section.
-	* This section describes subnode "Database" in "Environment". It is a root for
+	* This section describes subnode "Databases" in "Runtime". It is a root for
 	* database explorer, handles open connections and a list of drives. Serves list
 	* of supported database products (suppdbsystems). Allows to add a new connection.
 	*/

@@ -43,27 +43,15 @@ public class AddIndexAction extends DatabaseAction
 			String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
 			Connection con = nfo.getConnection();
-//			DatabaseMetaData dmd = con.getMetaData();
 			DatabaseMetaData dmd = info.getSpecification().getMetaData();
 			Specification spec = (Specification)nfo.getSpecification();
 			String index = (String)nfo.get(DatabaseNode.INDEX);
       DriverSpecification drvSpec = info.getDriverSpecification();
 
 			// List columns not present in current index
-
 			Vector cols = new Vector(5);
-      
-//			ResultSet rs = dmd.getColumns(catalog, nfo.getUser(), tablename, null);
 
-//je to BARBARSTVI, po beta 6 rozumne prepsat
-//ResultSet rs;
-//if (dmd.getDatabaseProductName().trim().equals("ACCESS"))
-//	rs = dmd.getColumns(catalog, null, tablename, null);
-//else
-//	rs = dmd.getColumns(catalog, dmd.getUserName(), tablename, null);
-	
       drvSpec.getColumns(catalog, dmd, tablename, null);
-      
 			while (drvSpec.rs.next())
         cols.add(drvSpec.rs.getString("COLUMN_NAME"));
 			drvSpec.rs.close();
@@ -95,6 +83,7 @@ public class AddIndexAction extends DatabaseAction
 }
 /*
  * <<Log>>
+ *  11   Gandalf   1.10        3/3/00   Radko Najman    
  *  10   Gandalf   1.9         2/16/00  Radko Najman    driver adaptor
  *  9    Gandalf   1.8         11/15/99 Radko Najman    MS ACCESS
  *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun

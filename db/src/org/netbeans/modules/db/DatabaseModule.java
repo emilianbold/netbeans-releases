@@ -28,39 +28,38 @@ import org.openide.util.NbBundle;
 * DB module.
 * @author Slavek Psenicka
 */
-public class DatabaseModule extends ModuleInstall 
-{
+public class DatabaseModule extends ModuleInstall {
 	private ResourceBundle bundle = NbBundle.getBundle("com.netbeans.enterprise.modules.db.resources.Bundle");
 	
-        static final long serialVersionUID =5426465356344170725L;
-	public void installed() 
-	{
+  static final long serialVersionUID =5426465356344170725L;
+  
+	public void installed() {
 		TopManager tm = TopManager.getDefault();
-//   	System.out.println("Installing database module");
 		
 		try {
 			FileSystem rfs = tm.getRepository().getDefaultFileSystem();
-    		FileObject rootFolder = rfs.getRoot();
-    		FileObject databaseFileObject = rootFolder.getFileObject("Database");
-//    		System.out.println("databaseFileObject = "+databaseFileObject);
-    		if (databaseFileObject == null) {
-    			databaseFileObject = rootFolder.createFolder("Database");
-    			FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
-//	    		System.out.println("adaptorsFileObject created = "+adaptorsFileObject);
-    			InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", com.netbeans.ddl.adaptors.DefaultAdaptor.class);
-    	    }
+      FileObject rootFolder = rfs.getRoot();
+      FileObject databaseFileObject = rootFolder.getFileObject("Database");
+      if (databaseFileObject == null) {
+        databaseFileObject = rootFolder.createFolder("Database");
+        FileObject adaptorsFileObject = databaseFileObject.createFolder("Adaptors");
+        InstanceDataObject.create(DataFolder.findFolder(adaptorsFileObject), "DefaultAdaptor", com.netbeans.ddl.adaptors.DefaultAdaptor.class);
+      }
 		} catch (LinkageError ex) {
 			String msg = MessageFormat.format(bundle.getString("FMT_CLASSNOTFOUND"), new String[] {ex.getMessage()});
-			if (tm != null) tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+			if (tm != null)
+        tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
 		} catch (Exception ex) {
 			String msg = MessageFormat.format(bundle.getString("FMT_EXCEPTIONINSTALL"), new String[] {ex.getMessage()});
-			if (tm != null) tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
+			if (tm != null)
+        tm.notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE));
 		}
 	}
 }
 
 /*
 * <<Log>>
+*  10   Gandalf   1.9         3/3/00   Radko Najman    
 *  9    Gandalf   1.8         11/27/99 Patrik Knakal   
 *  8    Gandalf   1.7         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
