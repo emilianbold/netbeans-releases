@@ -25,6 +25,8 @@ import org.openide.loaders.DataObject;
 import org.openide.cookies.InstanceCookie;
 import org.openide.nodes.Node;
 import java.util.*;
+import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 public class Server implements Node.Cookie {
     
@@ -139,8 +141,11 @@ public class Server implements Node.Cookie {
         return dep.getContainerLimitation() == null || dep.getContainerLimitation().isEjbjarDeploy();
     }
     
-    public String getFindServer() {
-        return dep.getFinderUi();
+    public javax.swing.JPanel getFindServer() {
+        Object o = getClassFromPlugin(dep.getFinderUi());
+        if (o instanceof javax.swing.JPanel)
+            return (javax.swing.JPanel) o;
+        return null;
     }
         
     public ConfigBeanDescriptor getConfigBeanDescriptor(String className) {
@@ -154,13 +159,12 @@ public class Server implements Node.Cookie {
     }
     
     private Object getClassFromPlugin(String className) {
-        if (className == null) return null;
+        if (className == null || "".equals(className.trim())) return null; //NOI18N
         try {
         return factory.getClass().getClassLoader().loadClass(className).newInstance();
         } catch (Exception e) {
-			e.printStackTrace();  // PENDING log this?
-                        return null;
-        //    throw new IllegalStateException("Couldn't load class " + className + " from plugin.");
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, e.getMessage());
+            return null;
         }
     }
     
@@ -174,26 +178,53 @@ public class Server implements Node.Cookie {
         return null;
     }
     
+    public DeploymentManagerWrapper getDeploymentManagerWrapper(Class wrapperClass) {
+        if (StartServer.class.isAssignableFrom(wrapperClass))
+            return getStartServer();
+        else if (IncrementalDeployment.class.isAssignableFrom(wrapperClass))
+            return getIncrementalDeployment();
+        else if (FileDeploymentLayout.class.isAssignableFrom(wrapperClass))
+            return getFileDeploymentLayout();
+        else if (ModuleUrlResolver.class.isAssignableFrom(wrapperClass))
+            return getModuleUrlResolver();
+        else 
+            throw new IllegalArgumentException("Unknown DeploymentManagerWrapper class " + wrapperClass.getName()); //NOI18N
+    }
+    
     public IncrementalDeployment getIncrementalDeployment() {
         String className = dep.getIncrementalDeploy();
         return (IncrementalDeployment) getClassFromPlugin(className);
     }
     
-    public InplaceDeployment getInplaceDeployment() {
-        String className = dep.getInplaceDeploy();
-        return (InplaceDeployment) getClassFromPlugin(className);
+    public FileDeploymentLayout getFileDeploymentLayout() {
+        String className = dep.getFileDeploymentLayout();
+        return (FileDeploymentLayout) getClassFromPlugin(className);
     }
     
     public StartServer getStartServer() {
         String className = dep.getStartServer();
-System.out.println("**** dep: " + dep);
-System.out.println("**** classname: " + className);
         return (StartServer) getClassFromPlugin(className);
     }
+
+    public ModuleUrlResolver getModuleUrlResolver() {
+        String className = dep.getModuleUrlResolver();
+        return (ModuleUrlResolver) getClassFromPlugin(className);
+    }
     
-    public TargetNameResolver getTargetResolver() {
-        String className = dep.getNameMapper();
-        return (TargetNameResolver) getClassFromPlugin(className);
+    public DeploymentPlanSplitter getDeploymentPlanSplitter() {
+        String className = dep.getDeploymentPlanSplitter();
+        return (DeploymentPlanSplitter) getClassFromPlugin(className);
     }
 
+    public ManagementMapper getManagementMapper() {
+        String className = dep.getNameMapper();
+        Object mapper = getClassFromPlugin(className);
+        if (mapper instanceof ManagementMapper)
+            return (ManagementMapper) mapper;
+        else {
+            ErrorManager.getDefault().log(
+            ErrorManager.WARNING, NbBundle.getMessage(Server.class, "MSG_InvalidNameMapper", className));
+            return null;
+        }
+    }
 }

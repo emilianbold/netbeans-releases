@@ -15,11 +15,35 @@ Microsystems, Inc. All Rights Reserved.
 <project basedir="." default="netbeans" name="j2eeserver">
 
   <property name="nbm_alias" value="nb_ide"/>
-  <!-- <property name="buildroot" value="/trout1/gfink/build/dublin"/>-->
   <property name="nbroot" value=".."/>
+  <property name="f4jroot" value="../../f4j_all"/>
   <property name="nbext" value="${nbroot}/nbbuild"/>
   <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
   <property name="license.file" value="${nbext}/standard-nbm-license.txt"/>
+  
+  <path id="cp">
+    <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
+    <pathelement location="${nbroot}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
+    <pathelement location="${nbroot}/core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
+    <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
+    <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
+    <pathelement location="${nbroot}/libs/external/j2eeeditor-1.0.jar"/>
+    <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
+    <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
+    <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
+    <pathelement location="${nbroot}/openide/io/netbeans/modules/autoload/openide-io.jar"/> 
+    <pathelement location="${nbroot}/core/settings/netbeans/modules/autoload/core-settings.jar"/>
+    <fileset dir="external">
+        <include name="*.jar"/>
+    </fileset>
+    <!-- PENDING required by debugger type, perhaps could be
+    removed -->
+    <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
+    <fileset dir="${nbroot}/core/external">
+      <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
+      <include name="crimson*.jar"/>
+    </fileset>
+  </path>
   
   <taskdef classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext}/nbantext.jar" name="locjar"/>
   <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext}/nbantext.jar"/>
@@ -42,13 +66,12 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="external">
       <ant dir="external" target="unscramble"/>
-      <ant dir="${nbroot}/libs/external" target="unscramble"/>
   </target>
 
   <target name="nbm" depends="netbeans">
     <makenbm file="j2eeserver.nbm"
              topdir="."
-             module="netbeans/modules/j2ee.jar"
+             module="netbeans/modules/autoload/j2eeserver.jar"
              homepage="http://${homepage.base}/j2eeserver.html"
              distribution="${dist.base}/j2eeserver.nbm">
       <license file="${license.file}" />
@@ -69,72 +92,37 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <delete file="j2eeserver.nbm"/>
     <delete file="manifest-subst.mf"/>
+    <delete dir="javadoc"/>
   </target>
 
   <!-- These are the secondary targets. -->
 
   <target name="release">
-    <copy todir="netbeans/modules/autoload/ext">
-      <fileset dir="external">
-         <include name="*.jar"/>
-      </fileset>
-    </copy>
   </target>
 
   <target depends="compile,release" name="jars">
-    <mkdir dir="netbeans/modules"/>
+    <mkdir dir="netbeans/modules/autoload"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf"
           filtering="on"/>
 
-    <locjar compress="false" jarfile="netbeans/modules/j2ee.jar" manifest="manifest-subst.mf">
+    <locjar compress="false" jarfile="netbeans/modules/autoload/j2eeserver.jar" manifest="manifest-subst.mf">
       <locale name="ja"/>
       <fileset dir="src" excludesfile="${nbext}/standard-jar-excludes.txt">
           <include name="org/**"/>
       </fileset>
     </locjar>
-<!--    <locjar compress="false" jarfile="netbeans/modules/ext/patches/jsr88javax.jar">
-       <fileset dir="src" excludesfile="${nbext}/standard-jar-excludes.txt">
-          <include name="javax/**"/>
-       </fileset>
-    </locjar> -->
   </target>
 
   <target name="compile" depends="external,privatedtds">
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <patternset>
           <include name="org/"/>
-          <exclude name="org/netbeans/modules/j2ee/deployment/execution/ServerDebuggerType.java"/>
-          <exclude name="org/netbeans/modules/j2ee/deployment/execution/ServerDebuggerTypeBeanInfo.java"/> 
           <exclude name="**/tests/**"/>
-          <exclude name="**/projects/**"/>
-          <exclude name="**/J2eeEnvironmentProvider.java"/>
+          <exclude name="**/J2eeNoProjectEnvironment.java"/>
       </patternset>
-      <classpath>
-        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nbroot}/debuggercore/api/netbeans/modules/autoload/debugger-api.jar"/>
-        <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/debuggerjpda.jar"/>
-        <pathelement location="${nbroot}/debuggerjpda/api/netbeans/modules/autoload/debuggerjpda-api.jar"/>
-        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nbroot}/core/javahelp/netbeans/modules/autoload/javahelp-api.jar"/>
-        <pathelement location="${nbroot}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
-        <pathelement location="${nbroot}/libs/external/j2eeeditor-1.0.jar"/> <!-- XXX -->
-<!--         <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> 
-        XXX -->
-        <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
-        <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/> <!-- XXX -->
-        <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
-<!--        <pathelement location="${nbroot}/projects/core/netbeans/modules/autoload/projects-core.jar"/>
-        <pathelement location="${nbroot}/projects/ide/netbeans/modules/projects-ide.jar"/>
-        <pathelement location="${nbroot}/projects/compilation/netbeans/modules/autoload/compilation.jar"/>
-        <pathelement location="${nbroot}/projects/filesets/netbeans/modules/autoload/filesets.jar"/> -->
-        <fileset dir="external">
-            <include name="*.jar"/>
-        </fileset>
-        <!-- PENDING required by debugger type, perhaps could be
-        removed -->
-        <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
-      </classpath>
+
+      <classpath refid="cp"/>
     </javac>
   </target>
 
@@ -174,33 +162,32 @@ Microsystems, Inc. All Rights Reserved.
       </antcall>
   </target>
 
-  <target name="ddgen" depends="s2binit">
+  <target name="ddinit">
+        <mkdir dir="src/${dtddir}"/>
+        <uptodate property="dd.generation" 
+                targetfile="${dtdfile}">
+            <srcfiles dir="src/${dtddir}" includes="*.java"/>
+        </uptodate> 
+  </target>
+
+  <target name="ddgen" depends="ddinit" if="dd.generation">
      <echo message="Generated schema2beans from ${dtdfile}"/>
-	<schema2beans schema="${dtdfile}" package="${dtdpackage}"
-	  rootDir="src" validate="true" attrProp="true"/>
-  </target> 
-
-  <!--
-
-  <target name="setup-jdkhome-1">
-    <property name="javahome" location="${java.home}"/>
-    <available property="javahome-valid" file="${javahome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome-2" depends="setup-jdkhome-1" if="javahome-valid">
-    <property name="jdkhome" value="${javahome}"/>
-    <property name="jdkhome-valid" value="true"/>
-  </target>
-  <target name="setup-jdkhome-3" depends="setup-jdkhome-1" unless="javahome-valid">
-    <property name="jdkhome" location="${javahome}/.."/>
-    <available property="jdkhome-valid" file="${jdkhome}/lib/tools.jar"/>
-  </target>
-  <target name="setup-jdkhome" depends="setup-jdkhome-2,setup-jdkhome-3" unless="jdkhome-valid">
-    <fail message="No tools.jar found in ${javahome}! Set -Djavahome=... as needed."/>
-  </target> -->
-
-  <!-- This target will only work *inside* the IDE!-->
-  <target depends="dev" description="Test the module inside the running IDE." name="reinstall">
-    <nbinstaller action="reinstall" module="netbeans/modules/j2ee.jar"/>
+     <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
+       <classpath>
+          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar" />
+          <pathelement path="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beansdev.jar" />
+          <fileset dir = "${nbroot}/openide">
+                <include name="netbeans/lib/openide*.jar"/>
+                <include name="loaders/netbeans/lib/openide-loaders.jar"/>
+          </fileset>
+        </classpath>
+        <arg line= "-f ${dtdfile}" />
+        <arg line= "-p ${dtdpackage}" />
+        <arg line= "-r src" />
+	    <arg line="-javaBeans"/>
+	    <arg line="-commonInterface"/>
+	    <arg line="-extendBaseBean"/>
+     </java>
   </target> 
 
   <target name="debug">
@@ -209,94 +196,45 @@ Microsystems, Inc. All Rights Reserved.
       </antcall>
   </target>
 
+  <!-- This target will only work *inside* the IDE!-->
+  <target depends="dev" description="Test the module inside the running IDE." name="reinstall">
+    <nbinstaller action="reinstall" module="netbeans/modules/autoload/j2eeserver.jar"/>
+  </target> 
+
   <target name="dev" description="A development target to compile with
-symbols and copy jar file(s)">
-        <antcall target="jars">
-                <param name="build.compiler.debug" value="on"/>
-        </antcall>
-        <copy todir="${nbroot}/nbbuild/netbeans/modules/autoload/ext">
-            <fileset dir="netbeans/modules/autoload/ext">
-              <exclude name="**/locale/*"/>
-              <exclude name="**/*-test.jar" /> 
-            </fileset>
-        </copy>
-      	    <copy todir="${nbroot}/nbbuild/netbeans/modules/"> 
-      <!--  <copy todir="../../f4j_all/f4jbuild/firststart/modules/"> -->
-            <fileset dir="netbeans/modules">
+symbols and copy jar file(s)" depends="debug">
+        <copy todir="${nbroot}/nbbuild/netbeans/modules/autoload/">
+            <fileset dir="netbeans/modules/autoload/">
               <exclude name="**/locale/*"/>
               <exclude name="**/*-test.jar" /> 
             </fileset>
         </copy>
   </target>
-
-  <target name="clean-javadoc">
-    <delete dir="J2EEServerAPIs"/>
-    <delete file="J2EEServerAPIs.zip"/>
-    <delete dir="javadoc"/>
+  
+ <target name="f4dev" description="A development target to compile with
+symbols and copy jar file(s)" depends="debug">
+        <copy todir="${f4jroot}/f4jbuild/firststart/modules/autoload/">
+            <fileset dir="netbeans/modules/autoload/">
+              <exclude name="**/locale/*"/>
+              <exclude name="**/*-test.jar" /> 
+            </fileset>
+        </copy>
   </target>
-
-  <target name="javadoc" depends="clean-javadoc,j2eeserver-module-apis">
-    <copy todir="javadoc">
-      <fileset dir=".">
-        <include name="J2EEServerAPIs/**"/>
-        <include name="J2EEServerAPIs.zip"/>
-      </fileset>
-    </copy>
-  </target>
-
-  <target name="j2eeserver-module-apis" description="Build j2eeserver module API documentation.">
-    <tstamp/>
-    <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2002 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
+  
+  <target name="javadoc" description="Build j2eeserver module API documentation.">
     <echo message="Build j2eeserver module API documentation..."/>
-    <delete dir="J2EEServerAPIs"/>
-    <mkdir dir="J2EEServerAPIs"/>
-    <javadoc destdir="J2EEServerAPIs"
-             packagenames="org.netbeans.modules.j2ee.deployment.devmodules.api,org.netbeans.modules.j2ee.deployment.devmodules.spi,org.netbeans.modules.j2ee.deployment.plugins.api,org.netbeans.modules.j2ee.deployment.plugins.spi"
-	     doctitle="NetBeans j2eeserver module APIs"
-             windowtitle="NetBeans j2eeserver module APIs"
-             overview="api/doc/overview.html"
-             bottom="${apis-footer}"
-             use="true"
-             splitindex="true"
-             author="false"
-             version="false"
-             maxmemory="64m"
-             stylesheetfile="../nbbuild/javadoctools/javadoc.css"
-    >
-      <sourcepath>
-        <pathelement location="src"/>
-        <pathelement location="api/doc"/>
-      </sourcepath>
-      <classpath>
-        <pathelement location="${nbroot}/openide/openide-13javac-workaround.jar"/>
-        <pathelement location="${nbroot}/openide/netbeans/lib/openide.jar"/>
-        <pathelement location="${nbroot}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
-<!--         <pathelement location="${nbroot}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/> 
-        XXX -->
-        <pathelement location="${nbroot}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/> <!-- XXX -->
-        <pathelement location="${nbroot}/schema2beans/netbeans/modules/autoload/schema2beans.jar"/>
-        <pathelement location="${nbroot}/projects/core/netbeans/modules/autoload/projects-core.jar"/>
-        <pathelement location="${nbroot}/projects/ide/netbeans/modules/projects-ide.jar"/>
-        <pathelement location="${nbroot}/projects/compilation/netbeans/modules/autoload/compilation.jar"/>
-        <pathelement location="${nbroot}/projects/filesets/netbeans/modules/autoload/filesets.jar"/>
-        <fileset dir="external">
-            <include name="*.jar"/>
-        </fileset>
-        <!-- PENDING required by debugger type, perhaps could be
-        removed -->
-        <pathelement location="${nbroot}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/> 
-      </classpath>
-    </javadoc>
-    <copy todir="J2EEServerAPIs">
-            <fileset dir="www/jsr88/">
-              <include name="*.html"/>
-            </fileset>
-    </copy>
-    <copy todir="J2EEServerAPIs">
-        <fileset dir="src">
-            <include name="**/netbeans-deployment.dtd"/>
-        </fileset>
-    </copy>
-    <zip zipfile="J2EEServerAPIs.zip" basedir="J2EEServerAPIs"/>
+    <!-- Ant 1.4 bug workaround: <property refid="..."/> does not work inside <ant> -->
+    <property name="_cp" refid="cp"/>
+    <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc">
+      <property name="javadoc.base" location="."/>
+      <property name="javadoc.name" value="J2EEServerAPI"/>
+      <property name="javadoc.title" value="NetBeans j2eeserver module APIs"/>
+      <property name="javadoc.packages" value="org.netbeans.modules.j2ee.deployment.devmodules.spi.*,org.netbeans.modules.j2ee.deployment.devmodules.api.*,org.netbeans.modules.j2ee.deployment.plugins.spi.*,org.netbeans.modules.j2ee.deployment.plugins.api.*"/>
+      <property name="javadoc.classpath" value="${_cp}"/>
+      <property name="javadoc.overview" location="api/doc/overview.html"/>
+      <property name="javadoc.docfiles" location="api/doc"/>
+      <!--<property name="javadoc.apichanges" location="api/doc/changes/apichanges.xml"/>-->
+    </ant>
   </target>
+
 </project>

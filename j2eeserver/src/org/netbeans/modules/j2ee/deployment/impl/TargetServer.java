@@ -17,11 +17,18 @@ package org.netbeans.modules.j2ee.deployment.impl;
 import org.openide.filesystems.FileUtil;
 
 import javax.enterprise.deploy.shared.ModuleType;
+import javax.enterprise.deploy.shared.StateType;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.status.*;
 import javax.enterprise.deploy.spi.exceptions.*;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.*;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
+import org.openide.ErrorManager;
+import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
+import org.netbeans.modules.j2ee.deployment.plugins.api.*;
+import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
 
 // import org.netbeans.api.debugger.DebuggerInfo;
 import java.util.Timer;
@@ -30,182 +37,401 @@ import java.util.TimerTask;
 import java.util.*;
 import java.io.*;
 
-/* Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
- * help */
+/**
+ * Encapsulates a set of ServerTarget(s), provides a wrapper for deployment
+ * help.  This is a throw away object, that get created and used within
+ * scope of a deployment execution only.
+ * The usage is for executor to call procesLastTargetModules(TargetModule[]) to
+ * build a list of TargetModuleID's known by the IDE to have been deployed and
+ * their oldest timestamp.
+ */
 public class TargetServer {
     
     Target[] targets;
     ServerInstance instance;
-    String[] ids;
-    TargetModuleID[] modules = null;
-    ProgressObject progressObject;
+    DeploymentTarget dtarget;
+    IncrementalDeployment incremental; //null value signifies don't do incremental
     
-    public TargetServer(ServerInstance instance, Target[] targets, String[] ids) {
-        this.targets = targets; this.instance = instance; this.ids = ids;
+    Set deployedRootTMIDs = new HashSet(); // type TargetModule
+    Set distributeTargets = new HashSet();
+    TargetModule[] redeployTargetModules = null;
+    File application = null;
+    
+    // Note: this constructor will have admin server running
+    public TargetServer(DeploymentTarget target) {
+        this.targets = target.getServer().toTargets();
+        this.instance = target.getServer().getServerInstance();
+        this.dtarget = target;
+        init();
     }
+    
     private Target[] getTargets() {
-        if (targets == null)
-            targets = instance.getDeploymentManager().getTargets();
         return targets;
     }
-    private TargetModuleID[] getModules() {
-        if(modules == null && ids != null) {
-            try {
-                modules = instance.getDeploymentManager().getAvailableModules(ModuleType.EAR /* PENDING get module type here */,
-                getTargets());
-                Collection idSet = Arrays.asList(ids);
-                Collection idList = new LinkedList();
-                for(int i = 0; i < modules.length; i++) {
-                    if(idSet.contains(modules[i].getModuleID())) idList.add(ids[i]);
-                }
-                if(idSet.size() == targets.length) {
-                    modules = new TargetModuleID[targets.length];
-                    idList.toArray(modules);
-                }
-            } catch (TargetException te) {
-                // PENDING log this exception.
-                te.printStackTrace();
+    
+    private void init() {
+        // see if we want and can incremental
+        if (dtarget.doFastDeploy()) 
+            incremental = instance.getIncrementalDeployment();
+
+        processLastTargetModules();
+    }
+    
+    private AppChangeDescriptor distributeChanges(TargetModule targetModule, DeployProgressUI ui) {
+        ServerFileDistributor sfd = new ServerFileDistributor(instance, dtarget);
+        ui.setProgressObject(sfd);
+        if (! sfd.checkServiceImplementations())
+            return null;
+        ModuleChangeReporter mcr = dtarget.getModuleChangeReporter();
+        AppChangeDescriptor acd = sfd.distribute(targetModule, mcr);
+        return acd;
+    }
+
+    /**
+     * Process last deployment TargetModuleID's for eligibility and oldest timestamp
+     */
+    private void processLastTargetModules() {
+        TargetModule[] targetModules = dtarget.getTargetModules();
+        if (targetModules == null || targetModules.length == 0) {
+            for (int i=0; i<targets.length; i++) {
+                distributeTargets.add(targets[i]);
+            }
+            return;
+        }
+        
+        // existing TMID's
+        DeploymentManager dm = instance.getDeploymentManager();
+        Map availables = new HashMap();
+        try {
+            ModuleType type = (ModuleType) dtarget.getModule().getModuleType();
+            TargetModuleID[] ids = dm.getAvailableModules(type, targets);
+            for (int i=0; i<ids.length; i++) {
+                availables.put(ids[i].toString(), ids[i]);
+            }
+        } catch (TargetException te) {
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, te);
+        }
+        
+        Set targetNames = new HashSet();
+        for (int i=0; i<targets.length; i++) targetNames.add(targets[i].getName());
+        
+        Set toRedeploy = new HashSet();
+        for (int i=0; i<targetModules.length; i++) {
+            // not my module
+            if (! targetModules[i].getInstanceUrl().equals(instance.getUrl()) ||
+            ! targetNames.contains(targetModules[i].getTargetName()))
+                continue;
+            
+            TargetModuleID tmID = (TargetModuleID) availables.get(targetModules[i].getId());
+            
+            // no longer a deployed module on server
+            if (tmID == null) {
+                Target target = targetModules[i].findTarget();
+                if (target != null)
+                    distributeTargets.add(target);
+            } else {
+                targetModules[i].initDelegate(tmID);
+                toRedeploy.add(targetModules[i]);
             }
         }
-        return modules;
+        
+        // check if redeploy not suppported and not incremental then transfer to distribute list
+        if (incremental == null && getApplication() == null) {
+            toRedeploy = Collections.EMPTY_SET;
+        } else if (incremental == null) {
+            long lastModified = getApplication().lastModified();
+            for (Iterator j=toRedeploy.iterator(); j.hasNext();) {
+                TargetModule deployed = (TargetModule) j.next();
+                if (lastModified >= deployed.getTimestamp()) {
+                    //transfer to distribute
+                    if (! dm.isRedeploySupported()) {
+                        distributeTargets.add(deployed.findTarget());
+                        j.remove();
+                    }
+                } else {
+                    // no need to redeploy
+                    j.remove();
+                }
+            }
+        } else { // make sure getDirectoryForModule return non-null directory for incremental
+            FileDeploymentLayout fileLayout = instance.getFileDeploymentLayout();
+            if (fileLayout == null)
+                incremental = null;
+            else {
+                for (Iterator k=toRedeploy.iterator(); k.hasNext();) {
+                    TargetModule tm = (TargetModule) k.next();
+                    if (fileLayout.getDirectoryForModule(tm.delegate()) == null) {
+                        incremental = null;
+                        break;
+                    }
+                }
+            }
+        }
+
+        redeployTargetModules = (TargetModule[]) toRedeploy.toArray(new TargetModule[toRedeploy.size()]);
+    }
+
+    private File getApplication() {
+        if (application != null) return application;
+        try {
+            FileObject archiveFO = dtarget.getModule().getArchive();
+            if (archiveFO == null) return null;
+            application = FileUtil.toFile(archiveFO);
+            return application;
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
+            return null;
+        }
+    }
+    
+    
+    public boolean startTargets(boolean debugMode, DeployProgressUI ui) {
+        getTargets();
+        if (debugMode) {
+            for (int i=0; i<targets.length; i++)
+                if (! instance.startDebugTarget(targets[i], ui))
+                    return false;
+        } else {
+            for (int i=0; i<targets.length; i++)
+                if (! instance.startTarget(targets[i], ui))
+                    return false;
+        }
+        return true;
+    }
+    
+    public boolean startInstance(DeployProgressUI ui) {
+        return instance.start(ui);
     }
     
     public boolean canIncrementallyRedeploy(IncrementalDeployment incremental) {
-        getModules();
-        if(modules != null)
-            return incremental.canIncrementallyRedeploy(modules);
-        else return false;
-    }
-    
-    public File getDeploymentDirectory(InplaceDeployment inplace) {
-        return inplace.getDirectory(getModules());
-    }
-    
-    public boolean canReceiveDirectory(InplaceDeployment inplace) {
-        return inplace.canReceiveDirectory(getTargets());
-    }
-    
-    public void start(DeployProgressUI ui) {
-        start(ui, false);
-    }
-    public void /*DebuggerInfo[] */ startDebugging(DeployProgressUI ui) {
-        return ;//start_private(ui, true);
-    }
-    
-    public void start(DeployProgressUI ui, boolean debugMode) {
-        start_private(ui, debugMode);
-    }
-    private void /* DebuggerInfo[] */ start_private(DeployProgressUI ui, boolean debugMode) {
-        StartServer starter = instance.getStartServer();
-        if(starter == null || ! starter.supportsStartDeploymentManager())
-            return ;//null;
-        
-        int work = 0;
-        // PENDING  Get a non-null ProgressObject
-        progressObject = starter.startDeploymentManager();
-        if ( progressObject == null) {
-            ui.addMessage("Starting deployment manager");
-            ui.addError("");    // NOI18N
-            ui.recordWork(++work);
-        }
-        else {
-            setProgressObject(ui, progressObject);
-        }
-        
-        for (int i = 0; i < getTargets().length; i++) {
-            if (debugMode)
-                return ;// starter.startDebugging(getTargets()[i]);
-            else {
-                // PENDING get a non-null progress object
-                progressObject = starter.startServer(getTargets()[i]);
-                if ( progressObject == null) {
-                    ui.addMessage("Starting target: "+ getTargets()[i]);
-                    ui.addError("");    // NOI18N
-                    ui.recordWork(++work>2 ? 2 : work);
-                }
-                else {
-                    setProgressObject(ui, progressObject);
-                }
-            }
-        }
-        return ;//null;
+        return incremental != null;
     }
     
     private boolean setProgressObject(DeployProgressUI progUI, ProgressObject obj) {
         return progUI.setProgressObject(obj);
     }
     
-    public Map deploy(DeployProgressUI progressUI, File application, InputStream plan, InplaceDeployment inplace, IncrementalDeployment incremental, Map changeList) throws Exception {
-        progressObject = null;
-        System.err.println(application.getAbsolutePath());
-        getModules();
-        if(incremental != null) {
-            progressObject = incremental.incrementalRedeploy(modules, application, plan, changeList);
-            setProgressObject(progressUI, progressObject);
+    private class DistributeEventHandler implements ProgressListener {
+        DeployProgressUI ui;
+        ProgressObject po;
+        
+        public DistributeEventHandler(DeployProgressUI ui, ProgressObject po) {
+            this.ui = ui;
+            this.po = po;
+            ui.setProgressObject(po);
+            po.addProgressListener(this);
         }
-        else if (inplace != null) {
-            progressObject = inplace.inPlaceDistribute(getTargets(), application, plan);
-            setProgressObject(progressUI, progressObject);
-        }
-        else {
-            System.out.println("Distributing "+application+" to "+java.util.Arrays.asList(getTargets()));
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            DeploymentStatus status = progressEvent.getDeploymentStatus();
+            StateType state = status.getState();
             
-            progressObject = instance.getDeploymentManager().distribute(getTargets(),new FileInputStream(application),plan);
-            setProgressObject(progressUI, progressObject);
+            System.err.println("mw DistributeEventHandler.handleProgressEvent state= " + state);
             
-            //<short-circuit>
-            int count = 0, guard = 7, work = 3;
-            
-            final ProgressObject distObj = progressObject;
-            final Timer timer = new Timer();
-            timer.schedule(new  TimerTask() {
-                public void run() {
-                    System.out.println("TimerTask dist command: " + distObj.getDeploymentStatus().getCommand()
-                    + " is completed: " + distObj.getDeploymentStatus().isCompleted());
-                    if (!distObj.getDeploymentStatus().isCompleted()) {
-                        throw new RuntimeException("Call to distribute() takes too long...");
+            if (state == StateType.COMPLETED) {
+                TargetModuleID[] modules = po.getResultTargetModuleIDs();
+                modules = saveRootTargetModules(modules);
+                po = null;
+                
+                System.err.println("Distributed modules: "+Arrays.asList(modules));
+                
+                ProgressObject startPO = instance.getDeploymentManager().start(modules);
+                ui.setProgressObject(startPO);
+                new StartEventHandler(startPO);
+
+                final Timer timer2 = new Timer();
+                final ProgressObject startObj = startPO;
+                timer2.schedule(new  TimerTask() {
+                    public void run() {
+                        System.out.println("TimerTask on command: " + startObj.getDeploymentStatus().getCommand()
+                        + " completed= " + startObj.getDeploymentStatus().isCompleted());
+                        if (startObj.getDeploymentStatus().isRunning()) {
+                             wakeUp();
+                        }
+                        timer2.cancel(); //Terminate the timer thread
                     }
-                    timer.cancel(); //Terminate the timer thread
                 }
-            }
-            , 15000);
-            
-            
-            TargetModuleID[] modules = progressObject.getResultTargetModuleIDs();
-            System.out.println("Distributed modules: "+Arrays.asList(modules));
-            
-            progressObject = instance.getDeploymentManager().start(modules);
-            setProgressObject(progressUI, progressObject);
-            
-            final Timer timer2 = new Timer();
-            final ProgressObject startObj = progressObject;
-            timer2.schedule(new  TimerTask() {
-                public void run() {
-                    System.out.println("TimerTask start command: " + startObj.getDeploymentStatus().getCommand()
-                    + " is completed: " + startObj.getDeploymentStatus().isCompleted());
-                    if (!startObj.getDeploymentStatus().isCompleted()) {
-                        System.out.println("Call to start() takes too long...");
-                    }
-                    timer2.cancel(); //Terminate the timer thread
-                }
-            }
-            , 120000);
-            
-            modules = progressObject.getResultTargetModuleIDs();
-            System.out.println("Started modules: "+Arrays.asList(modules));
-            
-            Map ret = new HashMap();
-            for(int i = 0; i < modules.length; i++)
-                ret.put(modules[i].getTarget(), modules[i].getModuleID());
-            return ret;
-            //</short-circuit>
+                , 120000);
+                
+            } // end of if (state == StateType.COMPLETED)
+            else if (state == StateType.FAILED) {
+                wakeUp();
+            } // end of else if (state == StateType.FAILED)
         }
-        Map ret = new HashMap();
-        TargetModuleID[] ids = progressObject.getResultTargetModuleIDs();
-        for(int i = 0; i < ids.length; i++)
-            ret.put(ids[i].getTarget(),ids[i].getModuleID());
-        ProgressObject st = instance.getDeploymentManager().start(progressObject.getResultTargetModuleIDs());
-        setProgressObject(progressUI, st);
-        return ret;
+    }
+    
+    private class IncrementalEventHandler implements ProgressListener {
+        ProgressObject po;
+        
+        public IncrementalEventHandler(ProgressObject po) {
+            this.po = po;
+            po.addProgressListener(this);
+        }
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            StateType state = progressEvent.getDeploymentStatus().getState();
+            if (state == StateType.COMPLETED) {
+            System.err.println("nam IncrementalEventHandler.handleProgressEvent state= " + state);
+                TargetModuleID[] modules = po.getResultTargetModuleIDs();
+                saveRootTargetModules(modules);
+                po = null;
+                wakeUp();
+            }
+            else if (state == StateType.FAILED) {
+                po = null;
+                wakeUp();
+            }
+        }
+    }
+
+    private class StartEventHandler implements ProgressListener {
+        ProgressObject startPO;
+        
+        public StartEventHandler(ProgressObject startPO) {
+            this.startPO = startPO;
+            startPO.addProgressListener(this);
+        }
+        public void handleProgressEvent(ProgressEvent progressEvent) {
+            DeploymentStatus status = progressEvent.getDeploymentStatus();
+            StateType state = status.getState();
+            
+            System.err.println("mw StartEventHandler.handleProgressEvent state= " + state);
+            
+            if (state == StateType.COMPLETED) {
+                TargetModuleID[] modules = startPO.getResultTargetModuleIDs();
+                
+                System.err.println("Started modules: " + Arrays.asList(modules));
+                for(int i = 0; i < modules.length; i++) {
+                    System.err.println("  URL=" + modules[i].getWebURL());
+                }
+                
+                wakeUp();
+                
+            } // end of if (state == StateType.COMPLETED)
+            else if (state == StateType.FAILED) {
+                wakeUp();
+            } // end of else if (state == StateType.FAILED)
+        }
+    }
+    
+    public synchronized void wakeUp() {
+        notifyAll();
+    }
+    
+    public boolean sleep() {
+        return sleep(0);
+    }
+    public synchronized boolean sleep(long timeout) {
+        try {
+            long t0 = System.currentTimeMillis();
+            this.wait(timeout);
+            return ((System.currentTimeMillis() - t0) < timeout);
+        } catch (Exception e) {
+            return false;
+        } // end of try-catch
+    }
+    
+    //collect root modules into TargetModule with timestamp
+    public TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
+        long timestamp = System.currentTimeMillis();
+        Set originals = new HashSet();
+        for (int i=0; i<modules.length; i++) {
+            if (modules[i].getParentTargetModuleID() == null) {
+                String id = modules[i].toString();
+                String targetName = modules[i].getTarget().getName();
+                TargetModule tm = new TargetModule(id, instance.getUrl(), targetName, timestamp, modules[i]);
+                deployedRootTMIDs.add(tm);
+                originals.add(modules[i]);
+            }
+        }
+        return (TargetModuleID[]) originals.toArray(new TargetModuleID[originals.size()]);
+    }
+
+    public TargetModule[] deploy(DeployProgressUI progressUI) throws IOException {
+        ProgressObject progressObject = null;
+
+        // save configuration file if not already save 
+        // Note: configuration is not DO so will not be saved automatically on execute
+        try {
+            dtarget.getDeploymentConfigurationProvider().saveOnDemand();
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ioe.getMessage());
+            return null;
+        }
+        File plan = dtarget.getConfigurationFile();
+
+        //PENDING: do initialDeploy(DeployableObject app, File dir)
+        // handle distribute
+        if (distributeTargets.size() > 0) {
+            Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
+
+            if (getApplication() != null) {
+                System.err.println("  Distributing " + application + " to " + Arrays.asList(targetz));
+                System.err.println("  Plan " + plan);
+
+                progressObject = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
+                new DistributeEventHandler(progressUI, progressObject);
+                sleep();
+            } else {
+                progressUI.addError(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
+            }
+        }
+        
+        // handle increment or redeploy
+        if (redeployTargetModules != null && redeployTargetModules.length > 0) {
+
+            //PENDING: detect target without incremental deploy capability (need APIs) 
+            if (incremental != null) {
+                // PENDING: Is this reasonable restriction?
+                if (redeployTargetModules.length != 1) {
+                    progressUI.addError(
+                        NbBundle.getMessage(TargetServer.class, "MSG_MoreThanOneIncrementalTargets"));
+                    return null;
+                }
+            
+                AppChangeDescriptor acd = distributeChanges(redeployTargetModules[0], progressUI);
+                if (acd == null) 
+                    return new TargetModule[0];
+
+                if (anyChanged(acd)) {
+                    long t0 = System.currentTimeMillis();
+                     
+                    progressObject = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
+                    progressUI.setProgressObject(progressObject);
+                    new IncrementalEventHandler(progressObject);
+
+                    StateType state = progressObject.getDeploymentStatus().getState();
+                    //System.out.println("incrementalDeploy: Status="+state);
+                    if (state !=  StateType.COMPLETED && state != StateType.FAILED) {
+                        System.out.println("Waiting on incrementalDeploy of ="+Arrays.asList(redeployTargetModules));
+                        if (sleep(120000) )
+                            System.out.println("Finished waiting on incrementalDeploy: deployed="+deployedRootTMIDs);
+                        else
+                            System.out.println("WARNING: incrementalDeploy: timeout or interrupted!");
+                    }
+                    System.out.println("incrementalDeploy time="+(System.currentTimeMillis()-t0)+" msecs.");
+                } else { // return original target modules
+                    return dtarget.getTargetModules();
+                }
+            } else { // redeploy
+                TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
+                if (getApplication() != null) {
+                    System.err.println("  Redeploying " + application + " with TMIDs " + Arrays.asList(redeployTargetModules));
+                    System.err.println("  Plan " + plan);
+                
+                    progressObject = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
+                    new DistributeEventHandler(progressUI, progressObject);
+                    sleep();
+                } else {
+                    progressUI.addError(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
+                } 
+            }
+        }
+        
+        return (TargetModule[]) deployedRootTMIDs.toArray(new TargetModule[deployedRootTMIDs.size()]);
+    }
+    
+    public static boolean anyChanged(AppChangeDescriptor acd) {
+        System.out.println(acd);
+        return (acd.manifestChanged() || acd.descriptorChanged() || acd.classesChanged() 
+                || acd.ejbsChanged() || acd.serverDescriptorChanged());
     }
 }

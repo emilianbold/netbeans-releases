@@ -51,30 +51,40 @@ public class ServerRegistryNode extends AbstractNode {
     
     public ServerRegistryNode() {
         super(new ServerChildren());
-        
-        setDisplayName(NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE_NO_DEFAULT"));//NOI18N
+        ServerString defaultInstance = ServerRegistry.getInstance().getDefaultInstance();
+        String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE_NO_DEFAULT");//NOI18N
+        if (defaultInstance != null) {
+            ServerInstance si = defaultInstance.getServerInstance();
+            msg = NbBundle.getMessage(ServerRegistryNode.class,
+            "SERVER_REGISTRY_NODE_DEFAULT",
+            ((si == null) ? defaultInstance.getUrl() : si.getDisplayName()));//NOI18N
+        }
+        setDisplayName(msg);
         setName("");//NOI18N
         setIconBase(REGISTRY_ICON_BASE);
         try {
             
             pluginListener = new ServerRegistry.PluginListener() {
                 public void serverAdded(Server server) {
-//                    System.err.println("Server added " + server);
+                    //                    System.err.println("Server added " + server);
                     updateKeys();
                 }
                 public void serverRemoved(Server server) {
-//                    System.err.println("Server removed " + server);
+                    //                    System.err.println("Server removed " + server);
                     updateKeys();
                 }
             };
             instanceListener = new ServerRegistry.InstanceListener() {
                 public void instanceAdded(ServerString instance) {
-//                    System.err.println("Adding instance in the node");
+                    //                    System.err.println("Adding instance in the node");
                     addInstance(instance.getServerInstance());
                 }
+                public void instanceRemoved(ServerString instance) {
+                    removeInstance(instance.getServerInstance());
+                }
                 public void changeDefaultInstance(ServerString instance) {
-//                    System.err.println("Changing default to " + instance);
-                    setInstance(instance.getServerInstance());
+                    //                    System.err.println("Changing default to " + instance);
+                    setInstance(instance == null ? null : instance.getServerInstance());
                 }
             };
             
@@ -96,16 +106,22 @@ public class ServerRegistryNode extends AbstractNode {
     }
     
     private void addInstance(ServerInstance instance) {
-                    Server server = instance.getServer();
-                    ServerNode node = getServerNode(server);
-                    node.addInstance(instance);
+        Server server = instance.getServer();
+        ServerNode node = getServerNode(server);
+        node.addInstance(instance);
+    }
+    
+    private void removeInstance(ServerInstance instance) {
+        Server server = instance.getServer();
+        ServerNode node = getServerNode(server);
+        node.removeInstance(instance);
     }
     
     private void updateKeys() {
-//        System.err.println("Updating the children of the server registry");
+        //        System.err.println("Updating the children of the server registry");
         ((ServerChildren) getChildren()).updateKeys();
     }
-        
+    
     ServerNode getServerNode(Server s) {
         ServerNode node = (ServerNode) serverNodes.get(s);
         if(node == null) {
@@ -118,7 +134,7 @@ public class ServerRegistryNode extends AbstractNode {
     public SystemAction[] createActions() {
         return new SystemAction[] {
             SystemAction.get(FindDeploymentManagerAction.class),
-            SystemAction.get(SetDefaultServerAction.class), 
+            SystemAction.get(SetDefaultServerAction.class),
             SystemAction.get(NodeHelpAction.class)};
     }
     
@@ -146,7 +162,7 @@ class ServerChildren extends Children.Keys {
         setKeys(ServerRegistry.getInstance().getServers());
     }
     protected Node[] createNodes(Object key) {
-//        System.err.println("Creating node for " + key);
+        //        System.err.println("Creating node for " + key);
         Server s = (Server) key;
         return new Node[] {new FilterNode(((ServerRegistryNode)getNode()).getServerNode(s))};
     }

@@ -37,8 +37,6 @@ Microsystems, Inc. All Rights Reserved.
           <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.dd.wizards.ServletIterator"/>
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/>
           <attr name="org.netbeans.modules.web.IsServletFile" boolvalue="true"/>
-          <attr name="NetBeansAttrDebuggerType" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerDebuggerType"/>
-          <attr name="NetBeansAttrExecutor" methodvalue="org.netbeans.modules.j2ee.impl.ServerExecSupport.getServerExecutor"/>
       </file>
       <!-- use template description from HTML module -->
       <file name="Html.html" url="nbresloc:/org/netbeans/modules/html/templates/html.html">
@@ -206,26 +204,6 @@ Microsystems, Inc. All Rights Reserved.
     </folder>
 
   <folder name="J2EE">
-    <folder name="ExecPerformersStorage">
-        <file name="org-netbeans-modules-web-execution-JspExecPerformer$Factory.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.JspExecPerformer$Factory.getJspFactory" />
-        </file>    
-        <file name="org-netbeans-modules-web-execution-JspServletExecPerformer$Factory.instance">
-             <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.JspServletExecPerformer$Factory.getJspServletFactory" />
-        </file>    
-        <file name="org-netbeans-modules-web-execution-HtmlExecPerformer$Factory.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.HtmlExecPerformer$Factory.getHtmlFactory" />
-        </file>    
-        <file name="org-netbeans-modules-web-execution-ServletExecPerformer$Factory.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.ServletExecPerformer$Factory.getJavaFactory" />
-        </file>    
-        <file name="org-netbeans-modules-web-execution-WebModuleExecPerformer$Factory.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.WebModuleExecPerformer$Factory.getWebModuleFactory" />
-        </file>    
-        <file name="org-netbeans-modules-web-execution-WebAppExecPerformer$Factory.instance">
-            <attr name="instanceCreate" methodvalue="org.netbeans.modules.web.execution.WebAppExecPerformer$Factory.getWebAppFactory" />
-        </file>    
-    </folder>
     <folder name="JSPParser">
     </folder>
     <folder name="JSPSyntaxColoring">

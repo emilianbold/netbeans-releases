@@ -396,13 +396,19 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module innertesters..."/>
     <ant dir="../innertesters" target="netbeans"/>
   </target>
+  <!--
   <target name="all-j2eeserver/deprecated" depends="all-openide,all-jarpackager,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-core/javahelp">
     <echo message="Building module j2eeserver(deprecated)..."/>
     <ant dir="../j2eeserver/deprecated" target="netbeans"/>
   </target>
-  <target name="all-j2eeserver" depends="all-openide,all-schema2beans,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi">
+  -->
+  <target name="all-j2eeserver" depends="all-openide,all-schema2beans,all-debuggercore,all-debuggerjpda,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-j2eeserver/j2eeapis">
     <echo message="Building module j2eeserver..."/>
     <ant dir="../j2eeserver" target="netbeans"/>
+  </target>
+  <target name="all-j2eeserver/j2eeapis">
+    <echo message="Building module j2eeserver/j2eeapis..."/>
+    <ant dir="../j2eeserver/j2eeapis" target="netbeans"/>
   </target>
   <target name="all-junit" depends="all-openide,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io,all-java/srcmodel">
     <echo message="Building module junit..."/>
@@ -610,6 +616,14 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tomcatint/tomcat40autocompile..."/>
     <ant dir="../tomcatint/tomcat40autocompile" target="netbeans"/>
   </target>
+  <target name="all-tomcatint/tomcat5" depends="all-openide,all-ant,all-schema2beans,all-java/srcmodel,all-openide/execution,all-openide/io">
+    <echo message="Building module tomcatint/tomcat5..."/>
+    <ant dir="../tomcatint/tomcat5" target="netbeans"/>
+  </target>
+  <target name="all-tomcatint/tomcat5/bundled" depends="all-tomcatint/tomcat5">
+    <echo message="Building module tomcatint/tomcat5/bundled..."/>
+    <ant dir="../tomcatint/tomcat5/bundled" target="netbeans"/>
+  </target>
   <target name="all-translatedfiles" depends="init">
     <echo message="Building module translatedfiles..."/>
     <ant dir="../translatedfiles" target="netbeans"/>
@@ -684,7 +698,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../web/servletapi24" target="netbeans"/>
   </target>
   <!-- XXX illegal dependence on core! -->
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver/deprecated,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-j2eeserver,all-html,all-httpserver,all-jarpackager,all-debuggercore,all-openidex,all-schema2beans,all-xml/api,all-xml/catalog,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
@@ -705,7 +719,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
-  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver/deprecated,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
+  <target name="all-web/advanced" depends="all-web/core,all-web/jspsyntax,all-jarpackager,all-debuggercore,all-j2eeserver,all-html,all-openidex,all-openide/deprecated,all-java/srcmodel,all-openide/execution">
     <echo message="Building module web/advanced..."/>
     <ant dir="../web/advanced" target="netbeans"/>
   </target>
