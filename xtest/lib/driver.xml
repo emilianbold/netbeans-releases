@@ -327,7 +327,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
   
   <target name="make-bin-executable" if="ide.home">
-    <chmod perm="ugo+rx" dir="${ide.home}" includes="**/*.sh"/>
+    <chmod perm="ugo+rx" dir="${ide.home}" includes="**"/>
   </target>
   
   <target name="check-ide-param" depends="actionlist" if="xtest.execute_actions.install-ide">
