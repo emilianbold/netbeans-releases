@@ -90,7 +90,6 @@ Microsystems, Inc. All Rights Reserved.
         <folder name="Help">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-netbeans-core-actions-AboutAction.instance"/>
-            <file name="org-netbeans-core-actions-TipOfTheDayAction.instance"/>
         </folder>
         
     </folder>

@@ -502,7 +502,6 @@ public abstract class NbTopManager {
                         if (windowSystem != null) {
                             windowSystem.save();
                         }
-                        org.netbeans.core.projects.XMLSettingsHandler.saveOptions();
                         try {
                             ((Lkp)Lookup.getDefault()).storeCache();
                         } catch (IOException ioe) {

@@ -40,8 +40,7 @@ public class FileSystemBeanInfo extends SimpleBeanInfo {
                    new PropertyDescriptor ("status", FileSystem.class, "getStatus", null), // 6 // NOI18N
             };
             ResourceBundle bundle = NbBundle.getBundle(FileSystemBeanInfo.class);
-            desc[0].setDisplayName (bundle.getString("PROP_readOnly"));
-            desc[0].setShortDescription (bundle.getString("HINT_readOnly"));
+            desc[0].setHidden(true);
             desc[1].setDisplayName (bundle.getString("PROP_valid"));
             desc[1].setHidden(true);
 /*

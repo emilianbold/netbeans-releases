@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -67,8 +67,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                                "getMiniStatusBarState", "setMiniStatusBarState") // NOI18N                                               
                    };
 
-            desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
-            desc[0].setShortDescription (Main.getString ("HINT_SHOW_TIPS_ON_STARTUP"));
             desc[0].setHidden (true);
             
             desc[1].setHidden (true);

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -97,7 +97,6 @@ public class DataFolderEditor extends PropertyEditorSupport {
         return true;
     }
 
-    /** Returns an instance of FileSystemPanel */
     public java.awt.Component getCustomEditor () {
         dfPanel = getDFPanel();
         Object val = getValue();
@@ -128,7 +127,6 @@ public class DataFolderEditor extends PropertyEditorSupport {
         super.setValue(newDf);
     }
     
-    /** Manages one instance of FileSystemPanel */
     public DataFolderPanel getDFPanel() {
         if (dfPanel == null) {
             dfPanel = new DataFolderPanel(this);
