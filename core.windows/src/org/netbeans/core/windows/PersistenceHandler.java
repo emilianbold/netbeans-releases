@@ -39,6 +39,7 @@ import org.netbeans.core.windows.persistence.WindowManagerConfig;
 import org.openide.ErrorManager;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 
 /** 
@@ -364,54 +365,53 @@ final class PersistenceHandler implements PersistenceObserver {
 
     
     private WindowManagerConfig getConfig() {
-        
         WindowManagerConfig wmc = new WindowManagerConfig();
         
-        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        WindowManagerImpl wmi = WindowManagerImpl.getInstance();
         
-        Rectangle joinedBounds = wm.getMainWindowBoundsJoined();
+        Rectangle joinedBounds = wmi.getMainWindowBoundsJoined();
         debugLog("joinedBouds=" + joinedBounds); // NOI18N
         wmc.xJoined      = joinedBounds.x;
         wmc.yJoined      = joinedBounds.y;
         wmc.widthJoined  = joinedBounds.width;
         wmc.heightJoined = joinedBounds.height;
-        Rectangle separatedBounds = wm.getMainWindowBoundsSeparated();
+        Rectangle separatedBounds = wmi.getMainWindowBoundsSeparated();
         debugLog("separatedBounds=" + separatedBounds); // NOI18N
         wmc.xSeparated      = separatedBounds.x;
         wmc.ySeparated      = separatedBounds.y;
         wmc.widthSeparated  = separatedBounds.width;
         wmc.heightSeparated = separatedBounds.height;
         
-        wmc.mainWindowFrameStateJoined = wm.getMainWindowFrameStateJoined();
+        wmc.mainWindowFrameStateJoined = wmi.getMainWindowFrameStateJoined();
         debugLog("mainWindowFrameStateJoined=" + wmc.mainWindowFrameStateJoined); // NOI18N
-        wmc.mainWindowFrameStateSeparated = wm.getMainWindowFrameStateSeparated();
+        wmc.mainWindowFrameStateSeparated = wmi.getMainWindowFrameStateSeparated();
         debugLog("mainWindowFrameStateSeparated=" + wmc.mainWindowFrameStateSeparated); // NOI18N
 
-        wmc.editorAreaState = wm.getEditorAreaState();
+        wmc.editorAreaState = wmi.getEditorAreaState();
         debugLog("editorAreaState=" + wmc.editorAreaState); // NOI18N
-        wmc.editorAreaBounds = wm.getEditorAreaBounds();
+        wmc.editorAreaBounds = wmi.getEditorAreaBounds();
         debugLog("editorAreaBounds=" + wmc.editorAreaBounds); // NOI18N
-        wmc.editorAreaConstraints = wm.getEditorAreaConstraints();
+        wmc.editorAreaConstraints = wmi.getEditorAreaConstraints();
         debugLog("editorAreaConstraints=" + wmc.editorAreaConstraints); // NOI18N
         wmc.screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         
-        ModeImpl mo = wm.getActiveMode();
+        ModeImpl mo = wmi.getActiveMode();
         debugLog("active mode=" + mo); // NOI18N
         if (mo != null) {
             wmc.activeModeName = mo.getName();
         }
         
-        mo = wm.getMaximizedMode();
+        mo = wmi.getMaximizedMode();
         debugLog("maximized mode=" + mo); // NOI18N
         if (mo != null) {
             wmc.maximizedModeName = mo.getName();
         }
         
-        wmc.toolbarConfiguration = wm.getToolbarConfigName();
+        wmc.toolbarConfiguration = wmi.getToolbarConfigName();
         debugLog("toolbarConfiguration=" + wmc.toolbarConfiguration); // NOI18N
         
         // Modes.
-        Set modeSet = wm.getModes();
+        Set modeSet = wmi.getModes();
         List modeConfigs = new ArrayList(modeSet.size());
         for (Iterator it = modeSet.iterator(); it.hasNext(); ) {
             modeConfigs.add(getConfigFromMode((ModeImpl) it.next()));
@@ -419,7 +419,7 @@ final class PersistenceHandler implements PersistenceObserver {
         wmc.modes = (ModeConfig[])modeConfigs.toArray(new ModeConfig[0]);
         
         // TopComponent groups.
-        Set tcGroups = wm.getTopComponentGroups();
+        Set tcGroups = wmi.getTopComponentGroups();
         List groupConfigs = new ArrayList(tcGroups.size());
         for (Iterator it = tcGroups.iterator(); it.hasNext(); ) {
             groupConfigs.add(getConfigFromGroup((TopComponentGroupImpl)it.next()));
@@ -428,29 +428,12 @@ final class PersistenceHandler implements PersistenceObserver {
 
         PersistenceManager pm = PersistenceManager.getDefault();
         //RecentViewList
-        TopComponent [] tcs = wm.getRecentViewList();
+        TopComponent [] tcs = wmi.getRecentViewList();
         List tcIdList = new ArrayList(tcs.length);
         for (int i = 0; i < tcs.length; i++) {
-            String tc_id = null;
             if (pm.isTopComponentPersistent(tcs[i])) {
-                try {
-                    tc_id = pm.getTopComponentPersistentIDAndSave(tcs[i]);
-                } catch (NotSerializableException nse) {
-                    //Ignore: Some instances of some TopComponents like for example
-                    //OutputTabTerm does not want to be serialized even if they declare
-                    //they are serializable so isTopComponentPersistent() return true.
-                    continue;
-                } catch (IOException ioe) {
-                    //Not able to get top component id
-                    ErrorManager em = ErrorManager.getDefault();
-                    em.annotate(ioe, "No tc_id for TopComponent:[" + tcs[i].getName() + "] " + tcs[i] // NOI18N
-                    + " Class:[" + tcs[i].getClass().getName() + "]"); // NOI18N
-                    em.notify(ErrorManager.INFORMATIONAL, ioe);
-                    continue;
-                }
-                if (tc_id != null) {
-                    tcIdList.add(tc_id);
-                }
+                String tc_id = WindowManager.getDefault().findTopComponentID(tcs[i]);
+                tcIdList.add(tc_id);
             }
         }
         wmc.tcIdViewList = (String []) tcIdList.toArray(new String [tcIdList.size()]);
@@ -460,6 +443,7 @@ final class PersistenceHandler implements PersistenceObserver {
 
     private ModeConfig getConfigFromMode(ModeImpl mode) {
         PersistenceManager pm = PersistenceManager.getDefault();
+        WindowManager wm = WindowManager.getDefault();
         ModeConfig modeCfg = new ModeConfig();
         modeCfg.name = mode.getName();
         debugLog(""); // NOI18N
@@ -486,23 +470,9 @@ final class PersistenceHandler implements PersistenceObserver {
         TopComponent selectedTC = mode.getSelectedTopComponent();
         if(selectedTC != null) {
             if (pm.isTopComponentPersistent(selectedTC)) {
-                try {
-                    String tc_id = pm.getTopComponentPersistentIDAndSave(selectedTC);
-                    debugLog("selected tc=" + selectedTC.getName()); // NOI18N
-                    if(tc_id != null) {
-                        modeCfg.selectedTopComponentID = tc_id;
-                    }
-                } catch (NotSerializableException nse) {
-                    //Ignore: Some instances of some TopComponents like for example
-                    //OutputTabTerm does not want to be serialized even if they declare
-                    //they are serializable so isTopComponentPersistent() return true.
-                } catch (IOException ioe) {
-                    //Not able to get top component id
-                    ErrorManager em = ErrorManager.getDefault();
-                    em.annotate(ioe, "No tc_id for TopComponent:[" + selectedTC.getName() + "] " + selectedTC // NOI18N
-                    + " Class:[" + selectedTC.getClass().getName() + "]"); // NOI18N
-                    em.notify(ErrorManager.INFORMATIONAL, ioe);
-                }
+                String tc_id = wm.findTopComponentID(selectedTC);
+                debugLog("selected tc=" + selectedTC.getName()); // NOI18N
+                modeCfg.selectedTopComponentID = tc_id;
             }
         }
         modeCfg.permanent = mode.isPermanent();
@@ -514,22 +484,8 @@ final class PersistenceHandler implements PersistenceObserver {
         for(Iterator it = mode.getOpenedTopComponents().iterator(); it.hasNext(); ) {
             TopComponent tc = (TopComponent)it.next();
             if (pm.isTopComponentPersistent(tc)) {
-                String tc_id;
-                try {
-                    tc_id = pm.getTopComponentPersistentIDAndSave(tc);
-                    debugLog("tc="+tc.getName()); // NOI18N
-                } catch (NotSerializableException nse) {
-                    //Ignore: Some instances of some TopComponents like for example
-                    //OutputTabTerm does not want to be serialized even if they declare
-                    //they are serializable so isTopComponentPersistent() return true.
-                    continue;
-                } catch (IOException ioe) {
-                    //Not able to get top component id
-                    ErrorManager em = ErrorManager.getDefault();
-                    em.annotate(ioe, "No tc_id for TopComponent [" + tc.getName() + "] " + tc); // NOI18N
-                    em.notify(ErrorManager.INFORMATIONAL, ioe);
-                    continue;
-                }
+                String tc_id = wm.findTopComponentID(tc);
+                debugLog("tc=" + tc.getName()); // NOI18N
                 TCRefConfig tcRefCfg = new TCRefConfig();
                 tcRefCfg.tc_id = tc_id;
                 tcRefCfg.opened = true;

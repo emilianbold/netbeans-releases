@@ -19,12 +19,15 @@ import java.beans.PropertyChangeListener;
 import java.io.FileNotFoundException;
 import java.io.InvalidObjectException;
 import java.io.IOException;
+import java.io.NotSerializableException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.WeakHashMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -433,27 +436,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         }
     }
     
-    /** Returns globaly unique ID for persistent TopComponent AND tries to serialize
-     * TopComponent if TopComponent was not serialized yet to make sure that
-     * TopComponent is serializable.
-     * If ID does not exist yet new ID is created.
-     * @return ID of TopComponent */
-    public String getTopComponentPersistentIDAndSave (TopComponent tc) throws IOException {
-        synchronized(LOCK_IDS) {
-            //Search in cache
-            String result = (String) topComponent2IDMap.get(tc);
-            if (result != null) {
-                if (isInvalidId(result)) {
-                    restorePair(tc, result);
-                }
-                return result;
-            }
-        }
-        
-        //Not found, create new settings file
-        return createTopComponentFile(tc);
-    }
-    
     /** @return Searches for top component with given string id and returns
      * found lookup item.
      */
@@ -676,7 +658,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     
     /** Asks all top components active in the system to save their current state.
      */
-    private void saveTopComponents () {
+    private void saveTopComponents (WindowManagerConfig wmc) {
         DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
         Map copyIdToTopComponentMap;
         // must be synced, as Hashmap constructor iterates over original map
@@ -713,19 +695,17 @@ public final class PersistenceManager implements PropertyChangeListener {
                             );
                         }
                     }
-                } catch(java.io.NotSerializableException nse) {
-                    // #20150: TopComponent which doesn't want to be serialized.
-                    // Clean it up from Persistence manager.
-                    synchronized(LOCK_IDS) {
-                        String id = (String)topComponent2IDMap.get(curTC);
-                        topComponent2IDMap.remove(curTC);
-                        id2TopComponentMap.remove(id);
-                    }
+                } catch (NotSerializableException nse) {
+                    //#36916: Handle case when TC is not serializable.
+                    String id = (String) topComponent2IDMap.get(curTC);
+                    removeTCFromConfig(wmc,id);
                 } catch (IOException exc) {
                     // some problem with saving of top component, log warning
                     ErrorManager.getDefault().notify(
                         ErrorManager.WARNING, exc
                     );
+                    String id = (String) topComponent2IDMap.get(curTC);
+                    removeTCFromConfig(wmc,id);
                 } catch (RuntimeException exc) {
                     //Bugfix #19688: Catch all other exceptions to be able to continue with saving process
                     String annotation = NbBundle.getMessage(
@@ -733,12 +713,16 @@ public final class PersistenceManager implements PropertyChangeListener {
                             curTC.getName());
                     ErrorManager.getDefault().annotate(exc, annotation);
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, exc);
+                    String id = (String) topComponent2IDMap.get(curTC);
+                    removeTCFromConfig(wmc,id);
                 } catch (LinkageError le) {
                     String annotation = NbBundle.getMessage(
                             PersistenceManager.class,"EXC_CannotSaveTCSettings",
                             curTC.getName());
                     ErrorManager.getDefault().annotate(le, annotation);
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, le);
+                    String id = (String) topComponent2IDMap.get(curTC);
+                    removeTCFromConfig(wmc,id);
                 }
             }
         }
@@ -864,16 +848,6 @@ public final class PersistenceManager implements PropertyChangeListener {
         
         return srcName;
     }
-
-    private String createTopComponentFile (TopComponent tc) throws IOException {
-        DataFolder compsFolder = DataFolder.findFolder(getComponentsLocalFolder());
-        String compName = WindowManager.getDefault().findTopComponentID(tc);
-        InstanceDataObject ido = InstanceDataObject.create(compsFolder,
-            unescape(compName), tc, null);
-        
-        return compName;
-    }
-    
     
     // Called during projects switch before loading the new project.
     public void reset() {
@@ -1189,12 +1163,12 @@ public final class PersistenceManager implements PropertyChangeListener {
     /** Saves window system configuration to disk.
      * @param wmc snapshot of windoes system configuration
      */
-    public void saveWindowSystem(WindowManagerConfig wmc) {
+    public void saveWindowSystem (WindowManagerConfig wmc) {
         //long start, end, diff;
         WindowManagerParser wmParser = getWindowManagerParser();
         try {
             //start = System.currentTimeMillis();
-            saveTopComponents();
+            saveTopComponents(wmc);
             //end = System.currentTimeMillis();
             //diff = end - start;
             //System.out.println("Saving of top components takes " + diff + " ms");
@@ -1208,6 +1182,69 @@ public final class PersistenceManager implements PropertyChangeListener {
             ErrorManager.getDefault().notify(
                 ErrorManager.WARNING, exc
             );
+        }
+    }
+    
+    /** Removes any occurence of TC id from configuration. It is necessary when
+     * serialization of some TC fails ie. tc throws NotSerializableException.
+     */
+    private void removeTCFromConfig (WindowManagerConfig wmc, String id) {
+        boolean removeFromRecent = false;
+        for (int i = 0; i < wmc.tcIdViewList.length; i++) {
+            if (id.equals(wmc.tcIdViewList[i])) {
+                removeFromRecent = true;
+                break;
+            }
+        }
+        if (removeFromRecent) {
+            List l = new ArrayList(wmc.tcIdViewList.length);
+            for (int i = 0; i < wmc.tcIdViewList.length; i++) {
+                if (!id.equals(wmc.tcIdViewList[i])) {
+                    l.add(wmc.tcIdViewList[i]);
+                }
+            }
+            wmc.tcIdViewList = (String []) l.toArray(new String[l.size()]);
+        }
+        for (int i = 0; i < wmc.modes.length; i++) {
+            ModeConfig mc = wmc.modes[i];
+            if (id.equals(mc.selectedTopComponentID)) {
+                mc.selectedTopComponentID = "";
+            }
+            boolean removeFromMode = false;
+            for (int j = 0; j < mc.tcRefConfigs.length; j++) {
+                if (id.equals(mc.tcRefConfigs[j].tc_id)) {
+                    removeFromMode = true;
+                    break;
+                }
+            }
+            if (removeFromMode) {
+                List l = new ArrayList(mc.tcRefConfigs.length);
+                for (int j = 0; j < mc.tcRefConfigs.length; j++) {
+                    if (!id.equals(mc.tcRefConfigs[j].tc_id)) {
+                        l.add(mc.tcRefConfigs[j]);
+                    }
+                }
+                mc.tcRefConfigs = (TCRefConfig []) l.toArray(new TCRefConfig[l.size()]);
+            }
+        }
+        for (int i = 0; i < wmc.groups.length; i++) {
+            GroupConfig gc = wmc.groups[i];
+            boolean removeFromGroup = false;
+            for (int j = 0; j < gc.tcGroupConfigs.length; j++) {
+                if (id.equals(gc.tcGroupConfigs[j].tc_id)) {
+                    removeFromGroup = true;
+                    break;
+                }
+            }
+            if (removeFromGroup) {
+                List l = new ArrayList(gc.tcGroupConfigs.length);
+                for (int j = 0; j < gc.tcGroupConfigs.length; j++) {
+                    if (!id.equals(gc.tcGroupConfigs[j].tc_id)) {
+                        l.add(gc.tcGroupConfigs[j]);
+                    }
+                }
+                gc.tcGroupConfigs = (TCGroupConfig []) l.toArray(new TCGroupConfig[l.size()]);
+            }
         }
     }
     
