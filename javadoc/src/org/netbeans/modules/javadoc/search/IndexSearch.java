@@ -157,7 +157,7 @@ public class IndexSearch
     java.awt.GridBagConstraints gridBagConstraints1 = new java.awt.GridBagConstraints ();
     gridBagConstraints1.gridwidth = 0;
     gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
-    gridBagConstraints1.insets = new java.awt.Insets (5, 3, 3, 3);
+    gridBagConstraints1.insets = new java.awt.Insets (5, 0, 0, 0);
     gridBagConstraints1.weightx = 1.0;
     gridBagConstraints1.weighty = 1.0;
     add (splitPanel, gridBagConstraints1);
@@ -248,6 +248,7 @@ public class IndexSearch
     quickViewButton = new javax.swing.JToggleButton ();
     setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints1;
+    setBorder (new javax.swing.border.EmptyBorder(new java.awt.Insets(8, 8, 8, 8)));
 
     jPanel1.setLayout (new java.awt.GridBagLayout ());
     java.awt.GridBagConstraints gridBagConstraints2;
@@ -262,7 +263,7 @@ public class IndexSearch
   
       gridBagConstraints2 = new java.awt.GridBagConstraints ();
       gridBagConstraints2.fill = java.awt.GridBagConstraints.HORIZONTAL;
-      gridBagConstraints2.insets = new java.awt.Insets (0, 3, 0, 8);
+      gridBagConstraints2.insets = new java.awt.Insets (0, 0, 0, 8);
       gridBagConstraints2.anchor = java.awt.GridBagConstraints.NORTH;
       gridBagConstraints2.weightx = 1.0;
       jPanel1.add (searchComboBox, gridBagConstraints2);
@@ -767,6 +768,7 @@ private void showSource (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_show
 
 /*
  * Log
+ *  26   Gandalf   1.25        1/15/00  Petr Hrebejk    UI Change
  *  25   Gandalf   1.24        1/13/00  Petr Hrebejk    i18n mk3  
  *  24   Gandalf   1.23        1/12/00  Petr Hrebejk    i18n mk2
  *  23   Gandalf   1.22        1/12/00  Petr Hrebejk    i18n
