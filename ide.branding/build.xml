@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans.
+The Initial Developer of the Original Code is Sun Microsystems, Inc.
+Portions Copyright 1997-2003 Sun Microsystems, Inc. All Rights Reserved.
+Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
+-->
+
+<project basedir="." default="netbeans" name="ide/branding">
+
+  <property name="nbroot" location="../.."/>
+  
+  <import file="${nbroot}/nbbuild/default.xml"/> 
+
+  <property name="locjar.warnMissingDir" value="true"/>
+
+  <!-- These are the locales we care about.  Not everything has to be -->
+  <!-- localized for each of these locales, though.		      -->
+  <property name="locales" value="nb"/>
+  <property name="locjar.locales"       value="${locales}"/>
+
+  <!-- Need todo: Decide how to handle genlist, especially since it's changing. -->
+  <!-- Note: jars has to be the last use of locjar so that inferring the        -->
+  <!-- location of the localizing bundle works!					-->
+  <target name="netbeans" depends="init,release,jars">
+    <genlist 
+      outputfiledir="${netbeans.dest.dir}/${cluster.dir}" 
+      module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
+    >
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="ide/branding.files"/>
+      </fileset>
+    </genlist>
+  </target>
+
+  <target name="init" depends="default.init" >
+
+    <patternset id="ide/branding.files">
+      <include name="**/*_nb.jar"/>
+      <include name="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" />
+    </patternset>
+  
+  
+    <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM"
+             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef name="locmakenbm" classname="org.netbeans.nbbuild.LocMakeNBM"
+             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjhindexer" classname="org.netbeans.nbbuild.LocJHIndexer"
+             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar"
+             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef name="grabLocalizableFiles"
+             classname="org.netbeans.nbbuild.GetL9eFiles"
+             classpath="${nbroot}/nbbuild/nbantext.jar"/>
+    <taskdef name="makelayer" 
+             classname="org.netbeans.nbbuild.MakeLayer" 
+	     classpath="${nbroot}/nbbuild/nbantext.jar"/>
+  </target>
+
+  <target name="release">
+
+    <!-- Currently nothing. -->
+
+  </target>
+
+  <target name="jars" depends="init">
+   <!-- <property name="locjar.writeSrcDir" value="true"/> -->
+
+    <mkdir  dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}" />
+    <!-- core (main core) -->
+    <jar basedir="." 
+      excludes="**/*"
+      manifest="manifest.mf"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-modules-ide-branding.jar" 
+    />
+    
+    <locjar 
+      basedir="core/src"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/core.jar"
+    />
+
+    <locjar 
+      basedir="core/windows/src"
+      jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/org-netbeans-core-windows.jar"
+    />
+  </target>
+
+  <target name="nbm" depends="netbeans" description="Create Localized NBM's">
+    <mkdir dir="build"/>
+    <makenbm 
+       file="build/org-netbeans-modules-ide-branding.nbm"
+       productdir="${netbeans.dest.dir}/${cluster.dir}"
+	     homepage="http://ide.${homepage.base}/"
+	     distribution="http://${dist.base}/org-netbeans-modules-ide-branding.nbm"
+       module="${nb.modules.dir}/org-netbeans-modules-ide-branding.jar"
+    >
+      <license file="${license.file}"/>
+      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
+    </makenbm>
+  </target>
+  
+	<target name="clean" depends="init" >
+  	<delete dir="build" />
+    <delete>
+      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+        <patternset refID="ide/branding.files"/>
+      </fileset>
+    </delete>
+  </target>
+
+</project>

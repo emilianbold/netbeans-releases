@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.ide.branding/1
+_OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/text/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Public-Packages: -

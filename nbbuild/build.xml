@@ -1047,14 +1047,10 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module features/web..."/>
     <ant dir="../ide/features/web" target="netbeans"/>
   </target>
-  <!-- targets for branding of NetBeans IDE -->
-  <target name="all-ide/branding/core" depends="init">
-    <echo message="Building module ide/branding/core..."/>
-    <ant dir="../ide/branding/core" target="netbeans"/>
-  </target>
-  <target name="all-ide/branding/core/windows" depends="init">
-    <echo message="Building module ide/branding/core/windows..."/>
-    <ant dir="../ide/branding/core/windows" target="netbeans"/>
+  <!-- target for branding of NetBeans IDE -->
+  <target name="all-ide/branding" depends="init">
+    <echo message="Building module ide/branding..."/>
+    <ant dir="../ide/branding" target="netbeans"/>
   </target>
   
   <target name="build-platform" depends="init" unless="platform-is-built">
