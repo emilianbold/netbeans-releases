@@ -208,20 +208,28 @@ public class CheckLinks extends MatchingTask {
                         if (others != null) {
                             String otherbase = unescape(m.group(4));
                             String otheranchor = unescape(m.group(5));
-                            if (!otherbase.startsWith("mailto:")) {
-                                String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
-                                String location = findLocation(content, m.start(4));
-                                try {
-                                    URI o = base.resolve(new URI(uri));
+                            String uri = (otheranchor == null) ? otherbase : otherbase + otheranchor;
+                            String location = findLocation(content, m.start(4));
+                            String fixedUri;
+                            if (uri.indexOf(' ') != -1) {
+                                fixedUri = uri.replaceAll(" ", "%20");
+                                task.log(normalize(basepath, mappers) + location + ": spaces in URIs should be encoded as \"%20\": " + uri, Project.MSG_WARN);
+                            } else {
+                                fixedUri = uri;
+                            }
+                            try {
+                                URI relUri = new URI(fixedUri);
+                                if (!relUri.isOpaque()) {
+                                    URI o = base.resolve(relUri);
                                     //task.log("href: " + o);
                                     if (!others.containsKey(o)) {
                                         // Only keep location info for first reference.
                                         others.put(o, location);
                                     }
-                                } catch (URISyntaxException e) {
-                                    // Message should contain the URI.
-                                    task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
-                                }
+                                } // else mailto: or similar
+                            } catch (URISyntaxException e) {
+                                // Message should contain the URI.
+                                task.log(normalize(basepath, mappers) + location + ": bad relative URI: " + e.getMessage(), Project.MSG_WARN);
                             }
                         } // else we are only checking that this one has right anchors
                     }
