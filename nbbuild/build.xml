@@ -2400,6 +2400,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <copy file="../ide/launcher/windows/netbeans.exe" todir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/windows/nb.exe" todir="${netbeans.dest.dir}/bin" />
     <copy file="../ide/launcher/os2/netbeans.cmd" todir="${netbeans.dest.dir}/bin" />
+    <!-- if anybody knows better place for icons, let me know: jtulach@netbeans.org -->
+    <copy file="../ide/launcher/os2/nbos2icons.zip" todir="${netbeans.dest.dir}/${nb.cluster.nb.dir}/" />
 
     <mkdir dir="${netbeans.dest.dir}/etc" />
     <copy file="../ide/launcher/netbeans.conf" todir="${netbeans.dest.dir}/etc" />
