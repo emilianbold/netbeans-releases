@@ -89,24 +89,33 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   }
 
   public void reorderSubComponents (int[] perm) {
-    // remove all visual components before permutation and than add it again
-    for (int i = 0, n=subComponents.size(); i < n; i++) {
-      removeVisualMenu ((RADMenuItemComponent) subComponents.get (i));
-    }
+    // XXX(-tdt) must make a copy of the component list, otherwise removing
+    // menu separator will break
+    
+    // make a copy of item list
+    ArrayList list = new ArrayList(subComponents.size());
+    list.addAll(subComponents);
+
+    // shuffle the copy
     for (int i = 0; i < perm.length; i++) {
       int from = i;
       int to = perm[i];
       if (from == to) continue;
-      Object value = subComponents.remove (from);
+      Object value = list.remove (from);
       if (from < to) {
-        subComponents.add (to - 1, value);
+        list.add (to - 1, value);
       } else {
-        subComponents.add (to, value);
+        list.add (to, value);
       }
     }
-    for (int i = 0, n=subComponents.size(); i < n; i++) {
-      addVisualMenu ((RADMenuItemComponent) subComponents.get (i));
-    }
+
+    // remove and re-add in new order
+    
+    for (int i = 0, n = list.size(); i < n; i++)
+      remove((RADMenuItemComponent) list.get (i));
+    for (int i = 0, n = list.size(); i < n; i++)
+      add((RADMenuItemComponent) list.get (i));
+    
     getFormManager ().fireComponentsReordered (this);
   }
 
@@ -119,7 +128,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
   }
 
   public void remove (RADComponent comp) {
-    if (!(comp instanceof RADMenuItemComponent)) throw new IllegalArgumentException ();
+    if (!(comp instanceof RADMenuItemComponent))
+      throw new IllegalArgumentException();
     removeVisualMenu ((RADMenuItemComponent)comp);
     subComponents.remove (comp);
     ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
@@ -227,7 +237,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         break;
       case T_JPOPUPMENU:
         if (comp.getMenuItemType () == T_JSEPARATOR) {
-          ((JPopupMenu)o).remove((JPopupMenu.Separator)m);
+          //XXX(-tdt) ((JPopupMenu)o).remove((JPopupMenu.Separator)m);
+          ((JPopupMenu)o).remove (subComponents.indexOf(comp));
         } else {
           ((JPopupMenu)o).remove((JMenuItem)m);
         }
@@ -256,7 +267,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
     * @return the help context
     */
     public org.openide.util.HelpCtx getHelpCtx() {
-      return new org.openide.util.HelpCtx (getClass ());
+      return new org.openide.util.HelpCtx(this.getClass());
     }
 
     /** Display name for the creation action. This should be
@@ -280,7 +291,7 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         newSeparatorComp.setComponent (JSeparator.class);
       }
       getFormManager ().addNonVisualComponent (newSeparatorComp, RADMenuComponent.this);
-      addVisualMenu (newSeparatorComp);
+      //XXX(-tdt) addVisualMenu (newSeparatorComp);
       getFormManager ().selectComponent (newSeparatorComp, false);
       return;
     }
@@ -344,6 +355,8 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
 
 /*
  * Log
+ *  10   Gandalf   1.9         3/7/00   Tran Duc Trung  FIX #5894: cannot 
+ *       reorder menu items if there is a separator among them
  *  9    Gandalf   1.8         12/8/99  Pavel Buzek     
  *  8    Gandalf   1.7         12/2/99  Pavel Buzek     AWT menu is displayed in
  *       form at design time (a swing equivalent is created for each awt menu 
