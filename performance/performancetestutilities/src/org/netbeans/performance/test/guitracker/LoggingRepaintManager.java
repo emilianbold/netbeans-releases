@@ -19,7 +19,7 @@ import javax.swing.RepaintManager;
 
 /** A repaint manager which will logs information about interesting events.
  *
- * @author  Tim Boudreau
+ * @author  Tim Boudreau, rkubacki@netbeans.org, mmirilovic@netbeans.org
  */
 public class LoggingRepaintManager extends RepaintManager {
     
@@ -32,7 +32,7 @@ public class LoggingRepaintManager extends RepaintManager {
      * @return time of last paint
      */
     public static long measureStartup () {
-        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 5000);
+        long waitAfterStartup = Long.getLong("org.netbeans.performance.waitafterstartup", 5000).longValue();
         
         // XXX load our EQ and repaint manager
         ActionTracker tr = ActionTracker.getInstance();
@@ -59,6 +59,10 @@ public class LoggingRepaintManager extends RepaintManager {
         this.tr = tr;
     }
     
+    /**
+     * Enable / disable our Repaint Manager
+     * @param val true - enable, false - disable
+     */
     public void setEnabled (boolean val) {
         if (isEnabled() != val) {
             if (val) {
@@ -69,59 +73,86 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     }
     
+    /**
+     * Get an answer on question "Is Repaint Manager enabled?"
+     * @return true - repaint manager is enabled, false - it's disabled
+     */
     public boolean isEnabled() {
         return orig != null;
     }
     
+    /**
+     * Enable Repaint Manager
+     */
     private void enable() {
         orig = currentManager(new JLabel()); //could be null for standard impl
         setCurrentManager(this);
     }
     
+    /**
+     * Disable Repaint Manager
+     */
     private void disable() {
         setCurrentManager(orig);
         orig = null;
     }
     
+    /**
+     * Measure onle explorer
+     * @param ignore true - measure only explorer, false - measure everything
+     */
     public void setOnlyExplorer (boolean ignore) {
         onlyExplorer = ignore;
     }
     
+    /**
+     * Measure onle editor
+     * @param ignore true - measure only editor, false - measure everything
+     */
     public void setOnlyEditor (boolean ignore) {
         onlyEditor = ignore;
     }
     
     private boolean hasValidateMatches = false;
     private boolean hasDirtyMatches = false;
+    
+    
+    /**
+     * Log the action when region is add to dirty regions.
+     *
+     * @param c component which is add to this region
+     * @param x point where the region starts
+     * @param y point where the region starts
+     * @param w width of the region
+     * @param h hieght of the region
+     */
     public synchronized void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
-        if (w > 10 && h > 18) {
-            if ((!onlyExplorer && !onlyEditor)
-            ||  (onlyEditor && c.getClass().getName().equals("org.openide.text.QuietEditorPane"))) {
-                tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
-                hasDirtyMatches = true;
-            }
-            else if (onlyExplorer) {
+        if (w > 10 && h > 18) { // painted region isn't cursor (or painted region is greater than cursor)
+            if (onlyExplorer) {  // if you want measure only explorer
                 Class clz = null;
-                for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {
-                    if (clz.getPackage().getName().equals("org.openide.explorer.view")) {
+                for (clz = c.getClass(); clz != null; clz = clz.getSuperclass()) {  // some components as ProjectsView uses own class for View so we are looking for those have superclass explorer.view
+                    if (clz.getPackage().getName().equals("org.openide.explorer.view")) { // if it's explorer.view log this paint event
                         tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
                         hasDirtyMatches = true;
                         break;
                     }
                 }
-                if (clz == null) {
+                if (clz == null) // if you are here, you were looking for superclass of your view , but it isn't explorer.view so we ignore this paint event
                     tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
-                }
-            }
-            else {
-                if (onlyExplorer || onlyEditor) {
+            } else if (onlyEditor) { // if you want measure only editor
+                if (c.getClass().getName().equals("org.openide.text.QuietEditorPane")) { // repainted class has to be QuietEditorPane
+                    tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
+                    hasDirtyMatches = true;
+                } else // ignore paints which are not from QuietEditorPane
                     tr.add (ActionTracker.TRACK_APPLICATION_MESSAGE, "ignored addDirtyRegion " + c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h);
-                }
             }
         }
         super.addDirtyRegion (c, x, y, w, h);
     }
     
+    /**
+     * Log the action when dirty regions are painted.
+     */
     public void paintDirtyRegions() {
         super.paintDirtyRegions();
         if (tr != null && hasDirtyMatches) {
