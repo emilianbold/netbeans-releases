@@ -39,7 +39,7 @@ public class SpecificationFactory implements DBSpecFactory {
 	/** Database description file
 	* You should use PListReader to parse it.
 	*/		
-	private final String sfile = "com/netbeans/ddl/data/dbspec.plist";	
+	private final String sfile = "/com/netbeans/ddl/resources/dbspec.plist";	
 			
 	/** Array of SpecificationFiles, found (but not read) files 
 	* which describes database products.
@@ -54,18 +54,23 @@ public class SpecificationFactory implements DBSpecFactory {
 	public SpecificationFactory ()
 	throws DDLException
 	{	
+		String file = System.getProperty("db.specifications.file");
 		try {
 			SpecificationParser parser;
-			URL dbsurl = ClassLoader.getSystemClassLoader().getResource(sfile);
-			String file = System.getProperty("db.specifications.file");
 			if (file == null) {
-				InputStream stream = dbsurl.openStream();
+				ClassLoader cl = getClass().getClassLoader();
+				InputStream stream = cl.getResourceAsStream(sfile);
+				if (stream == null) throw new Exception("unable to open stream "+sfile);
 				parser = new SpecificationParser(stream);
+				specs = parser.getData();
 				stream.close();		
-			} else parser = new SpecificationParser(file);
-			specs = parser.getData();
+			} else {
+				parser = new SpecificationParser(file);
+				specs = parser.getData();
+			}
 		} catch (Exception e) {
-			throw new DDLException("unable to read specifications file, "+e.getMessage());
+			if (file != null) throw new DDLException("unable to read specifications file "+file+", "+e.getMessage());
+			else throw new DDLException("unable to read default specifications file, "+e.getMessage());
 		}
 	}
 	
@@ -95,16 +100,18 @@ public class SpecificationFactory implements DBSpecFactory {
 	public DBSpec createSpec(DBConnection dbcon) 
 	throws DatabaseProductNotFoundException, DDLException
 	{
+		String pn = null;
 		try {
 			Connection con = dbcon.createJDBCConnection();
 			DatabaseMetaData dmd = con.getMetaData();	
-			DBSpec spec = createSpec(dbcon, dmd.getDatabaseProductName());
+			pn = dmd.getDatabaseProductName();
+			DBSpec spec = createSpec(dbcon, pn);
 			con.close();
 			return spec;
 		} catch (SQLException e) {
 			throw new DDLException("unable to connect to server");
 		} catch (Exception e) {
-			throw new DDLException("unable to create specification, "+e.getMessage());
+			throw new DatabaseProductNotFoundException(pn, "unable to create specification, "+e.getMessage());
 		}
 	}
 	
@@ -192,6 +199,7 @@ public class SpecificationFactory implements DBSpecFactory {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
 */

@@ -29,9 +29,11 @@ public class Specification implements DBSpec {
 	private Connection jdbccon;
 	
 	public static final String CREATE_TABLE = "CreateTableCommand";
+	public static final String RENAME_TABLE = "RenameTableCommand";
 	public static final String DROP_TABLE = "DropTableCommand";
 	public static final String COMMENT_TABLE = "CommentTableCommand";
 	public static final String ADD_COLUMN = "AddColumnCommand";
+	public static final String RENAME_COLUMN = "RenameColumnCommand";
 	public static final String REMOVE_COLUMN = "RemoveColumnCommand";
 	public static final String CREATE_INDEX = "CreateIndexCommand";
 	public static final String DROP_INDEX = "DropIndexCommand";
@@ -179,12 +181,31 @@ public class Specification implements DBSpec {
 	{
 		return (AbstractCommand)createCommand(DROP_TABLE, tableName);
 	}
+	
+	/** Drop table command
+	* @param tableName Name of the table
+	*/
+	public RenameTable createCommandRenameTable(String tableName, String newName)
+	throws CommandNotSupportedException
+	{
+		RenameTable cmd = (RenameTable)createCommand(RENAME_TABLE, tableName);
+		cmd.setNewName(newName);
+		return cmd;
+	}
 		
 	/** Add column */
 	public AddColumn createCommandAddColumn(String tableName)
 	throws CommandNotSupportedException
 	{
 		return (AddColumn)createCommand(ADD_COLUMN, tableName);
+	}
+
+	/** Rename column */
+	public RenameColumn createCommandRenameColumn(String tableName)
+	throws CommandNotSupportedException
+	{
+		RenameColumn cmd = (RenameColumn)createCommand(RENAME_COLUMN, tableName);
+		return cmd;
 	}
 
 	/** Remove column
@@ -333,6 +354,7 @@ public class Specification implements DBSpec {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
 */

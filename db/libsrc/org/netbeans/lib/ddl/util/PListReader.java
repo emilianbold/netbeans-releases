@@ -26,6 +26,13 @@ public class PListReader {
 	
 	protected StreamTokenizer tokenizer = null;
 	
+	public static Map read(String file)
+	throws FileNotFoundException, ParseException, IOException
+	{
+		PListReader reader = new PListReader(file);
+		return reader.getData();
+	}
+	
 	/** Constructor
 	* Initializes reader with contents of file
 	* @param file File to read

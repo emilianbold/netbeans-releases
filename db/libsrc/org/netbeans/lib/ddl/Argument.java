@@ -13,7 +13,7 @@
 
 package com.netbeans.ddl;
 
-/** 
+/**
 * Interface of argument type. It should be used for all in(out) values in
 * procedures/functions.
 *
@@ -23,8 +23,8 @@ public interface Argument {
 
 	/** Returns name */
 	public String getName();
-	
-	/** Sets name 
+
+	/** Sets name
 	* @param aname New name.
 	*/
 	public void setName(String aname);
@@ -33,7 +33,7 @@ public interface Argument {
 	* of procedure. Particular values you can find in DatabaseMetadata;
 	*/
 	public int getType();
-	
+
 	/** Sets type of argument
 	* @param aatypename New type.
 	*/
@@ -41,7 +41,7 @@ public interface Argument {
 
 	/** Returns datatype of argument */
 	public int getDataType();
-	
+
 	/** Sets datatype of argument
 	* @param aatypename New type.
 	*/

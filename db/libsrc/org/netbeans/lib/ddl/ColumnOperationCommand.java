@@ -16,7 +16,7 @@ package com.netbeans.ddl;
 import java.sql.*;
 import com.netbeans.ddl.*;
 
-/** 
+/**
 * Interface of column-based operations. This interface should implement all commands
 * opearting with one column, eg. add and drop column etc. This is not interface for
 * multi-column operations (eg. create table).
@@ -24,11 +24,11 @@ import com.netbeans.ddl.*;
 * @author Slavek Psenicka
 */
 public interface ColumnOperationCommand extends DDLCommand, OwnedObjectCommand {
-	
+
 	/** Returns column specification array */
 	public TableColumnDescriptor getColumn();
-	
-	/** Sets column specification array 
+
+	/** Sets column specification array
 	* @param col New column.
 	*/
 	public void setColumn(TableColumnDescriptor col);
@@ -36,6 +36,8 @@ public interface ColumnOperationCommand extends DDLCommand, OwnedObjectCommand {
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
 */
+

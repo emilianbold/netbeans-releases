@@ -14,28 +14,30 @@
 
 package com.netbeans.enterprise.modules.db.explorer.actions;
 
-import java.io.*;
-import java.beans.*;
-import java.util.*;
-import java.sql.*;
+import java.sql.Connection;
 import com.netbeans.ide.*;
-import com.netbeans.ide.util.*;
-import com.netbeans.ide.util.actions.*;
 import com.netbeans.ide.nodes.*;
-import com.netbeans.enterprise.modules.db.explorer.*;
+import com.netbeans.enterprise.modules.db.explorer.nodes.*;
+import com.netbeans.enterprise.modules.db.explorer.infos.*;
 
-public class DisconnectAction extends DEAction
+public class DisconnectAction extends DatabaseAction
 {
 	protected boolean enable(Node[] activatedNodes)
 	{
-		if (activatedNodes.length < 1) return false;
-		Node node = (Node)activatedNodes[0].getCookie(this.getClass());
-		if (DEConnectionNode.class.isInstance(node)) {
-			DENodeInfo ninfo = ((DEConnectionNode)node).getInfo();
-			Connection connection = (Connection)ninfo.get("connection");
-			return (connection != null);
+		Node node = activatedNodes[0];
+		ConnectionOperations nfo = (ConnectionOperations)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+		Connection connection = (Connection)((DatabaseNodeInfo)nfo).getConnection();
+		return (connection != null);
+	}
+
+	public void performAction (Node[] activatedNodes) 
+	{
+		Node node = activatedNodes[0];
+		try {
+			ConnectionNodeInfo nfo = (ConnectionNodeInfo)findInfo((DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class));
+			nfo.disconnect();
+		} catch(Exception e) {
+			TopManager.getDefault().notify(new NotifyDescriptor.Message("Unable to disconnect from "+node.getName()+", "+e.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 		}
-		
-		return false;
 	}
 }

@@ -143,6 +143,7 @@ public class CommandBuffer
 
 /*
 * <<Log>>
+*  2    Gandalf   1.1         4/23/99  Slavek Psenicka new version
 *  1    Gandalf   1.0         4/6/99   Slavek Psenicka 
 * $
 */
