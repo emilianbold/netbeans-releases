@@ -55,6 +55,12 @@ Microsystems, Inc. All Rights Reserved.
         To get the API of your module listed here, see the documentation for the 
         Javadoc building
         <a href="http://openide.netbeans.org/tutorial/api.html">infrastructure</a>.
+        
+        <h4>Additional Sources of Information</h4>
+        
+        <ul>
+            <li><a href="allclasses.html">Index of all NetBeans API classes</a></li>
+        </ul>
 
         <hr/>
         <xsl:call-template name="list-modules" />

@@ -1141,8 +1141,8 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
           <property name="stop.when.broken.module" value="false"/>
       </ant>
       
-      <mkdir dir="modules_exported_interfaces" />
-      <property name="export.interfaces" location="modules_exported_interfaces" />
+      <mkdir dir="build/ModulesExportedInterfaces" />
+      <property name="export.interfaces" location="build/ModulesExportedInterfaces" />
       
       <!-- build javadoc for supported APIs -->
       <for-each startdir=".." target="javadoc" locations="${fixedmodules}"/>
@@ -1152,18 +1152,18 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${fixedmodules}"/>
       <simplemerge topdir=".." subdir="javadoc" dest="modules_javadoc" modules="${modules}"/>
       
-      <echo file="modules_exported_interfaces/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+      <echo file="build/ModulesExportedInterfaces/header.gen" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;apis&gt;
 </echo>
       
-      <echo file="modules_exported_interfaces/footer.gen" >
+      <echo file="build/ModulesExportedInterfaces/footer.gen" >
         &lt;/apis&gt;
       </echo>
       
       <concat destfile="modules_javadoc/index.xml" >
-          <fileset dir="modules_exported_interfaces" includes="header.gen" />
-          <fileset dir="modules_exported_interfaces" includes="*" excludes="*.gen" />
-          <fileset dir="modules_exported_interfaces" includes="footer.gen" />
+          <fileset dir="build/ModulesExportedInterfaces" includes="header.gen" />
+          <fileset dir="build/ModulesExportedInterfaces" includes="*" excludes="*.gen" />
+          <fileset dir="build/ModulesExportedInterfaces" includes="footer.gen" />
       </concat>
       
       <tstamp>
@@ -1177,7 +1177,21 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       >
         <param name="date" expression="${modules-javadoc-date}"/>
       </style>
-      <delete dir="modules_exported_interfaces" />
+      
+    <taskdef 
+        name="javadoc-index" 
+        classpath="nbantext.jar" 
+        classname="org.netbeans.nbbuild.JavadocIndex"
+    />
+    
+    <javadoc-index target="modules_javadoc/allclasses.html" > 
+        <packageslist dir="modules_javadoc" >
+            <include name="**/allclasses-noframe.html" />
+        </packageslist>
+    </javadoc-index>
+    
+      
+      
   </target>
 
   <target name="build-messaging" depends="init">
