@@ -111,8 +111,11 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
         
         if (!super.close())
             return false;
-        
-        myEntry.getHandler().reparseNowBlocking();
+
+        // #21850. Don't reparse invalid or virtual file.
+        if(myEntry.getFile().isValid() && !myEntry.getFile().isVirtual()) {
+            myEntry.getHandler().reparseNowBlocking();
+        }
         return true;
     }
     
@@ -842,9 +845,11 @@ implements EditCookie, EditorCookie, PrintCookie, CloseCookie, Serializable {
             boolean canClose = super.closeLast();
             if (!canClose)
                 return false;
-            
-            if(!((PropertiesEditorSupport)cloneableEditorSupport()).hasOpenedTableComponent()) {
-                entry.getHandler().reparseNowBlocking();
+            // #21850. Don't reparse invalid or virtual file.
+            if(entry.getFile().isValid() && !entry.getFile().isVirtual()) {
+                if(!((PropertiesEditorSupport)cloneableEditorSupport()).hasOpenedTableComponent()) {
+                    entry.getHandler().reparseNowBlocking();
+                }
             }
             return true;
         }
