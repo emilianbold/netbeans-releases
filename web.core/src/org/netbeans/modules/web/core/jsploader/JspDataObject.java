@@ -57,9 +57,6 @@ import org.netbeans.modules.j2ee.impl.ServerExecSupport;
 import org.netbeans.modules.j2ee.impl.ServerRegistryImpl;
 import org.netbeans.modules.web.context.WebContextObject;
 
-import org.netbeans.modules.java.JavaCompilerType;
-import org.netbeans.modules.java.JavaExternalCompilerType;
-import org.netbeans.modules.java.JExternalCompilerGroup;
 import org.netbeans.modules.java.environment.Utilities;
 import org.netbeans.modules.java.Util;
 import org.openidex.nodes.looks.Look;
@@ -506,28 +503,6 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     */
     private FileObject updateServletFileObject() throws IOException {
         return compileData.getServletFileObject();
-    }
-    
-    /* Determines whether the FileObject representing the generated servlet
-     * needs to be refresh()-ed to synchronize itself with the underlying file.
-     * @param servlet FileObject representing the generated servlet (may be null)
-     * @return returns true if the servlet FileObject does not exist (is null),
-     *  the underlying file does not exist (is null) or the last modified date 
-     *  of the fileoblect differs from the last modif. date of the file.
-     */
-    private boolean needsRefresh(FileObject servlet) {
-        if (servlet == null)
-            return true;
-        File servletFile = NbClassPath.toFile(servlet);
-        if (servletFile == null)
-            return true;
-        if (debug) {
-            System.out.println("needsR::file modified       :" + servletFile.lastModified()); // NOI18N
-            System.out.println("needsR::fileobject modified :" + servlet.lastModified().getTime()); // NOI18N
-        }
-        if (servlet.lastModified().getTime() != servletFile.lastModified())
-            return true;
-        return false;
     }
     
     /////// -------- FIELDS AND METHODS FOR MANIPULATING THE PARSED INFORMATION -------- ////////
