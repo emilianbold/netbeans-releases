@@ -61,7 +61,6 @@ public final class MultiViewPeer  {
     transient MultiViewTopComponentLookup lookup;
     TopComponent peer;
     private ActionRequestObserverFactory factory;
-    private PropertyChangeListener activatedListener;
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
     
@@ -69,7 +68,6 @@ public final class MultiViewPeer  {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
-        activatedListener = new MultiViewPeer.ActivatedNodesListener();
     }
     
  
@@ -160,7 +158,6 @@ public final class MultiViewPeer  {
         el.componentShowing();
         delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
         ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
-        setActivatedNodesAccordingToElement(true);
         tabs.setInnerToolBar(el.getToolbarRepresentation());
         
     }
@@ -194,15 +191,6 @@ public final class MultiViewPeer  {
         if (desc != null) {
             MultiViewElement el = model.getElementForDescription(desc);
             el.componentHidden();
-            TopComponent origin = null;
-            if (el instanceof TopComponent) {
-                origin = (TopComponent)el;
-            } else if (el.getVisualRepresentation() instanceof TopComponent) {
-                origin = (TopComponent)el.getVisualRepresentation();
-            }
-            if (origin != null) {
-                origin.removePropertyChangeListener("activatedNodes", activatedListener);
-            }
         }
     }
 
@@ -244,32 +232,10 @@ public final class MultiViewPeer  {
             // is it a problem?
             delegatingMap.setDelegateMap(el.getVisualRepresentation().getActionMap());
             ((MultiViewTopComponentLookup)peer.getLookup()).setElementLookup(el.getLookup());
-            setActivatedNodesAccordingToElement(true);
         }
     }
     
     
-    private void setActivatedNodesAccordingToElement(boolean addListener) {
-        MultiViewElement el = model.getActiveElement();
-        TopComponent origin = null;
-        if (el instanceof TopComponent) {
-            origin = (TopComponent)el;
-        } else if (el.getVisualRepresentation() instanceof TopComponent) {
-            origin = (TopComponent)el.getVisualRepresentation();
-        }
-        if (origin != null) {
-            peer.setActivatedNodes(origin.getActivatedNodes());
-            if (addListener) {
-                origin.addPropertyChangeListener("activatedNodes", activatedListener);
-            }
-        } else {
-            // maybe add some API later to allow element add activated nodes..
-            //mkleint however for now, just let the elements handle it themselves by calling 
-            // getComponent().setActivatedNodes() on the MultiViewElementCallback
-//            peer.setActivatedNodes(new Node[0]);
-        }
-        
-    }
     
     /**
      * merge action for the topcomponent and the enclosed MultiViewElement..
@@ -560,34 +526,6 @@ public final class MultiViewPeer  {
             tabs.requestFocusForSelectedButton();
             
         }
-    }
-    
-    
-//    private static class MVProxyLookup extends ProxyLookup {
-//        private Lookup initialLookup;
-//        public MVProxyLookup(Lookup initial) {
-//            super(new Lookup[] {initial});
-//            initialLookup = initial;
-//        }
-//
-//        
-////        public MVProxyLookup() {
-////            super();
-////        }
-////        
-//        public void setElementLookup(Lookup look) {
-//            setLookups(new Lookup[] {initialLookup, look});
-//        }
-//    }
-    
-    private class ActivatedNodesListener implements PropertyChangeListener {
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            if ("activatedNodes".equals(evt.getPropertyName())) {
-                setActivatedNodesAccordingToElement(false);
-            }
-        }
-        
     }
     
 }
