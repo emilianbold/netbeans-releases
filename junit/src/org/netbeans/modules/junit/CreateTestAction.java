@@ -398,7 +398,7 @@ public class CreateTestAction extends CookieAction {
     
     private static String packageName(String fullName) {
         int i = fullName.lastIndexOf('.');
-        return fullName.substring(0, i > 0 ? i : fullName.length());
+        return fullName.substring(0, i > 0 ? i : 0);
     }
 
     private static DataObject getTestClass(ClassPath cp, String testClassName, DataObject doTemplate) {
