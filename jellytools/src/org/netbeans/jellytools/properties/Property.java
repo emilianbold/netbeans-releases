@@ -286,11 +286,11 @@ public class Property {
                     pe.setAsText(textValue);
                     property.setValue(pe.getValue());
                 } catch (IllegalAccessException iae) {
-                    ErrorManager.getDefault().notify(iae);
+                    ErrorManager.getDefault().notify(ErrorManager.USER, iae);
                 } catch (IllegalArgumentException iare) {
-                    ErrorManager.getDefault().notify(iare);
+                    ErrorManager.getDefault().notify(ErrorManager.USER, iare);
                 } catch (InvocationTargetException ite) {
-                    ErrorManager.getDefault().notify(ite);
+                    ErrorManager.getDefault().notify(ErrorManager.USER, ite);
                 } catch (Exception e) {
                     throw new JemmyException("Exception while setting value of property.", e);
                 }
