@@ -48,7 +48,7 @@ Microsystems, Inc. All Rights Reserved.
 	<pathelement location="${xtest.extra.home}/lib/xml-apis.jar"/>
 	<pathelement location="${xtest.extra.home}/lib/xerces.jar"/>
 	<pathelement location="${xtest.extra.home}/lib/xalan.jar"/>
-	<pathelement location="${xtest.extra.home}/lib/junit-ext.jar"/>
+	<pathelement location="lib/junit-ext.jar"/>
       </classpath>
     </javac>
   </target>
