@@ -136,17 +136,10 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
                 CatalogReader next = (CatalogReader) it.next();
                 try {
                     String sid=null;
-                    if (publicId.startsWith("urn:")) { //NOI18N
-                        String urn = publicId.substring(4);
-                        if (urn.startsWith("publicid:")) { //NOI18N
-                            // resolving publicId from catalog
-                            urn=urn.substring(9).replace('+', ' ').replaceAll(":", "//"); //NOI18N
-                            sid=next.resolvePublic(urn);
-                        } else if ((urn.startsWith("systemid:"))) { //NOI18N
-                            // resolving systemId from catalog
-                            urn=urn.substring(9).replace('+', ' ').replaceAll(":", "//"); //NOI18N
-                            sid=next.getSystemID(urn);
-                        }
+                    if (publicId.startsWith("urn:publicid:")) { //NOI18N
+                        // resolving publicId from catalog
+                        String urn = publicId.substring(13);
+                        sid=next.resolvePublic(URNtoPublic(urn));
                     } else sid = next.resolveURI(publicId);
                     if (sid != null) {
                         javax.xml.transform.Source source =  new javax.xml.transform.sax.SAXSource();
@@ -164,4 +157,10 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
         return result;        
     }
     
+    /** Conversion of URN string to public identifier
+     *  see : http://www.faqs.org/rfcs/rfc3151.html
+     */
+    private String URNtoPublic(String urn) {
+        return urn.replace('+',' ').replaceAll(":","//").replaceAll(";","::").replaceAll("%2B","+").replaceAll("%3A",":").replaceAll("%2F","/").replaceAll("%3B",";").replaceAll("%27","'").replaceAll("%3F","?").replaceAll("%23","#").replaceAll("%25","%");
+    }
 }
