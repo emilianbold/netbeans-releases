@@ -73,6 +73,7 @@ public class HostPropertyCustomEditor extends javax.swing.JPanel implements Acti
         hostLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostLabelA11yDesc"));  // NOI18N
         grantLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantLabelA11yDesc"));  // NOI18N
         grantTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_GrantTextAreaA11yName"));  // NOI18N
+        getAccessibleContext().setAccessibleDescription (org.openide.util.NbBundle.getBundle(HostPropertyCustomEditor.class).getString("ACS_HostPropertyPanelA11yName"));  // NOI18N
     }
     
     /** This method is called from within the constructor to
