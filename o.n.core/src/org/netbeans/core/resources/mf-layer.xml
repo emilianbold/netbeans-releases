@@ -444,6 +444,7 @@ Microsystems, Inc. All Rights Reserved.
       <folder name="Mount">
           <!-- a value to signal that this folder should not be visible in the simple new from template wizard -->
           <attr name="simple" boolvalue="false" />
+          <attr name="org-netbeans-core-ExLocalFileSystem.settings/org-netbeans-core-ExJarFileSystem.settings" boolvalue="true" />
           
           <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
           <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/core/resources/repository.gif" />
