@@ -51,12 +51,12 @@ Microsystems, Inc. All Rights Reserved.
 
             &schema-templates;
             
-            <file name="StyleSheet.xsl" url="templates/StyleSheet.xml.template">
+<!--            <file name="StyleSheet.xsl" url="templates/StyleSheet.xml.template">
                 <attr name="template" boolvalue="true" />
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.core.resources.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/xmlObject.gif" />
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/xml/core/resources/StyleSheet.html" />
-            </file>
+            </file>-->
 
             <file name="xml_entity.ent" url="templates/xml_entity.ent.template">
                 <attr name="template" boolvalue="true" />
@@ -77,9 +77,9 @@ Microsystems, Inc. All Rights Reserved.
             <!-- Order by importance from general ones to specialized ones ! -->
             <attr name="XMLWizard.xml/emptyDTD.dtd" boolvalue="true"/>
             <attr name="emptyDTD.dtd/XMLSchema.xml" boolvalue="true"/>
-            <attr name="emptyDTD.dtd/StyleSheet.xsl" boolvalue="true"/>
+<!--            <attr name="emptyDTD.dtd/StyleSheet.xsl" boolvalue="true"/>
             <attr name="XMLSchema.xml/StyleSheet.xsl" boolvalue="true"/>
-            <attr name="StyleSheet.xsl/XMLCatalog.xml" boolvalue="true"/>
+            <attr name="StyleSheet.xsl/XMLCatalog.xml" boolvalue="true"/>-->
             <attr name="XMLCatalog.xml/xml_entity.ent" boolvalue="true"/>
             <attr name="xml_entity.ent/CascadeStyleSheet.css" boolvalue="true"/>
 

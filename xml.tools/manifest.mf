@@ -7,3 +7,6 @@ OpenIDE-Module-Specification-Version: @TOOLS_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@, org.netbeans.modules.jaxp/1 > @JAXP_SPEC_VERS_SUBST@, org.netbeans.modules.servletapi/1, org.netbeans.modules.httpserver/1 > 1.2
 Class-Path: docs/xml-tools.jar
+
+Name: org/netbeans/modules/xsl/XSLDataLoader.class
+OpenIDE-Module-Class: Loader
