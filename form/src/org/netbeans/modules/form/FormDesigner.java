@@ -711,6 +711,9 @@ public class FormDesigner extends TopComponent
                             initialize();
                             ComponentInspector.getInstance()
                                 .focusForm(formEditorSupport);
+
+                            if (formEditorSupport.getOpenedPanes() == null)
+                                formEditorSupport.open();
                         }
                     }
                 });
