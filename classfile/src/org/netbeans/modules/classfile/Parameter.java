@@ -70,7 +70,8 @@ public final class Parameter extends Field {
     }
     
     public String toString() {
-        StringBuffer sb = new StringBuffer(getName());
+        StringBuffer sb = new StringBuffer("name=");
+	sb.append(getName());
         sb.append(" type="); //NOI18N
         sb.append(getDescriptor());
 	if (getTypeSignature() != null) {
@@ -106,7 +107,7 @@ public final class Parameter extends Field {
             signature = method.getDescriptor();
             assert signature.charAt(0) == '(';
             isig = 1;  // skip '('
-            ivar = 0;
+            ivar = method.isStatic() ? 0 : 1;
 	    Code code = method.getCode();
             localVars = code != null ? 
 		code.getLocalVariableTable() : 
@@ -119,8 +120,15 @@ public final class Parameter extends Field {
         
         public Object next() {
             if (hasNext()) {
-                String name = ivar < localVars.length ? 
-                    localVars[ivar].getName() : "";
+		String name = "";
+		for (int i = 0; i < localVars.length; i++) {
+		    LocalVariableTableEntry lvte = localVars[i];
+		    // only parameters have a startPC of zero
+		    if (lvte.index == ivar && lvte.startPC == 0) {
+			name = localVars[i].getName();
+			break;
+		    }
+		}
                 ivar++;
                 int sigStart = isig;
                 while (isig < signature.length()) {
