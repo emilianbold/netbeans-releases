@@ -33,6 +33,8 @@ import org.netbeans.api.xml.cookies.*;
 import org.netbeans.spi.xml.cookies.*;
 
 import org.netbeans.modules.xsl.utils.TransformUtil;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 
 /**
  *
@@ -163,12 +165,23 @@ public class TransformServlet extends HttpServlet {
     }
 
     public static URL getServletURL () throws MalformedURLException, UnknownHostException {
-        URL base = HttpServer.getResourceRoot();
+        
+        URL base = getSampleHTTPServerURL();
         // XXX hack: assume that the path /servlet/CLASSNAME works on this server.
         URL root = new URL (base.getProtocol(), base.getHost(), base.getPort(), "/servlet/" + TransformServlet.class.getName() + "/");
+        
         return root;
     }
 
+    private static URL getSampleHTTPServerURL() {
+        FileSystem fs = Repository.getDefault().getDefaultFileSystem();
+	    FileObject fo = fs.findResource("HTTPServer_DUMMY");
+	    if (fo == null) {
+	        return null;
+	    }
+	    URL u = URLMapper.findURL(fo, URLMapper.NETWORK);
+	    return u;
+    }
 
     private String generateReport (List msgList) {
         StringBuffer sb = new StringBuffer();
