@@ -202,10 +202,12 @@ public class NbPath extends Task {
             list.setLength(0);
             // since xalan is now part of JDK 1.4 and greater - do not add it
             if (!NbPath.isJDK14AndOver()) {
-                System.out.println("NbPath: Adding xalan");
+                //System.out.println("NbPath: Adding xalan");
                 addPath(list, xalan_jar);
+                /*
             } else {
                 System.out.println("NbPath: not adding xalan");
+                 */
             }
             addPath(list, xerces_jar);
             xalan_path = list.toString();
