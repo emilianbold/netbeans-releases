@@ -84,8 +84,6 @@ final class PackageRootNode extends AbstractNode {
                 org.openide.util.actions.SystemAction.get( org.openide.actions.PasteAction.class ),
                 null,
                 org.openide.util.actions.SystemAction.get( org.openide.actions.ToolsAction.class ),
-                null,                    
-                org.openide.util.actions.SystemAction.get( org.openide.actions.PropertiesAction.class ),
             };
         }
         return actions;            
