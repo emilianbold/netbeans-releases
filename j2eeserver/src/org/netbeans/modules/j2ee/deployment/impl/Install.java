@@ -27,14 +27,16 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressMonitor;
  */
 public class Install extends org.openide.modules.ModuleInstall {
     
+    private String title = "Stopping J2EE Servers"; //NOI18N
+    
     /** Creates a new instance of Install */
     public Install() {
+        title = NbBundle.getMessage(Install.class, "LBL_ShutDownServers");  //NOI18N
     }
     
     public void close() {
         if (ServerRegistry.wasInitialized ()) {
             Collection instances = ServerRegistry.getInstance().getInstances();
-            String title = NbBundle.getMessage(Install.class, "LBL_ShutDownServers");
 
             DeployProgressMonitor ui = new DeployProgressMonitor(title, true, false);
             for (Iterator i=instances.iterator(); i.hasNext();) {
