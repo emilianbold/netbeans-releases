@@ -15,11 +15,11 @@ package org.netbeans.modules.ant.freeform;
 
 import java.io.File;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
 /**
  * Test {@link ArtifactProvider}.
@@ -54,6 +54,44 @@ public class ArtifactProviderTest extends TestBase {
         assertEquals("right ID", "jar", aa.getID());
         assertEquals("right type", "jar", aa.getType());
         assertEquals("right script", simple.helper().resolveFile("build.xml"), aa.getScriptLocation());
+    }
+    
+    public void testGetBuildArtifacts() throws Exception {
+        AntProjectHelper helper = simple.helper();
+        List exports = new ArrayList();
+        FreeformProjectGenerator.Export e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "path/smth.jar";
+        e.script = "someScript";
+        e.buildTarget = "build_target";
+        exports.add(e);
+        FreeformProjectGenerator.putExports(helper, exports);
+        AntArtifact[] aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        assertNotNull("some artifact found", aa);
+        assertEquals("one artifact found", 1, aa.length);
+
+        e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "path/smth.jar";
+        e.script = "someScript";
+        e.buildTarget = "build_target2";
+        exports.add(e);
+        FreeformProjectGenerator.putExports(helper, exports);
+        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        assertNotNull("some artifact found", aa);
+        assertEquals("one artifact found", 2, aa.length);
+
+        // one type/target/script produces two outputs -> no AA
+        e = new FreeformProjectGenerator.Export();
+        e.type = "jar";
+        e.location = "path/smth2.jar";
+        e.script = "someScript";
+        e.buildTarget = "build_target2";
+        exports.add(e);
+        FreeformProjectGenerator.putExports(helper, exports);
+        aa = AntArtifactQuery.findArtifactsByType(simple, "jar");
+        assertNotNull("some artifact found", aa);
+        assertEquals("one artifact found", 1, aa.length);
     }
     
 }

@@ -17,6 +17,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,12 +45,25 @@ final class ArtifactProvider implements AntArtifactProvider {
         Iterator/*<Element>*/ exports = Util.findSubElements(data).iterator();
         List/*<AntArtifact>*/ artifacts = new ArrayList();
         Set/*<String>*/ ids = new HashSet();
+        HashMap/*<String,AntArtifact>*/ uniqueArtifacts = new HashMap();
         while (exports.hasNext()) {
             Element export = (Element) exports.next();
             if (!export.getLocalName().equals("export")) { // NOI18N
                 continue;
             }
             FreeformArtifact artifact = new FreeformArtifact(export);
+            
+            String artifactKey = artifact.getType() + artifact.getTargetName() + artifact.getScriptLocation().getAbsolutePath();
+            FreeformArtifact alreadyHasArtifact = (FreeformArtifact)uniqueArtifacts.get(artifactKey);
+            if (alreadyHasArtifact != null) {
+                // #50076: There is multiple output jars produced by
+                // one type/target/script. Do not report this AA.
+                artifacts.remove(alreadyHasArtifact);
+                continue;
+            } else {
+                uniqueArtifacts.put(artifactKey, artifact);
+            }
+            
             String id = artifact.preferredId();
             if (!ids.add(id)) {
                 // Need to uniquify it.
