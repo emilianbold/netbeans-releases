@@ -179,7 +179,13 @@ public final class BeanInstaller extends Object {
     }
     FileObject category = paletteFolder.getFileObject(pal);
     if (category == null) {
-      return;
+      try {
+        category = paletteFolder.createFolder (pal);
+      } catch (IOException e) {
+        // [PENDING]
+        e.printStackTrace ();
+        return;
+      }
     }
 
     
@@ -571,6 +577,8 @@ public final class BeanInstaller extends Object {
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/7/99   Ian Formanek    PaletteCategory is 
+ *       created if it does not exist yet
  *  4    Gandalf   1.3         6/7/99   Ian Formanek    Allows to select beans 
  *       and category
  *  3    Gandalf   1.2         6/4/99   Ian Formanek    First cut of 
