@@ -50,8 +50,8 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         this.title=title;
         this.node=node;
         contentPanel=panel;
-        initComponents();
-
+        initComponents();   
+        
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -71,26 +71,25 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
-                System.out.println("showPopup");
+                if (!SectionPanel.this.isActive()) {
+                    SectionPanel.this.setActive(true);
+                }
                 JPopupMenu popup = getNode().getContextMenu();
-                //setActive(true);
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
+        
         panel.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
-                System.out.println("showPopup");
+                if (!SectionPanel.this.isActive()) {
+                    SectionPanel.this.setActive(true);
+                }
                 JPopupMenu popup = getNode().getContextMenu();
-                //setActive(true);
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
     }
-    
-    public Node getNode() {
-        return node; 
-    }
-    
+
     public String getTitle() {
         return title;
     }
@@ -99,66 +98,40 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         this.title=title;
     }
     
+    /** Method from NodeSectionPanel interface */
+    public Node getNode() {
+        return node; 
+    }
+    
+    /** Method from NodeSectionPanel interface */
     public void open(){
         foldButton.setSelected(false);
         contentPanel.setVisible(true);
         filler.setVisible(true);
-        //setActive(true);
     }
     
+    /** Method from NodeSectionPanel interface */
     public void scroll(javax.swing.JScrollPane scrollPane) {
         Point location = SwingUtilities.convertPoint(this, getLocation(),scrollPane);
         location.x=0;
         scrollPane.getViewport().setViewPosition(location);
     }
     
+    /** Method from NodeSectionPanel interface */
     public void setActive(boolean active) {
         System.out.println("setActive = "+active +":"+node.getDisplayName());
         titleButton.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
-        if (active) sectionView.setActivePanel(this);
+        if (active && !this.equals(sectionView.getActivePanel())) {
+            sectionView.sectionSelected(true);
+            sectionView.setActivePanel(this);
+            sectionView.selectNode(node);
+        }
         this.active=active;
     }
     
+    /** Method from NodeSectionPanel interface */
     public boolean isActive() {
         return active;
-    }
-    /*
-    public void setOpen(boolean open){
-        setOpen(open,true);
-    }
-    
-    public void setOpen(boolean open,boolean scroll){
-        System.out.println("isSeelcted?"+foldButton.isSelected());
-        foldButton.setSelected(!open);
-        contentPanel.setVisible(open);
-        filler.setVisible(open);
-        if (open && parentSection !=null){
-            parentSection.setOpen(true,false);
-	}
-        if (scroll && scrollPane!=null){
-            Point location = SwingUtilities.convertPoint(this,getLocation(),scrollPane);
-            location.x=0;
-            scrollPane.getViewport().setViewPosition(location);
-        }
-    }
-    */
-    public void addNotify(){
-        super.addNotify();
-        /*
-        scrollPane = null;
-        parentSection=null;
-        Container ancestor = this.getParent();
-        while (ancestor !=null && scrollPane == null){
-            if (ancestor instanceof JScrollPane){
-                scrollPane = (JScrollPane) ancestor;
-            }
-            if (ancestor instanceof SectionPanel_1 && parentSection==null){
-                parentSection = (SectionPanel_1) ancestor;
-            }
-            ancestor = ancestor.getParent();
-            
-        }
-         */
     }
     
     /** This method is called from within the constructor to
@@ -234,9 +207,7 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
 
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         // TODO add your handling code here:
-        System.out.println("TitleButton:actionPerformed()");
         setActive(true);
-        sectionView.setSectionFocused(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed
@@ -253,4 +224,21 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
     private javax.swing.JButton titleButton;
     // End of variables declaration//GEN-END:variables
     
+    public static class InnerPanel extends javax.swing.JPanel {
+        
+        public void add (java.awt.Component comp, Object constraints) {
+            super.add(comp, constraints);           
+            if (comp instanceof javax.swing.text.JTextComponent) {
+                ((javax.swing.text.JTextComponent)comp).addFocusListener(new java.awt.event.FocusAdapter() {
+                    public void focusGained(java.awt.event.FocusEvent evt) {
+                        java.awt.Component parent = InnerPanel.this.getParent();
+                        if (parent instanceof  SectionPanel) {
+                            ((SectionPanel)parent).setActive(true);
+                        }
+                    }
+                });
+              
+            }
+        }
+    }
 }

@@ -17,17 +17,18 @@ import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.GridBagLayout;
 import org.openide.nodes.Node;
+import org.netbeans.modules.xml.multiview.cookies.SectionFocusCookie;
 /**
  *
  * @author mkuchtiak
  */
-public class SectionView extends PanelView {
+public class SectionView extends PanelView implements SectionFocusCookie {
     private JPanel scrollPanel, filler;
     private javax.swing.JScrollPane scrollPane;
     private java.util.Hashtable map;
     private int sectionCount=0;
     private NodeSectionPanel activePanel;
-    private boolean sectionFocused; 
+    boolean sectionSelected; 
     
     /** Creates a new instance of SectionView */
     public SectionView() {
@@ -46,13 +47,19 @@ public class SectionView extends PanelView {
         add (scrollPane, BorderLayout.CENTER);
     }
     
+    public boolean focusSection(NodeSectionPanel panel) {
+        panel.open();
+        openParents((JPanel)panel);
+        panel.scroll(scrollPane);
+        panel.setActive(true);
+        setActivePanel(panel);
+        return true;
+    }
+
     private void openSection(Node node){
         NodeSectionPanel panel = (NodeSectionPanel) map.get(node);
         if (panel != null) {
-            panel.open();
-            panel.setActive(true);
-            openParents((JPanel)panel);
-            panel.scroll(scrollPane);
+            focusSection(panel);
         }
     }
     
@@ -103,45 +110,41 @@ public class SectionView extends PanelView {
         
         mapSection(section.getNode(), section);
         sectionCount++;
-        System.out.println("addSection, map size = :"+map.size()+":"+sectionCount);
     }
-    /*
-    public void addSection(Node node, String name, JPanel panel){
-        addSection(node, name, panel,true);
-    }
-    
-    public void addSection(Node node, String name,JPanel panel, boolean initialyOpen){
-        addSection( new SectionPanel_1(node, name, panel,initialyOpen));
-    }
-    */
+
     public void setActivePanel(NodeSectionPanel activePanel) {
         if (this.activePanel!=null && this.activePanel!=activePanel) {
             this.activePanel.setActive(false);
         }
         this.activePanel = activePanel;
-        setManagerSelection(new Node[]{activePanel.getNode()});
+    }
+    
+    public NodeSectionPanel getActivePanel() {
+        return activePanel;
+    }
+    
+    public void selectNode(Node node) {
+        setManagerSelection(new Node[]{node});
     }
     
     public void showSelection(org.openide.nodes.Node[] nodes) {
-        System.out.println("showSelection "+nodes[0]+":"+sectionFocused);
-        if (sectionFocused) {
-            sectionFocused=false;
+        System.out.println("showSelection "+nodes[0]+":"+sectionSelected);
+        if (sectionSelected) {
+            sectionSelected=false;
             return;
         }
         if (nodes!=null && nodes.length>0) {
          final Node n = nodes[0];
          javax.swing.SwingUtilities.invokeLater(new Runnable () {
              public void run() {
-                 //sectionPanel.openSection(n);
-                 //sectionPanel.setActiveNode(n);
                  openSection(n);
              }
          });
         }
     }
     
-    public void setSectionFocused(boolean sectionFocused) {
-        this.sectionFocused=sectionFocused;
+    void sectionSelected(boolean sectionSelected) {
+        this.sectionSelected=sectionSelected;
     }
     
 }

@@ -99,7 +99,7 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
         EditAction edit = (EditAction)SystemAction.get(EditAction.class);
         ((JComponent)edit.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(edit.getToolbarPresenter());
-        
+        /*
         CopyAction copy = (CopyAction)SystemAction.get(CopyAction.class);
         ((JComponent)copy.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(copy.getToolbarPresenter());
@@ -107,11 +107,11 @@ public class ToolBarDesignEditor extends AbstractDesignEditor implements org.ope
         PasteAction paste = (PasteAction)SystemAction.get(PasteAction.class);
         ((JComponent)paste.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(paste.getToolbarPresenter());
-        
+        */
         DeleteAction del = (DeleteAction)SystemAction.get(DeleteAction.class);
         ((JComponent)del.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(del.getToolbarPresenter());
-        
+
         NewAction n= (NewAction)SystemAction.get(NewAction.class);
         ((JComponent)n.getToolbarPresenter()).setBorder(new javax.swing.border.EmptyBorder(0,0,0,0));
         toolbar.add(n.getToolbarPresenter());

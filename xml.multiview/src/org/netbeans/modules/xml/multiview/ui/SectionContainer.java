@@ -50,38 +50,61 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
             protected void showPopup(java.awt.event.MouseEvent e) {
-                System.out.println("showPopup");
                 JPopupMenu popup = getNode().getContextMenu();
                 popup.show(foldButton,e.getX(), e.getY());
             }
         });
     }
     
+    /** Method from NodeSectionPanel interface */
     public Node getNode() {
         return root; 
     }
     
+    /** Method from NodeSectionPanel interface */
     public void open(){
         foldButton.setSelected(false);
         contentPanel.setVisible(true);
         filler.setVisible(true);
-        //setActive(true);
     }
 
+    /** Method from NodeSectionPanel interface */
     public void scroll(javax.swing.JScrollPane scrollPane) {
         Point location = SwingUtilities.convertPoint(this, getLocation(),scrollPane);
         location.x=0;
         scrollPane.getViewport().setViewPosition(location);
     }
+    
+    /** Method from NodeSectionPanel interface */
+    public void setActive(boolean active) {
+        titleButton.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
+        if (active && !this.equals(sectionView.getActivePanel())) {
+            sectionView.sectionSelected(true);
+            sectionView.setActivePanel(this);
+            sectionView.selectNode(root);
+        }
+        this.active=active;
+    }
+    
+    /** Method from NodeSectionPanel interface */
+    public boolean isActive() {
+        return active;
+    }
 
+    /** Maps section to a node
+    */
     public void mapSection(Node key, NodeSectionPanel panel){
         sectionView.mapSection(key,panel);
     }
-
+    
+    /** Gets section for a node
+    */
     public NodeSectionPanel getSection(Node key){
         return sectionView.getSection(key);
-    }    
-
+    }
+    
+    /** Adds new section and maps it to a node
+    */
     public void addSection(NodeSectionPanel section){
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -94,17 +117,6 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         
         mapSection(section.getNode(), section);
         sectionCount++;
-        System.out.println("addSection, map size = :"+sectionCount);
-    }
-    
-    public void setActive(boolean active) {
-        titleButton.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():SectionVisualTheme.getSectionHeaderColor());
-        if (active) sectionView.setActivePanel(this);
-        this.active=active;
-    }
-    
-    public boolean isActive() {
-        return active;
     }
     
     /** This method is called from within the constructor to
@@ -192,7 +204,6 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     private void titleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_titleButtonActionPerformed
         // TODO add your handling code here:
         setActive(true);
-        sectionView.setSectionFocused(true);
     }//GEN-LAST:event_titleButtonActionPerformed
 
     private void foldButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foldButtonActionPerformed

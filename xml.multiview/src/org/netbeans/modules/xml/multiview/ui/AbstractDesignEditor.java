@@ -27,9 +27,6 @@ import org.openide.windows.TopComponent;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.xml.multiview.PanelFocusCookie;
-
-
 /**
  * The ComponentPanel three pane editor. This is basically a container that implements the ExplorerManager
  * interface. It coordinates the selection of a node in the structure pane and the display of a panel by the a PanelView
@@ -38,7 +35,7 @@ import org.netbeans.modules.xml.multiview.PanelFocusCookie;
  *
  **/
 
-public abstract class AbstractDesignEditor extends TopComponent implements ExplorerManager.Provider, PanelFocusCookie {
+public abstract class AbstractDesignEditor extends TopComponent implements ExplorerManager.Provider {
     
     
     /** The default width of the AbstractComponentEditor */
@@ -213,22 +210,6 @@ public abstract class AbstractDesignEditor extends TopComponent implements Explo
             return  ((PanelView)contentView).canClose();
         else
             return true;
-    }
-    
-    /**
-     * This method supports the PanelFocusCookie. It allows an external source set the focus on a ComponentPanel.
-     *  See the JavaDoc for PanelFocusCookie for more information.
-     *  Default implementation just delegates to the single PanelView.
-     * @param  panelViewNameHint String used as a hint for the appropriate PanelView if there is more than one.
-     * @param  panelNameHint String used as a hint for the appropiate panel in the PanelView
-     * @param  focusObject Object that can be used to identify the object that should have the focus.
-     * @return  true if the ComponentPanel was able to focus on the object.
-     */
-    public boolean setFocusOn(String panelViewNameHint, String panelNameHint, Object focusObject){
-        if (contentView!=null)
-            return ((PanelView)contentView).setFocusOn( panelViewNameHint,  panelNameHint,  focusObject);
-        else
-            return false;
     }
     
     /**

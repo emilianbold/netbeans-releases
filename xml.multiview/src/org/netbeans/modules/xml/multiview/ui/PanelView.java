@@ -22,7 +22,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.xml.multiview.PanelFocusCookie;
 
 /**
  * The component that will display a panel corresponding to the node selection of its parent ExplorerManager, usually a
@@ -33,7 +32,7 @@ import org.netbeans.modules.xml.multiview.PanelFocusCookie;
  * Created on October 29, 2002, 12:24 PM
  * @author B.Ashby, M.Kuchtiak
  */
-public abstract class PanelView extends javax.swing.JPanel implements PanelFocusCookie {
+public abstract class PanelView extends javax.swing.JPanel {
     
     private Node root, initialNode;
     /** not null if popup menu enabled */
@@ -177,21 +176,6 @@ public abstract class PanelView extends javax.swing.JPanel implements PanelFocus
      */    
     public boolean canClose(){
         return  true;
-    }
-     /**
-     * This method supports the PanelFocusCookie. It allows an external source set the focus on a ComponentPanel.
-     *  See the JavaDoc for PanelFocusCookie for more information.
-     *  Default implementation returns true if the panelViewNameHint is the same as the name of the PanelView as determined
-     *  by calling get name. It would be the responsibility of any subclass to reset the currently selected node if necessary.
-     * @param  panelViewNameHint String used as a hint for the appropriate PanelView if there is more than one.
-     * @param  panelNameHint String used as a hint for the appropiate panel in the PanelView
-     * @param  focusObject Object that can be used to identify the object that should have the focus.
-     * @return  true if the ComponentPanel was able to focus on the object.
-     */   
-    public boolean setFocusOn(String panelViewNameHint, String panelNameHint, Object focusObject){
-        if (panelViewNameHint !=null && panelViewNameHint.equals(getName()))
-         return true;
-        return false;
     }
     
      /* Initializes the component.
