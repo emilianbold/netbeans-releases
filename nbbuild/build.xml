@@ -240,7 +240,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
 
   <!-- And the modules: -->
-  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/deprecated,all-openide/compiler,all-openide/execution,all-openide/io,all-java/api">
+  <target name="all-ant" depends="all-openide,all-core/javahelp,all-openide/compiler,all-openide/execution,all-openide/io,all-java/api">
     <echo message="Building module ant..."/>
     <ant dir="../ant" target="netbeans"/>
   </target>
@@ -304,6 +304,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggercore/oldapi..."/>
     <ant dir="../debuggercore/oldapi" target="netbeans"/>
   </target>
+  <!-- XXX most deps on all-openide/deprecated are bogus and should be removed -->
   <target name="all-debuggercore" depends="all-openide,all-openide/deprecated,all-java/srcmodel,all-openide/compiler,all-openide/execution,all-openide/io,all-debuggercore/oldapi">
     <echo message="Building module debuggercore..."/>
     <ant dir="../debuggercore" target="netbeans"/>
