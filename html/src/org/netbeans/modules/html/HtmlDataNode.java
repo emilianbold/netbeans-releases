@@ -7,19 +7,17 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.html;
 
-import org.openide.actions.OpenAction;
-import org.openide.actions.ViewAction;
-import org.openide.filesystems.*;
-import org.openide.loaders.*;
-import org.openide.nodes.*;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Node that represents HTML data object.
@@ -35,19 +33,6 @@ public class HtmlDataNode extends org.openide.loaders.DataNode {
         setShortDescription (NbBundle.getMessage(HtmlDataNode.class, "LBL_htmlNodeShortDesc"));
     }
 
-    /** Get the default action for this node - 
-     *  no action for templates, 
-     *  ViewAction when data object is mounted on javadoc filesystem,
-     *  OpenAction otherwise.
-     *
-     * @return default action, or <code>null</code> if there should be none
-     */
-    public SystemAction getDefaultAction () {
-        if (getDataObject ().isTemplate ())
-            return null;
-        return SystemAction.get (OpenAction.class);
-    }
-    
     public Node.PropertySet[] getPropertySets() {
           if(sheet == null) {
             sheet = new Sheet();
