@@ -50,7 +50,7 @@ public class TestSetIEAction extends TestSetAction {
     
     public TestSetIEAction(String name) {
         super(name);
-        indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class)))
+        indentEngine=((BaseOptions)(SystemOption.findObject(JavaOptions.class, true)))
         .getIndentEngine();
     }
     
@@ -84,7 +84,7 @@ public class TestSetIEAction extends TestSetAction {
                 }
                 
                 Class kitClass = kit.getClass();
-                AllOptions option = (AllOptions)AllOptions.findObject(AllOptions.class);
+                AllOptions option = (AllOptions)AllOptions.findObject(AllOptions.class, true);
                 SystemOption[] options = option.getOptions();
                 
                 for (int cntr = 0; cntr < options.length; cntr++) {
