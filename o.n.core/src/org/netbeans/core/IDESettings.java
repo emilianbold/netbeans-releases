@@ -18,10 +18,12 @@ import java.beans.PropertyEditorManager;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Hashtable;
+import javax.swing.SwingUtilities;
 
 import org.openide.NotifyDescriptor;
 import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
+import org.openide.loaders.DataNode;
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -49,7 +51,8 @@ public class IDESettings extends SystemOption {
   public static final String PROP_PROXY_HOST = "proxyHost"; // NOI18N
   /** proxy port property name */
   public static final String PROP_PROXY_PORT = "proxyPort"; // NOI18N
-
+  /** show file extensions property name */
+  public static final String PROP_SHOW_FILE_EXTENSIONS = "showFileExtensions"; // NOI18N
 
 // ------------------------------------------
 // properties
@@ -173,6 +176,7 @@ public class IDESettings extends SystemOption {
     } else {
       System.setProperty ("proxySet", "false"); // NOI18N
     }
+    // [PENDING] property change
   }
 
   /** Getter for proxy host.
@@ -187,6 +191,7 @@ public class IDESettings extends SystemOption {
   */
   public void setProxyHost (String value) {
     System.setProperty ("proxyHost", value); // NOI18N
+    // [PENDING] property change
   }
 
   /** Getter for proxy port.
@@ -201,11 +206,37 @@ public class IDESettings extends SystemOption {
   */
   public void setProxyPort (String value) {
     System.setProperty ("proxyPort", value); // NOI18N
+    // [PENDING] property change
   }
+  
+  /** Getter for showing file extensions.
+  * @return whether to show them
+  */
+  public boolean getShowFileExtensions () {
+    return DataNode.getShowFileExtensions ();
+  }
+  
+  /** Setter for showing file extensions.
+  * @param s whether to show them
+  */
+  public void setShowFileExtensions (boolean s) {
+    boolean old = getShowFileExtensions ();
+    DataNode.setShowFileExtensions (s);
+    firePropertyChange (PROP_SHOW_FILE_EXTENSIONS, new Boolean (old), new Boolean (s));
+    if (SwingUtilities.isEventDispatchThread ()) {
+      TopManager.getDefault ().notify
+        (new NotifyDescriptor.Message
+          (Main.getString ("MSG_must_restart_IDE_for_show_file_extensions"),
+           NotifyDescriptor.WARNING_MESSAGE));
+    }
+  }
+  
 }
 
 /*
  * Log
+ *  16   Jaga      1.14.1.0    2/29/00  Jesse Glick     User option to show file
+ *       extensions.
  *  15   Gandalf   1.14        1/13/00  Jaroslav Tulach I18N
  *  14   Gandalf   1.13        1/10/00  Ian Formanek    Look&Feel property 
  *       removed

@@ -50,6 +50,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
                                 "getProxyHost", "setProxyHost"), // NOI18N
         new PropertyDescriptor (IDESettings.PROP_PROXY_PORT, IDESettings.class,
                                 "getProxyPort", "setProxyPort"), // NOI18N
+        new PropertyDescriptor (IDESettings.PROP_SHOW_FILE_EXTENSIONS, IDESettings.class,
+                                "getShowFileExtensions", "setShowFileExtensions"), // NOI18N
       };
 
       desc[0].setDisplayName (Main.getString ("PROP_SHOW_TIPS_ON_STARTUP"));
@@ -73,6 +75,9 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
       desc[7].setDisplayName (Main.getString ("PROP_PROXY_PORT"));
       desc[7].setShortDescription (Main.getString ("HINT_PROXY_PORT"));
+
+      desc[8].setDisplayName (Main.getString ("PROP_SHOW_FILE_EXTENSIONS"));
+      desc[8].setShortDescription (Main.getString ("HINT_SHOW_FILE_EXTENSIONS"));
 
     } catch (IntrospectionException ex) {
       if (System.getProperty ("netbeans.debug.exceptions") != null) ex.printStackTrace();
@@ -101,6 +106,8 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  15   Jaga      1.13.1.0    2/29/00  Jesse Glick     User option to show file
+ *       extensions.
  *  14   Gandalf   1.13        1/13/00  Jaroslav Tulach I18N
  *  13   Gandalf   1.12        1/10/00  Ian Formanek    Removed Look&Feel 
  *       property
