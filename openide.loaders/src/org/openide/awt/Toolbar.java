@@ -48,6 +48,7 @@ import java.util.TooManyListenersException;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.border.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 
 import org.openide.*;
 import org.openide.loaders.*;
@@ -97,6 +98,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
     /* FolderInstance that will track all the changes in backingFolder */
     private Folder processor;
 
+    //needed to turn off the painting of toolbar button borders on ocean/jdk1.5
+    private boolean isMetalLaF;
+    private boolean isJdk15;
+    
     static final long serialVersionUID =5011742660516204764L;
 
     /** Create a new Toolbar with empty name. */
@@ -130,6 +135,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         backingFolder = folder;
         initAll(folder.getName(), f);
         initDnD();
+
+        Class clazz = UIManager.getLookAndFeel().getClass();
+        isMetalLaF = MetalLookAndFeel.class.isAssignableFrom(clazz);
+        isJdk15 = System.getProperty( "java.version" ).startsWith( "1.5" );
     }
     
     private void initDnD() {
@@ -511,7 +520,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
         if (c instanceof AbstractButton) {
             c.setFocusable(false);
             ((JComponent) c).setOpaque(false);
-            if (!(c instanceof JToggleButton)) {
+            if( !(c instanceof JToggleButton) && isMetalLaF && isJdk15 ) {
                 //JDK 1.5 metal/ocean resets borders, so fix it this way
                 ((AbstractButton) c).setBorderPainted(false);
                 ((AbstractButton) c).setOpaque(false);
