@@ -17,16 +17,15 @@ import org.netbeans.core.spi.multiview.*;
 import org.openide.windows.TopComponent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
-import java.awt.*;
 
 /**
  * XmlMultiviewElement.java
@@ -46,7 +45,7 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
     
     public ToolBarMultiViewElement(final XmlMultiViewDataObject dObj) {
         this.dObj=dObj;
-        dObj.addPropertyChangeListener(new PropertyChangeListener() {
+        PropertyChangeListener listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_MODIFIED.equals(evt.getPropertyName()) && editor != null) {
                     Utils.runInAwtDispatchThread(new Runnable() {
@@ -56,7 +55,8 @@ public abstract class ToolBarMultiViewElement implements MultiViewElement {
                     });
                 }
             }
-        });
+        };
+        dObj.addPropertyChangeListener(WeakListeners.propertyChange(listener, dObj));
     }
 
     protected void setVisualEditor(ToolBarDesignEditor editor) {
