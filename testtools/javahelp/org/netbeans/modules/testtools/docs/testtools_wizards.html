@@ -16,35 +16,113 @@
 Module contains several templates and associated wizards. All templates are available in folder <code>Templates/Test Tools</code>.
 
 <a name="SpaceSet"></a>
-<h3>Test Workspace</h3>
+<h3>Test Workspace Settings</h3>
 All the code needed for testing one module is stored in directory called "<code>test</code>". 
 This directory with its content is called Test Workspace.<p>  
-<b>Test Workspace Template</b> with associated <b>Test Workspace Wizard</b> helps you to create this directory and main build.xml script.
+<b>Test Workspace Template</b></code> with associated <b>Test Workspace Wizard</b> helps you to create this directory and main build.xml script.
+<p>
+<code><b>Test Workspace position in CVS</b></code> selection determines depth of created test workspace in CVS repository structure.<br>
+Value is set automatically if parent directory already contains CVS information.
+<p>
+<code><b>Advanced Settings</b></code> checkbox should be used with detailed knowledge of underlying properties only.
+<p>
+<code><b>Default Test Type</b></code> is lately changed in Test Type wizard when newly created test type is marked as default.
+<p>
+<code><b>Default Attributes</b></code> reflects new test bag attributes by default.
+<p>
+<code><b>Netbeans Home Directory</b></code> field contains relative path to Netbeans build directory in dependency on position in CVS or absolute path to Netbeans installation when out of CVS structure.
+<p>
+<code><b>XTest Home Directory</b></code> field contains relative path to XTest distribution directory in dependency on position in CVS or absolute path to XTest distribution provided by this module when test workspace is out of CVS structure.
+<p>
 
+<hr>
 <a name="TypeTemp"></a>
-<h3>Test Type</h3>
+<h3>Test Type Name and Template</h3>
 Test Workspace can contain several Test Types. 
 Each Test Type is represented by configuration script, build script and separate subdirectory.
-Scripts determine the way of compilation and execution of tests, subdirectory contains data and sources of the tests.<p>  
-<b>QA Functional Test Type Template</b> and  <b>Unit Test Type Template</b> are two templates of most common Test Types.<br>
-Associated <b>Test Type Wizard</b> helps you to create a new build script, configuration file and relevant subdirectory structure.
-Created subdirectory for test sources is finally mounted into filesystems repository.
+Scripts determine the way of compilation and execution of tests, subdirectory contains data and sources of the tests.
+<p>
+<code><b>Name</b></code> defines new test type name (folder name, config name, build script name ...).<br>
+Default name value is derived from template (QA Functional... -> qa-functional, Unit... -> unit).
+<p>  
+<code><b>QA Functional Test Type Template</b></code> and  <code><b>Unit Test Type Template</b></code> are two templates of most common Test Types.<br>
+<p>
+
+<hr>
 <a name="TypeSet"></a>
+<h3>Test Type Settings</h3>
+<code><b>Set Test Type as default in Test Workspace</b></code> checkbox propagates this new test type as default for current workspace when enabled.
+<p>  
+<code><b>Use Jemmy and Jelly libraries</b></code> checkbox affects class path for tests under current test type.
+<p>  
+<code><b>Window System</b></code> radio buttons define default window system mode for tests running in IDE mode.
+<p>  
+
+<hr>
 <a name="TypeAdvSet"></a>
+<h3>Test Type Advanced Settings</h3>
+<code><b>Command Line Suffix</b></code> property allows to add any string suffix to command line of IDE execution.
+<p>  
+<code><b>Compilation Exclude Pattern</b></code> is expression defining folders/files to exclude from compilation.
+<p>  
+<code><b>Compilation Class Path</b></code> property allows to add some archives or directories to compilation class path.<br>
+Use customizer, relative paths or paths relative to some vell-known path property.
+<p>
+<code><b>Execution Extra JARs</b></code> property defines set of jars used in class path during code execution or mounted into repository in IDE execution mode.
+<p>
+<code><b>Jemmy JAR Home</b></code> property contains path to Jemmy library.
+<p>  
+<code><b>Jelly JAR Home</b></code> property contains path to Jelly library.
+<p>
+Be aware of using absolute paths and assure that relative paths are present in CVS and checked out from CVS during tests. Otherwise these tests could not be used in automated testing on servers.
+<p>
 
+<hr>
 <a name="BagSet"></a>
+<h3>Test Bag Settings</h3>
+<code><b>Test Bag Name</b></code> property defines name of test bag displayed in test results. 
+<p>
+<code><b>Attributes</b></code> property contains expression composed from attributes and logical operators.<br>
+This expression is evaluated with attributes given during test execution and test bag is executed only after positive result.
+<p>  
+<code><b>Execution Include Pattern</b></code> is expression defining set of classes/methods included in execution of current test bag.
+<p>
+<code><b>Execution Exclude Pattern</b></code> is expression defining set of classes/methods excluded from execution of current test bag.
+<p>  
+<code><b>Executor</b></code> could be command-line - <code><b>Code</b></code> or using Netbeans - <code><b>IDE</b></code>. 
+<p>
 
+<hr>
 <a name="SuiteTarg"></a>
-<h3>Test Suite</h3>
+<h3>Test Suite Template and Target Location</h3>
 Test Suite is represented by single source file with several Test Case Methods. 
-For more informations see <a href="http://xtest.netbeans.org/docs.html">http://xtest.netbeans.org/docs.html</a>.<p>
-<b>Simple Test Suite Template</b>, <b>Jemmy Test Suite Template</b> and <b>Jelly Test Suite Template</b> are three offered templates.<br>
-Associated <b>Test Suite Wizard</b> helps you to create a new test suite with defined list of test cases.
-In addition it creates proper data directory structure and empty golden file for each "golden" test case type.<p>     
+For more information see <a href="http://xtest.netbeans.org/docs.html">http://xtest.netbeans.org/docs.html</a>.<p>     
+<code><b>Name</b></code> defines class name of new test suite.
+<p>
+<code><b>Package</b></code> text field affects package location of the new class.<br>
+New directories are automatically created if necessary. 
+<p>
+<code><b>Simple Test Suite Template</b></code>, <code><b>Jemmy Test Suite Template</b></code> and <code><b>Jelly Test Suite Template</b></code> are three offered templates.
+<p>
 
+<hr>
 <a name="Cases"></a>
-
-<br><br>
+<h3>Create Test Case</h3>
+<code><b>Test Case Name</b></code> defines test method name.
+<p>  
+<code><b>Template</b></code> of test method can be selected here.<br>
+Usual template set contains templates with and without golden files usage.
+<p>  
+<code><b>Add</b></code> button add above filled values into list of test methods.
+<p>
+<code><b>Remove</b></code> button removes selected test method from list.
+<p>  
+<code><b>Up</b></code> button moves selected test method in list up in order.
+<p>  
+<code><b>Down</b></code> button moves selected test method in list down in order.
+<p>
+<hr>
+<p>
 All wizards are piped together but you can finish at the end of each. 
 Following picture shows Test Tools Wizards schema.<p>
 <img src="schema.gif" border="0"> 
