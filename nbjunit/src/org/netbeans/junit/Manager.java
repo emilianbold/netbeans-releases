@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 /*
@@ -84,6 +84,9 @@ public class Manager extends Object {
         }
         if (path != null) {
             path = path.replace('/', File.separatorChar);
+        } else {
+            // Fallback value, guaranteed to be defined.
+            path = System.getProperty("java.io.tmpdir");
         }
         return path;
     }

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -24,9 +24,11 @@ import java.util.*;
 import java.net.URL;
 
 import org.netbeans.junit.diff.*;
-//import junit.framework.TestResult;
-/** NetBeans extension to JUnit's TestCase. This extension adds mostly
- * possibility to compare files (assertFile).
+
+/**
+ * NetBeans extension to JUnit's {@link TestCase}.
+ * Adds various abilities such as comparing golden files, getting a working
+ * directory for test files, testing memory usage, etc.
  */
 public abstract class NbTestCase extends TestCase implements NbTest {
     
@@ -346,23 +348,15 @@ public abstract class NbTestCase extends TestCase implements NbTest {
 
     
     /** Returns path to test method working directory as a String. Path is constructed
-     * as ${nbjunit.workdir}/${package}/${classname}/${testmethodname}. (nbjunit.workdir
-     * property have to be set in junit.properties file)
-     * Please note, this method does not guarantee that working directory really exist.
-     * @throws IOException if nbjunit.workdir property has not been set
-     * @return path
+     * as ${nbjunit.workdir}/${package}/${classname}/${testmethodname}. (The nbjunit.workdir
+     * property should be set in junit.properties; otherwise the default is ${java.io.tmpdir}.)
+     * Please note that this method does not guarantee that the working directory really exists.
+     * @return a path to a test method working directory
      */    
-    public String getWorkDirPath() throws IOException {
-        String path = Manager.getWorkDirPath();
-        if (path == null) {
-            throw new IOException(Manager.NBJUNIT_WORKDIR+" is not set, cannot create workdir");
-        }
-        
-        // package+class
-        path += File.separator + this.getClass().getName().replace('.',File.separatorChar);
-        // method name
-        path += File.separator + getName();
-        return path;
+    public String getWorkDirPath() {
+        return Manager.getWorkDirPath() +
+            File.separator + getClass().getName().replace('.', File.separatorChar) +
+            File.separator + getName();
     }
 
     /** Returns unique working directory for a test (each test method have uniq1ue dir).
