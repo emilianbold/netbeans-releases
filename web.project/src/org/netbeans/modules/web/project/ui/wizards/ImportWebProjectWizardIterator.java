@@ -35,6 +35,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
@@ -576,6 +577,59 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
 
         public void validate() throws WizardValidationException {
             panel.validateLocations();
+            
+            //delete existing class files
+            searchClassFiles (FileUtil.toFileObject (FileUtil.normalizeFile(new File (panel.jTextFieldJavaSources.getText ()))));
         }
+        
+        private void searchClassFiles (FileObject folder) throws WizardValidationException {
+            Enumeration en = folder.getData (true);
+            boolean found = false;
+            while (!found && en.hasMoreElements ()) {
+                Object obj = en.nextElement ();
+                assert obj instanceof FileObject : "Instance of FileObject: " + obj; // NOI18N
+                FileObject fo = (FileObject) obj;
+                found = "class".equals (fo.getExt ()); // NOI18N
+            }
+
+            if (found) {
+
+                Object DELETE_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_DeleteOption"); // NOI18N
+                Object KEEP_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_KeepOption"); // NOI18N
+                Object CANCEL_OPTION = NbBundle.getMessage (ImportWebProjectWizardIterator.class, "TXT_CancelOption"); // NOI18N
+                NotifyDescriptor desc = new NotifyDescriptor (
+                        NbBundle.getMessage (ImportWebProjectWizardIterator.class, "MSG_FoundClassFiles"), // NOI18N
+                        NbBundle.getMessage (ImportWebProjectWizardIterator.class, "MSG_FoundClassFiles_Title"), // NOI18N
+                        NotifyDescriptor.YES_NO_CANCEL_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[] {DELETE_OPTION, KEEP_OPTION, CANCEL_OPTION},
+                        null
+                        );
+
+                Object result = DialogDisplayer.getDefault().notify(desc);
+                if (DELETE_OPTION.equals (result)) {
+                    deleteClassFiles (folder);
+                } else if (!KEEP_OPTION.equals (result)) {
+                    // cancel, back to wizard
+                    throw new WizardValidationException (panel.jTextFieldJavaSources, "", ""); // NOI18N
+                }            
+            }
+        }
+
+        private void deleteClassFiles (FileObject folder) {
+            Enumeration en = folder.getData (true);
+            while (en.hasMoreElements ()) {
+                Object obj = en.nextElement ();
+                assert obj instanceof FileObject : "Instance of FileObject: " + obj;
+                FileObject fo = (FileObject) obj;
+                try {
+                    if ("class".equals(fo.getExt())) //NOI18N
+                        fo.delete ();
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault ().notify (ioe);
+                }
+            }
+        }
+
     }
 }
