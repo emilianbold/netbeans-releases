@@ -94,34 +94,6 @@ public class FormUtils extends Object {
     return false;
   }
 
-  /** A utility method for acquiring the BeanInfo for specified class.
-  * It should be used in the form editor instead of direct call to Introspector.getBeanInfo
-  * to allow providing special BeanInfo classes for certain components.
-  * @param clazz the class of the bean we are requesting the BeanInfo for.
-  * @return the requested BeanInfo class
-  * @exception java.beans.IntrospectionException thrown when the introspection fails
-  */
-  public static BeanInfo getBeanInfo (Class clazz)  throws java.beans.IntrospectionException {
-    return Utilities.getBeanInfo (clazz);
-  }
-
-  public static Object[] getDefaultPropertyValues (Class beanClass, BeanInfo info) {
-    Object[] values = (Object[]) valuesCache.get (beanClass);
-    if (values != null) return values;
-    try {
-      Object beanObject = beanClass.newInstance ();
-      Object[] defaultValues = getPropertyValues (beanObject, info);
-
-      // save the values into cache for future quick access
-      valuesCache.put (beanClass, defaultValues);
-
-      return defaultValues;
-
-    } catch (Exception e) {
-      return new Object [0];
-    }
-  }
-
   public static void notifyPropertyException (Class beanClass, String propertyName, String displayName, Throwable t, boolean reading) {
     boolean dontPrint = false;
     // if it is a subclass of Applet, we ignore InvocationTargetException
@@ -150,62 +122,6 @@ public class FormUtils extends Object {
     }
   }
 
-  /** Called from init() to get the default property values - it will serve for checking
-  * which properties has changed (and thus should be saved/generated).
-  * @return an array of default property values
-  */
-  public static Object[] getPropertyValues (Object beanObject, BeanInfo info) {
-    PropertyDescriptor[] properties = info.getPropertyDescriptors ();
-    Object[] defaultValues = new Object [properties.length];
-    for (int i = 0; i < properties.length; i++) {
-      if (defaultValues [i] == null) {
-        Method readMethod = properties[i].getReadMethod ();
-        if (readMethod != null) {
-          try {
-            defaultValues[i] = readMethod.invoke (beanObject, new Object [0]);
-            if (defaultValues [i] == null)
-              defaultValues [i] = getSpecialDefaultAWTValue (beanObject, properties[i]);
-          } catch (Exception e) {
-            defaultValues[i] = null; // problem with reading property ==>> no default value
-            if (ideSettings.getOutputLevel () != IDESettings.OUTPUT_MINIMUM) {
-              notifyPropertyException (beanObject.getClass (), properties [i].getName (), "component", e, true);
-            }
-          } // catch
-        } // if (readMethod != null)
-        else // the property does not have plain read method
-          if (properties[i] instanceof IndexedPropertyDescriptor) {
-            defaultValues[i] = null;
-  //          [PENDING]
-  //          Method indexedReadMethod = ((IndexedPropertyDescriptor)properties[i]).getIndexedReadMethod ();
-          } else // the property does not have indexed read method ==>> is write-only
-            defaultValues[i] = null;
-      }
-    } // for
-
-    return defaultValues;
-  }
-
-  private static Object getSpecialDefaultAWTValue (Object beanObject, PropertyDescriptor desc) {
-    String propertyName = desc.getName ();
-    if ((beanObject instanceof Label) ||
-        (beanObject instanceof Button) ||
-        (beanObject instanceof TextField) ||
-        (beanObject instanceof TextArea) ||
-        (beanObject instanceof Checkbox) ||
-        (beanObject instanceof Choice) ||
-        (beanObject instanceof List) ||
-        (beanObject instanceof Scrollbar) ||
-        (beanObject instanceof ScrollPane) ||
-        (beanObject instanceof Panel)) {
-      if ("background".equals (propertyName))
-        return Color.lightGray;
-      else if ("foreground".equals (propertyName))
-        return Color.black;
-      else if ("font".equals (propertyName))
-        return new Font ("Dialog", Font.PLAIN, 12);
-    }
-    return null;
-  }
 
   public static boolean isIgnoredProperty (Class beanClass, String propertyName) {
     if (JComponent.class.isAssignableFrom (beanClass)) {
@@ -215,31 +131,6 @@ public class FormUtils extends Object {
     if (javax.swing.JDesktopPane.class.isAssignableFrom (beanClass) && "desktopManager".equals (propertyName))
       return true;
     return false;
-  }
-
-  /** A utility method that returns a class of event adapter for
-  * specified listener. It works only on known listeners from java.awt.event.
-  * Null is returned for unknown listeners.
-  * @return class of an adapter for specified listener or null if
-  *               unknown/does not exist
-  */
-  public static Class getAdapterForListener (Class listener) {
-    if (java.awt.event.ComponentListener.class.equals (listener))
-      return java.awt.event.ComponentAdapter.class;
-    else if (java.awt.event.ContainerListener.class.equals (listener))
-      return java.awt.event.ContainerAdapter.class;
-    else if (java.awt.event.FocusListener.class.equals (listener))
-      return java.awt.event.FocusAdapter.class;
-    else if (java.awt.event.KeyListener.class.equals (listener))
-      return java.awt.event.KeyAdapter.class;
-    else if (java.awt.event.MouseListener.class.equals (listener))
-      return java.awt.event.MouseAdapter.class;
-    else if (java.awt.event.MouseMotionListener.class.equals (listener))
-      return java.awt.event.MouseMotionAdapter.class;
-    else if (java.awt.event.WindowListener.class.equals (listener))
-      return java.awt.event.WindowAdapter.class;
-    else return null; // not found
-
   }
 
   /** A utility method that returns the string that should be used for indenting
@@ -295,7 +186,7 @@ public class FormUtils extends Object {
   * the component name and the name of the listener method (with first letter capital)
   * (e.g. button1MouseReleased).
   */
-/*  public static String getDefaultEventName (RADNode component, Method listenerMethod) {
+/*  public static String getDefaultEventName (RADComponent component, Method listenerMethod) {
     String componentName = component.getName ();
     if (component instanceof RADFormNode)
       componentName = "form";
@@ -474,6 +365,7 @@ public class FormUtils extends Object {
 
 /*
  * Log
+ *  6    Gandalf   1.5         4/29/99  Ian Formanek    
  *  5    Gandalf   1.4         4/7/99   Ian Formanek    Debug finalized, 
  *       Hashtable->HashMap
  *  4    Gandalf   1.3         3/29/99  Ian Formanek    Added DEBUG methods

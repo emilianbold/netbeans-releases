@@ -13,26 +13,20 @@
 
 package com.netbeans.developer.modules.loaders.form.formeditor;
 
-/** 
-*
-* @author Ian Formanek
-*/
-public class RADContainer extends RADComponent implements ComponentContainer {
-  private RADComponent[] subComponents;
+/**
+ *
+ * @author  Ian Formanek
+ */
+public interface ComponentContainer {
 
-  public RADComponent[] getSubComponents () {
-    return subComponents;
-  }
+  public RADComponent[] getSubComponents ();
 
-  public void initSubComponents (RADComponent[] initComponents) {
-    subComponents = initComponents;
-  }
+  public void initSubComponents (RADComponent[] initComponents);
 
 }
 
 /*
  * Log
- *  2    Gandalf   1.1         4/29/99  Ian Formanek    
- *  1    Gandalf   1.0         4/26/99  Ian Formanek    
+ *  1    Gandalf   1.0         4/29/99  Ian Formanek    
  * $
  */

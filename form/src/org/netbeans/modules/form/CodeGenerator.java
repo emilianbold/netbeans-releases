@@ -33,8 +33,10 @@ public abstract class CodeGenerator {
     return new Node.Property[0];
   }
 }
+
 /*
  * Log
+ *  2    Gandalf   1.1         4/29/99  Ian Formanek    
  *  1    Gandalf   1.0         4/26/99  Ian Formanek    
  * $
  */

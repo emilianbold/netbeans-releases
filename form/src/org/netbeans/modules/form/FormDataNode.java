@@ -48,11 +48,12 @@ public class FormDataNode extends JavaNode {
   protected String[] getIcons() {
     return FORM_ICONS;
   }
-
+  
 }
 
 /*
  * Log
+ *  7    Gandalf   1.6         4/29/99  Ian Formanek    
  *  6    Gandalf   1.5         4/27/99  Ian Formanek    Fixed bug #1457 - Form 
  *       DataObject does not have the "Execution" properties
  *  5    Gandalf   1.4         4/13/99  Ian Formanek    Fixed problems with form
