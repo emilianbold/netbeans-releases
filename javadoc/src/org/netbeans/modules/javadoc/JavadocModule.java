@@ -45,6 +45,9 @@ import org.openidex.util.Utilities2;
 */
 public class JavadocModule extends ModuleInstall {
 
+    /** serialVersionUID */
+    private static final long serialVersionUID = 984124010415492146L;
+
     private static int numberOfStarts = 0;
 
     /** By first install of module in the IDE, check whether standard documentation folder
