@@ -49,6 +49,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Dimension;
 import javax.swing.border.EmptyBorder;
 import java.awt.Insets;
+import org.apache.tools.ant.module.wizards.shortcut.ShortcutWizard;
 import org.openide.util.HelpCtx;
 import org.netbeans.api.javahelp.Help;
 
@@ -87,10 +88,12 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
     }
 
     private final Action EXECUTE = new ExecuteAction();
+    private final Action CREATE_SHORTCUT = new CreateShortcutAction();
 
     public Action[] getActions(boolean context) {
         return new Action[] {
             EXECUTE,
+            CREATE_SHORTCUT,
             null,
             SystemAction.get (OpenLocalExplorerAction.class),
             null,
@@ -130,6 +133,23 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
             } catch (IOException ioe) {
                 AntModule.err.notify(ioe);
             }
+        }
+        
+    }
+    
+    /**
+     * Action to invoke the target shortcut wizard.
+     * Used to be a "template", but this is more natural.
+     * @see "issue #37374"
+     */
+    private final class CreateShortcutAction extends AbstractAction {
+        
+        CreateShortcutAction() {
+            super(NbBundle.getMessage(AntTargetNode.class, "LBL_create_shortcut"));
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            ShortcutWizard.show((AntProjectCookie)getCookie(AntProjectCookie.class), el);
         }
         
     }

@@ -16,9 +16,6 @@
 package org.apache.tools.ant.module.wizards.shortcut;
 
 import java.awt.Component;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -26,130 +23,58 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 import org.openide.WizardDescriptor;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.*;
-import org.openide.util.NbBundle;
-import java.awt.Dimension;
-import javax.swing.KeyStroke;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.Repository;
-import java.io.OutputStream;
-import org.openide.ErrorManager;
-import org.openide.util.Utilities;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataFolder;
+import org.openide.util.NbBundle;
 
-public class ShortcutIterator implements TemplateWizard.Iterator {
+final class ShortcutIterator implements WizardDescriptor.Iterator {
     
-    // Attributes stored on the template wizard:
+    ShortcutIterator() {}
     
-    /** type String */
-    public static final String PROP_CODE_NAME = "wizdata.codeName"; // NOI18N
-    /** type String */
-    public static final String PROP_CONTENTS = "wizdata.contents"; // NOI18N
-    /** type Boolean */
-    public static final String PROP_SHOW_CUST = "wizdata.show.cust"; // NOI18N
-    /** type Boolean */
-    public static final String PROP_SHOW_MENU = "wizdata.show.menu"; // NOI18N
-    /** type Boolean */
-    public static final String PROP_SHOW_TOOL = "wizdata.show.tool"; // NOI18N
-    /** type Boolean */
-    public static final String PROP_SHOW_KEYB = "wizdata.show.keyb"; // NOI18N
-    /** type DataFolder */
-    public static final String PROP_FOLDER_MENU = "wizdata.folder.menu"; // NOI18N
-    /** type DataFolder */
-    public static final String PROP_FOLDER_TOOL = "wizdata.folder.tool"; // NOI18N
-    /** type KeyStroke */
-    public static final String PROP_STROKE = "wizdata.stroke"; // NOI18N
-
-    private static final long serialVersionUID = 47387529866399027L;
-
     // You should define what panels you want to use here:
 
-    protected WizardDescriptor.Panel[] createPanels () {
+    private WizardDescriptor.Panel[] createPanels () {
         return new WizardDescriptor.Panel[] {
             new IntroPanel.IntroWizardPanel (),
-            new SelectTargetPanel.SelectTargetWizardPanel (),
-            new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
-            new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_menu_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")).getNodeDelegate (), false, true, PROP_FOLDER_MENU),
-            new SelectFolderPanel.SelectFolderWizardPanel (NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_toolbar"), NbBundle.getMessage (ShortcutIterator.class, "SI_TEXT_toolbar_locn"), DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")).getNodeDelegate (), false, false, PROP_FOLDER_TOOL),
+            new SelectFolderPanel.SelectFolderWizardPanel(
+                NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_menu_to_add_to"),
+                NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_menu_locn"),
+                NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_menu"),
+                DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Menu")), // NOI18N
+                true, ShortcutWizard.PROP_FOLDER_MENU),
+            new SelectFolderPanel.SelectFolderWizardPanel(
+                NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_select_toolbar"),
+                NbBundle.getMessage(ShortcutIterator.class, "SI_TEXT_toolbar_locn"),
+                NbBundle.getMessage(ShortcutIterator.class, "SI_LBL_display_name_for_toolbar"),
+                DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().findResource("Toolbars")), // NOI18N
+                false, ShortcutWizard.PROP_FOLDER_TOOL),
             new SelectKeyboardShortcutPanel.SelectKeyboardShortcutWizardPanel (),
+            new CustomizeScriptPanel.CustomizeScriptWizardPanel (),
         };
     }
 
     // And the list of step names:
 
-    protected String[] createSteps () {
+    private String[] createSteps () {
         return new String[] {
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_choose_options"),
-            NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_select_ant_target"),
-            NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_cust_script"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_add_to_menu"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_add_to_toolbar"),
             NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_make_keyboard_shortcut"),
+            NbBundle.getMessage (ShortcutIterator.class, "SI_LBL_cust_script"),
         };
     }
     
-    private void dumpContents () {
-        String[] keys = {"wizdata.codeName", "wizdata.contents", "wizdata.show.cust", "wizdata.show.menu", "wizdata.show.tool", "wizdata.show.keyb", "wizdata.folder.menu", "wizdata.folder.tool", "wizdata.stroke"}; // NOI18N
-        System.err.println("TemplateWizard:"); // NOI18N
-        for (int i = 0; i < keys.length; i++) {
-            System.err.println("\t" + keys[i] + " = " + wiz.getProperty (keys[i])); // NOI18N
-        }
-    }
-
-
-    public Set instantiate (TemplateWizard wiz) throws IOException/*, IllegalStateException*/ {
-        //dumpContents ();
-        if (showing (PROP_SHOW_KEYB)) {
-            FileObject shortcutsFolder = Repository.getDefault ().getDefaultFileSystem ().findResource ("Shortcuts"); // NOI18N
-            KeyStroke stroke = (KeyStroke) wiz.getProperty (PROP_STROKE);
-            create (DataFolder.findFolder (shortcutsFolder), Utilities.keyToString (stroke));
-        }
-        if (showing (PROP_SHOW_MENU)) {
-            create ((DataFolder) wiz.getProperty (PROP_FOLDER_MENU), null);
-        }
-        if (showing (PROP_SHOW_TOOL)) {
-            create ((DataFolder) wiz.getProperty (PROP_FOLDER_TOOL), null);
-        }
-        return Collections.EMPTY_SET;
-    }
-    
-    private DataObject create (DataFolder f, String name) throws IOException {
-        final String fname = (name != null) ? name : (String) wiz.getProperty (PROP_CODE_NAME);
-        final String contents = (String) wiz.getProperty (PROP_CONTENTS);
-        final FileObject folder = f.getPrimaryFile ();
-        final FileObject[] shortcut = new FileObject[1];
-        folder.getFileSystem ().runAtomicAction (new FileSystem.AtomicAction () {
-            public void run () throws IOException {
-                shortcut[0] = folder.createData (fname, "xml"); // NOI18N
-                FileLock lock = shortcut[0].lock ();
-                try {
-                    OutputStream os = shortcut[0].getOutputStream (lock);
-                    try {
-                        os.write (contents.getBytes ("UTF-8")); // NOI18N
-                    } finally {
-                        os.close ();
-                    }
-                } finally {
-                    lock.releaseLock ();
-                }
-            }
-        });
-        return DataObject.find (shortcut[0]);
-    }
-
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient TemplateWizard wiz;
+    private transient ShortcutWizard wiz;
 
     // You can keep a reference to the TemplateWizard which can
     // provide various kinds of useful information such as
     // the currently selected target name.
     // Also the panels will receive wiz as their "settings" object.
-    public void initialize (TemplateWizard wiz) {
+    void initialize(ShortcutWizard wiz) {
         this.wiz = wiz;
         index = 0;
         panels = createPanels ();
@@ -172,10 +97,6 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             }
         }
     }
-    public void uninitialize (TemplateWizard wiz) {
-        this.wiz = null;
-        panels = null;
-    }
 
     // --- WizardDescriptor.Iterator METHODS: ---
 
@@ -184,23 +105,22 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             new Integer (index + 1), new Integer (panels.length));
     }
 
-    private boolean showing (String prop) {
+    boolean showing(String prop) {
         Boolean s = (Boolean) wiz.getProperty (prop);
         return (s == null) || s.booleanValue ();
     }
     private boolean showing (int index) throws NoSuchElementException {
         switch (index) {
         case 0:
-        case 1:
             return true;
+        case 1:
+            return showing(ShortcutWizard.PROP_SHOW_MENU);
         case 2:
-            return showing (PROP_SHOW_CUST);
+            return showing(ShortcutWizard.PROP_SHOW_TOOL);
         case 3:
-            return showing (PROP_SHOW_MENU);
+            return showing(ShortcutWizard.PROP_SHOW_KEYB);
         case 4:
-            return showing (PROP_SHOW_TOOL);
-        case 5:
-            return showing (PROP_SHOW_KEYB);
+            return showing(ShortcutWizard.PROP_SHOW_CUST);
         default:
             throw new NoSuchElementException ();
         }
@@ -216,7 +136,10 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
     public boolean hasPrevious () {
         return index > 0;
     }
-    public void nextPanel () {
+    public void nextPanel() throws NoSuchElementException {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
         while (! showing (index)) index++;
         if (index == 1) {
@@ -224,7 +147,10 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
             fireChangeEvent ();
         }
     }
-    public void previousPanel () {
+    public void previousPanel() throws NoSuchElementException {
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
         while (! showing (index)) index--;
     }
@@ -252,10 +178,6 @@ public class ShortcutIterator implements TemplateWizard.Iterator {
         while (it.hasNext ()) {
             ((ChangeListener) it.next ()).stateChanged (ev);
         }
-    }
-    private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject ();
-        listeners = new HashSet (1);
     }
 
 }

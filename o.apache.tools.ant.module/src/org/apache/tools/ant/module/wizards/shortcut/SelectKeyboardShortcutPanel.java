@@ -29,13 +29,12 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.TemplateWizard;
 import javax.swing.KeyStroke;
 import org.openide.util.Utilities;
 import java.awt.event.KeyListener;
 import java.awt.event.KeyEvent;
 
-public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements KeyListener {
+final class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements KeyListener {
 
     private KeyStroke stroke = null;
     
@@ -169,8 +168,8 @@ public class SelectKeyboardShortcutPanel extends javax.swing.JPanel implements K
             // XXX later...
         }
         public void storeSettings (Object settings) {
-            TemplateWizard wiz = (TemplateWizard) settings;
-            wiz.putProperty (ShortcutIterator.PROP_STROKE, getPanel().stroke);
+            WizardDescriptor wiz = (WizardDescriptor) settings;
+            wiz.putProperty(ShortcutWizard.PROP_STROKE, getPanel().stroke);
         }
     }
     

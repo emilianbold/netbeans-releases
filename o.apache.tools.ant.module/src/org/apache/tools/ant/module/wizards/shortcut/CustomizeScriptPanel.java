@@ -27,11 +27,10 @@ import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.loaders.TemplateWizard;
 import javax.swing.text.EditorKit;
 import javax.swing.JEditorPane;
 
-public class CustomizeScriptPanel extends javax.swing.JPanel {
+final class CustomizeScriptPanel extends javax.swing.JPanel {
 
     /** Create the wizard panel component and set up some basic properties. */
     public CustomizeScriptPanel (CustomizeScriptWizardPanel wiz) {
@@ -154,14 +153,13 @@ public class CustomizeScriptPanel extends javax.swing.JPanel {
         */
 
         public void readSettings (Object settings) {
-            TemplateWizard wiz = (TemplateWizard) settings;
-            String contents = (String) wiz.getProperty (ShortcutIterator.PROP_CONTENTS);
-            if (contents == null) contents = ""; // NOI18N
-            getPanel().scriptPane.setText (contents);
+            ShortcutWizard wiz = (ShortcutWizard) settings;
+            String contents = wiz.getContents();
+            getPanel().scriptPane.setText(contents);
         }
         public void storeSettings (Object settings) {
-            TemplateWizard wiz = (TemplateWizard) settings;
-            wiz.putProperty (ShortcutIterator.PROP_CONTENTS, getPanel().scriptPane.getText ());
+            ShortcutWizard wiz = (ShortcutWizard) settings;
+            wiz.putContents(getPanel().scriptPane.getText());
         }
     }
 

@@ -29,7 +29,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.loaders.TemplateWizard;
 
-public class IntroPanel extends javax.swing.JPanel {
+final class IntroPanel extends javax.swing.JPanel {
 
     private IntroWizardPanel wiz;
     
@@ -74,17 +74,18 @@ public class IntroPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        customizeCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_cust_code_checkbox_mnem")).charAt(0));
         customizeCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_cust_code_checkbox"));
+        customizeCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_cust_code_checkbox_mnem")).charAt(0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         add(customizeCheck, gridBagConstraints);
 
-        menuCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_menu_item_mnem")).charAt(0));
         menuCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_menu_item"));
+        menuCheck.setMnemonic((NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_menu_item_mnem")).charAt(0));
         menuCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 someCheckboxClicked(evt);
@@ -93,9 +94,9 @@ public class IntroPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(menuCheck, gridBagConstraints);
 
         toolbarCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_toolbar_button"));
@@ -108,9 +109,9 @@ public class IntroPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(toolbarCheck, gridBagConstraints);
 
         keyboardCheck.setText(NbBundle.getMessage(IntroPanel.class, "IP_LBL_add_kbd_shortcut"));
@@ -124,22 +125,21 @@ public class IntroPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         add(keyboardCheck, gridBagConstraints);
 
-        hintsArea.setBackground(new java.awt.Color(204, 204, 204));
         hintsArea.setEditable(false);
         hintsArea.setFont(javax.swing.UIManager.getFont ("Label.font"));
-        hintsArea.setForeground(new java.awt.Color(102, 102, 153));
-        hintsArea.setLineWrap(true);
         hintsArea.setText(NbBundle.getMessage(IntroPanel.class, "IP_TEXT_select_how_to_install_shortcut"));
+        hintsArea.setBackground(new java.awt.Color(204, 204, 204));
+        hintsArea.setLineWrap(true);
+        hintsArea.setForeground(new java.awt.Color(102, 102, 153));
         hintsArea.setWrapStyleWord(true);
         hintsArea.setDisabledTextColor(javax.swing.UIManager.getColor ("Label.foreground"));
-        hintsArea.setEnabled(false);
         hintsArea.setOpaque(false);
+        hintsArea.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -212,11 +212,11 @@ public class IntroPanel extends javax.swing.JPanel {
             // XXX should read checkboxes from settings... skip for now.
         }
         public void storeSettings (Object settings) {
-            TemplateWizard wiz = (TemplateWizard) settings;
-            wiz.putProperty (ShortcutIterator.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-            wiz.putProperty (ShortcutIterator.PROP_SHOW_MENU, getPanel().menuCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-            wiz.putProperty (ShortcutIterator.PROP_SHOW_TOOL, getPanel().toolbarCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
-            wiz.putProperty (ShortcutIterator.PROP_SHOW_KEYB, getPanel().keyboardCheck.isSelected () ? Boolean.TRUE : Boolean.FALSE);
+            WizardDescriptor wiz = (WizardDescriptor) settings;
+            wiz.putProperty(ShortcutWizard.PROP_SHOW_CUST, getPanel().customizeCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty(ShortcutWizard.PROP_SHOW_MENU, getPanel().menuCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty(ShortcutWizard.PROP_SHOW_TOOL, getPanel().toolbarCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
+            wiz.putProperty(ShortcutWizard.PROP_SHOW_KEYB, getPanel().keyboardCheck.isSelected() ? Boolean.TRUE : Boolean.FALSE);
         }
     }
 
