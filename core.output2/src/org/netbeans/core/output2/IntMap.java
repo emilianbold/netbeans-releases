@@ -63,7 +63,7 @@ final class IntMap {
             return backward ? keys[last] : keys[0];
         }
         int idx = Arrays.binarySearch (keys, line);
-        if (idx < 0) {
+        if (idx < 0 && last > 0) {
             for (int i=1; i <= last; i++) {
                 if (keys[i-1] < line && keys[i] > line) {
                     idx = i;
