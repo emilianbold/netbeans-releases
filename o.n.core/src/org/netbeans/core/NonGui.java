@@ -222,6 +222,7 @@ public class NonGui extends NbTopManager implements Runnable {
             }
 
             if (exc != null) {
+                exc.printStackTrace ();
                 Object[] arg = new Object[] {systemDir};
                 System.out.println (new MessageFormat(getString("CTL_Cannot_mount_systemfs")).format(arg));
                 doExit (3);
