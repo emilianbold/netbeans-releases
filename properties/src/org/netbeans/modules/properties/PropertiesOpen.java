@@ -18,8 +18,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import java.text.MessageFormat;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
+import java.beans.*;
 import javax.swing.JTable;
 import javax.swing.JPanel;
 import javax.swing.JButton;
@@ -54,26 +53,34 @@ import org.openide.text.EditorSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.TopManager;
-
+import org.openide.windows.CloneableOpenSupport;
 
 /** Support for opening properties files (OpenCookie) in visual editor */
-public class PropertiesOpen extends OpenSupport implements OpenCookie {
+public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie {
 
     /** Main properties dataobject */
     PropertiesDataObject obj;
+    
+    /** Entry to work with. */
+    protected MultiDataObject.Entry entry;
+
+    /** Listener for modificationc on dataobject, adding and removing save cookie */
     PropertyChangeListener modifL;
 
-    private PropertiesTableModel tableModel = null;
-    private Dialog dialog;
-    private boolean closingLast = false;
+    
+//    private PropertiesTableModel tableModel = null; // TEMP
+//    private Dialog dialog; // TEMP
+//    private boolean closingLast = false; // TEMP teh methods are synchronized already
 
 
     /** Constructor */
     public PropertiesOpen(PropertiesFileEntry fe) {
-        super(fe);
+        super(new Env(fe.getDataObject()));
         this.obj = (PropertiesDataObject)fe.getDataObject();
-        this.obj.addPropertyChangeListener(new WeakListener.PropertyChange(modifL =
-                                               new ModifiedListener()));
+        this.entry = fe;
+        
+        this.obj.addPropertyChangeListener(WeakListener.propertyChange(modifL = 
+            new ModifiedListener(), this.obj));
     }
 
     void setRef(CloneableTopComponent.Ref ref) {
@@ -101,25 +108,26 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
     }
 
     public synchronized boolean hasOpenComponent() {
-        if (closingLast) return false;
+//        if (closingLast) return false; // TEMP
         java.util.Enumeration en = allEditors.getComponents ();
         return en.hasMoreElements ();
     }
 
-    public PropertiesTableModel getTableModel() {
+// TEMP>>    
+/*    public PropertiesTableModel getTableModel() {
         if (tableModel == null)
             tableModel = new PropertiesTableModel(obj);
         return tableModel;
-    }
-
+    }*/
+// TEMP<<
 
     private synchronized void closeDocuments() {
-        closingLast = true;
+//        closingLast = true; // TEMP
         closeEntry((PropertiesFileEntry)obj.getPrimaryEntry());
         for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
             closeEntry((PropertiesFileEntry)it.next());
         }
-        closingLast = false;
+//        closingLast = false; // TEMP
     }
 
     private void closeEntry(PropertiesFileEntry entry) {
@@ -164,10 +172,30 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         return true;
     }
 
+    /** Message to display when an object is being opened.
+    * @return the message or null if nothing should be displayed
+    */
+    protected String messageOpening () {
+        DataObject obj = entry.getDataObject ();
+
+        return NbBundle.getMessage (OpenSupport.class , "CTL_ObjectOpen", // NOI18N
+            obj.getName(),
+            obj.getPrimaryFile().toString()
+        );
+    }
+
+    /** Message to display when an object has been opened.
+    * @return the message or null if nothing should be displayed
+    */
+    protected String messageOpened () {
+        return NbBundle.getMessage (OpenSupport.class, "CTL_ObjectOpened"); // NOI18N
+    }
+    
+    
     /** Returns true if closing this editor whithout saving would result in loss of data
     *  because al least one of the modified files is not open in the code editor.
     *  Should be called only if the object has SaveCookie
-    */                  
+    */
     private boolean shouldAskSave() {
         // for each entry : if there is a SaveCookie and no open editor component, return true.
         // if passed for all entries, return false
@@ -184,6 +212,183 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         return false;
     }
 
+    // copied from OpenSupport
+    /** Environment that connects the support together with DataObject.
+    */
+    public static class Env extends Object implements CloneableOpenSupport.Env, java.io.Serializable,
+    PropertyChangeListener, VetoableChangeListener {
+        /** generated Serialized Version UID */
+//        static final long serialVersionUID = -1934890789745432531L;
+        /** object to serialize and be connected to*/
+        private DataObject obj;
+        
+        /** support for firing of property changes
+        */
+        private transient PropertyChangeSupport propSupp;
+        /** support for firing of vetoable changes
+        */
+        private transient VetoableChangeSupport vetoSupp;
+
+        /** Constructor. Attaches itself as listener to 
+        * the data object so, all property changes of the data object
+        * are also rethrown to own listeners.
+        *
+        * @param obj data object to be attached to
+        */
+        public Env (DataObject obj) {
+            this.obj = obj;
+            obj.addPropertyChangeListener (WeakListener.propertyChange (this, obj));
+        }
+        
+        /** Getter for data object.
+        */
+        protected final DataObject getDataObject () {
+            return obj;
+        }
+
+        /** Adds property listener.
+         */
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            prop ().addPropertyChangeListener (l);
+        }
+
+        /** Removes property listener.
+         */
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            prop ().removePropertyChangeListener (l);
+        }
+
+        /** Adds veto listener.
+         */
+        public void addVetoableChangeListener(VetoableChangeListener l) {
+            veto ().addVetoableChangeListener (l);
+        }
+
+        /** Removes veto listener.
+         */
+        public void removeVetoableChangeListener(VetoableChangeListener l) {
+            veto ().removeVetoableChangeListener (l);
+        }
+
+        /** Test whether the support is in valid state or not.
+        * It could be invalid after deserialization when the object it
+        * referenced to does not exist anymore.
+        *
+        * @return true or false depending on its state
+        */
+        public boolean isValid () {
+            return getDataObject ().isValid ();
+        }
+        
+        /** Test whether the object is modified or not.
+         * @return true if the object is modified
+         */
+        public boolean isModified() {
+            return getDataObject ().isModified ();
+        }
+
+        /** Support for marking the environement modified.
+        * @exception IOException if the environment cannot be marked modified
+        *   (for example when the file is readonly), when such exception
+        *   is the support should discard all previous changes
+        */
+        public void markModified() throws java.io.IOException {
+            getDataObject ().setModified (true);
+        }
+        
+        /** Reverse method that can be called to make the environment 
+        * unmodified.
+        */
+        public void unmarkModified() {
+            getDataObject ().setModified (false);
+        }
+        
+        /** Method that allows environment to find its 
+         * cloneable open support.
+        * @return the support or null if the environemnt is not in valid 
+        * state and the CloneableOpenSupport cannot be found for associated
+        * data object
+        */
+        public CloneableOpenSupport findCloneableOpenSupport() {
+            return (CloneableOpenSupport)getDataObject ().getCookie (CloneableOpenSupport.class);
+        }
+        
+        /** Accepts property changes from DataObject and fires them to
+        * own listeners.
+        */
+        public void propertyChange(PropertyChangeEvent ev) {
+            if (DataObject.PROP_MODIFIED.equals (ev.getPropertyName())) {
+                if (getDataObject ().isModified ()) {
+                    getDataObject ().addVetoableChangeListener(this);
+                } else {
+                    getDataObject ().removeVetoableChangeListener(this);
+                }
+            }
+            
+            firePropertyChange (
+                ev.getPropertyName (),
+                ev.getOldValue (),
+                ev.getNewValue ()
+            );
+        }
+        
+        /** Accepts vetoable changes and fires them to own listeners.
+        */
+        public void vetoableChange(PropertyChangeEvent ev) throws PropertyVetoException {
+            fireVetoableChange (
+                ev.getPropertyName (),
+                ev.getOldValue (),
+                ev.getNewValue ()
+            );
+        }
+        
+        /** Fires property change.
+        * @param name the name of property that changed
+        * @param oldValue old value
+        * @param newValue new value
+        */
+        protected void firePropertyChange (String name, Object oldValue, Object newValue) {
+            prop ().firePropertyChange (name, oldValue, newValue);
+        }
+        
+        /** Fires vetoable change.
+        * @param name the name of property that changed
+        * @param oldValue old value
+        * @param newValue new value
+        */
+        protected void fireVetoableChange (String name, Object oldValue, Object newValue) 
+        throws PropertyVetoException {
+            veto ().fireVetoableChange (name, oldValue, newValue);
+        }
+        
+        /** Lazy getter for change support.
+        */
+        private PropertyChangeSupport prop () {
+            if (propSupp == null) {
+                synchronized (this) {
+                    if (propSupp == null) {
+                        propSupp = new PropertyChangeSupport (this);
+                    }
+                }
+            }
+            return propSupp;
+        }
+        
+        /** Lazy getter for veto support.
+        */
+        private VetoableChangeSupport veto () {
+            if (vetoSupp == null) {
+                synchronized (this) {
+                    if (vetoSupp == null) {
+                        vetoSupp = new VetoableChangeSupport (this);
+                    }
+                }
+            }
+            return vetoSupp;
+        }
+    } // end of Env
+    
+    
     /** Class for opening at a given key. */
     public class PropertiesOpenAt implements OpenCookie {
 
@@ -230,7 +435,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         * when top component becomes modified */
         protected String modifiedAppendix = " *";
 
-        static final long serialVersionUID =2836248291419024296L;
+//        static final long serialVersionUID =2836248291419024296L;
         /** Default constructor for deserialization */
         public PropertiesCloneableTopComponent() {
         }
@@ -252,16 +457,19 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         }
 
         private void initMe() {
+            // force closing panes in all workspaces, default is in current only
+            setCloseOperation(TopComponent.CLOSE_EACH);
             // add to OpenSupport - patch for a bug in deserialization
             dobj.getOpenSupport().setRef(getReference());
 
             setName(dobj.getNodeDelegate().getDisplayName());
 
-            // listen to saving
+            // listen to saving and renaming
             dobj.addPropertyChangeListener(new WeakListener.PropertyChange(cookieL =
                                                new PropertyChangeListener() {
                                                    public void propertyChange(PropertyChangeEvent evt) {
-                                                       if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()))
+                                                       // TEMP
+                                                       if (DataObject.PROP_NAME.equals(evt.getPropertyName()) || DataObject.PROP_COOKIE.equals(evt.getPropertyName())) 
                                                            setName(dobj.getNodeDelegate().getDisplayName());
                                                    }
                                                }));
@@ -307,7 +515,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
             c.weightx = 1.0;
             c.weighty = 1.0;
             c.gridwidth = GridBagConstraints.REMAINDER;
-            mainPanel = new BundleEditPanel(dobj, dobj.getOpenSupport().getTableModel());
+            mainPanel = new BundleEditPanel(dobj, new PropertiesTableModel(dobj));
             gridbag.setConstraints(mainPanel, c);
             add (mainPanel);
         }
@@ -416,7 +624,6 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
         public void propertyChange(PropertyChangeEvent ev) {
             if ((ev.getSource() == obj) &&
                     (DataObject.PROP_MODIFIED.equals(ev.getPropertyName()))) {
-
                 if (((Boolean) ev.getNewValue()).booleanValue()) {
                     addSaveCookie();
                 } else {
