@@ -23,13 +23,34 @@ import org.openide.util.*;
 *
 * @author Petr Jiricka
 */
-final class Util extends Object {
+public final class Util extends Object {
                                                                                        
   /** Character used to separate parts of bundle properties file name */                                                                                     
   public static final char PRB_SEPARATOR_CHAR = PropertiesDataLoader.PRB_SEPARATOR_CHAR;
   /** Default length for the first part of node label */                                                                                     
   public static final int LABEL_FIRST_PART_LENGTH = 10;
-  
+              
+  /** Converts a string to a string suitable for a resource bundle key */            
+  public static String stringToKey(String source) {
+    StringBuffer result = new StringBuffer();
+    for (int i = 0; i < source.length(); i++) {
+      char x = source.charAt(i);
+      switch (x) {          
+        case '=':
+        case ':':
+        case '\t':
+        case '\r':
+        case '\n':
+        case '\f':
+        case ' ': 
+          result.append('_'); break;
+        default:
+          result.append(x); 
+      }                       
+    }
+    return result.toString();
+  }
+    
   /** returns the file for the primary entry
   *   @param fe entry for a properties file
   */
@@ -189,6 +210,8 @@ final class Util extends Object {
 
 /*
  * <<Log>>
+ *  3    Gandalf   1.2         8/17/99  Petr Jiricka    Added stringToKey 
+ *       utility method
  *  2    Gandalf   1.1         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  1    Gandalf   1.0         5/12/99  Petr Jiricka    
