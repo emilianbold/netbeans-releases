@@ -884,6 +884,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../ide/welcome" target="netbeans"/>
   </target>
 
+  <target name="all-ide/applemenu" depends="build-platform">
+    <echo message="Building module ide/applemenu..."/>
+    <ant dir="../ide/applemenu" target="netbeans"/>
+  </target>
+  
   <!-- Libs modules -->
   <target name="all-libs/xalan" depends="init">
       <echo message="Building module libs/xalan..."/>
@@ -1350,7 +1355,7 @@ the ${netbeans.dest}/bin/ directory.
           unless="${one.cluster.name}-hasNoDependencies">
     <run-depend-build clusters-to-build="${one.cluster.dependencies}"/> 
   </target>
-  
+
   <target name="build-one-cluster-check">
     <condition property="${one.cluster.name}-is-built">
       <available file="build/${one.cluster.name}.built"/>
