@@ -41,6 +41,8 @@ import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.Util;
 
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.support.GenericSources;
+
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -73,7 +75,7 @@ public final class View implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootChildren extends Children.Keys {
+    private static final class RootChildren extends Children.Keys/*<Element>*/ {
         
         private final FreeformProject p;
         
@@ -115,8 +117,6 @@ public final class View implements LogicalViewProvider {
             } else {
                 label = file.getNameExt();
             }
-            Node base;
-            boolean pkgUi;
             DataObject fileDO;
             try {
                 fileDO = DataObject.find(file);
@@ -131,19 +131,15 @@ public final class View implements LogicalViewProvider {
                 String style = itemEl.getAttribute("style"); // NOI18N
                 if (style.equals("tree")) { // NOI18N
                     // XXX filter by VisibilityQuery
-                    pkgUi = false;
-                    base = fileDO.getNodeDelegate();
+                    return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
                 } else {
                     assert style.equals("packages") : style;
-                    pkgUi = true;
-                    base = new AbstractNode(PackageView.createPackageView(file), Lookups.singleton(fileDO));
+                    return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
                 }
             } else {
                 assert itemEl.getLocalName().equals("source-file") : itemEl;
-                pkgUi = false;
-                base = fileDO.getNodeDelegate();
+                return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
             }
-            return new Node[] {new ViewItemNode(base, location, label, pkgUi)};
         }
         
     }
@@ -163,11 +159,6 @@ public final class View implements LogicalViewProvider {
         
         public String getDisplayName() {
             return ProjectUtils.getInformation(p).getDisplayName();
-        }
-        
-        public String getShortDescription() {
-            // XXX I18N
-            return "Freeform project in " + FileUtil.toFile(p.getProjectDirectory()).getAbsolutePath();
         }
         
         public Image getIcon(int type) {
@@ -202,13 +193,10 @@ public final class View implements LogicalViewProvider {
         
         private final String displayName;
         
-        private final boolean pkgUi;
-        
-        public ViewItemNode(Node orig, String name, String displayName, boolean pkgUi) {
+        public ViewItemNode(Node orig, String name, String displayName) {
             super(orig);
             this.name = name;
             this.displayName = displayName;
-            this.pkgUi = pkgUi;
         }
         
         public String getName() {
@@ -229,35 +217,6 @@ public final class View implements LogicalViewProvider {
         
         public boolean canCut() {
             return false;
-        }
-        
-        public Action[] getActions(boolean context) {
-            if (pkgUi) {
-                return new Action[] {
-                    SystemAction.get(OpenLocalExplorerAction.class),
-                    SystemAction.get(FindAction.class),
-                    null,
-                    LogicalViews.newFileAction(),
-                };
-            } else {
-                return super.getActions(context);
-            }
-        }
-        
-        public Image getIcon(int type) {
-            if (pkgUi) {
-                return Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/packageRoot.gif", true); // NOI18N
-            } else {
-                return super.getIcon(type);
-            }
-        }
-        
-        public Image getOpenedIcon(int type) {
-            if (pkgUi) {
-                return Utilities.loadImage("org/netbeans/modules/ant/freeform/resources/packageRootOpen.gif", true); // NOI18N
-            } else {
-                return super.getOpenedIcon(type);
-            }
         }
         
     }
