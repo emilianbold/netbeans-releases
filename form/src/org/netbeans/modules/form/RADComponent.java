@@ -352,22 +352,37 @@ public class RADComponent {
   }
 
 // -----------------------------------------------------------------------------
-// Package-private Access to component Properties
+// Access to component Properties
 
-  Node.Property[] getSyntheticProperties () {
+  public Node.Property[] getSyntheticProperties () {
     return syntheticProperties;
   }
 
-  Node.Property[] getComponentProperties () {
+  public Node.Property[] getComponentProperties () {
     return beanProperties;
   }
   
-  Node.Property[] getComponentExpertProperties () {
+  public Node.Property[] getComponentExpertProperties () {
     return beanExpertProperties;
   }
 
-  Node.Property[] getComponentEvents () {
+  public Node.Property[] getComponentEvents () {
     return beanEvents;
+  }
+
+  /** Can be used to obtain RADProperty of property with specified name
+  * @param name the name of the property - the same as returned from PropertyDescriptor.getName ()
+  * @return the RADProperty representing the specified property or null if property with specified name does not exist
+  */
+  public RADProperty getPropertyByName (String name) {
+    return (RADProperty) nameToProperty.get (name);
+  }
+  
+  /** This method can be used to obtain default property value of the specified property. 
+  * @return the default property value or null, which means that the default value is null or cannot be obtained (write only property, ...)
+  */
+  public Object getDefaultPropertyValue (RADProperty prop) {
+    return changedPropertyValues.get (prop);
   }
 
 // -----------------------------------------------------------------------------
@@ -486,14 +501,6 @@ public class RADComponent {
 
   }
   
-  /** Can be used to obtain RADProperty of property with specified name
-  * @param name the name of the property - the same as returned from PropertyDescriptor.getName ()
-  * @return the RADProperty representing the specified property or null if property with specified name does not exist
-  */
-  RADProperty getPropertyByName (String name) {
-    return (RADProperty) nameToProperty.get (name);
-  }
-  
   /** This method can be used to correctly set property value of specified property on the bean represented by this RADComponent. 
   * Used during deserialization.
   * @param desc The property to change
@@ -507,13 +514,6 @@ public class RADComponent {
     changedPropertyValues.put (prop, value);
   }
   
-  /** This method can be used to obtain default property value of the specified property. 
-  * @return the default property value or null, which means that the default value is null or cannot be obtained (write only property, ...)
-  */
-  Object getDefaultPropertyValue (RADProperty prop) {
-    return changedPropertyValues.get (prop);
-  }
-
 // -----------------------------------------------------------------------------
 // Protected interface to working with properties on bean instance
 
@@ -611,23 +611,7 @@ public class RADComponent {
 // -----------------------------------------------------------------------------
 // Properties and Inner Classes
 
-  private Node.Property createProperty (final PropertyDescriptor desc) {
-    Node.Property prop;
-    if (desc instanceof IndexedPropertyDescriptor) {
-      prop = new RADIndexedPropertyImpl ((IndexedPropertyDescriptor)desc);
-    } else { 
-      prop = new RADPropertyImpl (desc);
-    }
-
-    prop.setName (desc.getName ());
-    prop.setDisplayName (desc.getDisplayName ());
-    prop.setShortDescription (desc.getShortDescription ());
-
-    nameToProperty.put (desc.getName (), prop);
-    return prop;
-  }
-
-  interface RADProperty {
+  public interface RADProperty {
     public String getName ();
     public PropertyDescriptor getPropertyDescriptor ();
     public PropertyEditor getPropertyEditor ();
@@ -642,6 +626,22 @@ public class RADComponent {
     public boolean supportsDefaultValue ();
     public void restoreDefaultValue ();
     public Object getDefaultValue ();
+  }
+
+  private Node.Property createProperty (final PropertyDescriptor desc) {
+    Node.Property prop;
+    if (desc instanceof IndexedPropertyDescriptor) {
+      prop = new RADIndexedPropertyImpl ((IndexedPropertyDescriptor)desc);
+    } else { 
+      prop = new RADPropertyImpl (desc);
+    }
+
+    prop.setName (desc.getName ());
+    prop.setDisplayName (desc.getDisplayName ());
+    prop.setShortDescription (desc.getShortDescription ());
+
+    nameToProperty.put (desc.getName (), prop);
+    return prop;
   }
 
   class RADPropertyImpl extends Node.Property implements RADProperty {
@@ -1200,6 +1200,8 @@ public class RADComponent {
 
 /*
  * Log
+ *  49   Gandalf   1.48        9/7/99   Ian Formanek    Properties access and 
+ *       RADProperty interface made public
  *  48   Gandalf   1.47        9/6/99   Ian Formanek    Fixed bug 3252 - 
  *       FormEditor - Label sometimes forgets to resize itself after font 
  *       change.
