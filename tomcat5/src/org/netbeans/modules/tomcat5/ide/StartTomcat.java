@@ -64,6 +64,8 @@ public final class StartTomcat extends StartServer implements ProgressObject
     public static final String TAG_EXEC_CMD      = "catalina"; // NOI18N
     public static final String TAG_EXEC_STARTUP  = "exec_startup"; // NOI18N
     public static final String TAG_EXEC_SHUTDOWN = "exec_shutdown"; // NOI18N
+    public static final String TAG_SECURITY_OPT = "security_option"; //NOI18N
+    public static final String TAG_FORCE_OPT = "force_option"; //NOI18N
     /** Shutdown command tag. */
     //public static final String TAG_SHUTDOWN_CMD   = "shutdown"; // NOI18N
     /** Debug startup/shutdown tag */
@@ -71,27 +73,37 @@ public final class StartTomcat extends StartServer implements ProgressObject
     
     private static final Integer DEFAULT_ADMIN_PORT = new Integer (8025);
     private static final Integer DEFAULT_SERVER_PORT = new Integer (8084);
+
+    private static NbProcessDescriptor defaultExecDesc(String command, String argCommand, String option) {
+        return new NbProcessDescriptor (
+                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
+                "{" + argCommand + "}" + " {" + option + "}",  // NOI18N
+                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+            );
+    }
     
     private static NbProcessDescriptor defaultExecDesc(String command, String argCommand) {
         return new NbProcessDescriptor (
-                "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
-                StartTomcat.TAG_SEPARATOR + "}bin{" + // NOI18N
-                StartTomcat.TAG_SEPARATOR + "}{" +     // NOI18N
-                command + "}",  // NOI18N
-                "{" + argCommand + "}" ,  // NOI18N
-                org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );     
+                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
+                "{" + argCommand + "}",  // NOI18N
+                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+            );
     }
 
+    private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand, String option) {
+        return new NbProcessDescriptor (
+                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
+                "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}" + " {" + option + "}",  // NOI18N
+                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+            );
+    }
+    
     private static NbProcessDescriptor defaultDebugStartDesc(String command, String jpdaCommand) {
         return new NbProcessDescriptor (
-                "{" + StartTomcat.TAG_CATALINA_HOME + "}{" +     // NOI18N
-                StartTomcat.TAG_SEPARATOR + "}bin{" + // NOI18N
-                StartTomcat.TAG_SEPARATOR + "}{" +     // NOI18N
-                command + "}",  // NOI18N
-                "{" + StartTomcat.TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
-                org.openide.util.NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
-            );     
+                "{" + TAG_CATALINA_HOME + "}{" + TAG_SEPARATOR + "}bin{" + TAG_SEPARATOR + "}{" + command + "}",  // NOI18N
+                "{" + TAG_JPDA + "}" + " {" + jpdaCommand + "}",  // NOI18N
+                NbBundle.getMessage (StartTomcat.class, "MSG_TomcatExecutionCommand")
+            );
     }
 
     private TomcatManager tm;
@@ -283,7 +295,12 @@ public final class StartTomcat extends StartServer implements ProgressObject
 
             if ((debug) && (command == CommandType.START)) {
 
-                NbProcessDescriptor pd  = defaultDebugStartDesc (StartTomcat.TAG_DEBUG_CMD, StartTomcat.TAG_JPDA_STARTUP);
+                NbProcessDescriptor pd  = null;
+                if (tm.getSecurityStartupOption()) {
+                    pd = defaultDebugStartDesc (TAG_DEBUG_CMD, TAG_JPDA_STARTUP, TAG_SECURITY_OPT);
+                } else {
+                    pd = defaultDebugStartDesc (TAG_DEBUG_CMD, TAG_JPDA_STARTUP);
+                }
                 try {
                     fireCmdExecProgressEvent("MSG_startProcess", StateType.RUNNING);
                     Process p = null;
@@ -329,8 +346,20 @@ public final class StartTomcat extends StartServer implements ProgressObject
                     return;
                 }
             } else {
-                NbProcessDescriptor pd  = defaultExecDesc (StartTomcat.TAG_EXEC_CMD, 
-                        command == CommandType.START ? StartTomcat.TAG_EXEC_STARTUP : StartTomcat.TAG_EXEC_SHUTDOWN);
+                NbProcessDescriptor pd = null;
+                if (command == CommandType.START) {
+                    if (tm.getSecurityStartupOption()) {
+                        pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP, TAG_SECURITY_OPT);
+                    } else {
+                        pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_STARTUP);
+                    }
+                } else {
+                    if (tm.getForceStopOption() && Utilities.isUnix()) {
+                        pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_SHUTDOWN, TAG_FORCE_OPT);
+                    } else {
+                        pd = defaultExecDesc(TAG_EXEC_CMD, TAG_EXEC_SHUTDOWN);
+                    }
+                }
                 try {
                     fireCmdExecProgressEvent(command == CommandType.START ? "MSG_startProcess" : "MSG_stopProcess",
                             StateType.RUNNING);
@@ -535,7 +564,9 @@ public final class StartTomcat extends StartServer implements ProgressObject
             map.put (TAG_DEBUG_CMD, catalinaStartupScript);
             map.put (TAG_JPDA, "jpda"); // NOI18N
             map.put (TAG_JPDA_STARTUP, "run"); // NOI18N
-            map.put (StartTomcat.TAG_CATALINA_HOME, home); // NOI18N
+            map.put (TAG_SECURITY_OPT, "-security"); // NOI18N            
+            map.put (TAG_FORCE_OPT, "-force"); // NOI18N
+            map.put (TAG_CATALINA_HOME, home); // NOI18N
             map.put (TAG_SEPARATOR, File.separator);
         }
         

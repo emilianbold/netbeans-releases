@@ -34,6 +34,7 @@ import org.openide.util.HelpCtx;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.cookies.EditorCookie;
+import org.openide.util.Utilities;
 
 
 /**
@@ -56,6 +57,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
     protected static final String ADMIN_PORT= "admin_port";//NOI18N
     protected static final String MONITOR_ENABLED= "monitor_enabled";//NOI18N
     protected static final String OPEN_CONTEXT_LOG_ON_RUN_ENABLED= "open_context_log_on_run_enabled";//NOI18N
+    protected static final String SECURITY_STARTUP_OPTION= "security_startup_option"; //NOI18N
+    protected static final String FORCE_STOP_OPTION= "force_stop_option"; //NOI18N
     protected static final String CLASSIC = "classic"; //NOI18N
     protected static final String USER_NAME = "user_name"; //NOI18N
     protected static final String PASSWORD = "password"; //NOI18N
@@ -295,7 +298,8 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
                        }
                    }
                };
-        ssProp.put(p); 
+        ssProp.put(p);
+        
         // SERVER PORT
         p = new PropertySupport.ReadWrite (
                    SERVER_PORT,
@@ -456,6 +460,60 @@ public class TomcatInstanceNode extends AbstractNode implements Node.Cookie {
             }
         };
         ssProp.put(p);
+        
+        // SECURITY STARTUP OPTION
+        p = new PropertySupport.ReadWrite(
+                   SECURITY_STARTUP_OPTION,
+                   Boolean.class,
+                   NbBundle.getMessage(TomcatInstanceNode.class, "PROP_securityStartupOption"),   // NOI18N
+                   NbBundle.getMessage(TomcatInstanceNode.class, "HINT_securityStartupOption")   // NOI18N
+               ) {
+                   
+                    public Object getValue () {
+                        TomcatManager tm = getTomcatManager();
+                        if (tm != null) {
+                            return Boolean.valueOf(tm.getSecurityStartupOption());
+                        }
+                        return Boolean.TRUE;
+                    }
+
+                    public void setValue (Object val) {
+                        TomcatManager tm = getTomcatManager();
+                        if (tm != null) {
+                            tm.setSecurityStartupOption(((Boolean)val).booleanValue());
+                        }
+                    }
+                   
+        };
+        ssProp.put(p);
+        
+        // FORCE STOP OPTION - UNIX specific option
+        if (Utilities.isUnix()) {
+            p = new PropertySupport.ReadWrite(
+                       FORCE_STOP_OPTION,
+                       Boolean.class,
+                       NbBundle.getMessage(TomcatInstanceNode.class, "PROP_forceStopOption"),   // NOI18N
+                       NbBundle.getMessage(TomcatInstanceNode.class, "HINT_forceStopOption")   // NOI18N
+                   ) {
+
+                        public Object getValue () {
+                            TomcatManager tm = getTomcatManager();
+                            if (tm != null) {
+                                return Boolean.valueOf(tm.getForceStopOption());
+                            }
+                            return Boolean.TRUE;
+                        }
+
+                        public void setValue (Object val) {
+                            TomcatManager tm = getTomcatManager();
+                            if (tm != null) {
+                                tm.setForceStopOption(((Boolean)val).booleanValue());
+                            }
+                        }
+
+            };
+            ssProp.put(p);
+        }
         
         // DEBUGGER
         Sheet.Set ssDebug = new Sheet.Set ();

@@ -134,6 +134,14 @@ public class TomcatManager implements DeploymentManager {
        to <code>true</code> web module's context log will be opened on run. */
     private static final String OPEN_CONTEXT_LOG_ON_RUN = "openContextLogOnRun";    
 
+    /** Tomcat specific Instance property - if this property exists and is set 
+       to <code>true</code> Tomcat will be started wiht the "-security" option */
+    private static final String SECURITY_STARTUP_OPTION = "securityStartupOption";
+
+    /** Tomcat specific Instance property - if this property exists and is set 
+       to <code>true</code> Tomcat will be stoped wiht the "-force" option */
+    private static final String FORCE_STOP_OPTION = "forceStopOption";
+
     /** Manager state. */
     private boolean connected;
     
@@ -543,8 +551,64 @@ public class TomcatManager implements DeploymentManager {
             if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
         }
         return true;
-    }    
+    }
+
+    /**
+     * Set whether Tomcat should be started with the "-security" option.
+     *
+     * @param val <code>true</code> if Tomcat should be started with the "-security" 
+     *         option, <code>false</code> otherwise.
+     */
+    public void setSecurityStartupOption(boolean val) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(SECURITY_STARTUP_OPTION, Boolean.valueOf(val).toString());
+        }
+    }
+
+    /**
+     * Should be Tomcat started with the "-security" option?
+     *
+     * @return <code>true</code> if Tomcat should be started with the "-security" 
+     *         option, <code>false</code> otherwise.
+     */
+    public boolean getSecurityStartupOption() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Object val = ip.getProperty(SECURITY_STARTUP_OPTION);
+            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
+        }
+        return false;
+    }
+
+    /**
+     * Set whether Tomcat should be stopped with the "-force" option.
+     *
+     * @param val <code>true</code> if Tomcat should be stopped with the "-force" 
+     *         option, <code>false</code> otherwise.
+     */
+    public void setForceStopOption(boolean val) {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            ip.setProperty(FORCE_STOP_OPTION, Boolean.valueOf(val).toString());
+        }
+    }
     
+    /**
+     * Should be Tomcat stopped with the "-force" option?
+     *
+     * @return <code>true</code> if Tomcat should be stopped with the "-force" 
+     *         option, <code>false</code> otherwise.
+     */
+    public boolean getForceStopOption() {
+        InstanceProperties ip = getInstanceProperties();
+        if (ip != null) {
+            Object val = ip.getProperty(FORCE_STOP_OPTION);
+            if (val != null) return Boolean.valueOf(val.toString()).booleanValue();
+        }
+        return false;
+    }
+
 // --- DeploymentManager interface implementation ----------------------
     
     public DeploymentConfiguration createConfiguration (DeployableObject deplObj) 
