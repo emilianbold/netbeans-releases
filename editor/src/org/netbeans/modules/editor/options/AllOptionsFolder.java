@@ -38,6 +38,15 @@ import org.netbeans.editor.BaseKit;
 import org.openide.loaders.DataObjectNotFoundException;
 import java.util.StringTokenizer;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.util.WeakListener;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import javax.swing.SwingUtilities;
+import org.openide.util.NbBundle;
+import org.openide.NotifyDescriptor;
+import java.text.MessageFormat;
+import org.openide.options.SystemOption;
 
 
 /** Editor Settings main node folder.
@@ -73,7 +82,9 @@ public class AllOptionsFolder{
     // List of already initialized options
     private static Map installedOptions = new Hashtable();
     
-    
+    /** Listens to changes on the Modules folder */
+    private static FileChangeListener moduleRegListener;
+
     
     /** Creates new AllOptionsFolder */
     private AllOptionsFolder(DataFolder fld) {
@@ -128,6 +139,78 @@ public class AllOptionsFolder{
         return null;
     }
     
+    /** Returns list of installed Options. Values = options classes */
+    public List getInstalledOptions(){
+        List retList = new ArrayList();
+        // first XMLized options
+        FileObject mainFolderFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        findResource(AllOptionsFolder.FOLDER+"/text"); //NOI18N
+        if (mainFolderFO != null){
+            DataFolder mainFolder = DataFolder.findFolder(mainFolderFO);
+            if (mainFolder != null){
+                DataObject subFolders[] = mainFolder.getChildren();
+                for (int i=0; i<subFolders.length; i++){
+                    if (!(subFolders[i] instanceof DataFolder)) continue;
+                    DataFolder subFolder = (DataFolder) subFolders[i];
+                    FileObject optionInstance = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                    findResource(subFolder.getPrimaryFile().getPackageName('/')+"/"+AllOptionsFolder.OPTION_FILE_NAME);
+                    if (optionInstance == null) continue;
+                    try{
+                        DataObject optionDO = DataObject.find(optionInstance);
+                        if (optionDO == null) continue;
+                        InstanceCookie ic = (InstanceCookie)optionDO.getCookie(InstanceCookie.class);
+                        if (ic == null) continue;
+                        BaseOptions bo = AllOptionsFolder.getDefault().getBO(ic);
+                        if (bo == null) continue;
+                        retList.add(bo.getClass());
+                    }catch(DataObjectNotFoundException donf){
+                        donf.printStackTrace();
+                    }
+                }
+            }
+        }
+        
+        // Now old SystemOptions options
+        AllOptions allOptions
+        = (AllOptions)AllOptions.findObject(AllOptions.class, true);
+        
+        if (allOptions == null) return retList;
+        
+        SystemOption[] sos = allOptions.getOptions();
+        if (sos == null) return retList;
+        
+        for (int i=0; i<sos.length; i++){
+            
+            if (!(sos[i] instanceof BaseOptions)) continue;
+            
+            BaseOptions bo = (BaseOptions) sos[i];
+            if (retList.contains(bo.getClass())) retList.remove(bo.getClass());
+            if (BaseKit.getKit(bo.getKitClass()).getContentType() != null){
+                retList.add(bo.getClass());
+                processInitializers(bo, false);
+            }else{
+                final String kitClazz = bo.getKitClass().toString();
+                SwingUtilities.invokeLater(
+                new Runnable() {
+                    public void run() {
+                        NotifyDescriptor msg = new NotifyDescriptor.Message(
+                        
+                        MessageFormat.format(
+                        NbBundle.getBundle( AllOptions.class ).getString("ERR_NoContentTypeDefined"), //NOI18N
+                        new Object[] {kitClazz}),
+                        NotifyDescriptor.WARNING_MESSAGE
+                        );
+                        
+                        TopManager.getDefault().notify(msg);
+                    }
+                }
+                );
+            }
+        }
+        
+        return retList;
+    }
+    
     /** Creates the only instance of AllOptionsFolder. */
     public static synchronized AllOptionsFolder getDefault(){
         // try to find the itutor XML settings
@@ -141,6 +224,23 @@ public class AllOptionsFolder{
         } else {
             if (settingsFolder == null){
                 settingsFolder = new AllOptionsFolder(df);
+                
+                // attach listeners for module registry for listening on addition or removal of modules in IDE
+                if(moduleRegListener == null) {
+                    moduleRegListener = new FileChangeAdapter() {
+                        public void fileChanged(FileEvent fe){
+                            updateOptions();
+                        }
+                    };
+
+                    FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
+
+                    if (moduleRegistry !=null){ //NOI18N
+                        moduleRegistry.addFileChangeListener(
+                        WeakListener.fileChange(moduleRegListener, moduleRegistry ));
+                    }
+                }
+                
                 return settingsFolder;
             }
         }
@@ -161,6 +261,37 @@ public class AllOptionsFolder{
      *  It is used mainly by other options for initializing global keyBindings */
     protected void loadDefaultKeyBindings(){
         getBase().getKeyBindingList();
+    }
+    
+    /** Returns kitClass of uninstalled option */ 
+    private synchronized static Class uninstallOption(){
+        List updatedInstalledOptions = AllOptionsFolder.getDefault().getInstalledOptions();
+        Iterator i = installedOptions.keySet().iterator();
+        while (i.hasNext()){
+            Object obj = i.next();
+            if(obj instanceof Class){
+                Class clz = (Class)obj;
+                if (!updatedInstalledOptions.contains(obj)){
+                    installedOptions.remove(obj);
+                    return (Class)obj;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private static void updateOptions(){
+        Iterator i = installedOptions.values().iterator();        
+        while (i.hasNext()){
+            Object obj = i.next();
+            if (obj instanceof BaseOptions){
+                BaseOptions bo = (BaseOptions)obj;
+                if (bo != null){
+                    bo.initPopupMenuItems();
+                }
+            }
+        }
+        uninstallOption();        
     }
     
     /** Gets the singleton of BaseOptions and register it in Settings initializer,
@@ -263,6 +394,9 @@ public class AllOptionsFolder{
 
         // load all settings of this mime type from XML files
         bo.loadXMLSettings();
+
+        //initialize popup menu
+        bo.initPopupMenuItems();
         
         /* Reset the settings so that the new initializers take effect
          * or the old are removed. */

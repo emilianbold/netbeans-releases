@@ -31,6 +31,12 @@ import org.openide.xml.XMLUtil;
 import org.openide.filesystems.FileLock;
 import java.io.IOException;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import java.util.Enumeration;
+import org.openide.cookies.InstanceCookie;
+import org.openide.util.actions.SystemAction;
+import java.lang.ClassNotFoundException;
+import java.util.Set;
 
 /** Various utilities for Editor Options.
  *
@@ -356,6 +362,105 @@ public class OptionUtilities {
             }
         }
         return ret;
+    }
+    
+    /** Gets attributes of base popup folder */
+    public static List getGlobalPopupAttribs(){
+        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+        if (mimeFolder == null) return new ArrayList();
+        MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+        if ( mpf!=null ){
+            List retList = new ArrayList();
+            for (Enumeration e = mpf.getDataFolder().getPrimaryFile().getAttributes() ; e.hasMoreElements() ;) {
+                String name = (String) e.nextElement();
+                if (name.indexOf("/") != -1) { //NOI18N
+                    Object value = mpf.getDataFolder().getPrimaryFile().getAttribute(name);
+                    if ((value instanceof Boolean) && ((Boolean) value).booleanValue()){
+                        retList.add(name);
+                    }
+                }
+            }
+            return retList;
+        }
+        return new ArrayList();
+    }
+    
+    /** Gets popup menu items (DataObjects) stored in base popup folder */
+    public static List getGlobalPopupMenuItems(){
+        MIMEOptionFolder mimeFolder = AllOptionsFolder.getDefault().getMIMEFolder();
+        if (mimeFolder == null) return new ArrayList();
+        MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+        if ( mpf!=null ){
+            return mpf.getProperties();
+        }
+        return new ArrayList();
+    }
+    
+    /** Creates String representation of popup from DO representation */
+    public static List getPopupStrings(List popup){
+        List retList = new ArrayList();
+        
+        for (int i=0; i<popup.size(); i++){
+            if (!(popup.get(i) instanceof DataObject)) continue;
+            
+            DataObject dob = (DataObject) popup.get(i);
+            InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
+            if (ic!=null){
+                try{
+                    if (SystemAction.class.isAssignableFrom(ic.instanceClass() )){
+                        retList.add(ic.instanceName());
+                    }
+                    if(javax.swing.JSeparator.class.isAssignableFrom(ic.instanceClass())){
+                        retList.add(null);
+                    }
+                }catch(IOException ioe){
+                    ioe.printStackTrace();
+                }catch(ClassNotFoundException cnfe){
+                    cnfe.printStackTrace();
+                }
+            }else{
+                if ("org-openide-windows-TopComponent".equals(dob.getName())){ //NOI18N
+                    retList.add(dob.getName().replace('-','.'));
+                }else{
+                    retList.add(dob.getName());
+                }
+            }
+        }
+        
+        return retList;
+    }
+    
+    /** Provides sorting of merged popup elements according to sort instructions in folder attribs */
+    public static List arrangeMergedPopup(Set items, Set attribs){
+        // init returnList with unsorted collection
+        List retList = new ArrayList(items);
+        
+        // prepare name list of instance files
+        List nameList = new ArrayList();
+        for (int i = 0; i<retList.size(); i++){
+            DataObject dob = (DataObject) retList.get(i);
+            nameList.add(dob.getPrimaryFile().getNameExt());
+        }
+        
+        // sort items
+        for (int i=0; i<attribs.size(); i++){
+            Iterator j = attribs.iterator();
+            while (j.hasNext()){
+                String attr = (String) j.next();
+                String firstItem = attr.substring(0,attr.indexOf('/'));
+                String secondItem = attr.substring(attr.indexOf('/')+1);
+                int first = nameList.indexOf(firstItem);
+                int second = nameList.indexOf(secondItem);
+                if ( (first>second) && (second>-1)){
+                    // move first item before the second
+                    nameList.add(second,nameList.remove(first));
+                    retList.add(second,retList.remove(first));
+                }
+            }
+        }
+        
+        //return sorted result
+        return getPopupStrings(retList);
     }
     
 }

@@ -70,6 +70,8 @@ import org.openide.util.Lookup.Template;
 import org.openide.util.Lookup.Item;
 import java.util.StringTokenizer;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import java.util.Set;
+import java.util.HashSet;
 
 
 /**
@@ -1027,6 +1029,44 @@ public class BaseOptions extends OptionSupport {
     public void setHighlightCaretRow(boolean highlight) {
         setSettingBoolean(ExtSettingsNames.HIGHLIGHT_CARET_ROW, highlight,
         HIGHLIGHT_CARET_ROW_PROP);
+    }
+    
+    /** Retrieves the actions from XML file */
+    public void initPopupMenuItems(){
+        if (!BASE.equals(getTypeName())){
+            MIMEOptionFolder mimeFolder = getMIMEFolder();
+            if (mimeFolder != null){
+                MultiPropertyFolder mpf = mimeFolder.getMPFolder("Popup",false); //NOI18N
+                if (mpf!=null){
+                    DataFolder df = mpf.getDataFolder();
+                    List mimeFolderAttribs = new ArrayList();
+                    for (Enumeration e = df.getPrimaryFile().getAttributes() ; e.hasMoreElements() ;) {
+                        mimeFolderAttribs.add(e.nextElement());
+                    }
+
+                    // merge folders only if mime folder has some relevant info
+                    if ( (mpf.getProperties().size()!=0) || (mimeFolderAttribs.size() != 0)) {
+                        
+                        // We are going to merge global popup items and mime popup items ...
+                        // Firstly merge popup items
+                        Set mergedPopupItems = new HashSet(OptionUtilities.getGlobalPopupMenuItems());
+                        mergedPopupItems.addAll(mpf.getProperties());
+                        
+                        // Then merge attribs
+                        Set mergedPopupAttribs = new HashSet(OptionUtilities.getGlobalPopupAttribs());
+                        mergedPopupAttribs.addAll(mimeFolderAttribs);
+                        
+                        // Sort it in accordance with merged Popup Attribs
+                        List orderedPopupItems = OptionUtilities.arrangeMergedPopup(mergedPopupItems, mergedPopupAttribs);
+                        super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, orderedPopupItems);
+                        return;
+                    }
+                }
+            }
+        }
+        
+        // setting global popup menu items
+        super.setSettingValue(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST, OptionUtilities.getPopupStrings(OptionUtilities.getGlobalPopupMenuItems()));
     }
     
     

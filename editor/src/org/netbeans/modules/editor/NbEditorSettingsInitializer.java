@@ -82,25 +82,6 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
     *   that updates it or if no previous initializers updated it.
     */
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
-
-        if (kitClass == NbEditorKit.class) {
-
-            settingsMap.put(ExtSettingsNames.POPUP_MENU_ACTION_NAME_LIST,
-                            new ArrayList(Arrays.asList(
-                                              new String[] {
-                                                  TopComponent.class.getName(),
-                                                  null,
-                                                  CutAction.class.getName(),
-                                                  CopyAction.class.getName(),
-                                                  PasteAction.class.getName(),
-                                                  null,
-                                                  DeleteAction.class.getName()
-                                              }
-                                          ))
-                           );
-
-        }
-
     }
 
 }
