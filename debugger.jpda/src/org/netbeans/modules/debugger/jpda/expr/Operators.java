@@ -145,14 +145,15 @@ class Operators implements JavaParserConstants {
             }
         }
 
-        if (((left instanceof StringReference) || (right instanceof StringReference))
-            && (operator.kind == PLUS)) {
-            String s1 = ((StringReference)left).value();
-            if (s1 == null)
-                s1 = "null";
-            String s2 = ((StringReference)right).value();
-            if (s2 == null)
-                s2 = "null";
+        if ((left == null || left instanceof StringReference || right == null || right instanceof StringReference)
+            && operator.kind == PLUS) {
+            String s1 = null, s2 = null;
+            if (left instanceof StringReference) s1 = ((StringReference)left).value();
+            else if (left == null) s1 = "null";
+            else s1 = left.toString();
+            if (right instanceof StringReference) s2 = ((StringReference)right).value();
+            else if (right == null) s2 = "null";
+            else s2 = right.toString();
             return vm.mirrorOf(s1 + s2);
         }
 

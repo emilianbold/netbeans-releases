@@ -43,6 +43,14 @@ public class EvaluationException extends RuntimeException {
     }
 
     public String getMessage() {
+        try {
+            return getMessageImpl();
+        } catch (Exception e) {
+            return message = formatMessage("CTL_EvalError_unknownInternalError", null);
+        }
+    }
+
+    public String getMessageImpl() {
         if (message != null) return message;
 
         String [] msgParams = null;
