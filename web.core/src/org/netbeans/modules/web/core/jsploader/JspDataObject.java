@@ -736,12 +736,19 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
     private static final String CORRECT_BIG5 = "BIG5";
     
     private static String canonizeEncoding(String encodingAlias) {
-        // this does not work correctly on JDK 1.4.1
+        
+        // canonic name first
+        if (Charset.isSupported(encodingAlias)) {
+            Charset cs = Charset.forName(encodingAlias);
+            encodingAlias = cs.name();
+        }
+        
+        // this is not supported on JDK 1.4.1
         if (encodingAlias.equalsIgnoreCase("MS932")) {
             return CORRECT_WINDOWS_31J;
         }
         // this is not a correct charset by http://www.iana.org/assignments/character-sets
-        if (encodingAlias.equalsIgnoreCase("EUC-JP-LINUX")) {
+        if (encodingAlias.equalsIgnoreCase("euc-jp-linux")) {
             return CORRECT_EUC_JP;
         }
         // chinese encodings that must be adjusted
@@ -757,14 +764,8 @@ public class JspDataObject extends MultiDataObject implements QueryStringCookie 
         if (encodingAlias.equalsIgnoreCase("EUC-TW")) {
             return CORRECT_BIG5;
         }
-        
-        
-        if (Charset.isSupported(encodingAlias)) {
-            Charset cs = Charset.forName(encodingAlias);
-            return cs.name();
-        } else {
-            return encodingAlias;
-        }
+
+        return encodingAlias;
     }
 
     private void printJob(CompilerJob job) {
