@@ -34,12 +34,12 @@ public class Difference extends Object implements Serializable {
     public static final int CHANGE = 2;
     
     private int type = 0;
-    private int f1Line1 = 0;
-    private int f1Line2 = 0;
-    private int f2Line1 = 0;
-    private int f2Line2 = 0;
-    private List f1LineDiffs;
-    private List f2LineDiffs;
+    private int firstStart = 0;
+    private int firstEnd = 0;
+    private int secondStart = 0;
+    private int secondEnd = 0;
+    private List firstLineDiffs;
+    private List secondLineDiffs;
     
     /** The text of the difference. For ADD the newly added text, for CHANGE
      * the new text which the old is changed to.
@@ -52,13 +52,13 @@ public class Difference extends Object implements Serializable {
      * Creates a new instance of Difference
      * @param type The type of the difference. Must be one of the {@link DELETE},
      *             {@link ADD} or {@link CHANGE}
-     * @param f1line1 The line number on which the difference starts in the first file.
-     * @param f1line2 The line number on which the difference ends in the first file.
-     * @param f2line1 The line number on which the difference starts in the second file.
-     * @param f2line2 The line number on which the difference ends in the second file.
+     * @param firstStart The line number on which the difference starts in the first file.
+     * @param firstEnd The line number on which the difference ends in the first file.
+     * @param secondStart The line number on which the difference starts in the second file.
+     * @param secondEnd The line number on which the difference ends in the second file.
      */
-    public Difference(int type, int f1Line1, int f1Line2, int f2Line1, int f2Line2) {
-        this(type, f1Line1, f1Line2, f2Line1, f2Line2, null, null);
+    public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd) {
+        this(type, firstStart, firstEnd, secondStart, secondEnd, null, null);
         //System.out.println(this);
     }
     
@@ -66,29 +66,29 @@ public class Difference extends Object implements Serializable {
      * Creates a new instance of Difference
      * @param type The type of the difference. Must be one of the {@link DELETE},
      *             {@link ADD} or {@link CHANGE}
-     * @param f1line1 The line number on which the difference starts in the first file.
-     * @param f1line2 The line number on which the difference ends in the first file.
-     * @param f2line1 The line number on which the difference starts in the second file.
-     * @param f2line2 The line number on which the difference ends in the second file.
-     * @param f1LineDiffs The list of differences on lines in the first file.
+     * @param firstStart The line number on which the difference starts in the first file.
+     * @param firstEnd The line number on which the difference ends in the first file.
+     * @param secondStart The line number on which the difference starts in the second file.
+     * @param secondEnd The line number on which the difference ends in the second file.
+     * @param firstLineDiffs The list of differences on lines in the first file.
      *                    The list contains instances of {@link Difference.Line}.
      *                    Can be <code>null</code> when there are no line differences.
-     * @param f2LineDiffs The list of differences on lines in the second file.
+     * @param secondLineDiffs The list of differences on lines in the second file.
      *                    The list contains instances of {@link Difference.Line}.
      *                    Can be <code>null</code> when there are no line differences.
      */
-    public Difference(int type, int f1Line1, int f1Line2, int f2Line1, int f2Line2,
-                      List f1LineDiffs, List f2LineDiffs) {
+    public Difference(int type, int firstStart, int firstEnd, int secondStart, int secondEnd,
+                      List firstLineDiffs, List secondLineDiffs) {
         if (type > 2 || type < 0) {
             throw new IllegalArgumentException("Bad Difference type = "+type);
         }
         this.type = type;
-        this.f1Line1 = f1Line1;
-        this.f1Line2 = f1Line2;
-        this.f2Line1 = f2Line1;
-        this.f2Line2 = f2Line2;
-        this.f1LineDiffs = f1LineDiffs;
-        this.f2LineDiffs = f2LineDiffs;
+        this.firstStart = firstStart;
+        this.firstEnd = firstEnd;
+        this.secondStart = secondStart;
+        this.secondEnd = secondEnd;
+        this.firstLineDiffs = firstLineDiffs;
+        this.secondLineDiffs = secondLineDiffs;
     }
 
     /**
@@ -101,29 +101,29 @@ public class Difference extends Object implements Serializable {
     /**
      * Get the line number on which the difference starts in the first file.
      */
-    public int getFile1Line1() {
-        return this.f1Line1;
+    public int getFirstStart() {
+        return this.firstStart;
     }
 
     /**
      * Get the line number on which the difference ends in the first file.
      */
-    public int getFile1Line2() {
-        return this.f1Line2;
+    public int getFirstEnd() {
+        return this.firstEnd;
     }
     
     /**
      * Get the line number on which the difference starts in the second file.
      */
-    public int getFile2Line1() {
-        return this.f2Line1;
+    public int getSecondStart() {
+        return this.secondStart;
     }
     
     /**
      * Get the line number on which the difference ends in the second file.
      */
-    public int getFile2Line2() {
-        return this.f2Line2;
+    public int getSecondEnd() {
+        return this.secondEnd;
     }
     
     /**
@@ -131,8 +131,8 @@ public class Difference extends Object implements Serializable {
      * The list contains instances of {@link Difference.Line}.
      * Can be <code>null</code> when there are no line differences.
      */
-    public List getFile1LineDiffs() {
-        return f1LineDiffs;
+    public List getFirstLineDiffs() {
+        return firstLineDiffs;
     }
     
     /**
@@ -140,8 +140,8 @@ public class Difference extends Object implements Serializable {
      * The list contains instances of {@link Difference.Line}.
      * Can be <code>null</code> when there are no line differences.
      */
-    public List getFile2LineDiffs() {
-        return f2LineDiffs;
+    public List getSecondLineDiffs() {
+        return secondLineDiffs;
     }
     
     /**
@@ -158,38 +158,15 @@ public class Difference extends Object implements Serializable {
         return text;
     }
     
-    public void shiftFile1Lines(int numLines) {
-        f1Line1 += numLines;
-        f1Line2 += numLines;
-        if (f1LineDiffs != null) {
-            shiftLineDiffs(f1LineDiffs, numLines);
-        }
-    }
-    
-    public void shiftFile2Lines(int numLines) {
-        f2Line1 += numLines;
-        f2Line2 += numLines;
-        if (f2LineDiffs != null) {
-            shiftLineDiffs(f2LineDiffs, numLines);
-        }
-    }
-    
-    private static void shiftLineDiffs(List lineDiffs, int numLines) {
-        for (Iterator it = lineDiffs.iterator(); it.hasNext(); ) {
-            LineDiff lDiff = (LineDiff) it.next();
-            lDiff.shiftLine(numLines);
-        }
-    }
-    
     public String toString() {
         return "Difference("+((type == ADD) ? "ADD" : (type == DELETE) ? "DELETE" : "CHANGE")+", "+
-               f1Line1+", "+f1Line2+", "+f2Line1+", "+f2Line2+")";
+               firstStart+", "+firstEnd+", "+secondStart+", "+secondEnd+")";
     }
     
     /**
      * This class represents a difference on a single line.
      */
-    public static class LineDiff extends Object implements Serializable {
+    public static class Part extends Object implements Serializable {
         
         private int type;
         private int line;
@@ -207,7 +184,7 @@ public class Difference extends Object implements Serializable {
           * @param pos1 The position on which the difference starts on this line.
           * @param pos2 The position on which the difference ends on this line.
           */
-        public LineDiff(int type, int line, int pos1, int pos2) {
+        public Part(int type, int line, int pos1, int pos2) {
             if (type > 2 || type < 0) {
                 throw new IllegalArgumentException("Bad Difference type = "+type);
             }
@@ -234,14 +211,14 @@ public class Difference extends Object implements Serializable {
         /**
           * Get the position on which the difference starts on this line.
           */
-        public int getPosition1() {
+        public int getStartPosition() {
             return this.pos1;
         }
         
         /**
           * Get the position on which the difference ends on this line.
           */
-        public int getPosition2() {
+        public int getEndPosition() {
             return this.pos2;
         }
         
@@ -257,10 +234,6 @@ public class Difference extends Object implements Serializable {
          */
         public String getText() {
             return text;
-        }
-        
-        public void shiftLine(int numLines) {
-            line += numLines;
         }
         
     }
