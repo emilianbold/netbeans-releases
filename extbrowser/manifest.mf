@@ -1,6 +1,5 @@
 OpenIDE-Module: org.netbeans.modules.extbrowser/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/extbrowser/Bundle.properties
-OpenIDE-Module-Display-Category: Web
 OpenIDE-Module-Layer: org/netbeans/modules/extbrowser/resources/layer.xml
 OpenIDE-Module-Specification-Version: 0.3
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
