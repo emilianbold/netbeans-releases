@@ -12,6 +12,7 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
+import java.text.MessageFormat;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
@@ -20,9 +21,11 @@ import java.io.File;
 import java.net.URL;
 import java.net.MalformedURLException;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class Util {
@@ -131,8 +134,15 @@ public class Util {
             File[] files = extFolder.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
-                    File f = files[i];
-                    assert f.exists() : "File.listFiles returned a nonexistent file " + f + " on " + extFolder;
+                    File f = files[i];                   
+                    if (!f.exists()) {
+                        //May happen, eg. broken link, it is safe to ignore it
+                        //since it is an extension directory, but log it.
+                        ErrorManager.getDefault().log (ErrorManager.WARNING,
+                            MessageFormat.format (NbBundle.getMessage(Util.class,"MSG_BrokenExtension"),
+                            new Object[] {f,extFolder}));
+                        continue;
+                    }                    
                     FileObject fo = FileUtil.toFileObject(f);
                     assert fo != null : "Must have defined a FileObject for existent file " + f;
                     if (!FileUtil.isArchiveFile(fo)) {
