@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -45,18 +45,45 @@ public class HtmlLoader extends UniFileLoader {
 
 
     static final long serialVersionUID =-5809935261731217882L;
+    
     public HtmlLoader() {
         super (HtmlDataObject.class);
     }
 
     protected void initialize () {
-        setDisplayName(NbBundle.getBundle(HtmlLoader.class).
-                       getString("PROP_HtmlLoader_Name"));
         getExtensions ().addExtension ("html"); // NOI18N
         getExtensions ().addExtension ("htm"); // NOI18N
         getExtensions ().addExtension ("shtml"); // NOI18N
 
-        setActions (new SystemAction[] {
+    }
+
+    
+    protected MultiDataObject createMultiObject (final FileObject primaryFile)
+    throws DataObjectExistsException, IOException {
+        return new HtmlDataObject (primaryFile, this);
+    }
+    
+    /** Get the default display name of this loader.
+     * @return default display name
+     */
+    protected String defaultDisplayName () {
+        return NbBundle.getBundle(HtmlLoader.class).
+                       getString("PROP_HtmlLoader_Name");
+    }
+    
+    /** Get default actions.
+     * @return array of default system actions or <CODE>null</CODE> if this loader
+     * does not have any actions.
+     * Typical example of usage:
+     * <pre>
+     * return new SystemAction[] {
+     *                   SystemAction.get (OpenAction.class), ...
+     *                   SystemAction.get (PropertiesAction.class)
+     *               };
+     * </pre>
+     */
+    protected SystemAction[] defaultActions () {
+        return new SystemAction[] {
                         SystemAction.get (ViewAction.class),
                         SystemAction.get (OpenAction.class),
                         SystemAction.get (FileSystemAction.class),
@@ -72,17 +99,8 @@ public class HtmlLoader extends UniFileLoader {
                         null,
                         SystemAction.get (ToolsAction.class),
                         SystemAction.get (PropertiesAction.class),
-                    });
+                    };
 
-/*ExtensionList ext = new ExtensionList();
-        ext.addExtension("txt"); // NOI18N
-        setExtensions(ext);
-*/
     }
-
     
-    protected MultiDataObject createMultiObject (final FileObject primaryFile)
-    throws DataObjectExistsException, IOException {
-        return new HtmlDataObject (primaryFile, this);
-    }
 }
