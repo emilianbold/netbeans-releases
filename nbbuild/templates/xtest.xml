@@ -14,17 +14,11 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="xtest" default="all" basedir=".">
+    <import file="../default.xml"/>
 
-    <dirname property="nb_all" file="${ant.file.xtest}/../.."/>
-
-    <!-- Points to parent of directory with IDE to test: -->
-    <property name="netbeans.dest.dir" location="${nb_all}/nbbuild"/>
-    <!-- Points to IDE dir within that dir: -->
-    <property name="cluster.dir" value="netbeans"/>
-    
     <!-- Home of XTest -->
     <property name="xtest.home" location="${nb_all}/xtest"/>
-
+    
     <!-- ****************************************************** -->
     <!-- ** You should not change anything after this comment,  -->
     <!-- **    unless you really know what you are doing        -->
@@ -48,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
     
     <!-- This calls target which will call compilers according to cfg file. -->
     <!-- You should not change this target unless you realy know what you are doing. -->
-    <target name="buildtests">
+    <target name="buildtests" depends="init" >
     	<xtest executeAction="buildTests"/>
     </target>
     

@@ -14,9 +14,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="module test build script" basedir="." default="all">
-    
-    <!-- Points to directory with moduleCluster.properties and directories.properties -->
-    <property name="netbeans.dest.dir" location="../../nbbuild/"/>
+    <import file="../../nbbuild/default-properties.xml" />    
     
     <!-- Name of tested module -->
     <property name="xtest.module" value="core"/>
