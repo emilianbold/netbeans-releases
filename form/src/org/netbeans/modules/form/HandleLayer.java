@@ -976,10 +976,12 @@ class HandleLayer extends JPanel
             if (fdResizer != null) {
                 fdResizer.dropDesigner(e.getPoint(), false);
             }
-            else if (componentDragger == null
-                && lastLeftMousePoint != null
-                && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6)
-                && CPManager.getDefault().getMode() == PaletteAction.MODE_SELECTION)
+            else if (!viewOnly
+                     && componentDragger == null
+                     && lastLeftMousePoint != null
+                     && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6)
+                     && CPManager.getDefault().getMode()
+                              == PaletteAction.MODE_SELECTION)
             { // start dragging
                 componentDragger = createComponentDragger(lastLeftMousePoint);
 //                lastLeftMousePoint = null;
