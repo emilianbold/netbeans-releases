@@ -83,11 +83,11 @@ public class HTMLViewAction extends CallableSystemAction {
             }
         } catch (java.net.MalformedURLException e) {
             if (!HtmlBrowser.getHomePage ().
-              startsWith ("http://")
+              startsWith ("http://") // NOI18N
             ) {
                 try {
                     tm.showUrl (new java.net.URL (
-                        "http://" + HtmlBrowser.getHomePage ()
+                        "http://" + HtmlBrowser.getHomePage () // NOI18N
                     ));
                 } catch (java.net.MalformedURLException e1) {
                     tm.showUrl (IDESettings.getRealHomeURL ());
