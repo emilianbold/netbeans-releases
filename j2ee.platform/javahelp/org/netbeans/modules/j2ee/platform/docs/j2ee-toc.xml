@@ -74,7 +74,12 @@
 	  <tocitem text="Creating a JSP File" target="jsp_create" />
 	  <tocitem text="Creating an HTML File" target="html_create" />
 	  <tocitem text="Editing a JSP or HTML File" target="jsp_edit" />
-	  <tocitem text="Setting Character Encoding for a JSP File" target="jsp_encoding" />
+          <tocitem text="Setting Character Encoding for a JSP File">
+		  <tocitem text="About Setting Character Encoding for a JSP File" target="jsp_encoding" />
+		  <tocitem text="Setting Request Character Encoding for a JSP File" target="jsp_encoding_request" />
+		  <tocitem text="Setting Page Character Encoding for a JSP File" target="jsp_encoding_page" />
+		  <tocitem text="Setting Response Character Encoding for a JSP File" target="jsp_encoding_response" />
+          </tocitem>
 	  <tocitem text="Defining a Custom Tag in a JSP File" target="jsp_usetaglib"/>
           <tocitem text="Defining an Applet in a JSP File" target="jsp_useapplet"/>
 	  <tocitem text="Defining a Tomcat Database Connection Pool in a JSP File" target="jsp_connectionpool_tomcat"/>
@@ -224,17 +229,10 @@
 		<tocitem text="Web Service Tasks: Quick Reference" target="tbd" />
 	        <tocitem text="Preparing to Develop Web Services and Clients" target="set_ws_server" />
  	 </tocitem>
-	 <tocitem text="Consuming Web Services" >
-		 <tocitem text="About Web Service Clients" target="about_wsc" /> 
-		 <tocitem text="Creating a Web Service Client" target="wsc_create" />
-		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
-		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
-		 <tocitem text="Building a Web Service Client" target="wsc_build" />
-		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
-	 </tocitem>
-	 <tocitem text="Creating and Editing Web Services" >
-                <tocitem text="Implementing an Existing WSDL File" target="create_ws_from_wsdl" />
-		<tocitem text="Exposing Existing Code as a Web Service" target="create_ws_from_code" />
+	 <tocitem text="Implementing Web Services" >
+ 		<tocitem text="About Implementing Web Services" target="about_implement_ws" />
+                <tocitem text="Creating a Web Service from a WSDL File" target="create_ws_from_wsdl" />
+		<tocitem text="Creating a Web Service from Existing Code" target="create_ws_from_code" />
 		<tocitem text="Creating a Web Service from Scratch" target="create_ws_from_scratch" />
     	        <tocitem text="Adding a Web Service Operation" target="add_ws_operation" />
 	        <tocitem text="Adding a SOAP Message Handler" target="add_ws_soap_message" />
@@ -261,7 +259,14 @@
 		 <tocitem text="Registering a Web Service" target="register_ws" />
 		 <tocitem text="Testing a Web Service on the Service Side" target="test_ws" /> 
 	 </tocitem>
-
+	 <tocitem text="Consuming Web Services" >
+		 <tocitem text="About Web Service Clients" target="about_wsc" /> 
+		 <tocitem text="Creating a Web Service Client" target="wsc_create" />
+		 <tocitem text="Testing a Web Service on the Client Side" target="wsc_test" /> 
+		 <tocitem text="Calling a Web Service Operation" target="wsc_call_ws" />
+		 <tocitem text="Building a Web Service Client" target="wsc_build" />
+		 <tocitem text="Deploying a Web Service Client" target="wsc_deploy" />
+	 </tocitem>
  </tocitem> 
 </tocitem>
 </toc>

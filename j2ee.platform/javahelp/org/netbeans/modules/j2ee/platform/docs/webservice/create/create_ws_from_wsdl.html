@@ -4,21 +4,19 @@ Inc.  All rights reserved.
 Use is subject to license terms.  *--> 
 <html> 
 <head> 
-	<title>Implementing an Existing WSDL File</title>
+	<title>Creating a Web Service from a WSDL File</title>
 <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head> 
 <body bgcolor="#FFFFFF">
-<h2>Implementing an Existing WSDL File</h2>
+<h2>Creating a Web Service from a WSDL File</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>When you and your business partners agree on a "contract" in the form of a WSDL file,
-you can use the IDE to implement it. You can also use the IDE to reimplement web services
-that have been published elsewhere, such as those offered by Amazon.com. 
- You do not need to know the details
- of the WSDL file when you create the web service, because the IDE provides
- wizards that guide you through the process.</p>
-<p><b>To implement a WSDL file:</b></p>
+you can use the IDE to implement it. The WSDL file is an agreement on the data and  messages 
+ that will be exchanged as well as how these messages will be sent and received. 
+ In the IDE, you can use the WSDL file to implement the web service.</p>
+ <p><b>To create a web service from a WSDL file:</b></p>
 <ol>
-<li>Do one of the following:
+<li>Depending on the <a href="about_implement_ws.html">implementation form</a>, do one of the following:
 <ul>
 	<li><a href="../../web/create/about/create_webapps_proj.html">Create a web application project</a>.</li>
 	<li><a href="../../ejb/editing/create_ejb_project.html">Create an EJB module project</a>.</li>
@@ -43,16 +41,20 @@ and choose New <img src="../../images/arrow.gif" alt="and choose" >&nbsp;Web Ser
 <li>Click Finish.
 <p>The IDE does the following:
 <ul>
-<li>It "normalizes" the WSDL file. For example, a <a href="../build/about_wsdl.html#binding">binding element</a> is created if it did
+	
+<li>A new WSDL file is created. The abstract portion is copied from the original file, 
+while the concrete portion is "normalized" from the original.
+For example, a <a href="../build/about_wsdl.html#binding">binding element</a> is created if it did
 not exist in the WSDL file. Also, the <a href="../build/about_wsdl.html#binding">service element</a> is created to be compatible with
-the name that you specified in the wizard.</li>
+binding, and receives the web service name that you specified in the wizard, replacing the service element 
+in the original WSDL file.</li>
 <li>It creates the Service Endpoint Interface (the "interface"), which declares the web service's operations. 
 In the IDE, the interface is identified by the suffix "SEI". For example, if you named your 
 web service <tt>CalculatorWS</tt>, its interface is named <tt>CalculatorWSSEI</tt>.
 The IDE automatically populates the interface with a declaration for each web service operation
  from the WSDL file.</li>
  <li>It creates the class for the implementation of the interface. The operations found
- from the WSDL file are added to this class.
+ in the WSDL file are added to this class.
 In the IDE, an implementation class is identified by the suffix "Impl" (for web applications)
  or "Bean" (for EJB modules). For example, if your 
  web service is named <tt>CalculatorWS</tt>, its implementation class is named <tt>CalculatorWSImpl</tt>
@@ -60,6 +62,14 @@ In the IDE, an implementation class is identified by the suffix "Impl" (for web 
 By default, both files are housed in a package within your project's <tt>src</tt> folder (in the Files window)
 and you can access it in the Source Packages node (in the Projects window).
 </ul>
+<table cellpadding="3" cellspacing="0" border="0">
+<tr valign="top"> 
+<td><img src="../../images/tip.gif" alt="tip">&nbsp;</td>
+<td>Since the WSDL file governs the interface to the web service,
+	you may <i>not</i> add new operations to web services that are created from a WSDL file, 
+	because these operations will not be reflected back in the WSDL file.</td>
+</tr>
+</table>
 </li>
 <li><a href="../build/compile_wsdl.html">Build the web service</a>.</li>
 </ul>

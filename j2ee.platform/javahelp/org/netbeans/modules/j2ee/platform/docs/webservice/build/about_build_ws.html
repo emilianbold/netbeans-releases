@@ -17,7 +17,7 @@ Use is subject to license terms.  *-->
   IDE does not package API libraries like the Servlet API in your EJB module JAR 
   file. You can adjust which archive files are packaged with your module in the 
   module project's Project Properties dialog box.</p>
-  <p>However, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is run as part of the build process.
+ <p>However, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is run as part of the build process.
 On the service side, the <a href="../build/about_wscompile.html"><tt>wscompile</tt></a> tool
 generates a <a href="about_wsdl.html">WSDL file</a> from a <a href="../about/about_ws.html">web service</a> or a 
 web service from a WSDL file. The <tt>wscompile</tt> tool
@@ -33,6 +33,26 @@ of your web service.</p>
  require you to set <tt>wscompile</tt> tool</a> features.</td>
 </tr>
 </table>
+<p><b>To build the web service:</b></p>
+<ol>
+<li>Do one of the following to build the web service:
+<ul>
+  <li>If the module within which the web service is implemented
+    is part of a J2EE application, make sure the J2EE application 
+    is set as the main project and choose Build <img src="../../images/arrow.gif" width="5" height="11" alt="and choose">&nbsp;Build 
+    Main Project (F11).</li>
+  <li>If the project is a stand-alone module, or if you want to build the 
+    module without building the other modules in the J2EE application, right-click 
+    the project's node in the Projects window and choose Build Project.</li>
+</ul></li>
+<li>Analyze the result and, if necessary, customize the <tt>wscompile</tt> tool's features,
+ depending on your needs:
+ <ul>
+<li><a href="../build/compile_wsdl.html">Building a Web Service from a WSDL File</a></li>
+<li><a href="../build/compile_doc.html">Building a Document-Style Web Service</a></li>
+<li><a href="../build/compile_rpc.html">Building a RPC-Style Web Service</a></li>
+</ol>
+
 
 <table>
 <tr>
@@ -42,10 +62,6 @@ of your web service.</p>
 <td width="23"></td>
 <td> 
 	<a href="../about/about_ws.html">About Web Services</a><br>
-	<a href="../build/compile_wsdl.html">Building a Web Service from a WSDL File</a><br>
-<a href="../build/compile_doc.html">Building a Document-Style Web Service</a><br>
-<a href="../build/compile_rpc.html">Building a RPC-Style Web Service</a><br>
- <a href="../consume/wsc_build.html">Building a Web Service Client</a><br>
 </td>
 </tr>
 </table>   

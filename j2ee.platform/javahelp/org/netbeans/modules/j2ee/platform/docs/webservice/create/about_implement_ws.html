@@ -4,11 +4,11 @@ Inc.  All rights reserved.
 Use is subject to license terms.  *--> 
 <html> 
 <head> 
-<title>About Web Services</title>
+<title>About Implementing Web Services</title>
 <link rel="stylesheet" href="../../../../../usersguide/ide.css" type="text/css">
 </head> 
 <body bgcolor="#FFFFFF">
-<h2>About Web Services</h2>
+<h2>About Implementing Web Services</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 <p>Web services are distributed application components that conform to
 standards that make them externally available. They solve the problem of
@@ -17,8 +17,9 @@ and run on a variety of software and hardware platforms. The proliferation of
 distributed environments has created a need for an enterprise to be able to publish all
 or part of the functionality of an application to other applications over an open
 network.</p>
-<p>Web services come in two styles, document-style and RPC-style:	
-<ul><li><b>Document-style.</b> The client interacts with the web service using 
+<p>Web services can be implemented in two forms, as a stateless session bean or as a Java class
+ in a web application:	
+<ul><li><b>Stateless session bean.</b> The client interacts with the web service using 
   documents that are meant to be processed as complete entities. These documents 
   typically take the form of XML, which is defined by a commonly agreed upon schema 
   between the service provider and its client. It is also possible that the document 
@@ -33,7 +34,7 @@ probably create a document-style web service:</p>
 are not expected.</li>
 <li>The web service is data-oriented, not process-oriented.
 </ul></li>
-  <li><b>RPC-style.</b> The web service is viewed by the client as a single logical 
+  <li><b>Java class.</b> The web service is viewed by the client as a single logical 
     application or component with encapsulated data, where the WSDL described 
     by the publicly-published interface and the XML in the SOAP messages exchanged 
     is formatted to map to the discrete operations published by that application. 
@@ -57,8 +58,9 @@ client and the web service work in a back-and-forth, conversational style.</li>
 <a href="../create/create_ws_from_code.html">exposing existing code</a>, or <a href="../create/create_ws_from_scratch.html">creating from scratch</a>.
 The IDE generates deployment information in the deployment descriptors, the Java code that describes
 the web service (the implementation class and the Service End Point Interface), and a compilation target in
-the Ant build script. After you finish development,
-you can finetune your web service using settings for building a <a href="../build/compile_wsdl.html">web service from a WSDL file</a>,
+the Ant build script. After you finish developing the web service,
+you can use the Web Services panel in the Project 
+Properties dialog box to specify advanced options for building a <a href="../build/compile_wsdl.html">web service from a WSDL file</a>,
 a <a href="../build/compile_doc.html">document-style web service</a>, or a <a href="../build/compile_rpc.html">RPC-style web service</a>.
   Then, when you
   build the web service, the <a href="../build/about_wscompile.html"><tt>wscompile</tt> tool</a> is called
