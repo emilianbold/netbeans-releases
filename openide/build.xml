@@ -286,7 +286,11 @@ Microsystems, Inc. All Rights Reserved.
     </and>
   </selector>
   <selector id="openide.fs" >
-    <filename name="**/openide/filesystems/*" />
+    <or>
+        <filename name="**/openide/filesystems/*" />
+        <filename name="**/openide/resources/localFS*" />
+        <filename name="**/openide/resources/jarFS*" />
+    </or>
   </selector>
   <selector id="openide.modules" >
     <filename name="**/openide/modules/*" />
