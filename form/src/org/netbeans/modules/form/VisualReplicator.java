@@ -526,7 +526,7 @@ public class VisualReplicator {
             ((JMenuBar)menu).add((JMenu)menuItem);
         }
         else if (menu instanceof JMenu) {
-            if (menuItem != null)
+            if (menuItem instanceof JMenuItem)
                 ((JMenu)menu).add((JMenuItem)menuItem);
             else
                 ((JMenu)menu).addSeparator();
@@ -535,7 +535,7 @@ public class VisualReplicator {
             ((MenuBar)menu).add((Menu)menuItem);
         }
         else if (menu instanceof Menu) {
-            if (menuItem != null)
+            if (menuItem instanceof MenuItem)
                 ((Menu)menu).add((MenuItem)menuItem);
             else
                 ((Menu)menu).addSeparator();
