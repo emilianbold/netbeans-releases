@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -78,17 +78,22 @@ public class PrintCvsModules extends Task {
         Iterator targit = todo.iterator();
         Vector cvslist = new Vector();
         cvslist.add("nbbuild");
+        Vector compiletime = new Vector();
         while (targit.hasNext()) {
             Target nexttargit = (Target)targit.next();
             String tname = nexttargit.getName();
-            log("tname is " + tname, Project.MSG_VERBOSE);
+            log("target name is " + tname, Project.MSG_VERBOSE);
             if (tname.startsWith(targetprefix)) {
                 String modname = tname.substring(targetprefix.length());
-                log("modname is " + modname, Project.MSG_VERBOSE);
-                log("modname.indexOf(\"/\") is " + modname.indexOf("/"), Project.MSG_VERBOSE);
+                log("build module name is " + modname, Project.MSG_VERBOSE);
+                if ( ! buildmodules.contains(modname) ) {
+ 		    log("module \""+modname+"\" seems to be only compile-time dependency", Project.MSG_VERBOSE);
+  		    compiletime.add(modname);
+                }
+                log("modname.indexOf(\"/\") is " + modname.indexOf("/"), Project.MSG_DEBUG);
                 if (modname.indexOf("/") > 0) {
                     modname = modname.substring(0,modname.indexOf("/"));
-                    log("modname is " + modname, Project.MSG_VERBOSE);
+                    log("cvs module name is " + modname, Project.MSG_VERBOSE);
                 }
                 if ( ! cvslist.contains(modname) ) {
                     cvslist.add(modname);
@@ -99,6 +104,8 @@ public class PrintCvsModules extends Task {
             }
         
         }
+        log("compiletime="+compiletime);
+        log("selectedmodules="+modules);
         log("cvsmodules="+cvslist);    
     }        
 
