@@ -26,9 +26,11 @@ import org.w3c.dom.Document;
 public interface DomProvider {
     
     /**
-     * Prepare for parsing. When the task is done, the document is ready.
+     * Prepare for parsing. If the DOM tree is not already
+     * available, parsing will be initiated. To receive notification
+     * of completion, attach a listener.
      */
-    Task prepare();
+    void start();
     
     /**
      * Get the parsed document (blocking as needed).

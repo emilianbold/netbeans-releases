@@ -41,13 +41,15 @@ public abstract class TwoWayEvent extends EventObject {
      */
     public static final class Derived extends TwoWayEvent {
         
-        private final Object oldValue, newValue, underlyingDelta;
+        private final Object oldValue, newValue, derivedDelta, underlyingDelta;
         
-        Derived(TwoWaySupport s, Object oldValue, Object newValue, Object underlyingDelta) {
+        Derived(TwoWaySupport s, Object oldValue, Object newValue, Object derivedDelta, Object underlyingDelta) {
             super(s);
             this.oldValue = oldValue;
             assert newValue != null;
             this.newValue = newValue;
+            assert oldValue != null ^ derivedDelta == null;
+            this.derivedDelta = derivedDelta;
             this.underlyingDelta = underlyingDelta;
         }
 
@@ -68,6 +70,14 @@ public abstract class TwoWayEvent extends EventObject {
         }
         
         /**
+         * Get the change to the derived model.
+         * @return the delta, or null if the old value was null
+         */
+        public Object getDerivedDelta() {
+            return derivedDelta;
+        }
+        
+        /**
          * Get the change to the underlying model that triggered this derivation.
          * Only applicable in case the derived model had been invalidated and
          * was stale before this derivation.
@@ -76,6 +86,10 @@ public abstract class TwoWayEvent extends EventObject {
          */
         public Object getUnderlyingDelta() {
             return underlyingDelta;
+        }
+        
+        public String toString() {
+            return "TwoWayEvent.Derived[" + getTwoWaySupport() + ",oldValue=" + oldValue + ",newValue=" + newValue + ",derivedDelta=" + derivedDelta + ",underlyingDelta=" + underlyingDelta + "]";
         }
         
     }
@@ -109,6 +123,10 @@ public abstract class TwoWayEvent extends EventObject {
          */
         public Object getUnderlyingDelta() {
             return underlyingDelta;
+        }
+        
+        public String toString() {
+            return "TwoWayEvent.Invalidated[" + getTwoWaySupport() + ",oldValue=" + oldValue + ",underlyingDelta=" + underlyingDelta + "]";
         }
         
     }
@@ -155,6 +173,10 @@ public abstract class TwoWayEvent extends EventObject {
             return derivedDelta;
         }
         
+        public String toString() {
+            return "TwoWayEvent.Recreated[" + getTwoWaySupport() + ",oldValue=" + oldValue + ",newValue=" + newValue + ",derivedDelta=" + derivedDelta + "]";
+        }
+        
     }
     
     /**
@@ -199,6 +221,10 @@ public abstract class TwoWayEvent extends EventObject {
             return derivedDelta;
         }
         
+        public String toString() {
+            return "TwoWayEvent.Clobbered[" + getTwoWaySupport() + ",oldValue=" + oldValue + ",newValue=" + newValue + ",derivedDelta=" + derivedDelta + "]";
+        }
+        
     }
 
     /**
@@ -212,6 +238,10 @@ public abstract class TwoWayEvent extends EventObject {
         
         Forgotten(TwoWaySupport s) {
             super(s);
+        }
+        
+        public String toString() {
+            return "TwoWayEvent.Forgotten[" + getTwoWaySupport() + "]";
         }
         
     }
@@ -259,6 +289,10 @@ public abstract class TwoWayEvent extends EventObject {
          */
         public Exception getException() {
             return exception;
+        }
+        
+        public String toString() {
+            return "TwoWayEvent.Broken[" + getTwoWaySupport() + ",oldValue=" + oldValue + ",underlyingDelta=" + underlyingDelta + ",exception=" + exception + "]";
         }
         
     }

@@ -107,15 +107,17 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                     assert !domProviders2Phadhails.containsKey(p);
                     domProviders2Phadhails.put(p, ph);
                     p.addChangeListener(this);
-                    p.prepare();
+                    p.start();
                 }
                 if (p.isValid()) {
+                    // XXX do this block atomically in a lock?
                     try {
                         return Collections.singletonList(p.getDocument().getDocumentElement());
                     } catch (IOException x) {
                         assert false : x;
                     }
                 } else {
+                    // XXX call p.start() again?
                     System.err.println("DOM tree is invalid");
                 }
             }

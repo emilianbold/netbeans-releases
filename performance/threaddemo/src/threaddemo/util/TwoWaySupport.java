@@ -57,11 +57,12 @@ import org.openide.util.Mutex;
  * {@link #doDerive} and {@link #doRecreate}.
  *
  * <li><p>The state ("value") of the derived model. This is never null and is the
- * return value of {@link #doDerive}, {@link #doRecreate}, {@link #getValueBlocking},
+ * return value of {@link #doRecreate}, {@link #getValueBlocking},
  * {@link #getValueNonBlocking}, and {@link #getStaleValueNonBlocking} (except
  * where those methods are documented to return null), as well as the first
- * parameter to {@link #doRecreate} and {@link #doDerive} and the parameter to
- * {@link #createReference}.
+ * parameter to {@link #doRecreate}, {@link #doDerive}, and
+ * {@link TwoWaySupport.DerivationResult#TwoWaySupport.DerivationResult}
+ * and the parameter to {@link #createReference}.
  *
  * <li><p>Deltas in the underlying model. These may in fact be entire new copies
  * of an underlying model, or some diff-like structure, or an {@link java.util.EventObject},
@@ -72,7 +73,8 @@ import org.openide.util.Mutex;
  * <li><p>Deltas in the derived model. Again these may be of the same form as the
  * derived model itself - just replacing the model wholesale - or they may be some
  * kind of diff or event structure. These are again never null and are the argument
- * for {@link #mutate} and the second argument for {@link #doRecreate}.
+ * for {@link #mutate} and the second argument for {@link #doRecreate} and
+ * {@link TwoWaySupport.DerivationResult#TwoWaySupport.DerivationResult}.
  *
  * </ol>
  *
@@ -138,7 +140,7 @@ import org.openide.util.Mutex;
  * otherwise nothing is changed.
  *
  * <p>You may not call any methods of this class from within the dynamic scope of
- * {@link #doDerive} or {@link @doRecreate} or a listener callback.
+ * {@link #doDerive} or {@link #doRecreate} or a listener callback.
  *
  * <p>You can attach a listener to this class. You will get an event when the
  * status of the support changes. All events are fired as soon as possible in the
@@ -228,22 +230,44 @@ public abstract class TwoWaySupport {
      * may change.
      *
      * <p>{@link TwoWayListener#derived} will be triggered after this method
-     * completes. However, in the case of a derived model with internal
-     * state with a complex relationship to the underlying model, it may not be
-     * apparent from a {@link TwoWayEvent.Derived} what the changes to the derived
-     * model were. Therefore, an implementation of this method may wish to fire
-     * suitable changes to listeners on the derived model, rather than extracting
-     * this information from the derived event.
+     * completes. An implementation is responsible for notifying relevant listeners
+     * of changes to the derived model, but should not do so from within the scope
+     * of this method, as the new value of the derived model will not yet be available;
+     * instead listen for {@link TwoWayEvent.Derived}. Both the derived delta and
+     * final value are made available to that event for this reason.
      *
      * @param oldValue the old value of the derived model, or null if it had
      *                 never been calculated before
      * @param underlyingDelta a change in the underlying model, or null if no
      *                        particular change was signalled
      * @return the new value of the derived model (might be the same object as
-     *         the old value)
+     *         the old value) plus the derived delta
      * @throws Exception (checked only!) if derivation of the model failed
      */
-    protected abstract Object doDerive(Object oldValue, Object underlyingDelta) throws Exception;
+    protected abstract DerivationResult doDerive(Object oldValue, Object underlyingDelta) throws Exception;
+    
+    /**
+     * Result of a derivation. Includes both the final resulting value, and the
+     * derived delta. The derived delta is not used by {@link TwoWaySupport} except
+     * to pass to {@link TwoWayEvent.Derived}, which may be useful for subclasses
+     * firing changes.
+     */
+    protected final static class DerivationResult {
+        final Object newValue;
+        final Object derivedDelta;
+        /**
+         * Create a derivation result wrapper object.
+         * @param newValue the new value of the derived model
+         * @param derivedDelta some representation of the difference from the old
+         *                     model; must be null if the old derived value was null,
+         *                     and only then
+         */
+        public DerivationResult(Object newValue, Object derivedDelta) {
+            if (newValue == null) throw new NullPointerException();
+            this.newValue = newValue;
+            this.derivedDelta = derivedDelta;
+        }
+    }
     
     /**
      * Compute the effect of two sequential changes to the underlying model.
@@ -265,9 +289,11 @@ public abstract class TwoWaySupport {
      * <p>This method is called with a write lock held on the mutex.
      *
      * <p>It is expected that any changes to the underlying model will be notified
-     * to the relevant listeners within the dynamic scope of this method. Normally
-     * an implementation will also notify changes to the derived model, unless that
-     * has been done by other code already.
+     * to the relevant listeners within the dynamic scope of this method. An implementation
+     * is responsible for notifying relevant listeners of changes to the derived
+     * model, but should not do so from within the scope of this method, as the
+     * new value of the derived model will not yet be available; instead listen for
+     * {@link TwoWayEvent.Recreated}.
      *
      * @param oldValue the old value of the derived model, or null if it was
      *                 never derived
@@ -278,19 +304,18 @@ public abstract class TwoWaySupport {
      */
     protected abstract Object doRecreate(Object oldValue, Object derivedDelta) throws Exception;
     
-    private boolean stateConsistent() {
+    private void assertStateConsistent() {
         assert Thread.holdsLock(LOCK);
-        if (fresh && model == null) return false;
-        if (fresh && problem != null) return false;
-        if (fresh && active) return false;
+        assert !fresh || model != null;
+        assert !fresh || problem == null;
+        assert !fresh || !active;
         if (active) {
-            if (!tasks.containsKey(this)) return false;
+            assert tasks.containsKey(this);
             // XXX check that toDerive and tasks are consistent
         } else {
-            if (tasks.containsKey(this)) return false;
+            assert !tasks.containsKey(this);
         }
         // XXX what else?
-        return true;
     }
     
     /**
@@ -306,7 +331,7 @@ public abstract class TwoWaySupport {
         assert mutex.canRead();
         Object old;
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             assert !mutating;
             while (deriving) {
                 // Another reader is getting the value at the moment, wait for it.
@@ -330,13 +355,22 @@ public abstract class TwoWaySupport {
             deriving = true;
             fresh = false;
         }
-        Object result = null;
+        DerivationResult result = null;
         Exception resultingProblem = null;
         try {
             result = doDerive(old, null);
-            assert result != null;
-            fireChange(new TwoWayEvent.Derived(this, old, result, underlyingDelta));
-            return result;
+            if (result == null) {
+                throw new NullPointerException();
+            }
+            assert result.newValue != null;
+            if (old == null && result.derivedDelta != null) {
+                throw new IllegalStateException("Cannot have a non-null derivedDelta for a null oldValue");
+            }
+            if (old != null && result.derivedDelta == null) {
+                throw new IllegalStateException("Cannot have a null derivedDelta for a non-null oldValue");
+            }
+            fireChange(new TwoWayEvent.Derived(this, old, result.newValue, result.derivedDelta, underlyingDelta));
+            return result.newValue;
         } catch (RuntimeException e) {
             // We don't treat these as model-visible exceptions.
             throw e;
@@ -351,12 +385,12 @@ public abstract class TwoWaySupport {
                 if (active) {
                     // No longer need to run this.
                     active = false;
-                    DeriveTask t = (DeriveTask)tasks.get(this);
+                    DeriveTask t = (DeriveTask)tasks.remove(this);
                     assert t != null;
                     toDerive.remove(t);
                 }
                 if (result != null) {
-                    setModel(result);
+                    setModel(result.newValue);
                     fresh = true;
                 } else if (resultingProblem != null) {
                     problem = resultingProblem;
@@ -385,7 +419,7 @@ public abstract class TwoWaySupport {
     public final Object getValueNonBlocking() {
         assert mutex.canRead();
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             assert !mutating;
             return fresh ? model.get() : null;
         }
@@ -400,7 +434,7 @@ public abstract class TwoWaySupport {
     public final Object getStaleValueNonBlocking() {
         assert mutex.canRead();
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             assert !mutating;
             return (model != null) ? model.get() : null;
         }
@@ -424,7 +458,7 @@ public abstract class TwoWaySupport {
         assert mutex.canWrite();
         Object oldValue;
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             assert !mutating;
             assert !deriving;
             oldValue = (model != null) ? model.get() : null;
@@ -469,7 +503,7 @@ public abstract class TwoWaySupport {
         boolean oldFresh;
         Object oldValue;
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             assert !mutating;
             if (this.underlyingDelta != null) {
                 // XXX don't call this with LOCK held
@@ -499,7 +533,7 @@ public abstract class TwoWaySupport {
     public final void initiate() {
         boolean isInitiating = false;
         synchronized (LOCK) {
-            assert stateConsistent();
+            assertStateConsistent();
             if (!active && !fresh) {
                 DeriveTask t = new DeriveTask(this);
                 toDerive.add(t);

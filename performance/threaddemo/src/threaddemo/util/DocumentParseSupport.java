@@ -30,6 +30,10 @@ import org.openide.util.Mutex;
 /**
  * Supports two-way parsing of an arbitrary model from a text document and
  * writing to the text document from the model.
+ * <p>The underlying model is a text document. The deltas to the underlying model
+ * in this implementation are document text changes or reload events, though that
+ * fact is not visible to subclasses. The derived model must be defined by the
+ * subclass.
  * @author Jesse Glick
  */
 public abstract class DocumentParseSupport extends TwoWaySupport {
@@ -38,7 +42,12 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     
     private StyledDocument document = null;
     private final Listener listener;
-    
+
+    /**
+     * Create a support based on an editor cookie and mutex.
+     * @param edit the container for the document containing some parsable data
+     * @param mutex a lock
+     */
     protected DocumentParseSupport(EditorCookie.Observable edit, Mutex mutex) {
         super(mutex);
         this.edit = edit;
@@ -46,6 +55,11 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         edit.addPropertyChangeListener(listener);
     }
     
+    /**
+     * In this implementation, deltas are either {@link PropertyChangeEvent}s
+     * of {@link org.openide.cookies.EditorCookie.Observable#PROP_DOCUMENT} indicating that the whole
+     * document changed (was reloaded, for example), or lists of {@link DocumentEvent}s.
+     */
     protected final Object composeUnderlyingDeltas(Object underlyingDelta1, Object underlyingDelta2) {
         assert underlyingDelta1 instanceof PropertyChangeEvent || underlyingDelta1 instanceof List;
         assert underlyingDelta2 instanceof PropertyChangeEvent || underlyingDelta2 instanceof List;
@@ -62,10 +76,18 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         }
     }
     
+    /**
+     * In this implementation, prepares the document so that it will soon be loaded,
+     * if it is not already.
+     */
     protected final void initiating() {
         edit.prepareDocument();
     }
-    
+
+    /**
+     * Make sure the correct document is open, and that the correct listeners
+     * are attached to it and not its predecessor.
+     */
     private void refreshDocument() throws IOException {
         StyledDocument oldDocument = document;
         // XXX is openDocument safe to call from any thread? probably yes, for now...
@@ -79,7 +101,11 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         }
     }
     
-    protected final Object doDerive(final Object oldValue, Object underlyingDelta) throws Exception {
+    /**
+     * Parse the document.
+     * Calls {@link #doDerive(StyledDocument, List, Object)}.
+     */
+    protected final DerivationResult doDerive(final Object oldValue, Object underlyingDelta) throws Exception {
         if (document == null) {
             refreshDocument();
         }
@@ -89,7 +115,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
         } else {
             documentEvents = null;
         }
-        final Object[] val = new Object[1];
+        final DerivationResult[] val = new DerivationResult[1];
         final Exception[] exc = new Exception[1];
         document.render(new Runnable() {
             public void run() {
@@ -113,11 +139,15 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * @param documentEvents a list of {@link DocumentEvent} that happened since
      *                       the last parse, or null if unknown (do a full reparse)
      * @param oldValue the last derived model value, or null
-     * @return the new derived model value
+     * @return the new derived model value plus the change made to it
      * @throws Exception (checked) in case of parsing problems
      */
-    protected abstract Object doDerive(StyledDocument document, List documentEvents, Object oldValue) throws Exception;
+    protected abstract DerivationResult doDerive(StyledDocument document, List documentEvents, Object oldValue) throws Exception;
     
+    /**
+     * Regenerates the document.
+     * Calls {@link #doRecreate(StyledDocument, Object, Object)}.
+     */
     protected final Object doRecreate(final Object oldValue, final Object derivedDelta) throws Exception {
         assert document != null || permitsClobbering();
         if (document == null) {
@@ -147,7 +177,7 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
     
     /**
      * Decide whether the given change to the derived model must occur in "user"
-     * mode, i.e. be prevented from modifying guard blocks.
+     * mode, that is, be prevented from modifying guard blocks.
      * The default implementation always returns false.
      * @return true to run using {@link NbDocument#runAtomicAsUser}, false for
      *              {@link NbDocument#runAtomic}
@@ -163,10 +193,13 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
      * @param oldValue the old derived model, if any
      * @param derivedDelta the change to the derived model
      * @return the new derived model
-     * @see NbDocument#WriteLockable
+     * @see org.openide.text.NbDocument.WriteLockable
      */
     protected abstract Object doRecreate(StyledDocument document, Object oldValue, Object derivedDelta) throws Exception;
     
+    /**
+     * Listens to changes in identity or content of the text document.
+     */
     private final class Listener implements DocumentListener, PropertyChangeListener {
         
         public void insertUpdate(DocumentEvent e) {
@@ -185,14 +218,18 @@ public abstract class DocumentParseSupport extends TwoWaySupport {
             // attr change - ignore
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(EditorCookie.Observable.PROP_DOCUMENT)) {
                 try {
                     refreshDocument();
                 } catch (IOException e) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                 }
-                invalidate(evt);
+                getMutex().readAccess(new Runnable() {
+                    public void run() {
+                        invalidate(evt);
+                    }
+                });
             }
         }
         
