@@ -12,104 +12,63 @@ Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
-<project name="libs/commons-logging" default="netbeans" basedir=".">
-    <import file="../../nbbuild/default.xml"/>
-    
-    <property name="extnl" location="../../nbbuild/external"/>
-    <property name="apache-license.file" location="${extnl}/apache-license-2.0.txt"/>
+<project name="libs/commons_logging" default="netbeans" basedir=".">
 
-    <property name="libs_root" location=".."/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
+    
+    <target name="jar-no-module-deps" unless="module.dependencies">
+        <property file="../public.properties"/>
+        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+            <manifest>
+                <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
+                <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
+                <attribute name="OpenIDE-Module-Specification-Version" value="${libs.commons_logging.specification.version}"/>
+                <attribute name="OpenIDE-Module-Implementation-Version" value="${libs.commons_logging.implementation.version}"/>
+                <attribute name="OpenIDE-Module-Build-Version" value="${buildnumber}"/>
+            </manifest>
+            <fileset dir="${build.classes.dir}"/>
+        </jar>
+    </target>
 
-    <target name="unscramble">
-        <taskdef name="unscramble" classname="org.netbeans.nbbuild.Unscramble" classpath="${extnl}/scrambler.jar"/>
-        <unscramble logfile="${extnl}/unscrambling.log">
-            <!-- LFI #2261: -->
-            <binary clear="../external/commons-logging-api.jar" scrambled="../external/commons-logging-api.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-        </unscramble>
-    </target>
-    
-    <target name="scramble">
-        <taskdef name="scramble" classname="org.netbeans.nbbuild.Scramble" classpath="${extnl}/scrambler.jar"/>
-        <scramble>
-            <binary clear="../external/commons-logging.jar.master" scrambled="../external/commons-logging.jar.scrambled" license="${extnl}/apache-license-2.0.txt"/>
-        </scramble>
-    </target>
-    
-    <target name="init" depends="default.init, unscramble">
-        <property file="${libs_root}/public.properties"/>
-        <filter token="COMMONS-LOGGING_SPEC_VERS_SUBST" value="${libs.commons-logging.specification.version}"/>
-        <filter token="COMMONS-LOGGING_IMPL_VERS_SUBST" value="${libs.commons-logging.implementation.version}"/>
-        <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-        <patternset id="libs/commons-logging-api.files">
-          <include name="${nb.modules/autoload.dir}/nb-commons-logging-wrapper.jar"/>
-          <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
+    <target name="files-init" depends="basic-init">
+        <patternset id="module.files">
+            <include name="${module.jar}"/>
+            <include name="${javahelp.jar}" if="has.javahelp"/>
+            <include name="${nb.system.dir}/Modules/${code.name.base.dashes}.xml"/>
+            <include name="${nb.modules.dir}/ext/commons-logging-1.0.4.jar"/>
         </patternset>
     </target>
 
-    <target name="jars" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}"/>
+    <target name="netbeans-extra" depends="release"/>
 
-        <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-        <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/nb-commons-logging-wrapper.jar"
-             manifest="manifest-subst.mf"
-             compress="false">
-            <fileset dir="src" excludesfile="${nb_all}/nbbuild/standard-jar-excludes.txt"/>
-        </jar>    
-    </target>
-
-    <target name="module-xml-autoload">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules"/>
-        <createmodulexml xmldir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules">
-            <autoload dir="${netbeans.dest.dir}/${cluster.dir}">
-                <include name="${nb.modules/autoload.dir}/nb-commons-logging-wrapper.jar"/>
-            </autoload>
-        </createmodulexml>
-    </target>
-    
     <target name="release" depends="init">
-        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext"/>
-        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules/autoload.dir}/ext">
+        <ant dir="../external" target="unscramble"/>
+        <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext"/>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}/ext">
             <fileset dir="../external">
-                <include name="commons-logging-api.jar"/>
+                <include name="commons-logging-1.0.4.jar"/>
             </fileset>
         </copy>
     </target>
 
-    <target name="netbeans" depends="jars, release, module-xml-autoload">
-       <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.modules/autoload.dir}/nb-commons-logging-wrapper.jar">
-          <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-             <patternset refID="libs/commons-logging-api.files"/>
-          </fileset>
-       </genlist>
-    </target>
-
-    <target name="nbm" depends="netbeans" description="Create a module archive for distribution">
-        <makenbm file="commons-logging-api.nbm"
+    <target name="nbm" depends="init,netbeans" description="Build NBM archive.">
+        <mkdir dir="build"/>
+        <makenbm file="build/${nbm}"
                  productdir="${netbeans.dest.dir}/${cluster.dir}"
-                 module="${nb.modules/autoload.dir}/nb-commons-logging-wrapper.jar"
-                 homepage="http://${homepage.base}/#commons-logging"
-                 distribution="http://${dist.base}/commons-logging-api.nbm">
+                 module="${module.jar}"
+                 homepage="${nbm.homepage}"
+                 distribution="http://${dist.base}/${nbm}"
+                 needsrestart="${nbm.needs.restart}"
+                 releasedate="${nbm.release.date}"
+		 moduleauthor="${nbm.module.author}">
             <license name="commons-logging-license.txt">
                 <text>For the integration module:</text>
                 <file location="${license.file}"/>
                 <text>For the Logging library:</text>
-                <file location="${apache-license.file}"/>
+                <file location="../../nbbuild/external/apache-license-2.0.txt"/>
             </license>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
         </makenbm>
     </target>
 
-    <target name="clean" depends="init" description="Clean build products">
-        <delete file="manifest-subst.mf"/>
-        <delete file="commons-logging-api.nbm"/>
-        <!-- <delete file="../external/commons-logging-api.jar"/> -->
-        <delete file="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}/Modules/org-netbeans-libs-commons_logging.xml"/>
-        <delete>
-            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-              <patternset refID="libs/commons-logging-api.files"/>
-            </fileset>
-        </delete>
-    </target>
-
-    <target name="all" depends="clean, nbm"/>
 </project>

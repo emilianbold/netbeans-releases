@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -64,7 +64,7 @@ public class JspParserImpl implements JspParserAPI {
             files[0] = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", null, false);
             files[1] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-runtime-5.0.28.jar", null, false);
             files[2] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jasper-compiler-5.0.28.jar", null, false);
-            files[3] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false);
+            files[3] = InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false);
             files[4] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false);
             files[5] = InstalledFileLocator.getDefault().locate("modules/autoload/ext/jsp-parser-ext.jar", null, false);
 

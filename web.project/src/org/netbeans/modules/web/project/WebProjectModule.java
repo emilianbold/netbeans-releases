@@ -130,7 +130,7 @@ public class WebProjectModule extends ModuleInstall {
                             sb.append(":"); // NOI18N
                             sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-el.jar", null, false));
                             sb.append(":"); // NOI18N
-                            sb.append(InstalledFileLocator.getDefault().locate("modules/autoload/ext/commons-logging-api.jar", null, false));
+                            sb.append(InstalledFileLocator.getDefault().locate("modules/ext/commons-logging-1.0.4.jar", null, false));
                             String jspc_cp_old = ep.getProperty(JSPC_CLASSPATH);
                             String jspc_cp = sb.toString();
                             if (jspc_cp_old == null || !jspc_cp_old.equals (jspc_cp)) {

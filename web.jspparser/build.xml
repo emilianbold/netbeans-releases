@@ -24,7 +24,6 @@ Microsystems, Inc. All Rights Reserved.
             <include name="${nb.modules/autoload.dir}/ext/jsp-parser-ext.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jasper-compiler-5.0.28.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/jasper-runtime-5.0.28.jar"/>
-            <include name="${nb.modules/autoload.dir}/ext/commons-logging-api.jar"/>
             <include name="${nb.modules/autoload.dir}/ext/commons-el.jar"/>
         </patternset>
     </target>
@@ -35,7 +34,6 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="../external">
             <include name="jasper-compiler-5.0.28.jar"/>
             <include name="jasper-runtime-5.0.28.jar"/>
-            <include name="commons-logging-api.jar"/>
             <include name="commons-el.jar"/>
           </fileset>
         </copy>

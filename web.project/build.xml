@@ -33,7 +33,7 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="../external/jsp-api-2.0.jar"/>
                 <pathelement location="../external/jasper-compiler-5.0.28.jar"/>
                 <pathelement location="../external/jasper-runtime-5.0.28.jar"/>
-                <pathelement location="../external/commons-logging-api.jar"/>
+                <pathelement location="../../libs/external/commons-logging-1.0.4.jar"/>
             </classpath>
         </javac>
         <copy todir="build/antclasses">
