@@ -160,12 +160,6 @@ Microsystems, Inc. All Rights Reserved.
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.execution.deprecated</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>1.0</run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
