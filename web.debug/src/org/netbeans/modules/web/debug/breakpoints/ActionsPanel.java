@@ -1,7 +1,7 @@
 /*
  * LineBreakpointPanel.java
  *
- * Created on 24. bøezen 2004, 16:18
+ * Created on 24. bezen 2004, 16:18
  */
 
 package org.netbeans.modules.web.debug.breakpoints;

@@ -26,7 +26,7 @@ import org.openide.loaders.DataFolder;
 /**
  * <P>
  * <P>
- * <FONT COLOR=ÿ#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
+ * <FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
  * <B>
  * <BR> XML Module API Test: Encoding Test
  * </B>
