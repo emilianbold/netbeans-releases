@@ -74,6 +74,9 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-openide-actions-CustomizeAction.instance"/>
             <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
+            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
+            <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            <file name="org-netbeans-core-actions-ExplorerRootsViewAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <file name="org-netbeans-core-actions-FocusPreviousWorkspaceAction.instance"/>            
             <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
@@ -173,7 +176,17 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
             <attr name="org-netbeans-core-actions-GlobalPropertiesAction.instance/org-netbeans-core-actions-ExplorerViewAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-ExplorerViewAction.instance"/>
-            <attr name="org-netbeans-core-actions-ExplorerViewAction.instance/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />
+            <attr name="org-netbeans-core-actions-ExplorerViewAction.instance/Separator3.instance" boolvalue="true" />
+            <file name="Separator3.instance">
+		<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+	    </file>
+            <attr name="Separator3.instance/org-netbeans-core-actions-ViewFilesystemsTabAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance"/>
+            <attr name="org-netbeans-core-actions-ViewFilesystemsTabAction.instance/org-netbeans-core-actions-ViewRuntimeTabAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ViewRuntimeTabAction.instance"/>
+            <attr name="org-netbeans-core-actions-ViewRuntimeTabAction.instance/org-netbeans-core-actions-ViewFilesystemsTabAction.instance" boolvalue="true" />
+            <file name="org-netbeans-core-actions-ExplorerRootsViewAction.instance"/>
+            <attr name="org-netbeans-core-actions-ExplorerRootsViewAction.instance/org-netbeans-core-actions-EditorViewAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-EditorViewAction.instance"/>
             <attr name="org-netbeans-core-actions-EditorViewAction.instance/org-netbeans-core-actions-OutputWindowAction.instance" boolvalue="true" />
             <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>

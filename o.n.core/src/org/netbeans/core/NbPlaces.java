@@ -115,25 +115,6 @@ public final class NbPlaces extends Object {
     /** Workspace node for current project. This node can change when project changes.
     */
     public Node projectDesktop () {
-        // >>>
-        // XXX temporary see parts about root nodes in issues #19443, #20517, #22758
-        FileObject fo = Repository.getDefault().getDefaultFileSystem()
-                .findResource("Nodes/ExplorerRoots/projectNode.instance"); // NOI18N
-        
-        if(fo != null) {
-            try {
-                DataObject dobj = DataObject.find(fo);
-                InstanceCookie ic = (InstanceCookie)dobj
-                        .getCookie(InstanceCookie.class);
-                return (Node)ic.instanceCreate();
-            } catch(IOException ioe) {
-                ErrorManager.getDefault().notify(ioe);
-            } catch(ClassNotFoundException cnfe) {
-                ErrorManager.getDefault().notify(cnfe);
-            }
-        }
-        // <<<
-            
         return workplace().getNodeDelegate();
     }
 
