@@ -109,7 +109,7 @@ public class AnnotationTypesFolder extends FolderInstance{
 
     /** Called for each XML file found in FOLDER directory */
     protected Object createInstance(InstanceCookie[] cookies) throws java.io.IOException, ClassNotFoundException {
-        annotationTypes = new HashMap(cookies.length * 4 / 3);
+        annotationTypes = new HashMap(cookies.length * 4 / 3 + 1);
         
         for (int i = 0; i < cookies.length; i++) {
             Object o = cookies[i].instanceCreate();

@@ -91,7 +91,7 @@ final class FolderOrder extends Object implements Comparator {
      */
     public synchronized void setOrder (DataObject[] arr) throws IOException {
         if (arr != null) {
-            order = new HashMap (arr.length * 3 / 4);
+            order = new HashMap (arr.length * 4 / 3 + 1);
 
             // each object only once
             Enumeration en = new RemoveDuplicatesEnumeration (new ArrayEnumeration (arr));
