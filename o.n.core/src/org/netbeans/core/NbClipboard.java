@@ -166,6 +166,10 @@ public final class NbClipboard extends ExClipboard
             dataOwner = null;
         }
         if (contents != null) {
+            if (log.isLoggable (log.INFORMATIONAL)) {
+                log.log (log.INFORMATIONAL, "systemClipboard updated:"); // NOI18N
+                logFlavors (contents.getTransferDataFlavors ());
+            }
             systemClipboard.setContents(contents, owner);
             return;
         }
@@ -173,6 +177,10 @@ public final class NbClipboard extends ExClipboard
         try {
             Transferable transferable = systemClipboard.getContents(this);
             super.setContents(transferable, null);
+            if (log.isLoggable (log.INFORMATIONAL)) {
+                log.log (log.INFORMATIONAL, "internal clipboard updated:"); // NOI18N
+                logFlavors (transferable.getTransferDataFlavors ());
+            }
             fireClipboardChange();
         }
         catch (ThreadDeath ex) {
@@ -188,6 +196,9 @@ public final class NbClipboard extends ExClipboard
             return;
 
         if (ev.getID() == WindowEvent.WINDOW_ACTIVATED) {
+            if (log.isLoggable (log.INFORMATIONAL)) {
+                log.log (log.INFORMATIONAL, "window activated scheduling update"); // NOI18N
+            }
             syncTask.schedule(0);
         }
     }
