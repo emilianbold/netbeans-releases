@@ -1234,6 +1234,7 @@ public class BaseOptions extends OptionSupport {
                         // We are going to merge global items and mime popup items ...
                         // Firstly merge popup items
                         Set mergedItems = new HashSet(OptionUtilities.getGlobalMenuItems(folderName));
+
                         mergedItems.addAll(mpf.getProperties());
                         
                         // Then merge attribs

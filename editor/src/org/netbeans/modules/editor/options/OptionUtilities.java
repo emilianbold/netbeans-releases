@@ -443,7 +443,6 @@ public class OptionUtilities {
     /** Creates String representation of popup from DO representation */
     public static List getPopupStrings(List popup){
         List retList = new ArrayList();
-        
         for (int i=0; i<popup.size(); i++){
             if (!(popup.get(i) instanceof DataObject)) continue;
             
@@ -451,7 +450,8 @@ public class OptionUtilities {
             InstanceCookie ic = (InstanceCookie)dob.getCookie(InstanceCookie.class);
             if (ic!=null){
                 try{
-                    if (SystemAction.class.isAssignableFrom(ic.instanceClass() )){
+                    if (SystemAction.class.isAssignableFrom(ic.instanceClass()) ||
+                        javax.swing.Action.class.isAssignableFrom(ic.instanceClass())){
                         retList.add(ic.instanceName());
                     }
                     if(javax.swing.JSeparator.class.isAssignableFrom(ic.instanceClass())){

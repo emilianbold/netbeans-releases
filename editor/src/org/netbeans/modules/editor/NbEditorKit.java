@@ -231,6 +231,7 @@ public class NbEditorKit extends ExtKit {
         protected void addAction(JTextComponent target, JPopupMenu popupMenu,
         String actionName) {
             if (actionName != null) { // try if it's an action class name
+
                 // Check for the TopComponent actions
                 if (TopComponent.class.getName().equals(actionName)) {
                     // Get the cloneable-editor instance
@@ -280,6 +281,8 @@ public class NbEditorKit extends ExtKit {
                     } catch (Throwable t) {
                     }
 
+
+                    
                     
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
                         Action a = SystemAction.get(saClass);
@@ -307,6 +310,50 @@ public class NbEditorKit extends ExtKit {
                         }
 
                         return;
+                    } else if(saClass != null && javax.swing.Action.class.isAssignableFrom(saClass)){
+                        Action a = null;
+                        JMenuItem item = null;
+                        
+                        if (actionName.endsWith("FileCommandAction")) return; //filter FileCommandAction
+                        
+                        try{
+                            a = (Action) saClass.newInstance();
+                        }catch(InstantiationException ie){
+                            ie.printStackTrace();
+                        }catch(IllegalAccessException iae){
+                            iae.printStackTrace();
+                        }
+                        
+                        if (a == null) return;
+
+                        
+                        String itemText = (String) a.getValue(Action.NAME);
+                        if (itemText == null){
+                            itemText = getItemText(target, actionName, a);
+                        }
+                        
+                        if (itemText != null) {
+                            item = new JMenuItem(itemText);
+                            item.addActionListener(a);
+                            // Try to get the accelerator
+                            Keymap km = target.getKeymap();
+                            if (km != null) {
+                                KeyStroke[] keys = km.getKeyStrokesForAction(a);
+                                if (keys != null && keys.length > 0) {
+                                    item.setAccelerator(keys[0]);
+                                }
+                            }
+                            item.setEnabled(a.isEnabled());
+                            Object helpID = a.getValue ("helpID");
+                            if (helpID != null && (helpID instanceof String))
+                                item.putClientProperty ("HelpID", helpID);
+                        }
+                        if (item != null) {
+                            popupMenu.add(item);
+                        }
+
+                        return;
+                        
                     }
                 }
 
