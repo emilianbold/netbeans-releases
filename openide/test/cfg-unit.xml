@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="openide unit test config">
 
-    <testbag testattribs="stable or temp" executor="code" name="testbag_1" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
 
         <testset dir="unit/src">
             <patternset>
