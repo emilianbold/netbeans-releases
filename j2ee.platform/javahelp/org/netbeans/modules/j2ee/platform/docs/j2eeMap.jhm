@@ -167,7 +167,7 @@
 	<mapID target="dd_multiview_pages_welcomeFilesNode" url="web/csh/graphic_editor/dd_multiview_pages_welcomeFilesNode.html" />
 	<mapID target="dd_multiview_pages_errorPagesNode" url="web/csh/graphic_editor/dd_multiview_pages_errorPagesNode.html" />
 	<mapID target="dd_multiview_pages_jspPropertyGroupsNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" />
-	<mapID target="dd_multiview_pages_jspPropertyGroupNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupNode.html" />
+	<mapID target="dd_multiview_pages_jspPropertyGroupNode" url="web/csh/graphic_editor/dd_multiview_pages_jspPropertyGroupsNode.html" />
 	
 	<!-- The Library Manager dialog box: -->
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="web/create/tag/taglib/taglib_manage.html" />
