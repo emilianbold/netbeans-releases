@@ -209,15 +209,23 @@ public class  PatternGroupNode extends AbstractNode {
     case PATTERN_KIND_PROPERTY: 
       PropertyPatternPanel propertyPanel;
       
+      /*
       dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
         PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
         true,                                                 // Modal
-        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
+        new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION },  // Option list
         NotifyDescriptor.OK_OPTION,                           // Default
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
         new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty"), // Help
         propertyPanel );
-       
+      */
+      
+      dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
+        PatternNode.bundle.getString( "CTL_TITLE_NewProperty"),            // Title
+        true,                                                 // Modal
+        propertyPanel );
+      dd.setClosingOptions( new Object[]{} );
+      
       dialog = TopManager.getDefault().createDialog( dd );
       propertyPanel.setDialog( dialog ); 
       propertyPanel.setForInterface( forInterface );
@@ -247,7 +255,8 @@ public class  PatternGroupNode extends AbstractNode {
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
         new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help
         idxPropertyPanel );
-       
+      dd.setClosingOptions( new Object[]{} );
+      
       dialog = TopManager.getDefault().createDialog( dd );
       idxPropertyPanel.setDialog( dialog ); 
       idxPropertyPanel.setForInterface( forInterface );
@@ -280,7 +289,8 @@ public class  PatternGroupNode extends AbstractNode {
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
         new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help
         uEventSetPanel );
-       
+      dd.setClosingOptions( new Object[]{} );
+      
       dialog = TopManager.getDefault().createDialog( dd );
       uEventSetPanel.setDialog( dialog ); 
       uEventSetPanel.setForInterface( forInterface );
@@ -305,7 +315,8 @@ public class  PatternGroupNode extends AbstractNode {
         DialogDescriptor.BOTTOM_ALIGN,                        // Align
         new HelpCtx (PatternGroupNode.class.getName () + ".dialogMultiCastES"), // Help
         eventSetPanel );
-       
+      dd.setClosingOptions( new Object[]{} );
+      
       dialog = TopManager.getDefault().createDialog( dd );
       eventSetPanel.setDialog( dialog ); 
       eventSetPanel.setForInterface( forInterface );
@@ -371,6 +382,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  9    Gandalf   1.8         11/10/99 Petr Hrebejk    Canged to work with 
+ *       DialogDescriptor.setClosingOptions()
  *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  7    Gandalf   1.6         9/15/99  Petr Hrebejk    Duplicity recognization 
