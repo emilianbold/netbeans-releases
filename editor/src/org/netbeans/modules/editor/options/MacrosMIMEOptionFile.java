@@ -46,6 +46,8 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
     /** Attributes */
     public static final String ATTR_NAME = "name"; //NOI18N
     public static final String ATTR_REMOVE = "remove"; //NOI18N
+    public static final String ATTR_XML_SPACE = "xml:space"; //NOI18N    
+    public static final String VALUE_XML_SPACE = "preserve"; //NOI18N
     
     /** File name of this MIMEOptionFile */
     static final String FILENAME = "macros"; //NOI18N
@@ -162,6 +164,7 @@ public class MacrosMIMEOptionFile extends MIMEOptionFile{
                 if (action.length()==0){
                     macroElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
                 }else{
+                    macroElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);
                     macroElem.appendChild(doc.createTextNode(action));
                 }
                 rootElem.appendChild(macroElem);

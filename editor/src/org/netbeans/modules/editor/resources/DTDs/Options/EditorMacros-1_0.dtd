@@ -27,5 +27,6 @@ System ID: http://www.netbeans.org/dtds/EditorMacros-1_0.dtd
 <!ATTLIST macro
     name CDATA #REQUIRED
     remove (true|false) "false"
+    xml:space (default|preserve) 'preserve'
 >
 

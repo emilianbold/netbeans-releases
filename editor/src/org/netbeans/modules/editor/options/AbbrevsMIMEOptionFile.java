@@ -46,6 +46,8 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
     public static final String ATTR_KEY = "key"; //NOI18N
     public static final String ATTR_ACTION = "action"; //NOI18N
     public static final String ATTR_REMOVE = "remove"; //NOI18N
+    public static final String ATTR_XML_SPACE = "xml:space"; //NOI18N    
+    public static final String VALUE_XML_SPACE = "preserve"; //NOI18N
     
     /** File name of this MIMEOptionFile */
     static final String FILENAME = "abbreviations"; //NOI18N
@@ -160,6 +162,7 @@ public class AbbrevsMIMEOptionFile extends MIMEOptionFile{
                 if (action.length()==0){
                     abbrevElem.setAttribute(ATTR_REMOVE, Boolean.TRUE.toString());
                 }else{
+                    abbrevElem.setAttribute(ATTR_XML_SPACE, VALUE_XML_SPACE);                    
                     abbrevElem.appendChild(doc.createTextNode(action));
                 }
                 

@@ -29,4 +29,5 @@ System ID: http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd
     key CDATA #REQUIRED
     remove (true|false) "false" 
     action CDATA #IMPLIED
+    xml:space (default|preserve) 'preserve'
 >
