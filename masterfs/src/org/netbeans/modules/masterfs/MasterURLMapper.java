@@ -18,6 +18,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
+import org.openide.ErrorManager;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -44,7 +45,8 @@ public final class MasterURLMapper extends URLMapper {
         } catch (IllegalArgumentException e) {
             StringBuffer sb = new StringBuffer();
             sb.append(e.getLocalizedMessage()).append(" [").append(url.toExternalForm()).append("]");//NOI18N
-            throw new IllegalArgumentException(sb.toString());
+            ErrorManager.getDefault().notify(new IllegalArgumentException(sb.toString()));
+            return null;
         }
 
         retVal = hfs.findResource(filePath);
