@@ -23,6 +23,7 @@ import java.beans.Introspector;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.jmi.reflect.InvalidObjectException;
+import org.netbeans.api.mdr.MDRepository;
 
 import org.netbeans.modules.javacore.internalapi.ParsingListener;
 import org.netbeans.modules.javacore.internalapi.JavaMetamodel;
@@ -36,6 +37,7 @@ import org.openide.src.Type;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.NewType;
 import org.openide.util.HelpCtx;
@@ -368,10 +370,9 @@ public class  PatternGroupNode extends AbstractNode {
         return false;
     }
     
-    public void updateChildren(Resource resource) {
-        boolean b = hasJDK15Features(resource);
-        if (b != isJDK15) {
-            isJDK15 = b;
+    public void updateChildren(boolean hasJDK15Features) {
+        if (hasJDK15Features != isJDK15) {
+            isJDK15 = hasJDK15Features;
             CookieSet cs = getCookieSet();
             PatternChildren ch = (PatternChildren)getChildren();
             cs.remove(ch.getPatternAnalyser());
@@ -422,12 +423,19 @@ public class  PatternGroupNode extends AbstractNode {
         }
         
         public void resourceParsed(Resource resource) {
-            PatternGroupNode node = (PatternGroupNode) get();
+            final PatternGroupNode node = (PatternGroupNode) get();
             if (node == null) {
                 run();
                 return;
             }
-            node.updateChildren(resource);
+            final boolean b = PatternGroupNode.hasJDK15Features(resource);
+            if (node.isJDK15 != b) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        node.updateChildren(b);
+                    }
+                });
+            }
         }
         
         public void run() {
@@ -466,14 +474,20 @@ public class  PatternGroupNode extends AbstractNode {
             }
         }
         
-        public synchronized void resourceParsed(Resource resource) {
+        public void resourceParsed(Resource resource) {
             DataObject dobj = JavaMetamodel.getManager().getDataObject(resource);
-            Set set = (Set)map.get(dobj);
-            if (set == null)
-                return;
-            for (Iterator iter = set.iterator(); iter.hasNext(); ) {
-                ParsingListener listener = (ParsingListener) iter.next();
-                listener.resourceParsed(resource);
+            Object[] elems = null;
+            
+            synchronized(this) {
+                Set set = (Set)map.get(dobj);
+                if (set == null)
+                    return;
+                else
+                    elems = set.toArray();
+            }
+            
+            for (int x = 0; x < elems.length; x++) {
+                ((ParsingListener)elems[x]).resourceParsed(resource);
             }
         }
         
