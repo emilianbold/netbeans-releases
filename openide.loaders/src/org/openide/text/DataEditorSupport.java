@@ -397,6 +397,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** The time when the data has been modified
         */
         public Date getTime() {
+            // #32777 - refresh file object and return always the actual time
+            getFileImpl().refresh(false);
             return getFileImpl ().lastModified ();
         }
         

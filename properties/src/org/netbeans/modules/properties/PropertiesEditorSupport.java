@@ -388,7 +388,12 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
     /** Helper method. Saves this entry. */
     private void saveThisEntry() throws IOException {
         super.saveDocument();
-        myEntry.setModified(false);
+        // #32777 - it can happen that save operation was interrupted
+        // and file is still modified. Mark it unmodified only when it is really
+        // not modified.
+        if (!env.isModified()) {
+            myEntry.setModified(false);
+        }
     }
     
     /** Helper method. Sets <code>CloneableTopComponent.Ref</code> for this support. 
@@ -583,6 +588,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
          * Implements <code>CloneableEditorSupport.Env</code> interface.
          * The time when the data has been modified. */
         public Date getTime() {
+            // #32777 - refresh file object and return always the actual time
+            entry.getFile().refresh(false);
             return entry.getFile().lastModified();
         }
             
