@@ -1331,7 +1331,106 @@ the ${netbeans.dest}/bin/ directory.
       </zipfileset>
     </zip>
   </target>
-  
+
+  <target name="create-rpms-proto">
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <mkdir dir="${netbeans.build.dir}/rpms"/>
+    <repeat target="create-one-rpm-proto" name="one.cluster.name" values="${clusters.list}" /> 
+  </target>
+    
+  <target name="create-one-rpm-proto">
+    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="cluster-description.properties" />
+    <loadproperties srcFile="directories.properties" />
+    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
+    <mkdir dir="${netbeans.build.dir}/rpms"/>
+    
+    <resolve name="pkg.name" property="${one.cluster.name}.pkg.name"/>
+    <resolve name="pkg.version" property="${one.cluster.name}.pkg.version"/>
+    <resolve name="pkg.desc" property="${one.cluster.name}.pkg.desc"/>
+    <resolve name="pkg.vendor" property="${one.cluster.name}.pkg.vendor"/>
+    <resolve name="pkg.email" property="${one.cluster.name}.pkg.email"/>
+    <resolve name="pkg.rpm.name" property="${one.cluster.name}.pkg.rpm.name"/>
+    <resolve name="pkg.rpm.requires" property="${one.cluster.name}.pkg.rpm.requires"/>
+    <resolve name="pkg.rpm.group" property="${one.cluster.name}.pkg.rpm.group"/>
+    <resolve name="pkg.rpm.url" property="${one.cluster.name}.pkg.rpm.url"/>
+    <resolve name="pkg.rpm.copyright" property="${one.cluster.name}.pkg.rpm.copyright"/>
+    <resolve name="pkg.rpm.map" property="${one.cluster.name}.pkg.rpm.map"/>
+    <resolve name="pkg.rpm.prefix" property="${one.cluster.name}.pkg.rpm.prefix"/>
+    
+    <echo file="${netbeans.build.dir}/rpms/${pkg.rpm.name}.spec">
+%define global_product_version ${pkg.version}
+%define global_product_release 00
+%define _prefix ${pkg.rpm.prefix}
+Version: %{global_product_version}
+Release: %{global_product_release}
+Group: ${pkg.rpm.group}
+Copyright: ${pkg.rpm.copyright}
+Vendor: ${pkg.vendor}
+URL: ${pkg.rpm.url}
+Prefix: %_prefix
+AutoReqProv: no
+Name: ${pkg.rpm.name}
+Summary: ${pkg.name}
+%description 
+${pkg.desc}
+
+%files
+
+%erpm_map ${pkg.rpm.map} nb_destdir
+
+%dir ${pkg.rpm.map}
+
+${pkg.rpm.map}/${one.cluster.dir}</echo>
+  </target>
+
+  <target name="create-svr4s-proto">
+    <taskdef name="repeat" classname="org.netbeans.nbbuild.Repeat" classpath="nbantext.jar"/>
+    <mkdir dir="${netbeans.build.dir}/rpms"/>
+    <repeat target="create-one-svr4-proto" name="one.cluster.name" values="${clusters.list}" /> 
+  </target>
+
+  <target name="create-one-svr4-proto">
+    <taskdef name="setcluster" classname="org.netbeans.nbbuild.SetCluster" classpath="nbantext.jar"/>
+    <taskdef name="resolve" classname="org.netbeans.nbbuild.ResolveProperty" classpath="nbantext.jar"/>
+    <loadproperties srcFile="cluster.properties" />
+    <loadproperties srcFile="cluster-description.properties" />
+    <loadproperties srcFile="directories.properties" />
+    <setcluster cluster="${one.cluster.name}" name="one.cluster.dir" />
+    <mkdir dir="${netbeans.build.dir}/svr4s"/>
+    
+    <resolve name="pkg.name" property="${one.cluster.name}.pkg.name"/>
+    <resolve name="pkg.version" property="${one.cluster.name}.pkg.version"/>
+    <resolve name="pkg.desc" property="${one.cluster.name}.pkg.desc"/>
+    <resolve name="pkg.vendor" property="${one.cluster.name}.pkg.vendor"/>
+    <resolve name="pkg.email" property="${one.cluster.name}.pkg.email"/>
+    <resolve name="pkg.svr4.pkg" property="${one.cluster.name}.pkg.svr4.pkg"/>
+    <resolve name="pkg.svr4.maxinst" property="${one.cluster.name}.pkg.svr4.maxinst"/>
+    <resolve name="pkg.svr4.sunw_pkgvers" property="${one.cluster.name}.pkg.svr4.sunw_pkgvers"/>
+    <resolve name="pkg.svr4.hotline" property="${one.cluster.name}.pkg.svr4.hotline"/>
+    <resolve name="pkg.svr4.classes" property="${one.cluster.name}.pkg.svr4.classes"/>
+    <resolve name="pkg.svr4.basedir" property="${one.cluster.name}.pkg.svr4.basedir"/>
+    <resolve name="pkg.svr4.pkginst" property="${one.cluster.name}.pkg.svr4.pkginst"/>
+    <resolve name="pkg.svr4.category" property="${one.cluster.name}.pkg.svr4.category"/>
+<echo file="${netbeans.build.dir}/svr4s/${pkg.svr4.pkg}.spec">
+PKG=${pkg.svr4.pkg}
+NAME=${pkg.name}
+ARCH=sparc
+VERSION=${pkg.version}
+MAXINST=${pkg.svr4.maxinst}
+CATEGORY=${pkg.svr4.category}
+SUNW_PKGVERS=${pkg.svr4.sunw_pkgvers}
+DESC=${pkg.desc}
+VENDOR=${pkg.vendor}
+HOTLINE=${pkg.svr4.hotline}
+EMAIL=${pkg.email}
+CLASSES=${pkg.svr4.classes}
+BASEDIR=${pkg.svr4.basedir}
+PKGINST=${pkg.svr4.pkginst}</echo>
+  </target>
+    
   <target name="sanity-check" depends="testuserdir-delete,sanity-start" description="Test whether the build can start up without problems."/>
   <target name="testuserdir-delete" depends="init">
     <delete dir="${test.user.dir}"/>
