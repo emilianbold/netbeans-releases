@@ -141,7 +141,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                                                }
                                            } );
 
-        RequestProcessor.postRequest( analyseTask );
+        RequestProcessor.getDefault().post( analyseTask );
 
         biDialog.show ();
 
@@ -153,7 +153,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                                           biaReference.getReference().regenerateSource();
                                       }
                                   } );
-            RequestProcessor.postRequest( task );
+            RequestProcessor.getDefault().post( task );
         }
 
     }
