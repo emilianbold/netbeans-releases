@@ -125,6 +125,9 @@ class HandleLayer extends JPanel
                 ex.printStackTrace();
             }
         }
+        
+        getAccessibleContext().setAccessibleName(FormEditor.getFormBundle().getString("ACSN_HandleLayer"));
+        getAccessibleContext().setAccessibleDescription(FormEditor.getFormBundle().getString("ACSD_HandleLayer"));
     }
 
     void setViewOnly(boolean viewOnly) {

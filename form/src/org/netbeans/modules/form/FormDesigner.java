@@ -215,6 +215,7 @@ public class FormDesigner extends TopComponent
         if (formModel.isReadOnly())
             name += " " + FormEditor.getFormBundle().getString("CTL_FormTitle_RO"); // NOI18N
         setName(name);
+        setToolTipText(name);
     }
     
     private String generateModeName(FormDesigner fd) {

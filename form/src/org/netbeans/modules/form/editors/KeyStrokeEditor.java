@@ -234,7 +234,7 @@ public class KeyStrokeEditor extends PropertyEditorSupport
             _ctrl.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CtrlKey"));
             panel.add(_ctrl);
             _alt = new JCheckBox("Alt");
-            _alt.setMnemonic('A');
+            _alt.setMnemonic('l');
             _alt.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AltKey"));
             panel.add(_alt);
             _shift = new JCheckBox("Shift");
