@@ -26,15 +26,24 @@ public class CustomizerJavadoc extends JPanel implements HelpCtx.Provider {
     public CustomizerJavadoc( WebProjectProperties uiProperties ) {
         initComponents();
         
+        uiProperties.JAVADOC_PRIVATE_MODEL.setMnemonic( jCheckBoxPrivate.getMnemonic() );
         jCheckBoxPrivate.setModel( uiProperties.JAVADOC_PRIVATE_MODEL );
+        uiProperties.JAVADOC_NO_TREE_MODEL.setMnemonic( jCheckBoxTree.getMnemonic() );
         jCheckBoxTree.setModel( uiProperties.JAVADOC_NO_TREE_MODEL );
+        uiProperties.JAVADOC_USE_MODEL.setMnemonic( jCheckBoxUsages.getMnemonic() );
         jCheckBoxUsages.setModel( uiProperties.JAVADOC_USE_MODEL );
+        uiProperties.JAVADOC_NO_NAVBAR_MODEL.setMnemonic( jCheckBoxNavigation.getMnemonic() );
         jCheckBoxNavigation.setModel( uiProperties.JAVADOC_NO_NAVBAR_MODEL ); 
+        uiProperties.JAVADOC_NO_INDEX_MODEL.setMnemonic( jCheckBoxIndex.getMnemonic() );
         jCheckBoxIndex.setModel( uiProperties.JAVADOC_NO_INDEX_MODEL ); 
+        uiProperties.JAVADOC_SPLIT_INDEX_MODEL.setMnemonic( jCheckBoxSplitIndex.getMnemonic() );
         jCheckBoxSplitIndex.setModel( uiProperties.JAVADOC_SPLIT_INDEX_MODEL ); 
+        uiProperties.JAVADOC_AUTHOR_MODEL.setMnemonic( jCheckBoxAuthor.getMnemonic() );
         jCheckBoxAuthor.setModel( uiProperties.JAVADOC_AUTHOR_MODEL ); 
+        uiProperties.JAVADOC_VERSION_MODEL.setMnemonic( jCheckBoxVersion.getMnemonic() );
         jCheckBoxVersion.setModel( uiProperties.JAVADOC_VERSION_MODEL );
         jTextFieldWinTitle.setDocument( uiProperties.JAVADOC_WINDOW_TITLE_MODEL );
+        uiProperties.JAVADOC_PREVIEW_MODEL.setMnemonic( jCheckBoxPreview.getMnemonic() );
         jCheckBoxPreview.setModel( uiProperties.JAVADOC_PREVIEW_MODEL ); 
 
         reenableSplitIndex( null );
