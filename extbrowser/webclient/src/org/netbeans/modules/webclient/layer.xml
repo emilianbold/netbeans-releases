@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+  <folder name="Services">
+    <folder name="Browsers">
+
+      <file name="Webclient.settings">
+        <![CDATA[<?xml version="1.0"?>
+<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+<module name="org.netbeans.modules.webclient/1" spec="0.3"/>
+<instanceof class="org.openide.util.SharedClassObject"/>
+<instanceof class="java.lang.Object"/>
+<instanceof class="org.openide.awt.HtmlBrowser$Factory"/>
+<instanceof class="java.io.Serializable"/>
+<instance class="org.netbeans.modules.webclient.WebclientBrowser"/>
+</settings>
+        ]]>
+        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.webclient.Bundle"/>
+        <!--<attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/webclient/resources/webclient.gif"/>-->
+      </file>
+    </folder>
+  </folder>
+</filesystem>
