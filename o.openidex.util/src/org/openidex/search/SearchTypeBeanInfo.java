@@ -20,16 +20,25 @@ import com.netbeans.developer.modules.search.res.*;
 public class SearchTypeBeanInfo extends SimpleBeanInfo {
             
   // Property identifiers //GEN-FIRST:Properties
-  private static final int PROPERTY_displayName = 0;
-  private static final int PROPERTY_scannerClass = 1;
+  private static final int PROPERTY_class = 0;
+  private static final int PROPERTY_name = 1;
+  private static final int PROPERTY_displayName = 2;
+  private static final int PROPERTY_helpCtx = 3;
+  private static final int PROPERTY_scannerClass = 4;
 
   // Property array 
-  private static PropertyDescriptor[] properties = new PropertyDescriptor[2];
+  private static PropertyDescriptor[] properties = new PropertyDescriptor[5];
 
   static {
     try {
+      properties[PROPERTY_class] = new PropertyDescriptor ( "class", SearchType.class, "getClass", null ); // NOI18N
+      properties[PROPERTY_class].setHidden ( true );
+      properties[PROPERTY_name] = new PropertyDescriptor ( "name", SearchType.class, "getName", "setName" ); // NOI18N
+      properties[PROPERTY_name].setHidden ( true );
       properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", SearchType.class, "getDisplayName", null ); // NOI18N
       properties[PROPERTY_displayName].setHidden ( true );
+      properties[PROPERTY_helpCtx] = new PropertyDescriptor ( "helpCtx", SearchType.class, "getHelpCtx", null ); // NOI18N
+      properties[PROPERTY_helpCtx].setHidden ( true );
       properties[PROPERTY_scannerClass] = new PropertyDescriptor ( "scannerClass", SearchType.class, "getScannerClass", null ); // NOI18N
       properties[PROPERTY_scannerClass].setHidden ( true );
     }
@@ -59,10 +68,10 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   private static java.awt.Image iconColor32 = null;
   private static java.awt.Image iconMono16 = null;
   private static java.awt.Image iconMono32 = null; //GEN-END:IconsDef
-  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";
+  private static String iconNameC16 = "/com/netbeans/developer/modules/filter/res/find.gif";//GEN-BEGIN:Icons // NOI18N
   private static String iconNameC32 = null;
   private static String iconNameM16 = null;
-  private static String iconNameM32 = null;
+  private static String iconNameM32 = null;//GEN-END:Icons
                                                  
   private static int defaultPropertyIndex = -1;//GEN-BEGIN:Idx
   private static int defaultEventIndex = -1;//GEN-END:Idx
@@ -174,7 +183,6 @@ public class SearchTypeBeanInfo extends SimpleBeanInfo {
   public BeanDescriptor getBeanDescriptor(){
     BeanDescriptor descr = new BeanDescriptor(SearchType.class);
     descr.setDisplayName(org.openide.util.NbBundle.getBundle(SearchTypeBeanInfo.class).getString("CTL_SearchTypes"));
-    descr.setValue ("helpID", SearchType.class.getName ()); // NOI18N
     return descr;
   }
   

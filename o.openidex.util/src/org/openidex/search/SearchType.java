@@ -19,7 +19,6 @@ import javax.swing.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.HelpCtx;
 
 
 /** A class that represents one search type to the user and 
@@ -35,7 +34,11 @@ import org.openide.util.HelpCtx;
 */
 public abstract class SearchType extends org.openide.ServiceType implements Cloneable {
   
-  public static final long serialVersionUID = 1L;
+  public static final long serialVersionUID = 2L;
+  
+  /** Name of valid property. */
+  public static final String PROP_VALID = "valid";
+  private boolean valid;
   
   /** Is this object enabled on given set of nodes or not.
   * @param arr array of nodes to use in this kriterium
@@ -57,25 +60,20 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
   */
   public abstract Class getScannerClass ();
   
-  /** SearchType must be cloneable.
-  *
-  * @return clone
-  */
-  public Object clone() {
-    try {
-      return super.clone();
-    } catch (CloneNotSupportedException ex) {
-      throw new RuntimeException("SearchType must be clonable."); // NOI18N
-    }
-  }
   
   /** Gives short type name.
   * @return String representing name used as tab label or null
   */
-  public String getTabText() {
-    return null;
-  }
+  public abstract String getTabText();
 
+  /** If any node match criterion it will be
+    returnded with following detail classes attached.
+    @return array of Classes their instances will have to be 
+      attached to matching node.
+  */
+  public abstract Class[] getDetailClasses();
+  
+//----------- Utility methods -------------------  
   
   /** @return display name obtained from BeanDescriptor or null.
   */
@@ -87,14 +85,34 @@ public abstract class SearchType extends org.openide.ServiceType implements Clon
     }    
   }
   
-  public HelpCtx getHelpCtx () {
-    return new HelpCtx (SearchType.class);
+  /** SearchType must be cloneable.
+  *
+  * @return a clone
+  */
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch (CloneNotSupportedException ex) {
+      throw new RuntimeException("SearchType must be clonable."); // NOI18N
+    }
+  }
+
+  /** Now the custonized criterion changed validity state. */
+  protected final void setValid(boolean state) {
+    boolean old = valid;
+    valid = state;
+    firePropertyChange(PROP_VALID, new Boolean(old), new Boolean(state));
   }
   
+  /** @return true if the criterion is currently valid. */
+  public final boolean isValid() {
+    return valid;
+  }
 }
 
 /* 
 * Log
+*  7    Gandalf-post-FCS1.5.1.0     4/4/00   Petr Kuzel      unknown state
 *  6    Gandalf   1.5         1/18/00  Jesse Glick     Context help.
 *  5    Gandalf   1.4         1/14/00  Ian Formanek    I18N
 *  4    Gandalf   1.3         1/4/00   Petr Kuzel      Polymorphism
