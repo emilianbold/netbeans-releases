@@ -308,7 +308,7 @@ implements ExPropertyEditor, PropertyChangeListener {
      * @return the human readable string
      */
     private String itemDisplayName (Lookup.Item item) {
-        return itemToNode (item).getDisplayName ();
+        return item.getDisplayName ();
     }
 
     /** Locates a node for given lookup item.
