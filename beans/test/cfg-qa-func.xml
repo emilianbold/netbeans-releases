@@ -22,7 +22,7 @@
     </testbag>
     
     <resultsprocessor name="qa-beans" antfile="build.xml" target="test_report"/>
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
-    <compiler name="default-compiler" default="true" antfile="build.xml" target="default-compiler"/>
+    <executor name="ide" antfile="build-qa-func.xml" target="runidetest"/>
+    <compiler name="default-compiler" default="true" antfile="build-qa-func.xml" target="default-compiler"/>
 
 </mconfig>
