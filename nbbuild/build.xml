@@ -1295,7 +1295,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   </target>
   <target name="all-schema2beans/dev" depends="init,all-schema2beans/rt">
     <echo message="Building module schema2beans/dev..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
@@ -1992,7 +1992,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
 
   <target name="all-xtest" depends="init,all-java/j2seproject,all-projects/projectui,all-java/javacore">
       <echo message="Building module xtest..."/>
-    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <getdependsclusters name="dependsClusters" list="${clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
