@@ -311,11 +311,21 @@
         
         <question id="format-dnd">
             Which protocols (if any) does your code understand during Drag &amp; Drop?
+            <hint>
+            Often Node's deal with clipboard by usage of <code>Node.drag, Node.getDropType</code>. 
+            Check your code for overriding these methods. Btw. if they are not overriden, they
+            by default delegate to <code>Node.clipboardCopy, Node.clipboardCut and Node.pasteTypes</code>.
+            </hint>
         </question>
         
         <question id="format-clipboard">
             Which data flavors (if any) does your code read from or insert to
-            the clipboard?
+            the clipboard (by access to clipboard on means calling methods on <code>java.awt.datatransfer.Transferable</code>?
+            
+            <hint>
+            Often Node's deal with clipboard by usage of <code>Node.clipboardCopy, Node.clipboardCut and Node.pasteTypes</code>.
+            Check your code for overriding these methods.
+            </hint>
         </question>
         
     </category>
