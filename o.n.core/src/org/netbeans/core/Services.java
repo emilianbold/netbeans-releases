@@ -314,12 +314,17 @@ final class Services extends ServiceType.Registry {
     */
     public final boolean remove (ManifestSection.ServiceSection section) 
     throws InstantiationException {
-
-      Object key = key (section.getServiceType());
+      ServiceType st = section.getServiceType ();
+      Object key = key (st);
       
       Node subNode = (Node)map.get (key);
+      if (subNode == null) {
+        // [PENDING] what causes this?
+        System.err.println("Services.SectionChildren.remove: subNode==null"); // NOI18N
+        return false; // is this right?
+      }
       Level l = (Level)subNode.getChildren ();
-      if (l.remove (section)) {      
+      if (l.remove (section)) {    
         map.remove (key);
         nodes.remove (subNode);
         refresh ();
@@ -716,6 +721,8 @@ final class Services extends ServiceType.Registry {
 
 /*
 * Log
+*  21   Jaga      1.16.2.3    3/28/00  Jesse Glick     Recovering more 
+*       gracefully from an occasional undiagnosed NPE.
 *  20   Jaga      1.16.2.2    3/24/00  Ales Novak      setServiceTypes fixed
 *  19   Jaga      1.16.2.1    2/24/00  Ian Formanek    Jaga changes
 *  18   Jaga      1.16.2.0    2/24/00  Ian Formanek    Changes for Jaga
