@@ -1123,7 +1123,7 @@ public final class NbMainExplorer extends CloneableTopComponent {
     }
 
     /** Listener on roots, listens to changes of roots content */
-    private final class RootsListener extends Object implements ChangeListener {
+    private static final class RootsListener extends Object implements ChangeListener {
         
         RootsListener() {}
         

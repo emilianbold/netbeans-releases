@@ -489,7 +489,7 @@ public class ProductInformationPanel extends JPanel {
     
     /**
      */
-    class FocusableLabel extends JLabel {
+    static class FocusableLabel extends JLabel {
     
         private boolean isFocused = false;
 
