@@ -204,20 +204,22 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 null,
                 null);
                 
-        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
-                WEBSERVICECLIENTS,
-                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
-                null,
-                null);
+// !PW web service clients in EJB project disabled for 4.1
+//        ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(
+//                WEBSERVICECLIENTS,
+//                bundle.getString( "LBL_Config_WebServiceClients" ), // NOI18N
+//                null,
+//                null);
                 
         ProjectCustomizer.Category webServices = ProjectCustomizer.Category.create(
                 WEBSERVICE_CATEGORY,
                 bundle.getString( "LBL_Config_WebServicesCategory" ), // NOI18N
                 null,
-                new ProjectCustomizer.Category[] { services, clients } );
+//                new ProjectCustomizer.Category[] { services, clients } );
+                new ProjectCustomizer.Category[] { services } );
                 
         List servicesSettings = null;
-        List serviceClientsSettings = null;
+//        List serviceClientsSettings = null;
         EjbJarProvider ejbJarProvider = (EjbJarProvider)project.getLookup().lookup(EjbJarProvider.class);
         FileObject metaInf = ejbJarProvider.getMetaInf();
         if (metaInf != null) {
@@ -225,10 +227,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             if (servicesSupport != null) {
                 servicesSettings = servicesSupport.getServices();
             }
-            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(metaInf);
-            if (clientSupport != null) {
-                serviceClientsSettings = clientSupport.getServiceClients();
-            }
+//            WebServicesClientSupport clientSupport = WebServicesClientSupport.getWebServicesClientSupport(metaInf);
+//            if (clientSupport != null) {
+//                serviceClientsSettings = clientSupport.getServiceClients();
+//            }
         }
         
         categories = new ProjectCustomizer.Category[] { 
@@ -251,11 +253,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         } else {
             panels.put( services, new NoWebServicesPanel());
         }
-        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
-            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
-        } else {
-            panels.put( clients, new NoWebServiceClientsPanel());
-        }
+//        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
+//            panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
+//        } else {
+//            panels.put( clients, new NoWebServiceClientsPanel());
+//        }
         
         panelProvider = new PanelProvider( panels );
     }

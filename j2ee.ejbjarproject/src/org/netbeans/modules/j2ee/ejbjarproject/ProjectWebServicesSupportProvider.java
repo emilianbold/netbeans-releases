@@ -69,6 +69,7 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
     }
 
     public WebServicesClientSupport findWebServicesClientSupport (FileObject file) {
+/* Disabled for 4.1.  Reenable at a later date when client support can be completed.
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null && project instanceof EjbJarProject) {
             EjbJarProject ejbproject = (EjbJarProject) project;
@@ -98,6 +99,7 @@ public class ProjectWebServicesSupportProvider implements WebServicesSupportProv
                 return ejbproject.getAPIWebServicesClientSupport();
             }
         }
+ */
         return null;
     }
 }
