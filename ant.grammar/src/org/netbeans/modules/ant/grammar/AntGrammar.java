@@ -605,6 +605,13 @@ class AntGrammar implements GrammarQuery {
         for (int i = 0; i < l.getLength(); i++) {
             visitForLikelyPropertyNames(l.item(i), choices);
         }
+        // Element attributes are not considered child nodes as such.
+        NamedNodeMap m = n.getAttributes();
+        if (m != null) {
+            for (int i = 0; i < m.getLength(); i++) {
+                visitForLikelyPropertyNames(m.item(i), choices);
+            }
+        }
     }
 
     // return defaults, no way to query them
