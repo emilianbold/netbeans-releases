@@ -478,7 +478,7 @@ implements java.io.Serializable {
     private static MultiFileLoader[] getSystemLoaders () {
         if (systemLoaders == null) {
             systemLoaders = new MultiFileLoader [] {
-                (MultiFileLoader) DataLoader.getLoader(DataLoaderPool$ShadowLoader.class),
+                (MultiFileLoader) DataLoader.getLoader(ShadowLoader.class),
                 (MultiFileLoader) DataLoader.getLoader(InstanceLoaderSystem.class)
             };
         }
@@ -490,10 +490,10 @@ implements java.io.Serializable {
     private static MultiFileLoader[] getDefaultLoaders () {
         if (defaultLoaders == null) {
             defaultLoaders = new MultiFileLoader [] {
-                (MultiFileLoader) DataLoader.getLoader(DataLoaderPool$FolderLoader.class),
+                (MultiFileLoader) DataLoader.getLoader(FolderLoader.class),
                 (MultiFileLoader) DataLoader.getLoader(XMLDataObject.Loader.class),
-                (MultiFileLoader) DataLoader.getLoader(DataLoaderPool$InstanceLoader.class),
-                (MultiFileLoader) DataLoader.getLoader(DataLoaderPool$DefaultLoader.class)
+                (MultiFileLoader) DataLoader.getLoader(InstanceLoader.class),
+                (MultiFileLoader) DataLoader.getLoader(DefaultLoader.class)
             };
         }
         return defaultLoaders;
@@ -550,7 +550,7 @@ implements java.io.Serializable {
      * otherwise IDE settings will not work at all. No module is permitted to use
      * .settings files.
      */
-    private static class InstanceLoaderSystem extends DataLoaderPool$InstanceLoader {
+    private static class InstanceLoaderSystem extends InstanceLoader {
         private static final long serialVersionUID = -935749906623354837L;
         
         /* Creates new InstanceLoader */
@@ -579,18 +579,17 @@ implements java.io.Serializable {
             };
         }
     }
-} // end of DataLoaderPool
 
 
 /* Instance loader recognizing .ser and .instance files. It's placed at
  * the end of loader pool among default loaders.
  */
-class DataLoaderPool$InstanceLoader extends UniFileLoader {
+private static class InstanceLoader extends UniFileLoader {
     static final long serialVersionUID =-3462727693843631328L;
 
 
     /* Creates new InstanceLoader */
-    public DataLoaderPool$InstanceLoader () {
+    public InstanceLoader () {
         super ("org.openide.loaders.InstanceDataObject"); // NOI18N
     }
 
@@ -605,7 +604,6 @@ class DataLoaderPool$InstanceLoader extends UniFileLoader {
     */
     protected SystemAction[] defaultActions () {
         return new SystemAction[] {
-            SystemAction.get (org.openide.actions.CustomizeBeanAction.class),
             SystemAction.get (org.openide.actions.FileSystemAction.class),
             null,
             SystemAction.get(org.openide.actions.CutAction.class),
@@ -714,18 +712,18 @@ class DataLoaderPool$InstanceLoader extends UniFileLoader {
             InstanceDataObject.XML_EXT
         };
     }
-} // end of DataLoaderPool$InstanceLoader
+} // end of InstanceLoader
 
 
 
     
 
 /** Loader for file objects not recognized by any other loader */
-class DataLoaderPool$DefaultLoader extends MultiFileLoader {
+private static final class DefaultLoader extends MultiFileLoader {
     static final long serialVersionUID =-6761887227412396555L;
 
     /* Representation class is DefaultDataObject */
-    public DataLoaderPool$DefaultLoader () {
+    public DefaultLoader () {
         super ("org.openide.loaders.DefaultDataObject"); // NOI18N
         //super (DefaultDataObject.class);
     }
@@ -810,14 +808,11 @@ class DataLoaderPool$DefaultLoader extends MultiFileLoader {
      */
     void checkFiles (MultiDataObject obj) {
     }
-} // end of DataLoaderPool$DefaultLoader
-
-
-
+} // end of DefaultLoader
 
 
 /** Loader for shadows, since 1.13 changed to UniFileLoader. */
-class DataLoaderPool$ShadowLoader extends UniFileLoader {
+private static final class ShadowLoader extends UniFileLoader {
     static final long serialVersionUID =-11013405787959120L;
 
     /* DO NOT REMOVE THIS, the ShadowChangeAdapter must be constructed, it listens
@@ -826,7 +821,7 @@ class DataLoaderPool$ShadowLoader extends UniFileLoader {
     private static ShadowChangeAdapter changeAdapter = new ShadowChangeAdapter();
 
     /* Representation class is DataShadow */
-    public DataLoaderPool$ShadowLoader () {
+    public ShadowLoader () {
         super ("org.openide.loaders.DataShadow"); // NOI18N
         //super (DataShadow.class);
     }
@@ -883,15 +878,15 @@ class DataLoaderPool$ShadowLoader extends UniFileLoader {
     }
     public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
     }
-} // end of DataLoaderPool$ShadowLoader
+} // end of ShadowLoader
 
-/** Loader for folders, since 1.13 changed to UniFileLoader. Will be made public by patching
+/** Loader for folders, since 1.13 changed to UniFileLoader.
  */
-class DataLoaderPool$FolderLoader extends UniFileLoader {
+static final class FolderLoader extends UniFileLoader {
     static final long serialVersionUID =-8325525104047820255L;
 
     /* Representation class is DataFolder */
-    public DataLoaderPool$FolderLoader () {
+    public FolderLoader () {
         super ("org.openide.loaders.DataFolder"); // NOI18N
         // super (DataFolder.class);
     }
@@ -901,41 +896,6 @@ class DataLoaderPool$FolderLoader extends UniFileLoader {
     *   actions
     */
     protected SystemAction[] defaultActions () {
-        listenForCompilerAPI();
-        // #30138: try to add compiler-related actions, if they exist.
-        // When Looks & new Datasystems are ready, this will no longer
-        // be necessary.
-        ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-        try {
-            Class c1 = Class.forName("org.openide.actions.CompileAction", true, l);
-            Class c2 = Class.forName("org.openide.actions.CompileAllAction", true, l);
-            Class c3 = Class.forName("org.openide.actions.BuildAction", true, l);
-            Class c4 = Class.forName("org.openide.actions.BuildAllAction", true, l);
-            return new SystemAction[] {
-                    SystemAction.get (org.openide.actions.OpenLocalExplorerAction.class),
-                    SystemAction.get (org.openide.actions.FindAction.class),
-                    SystemAction.get (org.openide.actions.FileSystemAction.class),
-                    null,
-                    SystemAction.get(c1),
-                    SystemAction.get(c2),
-                    null,
-                    SystemAction.get(c3),
-                    SystemAction.get(c4),
-                    null,
-                    SystemAction.get (org.openide.actions.CutAction.class),
-                    SystemAction.get (org.openide.actions.CopyAction.class),
-                    SystemAction.get (org.openide.actions.PasteAction.class),
-                    null,
-                    SystemAction.get (org.openide.actions.DeleteAction.class),
-                    SystemAction.get (org.openide.actions.RenameAction.class),
-                    null,
-                    SystemAction.get (org.openide.actions.NewTemplateAction.class),
-                    null,
-                    SystemAction.get (org.openide.actions.ToolsAction.class),
-                    SystemAction.get (org.openide.actions.PropertiesAction.class)
-                };
-        } catch (ClassNotFoundException cnfe) {
-            // OK, platform - don't include them.
             return new SystemAction[] {
                     SystemAction.get (org.openide.actions.OpenLocalExplorerAction.class),
                     SystemAction.get (org.openide.actions.FindAction.class),
@@ -953,48 +913,8 @@ class DataLoaderPool$FolderLoader extends UniFileLoader {
                     SystemAction.get (org.openide.actions.ToolsAction.class),
                     SystemAction.get (org.openide.actions.PropertiesAction.class)
                 };
-        }
     }
     
-    /**
-     * If we have not done so already, listen for changes in the enablement of the
-     * Compiler API. This will affect the default actions.
-     * @see "#34330"
-     */
-    private void listenForCompilerAPI() {
-        String flag = "listenForCompilerAPI"; // NOI18N
-        if (getProperty(flag) != null) {
-            // Already listening.
-            return;
-        }
-        // Need to listen.
-        putProperty(flag, Boolean.TRUE, false);
-        Iterator it = Lookup.getDefault().lookup(new Lookup.Template(ModuleInfo.class)).allInstances().iterator();
-        ModuleInfo compilerAPI = null;
-        while (it.hasNext()) {
-            ModuleInfo mi = (ModuleInfo)it.next();
-            if (mi.getCodeNameBase().equals("org.openide.compiler")) { // NOI18N
-                compilerAPI = mi;
-                break;
-            }
-        }
-        if (compilerAPI == null) {
-            // Not installed. XXX technically we should listen for changes in the lookup
-            // template in case it is added and enabled. In practice this is very unlikely.
-            return;
-        }
-        compilerAPI.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent ev) {
-                if (ModuleInfo.PROP_ENABLED.equals(ev.getPropertyName())) {
-                    // Need to refresh default actions list. XXX design of DataLoader, with
-                    // getActions being final, makes it impossible to do this cleanly.
-                    putProperty("defaultActions", null, false); // NOI18N
-                    firePropertyChange(PROP_ACTIONS, null, null);
-                }
-            }
-        });
-    }
-
     /** Get the default display name of this loader.
     * @return default display name
     */
@@ -1049,4 +969,6 @@ class DataLoaderPool$FolderLoader extends UniFileLoader {
         }
     }
 
-} // end of DataLoaderPool$FolderLoader
+} // end of FolderLoader
+
+}

@@ -136,7 +136,7 @@ implements ChangeListener, RepositoryListener, PropertyChangeListener {
     /** Calls into FolderLoader. Setups security condition to allow DataObject constructor
      * to succeed.
      */
-    public static MultiDataObject createMultiObject(DataLoaderPool$FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
+    public static MultiDataObject createMultiObject(DataLoaderPool.FolderLoader loader, FileObject fo, DataFolder original) throws java.io.IOException {
         MultiDataObject ret;
         
         Collection prev = enterAllowContructor ();

@@ -268,7 +268,7 @@ public class XMLDataObject extends MultiDataObject {
         Node.Cookie cake = (Node.Cookie)getIP ().lookupCookie (cls);
        
         if (cake instanceof InstanceCookie) {
-            cake = originCookie ((InstanceCookie)cake, cls);
+            cake = ofCookie ((InstanceCookie)cake, cls);
         }
         
         if (cake == null) {
@@ -279,22 +279,22 @@ public class XMLDataObject extends MultiDataObject {
         return cake;
     }
 
-    /** Special support of InstanceCookie.Origin. If the Info class
-     * provides InstanceCookie but not Origin, we add the origin to be
+    /** Special support of InstanceCookie.Of. If the Info class
+     * provides InstanceCookie but not IC.Of, we add the extra interface to
      * this data object.
      *
      * @param ic instance cookie
      * @param cls constraining class
-     * @return instance of InstanceCookie.Origin (usually)
+     * @return instance of InstanceCookie.Of
      */
-    private InstanceCookie originCookie (InstanceCookie ic, Class cls) {
-        if (ic instanceof InstanceCookie.Origin) {
+    private InstanceCookie ofCookie (InstanceCookie ic, Class cls) {
+        if (ic instanceof InstanceCookie.Of) {
             return ic;
         } else if (! cls.isAssignableFrom (ICDel.class)) {
             // Someone was looking for, and a processor etc. was
             // providing, some specialization which ICDel cannot
             // provide. Return the real implementation and forget
-            // about making this a .Origin.
+            // about making this a IC.Of.
             return ic;
         } else {
             ICDel d = new ICDel (this, ic);
@@ -1851,9 +1851,9 @@ public class XMLDataObject extends MultiDataObject {
         
     }
     
-    /** A special delegator that adds InstanceCookie.Origin to objects that miss it
+    /** A special delegator that adds InstanceCookie.Of to objects that miss it
      */
-    private static class ICDel extends Object implements InstanceCookie.Origin, InstanceCookie.Of {
+    private static class ICDel extends Object implements InstanceCookie.Of {
         /** object we belong to
          */
         private XMLDataObject obj;
@@ -1878,10 +1878,6 @@ public class XMLDataObject extends MultiDataObject {
         public Object instanceCreate ()
         throws java.io.IOException, ClassNotFoundException {
             return ic.instanceCreate ();
-        }
-
-        public FileObject instanceOrigin () {
-            return obj.getPrimaryFile ();
         }
 
         public boolean instanceOf (Class cls2) {

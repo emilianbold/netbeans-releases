@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -109,7 +109,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
         super (pf, loader);
 
         if (pf.hasExt (SER_EXT)) { // NOI18N
-            // only if we have ser extension the Ser (InstanceCookie.Origin)
+            // only if we have ser extension the Ser (InstanceCookie)
             // should be accessible
             ser = new Ser (this);
             getCookieSet ().add (ser);
@@ -1002,7 +1002,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
 
     /** Support for serialized objects.
      */
-    private static final class Ser extends InstanceSupport.Origin
+    private static final class Ser extends InstanceSupport
     implements Runnable {
         /** the reference to the bean, so it is created just once when used */
         private java.lang.ref.Reference bean = new java.lang.ref.SoftReference (null);

@@ -314,7 +314,7 @@ public abstract class NbTopManager {
         /** Default constructor for lookup. */
         public NbURLDisplayer() {}
         /** WWW browser window. */
-        private HtmlBrowser.BrowserComponent htmlViewer;
+        private HtmlBrowserComponent htmlViewer;
         public void showURL(final URL u) {
             Mutex.EVENT.readAccess(new Runnable() {
                 public void run() {
@@ -613,7 +613,7 @@ public abstract class NbTopManager {
     /**
     * For externalization of HTMLBrowser.
     */
-    public static class NbBrowser extends HtmlBrowser.BrowserComponent {
+    public static class NbBrowser extends HtmlBrowserComponent {
 
         static final long serialVersionUID =5000673049583700380L;
 

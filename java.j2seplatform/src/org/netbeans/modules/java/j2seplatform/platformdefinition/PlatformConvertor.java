@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -39,7 +39,7 @@ import org.netbeans.api.java.platform.*;
  * @author Svata Dedic
  */
 public class PlatformConvertor 
-implements Environment.Provider, InstanceCookie.Origin, InstanceCookie.Of,
+implements Environment.Provider, InstanceCookie.Of,
         PropertyChangeListener, Runnable, InstanceContent.Convertor {
     
     private PlatformConvertor() {}
@@ -135,10 +135,6 @@ implements Environment.Provider, InstanceCookie.Origin, InstanceCookie.Of,
     
     public boolean instanceOf(Class type) {
         return (type.isAssignableFrom(JavaPlatform.class));
-    }
-    
-    public FileObject instanceOrigin() {
-        return holder.getPrimaryFile();
     }
     
     static int DELAY = 2000;

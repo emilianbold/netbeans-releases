@@ -161,6 +161,10 @@ final class NbModuleProject implements Project {
         }
         if (displayName == null) {
             displayName = getName();
+            if (displayName.equals("org.netbeans")) { // NOI18N
+                // Special case.
+                displayName = "Core Bootstrap";
+            }
         }
         return displayName;
     }

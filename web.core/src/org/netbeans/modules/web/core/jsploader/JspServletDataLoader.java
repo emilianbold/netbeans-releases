@@ -7,12 +7,11 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
 package org.netbeans.modules.web.core.jsploader;
-
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -67,7 +66,6 @@ public class JspServletDataLoader extends JavaDataLoader {
     protected SystemAction[] defaultActions() {
         return new SystemAction [] {
             SystemAction.get(OpenAction.class),
-            SystemAction.get(CustomizeBeanAction.class),
             SystemAction.get(FileSystemAction.class),
             null,
             SystemAction.get(ExecuteAction.class),

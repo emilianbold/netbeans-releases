@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,6 @@
  * Created: Fri Jan 19 16:21:06 2001
  *
  * @author Ana von Klopp
- * @version
  */
 
 package  org.netbeans.modules.web.monitor.client;
@@ -108,9 +107,11 @@ class Controller  {
     
     private transient Comparator comp = null;
 
+    /*
     private HtmlBrowser.BrowserComponent browser = null;
     private SettingsListener browserListener = null;
     private SystemOption settings = null;
+    */
 
     private boolean useBrowserCookie = true;
 
@@ -120,7 +121,9 @@ class Controller  {
 	currBeans = new Hashtable();
 	saveBeans = new Hashtable();
 	createNodeStructure();
+        /*
 	registerBrowserListener();
+        */
     }
 
     static Controller getInstance() { 
@@ -162,7 +165,9 @@ class Controller  {
 
     void cleanup() {
 	deleteDirectory(currDirStr);
+        /*
 	removeBrowserListener();
+        */
     }
 
     /**
@@ -1353,6 +1358,7 @@ class Controller  {
         // window system code must be run in AWT thread
         SwingUtilities.invokeLater(new Runnable() {
             public void run () {
+                /*
                 if(browser == null) 
                     browser = 
                         new HtmlBrowser.BrowserComponent(getFactory(), true, true);
@@ -1362,12 +1368,15 @@ class Controller  {
 		    browser.open();
 		    if(!browser.isShowing()) browser.setVisible(true);
 		}
+                */
+                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
 	    }});
     }
-    
+
+    // XXX TBD whether this is useful...
     /* 
      * Get a factory objects for browsers. 
-     */
+     * /
     private  HtmlBrowser.Factory getFactory() {
 
 	if(debug) log("getFactory()"); //NOI18N
@@ -1429,11 +1438,12 @@ class Controller  {
 	}
 	return null;	 
     }
+    */
 
     /** 
      * Registers a listener to core events so that we know if the
      * browser has changed on the system. 
-     */
+     * /
     private void registerBrowserListener() {
         FileObject fo =	Repository.getDefault().getDefaultFileSystem()
 	    .findResource("Services/org-netbeans-core-IDESettings.settings"); // NOI18N
@@ -1459,12 +1469,13 @@ class Controller  {
             }
         }
     }
+    */
 
 
     /** 
      * Removes the listener which detectes whether the browser setting
      * has changed on the system.
-     */
+     * /
     private void removeBrowserListener() {
 	if(settings == null || browserListener == null) return;
 	try {
@@ -1473,6 +1484,7 @@ class Controller  {
 	catch(Exception ex) {
 	}
     }
+    */
 
     // PENDING - use the logger instead
     private static void log(final String s) {
@@ -1531,6 +1543,7 @@ class Controller  {
     }
     
 
+    /*
     class SettingsListener implements PropertyChangeListener {
 	
 	private SystemOption source;
@@ -1547,6 +1560,7 @@ class Controller  {
 	    }
 	}
     }
+    */
      
     
     /**

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.apisupport.project</type>
+    <name>org.openide</name>
+    <configuration>
+        <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
+            <path>openide</path>
+            <module-dependencies/>
+            <public-packages>
+                <package>org.openide</package>
+                <package>org.openide.actions</package>
+                <package>org.openide.awt</package>
+                <package>org.openide.cookies</package>
+                <package>org.openide.explorer</package>
+                <package>org.openide.explorer.propertysheet</package>
+                <package>org.openide.explorer.propertysheet.editors</package>
+                <package>org.openide.explorer.view</package>
+                <package>org.openide.filesystems</package>
+                <package>org.openide.modules</package>
+                <package>org.openide.nodes</package>
+                <package>org.openide.options</package>
+                <package>org.openide.text</package>
+                <package>org.openide.util</package>
+                <package>org.openide.util.actions</package>
+                <package>org.openide.util.datatransfer</package>
+                <package>org.openide.util.enum</package>
+                <package>org.openide.util.io</package>
+                <package>org.openide.util.lookup</package>
+                <package>org.openide.windows</package>
+                <package>org.openide.xml</package>
+            </public-packages>
+            <javadoc/>
+            <unit-tests/>
+        </data>
+    </configuration>
+</project>

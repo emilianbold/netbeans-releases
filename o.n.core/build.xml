@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='ISO-8859-1' ?><!-- -*- sgml-indent-step: 2 -*- -->
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
                 Sun Public License Notice
 
@@ -8,114 +8,75 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
 <project name="core" default="netbeans" basedir=".">
-  <import file="../nbbuild/default.xml"/> 
 
-  <target name="init" depends="default.init">
-    <patternset id="core.files">
-      <include name="${nb.lib.dir}/core.jar"/>
-      <include name="${nb.lib.dir}/ide.ks"/>
-      <include name="${nb.lib.dir}/ext/boot.jar"/>
-      <include name="${nb.bin.dir}/.runide_defaults.sh"/>
-      <include name="${nb.bin.dir}/ide.cfg"/>
-      <include name="${nb.bin.dir}/ide.policy"/>
-      <include name="${nb.bin.dir}/macosx_launcher.dmg"/>
-      <include name="${nb.bin.dir}/runide.exe"/>
-      <include name="${nb.bin.dir}/runide.sh"/>
-      <include name="${nb.bin.dir}/runide_exe_defaults"/>
-      <include name="${nb.bin.dir}/runideopenvms.com"/>
-      <include name="${nb.bin.dir}/runideos2.cmd"/>
-      <include name="${nb.bin.dir}/runidew.exe"/>
-      <include name="${nb.system.dir}/ModuleAutoDeps/org-netbeans-core.xml"/>
-      <include name="CREDITS.html"/>
-    </patternset>
-    <path id="cp">
-      <pathelement location="${nb_all}/openide/openide-13javac-workaround.jar"/>
-      <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
-      <pathelement location="${openide/explorer.dir}/${nb.lib.dir}/openide-explorer.jar" /> <!-- XXX 3.6 property sheet settings - see c.PsSettingsImpl -->
-      <pathelement location="${openide/loaders.dir}/${nb.lib.dir}/openide-loaders.jar"/> <!-- XXX remove soon -->
-      <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
-    </path>
-  </target>
+    <import file="../nbbuild/templates/projectized.xml"/> 
 
-  <target name="compile" depends="init,boot">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
-      <classpath refid="cp"/>
-    </javac>
-  </target>
+    <target name="files-init" depends="basic-init">
+        <patternset id="main.module.files">
+            <include name="${module.jar}"/>
+            <include name="${nb.lib.dir}/ide.ks"/>
+            <include name="${nb.bin.dir}/.runide_defaults.sh"/>
+            <include name="${nb.bin.dir}/ide.cfg"/>
+            <include name="${nb.bin.dir}/ide.policy"/>
+            <include name="${nb.bin.dir}/macosx_launcher.dmg"/>
+            <include name="${nb.bin.dir}/runide.exe"/>
+            <include name="${nb.bin.dir}/runide.sh"/>
+            <include name="${nb.bin.dir}/runide_exe_defaults"/>
+            <include name="${nb.bin.dir}/runideopenvms.com"/>
+            <include name="${nb.bin.dir}/runideos2.cmd"/>
+            <include name="${nb.bin.dir}/runidew.exe"/>
+            <include name="${nb.system.dir}/ModuleAutoDeps/org-netbeans-core.xml"/>
+            <include name="CREDITS.html"/>
+        </patternset>
+        <patternset id="module.files">
+            <patternset refid="main.module.files"/>
+            <include name="${nb.lib/ext.dir}/boot.jar"/> <!-- see core/bootstrap/build.xml -->
+        </patternset>
+    </target>
 
-  <!-- XXX move to bootstrap/build.xml -->  
-  <target name="boot" depends="init">
-    <javac srcdir="bootstrap/src" destdir="bootstrap/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/ext" />
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/ext/boot.jar"
-            basedir="bootstrap/src"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-	    compress="false">
-    </jar>
-  </target>
+    <target name="clean" depends="init">
+        <delete dir="build"/>
+        <delete dir="javadoc"/>
+        <delete>
+            <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
+                <patternset refid="main.module.files"/>
+            </fileset>
+        </delete>
+        <delete file="${netbeans.dest.dir}/${cluster.dir}/update_tracking/${code.name.base.dashes}.xml"/>
+    </target>
 
-  <target name="jars" depends="init,compile">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
-    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/core.jar"
-            basedir="src"
-            manifest="manifest-subst.mf"
-            excludesfile="../nbbuild/standard-jar-excludes.txt"
-            excludes="org/netbeans/*class"
-	    compress="false"/>
-  </target>
+    <target name="netbeans-extra" depends="release"/>
 
-  <target name="release" depends="init">
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
-      <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- These do not currently work anyway: -->
-        <exclude name="unsupported/nbscript*"/>
-      </fileset>
-    </copy>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" includeEmptyDirs="false">
-      <fileset dir="release/lib" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}" includeEmptyDirs="false">
-      <fileset dir="release/system" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-    </copy>
-    <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/CREDITS.html"/>
-    <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="crlf">
-      <include name="**/*.bat"/>
-      <include name="**/*.cmd"/>
-    </fixcrlf>
-    <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="lf">
-      <include name="**/*.sh"/>
-      <include name="**/ide.cfg"/>
-    </fixcrlf>
-  </target>
+    <target name="release" depends="init">
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" includeEmptyDirs="false">
+            <fileset dir="release/bin" excludesfile="../nbbuild/standard-jar-excludes.txt">
+                <!-- These do not currently work anyway: -->
+                <exclude name="unsupported/nbscript*"/>
+            </fileset>
+        </copy>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}" includeEmptyDirs="false">
+            <fileset dir="release/lib" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}/${nb.system.dir}" includeEmptyDirs="false">
+            <fileset dir="release/system" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+        </copy>
+        <copy todir="${netbeans.dest.dir}/${cluster.dir}" file="release/CREDITS.html"/>
+        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="crlf">
+            <include name="**/*.bat"/>
+            <include name="**/*.cmd"/>
+        </fixcrlf>
+        <fixcrlf srcdir="${netbeans.dest.dir}/${cluster.dir}/${nb.bin.dir}" eol="lf">
+            <include name="**/*.sh"/>
+            <include name="**/ide.cfg"/>
+        </fixcrlf>
+    </target>
 
-  <target name="netbeans" depends="init,jars,release" description="Build everything.">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib/patches.dir}"/>
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.modules.dir}"/>
-    <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.lib.dir}/core.jar">
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="core.files"/>
-      </fileset>
-    </genlist>
-  </target>
-
-  <target name="nbm" depends="netbeans" description="Build an NBM.">
-    <makenbm file="core.nbm"
-             productdir="${netbeans.dest.dir}/${cluster.dir}"
-             module="${nb.lib.dir}/core.jar"
-	     homepage="http://core.${homepage.base}/"
-	     distribution="http://${dist.base}/core.nbm">
-      <license file="${license.file}"/>
-      <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-    </makenbm>
-  </target>
-
+<!-- XXX may be obsolete:
   <target name="lib-modules" description="Create a standalone Modules API and implementation." depends="init">
     <mkdir dir="modules-lib/src"/>
     <copy todir="modules-lib/src">
@@ -166,24 +127,6 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </jar>
   </target>
-
-  <target name="clean" depends="init" description="Clean all build products.">
-    <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="bootstrap/src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir=".">
-        <include name="*-subst.mf"/>
-      </fileset>
-      <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
-        <patternset refID="core.files"/>
-      </fileset>
-    </delete>
-    <delete dir="modules-lib"/>
-    <delete file="core.nbm"/>
-  </target>
+-->
 
 </project>

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -171,7 +171,6 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
     }
 
     /** Returns the origin of the instance.
-     * @see org.openide.cookies.InstanceCookie.Origin#instanceOrigin
     * @return the origin
     */
     public FileObject instanceOrigin () {
@@ -492,40 +491,7 @@ public class InstanceSupport extends Object implements InstanceCookie.Of {
      */
     protected ClassLoader createClassLoader() {
         ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-        /* XXX this will not work any more
-        try {
-            Class c = Class.forName("org.openide.execution.NbClassLoader", true, l); // NOI18N
-            ClassLoader nbcl = (ClassLoader)c.newInstance();
-            Method m = c.getMethod("setDefaultPermissions", new Class[] {PermissionCollection.class}); // NOI18N
-            Permissions perms = new Permissions();
-            perms.add(new FilePermission("<<ALL FILES>>", "read")); // NOI18N
-            perms.add(new PropertyPermission("*", "read")); // NOI18N
-            perms.setReadOnly();
-            m.invoke(nbcl, new Object[] {perms});
-            return nbcl;
-        } catch (ClassNotFoundException cnfe) {
-            // OK, use systemClassLoader.
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
-        }
-         */
         return l;
-    }
-
-    /** Enhanced instance cookie support that also knows the file it
-    * has been created from and can be serialized back to.
-    * Note that <code>InstanceSupport</code> already does; this class
-    * only declares the interface.
-    */
-    public static class Origin extends InstanceSupport
-        implements org.openide.cookies.InstanceCookie.Origin {
-        /** New support for a given entry. The file is taken from the
-        * entry and is updated if the entry moves or renames itself.
-        * @param entry entry to create instance from
-        */
-        public Origin (MultiDataObject.Entry entry) {
-            super (entry);
-        }
     }
 
     /** Trivial supporting instance cookie for already-existing objects.

@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -637,11 +637,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                     if (cookie instanceof HoldInstance) {
                         hold = (HoldInstance)cookie;
                     } else {
-                        if (cookie instanceof org.openide.cookies.InstanceCookie.Origin) {
-                            hold = new HoldInstanceOrigin (obj, (org.openide.cookies.InstanceCookie.Origin)cookie);
-                        } else {
-                            hold = new HoldInstance (obj, cookie);
-                        }
+                        hold = new HoldInstance(obj, cookie);
                     }
                     
                     // synchronized for safe access to map field
@@ -838,11 +834,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
                          * if ((ic == null && hi.cookie != null) || (ic != hi && !ic.equals (hi.cookie))) { 
                          */
                         if (ic == null || (ic != hi && !ic.equals (hi.cookie))) { 
-                            if (ic instanceof org.openide.cookies.InstanceCookie.Origin) {
-                                hi = new HoldInstanceOrigin (source, (org.openide.cookies.InstanceCookie.Origin)ic);
-                            } else {
-                                hi = new HoldInstance (source, ic);
-                            }
+                            hi = new HoldInstance(source, ic);
 
                             // synchronized for safe access to map field
                             synchronized (CURRENT) {
@@ -981,19 +973,4 @@ public abstract class FolderInstance extends Task implements InstanceCookie {
         }
     } // end of HoldInstance
     
-    /* -------------------------------------------------------------------- */
-    /* -- Inner class HoldInstanceOrigin ---------------------------------- */
-    /* -------------------------------------------------------------------- */
-
-    /** Special HoldInstance that implements the InstanceCookie$Origin */
-    private class HoldInstanceOrigin extends HoldInstance implements org.openide.cookies.InstanceCookie.Origin {
-
-        public HoldInstanceOrigin (DataObject source, org.openide.cookies.InstanceCookie.Origin cookie) {
-            super (source, cookie);
-        }
-
-        public FileObject instanceOrigin () {
-            return ((org.openide.cookies.InstanceCookie.Origin) cookie).instanceOrigin ();
-        }
-    }
 }

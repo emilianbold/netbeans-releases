@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -29,20 +29,6 @@ Microsystems, Inc. All Rights Reserved.
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath refid="cp"/>
         </javac>
-
-        <!-- Patching -->
-        <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass"
-             classpath="${nb_all}/nbbuild/nbantext.jar"/>
-        <enhanceclass basedir="src">
-            <classpath>
-                <pathelement location="${core.dir}/${nb.lib.dir}/ext/boot.jar"/>
-                <!-- See xtest/instance/build-clover.xml for explanation: -->
-                <pathelement location="../../core/netbeans/lib/ext/clover.jar"/>
-            </classpath>
-            <!-- Making public -->
-            <patch class="org/openide/windows/InputOutput$$Null" /> 
-            <patch class="org/openide/windows/InputOutput$$NullOutputWriter" /> 
-        </enhanceclass>
     </target>
 
     <target name="jars" depends="compile">

@@ -13,10 +13,10 @@ Microsystems, Inc. All Rights Reserved.
 -->
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
-    <name>org.netbeans.core.ui</name>
+    <name>org.netbeans.core</name>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/1">
-            <path>core/ui</path>
+            <path>core</path>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.openide</code-name-base>
@@ -24,25 +24,27 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>3.17</specification-version>
+                        <specification-version>4.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.15</specification-version>
+                        <specification-version>4.11</specification-version>
                     </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.core.windows</code-name-base>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency>
+                </dependency>	
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <!-- core/execution, editor, i18n -->
+                <package>org.netbeans.beaninfo.editors</package>
+                <!-- autoupdate, core/windows, core/deprecated, scripting, sim/bugsubmitter -->
+                <package>org.netbeans.core</package>
+                <!-- autoupdate, apisupport/ant, apisupport/lite -->
+                <package>org.netbeans.core.modules</package>
+            </public-packages>
+            <unit-tests/>
         </data>
     </configuration>
 </project>

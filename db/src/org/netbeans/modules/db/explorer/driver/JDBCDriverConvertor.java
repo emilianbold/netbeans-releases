@@ -53,7 +53,7 @@ import org.xml.sax.SAXException;
 /**
  * Reads and writes the standard JDBC driver registration format.
  */
-public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie.Origin, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
+public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor {
     
     private JDBCDriverConvertor() {}
 

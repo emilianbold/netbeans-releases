@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile-regular" depends="init">
-    <javac destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <javac destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <src path="src" />
       <src path="util/src" />
       <src path="awt/src" />
@@ -44,32 +44,32 @@ Microsystems, Inc. All Rights Reserved.
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
     </javac>
-    <javac srcdir="windows/src" destdir="windows/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <javac srcdir="windows/src" destdir="windows/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
       <classpath>
-        <pathelement location="src" />
+        <pathelement location="build/classes" />
       </classpath>
     </javac>
-    <javac srcdir="explorer/src" destdir="explorer/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <javac srcdir="explorer/src" destdir="explorer/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
       <classpath>
-        <pathelement location="src" />
+        <pathelement location="build/classes" />
       </classpath>
     </javac>
-    <javac srcdir="windows/src" destdir="windows/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4"> 
+    <javac srcdir="windows/src" destdir="windows/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4"> 
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
       <classpath>
-        <pathelement location="src" />
+        <pathelement location="build/classes" />
       </classpath>
     </javac>
-    <javac srcdir="explorer/src" destdir="explorer/src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+    <javac srcdir="explorer/src" destdir="explorer/build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <bootclasspath refid="openide-boot-cp"/>
       <classpath refid="openide-cp"/>
       <classpath>
-        <pathelement location="src" />
+        <pathelement location="build/classes" />
       </classpath>
     </javac>
   </target>
@@ -88,7 +88,8 @@ Microsystems, Inc. All Rights Reserved.
     <!-- needed for all 1.3 Javac versions. Easier to ensure that the outer classes -->
     <!-- appear in a separate JAR file at compile time, this assuages the compiler. -->
     <!-- Cf. #4401373. -->
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <mkdir dir="build/classes"/>
+    <javac srcdir="src" destdir="build/classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <!-- Compare inner classes of Actions: -->
       <include name="org/openide/awt/ToolbarButton.java"/>
       <include name="org/openide/awt/ToolbarToggleButton.java"/>
@@ -98,7 +99,7 @@ Microsystems, Inc. All Rights Reserved.
       <include name="org/openide/util/TaskListener.java"/>
     </javac>
     <jar jarfile="openide-13javac-workaround.jar"
-         basedir="src"
+         basedir="build/classes"
          compress="false">
       <include name="org/openide/awt/ToolbarButton.class"/>
       <include name="org/openide/awt/ToolbarButton$*.class"/>
@@ -133,40 +134,13 @@ Microsystems, Inc. All Rights Reserved.
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
   </target>
   
-  <target name="old-jars" depends="compile,13javac-workaround,vers-prep,loaders_32143-compat" description="Create JAR files.">
-    <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
-    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" manifest="manifest-subst.mf" compress="false" duplicate="preserve" >
-      <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      
-      <!-- include also patches -->
-      <fileset dir="compat/src">
-           <!-- But include patch files -->
-           <include name="**/$$*$$Patch$$.class" />
-      </fileset>
-    </jar>
-  </target>
-
-  <target name="loaders_32143-compat" depends="libs" unless="loaders_32143-compat.skip" >
-    <!-- temporary compatibility for API classes that had to be changed due to
-         work in loaders_32143 branch. Shall provide enough time to module
-         writers using the old code to update to new replacements.
-     -->
-     <ant antfile="build.xml" target="jars" dir="loaders" />
-     <ant antfile="build.xml" target="openide-compat" dir="compat" />
-     <ant antfile="build.xml" target="openide-compat" dir="windows" />
-     <ant antfile="build.xml" target="openide-compat" dir="text" />
-  </target>
-  
   <target name="release" depends="init">
     <copy todir="${netbeans.dest.dir}/${cluster.dir}" includeEmptyDirs="false">
       <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </copy>
   </target>
 
-  <target name="netbeans" depends="init,jars-from-libs,release,libs,loaders_32143-compat" description="Build everything needed for inclusion in the IDE.">
+  <target name="netbeans" depends="init,jars-from-libs,release,libs" description="Build everything needed for inclusion in the IDE.">
     <genlist outputfiledir="${netbeans.dest.dir}/${cluster.dir}" module="${nb.lib.dir}/openide.jar">
       <fileset dir="${netbeans.dest.dir}/${cluster.dir}">
         <patternset refID="openide.files"/>
@@ -335,12 +309,10 @@ Microsystems, Inc. All Rights Reserved.
   
   <!-- compiles one of the sets of above defines files into 
     provided directory
-    
-    
   -->
-  <target name="do-lib-javac" >
-    <mkdir dir="${localdir}" />
-    <javac sourcepath="" destdir="${localdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+  <target name="do-lib-javac-localdir" if="localdir">
+    <mkdir dir="${destdir}"/>
+    <javac sourcepath="" destdir="${destdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
       <src path="src" />
       <src path="${localdir}" />
       <selector>
@@ -353,14 +325,42 @@ Microsystems, Inc. All Rights Reserved.
       <classpath refid="classpath" />
     </javac>
     <!-- copy non-java files into new direction -->
-    <copy todir="${localdir}" >
+    <copy todir="${destdir}" >
       <fileset dir="src" >
         <selector refid="${selector}" />
-        <exclude name="**/*java" />
-        <exclude name="**/*class" />
+        <exclude name="**/*.java" />
+        <exclude name="**/*.class" />
+      </fileset>
+    </copy>
+    <copy todir="${destdir}">
+      <fileset dir="${localdir}">
+        <excludesfile name="${nbroot}/nbbuild/standard-jar-excludes.txt"/>
       </fileset>
     </copy>
   </target>
+  <target name="do-lib-javac-nolocaldir" unless="localdir">
+    <mkdir dir="${destdir}"/>
+    <javac sourcepath="" destdir="${destdir}" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.4">
+      <src path="src" />
+      <selector>
+        <or>
+          <selector refid="${selector}" />
+          <filename name="${include}" />
+          <filename name="org/netbeans/modules/openide/**/*.java" />
+        </or>
+      </selector>
+      <classpath refid="classpath" />
+    </javac>
+    <!-- copy non-java files into new direction -->
+    <copy todir="${destdir}" >
+      <fileset dir="src" >
+        <selector refid="${selector}" />
+        <exclude name="**/*.java" />
+        <exclude name="**/*.class" />
+      </fileset>
+    </copy>
+  </target>
+  <target name="do-lib-javac" depends="do-lib-javac-localdir,do-lib-javac-nolocaldir"/>
 
   <target name="do-lib-javadoc" >
     <ant dir="${nbroot}/nbbuild/javadoctools" antfile="template.xml" target="javadoc" inheritRefs="true" >
@@ -376,35 +376,24 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <!-- Build whole openide.jar from separate libraries -->
-  <target name="jars-from-libs" depends="init,libs,vers-prep,loaders_32143-compat" description="Create JAR files from copied directories." unless="no-openide.jar">
+  <target name="jars-from-libs" depends="init,libs,vers-prep" description="Create JAR files from copied directories." unless="no-openide.jar">
     <property name="openide.jar" value="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
     <mkdir dir="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
+    <!-- To find overlaps, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
     <jar jarfile="${openide.jar}" manifest="manifest-subst.mf" compress="false" duplicate="fail" >
-      
-      <fileset dir="actions/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="awt/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-        <!-- Bogus version, already supplied by openide-compat -->
-        <exclude name="org/openide/awt/HtmlBrowser$BrowserComponent.class"/>
-        <!-- To find others, use: zipinfo netbeans/lib/openide.jar|fgrep stor|cut -c21-29,54-|sort -k2|uniq|uniq -d -s9 -->
-      </fileset>
-      <fileset dir="dialogs/src" excludesfile="../nbbuild/standard-jar-excludes.txt" />
-      <fileset dir="explorer/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="fs/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="nodes/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-         <!-- will be provided by openide-compat -->
-         <exclude name="org/openide/cookies/InstanceCookie$$Origin.class" />
-      </fileset>
-      <fileset dir="options/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="text/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="util/src" excludesfile="../nbbuild/standard-jar-excludes.txt">
-         <!-- will be provided by openide-compat -->
-         <exclude name="org/openide/cookies/WeakListener.class" />
-         <exclude name="org/openide/cookies/WeakListener$$*.class" />
-      </fileset>
-      <fileset dir="modules/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="windows/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
-      <fileset dir="compat/src" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="actions/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="awt/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="dialogs/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt" />
+      <fileset dir="explorer/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="fs/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="nodes/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="options/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="text/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="util/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="modules/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="windows/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+      <fileset dir="compat/build/classes" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
     </jar>
   </target>
   
@@ -813,13 +802,8 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
   </target>
 
   <target name="clean" description="Remove all build products." depends="init,libs-clean">
+    <delete dir="build"/>
     <delete>
-      <fileset dir="src">
-        <include name="**/*.class"/>
-      </fileset>
-      <fileset dir="compat/src">
-        <include name="**/*.class"/>
-      </fileset>
       <fileset dir=".">
         <include name="*-subst.mf"/>
       </fileset>

@@ -185,7 +185,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building java/srcmodel..."/>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
-  <target name="all-core" depends="all-openide,all-openide/loaders">
+  <target name="all-core/bootstrap" depends="init">
+    <echo message="Building module core/bootstrap..."/>
+    <ant dir="../core/bootstrap" target="netbeans"/>
+  </target>
+  <target name="all-core" depends="all-openide,all-openide/loaders,all-core/bootstrap">
     <echo message="Building IDE core implementation..."/>
     <ant dir="../core" target="netbeans"/>
   </target>
@@ -197,11 +201,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/compiler..."/>
     <ant dir="../core/compiler" target="netbeans"/>
   </target>
-  <target name="all-core/execution" depends="all-openide,all-openide/io,all-openide/execution,all-core">
+  <target name="all-core/execution" depends="all-openide,all-openide/io,all-openide/execution,all-core,all-core/bootstrap">
     <echo message="Building module core/execution..."/>
     <ant dir="../core/execution" target="netbeans"/>
   </target>
-  <target name="all-core/output" depends="all-openide,all-openide/io,all-core,all-core/term">
+  <target name="all-core/output" depends="all-openide,all-openide/io,all-core/term">
     <echo message="Building module core/output..."/>
     <ant dir="../core/output" target="netbeans"/>
   </target>
@@ -209,7 +213,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module core/term..."/>
     <ant dir="../core/term" target="netbeans"/>
   </target>
-  <target name="all-core/ui" depends="all-openide,all-core,all-core/windows">
+  <target name="all-core/ui" depends="all-openide">
     <echo message="Building module core/ui..."/>
     <ant dir="../core/ui" target="netbeans"/>
   </target>
@@ -279,7 +283,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module ant/browsetask..."/>
     <ant dir="../ant/browsetask" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-java/api,all-openide/compiler,all-openide/execution,all-openide/io">
+  <target name="all-apisupport" depends="all-openide,all-core/javahelp,all-java/api,all-openide/compiler,all-openide/execution,all-openide/io">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
@@ -292,7 +296,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module apisupport/apidocs..."/>
     <ant dir="../apisupport/apidocs" target="netbeans"/>
   </target>
-  <target name="all-apisupport/lite" depends="all-openide,all-core,all-java/srcmodel,all-openide/execution">
+  <target name="all-apisupport/lite" depends="all-openide,all-java/srcmodel,all-openide/execution">
     <echo message="Building module apisupport lite..."/>
     <ant dir="../apisupport/lite" target="netbeans"/>
   </target>
@@ -328,7 +332,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module db..."/>
     <ant dir="../db" target="netbeans"/>
   </target>
-  <target name="all-debuggercore/oldapi" depends="all-openide,all-java/srcmodel,all-openide/execution,all-openide/loaders,all-core,all-openide/execution/deprecated">
+  <target name="all-debuggercore/oldapi" depends="all-openide,all-java/srcmodel,all-openide/execution,all-openide/loaders,all-openide/execution/deprecated">
     <echo message="Building module debuggercore/oldapi..."/>
     <ant dir="../debuggercore/oldapi" target="netbeans"/>
   </target>
@@ -497,11 +501,11 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module monitor..."/>
     <ant dir="../monitor" target="netbeans"/>
   </target>
-  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex,all-openidex/looks,all-core/naming">
+  <target name="all-mdr" depends="all-openide,all-openide/deprecated,all-openide/loaders,all-openidex,all-core/naming"><!-- XXX no more openidex/looks -->
     <echo message="Building module mdr..."/>
     <ant dir="../mdr" target="netbeans"/>
   </target>
-  <target name="all-mdr/samples/xml" depends="all-openide,all-openidex,all-openidex/looks,all-xml/core,all-mdr">
+  <target name="all-mdr/samples/xml" depends="all-openide,all-openidex,all-xml/core,all-mdr"><!-- XXX no more openidex/looks -->
     <echo message="Building module mdr/samples/xml..."/>
     <ant dir="../mdr/samples/xml" target="netbeans"/>
   </target>
@@ -564,7 +568,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module tasklist/api..."/>
     <ant dir="../tasklist/api" target="netbeans"/>
   </target>
-  <target name="all-tasklist/core" depends="all-openide,all-core/settings,all-core/output,all-tasklist/api">
+  <target name="all-tasklist/core" depends="all-openide,all-core/settings,all-tasklist/api">
     <echo message="Building module tasklist/core..."/>
     <ant dir="../tasklist/core" target="netbeans"/>
   </target>
@@ -637,7 +641,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module usersguide..."/>
     <ant dir="../usersguide" target="netbeans"/>
   </target>
-  <target name="all-utilities" depends="all-openide,all-openide/io,all-openidex,all-core/javahelp,all-core">
+  <target name="all-utilities" depends="all-openide,all-openide/io,all-openidex,all-core/javahelp,all-core/bootstrap">
     <echo message="Building module utilities..."/>
     <ant dir="../utilities" target="netbeans"/>
   </target>
@@ -717,7 +721,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/project..."/>
     <ant dir="../web/project" target="netbeans" />
   </target>
-  <target name="all-web/core" depends="all-openide,all-java,all-core,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
+  <target name="all-web/core" depends="all-openide,all-java,all-editor,all-web/ddapi,all-web/webapi,all-j2eeserver,all-html,all-httpserver,all-debuggercore,all-openidex,all-schema2beans/rt,all-xml/api,all-xml/catalog,all-java/srcmodel,all-java/api,all-openide/execution,all-openide/io,all-debuggercore/oldapi,all-projects/projectapi,all-web/jspsyntax">
     <echo message="Building module web/core..."/>
     <ant dir="../web/core" target="netbeans"/>
   </target>
@@ -733,8 +737,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module web/jspdebug..."/>
     <ant dir="../web/jspdebug" target="netbeans"/>
   </target>
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-web/taglibed" depends="all-web/core,all-jarpackager,all-core,all-xml/core,all-openide/deprecated,all-java/srcmodel,all-openide/io">
+  <target name="all-web/taglibed" depends="all-web/core,all-jarpackager,all-xml/core,all-openide/deprecated,all-java/srcmodel,all-openide/io">
     <echo message="Building module web/taglibed..."/>
     <ant dir="../web/taglibed" target="netbeans"/>
   </target>
@@ -768,8 +771,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <ant dir="../corba" target="netbeans"/>
   </target>
 
-  <!-- XXX illegal dependence on core! -->
-  <target name="all-ui/welcome" depends="all-openide,all-core,all-utilities,all-autoupdate">
+  <target name="all-ui/welcome" depends="all-openide,all-utilities,all-autoupdate">
     <echo message="Building module ui/welcome..."/>
     <ant dir="../ui/welcome" target="netbeans"/>
   </target>
@@ -859,11 +861,6 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
   <target name="all-treefs" depends="all-openide,all-java/srcmodel">
     <echo message="Building module treefs..."/>
     <ant dir="../treefs" target="netbeans"/>
-  </target>
-
-  <target name="all-openidex/looks" depends="all-openide,all-core/naming">
-      <echo message="Building module openidex/looks..."/>
-      <ant dir="../openidex/looks" target="netbeans"/>
   </target>
 
   <target name="all-utilities/loaderswitcher" depends="all-openide">
@@ -1117,15 +1114,6 @@ Tag:
     <!-- zip task not well suited to making final build, as it does not set +x bits -->
     <!-- so on Unix try to use native ZIP first -->
     <delete file="NetBeans-${buildnum}.zip"/>
-    <!-- XXX Ant 1.5.2 can store +x bit, see zipfileset -->
-<!--
-    <exec executable="zip" dir="." os="Linux SunOS Solaris Mac OS X" failonerror="false">
-      <arg value="-r"/>
-      <arg value="NetBeans-${buildnum}.zip"/>
-      <arg value="${netbeans.dest}"/>
-    </exec>
--->
-
     <!-- see issue #35744 http://www.netbeans.org/issues/show_bug.cgi?id=35744 -->
     <delete file="NetBeans-${buildnum}.zip"/>
     <zip destfile="NetBeans-${buildnum}.zip" update="true" duplicate="preserve">
@@ -1416,6 +1404,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete file="moduledefs-tmp.properties"/>
     <delete file="moduleCluster.properties"/>
     <delete dir="nbms" />
+    <delete dir="modules_exported_interfaces"/>
   </target>
 
   <target name="clean" depends="init,localclean"

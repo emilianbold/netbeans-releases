@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -35,9 +35,6 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
     /** requested URL */
     protected URL url;
     protected String title = "";      // NOI18N
-    
-    /** What's this?? */ // TODO
-    protected HtmlBrowser.BrowserComponent delegatingBrowser = null;
     
     /** reference to a factory to get settings */
     protected ExtWebBrowser extBrowserFactory;
@@ -99,23 +96,7 @@ public abstract class ExtBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
      *
      * @param url URL to show in the browser.
      */
-    public void setURL(URL url) {
-        if (url == null)
-            return;
-        
-        if (isInternalProtocol (url.getProtocol ())) {
-            if (delegatingBrowser == null) {
-                delegatingBrowser = new HtmlBrowser.BrowserComponent ();
-            }
-            delegatingBrowser.open ();
-            delegatingBrowser.requestFocus ();
-            delegatingBrowser.setURL (url);
-
-            URL old = this.url;
-            this.url = url;
-            pcs.firePropertyChange (PROP_URL, old, url);
-        }
-    }
+    public abstract void setURL(URL url);
     
     /** Returns visual component of html browser.
      *

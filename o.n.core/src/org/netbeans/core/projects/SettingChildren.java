@@ -35,7 +35,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import org.openide.actions.CustomizeBeanAction;
 import org.openide.actions.ToolsAction;
 import org.openide.util.actions.SystemAction;
 
@@ -281,11 +280,10 @@ public final class SettingChildren extends FilterNode.Children {
             return getOriginal().hashCode();
         }
         // #24766 Exclude Customize Bean action.
-        /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
+        /** Overrides superclass method, excludes the ToolsAction from the node. */
         public SystemAction[] getActions() {
             SystemAction[] as = super.getActions();
-            SystemAction[] toDeleteActions = new SystemAction[] {SystemAction.get(CustomizeBeanAction.class), 
-                    SystemAction.get(ToolsAction.class)};
+            SystemAction[] toDeleteActions = new SystemAction[] {SystemAction.get(ToolsAction.class)};
 
             as = removeActions(as, toDeleteActions);
             return as;

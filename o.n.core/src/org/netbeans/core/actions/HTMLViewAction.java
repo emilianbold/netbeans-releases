@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -28,6 +28,8 @@ import org.netbeans.core.IDESettings;
 */
 public class HTMLViewAction extends CallableSystemAction {
 
+    public static final String MODE_NAME = "webbrowser"; // NOI18N
+
     protected String iconResource () {
         return "org/netbeans/core/resources/actions/htmlView.gif"; // NOI18N
     }
@@ -40,7 +42,7 @@ public class HTMLViewAction extends CallableSystemAction {
             
             // is browser open on current workspace?
             Workspace workspace = WindowManager.getDefault().getCurrentWorkspace ();
-            Mode mode = workspace.findMode (org.openide.awt.HtmlBrowser.BrowserComponent.MODE_NAME);
+            Mode mode = workspace.findMode(MODE_NAME);
             if (mode != null) {
                 TopComponent [] comps = mode.getTopComponents ();
                 if (comps.length > 0) {
@@ -54,7 +56,7 @@ public class HTMLViewAction extends CallableSystemAction {
                 Workspace [] workspaces = WindowManager.getDefault ().getWorkspaces ();
                 if (workspaces != null) {
                     for (int i=0; i<workspaces.length; i++) {
-                        mode = workspaces[i].findMode (org.openide.awt.HtmlBrowser.BrowserComponent.MODE_NAME);
+                        mode = workspaces[i].findMode(MODE_NAME);
                         if (mode != null) {
                             TopComponent [] comps = mode.getTopComponents ();
                             if (comps.length > 0) {

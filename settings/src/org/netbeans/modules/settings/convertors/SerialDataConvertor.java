@@ -290,7 +290,7 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     //////////////////////////////////////////////////////////////////////////
     
     /** InstanceCookie implementation */
-    private final class SettingsInstance implements InstanceCookie.Of, InstanceCookie.Origin {
+    private final class SettingsInstance implements InstanceCookie.Of {
         
         /** created instance   */
         private SoftReference inst;
@@ -417,13 +417,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                 inform(ex);
                 return ""; // NOI18N
             }
-        }
-        
-        /** Returns the origin of the instance.
-         * @return the original file
-         */
-        public FileObject instanceOrigin() {
-            return getDataObject().getPrimaryFile();
         }
         
         private Object getCachedInstance() {

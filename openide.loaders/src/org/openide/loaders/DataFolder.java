@@ -300,33 +300,6 @@ implements Serializable, DataObject.Container {
         }
     }
 
-    /** Adds a compilation cookie.
-     * @deprecated While the correct cookie will continue to be served for backward compatibility,
-     *             new code should not rely on data folders having <code>CompilerCookie</code>.
-     *             Instead, traverse children explicitly looking for compilation cookies; or call
-     *             <code>AbstractCompileAction.prepareJobFor</code> for convenience.
-    */
-    public Node.Cookie getCookie (Class cookie) {
-        // is somebody asking for folder compiler?
-        if (cookie.getName().startsWith("org.openide.cookies.CompilerCookie$")) { // NOI18N
-            try {
-                Class cmp = Class.forName("org.openide.actions.AbstractCompileAction$Cmp", true, cookie.getClassLoader()); // NOI18N
-                java.lang.reflect.Constructor con = cmp.getConstructor(new Class[] {DataObject.Container.class, Class.class});
-                con.setAccessible(true);
-                Object o = con.newInstance(new Object[] {this, cookie});
-                if (cookie.isInstance(o)) {
-                    return (Node.Cookie)o;
-                }
-                // else go on, folder compiler does not implement such cookie
-            } catch (Exception e) {
-                // Oh well.
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-            }
-        }
-        // end testing
-        return super.getCookie (cookie);
-    }
-
     /** Create node representative for this folder.
     */
     protected synchronized Node createNodeDelegate () {
@@ -710,7 +683,7 @@ implements Serializable, DataObject.Container {
                 countDown--;
                 try {
                     // resolve temporary object for moving into
-                    DataLoaderPool$FolderLoader folderLoader = (DataLoaderPool$FolderLoader) getMultiFileLoader ();
+                    DataLoaderPool.FolderLoader folderLoader = (DataLoaderPool.FolderLoader) getMultiFileLoader ();
                     newFolder = (DataFolder) DataObjectPool.createMultiObject (folderLoader, newFile, this);
                     dispose = false;
                     break;

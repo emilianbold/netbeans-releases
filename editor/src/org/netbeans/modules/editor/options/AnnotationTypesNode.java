@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -37,7 +37,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.openide.ErrorManager;
-import org.openide.actions.CustomizeBeanAction;
 import org.openide.util.Utilities;
 
 /** Node representing the Annotation Types in Options window.
@@ -208,21 +207,6 @@ public class AnnotationTypesNode extends AbstractNode {
             }
             public HelpCtx getHelpCtx() {
                 return new HelpCtx(HELP_ID);
-            }
-            
-            // #28678 Exclude Customize Bean action.
-            /** Overrides superclass method, excludes the CustomizeBeanAction from the node. */
-            public SystemAction[] getActions() {
-                SystemAction[] as = super.getActions();
-                List actions = java.util.Arrays.asList(as);
-                SystemAction customizeBean = SystemAction.get(CustomizeBeanAction.class);
-                if(actions.contains(customizeBean)) {
-                    actions = new ArrayList(actions); // to be mutable
-                    actions.remove(customizeBean);
-                    return (SystemAction[])actions.toArray(new SystemAction[0]);
-                } else {
-                    return as;
-                }
             }
             
         }
