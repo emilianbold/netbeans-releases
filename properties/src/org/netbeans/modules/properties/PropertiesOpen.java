@@ -561,6 +561,20 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             initialize();
         }
 
+        /** Docks the table into the workspace */
+        public void open(Workspace workspace){
+            if (workspace == null) workspace = TopManager.getDefault().getWindowManager().getCurrentWorkspace();
+            Mode editorMode = workspace.findMode(this);
+            if (editorMode == null) {
+                editorMode = workspace.createMode(
+                    CloneableEditorSupport.EDITOR_MODE, 
+                    getName(),
+                    CloneableEditorSupport.class.getResource("/org/openide/resources/editorMode.gif")); // NOI18N
+                editorMode.dockInto(this);
+            }
+
+            super.open(workspace);
+        }
         
         /** Initializes this instance. Used by construction and deserialization. */
         private void initialize() {
@@ -586,18 +600,6 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
                     }
             }, propDataObject));
             
-            // dock into editor mode if possible
-            Workspace[] currentWs = TopManager.getDefault().getWindowManager().getWorkspaces();
-            for (int i = currentWs.length; --i >= 0; ) {
-                Mode editorMode = currentWs[i].findMode(CloneableEditorSupport.EDITOR_MODE);
-                if (editorMode == null) {
-                    editorMode = currentWs[i].createMode(
-                        CloneableEditorSupport.EDITOR_MODE, 
-                        getName(),
-                        CloneableEditorSupport.class.getResource("/org/openide/resources/editorMode.gif")); // NOI18N
-                }
-                editorMode.dockInto(this);
-            }
         }
         
         /** Gets string for tooltip. */
