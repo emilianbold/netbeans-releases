@@ -175,7 +175,7 @@ sub checkline {
 
     return (! m,NOI18N,
             && ! m,getString\s*\(,
-            && ! m,err\. ?print,
+            && ! m,System\. ?err\. ?print,
             && ! m,getProperty,
             && ! m,getBoolean,
             && ! m,NbBundle\. ?get(Message|LocalizedFile),
