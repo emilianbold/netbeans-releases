@@ -35,11 +35,7 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>
-        <pathelement location="../openidex/netbeans/modules/openidex.jar"/>
         <pathelement location="../java/netbeans/modules/java.jar"/>
-        <pathelement location="../clazz/netbeans/modules/clazz.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/parser.jar"/>
-        <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
       </classpath>
     </javac>
   </target>
