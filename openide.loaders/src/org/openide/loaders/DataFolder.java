@@ -581,7 +581,7 @@ implements Serializable, DataObject.Container {
             while (testFolder != null) {
                 if (testFolder.equals(this)) {
                     throw (IOException) ErrorManager.getDefault().annotate(
-                        new IOException("Error Copying File or Folder"), //NOI18N
+                        new IOException("Error copying file or folder: " + testFolder.getPrimaryFile() + " in " + getPrimaryFile()), //NOI18N
                         NbBundle.getMessage(DataFolder.class, "EXC_CannotCopySubfolder", getName()) //NOI18N
                     );
                 }
