@@ -590,7 +590,7 @@ is divided into following sections:
                  
             </target>
             
-            <target name="-copy-manifest" if="conf.dir">
+            <target name="-copy-manifest" if="has.custom.manifest">
                 <mkdir dir="${{build.meta.inf.dir}}"/>
                 <copy todir="${{build.meta.inf.dir}}">
                     <fileset dir="${{conf.dir}}" includes="MANIFEST.MF"/>
