@@ -29,7 +29,7 @@ import org.openide.util.Utilities;
 import org.openide.src.nodes.FilterFactory;
 import org.openide.actions.CutAction;
 import org.openide.util.actions.SystemAction;
-import org.openide.modules.ModuleInstall;
+import org.openide.modules.*;
 import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -57,7 +57,7 @@ public class JavadocModule extends ModuleInstall {
     }
     
     public static boolean isDisabledForJDK14(){
-        if("1.4".startsWith(System.getProperty("java.version")))
+        if(Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.4")) >= 0)         
             return true;
         else
             return false;
