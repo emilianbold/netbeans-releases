@@ -90,8 +90,8 @@ public class LineDiff implements Diff {
         String testLine;
         
         if (diffFile == null) {
-            while ((passLine = first.readLine()) != null) {
-                testLine = second.readLine();
+            while ((passLine = second.readLine()) != null) {
+                testLine = first.readLine();
                 if (testLine == null) {
                     first.close();
                     second.close();
@@ -190,6 +190,7 @@ public class LineDiff implements Diff {
                     ps.println(result.get(i));
                 }
                 ps.close();
+                return true;
             }
         }
         return false;
