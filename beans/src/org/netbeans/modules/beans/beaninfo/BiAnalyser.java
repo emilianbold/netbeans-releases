@@ -648,8 +648,8 @@ public class BiAnalyser extends Object implements Node.Cookie {
     private void regenerateDefaultIdx() {
         StringBuffer sb = new StringBuffer(100);
 
-        sb.append( TAB + "private static int " + DEFAULT_PROPERTY_INDEX + " = ").append( defaultPropertyIndex ).append( ";\n"); // NOI18N
-        sb.append( TAB + "private static int " + DEFAULT_EVENT_INDEX + " = ").append( defaultEventIndex ).append( ";\n"); // NOI18N
+        sb.append( TAB + "private static final int " + DEFAULT_PROPERTY_INDEX + " = ").append( defaultPropertyIndex ).append( ";\n"); // NOI18N
+        sb.append( TAB + "private static final int " + DEFAULT_EVENT_INDEX + " = ").append( defaultEventIndex ).append( ";\n"); // NOI18N
 
         bis.setDefaultIdxSection( sb.toString() );
     }
