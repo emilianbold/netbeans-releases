@@ -438,10 +438,16 @@ public class OptionUtilities {
         }
         return new ArrayList();
     }
-    
-    
-    /** Creates String representation of popup from DO representation */
+
     public static List getPopupStrings(List popup){
+        return getPopupStrings(popup, false);
+    }    
+    
+    /** Creates String representation of popup from DO representation
+     *  @param addSeparatorInstance if true the result list will use instance of JSeparator in case of separator,
+     *   if false null will be used
+     */
+    public static List getPopupStrings(List popup, boolean addSeparatorInstance){
         List retList = new ArrayList();
         for (int i=0; i<popup.size(); i++){
             if (!(popup.get(i) instanceof DataObject)) continue;
@@ -458,7 +464,7 @@ public class OptionUtilities {
                         retList.add(ic.instanceCreate());
                     }
                     if(javax.swing.JSeparator.class.isAssignableFrom(ic.instanceClass())){
-                        retList.add(null);
+                        retList.add(addSeparatorInstance?new javax.swing.JSeparator():null);
                     }
                 }catch(IOException ioe){
                     ioe.printStackTrace();

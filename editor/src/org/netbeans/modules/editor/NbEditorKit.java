@@ -220,7 +220,7 @@ public class NbEditorKit extends ExtKit {
             EditorUI ui = Utilities.getEditorUI(target);            
             BaseOptions bo = BaseOptions.getOptions(NbEditorKit.this.getClass());
             if (bo != null){
-                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup")); // NOI18N
+                l = OptionUtilities.getPopupStrings(bo.getOrderedMultiPropertyFolderFiles("Popup"), true); // NOI18N
             }else{
                 l = (List)Settings.getValue(Utilities.getKitClass(target),
                     (ui == null || ui.hasExtComponent())
@@ -233,8 +233,11 @@ public class NbEditorKit extends ExtKit {
                 Iterator i = l.iterator();
                 while (i.hasNext()) {
                     Object obj = i.next();
+                    if (obj == null) continue;
                     if (obj instanceof Action){
                         addAction(target, pm, (Action)obj);
+                    }else if (obj instanceof javax.swing.JSeparator){
+                        addAction(target, pm, (String)null);
                     }else{
                         String an = (String)obj;
                         addAction(target, pm, an);
