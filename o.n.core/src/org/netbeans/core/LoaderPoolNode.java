@@ -28,7 +28,7 @@ import com.netbeans.ide.nodes.*;
 import com.netbeans.ide.util.actions.SystemAction;
 import com.netbeans.ide.util.Mutex;
 import com.netbeans.ide.util.NbBundle;
-import com.netbeans.developer.impl.actions.ReorderAction;
+import com.netbeans.ide.actions.ReorderAction;
 
 
 /** Node which represents loader pool and its content - all loaders
@@ -522,6 +522,7 @@ public final class LoaderPoolNode extends IndexedNode {
 
 /*
 * Log
+*  5    Gandalf   1.4         1/7/99   David Simonek   
 *  4    Gandalf   1.3         1/7/99   Ian Formanek    fixed resource names
 *  3    Gandalf   1.2         1/6/99   Ian Formanek    Reflecting change in 
 *       datasystem package
