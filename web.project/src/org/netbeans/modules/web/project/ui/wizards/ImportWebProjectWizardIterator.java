@@ -45,6 +45,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.Project;
@@ -343,10 +344,10 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             return panel;
         }
         
-        public org.openide.util.HelpCtx getHelp () {
-            return null;
+        public HelpCtx getHelp() {
+            return new HelpCtx(ThePanel.class);
         }
-        
+
         public boolean isValid () {
             getComponent();
             return panel.valid(wizardDescriptor);
@@ -478,8 +479,8 @@ public class ImportWebProjectWizardIterator implements TemplateWizard.Iterator {
             return panel;
         }
         
-        public org.openide.util.HelpCtx getHelp () {
-            return null;
+        public HelpCtx getHelp() {
+            return new HelpCtx(SecondPanel.class);
         }
         
         public boolean isValid () {

@@ -52,7 +52,7 @@ final class PanelConfigureProject implements WizardDescriptor.Panel, WizardDescr
     }
     
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx(PanelConfigureProject.class);
     }
     
     public boolean isValid() {
