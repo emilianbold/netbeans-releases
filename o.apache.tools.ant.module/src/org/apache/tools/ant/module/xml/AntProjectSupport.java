@@ -130,10 +130,11 @@ public class AntProjectSupport implements AntProjectCookie, DocumentListener, Fi
         AntModule.err.log ("AntProjectSupport.parseDocument: fo=" + fo);
         try {
             DOMParser parser = new DOMParser ();
-            // Xerces 1.2.1 has an apparent bug that when lazy node expansion is turned on,
+            // Xerces 1.2.3 has an apparent bug that when lazy node expansion is turned on,
             // when the node finally is expanded (in response to some getter method), the
             // DOM tree fires a mutation event (though in fact the tree has not been changed).
             // This causes gratuitous document modification and an endless feedback loop.
+            // Appears to have been fixed in Xerces CVS in Feb 2001, so remove this sometime...
             parser.setFeature ("http://apache.org/xml/features/dom/defer-node-expansion", false); // NOI18N
             Reader rd;
             EditorCookie editor = getEditor ();
