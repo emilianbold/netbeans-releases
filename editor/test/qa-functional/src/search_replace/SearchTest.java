@@ -24,7 +24,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 
 /**
- * Test of search functionality in editor.
+ * Test of find functionality in editor.
  *
  * @author Roman Strobl
  */
@@ -85,9 +85,8 @@ public class SearchTest extends EditorTestCase {
             find.find();
             new EventTool().waitNoEvent(1000);
             find.close();
-            // check position
-            assertEquals(editor.getLineNumber(), 16);
-            assertEquals(editor.txtEditorPane().getCaret().getDot(), 266);           
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), "'public' found at 16:5");
 
             // choose the "testFindSelectionRepeated" word
             editor.select(13, 14, 38);
@@ -99,9 +98,8 @@ public class SearchTest extends EditorTestCase {
             find2.find();
             new EventTool().waitNoEvent(1000);
             find2.close();
-            // check position
-            assertEquals(editor.getLineNumber(), 15);
-            assertEquals(editor.txtEditorPane().getCaret().getDot(), 258);
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), "'testFindSelectionRepeated' found at 15:35");
             
         } finally {
             closeFileWithDiscard();
@@ -142,9 +140,8 @@ public class SearchTest extends EditorTestCase {
             find3.find();
             new EventTool().waitNoEvent(1000);
             find3.close();
-            // check position
-            assertEquals(editor.getLineNumber(), 16);
-            assertEquals(editor.txtEditorPane().getCaret().getDot(), 262);
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), "'public' found at 16:5");
                         
         } finally {
             closeFileWithDiscard();
@@ -172,9 +169,8 @@ public class SearchTest extends EditorTestCase {
             find.find();
             new EventTool().waitNoEvent(1000);
             find.close();
-            // check position
-            assertEquals(editor.getLineNumber(), 13);
-            assertEquals(editor.txtEditorPane().getCaret().getDot(), 163);
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), "'cLaSs' found at 13:8");
             
         } finally {
             closeFileWithDiscard();
