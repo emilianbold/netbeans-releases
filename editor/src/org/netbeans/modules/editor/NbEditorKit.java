@@ -332,7 +332,7 @@ public class NbEditorKit extends ExtKit {
         }
         
         public String getShortDescription() {
-            return "";
+            return org.openide.util.NbBundle.getBundle (NbEditorKit.class).getString("Bookmark_Tooltip"); // NOI18N
         }
     }
 
