@@ -385,7 +385,7 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 	    logEvent(this, Log.ERROR, e);
 	}
 	
-	System.getProperties().put("nbInstallDir", nbInstallDir);
+	Util.setNbInstallDir(nbInstallDir);
 	logEvent(this, Log.DBG, "User specified nbInstallDir: " + nbInstallDir);
 	
  	// Check the j2se directory
@@ -426,7 +426,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
             }
             try {
                 ProductService service = (ProductService)getService(ProductService.NAME);
-                service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
+                if (Util.isWindowsOS()) {
+                    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", nbInstallDir);
+                } else {
+                    service.setRetainedProductBeanProperty(productURL, "beanJ2SE", "installLocation", j2seInstallDir);
+                }
             } catch (ServiceException e) {
                 logEvent(this, Log.ERROR, e);
             }
@@ -436,9 +440,11 @@ public class InstallDirSelectionPanel extends ExtendedWizardPanel implements Act
 
             // Last thing to do is create the J2SE directory unless the
             // directory exists and is empty.
-            if (!emptyExistingDirJ2SE) {
-                if (!createDirectory(j2seInstallDir, j2seMsgStart)) return false;
-            }
+            /*if (!emptyExistingDirJ2SE) {
+                if (!createDirectory(j2seInstallDir, j2seMsgStart)) {
+                    return false;
+                }
+            }*/
         }
         
         //#49348: Do not allow the same dir for JDK and NB.

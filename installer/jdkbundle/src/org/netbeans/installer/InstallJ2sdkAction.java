@@ -42,6 +42,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
     private static final int UNINSTALL = 1;
     
     private String statusDesc = "";
+    private String nbInstallDir = "";
     private String j2seInstallDir = "";
     private String jreInstallDir = "";
     private String tempDir = "";
@@ -77,6 +78,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         ProductService pservice = (ProductService)getService(ProductService.NAME);
         String productURL = ProductService.DEFAULT_PRODUCT_SOURCE;
         instDirPath = resolveString((String)pservice.getProductBeanProperty(productURL,null,"absoluteInstallLocation")); */
+        nbInstallDir = Util.getNbInstallDir();
+        logEvent(this, Log.DBG,"nbInstallDir: " + nbInstallDir);
         origJ2SEInstallDir = (String) System.getProperties().get("j2seInstallDir");
         logEvent(this, Log.DBG,"$D(common): " + resolveString("$D(common)"));
         logEvent(this, Log.DBG,"$D(install): " + resolveString("$D(install)"));
@@ -121,48 +124,43 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 		+ "j2se-uninstall.template";
 		createUninstallScript(jdkUninstallScript, "uninstall.sh");
 	    } else {
-		String jdkInstallScript = uninstDir + File.separator 
-                + "custom-install-jdk.template";
+		String jdkInstallScript = nbInstallDir + File.separator + "_uninst"
+                + File.separator + "custom-install-jdk.template";
 		createInstallScriptJDKWindows(jdkInstallScript, "custom-install-jdk.bat");
             }
             String execName;
-            String driveName;
             int paramCount;
 
 	    // We'll be running the j2se installer in silent mode so most 
 	    // of this code is putting together the path and script or exe to
 	    // run. Determine the script or exe to run.
             if (Util.isWindowsNT() || Util.isWindows98()) {
-                execName =  findJDKWindowsInstaller(j2seInstallDir);
+                execName =  findJDKWindowsInstaller();
                 paramCount = 1;
-                driveName = "";                
-            }
-            else if (Util.isWindowsOS()) {
-                driveName = j2seInstallDir.substring(0, j2seInstallDir.indexOf(File.separator));
+            } else if (Util.isWindowsOS()) {
                 execName = "custom-install-jdk.bat";
-                paramCount = 5;
-            }
-            else {
+                paramCount = 1;
+            } else {
                 execName = "custom-install";
-                driveName = "";
                 paramCount = 1;
             }
             
             String cmdArray[] = new String[paramCount];
-            String execPath   = uninstDir + File.separator + execName;
-            String logPath    = origJ2SEInstallDir + File.separator + "install-jdk.log";
+            String execPath;
+            if (Util.isWindowsOS()) {
+                //Not for Win 98/Win NT
+                execPath  = nbInstallDir + File.separator + "_uninst" + File.separator + execName;
+            } else {
+                execPath  = uninstDir + File.separator + execName;
+            }
             String envP[] = null;
             
 	    // Put the command and arguments together for windows
             if (Util.isWindowsNT() || Util.isWindows98()) {
-                cmdArray[0] = j2seInstallDir + File.separator + execName
+                cmdArray[0] = "\"" + nbInstallDir + File.separator + execName + "\""
                 + " /s /v\"/qn INSTALLDIR=\\\"" + j2seInstallDir + "\\\"\"";
             } else if (Util.isWindowsOS()) {
                 cmdArray[0] = execPath;
-                cmdArray[1] = "\"" + logPath + "\""; //logfile
-                cmdArray[2] = "\"" + j2seInstallDir + "\\\""; //instDir NOTE: the opening backslash is in the script
-                cmdArray[3] = driveName;
-                cmdArray[4] = "\"" + uninstDir + "\""; //uninstDir
             } else {
                 cmdArray[0] = execPath;
             }
@@ -172,7 +170,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             logEvent(this, Log.DBG,"Start Invoking JDK installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
             runCommand(cmdArray, envP, support);
             
-            //Run JRE installer separately on Win NT / Win 98.
             //Update status description
             if (Util.isWindowsOS() && !Util.isJREAlreadyInstalled()) {
                 statusDesc = resolveString("$L(org.netbeans.installer.Bundle,ProgressPanel.installMessage,"
@@ -185,7 +182,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             if (Util.isWindowsNT() || Util.isWindows98()) {
                 //Install public JRE only when it is not already installed.
                 if (!Util.isJREAlreadyInstalled()) {
-                    String jreInstaller = findJREWindowsInstaller();
+                    String jreInstaller = findJREWindowsInstaller() + File.separator + "jre.msi";
                     if (jreInstaller != null) {
                         cmdArray[0] = "msiexec.exe /qn /i \"" + jreInstaller + "\""
                         + " IEXPLORER=1 MOZILLA=1";
@@ -197,25 +194,21 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
             } else if (Util.isWindowsOS()) {
                 //Install public JRE only when it is not already installed.
                 if (!Util.isJREAlreadyInstalled()) {
-                    String jreInstallScript = uninstDir + File.separator 
-                    + "custom-install-jre.template";
+                    String jreInstallScript = nbInstallDir + File.separator + "_uninst"
+                    + File.separator + "custom-install-jre.template";
                     createInstallScriptJREWindows(jreInstallScript, "custom-install-jre.bat");
-                    driveName = j2seInstallDir.substring(0, j2seInstallDir.indexOf(File.separator));
                     execName = "custom-install-jre.bat";
-                    paramCount = 4;
+                    paramCount = 1;
                     cmdArray = new String[paramCount];
-                    execPath   = uninstDir + File.separator + execName;
-                    logPath    = origJ2SEInstallDir + File.separator + "install-jre.log";
+                    execPath   = nbInstallDir + File.separator + "_uninst" + File.separator + execName;
                     cmdArray[0] = execPath;
-                    cmdArray[1] = "\"" + logPath + "\""; //logfile
-                    cmdArray[2] = driveName;
-                    cmdArray[3] = "\"" + uninstDir + "\""; //uninstDir
                     logEvent(this, Log.DBG,"# # # # # # # #");
                     logEvent(this, Log.DBG,"Start Invoking JRE installer: cmdArray -> " + Arrays.asList(cmdArray).toString());
                     runCommand(cmdArray, envP, support);
                 }
             }
-            
+
+            //Delete files
             //Delete _uninst dir on Windows
             //XXX this must be reconsidered as storage builder is run after JDK install action
             /*if (Util.isWindowsOS()) {
@@ -614,7 +607,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
      * @scriptName - the name of the generated script
      */
     private boolean createInstallScriptJDKWindows (String template, String scriptName)
-	throws Exception {
+    throws Exception {
+        logEvent(this, Log.DBG,"createInstallScriptJDKWindows ENTER");
 	File templateFile = new File(template);
 	String parent = templateFile.getParent();
 	if (parent == null) {
@@ -625,12 +619,21 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         BufferedReader reader = new BufferedReader(new FileReader(templateFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
         
-        String installerName = findJDKWindowsInstaller(j2seInstallDir);
-        
+        String installerName = findJDKWindowsInstaller();
+        String driveName = nbInstallDir.substring(0, nbInstallDir.indexOf(File.separator));
+        String logFileName = nbInstallDir + File.separator + "_uninst" + File.separator + "install-jdk.log";
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("SET INSTALLER_NAME=")) {
-                line = "SET INSTALLER_NAME=" + installerName;
+            if (line.startsWith("SET DRIVE=")) {
+                line = "SET DRIVE=" + driveName;
+            } else if (line.startsWith("SET LOGFILE=")) {
+                line = "SET LOGFILE=" + "\"" + logFileName + "\"";
+            } else if (line.startsWith("SET JDK_INSTALL_DIR=")) {
+                line = "SET JDK_INSTALL_DIR=" + "\"" + j2seInstallDir + "\\\"";
+            } else if (line.startsWith("SET JDK_INSTALLER_LOCATION=")) {
+                line = "SET JDK_INSTALLER_LOCATION=" + "\"" + nbInstallDir + "\"";
+            } else if (line.startsWith("SET JDK_INSTALLER_NAME=")) {
+                line = "SET JDK_INSTALLER_NAME=" + installerName;
             } else if (line.startsWith("SET TMP=")) {
                 line = "SET TMP=" + tempDir;
             } else if (line.startsWith("SET TEMP=")) {
@@ -649,7 +652,8 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
      * @scriptName - the name of the generated script
      */
     private boolean createInstallScriptJREWindows (String template, String scriptName)
-	throws Exception {
+    throws Exception {
+        logEvent(this, Log.DBG,"createInstallScriptJREWindows ENTER");
 	File templateFile = new File(template);
 	String parent = templateFile.getParent();
 	if (parent == null) {
@@ -660,19 +664,26 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         BufferedReader reader = new BufferedReader(new FileReader(templateFile));
         BufferedWriter writer = new BufferedWriter(new FileWriter(scriptFile));
         
-        String installerName = findJREWindowsInstaller();
+        String installerPath = findJREWindowsInstaller();
+        String driveName = installerPath.substring(0, installerPath.indexOf(File.separator));
+        String logFileName = nbInstallDir + File.separator + "_uninst" + File.separator + "install-jdk.log";
         
         String line;
         while ((line = reader.readLine()) != null) {
-            if (line.startsWith("SET TMP=")) {
+            if (line.startsWith("SET DRIVE=")) {
+                line = "SET DRIVE=" + driveName;
+            } else if (line.startsWith("SET LOGFILE=")) {
+                line = "SET LOGFILE=" + "\"" + logFileName + "\"";
+            } else if (line.startsWith("SET TMP=")) {
                 line = "SET TMP=" + tempDir;
             } else if (line.startsWith("SET TEMP=")) {
                 line = "SET TEMP=" + tempDir;
+            } else if (line.startsWith("SET JRE_INSTALLER_LOCATION=")) {
+                line = "SET JRE_INSTALLER_LOCATION=" + "\"" + installerPath + "\"";
             } else if (line.startsWith("SET JRE_MSI_PROJECT=")) {
-                //Installation of public JRE. Path must be set according to JDK version.
-                line = "SET JRE_MSI_PROJECT=\"" + installerName + "\"";
-                logEvent(this, Log.DBG, "JRE line:" + line);
+                line = "SET JRE_MSI_PROJECT=" + "jre.msi";
             }
+            logEvent(this, Log.DBG, "JRE line:" + line);
             writer.write(line + System.getProperty("line.separator"));
         }
         reader.close();
@@ -681,10 +692,10 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
 	return true;
     }
     
-    private String findJDKWindowsInstaller (String j2seInstallDir) {
+    private String findJDKWindowsInstaller () {
 	String installerName = null;
         //Try to locate Windows JDK installer
-        File installDirFile = new File(j2seInstallDir);
+        File installDirFile = new File(nbInstallDir);
         logEvent(this, Log.DBG, "findJDKWindowsInstaller installDirFile: " + installDirFile);
         File [] children = installDirFile.listFiles();
         String installerPrefix = resolveString("$L(org.netbeans.installer.Bundle,JDK.installerPrefix)");
@@ -704,11 +715,11 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         return installerName;
     }
     
-    /** Find path to public JRE installer ie. jre.msi file. 
+    /** Find path to public JRE installer ie. jre.msi file WITHOUT file itself. 
      * @return null if jre.msi file for given JRE version is not found 
      */
     private String findJREWindowsInstaller () {
-        //+ "\\Java\\Update\\Base Images\\jdk1.5.0_01.b06\\patch-jdk1.5.0_01.b06\\jre.msi\"";
+        //+ "\\Java\\Update\\Base Images\\jdk1.5.0.b64\\patch-jdk1.5.0_01.b06\\jre.msi\"";
 	String installerName = null;
         //String baseDir = resolveString("$D(common)") + "\\Java\\Update\\Base Images\\";
         File baseDirFile = new File(resolveString("$D(common)") + "\\Java\\Update\\Base Images\\");
@@ -756,7 +767,7 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         }
         
         logEvent(this, Log.DBG, "findJREWindowsInstaller JRE installer found: " + jreInstallerFile.getPath());
-        return jreInstallerFile.getPath();
+        return patchDirFile.getPath();
     }
     
     private boolean moveJ2SEDirContents() {
@@ -849,7 +860,6 @@ public class InstallJ2sdkAction extends ProductAction implements FileFilter {
         public void run() {
             int sleepTime = 1000;
             while (loop) {
-                logEvent(this, Log.DBG,"looping");
                 try {
                     if (jdkDir.exists()) {
                         //logEvent(this, Log.DBG,"going 2 updateProgressBar");
