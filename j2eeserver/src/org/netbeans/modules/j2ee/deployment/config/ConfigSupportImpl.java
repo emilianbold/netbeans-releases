@@ -195,7 +195,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             if (configDO == null) {
                 FileObject fo = findPrimaryConfigurationFO();
                 if (fo != null) {
-                    configDO = (ConfigDataObject) DataObject.find(fo);
+                    DataObject dobj = DataObject.find(fo);
+                    if (dobj instanceof ConfigDataObject) {
+                        configDO = (ConfigDataObject) dobj;
+                    }
                 }
             }
             if (configDO != null) {
