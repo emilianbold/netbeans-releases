@@ -55,6 +55,8 @@ public class ElementLook extends Look implements EventListener {
     }
     
     public void handleEvent(Event evt) {
+        // XXX for some reason, sometimes if refactoring is done while an XML phadhail is
+        // expanded, some infinite loop occurs and this method is called repeatedly
         try {
             Element parent = (Element)evt.getCurrentTarget();
             System.err.println("ElementLook: event on " + parent.getTagName() + ": " + evt + "; co=" + getChildObjects(parent, null));//XXX
