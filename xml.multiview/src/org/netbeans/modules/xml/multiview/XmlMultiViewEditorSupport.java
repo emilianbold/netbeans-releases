@@ -81,6 +81,7 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Edit
 
         addSaveCookie();
         if (!dObj.isChangedFromUI()) restartTimer();
+        else dObj.changedFromUI = false;
         return true;
     }
 

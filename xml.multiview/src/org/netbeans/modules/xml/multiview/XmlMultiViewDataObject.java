@@ -28,15 +28,22 @@ import org.xml.sax.InputSource;
  */
 public abstract class XmlMultiViewDataObject extends MultiDataObject implements CookieSet.Factory {
 
+    public static final String PROP_DOCUMENT_VALID = "document_valid"; //NOI18N
     private XmlMultiViewEditorSupport editor;
-    private boolean documentValid;
+    private org.xml.sax.SAXException saxError;
     boolean changedFromUI;
+    private boolean modelUpdated;
     private Reader reader;
     
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().add(XmlMultiViewEditorSupport.class, this);
+        try {
+            modelUpdated = createModelFromFileObject(pf);
+        } catch (IOException ex) {
+            modelUpdated = false;
+        }
         //getCookieSet().add(EditCookie.class, this);
         //getCookieSet().add(EditorCookie.class, this);
     }
@@ -60,45 +67,55 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         return editor;
     }
+    /** Create the data model from file object. Called from constructor.
+    * @return true if model was succesfully created, false otherwise
+    */
+    protected abstract boolean createModelFromFileObject(FileObject fo) throws java.io.IOException;
     
-    protected abstract org.xml.sax.SAXException updateModelFromDocument() throws java.io.IOException ;
+    /** Update data model from document text . Called when something is changed in xml editor. 
+    * @return true if model was succesfully created, false otherwise
+    */
+    protected abstract boolean updateModelFromDocument() throws java.io.IOException ;
+    
+    protected boolean isModelUpdated() {
+        return modelUpdated;
+    }
     
     protected boolean isChangedFromUI() {
         return changedFromUI;
     }
-     /** This method parses XML document and calls abstract updateModelFromInputSource method which
-    * updates corresponding DataModel.
+     /** This method parses XML document and calls abstract updateModelFromDocument() method which
+    * is trying to update corresponding data model.
     */    
     protected void updateModelFromSource() {
-        org.xml.sax.SAXException err=null;
+        boolean modelUpd=false;
         try {
-            //inputReader = createInputReader();
-            //err=updateModelFromDocument(inputReader);
-            err=updateModelFromDocument();
-            System.out.println("err="+err);
+            modelUpd=updateModelFromDocument();
         }
         catch (java.io.IOException e) {
+            modelUpd=false;
             org.openide.ErrorManager.getDefault ().notify (org.openide.ErrorManager.INFORMATIONAL, e);
         }
-        if (err==null){
-            setDocumentValid(true);
-        }else {
-            setDocumentValid(false);
+        modelUpdated=modelUpd;
+    }
+    
+    protected void setSaxError(org.xml.sax.SAXException saxError) {
+        if (this.saxError==null) {
+            if (saxError!=null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.TRUE, Boolean.FALSE);
+        } else {
+            if (saxError==null) firePropertyChange(PROP_DOCUMENT_VALID, Boolean.FALSE, Boolean.TRUE);
         }
+        this.saxError=saxError;
     }
     
-    protected void setDocumentValid(boolean valid) {
-        documentValid=valid;
-    }
-    
-    public boolean isDocumentValid() {
-        return documentValid;
+    public org.xml.sax.SAXException getSaxError() {
+        return saxError;
     }
 
     /** This method is used for obtaining the current source of xml document.
-    * First try if document is in the memory. If not, provide the input from
+    * First try if document is open in editor. If not, provide the input from
     * underlayed file object.
-    * @return The input source from memory or from file
+    * @return The InputStream from swing document or from file
     * @exception IOException if some problem occurs
     */
     protected InputStream createInputStream() throws java.io.IOException {
@@ -128,9 +145,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
     
     /** This method is used for obtaining the current source of xml document.
-    * First try if document is in the memory. If not, provide the input from
+    * First try if document is open in editor. If not, provide the input from
     * underlayed file object.
-    * @return The input source from memory or from file
+    * @return The InputSource from swing document or null
     * @exception IOException if some problem occurs
     */
     protected InputSource createInputSource() throws java.io.IOException {
@@ -154,9 +171,9 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             return new InputSource(new StringReader(str[0]));
         } 
         else {
-            return null;
+            //return null;
             // loading from the file
-            //return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
+            return new InputSource(new FileReader(org.openide.filesystems.FileUtil.toFile(getPrimaryFile())));
         }
     }
     
@@ -171,7 +188,6 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     public void UIUpdated() {
         changedFromUI=true;
         if(getCookie(SaveCookie.class) == null) {
-            System.out.println("1");
             getCookieSet0().add(getEditorSupport().saveCookie);
             setModified(true);
         }
