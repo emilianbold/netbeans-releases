@@ -376,6 +376,7 @@ cause it to fail.
             <mapper type="glob" from="${javadoc.out.dir}/architecture-summary.html" to="${javadoc.arch}"/>
             <mapper type="glob" from="${javadoc.out.dir}/*.html" to="${javadoc.docfiles}/*.html"/>
         </checklinks>
+        <!-- XXX run doctorj (doctorj.sf.net) if it is installed? -->
     </target>
     
     <target name="javadoc" depends="javadoc-stage-check" unless="javadoc.up.to.date" description="Build Javadoc and associated documentation for a module.">
