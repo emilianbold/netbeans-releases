@@ -160,7 +160,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 // TAG COMPLETION
                 case JspSyntaxSupport.TAG_COMPLETION_CONTEXT :
 // System.err.println("TAG_COMPLETION_CONTEXT");
-                    if( !visible && first == ' ' ) return COMPLETION_POPUP;
+                    if( !visible && first == ' ' || first == ':' ) return COMPLETION_POPUP;
                     if( visible && first == '>' ) return COMPLETION_HIDE;
                     return visible ? COMPLETION_POST_REFRESH : COMPLETION_CANCEL;
 
