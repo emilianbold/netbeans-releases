@@ -133,7 +133,7 @@ public class RADMenuItemComponent extends RADComponent {
   private ActionListener getDefaultActionListener() {
     return new ActionListener() {
       public void actionPerformed(ActionEvent ev) {
-        if (hasDefaultEvent ()) attachDefaultEvent ();
+        if (!getFormManager ().isTestMode () && hasDefaultEvent ()) attachDefaultEvent ();
       }
     };
   }
@@ -142,6 +142,8 @@ public class RADMenuItemComponent extends RADComponent {
 
 /*
  * Log
+ *  7    Gandalf   1.6         11/10/99 Pavel Buzek     while menu is selectedf 
+ *       in form in test mode do not go to event handler
  *  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         10/9/99  Ian Formanek    Fixed bug 4411 - Delete 
