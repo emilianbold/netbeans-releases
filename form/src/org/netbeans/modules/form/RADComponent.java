@@ -661,8 +661,9 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
                             newProps.add(prop);
                         }
                         descIndex = j + 1;
-                        if (descIndex == descriptors.length)
-                            descIndex = 0;
+                        if (descIndex == descriptors.length
+                                         && i+1 < propNames.length)
+                            descIndex = 0; // go again from beginning
                         break;
                     }
                     j++;
@@ -777,11 +778,13 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
 
                     if (event != null) {
                         if (methodIndex == methods.length) {
-                            setIndex = j + 1;
-                            if (setIndex == eventSets.length)
-                                setIndex = 0;
                             methodIndex = 0;
+                            setIndex = j + 1; // will continue in new set
+                            if (setIndex == eventSets.length
+                                            && i+1 < eventNames.length)
+                                setIndex = 0; // go again from beginning
                         }
+                        else setIndex = j; // will continue in the same set
                         break;
                     }
 
