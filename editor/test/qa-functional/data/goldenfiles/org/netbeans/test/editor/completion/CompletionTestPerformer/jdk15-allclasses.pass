@@ -86,8 +86,8 @@ UnsupportedOperationException
 VerifyError
 VirtualMachineError
 Void
-reflect
-ref
-management
-instrument
 annotation
+instrument
+management
+ref
+reflect
