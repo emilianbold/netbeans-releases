@@ -33,6 +33,7 @@ import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileObject;
@@ -177,7 +178,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 // Enable all components acessory
                 setAccessoryEnablement( true );
                 
-                jTextFieldProjectName.setText( project.getDisplayName() ); 
+                jTextFieldProjectName.setText(ProjectUtils.getInformation(project).getDisplayName());
                 
                 spListModel.clear();                
                 
@@ -288,7 +289,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
             }
             String displayName = MessageFormat.format( 
                 pattern, 
-                new Object[] { p.getDisplayName(), relPath } );
+                new Object[] { ProjectUtils.getInformation(p).getDisplayName(), relPath } );
             subprojects.set( i, displayName );
         }
         

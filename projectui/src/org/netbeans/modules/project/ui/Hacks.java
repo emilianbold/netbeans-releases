@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.actions.EditAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataLoader;
@@ -147,7 +148,7 @@ public class Hacks {
                         }
                         String pname;
                         if (projects.size() == 1) {
-                            pname = ((Project)projects.iterator().next()).getDisplayName();
+                            pname = ProjectUtils.getInformation((Project)projects.iterator().next()).getDisplayName();
                             assert pname != null;
                         } else if (projects.isEmpty()) {
                             pname = "No Project"; // XXX I18N

@@ -34,6 +34,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -210,7 +211,7 @@ public class WebProjectProperties {
         // Replace projects in the list with formated names
         for ( int i = 0; i < subprojects.size(); i++ ) {
             Project p = (Project)subprojects.get( i );           
-            subprojects.set( i, p.getDisplayName() );
+            subprojects.set(i, ProjectUtils.getInformation(p).getDisplayName());
         }
         
         // Sort the list

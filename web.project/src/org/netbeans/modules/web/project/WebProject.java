@@ -20,7 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.*;
-import java.awt.Image;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
@@ -35,6 +36,7 @@ import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
@@ -60,12 +62,12 @@ import org.openide.util.lookup.Lookups;
  */
 final class WebProject implements Project, AntProjectListener {
     
-    private static final Image WEB_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif" ); // NOI18N
+    private static final Icon WEB_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); // NOI18N
+    
     private final AntProjectHelper helper;
     private final ReferenceHelper refHelper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
-    private final PropertyChangeSupport pcs;
     private final ProjectWebModule webModule;
     
     WebProject(AntProjectHelper helper) throws IOException {
@@ -75,7 +77,6 @@ final class WebProject implements Project, AntProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper);
         webModule = new ProjectWebModule (this, helper);
         lookup = createLookup(aux);
-        pcs = new PropertyChangeSupport(this);
         helper.addAntProjectListener(this);
     }
 
@@ -83,20 +84,8 @@ final class WebProject implements Project, AntProjectListener {
         return helper.getProjectDirectory();
     }
 
-    public Image getIcon() {
-        return WEB_PROJECT_ICON;
-    }
-        
-    public String getName() {
-        return helper.getName();
-    }
-
-    public String getDisplayName() {
-        return helper.getDisplayName();
-    }
-
     public String toString() {
-        return "WebProject[" + getName() + "]"; // NOI18N
+        return "WebProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
     public Lookup getLookup() {
@@ -113,6 +102,7 @@ final class WebProject implements Project, AntProjectListener {
             "${build.test.classes.dir}/*.class", // NOI18N
         });
         return Lookups.fixed(new Object[] {
+            new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
             spp,
@@ -130,19 +120,12 @@ final class WebProject implements Project, AntProjectListener {
         });
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        pcs.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        pcs.removePropertyChangeListener(listener);
-    }
-
     public void configurationXmlChanged(AntProjectEvent ev) {
         if (ev.getPath().equals(AntProjectHelper.PROJECT_XML_PATH)) {
             // Could be various kinds of changes, but name & displayName might have changed.
-            pcs.firePropertyChange(PROP_NAME, null, null);
-            pcs.firePropertyChange(PROP_DISPLAY_NAME, null, null);
+            Info info = (Info)getLookup().lookup(ProjectInformation.class);
+            info.firePropertyChange(ProjectInformation.PROP_NAME);
+            info.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME);
         }
     }
 
@@ -172,6 +155,42 @@ final class WebProject implements Project, AntProjectListener {
     }
     
     // Private innerclasses ----------------------------------------------------
+    
+    private final class Info implements ProjectInformation {
+        
+        private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+        
+        Info() {}
+        
+        void firePropertyChange(String prop) {
+            pcs.firePropertyChange(prop, null, null);
+        }
+        
+        public String getName() {
+            return helper.getName();
+        }
+        
+        public String getDisplayName() {
+            return helper.getDisplayName();
+        }
+        
+        public Icon getIcon() {
+            return WEB_PROJECT_ICON;
+        }
+        
+        public Project getProject() {
+            return WebProject.this;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            pcs.addPropertyChangeListener(listener);
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            pcs.removePropertyChangeListener(listener);
+        }
+        
+    }
     
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         

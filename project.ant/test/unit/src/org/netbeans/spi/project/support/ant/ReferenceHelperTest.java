@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
@@ -477,7 +478,7 @@ public class ReferenceHelperTest extends NbTestCase {
         assertEquals("two subprojects", 2, subprojs.size());
         Project[] subprojsA = (Project[])subprojs.toArray(new Project[2]);
         Project proj2, proj3;
-        if (subprojsA[0].getName().equals("proj2")) {
+        if (ProjectUtils.getInformation(subprojsA[0]).getName().equals("proj2")) {
             proj2 = subprojsA[0];
             proj3 = subprojsA[1];
         } else {

@@ -13,8 +13,6 @@
 
 package org.netbeans.api.project;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
@@ -34,12 +32,6 @@ import org.openide.util.Lookup;
  * @author Jesse Glick
  */
 public interface Project extends Lookup.Provider {
-    
-    /** Property name fired when the code name changes. */
-    String PROP_NAME = "name"; // NOI18N
-    
-    /** Property name fired when the display name changes. */
-    String PROP_DISPLAY_NAME = "displayName"; // NOI18N
     
     /**
      * Gets an associated directory where the project metadata and possibly sources live.
@@ -62,6 +54,7 @@ public interface Project extends Lookup.Provider {
      * yourself.</p>
      * <p>The following abilities are recommended:</p>
      * <ol>
+     * <li>{@link org.netbeans.spi.project.ProjectInformation}</li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/LogicalViewProvider.html"><code>LogicalViewProvider</code></a></li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/CustomizerProvider.html"><code>CustomizerProvider</code></a></li>
      * <li>{@link org.netbeans.spi.project.ActionProvider}</li>
@@ -95,49 +88,5 @@ public interface Project extends Lookup.Provider {
      * @return a set of abilities
      */
     Lookup getLookup();
-    
-    /**
-     * Get a programmatic code name suitable for use in build scripts or other
-     * references.
-     * <p>
-     * Project names should typically be distinctive enough to distinguish
-     * between different projects with some kind of relationships, <em>but</em>
-     * any usage of this name must take into account that they are not forced
-     * to be unique.
-     * <p>
-     * Should not contain odd characters; should be usable as a directory name
-     * on disk, as (part of) an Ant property name, etc.
-     * XXX precise format - at least conforms to XML NMTOKEN or ID
-     * @return a code name
-     */
-    String getName();
-    
-    /**
-     * Get a human-readable display name for the project.
-     * May contain spaces, international characters, etc.
-     * XXX precise format - probably XML PCDATA
-     * @return a display name for the project
-     */
-    String getDisplayName();
-    
-    /** 
-     * Gets icon for given project. Usually determined by the 
-     * project type
-     * @return icon of the project.
-     */
-    Image getIcon();
-    
-    /**
-     * Add a listener to property changes.
-     * Only {@link #PROP_NAME} and {@link #PROP_DISPLAY_NAME} may be fired.
-     * @param listener a listener to add
-     */
-    void addPropertyChangeListener(PropertyChangeListener listener);
-    
-    /**
-     * Remove a listener to property changes.
-     * @param listener a listener to remove
-     */
-    void removePropertyChangeListener(PropertyChangeListener listener);
     
 }

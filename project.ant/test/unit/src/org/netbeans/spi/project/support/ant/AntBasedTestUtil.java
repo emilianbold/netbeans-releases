@@ -13,7 +13,6 @@
 
 package org.netbeans.spi.project.support.ant;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,6 +31,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.Icon;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -39,6 +39,7 @@ import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.diff.DiffProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -119,6 +120,7 @@ public class AntBasedTestUtil {
             refHelper = new ReferenceHelper(helper, aux);
             genFilesHelper = new GeneratedFilesHelper(helper);
             l = Lookups.fixed(new Object[] {
+                new TestInfo(),
                 helper,
                 refHelper,
                 genFilesHelper,
@@ -146,23 +148,33 @@ public class AntBasedTestUtil {
             return helper.getProjectDirectory();
         }
         
-        public String getName() {
-            return helper.getName();
-        }
-        
-        public String getDisplayName() {
-            return helper.getDisplayName();
-        }
-        
         public Lookup getLookup() {
             return l;
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
-        
-        public Image getIcon() {
-            return null;
+        private final class TestInfo implements ProjectInformation {
+            
+            TestInfo() {}
+            
+            public String getName() {
+                return helper.getName();
+            }
+            
+            public String getDisplayName() {
+                return helper.getDisplayName();
+            }
+            
+            public Icon getIcon() {
+                return null;
+            }
+            
+            public Project getProject() {
+                return TestAntBasedProject.this;
+            }
+            
+            public void addPropertyChangeListener(PropertyChangeListener listener) {}
+            public void removePropertyChangeListener(PropertyChangeListener listener) {}
+            
         }
         
         private final class TestAntArtifactProvider implements AntArtifactProvider {

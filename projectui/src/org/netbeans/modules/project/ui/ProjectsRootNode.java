@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.LogicalViews;
 import org.openide.DialogDisplayer;
@@ -157,7 +158,7 @@ public class ProjectsRootNode extends AbstractNode {
             
             if (n.getLookup().lookup(Project.class) != project) {
                 // Various actions, badging, etc. are not going to work.
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + project.getName() + " failed to supply itself in the lookup of the root node of its own logical view");
+                ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - project " + ProjectUtils.getInformation(project).getName() + " failed to supply itself in the lookup of the root node of its own logical view");
             }
             
             return new Node[] { new BadgingNode( n ) };
@@ -209,7 +210,7 @@ public class ProjectsRootNode extends AbstractNode {
 //                return 1;
 //            }
             
-            return COLLATOR.compare( p1.getDisplayName(), p2.getDisplayName() );
+            return COLLATOR.compare(ProjectUtils.getInformation(p1).getDisplayName(), ProjectUtils.getInformation(p2).getDisplayName());
         }
         
     }

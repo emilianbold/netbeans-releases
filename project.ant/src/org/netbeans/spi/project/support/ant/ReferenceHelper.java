@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.queries.CollocationQuery;
@@ -164,7 +165,7 @@ public final class ReferenceHelper {
                     throw new IllegalArgumentException("No project associated with " + artifact); // NOI18N
                 }
                 // Set up the raw reference.
-                String forProjName = forProj.getName();
+                String forProjName = ProjectUtils.getInformation(forProj).getName();
                 // XXX need to uniquify it! If there is already a reference using that name,
                 // but it refers to a different project, choose a new name.
                 File forProjDir = FileUtil.toFile(forProj.getProjectDirectory());
@@ -583,7 +584,7 @@ public final class ReferenceHelper {
     public String createForeignFileReference(AntArtifact artifact) throws IllegalArgumentException {
         addReference(artifact);
         // XXX need to take uniquified foreign project name from addReference somehow
-        String forProjName = artifact.getProject().getName();
+        String forProjName = ProjectUtils.getInformation(artifact.getProject()).getName();
         return "${reference." + forProjName + '.' + artifact.getTargetName() + '}'; // NOI18N
     }
     

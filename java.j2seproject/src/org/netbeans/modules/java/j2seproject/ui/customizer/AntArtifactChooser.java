@@ -23,6 +23,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -142,7 +143,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         
         DefaultListModel model = (DefaultListModel)jListArtifacts.getModel();
         model.clear();
-        jTextFieldName.setText( project == null ? "" : project.getDisplayName() ); //NOI18N
+        jTextFieldName.setText(project == null ? "" : ProjectUtils.getInformation(project).getDisplayName()); //NOI18N
         
         if ( project != null ) {
                         

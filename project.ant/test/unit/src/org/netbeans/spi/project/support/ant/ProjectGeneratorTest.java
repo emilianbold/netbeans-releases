@@ -17,10 +17,12 @@ import java.util.Collections;
 import java.util.Properties;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.Util;
+import org.netbeans.spi.project.ProjectInformation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
@@ -81,8 +83,9 @@ public class ProjectGeneratorTest extends NbTestCase {
                     Project p = ProjectManager.getDefault().findProject(projdir);
                     assertNotNull("Project exists", p);
                     // Check that basic characteristics are correct.
-                    assertEquals("correct code name", "testproj", p.getName());
-                    assertEquals("no display name yet", null, p.getDisplayName());
+                    ProjectInformation pi = ProjectUtils.getInformation(p);
+                    assertEquals("correct code name", "testproj", pi.getName());
+                    assertEquals("no display name yet", null, pi.getDisplayName());
                     assertEquals("correct directory", projdir, p.getProjectDirectory());
                     assertTrue("already modified", ProjectManager.getDefault().isModified(p));
                     // Configure it.

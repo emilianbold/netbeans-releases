@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
@@ -27,10 +26,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.ProjectInformation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -54,21 +56,20 @@ import org.w3c.dom.NodeList;
  */
 final class NbModuleProject implements Project {
     
-    private static final Image NB_PROJECT_ICON = Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif" ); // NOI18N
+    private static final Icon NB_PROJECT_ICON = new ImageIcon(Utilities.loadImage( "org/netbeans/modules/apisupport/project/resources/module.gif")); // NOI18N
     
     private static final String BUILD_XSL = "nbbuild/templates/build.xsl";
 
     private final AntProjectHelper helper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
-    private String displayName;
     private final ModuleList moduleList;
     private Map/*<String,String>*/ evalPredefs;
     private List/*<Map<String,String>>*/ evalDefs;
     
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
-        Util.err.log("Loading project for " + getName() + " in " + getProjectDirectory());
+        Util.err.log("Loading project in " + getProjectDirectory());
         File nbroot = helper.resolveFile(getNbrootRel());
         moduleList = ModuleList.getModuleList(nbroot);
         genFilesHelper = new GeneratedFilesHelper(helper);
@@ -91,6 +92,7 @@ final class NbModuleProject implements Project {
             });
         }
         lookup = Lookups.fixed(new Object[] {
+            new Info(),
             helper.createAuxiliaryConfiguration(),
             helper.createCacheDirectoryProvider(),
             new SavedHook(),
@@ -110,72 +112,8 @@ final class NbModuleProject implements Project {
         });
     }
     
-    public String getName() {
-        return helper.getName();
-    }
-    
-    public String getDisplayName() {
-        if (displayName == null) {
-            Manifest mf = getManifest();
-            if (mf != null) {
-                String locBundleResource = mf.getMainAttributes().
-                    getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
-                if (locBundleResource != null) {
-                    String locBundleResourceBase, locBundleResourceExt;
-                    int idx = locBundleResource.lastIndexOf('.');
-                    if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
-                        locBundleResourceBase = locBundleResource.substring(0, idx);
-                        locBundleResourceExt = locBundleResource.substring(idx);
-                    } else {
-                        locBundleResourceBase = locBundleResource;
-                        locBundleResourceExt = "";
-                    }
-                    FileObject srcFO = getSourceDirectory();
-                    if (srcFO != null) {
-                        Iterator it = NbBundle.getLocalizingSuffixes();
-                        while (it.hasNext()) {
-                            String suffix = (String)it.next();
-                            String resource = locBundleResourceBase + suffix +
-                                locBundleResourceExt;
-                            FileObject bundleFO = srcFO.getFileObject(resource);
-                            if (bundleFO != null) {
-                                Properties p = new Properties();
-                                try {
-                                    InputStream is = bundleFO.getInputStream();
-                                    try {
-                                        p.load(is);
-                                    } finally {
-                                        is.close();
-                                    }
-                                    displayName = p.getProperty("OpenIDE-Module-Name"); // NOI18N
-                                    if (displayName != null) {
-                                        break;
-                                    }
-                                } catch (IOException e) {
-                                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (displayName == null) {
-            displayName = getName();
-            if (displayName.equals("org.netbeans")) { // NOI18N
-                // Special case.
-                displayName = "Core Bootstrap";
-            }
-        }
-        return displayName;
-    }
-    
-    public Image getIcon() {
-        return NB_PROJECT_ICON;
-    }
-    
     public String toString() {
-        return "NbModuleProject[" + getName() + "]"; // NOI18N
+        return "NbModuleProject[" + getProjectDirectory() + "]"; // NOI18N
     }
     
     public Lookup getLookup() {
@@ -184,12 +122,6 @@ final class NbModuleProject implements Project {
     
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
     }
     
     private Manifest getManifest() {
@@ -271,7 +203,7 @@ final class NbModuleProject implements Project {
         stock.put("netbeans.dest.dir", "${nb_all}/nbbuild"); // NOI18N
         stock.put("cluster.dir", "netbeans"); // NOI18N
         Map/*<String,String>*/ defaults = new HashMap();
-        defaults.put("code.name.base.dashes", getName().replace('.', '-')); // NOI18N
+        defaults.put("code.name.base.dashes", helper.getName().replace('.', '-')); // NOI18N
         defaults.put("module.jar.dir", "${nb.modules.dir}"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
@@ -342,7 +274,7 @@ final class NbModuleProject implements Project {
                 return pathS.replaceAll("[^/]+", ".."); // NOI18N
             }
         }
-        Util.err.log(ErrorManager.WARNING, "Could not compute relative path to nb_all for " + getName());
+        Util.err.log(ErrorManager.WARNING, "Could not compute relative path to nb_all for " + this);
         return ".."; // NOI18N
     }
     
@@ -350,7 +282,7 @@ final class NbModuleProject implements Project {
         String nbrootRel = getNbrootRel();
         FileObject nbroot = getHelper().resolveFileObject(nbrootRel);
         if (nbroot == null) {
-            Util.err.log(ErrorManager.WARNING, "Warning - cannot find nb_all for " + getName());
+            Util.err.log(ErrorManager.WARNING, "Warning - cannot find nb_all for " + this);
         }
         return nbroot;
     }
@@ -390,6 +322,88 @@ final class NbModuleProject implements Project {
             genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_XML_PATH,
                 buildXsl.getURL(), p);
         }
+    }
+    
+    private final class Info implements ProjectInformation {
+        
+        private String displayName;
+        
+        Info() {}
+        
+        public String getName() {
+            return helper.getName();
+        }
+        
+        public String getDisplayName() {
+            if (displayName == null) {
+                Manifest mf = getManifest();
+                if (mf != null) {
+                    String locBundleResource = mf.getMainAttributes().
+                    getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
+                    if (locBundleResource != null) {
+                        String locBundleResourceBase, locBundleResourceExt;
+                        int idx = locBundleResource.lastIndexOf('.');
+                        if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
+                            locBundleResourceBase = locBundleResource.substring(0, idx);
+                            locBundleResourceExt = locBundleResource.substring(idx);
+                        } else {
+                            locBundleResourceBase = locBundleResource;
+                            locBundleResourceExt = "";
+                        }
+                        FileObject srcFO = getSourceDirectory();
+                        if (srcFO != null) {
+                            Iterator it = NbBundle.getLocalizingSuffixes();
+                            while (it.hasNext()) {
+                                String suffix = (String)it.next();
+                                String resource = locBundleResourceBase + suffix +
+                                locBundleResourceExt;
+                                FileObject bundleFO = srcFO.getFileObject(resource);
+                                if (bundleFO != null) {
+                                    Properties p = new Properties();
+                                    try {
+                                        InputStream is = bundleFO.getInputStream();
+                                        try {
+                                            p.load(is);
+                                        } finally {
+                                            is.close();
+                                        }
+                                        displayName = p.getProperty("OpenIDE-Module-Name"); // NOI18N
+                                        if (displayName != null) {
+                                            break;
+                                        }
+                                    } catch (IOException e) {
+                                        Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (displayName == null) {
+                displayName = getName();
+                if (displayName.equals("org.netbeans")) { // NOI18N
+                    // Special case.
+                    displayName = "Core Bootstrap";
+                }
+            }
+            return displayName;
+        }
+        
+        public Icon getIcon() {
+            return NB_PROJECT_ICON;
+        }
+        
+        public Project getProject() {
+            return NbModuleProject.this;
+        }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+        }
+        
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+        
     }
     
     private final class SavedHook extends ProjectXmlSavedHook {

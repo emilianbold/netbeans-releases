@@ -33,6 +33,8 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ProjectInformation;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -351,8 +353,9 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             javax.swing.plaf.basic.BasicComboBoxRenderer cbr = (javax.swing.plaf.basic.BasicComboBoxRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
             
             if ( value != null ) {
-                cbr.setText( ((Project)value).getDisplayName() );
-                cbr.setIcon( new ImageIcon( ((Project)value).getIcon() ) );
+                ProjectInformation pi = ProjectUtils.getInformation((Project)value);
+                cbr.setText(pi.getDisplayName());
+                cbr.setIcon(pi.getIcon());
             }
             return cbr;
         }

@@ -231,16 +231,8 @@ public final class TestUtil extends ProxyLookup {
             this.state = state;
         }
         
-        public String getDisplayName() {
-            return "Test Project in " + getProjectDirectory().getNameExt();
-        }
-        
         public Lookup getLookup() {
             return Lookup.EMPTY;
-        }
-        
-        public String getName() {
-            return "testproject:" + getProjectDirectory().getNameExt();
         }
         
         public FileObject getProjectDirectory() {
@@ -248,15 +240,25 @@ public final class TestUtil extends ProxyLookup {
         }
         
         public String toString() {
-            return getName();
+            return "testproject:" + getProjectDirectory().getNameExt();
+        }
+
+        /* Probably unnecessary to have a ProjectInformation here:
+        public String getName() {
+            return "testproject:" + getProjectDirectory().getNameExt();
         }
         
-        public void addPropertyChangeListener(PropertyChangeListener listener) {}
-        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+        public String getDisplayName() {
+            return "Test Project in " + getProjectDirectory().getNameExt();
+        }
         
         public Image getIcon() {
             return null;
         }
+        
+        public void addPropertyChangeListener(PropertyChangeListener listener) {}
+        public void removePropertyChangeListener(PropertyChangeListener listener) {}
+         */
         
     }
     
