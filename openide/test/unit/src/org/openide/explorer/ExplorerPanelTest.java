@@ -26,6 +26,9 @@ import javax.swing.JMenu;
 
 import org.openide.actions.CopyAction;
 import org.openide.actions.CutAction;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
@@ -34,6 +37,7 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
+import org.openide.util.io.NbMarshalledObject;
 
 
 /**
@@ -244,6 +248,31 @@ public class ExplorerPanelTest extends NbTestCase {
         ns = new java.awt.datatransfer.StringSelection("Another Selection");
         ec.setContents(ns, ns);
         assertTranferables (ns, disabledNode.lastTransferable);
+    }
+    
+    public void testSelectedNodesInDeserializedPanel () throws Exception {
+        ExplorerPanel panel = new ExplorerPanel ();
+
+        FileObject fo = Repository.getDefault ().getDefaultFileSystem ().getRoot ();
+        DataObject rootFilesystem = DataObject.find (fo);
+        Node root = rootFilesystem.getNodeDelegate ();
+        panel.getExplorerManager ().setRootContext (root);
+        panel.getExplorerManager ().setSelectedNodes (new Node[] {root});
+        
+        assertNotNull ("Array of selected nodes is not null.", panel.getExplorerManager ().getSelectedNodes ());
+        assertFalse ("Array of selected nodes is not empty.",  panel.getExplorerManager ().getSelectedNodes ().length == 0);
+        assertEquals ("The selected node is Filesystems root.", panel.getExplorerManager ().getSelectedNodes ()[0], root);
+        
+        NbMarshalledObject mar = new NbMarshalledObject (panel);
+        Object obj = mar.get ();
+        ExplorerPanel deserializedPanel = (ExplorerPanel) obj;
+        
+        assertNotNull ("Deserialized panel is not null.", deserializedPanel);
+        
+        assertNotNull ("[Deserialized panel] Array of selected nodes is not null.", deserializedPanel.getExplorerManager ().getSelectedNodes ());
+        assertFalse ("[Deserialized panel] Array of selected nodes is not empty.",  deserializedPanel.getExplorerManager ().getSelectedNodes ().length == 0);
+        assertEquals ("[Deserialized panel] The selected node is Filesystems root.", deserializedPanel.getExplorerManager ().getSelectedNodes ()[0], root);
+        
     }
     
     /** Compares whether two transferables are the same.

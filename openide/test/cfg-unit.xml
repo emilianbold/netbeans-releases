@@ -138,6 +138,7 @@ Microsystems, Inc. All Rights Reserved.
 		<!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
                 <include name="org/openide/explorer/view/TTVTest.class"/>               
+                <exclude name="org/openide/explorer/view/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
         </testset>        
     </testbag>
@@ -175,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/nodes/ChildrenArrayTest.class/testNodeEventsFiredAtOnce"/>
                 <!-- Implementation was apparently killed during a refactoring (see #16430): -->
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
+                <include name="org/openide/explorer/view/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
         </testset>      
     </testbag>
