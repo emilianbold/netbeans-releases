@@ -338,7 +338,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
         try {
             setRunning(true);
             return new URL("http", getLocalHost(), getPort(), // NOI18N
-                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getDisplayName ()) + "/" + // NOI18N
+                           getJavadocBaseURL() + mangle (fo.getFileSystem ().getSystemName ()) + "/" + // NOI18N
                            fo.getPackageNameExt('/','.')); // NOI18N
         }
         catch (org.openide.filesystems.FileStateInvalidException ex) {
