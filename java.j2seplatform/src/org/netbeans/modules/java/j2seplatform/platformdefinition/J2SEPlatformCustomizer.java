@@ -392,7 +392,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                         this.data = getPathList (this.platform.getSourceFolders());
                         break;
                     case JAVADOC:
-                        this.data = this.platform.getJavadocFolders();
+                        this.data = new ArrayList(this.platform.getJavadocFolders());
                         break;
                 }
             }
