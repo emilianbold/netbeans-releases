@@ -121,6 +121,12 @@ public class NbClipboardIsUsedBySwingComponentsTest extends NbTestCase {
         assertEquals ("Test is again the same", getName (), f.getText ());
     }
     
+    public void testItIsStillPossibleToGetTheClipboardForNormalCode () throws Exception {
+        assertNotNull (
+            java.awt.Toolkit.getDefaultToolkit ().getSystemClipboard ()
+        );
+    }
+    
     public void assertClipboard (String text) {
         try {
             Transferable t = clip.getContentsSuper (this);
