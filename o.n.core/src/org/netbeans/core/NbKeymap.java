@@ -139,41 +139,72 @@ public final class NbKeymap extends Observable implements Keymap {
         return bindings.containsKey(key);
     }
 
+    /** Updates action accelerator. */
+    private void updateActionAccelerator(Action a) {
+        if(a == null) {
+            return;
+        }
+        
+        KeyStroke[] keystrokes = getKeyStrokesForAction(a);
+        a.putValue(Action.ACCELERATOR_KEY,
+                   keystrokes.length > 0 ? keystrokes[0]
+                                         : null);
+    }
+    
     public void addActionForKeyStroke(KeyStroke key, Action a) {
         synchronized (this) {
             bindings.put(key, a);
             actions = null;
         }
+        
+        updateActionAccelerator(a);
         setChanged();
         notifyObservers();
     }
 
     void addActionForKeyStrokeMap(HashMap map) {
+        Set actionsSet = new HashSet();
         synchronized (this) {
             for (Iterator it = map.keySet ().iterator (); it.hasNext (); ) {
                 Object key = it.next ();
-                bindings.put(key, map.get (key));
+                Object value = map.get(key);
+                bindings.put(key, value);
+                actionsSet.add(value);
             }
             actions = null;
         }
+        
+        for(Iterator it = actionsSet.iterator(); it.hasNext(); ) {
+            updateActionAccelerator((Action)it.next());
+        }
+        
         setChanged();
         notifyObservers();
     }
 
     public void removeKeyStrokeBinding(KeyStroke key) {
+        Action a;
         synchronized (this) {
-            bindings.remove(key);
+            a = (Action)bindings.remove(key);
             actions = null;
         }
+        updateActionAccelerator(a);
         setChanged();
         notifyObservers();
     }
 
     public void removeBindings() {
+        Set actionsSet;
         synchronized (this) {
+            actionsSet = new HashSet(bindings.values());
             bindings.clear();
             actions = null;
         }
+        
+        for(Iterator it = actionsSet.iterator(); it.hasNext(); ) {
+            updateActionAccelerator((Action)it.next());
+        }
+        
         setChanged();
         notifyObservers();
     }
