@@ -15,6 +15,7 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.ArrayReference;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.NativeMethodException;
@@ -123,6 +124,8 @@ public class LocalsTreeModel implements TreeModel {
                     return i;
                 } catch (NativeMethodException ex) {
                     return 1;//throw new NoInformationException ("native method");
+                } catch (InternalException ex) {
+                    return 1;//throw new NoInformationException ("native method");
                 } catch (InvalidStackFrameException ex) {
                     return 1;//throw new NoInformationException ("thread is running");
                 } catch (VMDisconnectedException ex) {
@@ -198,37 +201,41 @@ public class LocalsTreeModel implements TreeModel {
             StackFrame stackFrame = callStackFrame.getStackFrame ();
             if (stackFrame == null) 
                 return new String [] {"No current thread"};
-            ObjectReference thisR = stackFrame.thisObject ();
-            if (thisR == null) {
-                Object[] avs = null;
-                try {
-                    return getLocalVariables (
-                        callStackFrame,
-                        stackFrame,
-                        from,
-                        to
-                    );
-                } catch (AbsentInformationException ex) {
-                    return new String [] {"compiled without -g"};
-                }
-            } else {
-                Object[] avs = null;
-                try {
-                    avs = getLocalVariables (
-                        callStackFrame,
-                        stackFrame,
-                        Math.max (from - 1, 0),
-                        Math.max (to - 1, 0)
-                    );
-                } catch (AbsentInformationException ex) {
-                    avs = new Object[] {"NoInfo"};
-                }
-                Object[] result = new Object [avs.length + 1];
-                if (from < 1)
-                    result [0] = getThis (thisR, "");
-                System.arraycopy (avs, 0, result, 1, avs.length);
-                return result;
-            }            
+            try {
+                ObjectReference thisR = stackFrame.thisObject ();
+                if (thisR == null) {
+                    Object[] avs = null;
+                    try {
+                        return getLocalVariables (
+                            callStackFrame,
+                            stackFrame,
+                            from,
+                            to
+                        );
+                    } catch (AbsentInformationException ex) {
+                        return new String [] {"compiled without -g"};
+                    }
+                } else {
+                    Object[] avs = null;
+                    try {
+                        avs = getLocalVariables (
+                            callStackFrame,
+                            stackFrame,
+                            Math.max (from - 1, 0),
+                            Math.max (to - 1, 0)
+                        );
+                    } catch (AbsentInformationException ex) {
+                        avs = new Object[] {"NoInfo"};
+                    }
+                    Object[] result = new Object [avs.length + 1];
+                    if (from < 1)
+                        result [0] = getThis (thisR, "");
+                    System.arraycopy (avs, 0, result, 1, avs.length);
+                    return result;
+                }            
+            } catch (InternalException ex) {
+                return new String [] {ex.getMessage ()};
+            }
         } // synchronized
     }
     
