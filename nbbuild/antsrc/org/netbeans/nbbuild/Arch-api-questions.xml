@@ -41,6 +41,16 @@
             what circumstances and what will be the typical code to write
             to use the module.
         </question>
+        
+        <question id="arch-time" when="init">
+            What are the time estimates of the work?
+            <hint>
+            Please express your estimates of how long the design, implementation,
+            stabilization are likely to last. How many people will be needed to
+            implement this and what is the expected milestone the work should be 
+            ready.
+            </hint>
+        </question>
     </category>
     <category id="dep" name="Project and platform dependencies">
         <question id="dep-nb" when="init" >
@@ -117,7 +127,7 @@
         </question>
         
         
-        <question id="deploy-packages" when="impl" >
+        <question id="deploy-packages" when="init" >
             Are packages of your module made inaccessible by not declaring them
             public?
             
@@ -225,7 +235,7 @@
 
     
     <category id="lookup" name="Lookup of components">
-        <question id="lookup-lookup" when="final" >
+        <question id="lookup-lookup" when="init" >
             Does your module use <code>org.openide.util.Lookup</code>
             to find any components to communicate with? Which ones?
             
@@ -376,7 +386,10 @@
             Which external criteria influence the performance of your
             program (size of file in editor, number of files in menu, 
             in source directory, etc.) and how well your code scales?
-            Please include some estimates.
+            <hint>
+            Please include some estimates, there are other more detailed 
+            questions to answer in later phases of implementation. 
+            </hint>
         </question>
         <question id="perf-limit" when="init">
             Are there any hardcoded or practical limits in the number or size of
@@ -384,7 +397,7 @@
         </question>
         <!-- multithreading -->
     
-        <question id="perf-mem" when="init" >
+        <question id="perf-mem" when="final" >
             How much memory does your component consume? Estimate
             with a relation to the number of windows, etc.
         </question>
