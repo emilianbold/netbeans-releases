@@ -112,19 +112,7 @@ abstract class DataTransferSupport {
         }
         /** Paste all DataObjects */
         public final Transferable paste () throws IOException {
-            if (javax.swing.SwingUtilities.isEventDispatchThread ()) {
-                RequestProcessor.getDefault ().post (new Runnable () {
-                    public void run () {
-                        try {
-                            doPaste ();
-                        } catch (IOException ioe) {
-                            ErrorManager.getDefault ().notify (ioe);
-                        }
-                    }
-                });
-            } else {
-                doPaste ();
-            }
+            doPaste ();
             // clear clipboard or preserve content
             return cleanClipboard () ? ExTransferable.EMPTY : null;
         }
