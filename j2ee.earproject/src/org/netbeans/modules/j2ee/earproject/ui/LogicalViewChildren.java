@@ -27,9 +27,9 @@ import org.netbeans.modules.j2ee.common.ui.customizer.VisualClassPathItem;
 
 
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.Project;
+import org.openide.util.RequestProcessor;
 /**
  * List of children of a containing node.
  * Each child node is represented by one key from some data model.
@@ -149,7 +149,13 @@ public class LogicalViewChildren extends Children.Keys  implements PropertyChang
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
-        updateKeys();
+        // unsafe to call Children.setKeys() while holding a mutext
+        // here the caller holds ProjectManager.mutex() read access
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                updateKeys();
+            }
+        });
     }
  
 /*    private void addKeyValues(List keyContainer, List beans) {
