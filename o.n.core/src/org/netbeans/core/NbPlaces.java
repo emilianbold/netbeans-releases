@@ -177,7 +177,6 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
       }
 
       DataFolder df = DataFolder.findFolder(fo);
-      df.setSortMode(DataFolder.SortMode.FOLDER_NAMES);
       return df;
     } catch (java.io.IOException ex) {
       throw new InternalError ("Folder not found and cannot be created: " + name);
@@ -188,6 +187,7 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  16   Gandalf   1.15        3/25/99  Jaroslav Tulach Faster startup.
 *  15   Gandalf   1.14        3/19/99  Jaroslav Tulach TopManager.getDefault 
 *       ().getRegistry ()
 *  14   Gandalf   1.13        3/13/99  Jaroslav Tulach Places.roots ()
