@@ -47,6 +47,8 @@ public class ConnectionSupport extends Object implements ConnectionCookie {
     public ConnectionSupport (MultiDataObject.Entry entry, ConnectionCookie.Type[] types) {
         this.entry = entry;
         this.types = types;
+        // #45750 - init list for CC.T which are not persistent
+        listeners = new LinkedList();
     }
 
     /** Attaches new node to listen to events produced by this
