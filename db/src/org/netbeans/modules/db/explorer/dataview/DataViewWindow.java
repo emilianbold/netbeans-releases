@@ -53,7 +53,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.SplittedPanel;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeTransfer;
 import org.openide.util.Lookup;
@@ -348,13 +347,7 @@ public class DataViewWindow extends TopComponent {
             con.gridy = 1;
             con.insets = new Insets (12, 12, 11, 11);
 
-            SplittedPanel split = new SplittedPanel();
-            split.setSplitType(SplittedPanel.VERTICAL);
-            split.setSplitTypeChangeEnabled(false);
-            split.setSplitAbsolute(false);
-            split.setSplitPosition(26);
-            split.add(subpane, SplittedPanel.ADD_LEFT);
-            split.add(subpane2, SplittedPanel.ADD_RIGHT);
+            JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, subpane, subpane2);
             layout.setConstraints(split, con);
             add(split);
         } catch (MissingResourceException e) {
