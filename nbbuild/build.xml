@@ -699,7 +699,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../debuggerjpda/ant" target="netbeans"/>
   </target>
-  <target name="all-editor" depends="init,all-java/srcmodel,all-java/api,all-java/javacore,all-projects/projectapi,all-editor/lib,all-editor/fold,all-editor/util">
+  <target name="all-editor" depends="init,all-editor/lib,all-editor/fold,all-editor/util">
     <echo message="Building module editor..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -729,6 +729,60 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../editor/util" target="netbeans"/>
+  </target>
+  <target name="all-editor/plain" depends="init,all-editor/plain/lib,all-editor,all-editor/lib,all-editor/util">
+    <echo message="Building module editor/plain..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../editor/plain" target="netbeans"/>
+  </target>
+  <target name="all-editor/plain/lib" depends="init,all-editor/lib,all-editor/util">
+    <echo message="Building module editor/plain/lib..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../editor/plain/lib" target="netbeans"/>
+  </target>
+  <target name="all-java/editor" depends="init,all-java/editor/lib,all-java/srcmodel,all-java/api,all-java/javacore,all-projects/projectapi,all-editor,all-editor/lib,all-editor/fold,all-editor/util">
+    <echo message="Building module java/editor..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/editor" target="netbeans"/>
+  </target>
+  <target name="all-java/editor/lib" depends="init,all-editor/lib,all-editor/fold,all-editor/util">
+    <echo message="Building module java/editor/lib..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/editor/lib" target="netbeans"/>
+  </target>
+  <target name="all-html/editor" depends="init,all-html/editor/lib,all-editor,all-editor/lib,all-editor/util">
+    <echo message="Building module html/editor..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../html/editor" target="netbeans"/>
+  </target>
+  <target name="all-html/editor/lib" depends="init,all-editor/lib,all-editor/util">
+    <echo message="Building module html/editor/lib..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../html/editor/lib" target="netbeans"/>
   </target>
   <target name="all-diff" depends="init,all-editor">
     <echo message="Building module diff..."/>
@@ -1736,7 +1790,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/jspparser" target="netbeans"/>
   </target>
-  <target name="all-web/jspsyntax" depends="init,all-web/jspparser">
+  <target name="all-web/jspsyntax" depends="init,all-web/jspparser,all-editor,all-editor/plain,all-java/editor,all-html/editor">
     <echo message="Building module web/jspsyntax..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">

@@ -21,7 +21,6 @@ import java.util.Iterator;
 import javax.swing.KeyStroke;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.SettingsDefaults;
-import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.ArrayList;

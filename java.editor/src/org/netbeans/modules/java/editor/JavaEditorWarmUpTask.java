@@ -11,7 +11,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.editor;
+package org.netbeans.modules.java.editor;
 
 import java.awt.Graphics;
 import java.awt.Point;
@@ -33,7 +33,6 @@ import org.netbeans.editor.Registry;
 import org.netbeans.editor.view.spi.EstimatedSpanView;
 import org.netbeans.editor.view.spi.LockView;
 import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.plain.PlainKit;
 import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
@@ -47,7 +46,7 @@ import org.openide.util.RequestProcessor;
  * @author  Tomas Pavek, Martin Roskanin
  */
 
-public class EditorWarmUpTask implements Runnable{
+public class JavaEditorWarmUpTask implements Runnable{
     
     /**
      * Number of lines that an artificial document
@@ -96,7 +95,6 @@ public class EditorWarmUpTask implements Runnable{
     private Graphics bGraphics;
     
     private BaseKit javaKit;
-    private BaseKit plainKit;
 
     private long startTime;
     
@@ -107,12 +105,8 @@ public class EditorWarmUpTask implements Runnable{
                     startTime = System.currentTimeMillis();
                 }
         
-                // Initialization of editor settings initializers and PrintOptions.
-                EditorModule.init();        
-
                 // Init of JavaKit and JavaOptions
                 javaKit = BaseKit.getKit(JavaKit.class);
-                plainKit = BaseKit.getKit(PlainKit.class);
         
                 //creating actions instances
                 javaKit.getActions();
@@ -298,7 +292,6 @@ public class EditorWarmUpTask implements Runnable{
         frame = null;
         bGraphics = null;
         javaKit = null;
-        plainKit = null;
     }
 
 }

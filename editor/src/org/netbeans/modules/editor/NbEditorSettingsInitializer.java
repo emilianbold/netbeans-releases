@@ -26,14 +26,6 @@ import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.MultiKeyBinding;
 import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtSettingsInitializer;
-import org.netbeans.editor.ext.html.HTMLSettingsInitializer;
-import org.netbeans.editor.ext.java.JavaSettingsInitializer;
-import org.netbeans.modules.editor.html.HTMLKit;
-import org.netbeans.modules.editor.html.NbHTMLSettingsInitializer;
-import org.netbeans.modules.editor.java.JavaKit;
-import org.netbeans.modules.editor.java.NbJavaSettingsInitializer;
-import org.netbeans.modules.editor.plain.PlainKit;
-import org.netbeans.modules.editor.plain.NbPlainSettingsInitializer;
 import org.openide.actions.SaveAction;
 import org.openide.actions.CutAction;
 import org.openide.actions.CopyAction;
@@ -63,12 +55,7 @@ public class NbEditorSettingsInitializer extends Settings.AbstractInitializer {
             inited = true;
             Settings.addInitializer(new BaseSettingsInitializer(), Settings.CORE_LEVEL);
             Settings.addInitializer(new ExtSettingsInitializer(), Settings.CORE_LEVEL);
-            Settings.addInitializer(new JavaSettingsInitializer(JavaKit.class));
-            Settings.addInitializer(new HTMLSettingsInitializer(HTMLKit.class));
             Settings.addInitializer(new NbEditorSettingsInitializer());
-            Settings.addInitializer(new NbPlainSettingsInitializer());
-            Settings.addInitializer(new NbJavaSettingsInitializer());
-            Settings.addInitializer(new NbHTMLSettingsInitializer());
 
             Settings.reset();
         }

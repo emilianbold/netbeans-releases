@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE catalog PUBLIC "-//NetBeans//DTD Editor Abbreviations settings 1.0//EN"
+ "http://www.netbeans.org/dtds/EditorAbbreviations-1_0.dtd">
+
+<abbrevs>
+<abbrev key="En">Enumeration</abbrev>
+<abbrev key="Ex">Exception</abbrev>
+<abbrev key="Ob">Object</abbrev>
+<abbrev key="Psf">public static final </abbrev>
+<abbrev key="Psfb">public static final boolean </abbrev>
+<abbrev key="Psfi">public static final int </abbrev>
+<abbrev key="Psfs">public static final String </abbrev>
+<abbrev key="St">String</abbrev>
+<abbrev key="ab">abstract </abbrev>
+<abbrev key="bo">boolean </abbrev>
+<abbrev key="br">break</abbrev>
+<abbrev key="ca">catch (</abbrev>
+<abbrev key="cl">class </abbrev>
+<abbrev key="cn">continue</abbrev>
+<abbrev key="df">default:</abbrev>
+<abbrev key="eq">equals</abbrev>
+<abbrev key="ex">extends </abbrev>
+<abbrev key="fa">false</abbrev>
+<abbrev key="fi">final </abbrev>
+<abbrev key="fl">float </abbrev>
+<abbrev key="fy">finally </abbrev>
+<abbrev key="ie">interface </abbrev>
+<abbrev key="im">implements </abbrev>
+<abbrev key="iof">instanceof </abbrev>
+<abbrev key="ir">import </abbrev>
+<abbrev key="le">length</abbrev>
+<abbrev key="pe">protected </abbrev>
+<abbrev key="pr">private </abbrev>
+<abbrev key="psf">private static final </abbrev>
+<abbrev key="psfb">private static final boolean </abbrev>
+<abbrev key="psfi">private static final int </abbrev>
+<abbrev key="psfs">private static final String </abbrev>
+<abbrev key="pst">printStackTrace();</abbrev>
+<abbrev key="pu">public </abbrev>
+<abbrev key="re">return </abbrev>
+<abbrev key="serr">System.err.println("|");</abbrev>
+<abbrev key="sout">System.out.println("|");</abbrev>
+<abbrev key="st">static </abbrev>
+<abbrev key="sw">switch (</abbrev>
+<abbrev key="sy">synchronized </abbrev>
+<abbrev key="tds">Thread.dumpStack();</abbrev>
+<abbrev key="th">throws </abbrev>
+<abbrev key="tw">throw </abbrev>
+<abbrev key="twn">throw new </abbrev>
+<abbrev key="wh">while (</abbrev>
+</abbrevs>

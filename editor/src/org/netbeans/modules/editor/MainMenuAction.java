@@ -30,7 +30,6 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -41,7 +40,7 @@ import org.openide.util.actions.Presenter;
  * Main menu action, like Edit/Go to Source, Edit/Go to Line..., 
  * View/Show Editor Toolbar, View/Show Line Numbers
  * This is the action implements Presenter.Menu and delegates on specific actions like 
- * ExtKit.toggleToolbarAction or JavaKit.gotoSuperImplementationAction
+ * ExtKit.toggleToolbarAction or ExtKit.gotoSuperImplementationAction
  *
  * @author  Martin Roskanin
  */
@@ -301,7 +300,7 @@ public abstract class MainMenuAction extends GlobalContextAction implements Pres
         }
 
         protected String getActionName() {
-            return JavaKit.gotoSuperImplementationAction;
+            return ExtKit.gotoSuperImplementationAction;
         }
     }
 

@@ -15,14 +15,6 @@ Microsystems, Inc. All Rights Reserved.
 
 <filesystem>
 
-    <folder name="Actions">
-        <folder name="Edit">
-            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.java.JavaFastOpenAction.getInstance"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Menu">
         <folder name="File">
             <attr name="org-openide-actions-PrintAction.instance/org-netbeans-modules-editor-ExportHtmlAction.instance" boolvalue="true"/>
@@ -47,11 +39,6 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-editor-MainMenuAction$GoToDeclarationAction.instance/org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance" boolvalue="true"/>
 
             <attr name="org-netbeans-modules-editor-MainMenuAction$GoToSuperAction.instance/org-openide-actions-GotoAction.instance" boolvalue="true"/>
-            <file name="org-netbeans-modules-editor-java-JavaFastOpenAction.shadow">            
-                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>            
-            </file>
-
-            <attr name="org-openide-actions-GotoAction.instance/org-netbeans-modules-editor-java-JavaFastOpenAction.shadow" boolvalue="true"/>           
 
         </folder>
                 
@@ -66,69 +53,14 @@ Microsystems, Inc. All Rights Reserved.
         </folder>
     </folder>
 
-    <folder name="DTDs">
-        <folder name="3_2">
-            <file name="catalog" url="DTDs/3_2/catalog"/>
-            <file name="html32.dtd" url="DTDs/3_2/html32.dtd"/>
-            <file name="lat1.ent" url="DTDs/3_2/lat1.ent"/>
-        </folder>
-        <folder name="4_0">
-            <file name="HTMLlat1.ent" url="DTDs/4_0/HTMLlat1.ent"/>
-            <file name="HTMLspecial.ent" url="DTDs/4_0/HTMLspecial.ent"/>
-            <file name="HTMLsymbol.ent" url="DTDs/4_0/HTMLsymbol.ent"/>
-            <file name="catalog" url="DTDs/4_0/catalog"/>
-            <file name="frameset.dtd" url="DTDs/4_0/frameset.dtd"/>
-            <file name="loose.dtd" url="DTDs/4_0/loose.dtd"/>
-            <file name="strict.dtd" url="DTDs/4_0/strict.dtd"/>
-        </folder>
-        <folder name="4_01">
-            <file name="HTMLlat1.ent" url="DTDs/4_01/HTMLlat1.ent"/>
-            <file name="HTMLspecial.ent" url="DTDs/4_01/HTMLspecial.ent"/>
-            <file name="HTMLsymbol.ent" url="DTDs/4_01/HTMLsymbol.ent"/>
-            <file name="catalog" url="DTDs/4_01/catalog"/>
-            <file name="frameset.dtd" url="DTDs/4_01/frameset.dtd"/>
-            <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
-            <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
-        </folder>
-    </folder>
-
-    <folder name="Shortcuts">
-        <file name="OS-O.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-java-JavaFastOpenAction.instance"/>
-        </file>
-    </folder>
-
-<!--
-    <folder name="Services">
-        <file name="AllOptions.settings" url="AllOptions.settings"/>
-    </folder>
-
--->
-
     <folder name="Services">
         <folder name="IndentEngine">
-            <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings" url="JavaIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-            </file>
-            <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-            </file>
             <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
             </file>
-            <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-            </file>
         </folder>
 
-    </folder>
-
-    <folder name="WarmUp">
-      <file name="org-netbeans-modules-editor-EditorWarmUpTask.instance"/>
     </folder>
 
     <folder name="UI">
@@ -149,22 +81,7 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Templates">
         <folder name="Services">
             <folder name="IndentEngine">
-                <file name="org-netbeans-modules-editor-java-JavaIndentEngine.settings" url="JavaIndentEngine.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-        	<file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
-            	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-            	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                    <attr name="template" boolvalue="true"/>
-        	</file>
                 <file name="org-netbeans-modules-editor-SimpleIndentEngine.settings" url="SimpleIndentEngine.settings">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
-                    <attr name="template" boolvalue="true"/>
-                </file>
-                <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
                     <attr name="template" boolvalue="true"/>
@@ -175,7 +92,6 @@ Microsystems, Inc. All Rights Reserved.
 
     <folder name="Editors">
         <folder name="text">
-
             <folder name="base">
                 <folder name="Popup">
                     <file name="org-openide-actions-CutAction.instance"/>
@@ -242,98 +158,6 @@ Microsystems, Inc. All Rights Reserved.
                         <file name="stop-macro-recording"/>
                     </folder>
                 </folder>
-            </folder>
-
-            <folder name="x-java">
-
-                <folder name="SideBar">
-                    <file name="org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance"/>
-                    <attr name="org-netbeans-editor-GlyphGutter.instance/org-netbeans-modules-editor-java-NbJavaCodeFoldingSideBarFactory.instance" boolvalue="true"/>
-                </folder>
-                
-                <folder name="FoldManager">
-                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
-                    <attr name="org-netbeans-editor-CustomFoldManager$Factory.instance/org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance" boolvalue="true"/>
-                    <file name="org-netbeans-modules-editor-java-NbJavaFoldManager$Factory.instance"/>
-                </folder>
-                
-                <file name="Settings.settings" url="JavaOptions.settings"/>
-                <folder name="Defaults">
-                    <file name="abbreviations.xml" url="XMLs/DefaultAbbrevs.xml"/>
-                    <file name="macros.xml" url="XMLs/DefaultMacros.xml"/>
-                    <file name="keybindings.xml" url="XMLs/DefaultKeyBindings.xml"/> 
-                </folder>
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.java.JavaKit"/>
-                </file>
-                
-                <folder name="Popup">
-                    <file name="generate-goto-popup"/>
-                    <file name="goto-help"/>
-                    <attr name="generate-goto-popup/goto-help" boolvalue="true"/>
-
-                    <file name="SeparatorAfterGoToHelp.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="goto-help/SeparatorAfterGoToHelp.instance" boolvalue="true"/>
-
-                    <file name="format"/>                    
-                    <attr name="SeparatorAfterGoToHelp.instance/format" boolvalue="true"/>                                        
-
-                    <file name="fix-imports"/>
-                    <attr name="format/fix-imports" boolvalue="true"/>
-                    <attr name="fix-imports/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    
-                    <file name="SeparatorBeforeCut.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="SeparatorBeforeCut.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    <attr name="format/SeparatorBeforeCut.instance" boolvalue="true"/>
-                    
-                    <file name="SeparatorAfterPaste.instance">
-			<attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="org-openide-actions-PasteAction.instance/SeparatorAfterPaste.instance" boolvalue="true"/>
-                    
-                    <file name="generate-fold-popup"/>
-                    <attr name="SeparatorAfterPaste.instance/generate-fold-popup" boolvalue="true"/>
-
-                </folder>
-                <folder name="Toolbars">
-                    <folder name="Default">
-                        <attr name="stop-macro-recording/Separator6.instance" boolvalue="true"/>
-                        <file name="Separator6.instance">
-                            <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        </file>
-                        <attr name="Separator6.instance/comment" boolvalue="true"/>
-                        <file name="comment"/>
-                        <attr name="comment/uncomment" boolvalue="true"/>
-                        <file name="uncomment"/>
-                    </folder>
-                </folder>
-            </folder>
-
-            <folder name="html">
-                <file name="Settings.settings" url="HTMLOptions.settings"/>
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
-                </file>
-
-                <folder name="Popup">
-                    <file name="format"/>
-                    <file name="SeparatorAfterFormat.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                    </file>
-                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
-                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                </folder>
-            </folder>
-
-            <folder name="plain">
-                <file name="Settings.settings" url="PlainOptions.settings"/>
-                <file name="EditorKit.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.plain.PlainKit"/>
-                </file>
             </folder>
         </folder>
 

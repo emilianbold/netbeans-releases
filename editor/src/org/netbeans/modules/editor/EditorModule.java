@@ -27,16 +27,11 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.DialogSupport;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.editor.LocaleSupport;
-import org.netbeans.editor.ext.java.JavaSettingsNames;
 import org.netbeans.modules.editor.options.AllOptions;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.BasePrintOptions;
-import org.netbeans.modules.editor.options.HTMLPrintOptions;
-import org.netbeans.modules.editor.options.JavaPrintOptions;
-import org.netbeans.modules.editor.options.PlainPrintOptions;
-import org.netbeans.modules.javacore.JMManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -60,13 +55,6 @@ public class EditorModule extends ModuleInstall {
 
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
-    /** PrintOptions to be installed */
-    static Class[] printOpts = new Class[] {
-        PlainPrintOptions.class,
-        JavaPrintOptions.class,
-        HTMLPrintOptions.class
-    };
-    
     static boolean inited = false;
 
     
@@ -76,24 +64,15 @@ public class EditorModule extends ModuleInstall {
         inited = true; // moved here to fix #27418
         
         NbEditorSettingsInitializer.init();
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-
         // Start listening on addition/removal of print options
         BasePrintOptions bpo = (BasePrintOptions) BasePrintOptions.findObject(BasePrintOptions.class, true);
         bpo.init();
-        
-        for (int i = 0; i < printOpts.length; i++) {
-            ps.addOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
-        }
     }
     
     /** Module installed again. */
     public void restored () {
-        JMManager.setDocumentLocksCounter(BaseDocument.THREAD_LOCAL_LOCK_DEPTH);
-
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
-        LocaleSupport.addLocalizer(new NbLocalizer(JavaSettingsNames.class));
 
         // Initializations
         DialogSupport.setDialogFactory( new NbDialogSupport() );
@@ -164,13 +143,6 @@ public class EditorModule extends ModuleInstall {
 
         AllOptionsFolder.unregisterModuleRegListener();
         
-        // Options
-        PrintSettings ps = (PrintSettings) SharedClassObject.findObject(PrintSettings.class, true);
-
-        for (int i = 0; i < printOpts.length; i++) {
-            ps.removeOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
-        }
-
         // unregister our registry
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N
@@ -222,8 +194,6 @@ public class EditorModule extends ModuleInstall {
             }
         });
         
-        JMManager.setDocumentLocksCounter(null);
-
         inited = false; // moved here as part of fix of #27418
     }
 

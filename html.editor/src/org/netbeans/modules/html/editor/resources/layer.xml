@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+
+<filesystem>
+
+    <folder name="DTDs">
+        <folder name="3_2">
+            <file name="catalog" url="DTDs/3_2/catalog"/>
+            <file name="html32.dtd" url="DTDs/3_2/html32.dtd"/>
+            <file name="lat1.ent" url="DTDs/3_2/lat1.ent"/>
+        </folder>
+        <folder name="4_0">
+            <file name="HTMLlat1.ent" url="DTDs/4_0/HTMLlat1.ent"/>
+            <file name="HTMLspecial.ent" url="DTDs/4_0/HTMLspecial.ent"/>
+            <file name="HTMLsymbol.ent" url="DTDs/4_0/HTMLsymbol.ent"/>
+            <file name="catalog" url="DTDs/4_0/catalog"/>
+            <file name="frameset.dtd" url="DTDs/4_0/frameset.dtd"/>
+            <file name="loose.dtd" url="DTDs/4_0/loose.dtd"/>
+            <file name="strict.dtd" url="DTDs/4_0/strict.dtd"/>
+        </folder>
+        <folder name="4_01">
+            <file name="HTMLlat1.ent" url="DTDs/4_01/HTMLlat1.ent"/>
+            <file name="HTMLspecial.ent" url="DTDs/4_01/HTMLspecial.ent"/>
+            <file name="HTMLsymbol.ent" url="DTDs/4_01/HTMLsymbol.ent"/>
+            <file name="catalog" url="DTDs/4_01/catalog"/>
+            <file name="frameset.dtd" url="DTDs/4_01/frameset.dtd"/>
+            <file name="loose.dtd" url="DTDs/4_01/loose.dtd"/>
+            <file name="strict.dtd" url="DTDs/4_01/strict.dtd"/>
+        </folder>
+    </folder>
+
+    <folder name="Services">
+        <folder name="IndentEngine">
+            <file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+            </file>
+            <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+            </file>
+        </folder>
+
+    </folder>
+
+    <folder name="Templates">
+        <folder name="Services">
+            <folder name="IndentEngine">
+        	<file name="org-netbeans-modules-editor-html-LineWrapIndentEngine.settings" url="LineWrapIndentEngine.settings">
+            	    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+            	    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                    <attr name="template" boolvalue="true"/>
+        	</file>
+                <file name="org-netbeans-modules-editor-html-HTMLIndentEngine.settings" url="HTMLIndentEngine.settings">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.Bundle"/>
+                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/editor/resources/indentEngine.gif"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
+    <folder name="Editors">
+        <folder name="text">
+            <folder name="html">
+                <file name="Settings.settings" url="HTMLOptions.settings"/>
+                <file name="EditorKit.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.editor.html.HTMLKit"/>
+                </file>
+
+                <folder name="Popup">
+                    <file name="format"/>
+                    <file name="SeparatorAfterFormat.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    </file>
+                    <attr name="format/SeparatorAfterFormat.instance" boolvalue="true"/>
+                    <attr name="SeparatorAfterFormat.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+
+</filesystem>

@@ -183,7 +183,6 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         setPropertyEditor(BaseOptions.SCROLL_JUMP_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.SCROLL_FIND_INSETS_PROP, ScrollInsetsEditor.class);
         setPropertyEditor(BaseOptions.MACRO_MAP_PROP, MacrosEditor.class, false);
-        setPropertyEditor(BaseOptions.CODE_FOLDING_PROPS_PROP, CodeFoldingEditor.class, false);
         
         setExpert(EXPERT_PROP_NAMES);
 
@@ -262,9 +261,18 @@ public class BaseOptionsBeanInfo extends SimpleBeanInfo {
         }
     }
 
-    /** @return localized string */
-    protected String getString(String s) {
-        return NbBundle.getMessage(BaseOptionsBeanInfo.class, s);
+    /**
+     * Get localized string for the given key.
+     *
+     * @param key the key string for which the localized
+     *  text is being retrieved. The localized string
+     *  for the key must exist otherwise
+     *  {@link java.util.MissingResourceException}
+     *  gets thrown.
+     * @return localized string
+     */
+    protected String getString(String key) {
+        return NbBundle.getMessage(BaseOptionsBeanInfo.class, key);
     }
 
     // ------------------------ carets --------------------------------

@@ -38,6 +38,8 @@ Microsystems, Inc. All Rights Reserved.
       <pathelement location="${openide.dir}/${nb.lib.dir}/openide.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-lib.jar"/>
       <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor.jar"/>
+      <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain.jar"/>
+      <pathelement location="${editor.dir}/${nb.modules.dir}/org-netbeans-modules-editor-plain-lib.jar"/>
       <!-- src must be on classpath, otherwise AspectJ compiler (ajc) wouldn't compile -->
       <pathelement location="src" />
     </path>

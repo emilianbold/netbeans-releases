@@ -36,8 +36,14 @@ Microsystems, Inc. All Rights Reserved.
               <attribute name="OpenIDE-Module-Implementation-Version" value="${buildnumber}"/>
               <attribute name="OpenIDE-Module-Public-Packages" value="${public.packages}"/>
               <attribute name="OpenIDE-Module-IDE-Dependencies" value="${ide.dependencies}"/>
-              <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.editor/2 > 1.6,
+              <attribute name="OpenIDE-Module-Module-Dependencies" value="org.netbeans.modules.editor/3 > 1.18,
   org.netbeans.modules.editor.lib/1, 
+  org.netbeans.modules.editor.plain/1,
+  org.netbeans.modules.editor.plain.lib/1,
+  org.netbeans.modules.java.editor/1,
+  org.netbeans.modules.java.editor.lib/1,
+  org.netbeans.modules.html.editor/1,
+  org.netbeans.modules.html.editor.lib/1,
   org.netbeans.modules.servletapi24/1 > ${web.servletapi24.specification.version},
   org.netbeans.modules.html/1,
   org.netbeans.modules.web.jspparser/2,

@@ -56,12 +56,10 @@ import org.openide.nodes.Node;
 import java.io.ObjectOutput;
 import org.openide.nodes.FilterNode;
 import org.openide.util.RequestProcessor;
-import org.netbeans.editor.ext.java.JavaSettingsDefaults;
 import org.openide.loaders.DataFolder;
 import org.openide.filesystems.FileObject;
 import org.netbeans.modules.editor.NbEditorSettingsInitializer;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.editor.java.JavaKit;
 import java.awt.event.KeyEvent;
 import java.awt.event.InputEvent;
 import org.openide.util.Lookup;
@@ -93,7 +91,7 @@ public class BaseOptions extends OptionSupport {
     /** Latest version of the options. It must be increased
      * manually when new patch is added to the options.
      */
-    protected static final int LATEST_OPTIONS_VERSION = UpgradeOptions.LATEST_VERSION;
+    protected static final int LATEST_OPTIONS_VERSION = 21;
     
     protected static final String OPTIONS_VERSION_PROP = "optionsVersion"; // NOI18N
     
@@ -141,7 +139,7 @@ public class BaseOptions extends OptionSupport {
     public static final String TEXT_ANTIALIASING_PROP = "textAntialiasing"; // NOI18N
     public static final String CODE_FOLDING_PROPS_PROP = "codeFoldingProps"; // NOI18N    
     
-    static final String[] BASE_PROP_NAMES = {
+    protected static final String[] BASE_PROP_NAMES = {
         ABBREV_MAP_PROP,
         CARET_BLINK_RATE_PROP,
         CARET_COLOR_INSERT_MODE_PROP,
@@ -762,7 +760,7 @@ public class BaseOptions extends OptionSupport {
                  * at line 235 the keyColoring was null.
                  * Therefore the patch appears here.
                  */
-                coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
+                //coloringMap = UpgradeOptions.patchColorings(getKitClass(), coloringMap);
             }
             
             if (saveToXML){
@@ -1369,9 +1367,9 @@ public class BaseOptions extends OptionSupport {
             refreshIndentEngineSettings();
 
             // Possibly upgrade the options
-            if (optionsVersion < LATEST_OPTIONS_VERSION) {
-                upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
-            }
+            //if (optionsVersion < LATEST_OPTIONS_VERSION) {
+            //    upgradeOptions(optionsVersion, LATEST_OPTIONS_VERSION);
+            //}
 
             optionsVersion = LATEST_OPTIONS_VERSION;
 
@@ -1388,7 +1386,7 @@ public class BaseOptions extends OptionSupport {
      */
     protected void upgradeOptions(int version, int latestVersion) {
         // Upgrade in separate class to avoid messing up BaseOptions
-        UpgradeOptions.upgradeOptions(this, version, latestVersion);
+        //UpgradeOptions.upgradeOptions(this, version, latestVersion);
     }
     
     /** Load settings from XML files and initialize changes */

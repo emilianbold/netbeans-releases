@@ -20,7 +20,7 @@ import java.awt.Image;
  *
  * @author Libor Karmolis
  */
-public class DTDOptionsBeanInfo extends org.netbeans.modules.editor.options.PlainOptionsBeanInfo {
+public class DTDOptionsBeanInfo extends org.netbeans.modules.editor.options.BaseOptionsBeanInfo {
 
     public DTDOptionsBeanInfo () {
         super ("/org/netbeans/modules/xml/text/resources/dtdEditorOptions");    // NOI18N

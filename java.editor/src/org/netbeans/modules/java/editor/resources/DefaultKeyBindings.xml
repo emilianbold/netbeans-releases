@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.0//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_0.dtd">
+
+  <!-- IMPORTANT:  To handle Apple-specific keybindings, there is another copy of
+     this file, with minor diffs, in ide/applemenu.  Any changes made here should
+     be made there too -->                            
+<bindings>
+    <bind actionName="goto-source" key="O-O"/>
+    <bind actionName="fast-import" key="OS-I"/>
+    <bind actionName="fix-imports" key="OS-F"/>
+
+    <bind actionName="goto-super-implementation" key="D-B"/>
+    <bind actionName="goto-declaration" key="O-G"/>    
+    <bind actionName="comment" key="DS-T"/>
+    <bind actionName="goto-help" key="O-F1"/>
+    <bind actionName="make-is" key="O-U$I"/>
+    <bind actionName="make-getter" key="O-U$G"/>
+    <bind actionName="macro-debug-var" key="D-J$D"/>
+    <bind actionName="uncomment" key="DS-D"/>
+    <bind actionName="make-setter" key="O-U$S"/>
+    <bind actionName="select-element-next" key="OS-S"/>
+    <bind actionName="select-element-previous" key="OS-A"/>
+</bindings>
