@@ -1281,7 +1281,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <include name="${nb.cluster.platform.dir}/${nb.bin.dir}/nbexec.cmd" />      
     </fixcrlf>
 
-    <echo file="${netbeans.dest}/build_info">NetBeans dev build
+    <echo file="${netbeans.dest.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
 Date:     ${TODAY}
