@@ -454,9 +454,12 @@ public class JavaCodeGenerator extends CodeGenerator {
   
   private void generateComponentInit (RADComponent comp, Writer initCodeWriter) throws IOException {
     if (comp instanceof RADVisualContainer) {
-      // generate layout init code
       DesignLayout dl = ((RADVisualContainer)comp).getDesignLayout ();
-      initCodeWriter.write (dl.generateInitCode ((RADVisualContainer)comp));
+      String layoutInitCode = dl.generateInitCode ((RADVisualContainer)comp);
+      if (layoutInitCode != null) {
+        // generate layout init code
+        initCodeWriter.write (layoutInitCode);
+      }
     }
 
     Object genType = comp.getAuxValue (AUX_CODE_GENERATION);
@@ -1238,6 +1241,8 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  51   Gandalf   1.50        9/24/99  Ian Formanek    counts with nulls 
+ *       returned from DesignLayout.generateInitCode method
  *  50   Gandalf   1.49        9/17/99  Ian Formanek    Fixed last change
  *  49   Gandalf   1.48        9/17/99  Ian Formanek    Fixed bug 1825 - 
  *       Property sheets are not synchronized and bug 2038 - Opening form marks 
