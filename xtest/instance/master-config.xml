@@ -39,8 +39,12 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
+      <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk14"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
@@ -65,8 +69,12 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core"   	testtypes="qa-functional"  attributes="validation"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation"/>
+      <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation"/>
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,jdk13"/> 
       <module name="qa"       	testtypes="serialization"  attributes="validation"/>
@@ -94,8 +102,12 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk14"/>
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
@@ -120,8 +132,12 @@ Microsystems, Inc. All Rights Reserved.
       <module name="core"   	testtypes="qa-functional"  attributes="validation,full"/>  
       <module name="editor" 	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="i18n"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="jarpackager"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="java"   	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="javacvs"   	testtypes="qa-functional"  attributes="validation,full"/>
+      <module name="jndi"    	testtypes="qa-functional"  attributes="validation,full">
+          <property file="../../../nbextra/qa/jndi/jndi.properties"/>
+      </module>      
       <module name="openide"  	testtypes="qa-functional"  attributes="validation,full"/>
       <module name="projects" 	testtypes="qa-functional"  attributes="validation,full,jdk13"/> 
       <module name="qa"       	testtypes="serialization"  attributes="validation,full"/>
