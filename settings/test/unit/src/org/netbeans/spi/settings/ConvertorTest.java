@@ -56,7 +56,7 @@ public class ConvertorTest extends NbTestCase {
         assertNotNull(l);
         FileObject src = (FileObject) l.lookup(FileObject.class);
         assertNotNull(src);
-        assertEquals(contextFO.toString(), src.toString());
+        assertEquals(contextFO.getPath(), src.getPath());
     }
     
     public void testFindReaderContext() throws Exception {
@@ -68,7 +68,7 @@ public class ConvertorTest extends NbTestCase {
             assertNotNull(l);
             FileObject src = (FileObject) l.lookup(FileObject.class);
             assertNotNull(src);
-            assertEquals(contextFO.toString(), src.toString());
+            assertEquals(contextFO.getPath(), src.getPath());
         } finally {
             lock.releaseLock();
         }
