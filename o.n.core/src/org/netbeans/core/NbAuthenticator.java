@@ -30,16 +30,11 @@ import org.openide.util.RequestProcessor;
 
 class NbAuthenticator extends java.net.Authenticator {
 
-  /** Resource bundle */
-  private static ResourceBundle bundle = NbBundle.getBundle( NbAuthenticator.class );
-
-  /** Password panel */
-  private static final PasswordPanel passwordPanel = new PasswordPanel();   
-
-
   protected java.net.PasswordAuthentication getPasswordAuthentication() {
     java.net.InetAddress site = getRequestingSite();
     String host = site == null ? "" : site.getHostName(); // NOI18N
+    PasswordPanel passwordPanel = new PasswordPanel();
+    ResourceBundle bundle = NbBundle.getBundle( NbAuthenticator.class );
 
     DialogDescriptor dd = new DialogDescriptor( passwordPanel, host == null ? bundle.getString( "CTL_PasswordProtected" ) : host );
     dd.setHelpCtx (new HelpCtx (NbAuthenticator.class.getName () + ".getPasswordAuthentication")); // NOI18N
@@ -53,7 +48,6 @@ class NbAuthenticator extends java.net.Authenticator {
       return null;
   }
 
-
   /** Inner class for JPanel with Username & Password fields */
 
   static class PasswordPanel extends javax.swing.JPanel {
@@ -61,9 +55,11 @@ class NbAuthenticator extends java.net.Authenticator {
     private static final int DEFAULT_WIDTH = 200;
     private static final int DEFAULT_HEIGHT = 0;
 
-static final long serialVersionUID =1555749205340031767L;
+    /** Generated serialVersionUID */
+    static final long serialVersionUID = 1555749205340031767L;
+
     /** Creates new form PasswordPanel */
-      public PasswordPanel() {
+    public PasswordPanel() {
       initComponents ();
     }
 
@@ -169,6 +165,7 @@ static final long serialVersionUID =1555749205340031767L;
 
 /*
  * Log
+ *  7    Jaga      1.5.1.0     4/12/00  Ales Novak      small memory leak
  *  6    Gandalf   1.5         1/13/00  Jaroslav Tulach I18N
  *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
