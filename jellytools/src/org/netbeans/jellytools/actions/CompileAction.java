@@ -21,7 +21,7 @@ import org.netbeans.jellytools.Bundle;
  * @author <a href="mailto:adam.sotona@sun.com">Adam Sotona</a> */
 public class CompileAction extends Action {
     
-    private static final String compilePopup = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Compile");
+    private static final String compilePopup = Bundle.getStringTrimmed("org.openide.compiler.Bundle", "Compile");
     private static final String compileMenu = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Build")
                                             + "|" + compilePopup;
     private static final Shortcut compileShortcut = new Shortcut(KeyEvent.VK_F9);
