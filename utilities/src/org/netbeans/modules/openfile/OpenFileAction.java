@@ -16,6 +16,7 @@ import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.utilities.Manager;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
@@ -56,7 +57,8 @@ public class OpenFileAction extends CallableSystemAction {
      * @return  the initialized file chooser
      */
     protected JFileChooser prepareFileChooser() {
-        JFileChooser chooser = new JFileChooser(currDir);
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, currDir);
         HelpCtx.setHelpIDString(chooser, getHelpCtx().getHelpID());
         
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
