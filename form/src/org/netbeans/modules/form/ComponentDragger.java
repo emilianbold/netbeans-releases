@@ -464,6 +464,12 @@ class ComponentDragger
                                     targetContainer, targetContainerDel,
                                     comp, metacomp.getComponentIndex(),
                                     posInCont, posInComp);
+
+                        if (constr == null && index >= 0) {
+                            // keep old constraints (if compatible)
+                            LayoutSupportManager.storeConstraints(metacomp);
+                            constr = layoutSupport.getStoredConstraints(metacomp);
+                        }
                     }
                     else { // resizing
                         int up = 0, down = 0, left = 0, right = 0;
