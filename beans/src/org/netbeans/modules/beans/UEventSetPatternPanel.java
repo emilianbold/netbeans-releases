@@ -302,8 +302,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
     public void actionPerformed( java.awt.event.ActionEvent e ) {
         if ( dialog != null ) {
 
-            if ( e.getActionCommand().equals( "OK" ) ) { // NOI18N
-
+            if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
                 //Test wether the string is empty
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
                     TopManager.getDefault().notify(
