@@ -120,7 +120,7 @@ public class BaseOptions extends OptionSupport {
     public static final String HIGHLIGHT_CARET_ROW_PROP = "highlightCaretRow"; // NOI18N
     public static final String HIGHLIGHT_MATCHING_BRACKET_PROP = "highlightMatchingBracket"; // NOI18N
     public static final String INDENT_ENGINE_PROP = "indentEngine"; // NOI18N
-    public static final String KEY_BINDING_LIST_PROP = "keyBindingList"; // NOI18N
+    public static final String KEY_BINDING_LIST_PROP = "4ingList"; // NOI18N
     public static final String LINE_HEIGHT_CORRECTION_PROP = "lineHeightCorrection"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP = "lineNumberMargin"; // NOI18N
     public static final String LINE_NUMBER_MARGIN_PROP_2 = "lineNumberMargin2"; // NOI18N    

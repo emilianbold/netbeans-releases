@@ -40,6 +40,8 @@ import org.netbeans.editor.GuardedDocument;
 import javax.swing.SwingUtilities;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Caret;
+import javax.swing.JEditorPane;
+import javax.swing.JComponent;
 
 /**
 * Editor UI
@@ -147,6 +149,60 @@ public class NbEditorUI extends ExtEditorUI {
         super.uninstallUI(c);
 
         c.removeFocusListener(focusL);
+    }
+    
+    public JComponent getExtComponent() {
+        JComponent extComponent = super.getExtComponent();
+        new NbToolbarSupport(extComponent, (JEditorPane)getComponent());
+        
+        
+/*        String toolbarFolderPath = "Editors/" + mimeType + "/Toolbars";
+
+        org.openide.filesystems.FileObject f = TopManager.getDefault().
+        getRepository().getDefaultFileSystem().findResource(toolbarFolderPath);
+
+        if (f != null) {
+            try {
+                DataObject dob = DataObject.find(f);
+                DataFolder df = (DataFolder)dob.getCookie(DataFolder.class);
+                if (df != null) {
+                    
+                    ToolbarPool tp = new ToolbarPool(df);
+                    extComponent.add(tp, BorderLayout.NORTH);
+                    tp.waitFinished();
+                    tp.setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
+                    tp.setBorder(null);
+                    
+                    Toolbar[] all = tp.getToolbars();
+                    for (int i = 0; i < all.length; i++) {
+                        Toolbar t = all[i];
+                        
+                        // PENDING Hack to get rid of toolbar bump
+                        t.addContainerListener(new ContainerAdapter() {
+                            public void componentAdded(ContainerEvent evt) {
+                                Container toolbarContainer = (Container)evt.getSource();
+                                if (toolbarContainer.getComponentCount() == 2
+                                    && toolbarContainer.getComponent(0).getClass().getName().equals(
+                                        "org.openide.awt.Toolbar$ToolbarBump")
+                                ) {
+                                    toolbarContainer.getComponent(0).setVisible(false); // bump
+                                    toolbarContainer.getComponent(1).setVisible(false); // separator
+                                }
+                            }
+                        });
+                        
+                        // Remove toolbar insets
+                        t.setBorder(null);
+                    }
+                }
+ 
+            } catch (org.openide.loaders.DataObjectNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+*/
+ 
+        return extComponent;
     }
 
     public final class SystemActionUpdater
