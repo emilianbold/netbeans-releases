@@ -194,7 +194,6 @@
   <tocitem text="Setting Run Arguments" target="run.options.jump" >
     <tocitem text="Specifying Arguments for Program Execution" target="run.arguments" />
     <tocitem text="Passing Arguments to the Java Virtual Machine" target="run.vm_arguments" />
-    <tocitem text="Enabling Assertion Checking for Program Execution" target="run.assertion" />
     <tocitem text="Setting an Execution Directory" target="run.execution.directory" />
     <tocitem text="Setting Runtime Options for the Environment" target="run.options" />
   </tocitem>
@@ -538,6 +537,7 @@
   <tocitem text="Editing an Ant Script" target="ant.editing" />
   <tocitem text="Adding a Task to an Ant Script" target="ant.add-task" />
   <tocitem text="Setting Properties in an Ant Script" target="ant.props" />
+  <tocitem text="Handling User Input in an Ant Task" target="ant.input-handler" />
   <tocitem text="Running an Ant Script" target="ant.running" />
   <tocitem text="Executing a Target" target="ant.target" />
   <tocitem text="Creating a Shortcut to a Target" target="ant.shortcut" />
@@ -547,9 +547,8 @@
     <tocitem text="Creating a Custom Ant Task" target="ant.createtask" />
     <tocitem text="Ant Classpath and Custom Tasks" target="ant.tasks-classpath" />
   </tocitem>
-  <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" >
-    <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
-  </tocitem>
+  <tocitem text="Viewing Ant Documentation" target="ant.ant-docs" />
+  <tocitem text="Installing Ant Documentation" target="ant.install-docs" />
   <tocitem text="Optional Ant Tasks" target="ant.optional-tasks" />
   <tocitem text="Configuring Ant Settings" target="ant.settings" />
 </tocitem>

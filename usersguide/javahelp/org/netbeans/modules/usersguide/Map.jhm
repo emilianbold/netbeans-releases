@@ -296,7 +296,6 @@
 <mapID target="run.remove" url="run/remove.html" />
 <mapID target="run.template" url="run/template.html" />
 <mapID target="run.mainclass" url="run/mainclass.html" />
-<mapID target="run.assertion" url="run/assertion.html" />
 <mapID target="output.window" url="run/output_window.html" />
 <mapID target="run.execution.directory" url="run/execution_directory.html" />
 <mapID target="run.64bit.jvm" url="run/64bit_jvm_run.html" />
@@ -618,6 +617,7 @@
 <mapID target="ant.install-docs" url="ant/install-docs.html" />
 <mapID target="ant.ant-docs" url="ant/ant-docs.html" />
 <mapID target="ant.add-task" url="ant/add-task.html" />
+<mapID target="ant.input-handler" url="ant/input_handler.html" />
 
 <mapID target="configure" url="configure/configure.html" />
 <mapID target="configure.options" url="configure/configure_options.html" />
@@ -668,6 +668,7 @@
 <mapID target="org.netbeans.modules.i18n.I18nOptions" url="internationalize/custominter.html" />
 <mapID target="ant.wizard.shortcut" url="ant/shortcut.html" />
 <mapID target="ant.wizard.properties" url="ant/ant-props.html" />
+<mapID target="org.apache.tools.ant.module.run.NBInputHandler" url="ant/input_handler.html" />
 
 <mapID target="org.netbeans.core.services.CompilerTypes" url="compile/options_jump.html" />
 <mapID target="org.netbeans.core.services.ExecutorTypes" url="run/executor_options.html" />
