@@ -161,7 +161,7 @@ final class BrokenDataShadow extends MultiDataObject {
             if (allDataShadows == null || allDataShadows.isEmpty ()) return;
             
             if (src != null) {
-                shadows = (Set)allDataShadows.get (src.getPrimaryFile ().toString ());
+                shadows = (Set)allDataShadows.get (src.getPrimaryFile ().getPath ());
                 if (shadows == null) {
                     // we know the source of the event and there are no
                     // shadows with such original
