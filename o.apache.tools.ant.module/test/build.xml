@@ -31,7 +31,7 @@ Microsystems, Inc. All Rights Reserved.
    
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="ide,stable"/>
+    <property name="xtest.attribs" value="full"/>
     
     <!-- Points to antfile with module's harness. 
          Targets from that antfile is called from this build.xml -->
