@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.HashSet;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
@@ -460,10 +461,11 @@ public class DefaultClassPathProvider implements ClassPathProvider {
                         }
                     }
                 }
-                this.cachedCompiledClassPath =  new ArrayList ();
+                List l =  new ArrayList ();
                 for (Iterator it = roots.iterator(); it.hasNext();) {
-                    this.cachedCompiledClassPath.add (ClassPathSupport.createResource((URL)it.next()));
+                    l.add (ClassPathSupport.createResource((URL)it.next()));
                 }
+                this.cachedCompiledClassPath = Collections.unmodifiableList(l);
             }
             return this.cachedCompiledClassPath;
         }
