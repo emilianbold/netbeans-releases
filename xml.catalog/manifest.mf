@@ -3,9 +3,9 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/catalog/resources/Bun
 OpenIDE-Module-Install: org/netbeans/modules/xml/catalog/CatalogModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/catalog/resources/mf-layer.xml
 OpenIDE-Module-IDE-Dependencies: IDE/1 > 1.24
-OpenIDE-Module-Specification-Version: @SPEC_VERS_SUBST@
+OpenIDE-Module-Specification-Version: @CATALOG_SPEC_VERS_SUBST@
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
-OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @SPEC_VERS_SUBST@
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.xml.core/1 > @CORE_SPEC_VERS_SUBST@
 Class-Path: docs/xml-catalog.jar ext/resolver-1_1_nb.jar
 
 Name: org/netbeans/modules/xml/catalog/CatalogRootNode.class
