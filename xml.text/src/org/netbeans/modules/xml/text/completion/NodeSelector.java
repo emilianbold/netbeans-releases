@@ -53,7 +53,7 @@ public class NodeSelector {
     private int lastCaretOffset = -1;
     
     /** Default delay between cursor movement and updating selected element nodes. */
-    private static final int SELECTED_NODES_DELAY = 500;
+    private static final int SELECTED_NODES_DELAY = 200;
     
     private JEditorPane pane;
     
