@@ -492,8 +492,19 @@ public class XMLDataObject extends MultiDataObject {
     final Document parsePrimaryFile () throws IOException, SAXException {
         emgr().log ("parsePrimaryFile");
         String loc = getPrimaryFile().getURL().toExternalForm();
-
-        return XMLUtil.parse(new InputSource(loc), false, /* #36295 */true, errorHandler, getSystemResolver());
+        try {
+            return XMLUtil.parse(new InputSource(loc), false, /* #36295 */true, errorHandler, getSystemResolver());
+        } catch (IOException e) {
+            // Perhaps this document was not on a mounted filesystem.
+            // Try again with an input stream - no relative URLs will work, but this
+            // is extremely unlikely to matter. Cf. #36340.
+            InputStream is = getPrimaryFile().getInputStream();
+            try {
+                return XMLUtil.parse(new InputSource(is), false, true, errorHandler, getSystemResolver());
+            } finally {
+                is.close();
+            }
+        }
     }
 
 
