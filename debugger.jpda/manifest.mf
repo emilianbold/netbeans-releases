@@ -4,6 +4,7 @@ OpenIDE-Module-Install: com/netbeans/developer/modules/debugger/jpda/JPDADebugge
 OpenIDE-Module-Module-Dependencies: com.netbeans.developer.modules.debugger.core/1
 OpenIDE-Module-Specification-Version: 0.9
 OpenIDE-Module-Implementation-Version: 0.9
+Class-Path: ext/jpda.jar
 
 Name: com/netbeans/developer/modules/debugger/jpda/JPDADebuggerType.class
 OpenIDE-Module-Class: Executor
