@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -151,7 +151,6 @@ Microsystems, Inc. All Rights Reserved.
 	     <pathelement location="gensrc"/>
 	     <pathelement location="../../netbeans/lib/openide.jar"/>
              <pathelement location="../../loaders/netbeans/lib/openide-loaders.jar"/>
-	     <pathelement location="../../compiler/netbeans/modules/autoload/openide-compiler.jar"/>
 	     <pathelement location="../../execution/netbeans/modules/autoload/openide-execution.jar"/>
 	     <pathelement location="../../io/netbeans/modules/autoload/openide-io.jar"/>
 	</path>
@@ -172,7 +171,6 @@ Microsystems, Inc. All Rights Reserved.
              <pathelement location="../../util/src"/>
              <pathelement location="../../nodes/src"/>
              <pathelement location="../../loaders/src"/>
-	     <pathelement location="../../compiler/src"/>
 	     <pathelement location="../../execution/src"/>
 	     <pathelement location="../../io/src"/>
 	     <pathelement location="../../windows/src"/>
@@ -194,7 +192,6 @@ Microsystems, Inc. All Rights Reserved.
 	     <pathelement location="gensrc"/>
 	     <pathelement location="${netbeans.home}/lib/openide.jar"/>
              <pathelement location="${netbeans.home}/lib/openide-loaders.jar"/>
-	     <pathelement location="${netbeans.home}/modules/autoload/openide-compiler.jar"/>
 	     <pathelement location="${netbeans.home}/modules/autoload/openide-execution.jar"/>
 	     <pathelement location="${netbeans.home}/modules/autoload/openide-io.jar"/>
    	</path>

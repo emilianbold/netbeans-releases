@@ -72,9 +72,6 @@ Microsystems, Inc. All Rights Reserved.
         <patchclass source="${netbeans.home}/lib/openide-loaders.jar" targetdir="gensrc">
             <classpath refid="boot.cp"/>
         </patchclass>
-        <patchclass source="${netbeans.home}/modules/autoload/openide-compiler.jar" targetdir="gensrc">
-            <classpath refid="boot.cp"/>
-        </patchclass>
         <patchclass source="${netbeans.home}/modules/autoload/openide-io.jar" targetdir="gensrc">
             <classpath refid="boot.cp"/>
         </patchclass>
