@@ -15,10 +15,8 @@
 package org.netbeans.modules.form;
 
 import org.openide.*;
-import org.openide.actions.OpenAction;
 import org.openide.loaders.*;
 import org.openide.filesystems.*;
-import org.openide.util.actions.SystemAction;
 import org.openide.nodes.Node;
 import org.openide.cookies.*;
 import org.netbeans.modules.java.JavaDataObject;
@@ -103,11 +101,11 @@ public class FormDataObject extends JavaDataObject {
     public boolean isReadOnly() {
         FileObject javaFO = getPrimaryFile();
         FileObject formFO = formEntry.getFile();
-        return javaFO.isReadOnly() || formFO.isReadOnly();
+        return !javaFO.canWrite() || !formFO.canWrite();
     }
 
     public boolean formFileReadOnly() {
-        return formEntry.getFile().isReadOnly();
+        return !formEntry.getFile().canWrite();
     }
 
     // from JavaDataObject
@@ -143,7 +141,6 @@ public class FormDataObject extends JavaDataObject {
      */
     protected Node createNodeDelegate() {
         FormDataNode node = new FormDataNode(this);
-        node.setDefaultAction(SystemAction.get(OpenAction.class));
         return node;
     }
 

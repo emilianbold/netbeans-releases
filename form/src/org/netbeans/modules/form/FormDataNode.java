@@ -14,6 +14,10 @@
 
 package org.netbeans.modules.form;
 
+import javax.swing.Action;
+
+import org.openide.actions.OpenAction;
+import org.openide.util.actions.SystemAction;
 import org.netbeans.modules.java.JavaNode;
 
 /** The DataNode for Forms.
@@ -42,6 +46,10 @@ public class FormDataNode extends JavaNode {
 
     protected String getBareIconBase() {
         return FORM_ICON_BASE;
+    }
+    
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenAction.class);
     }
 
 }
