@@ -13,6 +13,7 @@
 
 #include <jvmpi.h>
 #include <string.h>
+#include <stdlib.h>
 
 static JavaVM *jvm;
 static JNIEnv *env;
@@ -204,18 +205,20 @@ JNIEXPORT jint JNICALL JVM_OnLoad(JavaVM *aJvm, char *options, void *reserved) {
 
 void notifyEvent(JVMPI_Event *event) {
     switch (event->event_type) {
-        case JVMPI_EVENT_CLASS_LOAD: 
+        case JVMPI_EVENT_CLASS_LOAD:
+            {
 //            fprintf(stderr, "jtrace> loaded %s\n", event->u.class_load.class_name);
-            for (int i = 0; i < event->u.class_load.num_methods; i++) {
-                JVMPI_Method *m = & event->u.class_load.methods[i];
+                for (int i = 0; i < event->u.class_load.num_methods; i++) {
+                    JVMPI_Method *m = & event->u.class_load.methods[i];
 
 //                fprintf(stderr, "jtrace>   %s%s\n", m->method_name, m->method_signature);
 
-                for (const char **p = traced_methods; *p != NULL; p += 2) {
-                    if (0 == strcmp(m->method_name, *p) && 0 == strcmp(m->method_signature, *(p+1))) {
-                        storeNewMethodID(m->method_id, event->u.class_load.class_name,
-                                     m->method_name, m->method_signature);
-                        break;
+                    for (const char **p = traced_methods; *p != NULL; p += 2) {
+                        if (0 == strcmp(m->method_name, *p) && 0 == strcmp(m->method_signature, *(p+1))) {
+                            storeNewMethodID(m->method_id, event->u.class_load.class_name,
+                                             m->method_name, m->method_signature);
+                            break;
+                        }
                     }
                 }
             }
