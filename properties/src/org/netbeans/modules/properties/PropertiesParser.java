@@ -72,36 +72,38 @@ class PropertiesParser {
     }
     
     /** Creates new input stream from the file object.
-     * Finds the properties data object, checks if the document is loaded
-     * and creates the stream either from the file object or from the document.
+     * Finds the properties data object, checks if the document is loaded,
+     * if not is loaded and created a stream from the document.
      * @exception IOException if any i/o problem occured during reading
      */
     private PropertiesReader createReader() throws IOException {
+        // Get loaded document, or load it if necessary.
+        Document loadDoc = null;
+        
         if(editor.isDocumentLoaded()) {
-            // Loading from the document in memory.
-            final Document document = editor.getDocument();
-            final String[] str = new String[1];
-            
-            // safely take the text from the document
-            document.render(new Runnable() {
-                public void run() {
-                    try {
-                        str[0] = document.getText(0, document.getLength());
-                    } catch(BadLocationException ble) {
-                        // Should be not possible.
-                        ble.printStackTrace();
-                    }
-                }
-            });
-            
-            return new PropertiesReader(str[0]);
-            
-        } else {
-            // Loading from the file (document wasn't loaded yet).
-            Reader reader = new PropertiesEditorSupport.NewLineReader(pfe.getFile().getInputStream());
-
-            return new PropertiesReader(reader);
+            loadDoc = editor.getDocument();
+        } 
+    
+        if(loadDoc == null) {
+            loadDoc = editor.openDocument(); 
         }
+            
+        final Document document = loadDoc;
+        final String[] str = new String[1];
+
+        // safely take the text from the document
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    str[0] = document.getText(0, document.getLength());
+                } catch(BadLocationException ble) {
+                    // Should be not possible.
+                    ble.printStackTrace();
+                }
+            }
+        });
+
+        return new PropertiesReader(str[0]);
     }
 
     /** Parses .properties file specified by <code>pfe</code> and resets its properties
@@ -141,7 +143,7 @@ class PropertiesParser {
     /** Parses .properties file and creates <code>PropertiesStruture</code>. */
     private PropertiesStructure parseFileMain() throws IOException {
 
-        Map items = new HashMap();
+        Map items = new HashMap(25, 1.0F);
 
         PropertiesReader reader = null;
         
@@ -158,9 +160,9 @@ class PropertiesParser {
             
             Element.ItemElem element = readNextElem(reader);
             
-            if(element == null)
+            if(element == null) {
                 break;
-            else {
+            } else {
                 // add at the end of the list
                 items.put(element.getKey(), element);
             }

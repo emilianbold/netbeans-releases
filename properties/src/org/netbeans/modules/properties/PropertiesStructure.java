@@ -86,6 +86,9 @@ public class PropertiesStructure extends Element {
             // assign the new structure
             items = new_items;
 
+            // Update bounds.
+            this.bounds = struct.getBounds();
+            
             // notification
             if(structChanged)
                 structureChanged(changed, inserted, deleted);
@@ -201,35 +204,15 @@ public class PropertiesStructure extends Element {
         // find the position where to add it
         try {
             synchronized(getParent()) {
-                PositionBounds pos = getSuitablePositionBoundsForInsert();
-                pos.insertAfter(item.printString());
+                PositionBounds pos = getBounds();
+                
+                pos.insertAfter("\n" + item.printString()); // NOI18N
                 return true;
             }
-        }
-        catch (IOException e) {
-            // PENDING
+        } catch (IOException ioe) {
             return false;
-        }
-        catch (BadLocationException e) {
-            // PENDING
+        } catch (BadLocationException ble) {
             return false;
-        }
-    }
-
-    /** Gets suitable positon for inserting of next item into document.
-     * @return <code>PositionBounds</code> after which a new item may be inserted by insertAfter method 
-     * @see org.openide.text.PositionBounds#insertAfter */
-    private PositionBounds getSuitablePositionBoundsForInsert() {
-        Element.ItemElem e = null;
-        
-        for(Iterator it = items.values().iterator(); it.hasNext();)
-            e = (Element.ItemElem)it.next();
-        
-        if (e == null)
-            return getBounds();
-        else {
-            e.print();
-            return e.getBounds();
         }
     }
 
