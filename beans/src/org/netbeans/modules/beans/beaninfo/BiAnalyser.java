@@ -534,11 +534,14 @@ public class BiAnalyser extends Object implements Node.Cookie {
             sb.append( TAB + "static {\n" + TABx2 + "try {\n" ); // NOI18N
 
         it = allMethods.iterator();
+        int lCurMethodCount = 0;
+        
         for ( int i = 0; it.hasNext(); i++ ) {
             BiFeature bif = ( BiFeature )it.next();
 
             if ( bif.isIncluded() ) {
-                sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "] = "); // NOI18N
+                sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(lCurMethodCount++ + "] = "); // NOI18N
+                //sb.append( TABx3 + "methods[METHOD_" ).append( bif.getName() ).append(i + "] = "); // NOI18N
                 sb.append( bif.getCreationString() ).append(";\n"); // NOI18N
 
                 Collection cs = bif.getCustomizationStrings();
