@@ -66,7 +66,7 @@ Microsystems, Inc. All Rights Reserved.
         <property name="xtest.ide.commandline.suffix" value=""/>
 
 	<!-- This classpath is beside jars in xtest.extra.jars also used for compilation. -->
-	<property name="compiletest.classpath" value="${nb_root}/openide/netbeans/lib/openide.jar;${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar;../../core/netbeans/modules/jsp.jar;../netbeans/modules/eager/jsp-parser.jar;../../external/jasper-compiler-5.0.2.jar;../../external/jasper-runtime-5.0.2.jar;../../external/servlet-api-2.4.jar;../../external/jsp-api-2.0.jar"/>
+	<property name="compiletest.classpath" value="${nb_root}/openide/netbeans/lib/openide.jar;${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar;../../core/netbeans/modules/jsp.jar;../netbeans/modules/autolad/jsp-parser.jar;../../external/jasper-compiler-5.0.2.jar;../../external/jasper-runtime-5.0.2.jar;../../external/servlet-api-2.4.jar;../../external/jsp-api-2.0.jar"/>
         
     </target>
     

@@ -92,8 +92,8 @@ Microsystems, Inc. All Rights Reserved.
                 <pathelement location="${netbeans.home}/modules/autoload/xml-api.jar" />
                 <pathelement location="${netbeans.home}/modules/autoload/xml-core.jar" />
                 <pathelement location="${netbeans.home}/modules/xml-catalog.jar"/>
-                <pathelement location="${netbeans.home}/modules/eager/jsp-parser.jar" />
-                <pathelement location="${netbeans.home}/modules/eager/jsp-syntax.jar" />
+                <pathelement location="${netbeans.home}/modules/autoload/jsp-parser.jar" />
+                <pathelement location="${netbeans.home}/modules/autoload/jsp-syntax.jar" />
                 <pathelement location="${netbeans.home}/modules/autoload/ext/jsp-api-2.0.jar" />
                 <pathelement location="${netbeans.home}/modules/autoload/ext/servlet-api-2.4.jar" />
                 <pathelement location="${netbeans.home}/modules/autoload/ddapi.jar" />

@@ -32,7 +32,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="compile" depends="init">
-    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
+    <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="true">
       <classpath>
         <pathelement location="${nb_root}/openide/openide-13javac-workaround.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
@@ -42,7 +42,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/xml/text-edit/netbeans/modules/xml-text-edit.jar"/>
         <pathelement location="../external/servlet-api-2.4.jar"/>
         <pathelement location="../external/jsp-api-2.0.jar"/>
-        <pathelement location="${nb_root}/web/jspparser/netbeans/modules/eager/jsp-parser.jar"/>
+        <pathelement location="${nb_root}/web/jspparser/netbeans/modules/autoload/jsp-parser.jar"/>
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/loaders/netbeans/lib/openide-loaders.jar"/>
         <!--<pathelement location="${nb_root}/openide/registry/netbeans/modules/org-netbeans-modules-registry.jar"/>-->
@@ -52,7 +52,7 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/eager"/>
+    <mkdir dir="netbeans/modules/autoload"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <!--<copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>-->
     <property file="${nb_root}/xml/spec-vers.properties"/>
@@ -61,7 +61,7 @@ Microsystems, Inc. All Rights Reserved.
         <expandproperties/>
       </filterchain>
     </copy>
-    <locjar jarfile="netbeans/modules/eager/jsp-syntax.jar"
+    <locjar jarfile="netbeans/modules/autoload/jsp-syntax.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -85,7 +85,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="web-jspsyntax.nbm"
              topdir="."
-             module="netbeans/modules/eager/jsp-syntax.jar"
+             module="netbeans/modules/autoload/jsp-syntax.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspsyntax.nbm">
       <license file="${license.file}"/>

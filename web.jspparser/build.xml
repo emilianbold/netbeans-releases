@@ -58,9 +58,9 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="jars" depends="compile">
-    <mkdir dir="netbeans/modules/eager"/>
+    <mkdir dir="netbeans/modules/autoload"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <locjar jarfile="netbeans/modules/eager/jsp-parser.jar"
+    <locjar jarfile="netbeans/modules/autoload/jsp-parser.jar"
             manifest="manifest-subst.mf"
             basedir="src"
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
@@ -73,8 +73,8 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
   <target name="release">
-    <mkdir dir="netbeans/modules/eager/ext"/>
-    <copy todir="netbeans/modules/eager/ext">
+    <mkdir dir="netbeans/modules/autoload/ext"/>
+    <copy todir="netbeans/modules/autoload/ext">
       <fileset dir="../external">
         <include name="jasper-compiler-5.0.18.jar"/>
         <include name="jasper-runtime-5.0.18.jar"/>
@@ -92,7 +92,7 @@ Microsystems, Inc. All Rights Reserved.
     <delete dir="Info"/>
     <makenbm file="web-jspparser.nbm"
              topdir="."
-             module="netbeans/modules/eager/jsp-parser.jar"
+             module="netbeans/modules/autoload/jsp-parser.jar"
 	     homepage="http://web.${homepage.base}/"
 	     distribution="http://${dist.base}/web-jspparser.nbm">
       <license name="jspparser-license.txt">
