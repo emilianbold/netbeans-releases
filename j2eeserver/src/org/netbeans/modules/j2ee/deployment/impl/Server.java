@@ -294,4 +294,32 @@ public class Server implements Node.Cookie {
             return true;
         }
     }
+
+    public static final String LAYER_DEPLOYMENT_FILE_NAMES = "DeploymentFileNames"; //NOI18N
+    private Map deployConfigDescriptorMap;
+    private void initDeploymentConfigurationFileList(FileObject fo) {
+        deployConfigDescriptorMap = new HashMap();
+        FileObject deplFNames = fo.getFileObject(LAYER_DEPLOYMENT_FILE_NAMES);
+        if (deplFNames != null) {
+            FileObject mTypes [] = deplFNames.getChildren();
+            for (int j=0; j < mTypes.length; j++) {
+                String mTypeName = mTypes [j].getName().toUpperCase();
+                FileObject allNames [] = mTypes [j].getChildren();
+                if (allNames == null || allNames.length == 0)
+                    continue;
+                ArrayList filepaths = new ArrayList();
+                for (int i = 0; i < allNames.length; i++) {
+                    if (allNames[i] == null)
+                        continue;
+                    String fname = allNames [i].getNameExt();
+                    filepaths.add(fname.replace('\\', '/')); //just in case..
+                }
+                deployConfigDescriptorMap.put(mTypeName, filepaths.toArray(new String[filepaths.size()]));
+            }
+        }
+    }
+    
+    public String[] getDeploymentPlanFiles(Object type) {
+        return (String[]) deployConfigDescriptorMap.get(type.toString().toUpperCase());
+    }
 }
