@@ -541,8 +541,14 @@ public abstract class NbTopManager /*extends TopManager*/ {
                         boolean isWinsysSaved = false;
                         // save project, if applicable
                         try {
-                            ((TrivialProjectManager)Lookup.getDefault().lookup(TrivialProjectManager.class)).store();
-                            isWinsysSaved = true;
+                            TrivialProjectManager tpm
+                                = (TrivialProjectManager)Lookup.getDefault()
+                                    .lookup(TrivialProjectManager.class);
+                            // XXX #29159 Empty trivial prj manager doesn't store anything.
+                            if(!(tpm instanceof TrivialProjectManager.Empty)) {
+                                tpm.store();
+                                isWinsysSaved = true;
+                            }
                         } catch (IOException ioe) {
                             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
                         }
