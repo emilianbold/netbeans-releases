@@ -188,6 +188,22 @@ Microsystems, Inc. All Rights Reserved.
     </locjar>
   </target>
   
+  <target name="check-javahelp" depends="javahelp" description="Validate helpset for various errors.">
+    <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
+      <classpath>
+        <pathelement location="../../nbbuild/nbantext.jar"/>
+        <fileset dir="../../nbbuild/external">
+          <include name="jhall*.jar"/>
+        </fileset>
+      </classpath>
+    </taskdef>
+    <checkhelpsets>
+      <fileset dir="javahelp">
+        <include name="org/netbeans/modules/tomcat5/docs/tomcat.hs"/>
+      </fileset>
+    </checkhelpsets>
+  </target>
+  
   <!-- This target will only work *inside* the IDE! -->
   <target depends="jars" description="Test the module inside the running IDE." name="test">
     <nbinstaller action="reinstall" module="netbeans/modules/tomcat5.jar"/>
