@@ -101,6 +101,8 @@ public final class AquaLFCustoms extends LFCustoms {
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI$Aqua",
 
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
+            
+            "floatingBorder", new DropShadowBorder(),
 
         }; //NOI18N
         return result;
