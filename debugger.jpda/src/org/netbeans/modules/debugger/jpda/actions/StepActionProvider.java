@@ -68,11 +68,13 @@ public class StepActionProvider extends JPDADebuggerActionProvider
 implements Executor {
     
     private StepRequest             stepRequest;
-    private ContextProvider          lookupProvider;
+    private ContextProvider         lookupProvider;
 
     
     private static boolean ssverbose = 
         System.getProperty ("netbeans.debugger.smartstepping") != null;
+    private static boolean verbose = 
+        System.getProperty ("netbeans.debugger.jdievents") != null;
 
 
     private static int getJDIAction (Object action) {
@@ -126,6 +128,8 @@ implements Executor {
                 getDebuggerImpl ().getOperator ().register (stepRequest, this);
                 stepRequest.setSuspendPolicy (getDebuggerImpl ().getSuspend ());
                 stepRequest.enable ();
+                if (verbose)
+                    System.out.println("JDI Request: " + stepRequest);
                 
                 // 4) resume JVM
                 getDebuggerImpl ().resume ();
