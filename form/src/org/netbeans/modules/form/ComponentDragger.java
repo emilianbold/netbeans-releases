@@ -356,7 +356,10 @@ class ComponentDragger
                 formModel.fireComponentAdded(compsMovedFromOutside[i], false);
             }
         }
-        else compsMovedFromOutside = new RADVisualComponent[0];
+        else {
+            compsMovedFromOutside = new RADVisualComponent[0];
+            formModel.fireComponentsReordered(targetMetaContainer, new int[0]);
+        }
 
         // fire changes - changing components layout
         RADVisualComponent[] compsMovedWithinTarget;
