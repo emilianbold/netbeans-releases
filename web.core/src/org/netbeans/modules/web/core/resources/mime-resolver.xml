@@ -32,12 +32,6 @@ Microsystems, Inc. All Rights Reserved.
         </resolver>
     </file>
 
-    
-    <file>
-        <ext name="tld"/>
-        <resolver mime="text/xml">
-        </resolver>
-    </file>
     <file>
         <ext name="xml"/>
         <resolver mime="text/x-dd-servlet2.2">
