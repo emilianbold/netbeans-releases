@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -113,7 +113,7 @@ class WizardSettings extends Object {
     }
 
     void readTypeSettings() {
-        Object o[]=GroupShadowTool.getLinks(typeTemplate);
+        Object o[] = ((DataObject.Container)typeTemplate).getChildren();
         XMLDocument doc=null;
         for (int i=0; (i<o.length)&&(doc==null); i++) 
             if ((o[i] instanceof DataObject) && (((DataObject)o[i]).getName().indexOf("build-")>=0)) // NOI18N

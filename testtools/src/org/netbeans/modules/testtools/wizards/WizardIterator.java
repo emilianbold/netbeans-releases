@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -31,8 +31,6 @@ import java.lang.reflect.Modifier;
 
 import org.openide.src.*;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
-import org.openide.WizardDescriptor;
 import org.openide.util.Utilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.util.RequestProcessor;
@@ -45,6 +43,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.LocalFileSystem;
 
 import org.netbeans.modules.java.JavaDataObject;
+import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /** Abstract Wizard Iterator class for all Test Tools Wizard Iterators
@@ -284,7 +283,7 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
                 set.typeName=set.typeTemplate.getPrimaryFile().getName();
             throw new IOException(NbBundle.getMessage(WizardIterator.class, "ERR_CreateTestType", new Object[] {set.typeName, set.typeTarget.getPrimaryFile().getPackageName('/'), ioe.getMessage()})); // NOI18N
         }
-        Object o[]=GroupShadowTool.getLinks(dob);
+        Object o[] = ((DataObject.Container)dob).getChildren();
         for (int i=0; i<o.length; i++) 
             if (o[i] instanceof DataObject) {
                 if (((DataObject)o[i]).getName().startsWith("build-")) // NOI18N
