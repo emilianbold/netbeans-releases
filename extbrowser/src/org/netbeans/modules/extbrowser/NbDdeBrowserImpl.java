@@ -19,6 +19,7 @@ import java.beans.*;
 import java.net.*;
 import javax.swing.*;
 import java.util.ResourceBundle;
+import java.util.StringTokenizer;
 
 import org.openide.TopManager;
 import org.openide.awt.HtmlBrowser;
@@ -252,30 +253,42 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
 
             // initProgress ();
 
-            String winID = "0x00000000"+Integer.toHexString (currWinID); // NOI18N
-            if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+            String winID;
             // IE problem
-            if (settings.getBrowser ().equals ("IEXPLORE")) winID = "0xFFFFFFFF";
+            if (settings.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+                winID = "0xFFFFFFFF";
+            else
+                winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
+            if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
+                
             try {
                 data = reqDdeMessage (settings.getBrowser (),"WWW_Activate",winID,3000);
             }
             catch (NbBrowserException ex) {
                 // try to start browser and activet it again
+                data = null;
                 if (settings.isStartWhenNotRunning ()) {
                     String b = getBrowserPath (settings.getBrowser ());
-                    setStatusMessage (bundle.getString("MSG_Running_command")+b);
-                    int from, to;
-                    from = b.indexOf ('"'); to = b.indexOf ('"', from+1);
-                    b = b.substring (from, to);
-                    Runtime.getRuntime ().exec (b);
-                    // wait for browser start
-                    Thread.currentThread ().sleep (7000);
-                    data = reqDdeMessage (settings.getBrowser (),"WWW_Activate",winID,3000);
-                    hasNoWindow = false;
+                    if (b != null) {
+                        if (b.charAt(0) == '"') {
+                            int from, to;
+                            from = b.indexOf ('"'); to = b.indexOf ('"', from+1);
+                            b = b.substring (from+1, to);
+                        }
+                        else {
+                            StringTokenizer st = new StringTokenizer(b);
+                            b = st.nextToken();
+                        }
+                        setStatusMessage (bundle.getString("MSG_Running_command")+b);
+                        Runtime.getRuntime ().exec (b);
+                        // wait for browser start
+                        Thread.currentThread ().sleep (7000);
+                        data = reqDdeMessage (settings.getBrowser (),"WWW_Activate",winID,3000);
+                        hasNoWindow = false;
+                    }
                 }
-                else 
-                    data = null;
             }
+            
             if (data != null && data.length >= 4) {
                 currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
                 setStatusMessage (bundle.getString("MSG_use_win")+currWinID);
@@ -287,20 +300,22 @@ public class NbDdeBrowserImpl extends org.openide.awt.HtmlBrowser.Impl {
                 return;
             }
             
-            winID = hasNoWindow? "0x0": "0x00000000"+Integer.toHexString (currWinID); // NOI18N
+            if (settings.getBrowser().equals(ExtBrowserSettings.IEXPLORE))
+                winID = hasNoWindow? "0": "-1";
+            else
+                winID = "0x00000000"+Integer.toHexString (hasNoWindow? 0: currWinID).toUpperCase (); // NOI18N
             if (winID.length() > 10) winID = "0x"+winID.substring(winID.length()-8); // NOI18N
-            // IE problem
-            if (settings.getBrowser ().equals ("IEXPLORE")) winID = "0xFFFFFFFF";   // NOI18N
 
             // nbfs can be displayed internally and in ext. viewer too
             String args1;
             args1="\""+url.toString()+"\",,"+winID+",0x1,,,"+(ddeProgressSrvName==null?"":ddeProgressSrvName);  // NOI18N
             data = reqDdeMessage (settings.getBrowser (),"WWW_OpenURL",args1,3000); // NOI18N
-            if(data != null && data.length >= 4) {
-                currWinID = DdeBrowserSupport.getDWORDAtOffset (data,0);
-                if (currWinID < 0) currWinID = -currWinID;
+            if (data != null && data.length >= 4) {
+                if (!settings.getBrowser ().equals ("IEXPLORE")) {
+                    currWinID=DdeBrowserSupport.getDWORDAtOffset (data, 0);
+                    if (currWinID < 0) currWinID = -currWinID;
+                }
                 setStatusMessage (bundle.getString ("MSG_use_win"));
-
             }
             URL oldUrl = this.url;
             this.url = url;
