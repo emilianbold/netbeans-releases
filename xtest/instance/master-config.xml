@@ -40,5 +40,9 @@
       <module name="openide" testtypes="validation" attributes="stable,code"/>
   </config>
   
+  <config name="qa-pilot">
+      <module name="debuggercore" testtypes="qa-functional" attributes="stable"/>
+  </config>
+    
 </testconfig>
 
