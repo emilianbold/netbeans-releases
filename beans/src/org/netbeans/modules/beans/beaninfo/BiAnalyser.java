@@ -1044,7 +1044,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         while( it.hasNext() ) {
             String statement = (String)it.next();
-            System.out.println(statement);
+            //System.out.println(statement);
             if ( statement.indexOf( "public BeanInfo[]getAdditionalBeanInfo()" ) != -1 ){
                     return true;
             }
