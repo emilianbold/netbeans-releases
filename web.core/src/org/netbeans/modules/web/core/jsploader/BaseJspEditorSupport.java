@@ -71,7 +71,7 @@ import org.openide.text.NbDocument;
 //import org.openide.debugger.Breakpoint;
 
 import org.openide.loaders.DataObject;
-import org.netbeans.api.web.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 public class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, EditorCookie.Observable, OpenCookie, LineCookie, CloseCookie, PrintCookie {
     

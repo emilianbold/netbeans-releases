@@ -20,7 +20,7 @@ import java.util.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.JSPServletFinder;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 
-import org.netbeans.api.web.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
 
 import org.openide.filesystems.*;

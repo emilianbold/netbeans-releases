@@ -67,8 +67,8 @@ Microsystems, Inc. All Rights Reserved.
                 </dependency>
             </module-dependencies>
             <public-packages>
-                <package>org.netbeans.api.web.webmodule</package>
-                <package>org.netbeans.spi.web.webmodule</package>
+                <package>org.netbeans.modules.web.api.webmodule</package>
+                <package>org.netbeans.modules.web.spi.webmodule</package>
             </public-packages>
         </data>
     </configuration>

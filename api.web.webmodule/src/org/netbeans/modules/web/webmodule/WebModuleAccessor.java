@@ -12,8 +12,8 @@
  */
 package org.netbeans.modules.web.webmodule;
 
-import org.netbeans.api.web.webmodule.WebModule;
-import org.netbeans.spi.web.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 
 /* This class provides access to the {@link WebModule}'s private constructor 
  * from outside in the way that this class is implemented by an inner class of 

@@ -31,7 +31,7 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
-import org.netbeans.api.web.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataNode;

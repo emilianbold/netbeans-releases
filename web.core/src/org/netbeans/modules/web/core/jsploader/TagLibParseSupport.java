@@ -29,7 +29,7 @@ import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
-import org.netbeans.api.web.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 /** Support for parsing JSP pages and tag files and cooperation between the parser 
  * and the editor.

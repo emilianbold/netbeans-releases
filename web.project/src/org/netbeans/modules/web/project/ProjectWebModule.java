@@ -29,7 +29,7 @@ import org.openide.loaders.DataObject;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.web.webmodule.WebModuleImplementation;
+import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.xml.sax.SAXException;
 
 /** A web module implementation on top of project.

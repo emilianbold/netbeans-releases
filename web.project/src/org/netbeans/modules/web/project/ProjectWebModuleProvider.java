@@ -15,16 +15,16 @@ package org.netbeans.modules.web.project;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.web.webmodule.WebModule;
-import org.netbeans.spi.web.webmodule.WebModuleFactory;
-import org.netbeans.spi.web.webmodule.WebModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
+import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 
 public class ProjectWebModuleProvider implements WebModuleProvider {
     
     public ProjectWebModuleProvider () {
     }
     
-    public org.netbeans.api.web.webmodule.WebModule findWebModule (org.openide.filesystems.FileObject file) {
+    public org.netbeans.modules.web.api.webmodule.WebModule findWebModule (org.openide.filesystems.FileObject file) {
         Project project = FileOwnerQuery.getOwner (file);
         if (project != null) {
             ProjectWebModule projectWebModule = (ProjectWebModule) project.getLookup ().lookup (ProjectWebModule.class);
