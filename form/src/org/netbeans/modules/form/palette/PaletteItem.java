@@ -115,31 +115,17 @@ public class PaletteItem implements java.io.Serializable {
 
     public String getName() {
         String name = instanceCookie.instanceName();
-/*        String name;
-        if (instanceDO != null)
-            name = instanceDO.instanceName();
-        else if (instanceCookie != null)
-            name = instanceCookie.instanceName();
-        else
-            name = beanClass.getName(); */
         int i = name.lastIndexOf('.');
         if (i >= 0)
             name = name.substring(i+1);
+        i = name.lastIndexOf('-');
+        if (i >= 0)
+            name = name.substring(i+1);
         return name;
-        //return org.openide.util.Utilities.getShortClassName(getItemClass());
     }
 
     public String getDisplayName() {
-        return itemNode.getDisplayName();
-/*        String name = getName();
-        if (name.endsWith("BorderInfo")) { // NOI18N
-            return name.substring(0, name.length() - 4); // remove the "Info" from BorderInfo classes // NOI18N
-        } else if (name.endsWith("Layout") && name.startsWith("Design")) { // NOI18N
-            return name.substring(6); // remove the "Design" from DesignXXXLayout classes // NOI18N
-        } else if (name.endsWith("LayoutSupport")) { // NOI18N
-            return name.substring(0, name.length() - "Support".length()); // NOI18N
-        }
-        return name; */
+        return itemNode.getDisplayName().replace('-', '.');
     }
 
     public Object getSharedInstance() throws InstantiationException, IllegalAccessException {
