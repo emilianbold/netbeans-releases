@@ -211,32 +211,28 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
     // Private methods ---------------------------------------------------------
     
     private static boolean isProjectDir( File dir ) {
-        
-        if ( dir == null ) {
-            return false;
-        }
-        
-        // Wondering why we are doing this? Surprise, surprise on windows
-        // some files comming from the JFileChooser have a registry ID as
-        // parent even if they are roots of file systems. That's bad because
-        // it will cause the floppy be checked which is very slow. So, sorry
-        // this seemed to be the easiest and most effective fix
-        File testFile = new File( dir.getPath() );
+        FileObject fo = convertToValidDir(dir);
+        return fo == null ? false : ProjectManager.getDefault().isProject( fo );
+    }
+    
+    private static FileObject convertToValidDir(File f) {
+        FileObject fo;
+        File testFile = new File( f.getPath() );
         if ( testFile == null || testFile.getParent() == null ) {
             // BTW this means that roots of file systems can't be project
             // directories.
-            return false;
+            return null;
         }
         
         /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
          * its used testFile instead of dir. 
         */    
         if ( !testFile.isDirectory() ) {
-            return false;
+            return null;
         }
-        
-        FileObject fo = FileUtil.toFileObject(dir);
-        return fo == null ? false : ProjectManager.getDefault().isProject( fo );
+            
+        fo =  FileUtil.toFileObject(FileUtil.normalizeFile(f));
+        return fo;
     }
     
     private static Project getProject( File dir ) {

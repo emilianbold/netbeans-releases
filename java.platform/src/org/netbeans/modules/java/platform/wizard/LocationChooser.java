@@ -297,21 +297,37 @@ public class LocationChooser extends javax.swing.JFileChooser  implements Proper
         
         
         private boolean isPlatformDir ( File f ) {
-            if (f.isFile ()) {
-                return false;
-            }
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-            if (fo == null) {
-                return false;
-            }
-            for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
-                PlatformInstall install = (PlatformInstall) it.next();                
-                if (install.accept(fo)) {
-                    return true;
+            FileObject fo = convertToValidDir(f);
+            
+            if (fo != null) {
+                for (Iterator it = this.regs.getInstallers().iterator(); it.hasNext();) {
+                    PlatformInstall install = (PlatformInstall) it.next();                
+                    if (install.accept(fo)) {
+                        return true;
+                    }
                 }
             }
             return false;
         }
-                
+
+        private static FileObject convertToValidDir(File f) {
+            FileObject fo;
+            File testFile = new File( f.getPath() );
+            if ( testFile == null || testFile.getParent() == null ) {
+                // BTW this means that roots of file systems can't be project
+                // directories.
+                return null;
+            }
+        
+            /**ATTENTION: on Windows may occure dir.isDirectory () == dir.isFile () == true then
+             * its used testFile instead of dir. 
+            */    
+            if ( !testFile.isDirectory() ) {
+                return null;
+            }
+            
+            fo =  FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            return fo;
+        }
     }
 }
