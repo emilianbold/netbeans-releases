@@ -149,14 +149,15 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
   /** Sets the name of the node */
   public void setName( String name ) {
-    /*
+    
     try {
+      pattern.patternAnalyser.setIgnore( true );
       setPatternName( name );
+      pattern.patternAnalyser.setIgnore( false );
     }
     catch (SourceException e) {
-    }
-    */
-    super.setName( name );
+    }    
+    
   }
 
   /** Tests if the given string is valid name for associated pattern and if not, notifies
@@ -322,6 +323,8 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
 
 /*
 * Log
+*  5    Gandalf   1.4         9/24/99  Petr Hrebejk    Rename of properties from
+*       popupmenu fixed
 *  4    Gandalf   1.3         7/28/99  Petr Hrebejk    Property Mode change fix
 *  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
 *       patterns resolving

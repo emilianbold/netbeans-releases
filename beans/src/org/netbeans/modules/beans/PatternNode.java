@@ -298,7 +298,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
 
   public void propertyChange(PropertyChangeEvent evt) {
     setIconBase( resolveIconBase() );
-    setName( pattern.getName() );
+    superSetName( pattern.getName() );
     firePropertyChange( null, null, null );  
   }
 
