@@ -35,8 +35,7 @@ public class EditorTestCase extends NbTestCase {
     private String defaultSampleName = "sample1";
 
     private static final char treeSeparator = '|';
-    //private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"test";
-    private final String defaultPackageNameTreePath = "src"+treeSeparator+"test"; //TEMP
+    private final String defaultPackageNameTreePath = "Source packages"+treeSeparator+"test";
     private final String defaultFileName = "sampel1";
     private String projectName = null;
     private String treeSubPackagePathToFile = null;
@@ -246,8 +245,7 @@ public class EditorTestCase extends NbTestCase {
      * @param srcName source name without suffix.
      */
     protected void openSourceFile(String dir, String srcName) {
-        //openFile("Source packages|" + dir, srcName);
-        openFile("src|" + dir, srcName); //TEMP
+        openFile("Source packages|" + dir, srcName);
     }
     
     protected final String getDefaultSamplePackage() {
