@@ -29,9 +29,12 @@ import org.apache.tools.ant.*;
 final class NbBuildLogger implements BuildLogger {
     
     private boolean updateStatusLine;
+    /** see "#19929" */
+    private String displayName;
     
-    public NbBuildLogger(boolean updateStatusLine) {
+    public NbBuildLogger(boolean updateStatusLine, String displayName) {
         this.updateStatusLine = updateStatusLine;
+        this.displayName = displayName;
     }
     
     // [PENDING] more coherent selection of messages based on verbosity
@@ -85,7 +88,7 @@ final class NbBuildLogger implements BuildLogger {
         startTime = System.currentTimeMillis();
         
         if (updateStatusLine) {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_running_ant"));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "FMT_running_ant", displayName));
         }
         // no messages printed for now
     }
@@ -98,7 +101,7 @@ final class NbBuildLogger implements BuildLogger {
             // [PENDING] should check for target member (and TargetExecutor should set it...)
             out.println(formatMessageWithTime("FMT_finished_target_printed", time));
             if (updateStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_finished_target_status"));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "FMT_finished_target_status", displayName));
             }
         } else {
             if ((t instanceof BuildException) && level < Project.MSG_VERBOSE) {
@@ -109,7 +112,7 @@ final class NbBuildLogger implements BuildLogger {
             }
             err.println(formatMessageWithTime("FMT_target_failed_printed", time)); // #10305
             if (updateStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "MSG_target_failed_status"));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbBuildLogger.class, "FMT_target_failed_status", displayName));
             }
         }
     }

@@ -40,13 +40,15 @@ import org.openide.util.io.ReaderInputStream;
 
 /** Executes an Ant Target asynchronously in the IDE.
  */
-public class TargetExecutor implements Runnable {
+public final class TargetExecutor implements Runnable {
     
     /**
-     * All tabs which are currently being used for some execution task.
-     * These are never reused.
+     * All tabs which were used for some process which has now ended.
+     * These are closed when you start a fresh process.
+     * Map from tab to tab display name.
+     * @see "#43001"
      */
-    private static final Set/*<String>*/ tabNamesInUse = new HashSet();
+    private static final Map/*<InputOutput,String>*/ freeTabs = new WeakHashMap();
     
     private AntProjectCookie pcookie;
     private InputOutput io;
@@ -55,6 +57,8 @@ public class TargetExecutor implements Runnable {
     private int verbosity = AntSettings.getDefault ().getVerbosity ();
     private Properties properties = (Properties) AntSettings.getDefault ().getProperties ().clone ();
     private List targetNames;
+    /** used for the tab etc. */
+    private String displayName;
 
     /** targets may be null to indicate default target */
     public TargetExecutor (AntProjectCookie pcookie, String[] targets) {
@@ -78,85 +82,78 @@ public class TargetExecutor implements Runnable {
         properties.putAll (p);
     }
     
-    /** If true, switch to the execution workspace when running the target(s).
-     * The exact workspace (if any) is that given in the IDE's general settings.
-     * By default, false.
-     * @since 2.7
-     * @see "#17039"
-     * @deprecated Meaningless in new window system.
-     */
-    public void setSwitchWorkspace(boolean sw) {}
-
     public ExecutorTask execute () throws IOException {
-        return execute((String)null);
-    }
-  
-    /** Start it going. */
-    ExecutorTask execute (String name) throws IOException {
-        //System.err.println("execute #1: " + this);
-        if (name == null) {
-            
-        if (AntSettings.getDefault ().getReuseOutput ()) {
-            name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_reused");
+        Element projel = pcookie.getProjectElement();
+        String projectName;
+        if (projel != null) {
+            // remove & if available.
+            projectName = Actions.cutAmpersand(projel.getAttribute("name")); // NOI18N
         } else {
-            Element projel = pcookie.getProjectElement ();
-            String projectName;
-            if (projel != null) {
-                // remove & if available.
-                projectName = Actions.cutAmpersand(projel.getAttribute("name")); // NOI18N
-            } else {
-                projectName = NbBundle.getMessage (TargetExecutor.class, "LBL_unparseable_proj_name");
+            projectName = NbBundle.getMessage(TargetExecutor.class, "LBL_unparseable_proj_name");
+        }
+        String fileName;
+        if (pcookie.getFileObject() != null) {
+            fileName = pcookie.getFileObject().getNameExt();
+        } else {
+            fileName = pcookie.getFile().getName();
+        }
+        if (projectName.equals("")) { // NOI18N
+            // No name="..." given, so try the file name instead.
+            projectName = fileName;
+        }
+        if (targetNames != null) {
+            StringBuffer targetList = new StringBuffer();
+            Iterator it = targetNames.iterator();
+            if (it.hasNext()) {
+                targetList.append((String) it.next());
             }
-            String fileName;
-            if (pcookie.getFileObject () != null) {
-                fileName = pcookie.getFileObject().getNameExt();
-            } else {
-                fileName = pcookie.getFile ().getName ();
+            while (it.hasNext()) {
+                targetList.append(NbBundle.getMessage(TargetExecutor.class, "SEP_output_target"));
+                targetList.append((String) it.next());
             }
-            if (projectName.equals("")) { // NOI18N
-                // No name="..." given, so try the file name instead.
-                projectName = fileName;
-            }
-            if (targetNames != null) {
-                StringBuffer targetList = new StringBuffer ();
-                Iterator it = targetNames.iterator ();
-                if (it.hasNext ()) {
-                    targetList.append ((String) it.next ());
-                }
-                while (it.hasNext ()) {
-                    targetList.append (NbBundle.getMessage (TargetExecutor.class, "SEP_output_target"));
-                    targetList.append ((String) it.next ());
-                }
-                name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
-            } else {
-                name = NbBundle.getMessage (TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
-            }
+            displayName = NbBundle.getMessage(TargetExecutor.class, "TITLE_output_target", projectName, fileName, targetList);
+        } else {
+            displayName = NbBundle.getMessage(TargetExecutor.class, "TITLE_output_notarget", projectName, fileName);
         }
         
-        }
         final ExecutorTask task;
         synchronized (this) {
-
             // OutputWindow
-            synchronized (tabNamesInUse) {
-                // XXX this is not quite right; while e.g. Ant Execution is in use
-                // by one long-running build, you get many more for other short
-                // builds, even though the others could be reused... is it possible
-                // to safely keep its own list of InputOutput's somehow?
-                io = IOProvider.getDefault().getIO(name, !tabNamesInUse.add(name));
+            synchronized (freeTabs) {
+                Iterator it = freeTabs.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry entry = (Map.Entry)it.next();
+                    InputOutput free = (InputOutput)entry.getKey();
+                    String freeName = (String)entry.getValue();
+                    if (io == null && freeName.equals(displayName)) {
+                        // Reuse it.
+                        io = free;
+                        io.getOut().reset();
+                        io.getErr().reset();
+                        io.flushReader();
+                    } else {
+                        // Discard it.
+                        // XXX if you run e.g. F9 many times very fast, sometimes
+                        // it can happen that some tabs stay open even though they
+                        // should be closed. Why? Happens with both core/output and
+                        // core/output2 so may be a bug in the execution engine...
+                        // or in code shared between these two modules.
+                        // Replanning to EQ does not help, either.
+                        free.closeInputOutput();
+                    }
+                }
+                freeTabs.clear();
             }
-            // this will delete the output even if a script is still running.
-            io.getOut ().reset ();
+            if (io == null) {
+                io = IOProvider.getDefault().getIO(displayName, true);
+            }
             // Disabled since for Ant-based compilation it is usually annoying:
             // #16720:
             //io.select();
             
-            task = ExecutionEngine.getDefault().execute (name, this, InputOutput.NULL);
-            //System.err.println("execute #2: " + this);
-            //System.err.println("execute #3: " + this);
+            task = ExecutionEngine.getDefault().execute(displayName, this, InputOutput.NULL);
         }
-        //System.err.println("execute #5: " + this);
-        WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io, name);
+        WrapperExecutorTask wrapper = new WrapperExecutorTask(task, io);
         RequestProcessor.getDefault().post(wrapper);
         return wrapper;
     }
@@ -165,16 +162,16 @@ public class TargetExecutor implements Runnable {
         this.outputStream = outputStream;
         ExecutorTask task = ExecutionEngine.getDefault().execute(
             NbBundle.getMessage(TargetExecutor.class, "LABEL_execution_name"), this, InputOutput.NULL);
-        return new WrapperExecutorTask(task, null, null);
+        return new WrapperExecutorTask(task, null);
     }
     
     private class WrapperExecutorTask extends ExecutorTask {
         private ExecutorTask task;
-        private InputOutput inputOutput;
-        public WrapperExecutorTask(ExecutorTask task, InputOutput inputOutput, String name) {
-            super(new WrapperRunnable(task, name));
+        private InputOutput io;
+        public WrapperExecutorTask(ExecutorTask task, InputOutput io) {
+            super(new WrapperRunnable(task));
             this.task = task;
-            this.inputOutput = inputOutput;
+            this.io = io;
         }
         public void stop () {
             task.stop ();
@@ -183,31 +180,25 @@ public class TargetExecutor implements Runnable {
             return task.result () + (ok ? 0 : 1);
         }
         public InputOutput getInputOutput () {
-            return inputOutput;
+            return io;
         }
     }
     private static class WrapperRunnable implements Runnable {
         private final ExecutorTask task;
-        private final String name;
-        public WrapperRunnable(ExecutorTask task, String name) {
+        public WrapperRunnable(ExecutorTask task) {
             this.task = task;
-            this.name = name;
         }
         public void run () {
             task.waitFinished ();
-            if (name != null) {
-                synchronized (tabNamesInUse) {
-                    tabNamesInUse.remove(name);
-                }
-            }
         }
     }
   
     /** Call execute(), not this method directly!
      */
     synchronized public void run () {
+        try {
+        
         if (outputStream == null) {
-            //System.out.println("run #1: " + this); // NOI18N
             // Just annoying during normal compilation:
             //io.setFocusTaken (true);
             io.setErrVisible (false);
@@ -259,7 +250,15 @@ public class TargetExecutor implements Runnable {
         }
         
         ok = AntBridge.getInterface().run(buildFile, pcookie.getFileObject(), targetNames,
-                                          in, out, err, properties, verbosity, outputStream == null);
+                                          in, out, err, properties, verbosity, outputStream == null, displayName);
+        
+        } finally {
+            if (io != null) {
+                synchronized (freeTabs) {
+                    freeTabs.put(io, displayName);
+                }
+            }
+        }
     }
 
 }

@@ -41,7 +41,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
     public static final String PROP_PROPERTIES = "properties"; // NOI18N
     public static final String PROP_SAVE_ALL = "saveAll"; // NOI18N
     public static final String PROP_CUSTOM_DEFS = "customDefs"; // NOI18N
-    public static final String PROP_REUSE_OUTPUT = "reuseOutput"; // NOI18N
     public static final String PROP_ANT_VERSION = "antVersion"; // NOI18N
     public static final String PROP_INPUT_HANDLER = "inputHandler"; // NOI18N
     public static final String PROP_ANT_HOME = "antHome"; // NOI18N
@@ -58,7 +57,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         p.setProperty ("build.compiler.emacs", "true"); // NOI18N
         p.setProperty ("build.sysclasspath", "ignore"); // #9527 NOI18N
         setProperties (p);
-        setReuseOutput (false);
         setSaveAll (true);
         setCustomDefs (new IntrospectedInfo ());
     }
@@ -114,15 +112,6 @@ public class AntSettings extends SystemOption implements ChangeListener {
         // identity of this object never changes so it does not really matter...
     }
 
-    /** If true, Ant Execution uses always the same Output tab. */
-    public boolean getReuseOutput () {
-        return ((Boolean) getProperty (PROP_REUSE_OUTPUT)).booleanValue ();
-    }
-    /** Sets the reuseOutput property. */
-    public void setReuseOutput (boolean b) {
-        putProperty (PROP_REUSE_OUTPUT, b ? Boolean.TRUE : Boolean.FALSE, true);
-    }
-    
     // #14993: read-only property for the version of Ant
     public String getAntVersion() {
         String v = (String)getProperty(PROP_ANT_VERSION);

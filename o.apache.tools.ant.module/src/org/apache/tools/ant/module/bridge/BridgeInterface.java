@@ -31,7 +31,7 @@ public interface BridgeInterface {
      * @param buildFile an Ant build script
      * @param targets a list of target names to run, or null to run the default target
      */
-    boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine);
+    boolean run(File buildFile, FileObject buildFileObject, List targets, InputStream in, PrintStream out, PrintStream err, Properties properties, int verbosity, boolean useStatusLine, String displayName);
     
     /**
      * Get some informational value of the Ant version.

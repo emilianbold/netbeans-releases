@@ -83,7 +83,7 @@ public class BridgeImpl implements BridgeInterface {
     
     public boolean run(File buildFile, final FileObject buildFileObject, List targets,
                        InputStream in, PrintStream out, PrintStream err,
-                       Properties properties, int verbosity, boolean useStatusLine) {
+                       Properties properties, int verbosity, boolean useStatusLine, String displayName) {
         boolean ok = false;
         
         // Make sure "main Ant loader" is used as context loader for duration of the
@@ -119,7 +119,7 @@ public class BridgeImpl implements BridgeInterface {
                 Map.Entry entry = (Map.Entry) it.next();
                 project.setUserProperty((String) entry.getKey(), (String) entry.getValue());
             }
-            logger = new NbBuildLogger(useStatusLine);
+            logger = new NbBuildLogger(useStatusLine, displayName);
             logger.setMessageOutputLevel(verbosity);
             logger.setOutputPrintStream(out);
             logger.setErrorPrintStream(err);
@@ -166,7 +166,7 @@ public class BridgeImpl implements BridgeInterface {
                 err.println(be);
             }
             if (useStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_target_failed_status"));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "FMT_target_failed_status", displayName));
             }
             out.close();
             err.close();
@@ -215,7 +215,7 @@ public class BridgeImpl implements BridgeInterface {
             ok = true;
         } catch (ThreadDeath td) {
             if (useStatusLine) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "MSG_target_failed_status"));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(BridgeImpl.class, "FMT_target_failed_status", displayName));
             }
             // don't throw ThreadDeath, just return. ThreadDeath sometimes
             // generated when killing process in Execution Window
@@ -264,17 +264,16 @@ public class BridgeImpl implements BridgeInterface {
                 }
                 fs.refresh(false);
                 gutProject(p2);
-            }
-        }, 1000); // a bit later; the target can finish first!
-        
-        if (!isAnt16()) {
-            // #36393 - memory leak in Ant 1.5.
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    hack36393();
+                if (!isAnt16()) {
+                    // #36393 - memory leak in Ant 1.5.
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            hack36393();
+                        }
+                    });
                 }
-            });
-        }
+            }
+        });
         
         } finally {
             if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
