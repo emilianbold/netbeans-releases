@@ -19,6 +19,8 @@ import org.netbeans.modules.websvc.spi.webservices.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 
 /** WebServicesSupport should be used to manipulate a projects representation
  *  of a web service implementation.
@@ -73,8 +75,8 @@ public final class WebServicesSupport {
 
 	// Delegated methods from WebServicesSupportImpl
 	
-	public void addServiceImpl(String serviceName, String serviceEndpoint, FileObject configFile) {
-		impl.addServiceImpl(serviceName, serviceEndpoint, configFile);
+	public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile) {
+		impl.addServiceImpl(serviceName, serviceEndpointInterface, serviceEndpoint, configFile);
 	}
 	
 	public FileObject getDD() {
@@ -86,6 +88,11 @@ public final class WebServicesSupport {
 	    return impl.getWsDDFolder();
 	}
 
+    public String getArchiveDDFolderName()
+	{
+		return impl.getArchiveDDFolderName();
+	}
+  
     public String getImplementationBean(String linkName)
 	{
 		return impl.getImplementationBean(linkName);
@@ -100,6 +107,17 @@ public final class WebServicesSupport {
 	{
 		return impl.getAntProjectHelper();
 	}
+
+    public String  generateImplementationBean(String name, FileObject pkg, Project project) throws java.io.IOException
+	{
+		return impl.generateImplementationBean(name, pkg, project);
+    }
+
+    public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName)
+	{
+		impl.addServiceImplLinkEntry(serviceImplBean, wsName);
+	}
+	
 
 /* !! What to put here?
  *

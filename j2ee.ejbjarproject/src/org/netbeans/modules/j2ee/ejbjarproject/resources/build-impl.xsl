@@ -276,6 +276,64 @@ is divided into following sections:
                 <xsl:with-param name="type" select="'jar'"/>
             </xsl:call-template>
 
+            <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service|/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
+				<target name="wscompile-init">
+					<taskdef name="wscompile" classname="com.sun.xml.rpc.tools.ant.Wscompile">
+					  <classpath path="${{wscompile.classpath}}"/>
+					</taskdef>
+					<mkdir dir="${{build.classes.dir}}/META-INF/wsdl"/>
+					<mkdir dir="${{build.generated.dir}}/wssrc"/>
+				</target>
+			</xsl:if>
+
+            <xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+              <xsl:variable name="wsname">
+                <xsl:value-of select="ejb:web-service-name"/>
+              </xsl:variable>
+
+              <target name="{$wsname}_wscompile" depends="wscompile-init">
+                <wscompile
+                   server="true"
+                   fork="true"
+                   keep="true"
+                   base="${{build.generated.dir}}/wssrc"
+                   xPrintStackTrace="true"
+                   verbose="true"
+                   nonClassDir="${{build.classes.dir}}/META-INF/wsdl"
+                   classpath="${{wscompile.classpath}}:${{build.classes.dir}}"
+                   mapping="${{build.classes.dir}}/META-INF/wsdl/${{{$wsname}.mapping}}"
+                   config="${{src.dir}}/${{{$wsname}.config.name}}">
+                   <!-- HTTPProxy="${http.proxyHost}:${http.proxyPort}" -->
+                </wscompile>
+              </target>
+            </xsl:for-each>
+
+			<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-service-clients/ejb:web-service-client">
+				<xsl:variable name="wsclientname">
+					<xsl:value-of select="ejb:web-service-client-name"/>
+				</xsl:variable>
+
+				<target name="{$wsclientname}_client_wscompile" depends="wscompile-init">
+					<copy file="${{web.docbase.dir}}/WEB-INF/wsdl/{$wsclientname}-config.xml"
+						tofile="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml" filtering="on">
+						<filterset>
+							<!-- replace token with reference to WSDL file in source tree, not build tree, since the
+							     the file probably has not have been copied to the build tree yet. -->
+							<filter token="CONFIG_ABSOLUTE_PATH" value="${{basedir}}/${{web.docbase.dir}}/WEB-INF/wsdl"/>
+						</filterset>
+					</copy>
+					<wscompile
+						xPrintStackTrace="true" verbose="true"
+						fork="true" keep="true" import="true" features="norpcstructures"
+						base="${{build.classes.dir}}"
+						sourceBase="${{build.generated.dir}}/wssrc"
+						classpath="${{wscompile.classpath}}"
+						mapping="${{build.web.dir}}/WEB-INF/wsdl/{$wsclientname}-mapping.xml"
+						config="${{build.generated.dir}}/wssrc/wsdl/{$wsclientname}-config.xml">
+					</wscompile>
+				</target>
+			</xsl:for-each>
+
             <target name="pre-pre-compile">
                 <xsl:attribute name="depends">init,deps-jar</xsl:attribute>
                 <mkdir dir="${{build.classes.dir}}"/>
@@ -331,16 +389,40 @@ is divided into following sections:
             
             <target name="do-compile">
                 <xsl:attribute name="depends">init,deps-jar,pre-pre-compile,pre-compile</xsl:attribute>
+                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                    <xsl:comment>For web services, refresh the Tie and SerializerRegistry classes</xsl:comment> 
+                    <delete> 
+                      <fileset dir="${{build.classes.dir}}" includes="**/*_Tie.* **/*_SerializerRegistry.*"/>
+                    </delete>
+                </xsl:if>
                 <ejbproject:javac xmlns:ejbproject="http://www.netbeans.org/ns/j2ee-ejbjarproject/1"/>
                 <copy todir="${{build.classes.dir}}">
                     <fileset dir="${{src.dir}}" excludes="${{build.classes.excludes}}"/>
                 </copy>
                 <copy todir="${{build.classes.dir}}/META-INF">
-                  <fileset dir="${{meta.inf}}"/>
+                  <fileset dir="${{meta.inf}}">
+                  </fileset>
                 </copy>
+                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+                    <xsl:comment>For web services, refresh ejb-jar.xml and sun-ejb-jar.xml</xsl:comment>  
+                    <copy todir="${{build.dir}}" overwrite="true"> 
+                      <fileset includes="META-INF/ejb-jar.xml META-INF/sun-ejb-jar.xml" dir="${{meta.inf}}"/>
+                    </copy>
+                 </xsl:if>
             </target>
 
             <target name="post-compile">
+                <xsl:if test="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+					<xsl:attribute name="depends">
+						<xsl:for-each select="/p:project/p:configuration/ejb:data/ejb:web-services/ejb:web-service">
+							<xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
+							<xsl:variable name="wsname2">
+								<xsl:value-of select="ejb:web-service-name"/>
+							</xsl:variable>
+							<xsl:value-of select="ejb:web-service-name"/><xsl:text>_wscompile</xsl:text>
+						</xsl:for-each>
+					</xsl:attribute>
+				</xsl:if>
                 <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>

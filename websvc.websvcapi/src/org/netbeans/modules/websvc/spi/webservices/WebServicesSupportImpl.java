@@ -15,6 +15,8 @@ package org.netbeans.modules.websvc.spi.webservices;
 
 import org.openide.filesystems.FileObject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.webservices.ServiceImplBean;
 
 /**
  *
@@ -22,15 +24,26 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  */
 public interface WebServicesSupportImpl {
 	
-	public void addServiceImpl(String serviceName, String serviceEndpoint, FileObject configFile);
+    /*
+     * Add web service related entries to the project file and the module's DD
+     */
+    public void addServiceImpl(String serviceName, String serviceEndpointInterface, String serviceEndpoint, FileObject configFile);
 	
-    
-	public FileObject getDD();
+    /**
+     * Get the FileObject of the webservices.xml file.
+     */
+    public FileObject getDD();
 
     /**
-     *  Returns the directory that contains webservices.xml
+     *  Returns the directory that contains webservices.xml in the project
      */
     public FileObject getWsDDFolder();
+
+    /**
+     * Returns the name of the directory that contains the webservices.xml in
+     * the archive
+     */
+    public String getArchiveDDFolderName();
 
     /**
      * Returns the name of the implementation bean class
@@ -44,9 +57,19 @@ public interface WebServicesSupportImpl {
      */
     public void removeServiceEntry(String serviceName, String linkName);
 	
-	/**
+    /**
      * Get the AntProjectHelper from the project
      */
     public AntProjectHelper getAntProjectHelper();
+
+    /**
+     * Generate the implementation bean class and return the class name
+     */
+    public String generateImplementationBean(String wsName, FileObject pkg, Project project)throws java.io.IOException;
+
+    /**
+     *  Add the servlet link or ejb link in the webservices.xml entry
+    */
+    public void addServiceImplLinkEntry(ServiceImplBean serviceImplBean, String wsName);
 	
 }

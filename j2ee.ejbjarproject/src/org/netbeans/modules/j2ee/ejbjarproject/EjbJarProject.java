@@ -69,6 +69,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
+import org.netbeans.modules.websvc.api.webservices.WebServicesClientSupport;
+import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 
 /**
  * Represents one ejb module project
@@ -84,6 +87,8 @@ final class EjbJarProject implements Project, AntProjectListener {
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
     private final EjbJarProvider ejbModule;
+    private WebServicesSupport apiWebServicesSupport;
+    //private WebServicesClientSupport apiWebServicesClientSupport;
     
     EjbJarProject(final AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -92,6 +97,8 @@ final class EjbJarProject implements Project, AntProjectListener {
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator ());
         genFilesHelper = new GeneratedFilesHelper(helper);
         ejbModule = new EjbJarProvider(this, helper);
+        apiWebServicesSupport = WebServicesSupportFactory.createWebServicesSupport (ejbModule);
+	//  apiWebServicesClientSupport = WebServicesSupportFactory.createWebServicesClientSupport (ejbModule);
         lookup = createLookup(aux);
         helper.addAntProjectListener(this);
     }
@@ -142,6 +149,7 @@ final class EjbJarProject implements Project, AntProjectListener {
             new Info(),
             aux,
             helper.createCacheDirectoryProvider(),
+            new ProjectWebServicesSupportProvider(),
             // XXX the helper should not be exposed
             helper,
             spp,
@@ -188,6 +196,15 @@ final class EjbJarProject implements Project, AntProjectListener {
         String srcDir = helper.getStandardPropertyEvaluator ().getProperty ("src.dir"); // NOI18N
         return helper.resolveFileObject(srcDir);
     }
+    
+    WebServicesSupport getAPIWebServicesSupport () {
+		return apiWebServicesSupport;
+    }
+    /*
+    WebServicesClientSupport getAPIWebServicesClientSupport () {
+		return apiWebServicesClientSupport;
+    }
+    */
     
      public EjbJarProvider getEjbModule () {
          return ejbModule;
@@ -439,7 +456,8 @@ final class EjbJarProject implements Project, AntProjectListener {
             "Templates/J2EE/Session", // NOI18N
             "Templates/J2EE/RelatedCMP", // NOI18N
             "Templates/Classes/Class.java", // NOI18N
-            "Templates/Other/Folder" // NOI18N
+            "Templates/Other/Folder", // NOI18N
+            "Templates/J2EE/WebService"
         };
         
         public String[] getRecommendedTypes() {

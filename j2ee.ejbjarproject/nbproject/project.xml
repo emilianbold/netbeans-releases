@@ -207,6 +207,20 @@ Microsystems, Inc. All Rights Reserved.
                                <release-version>1</release-version>
                        </run-dependency>
                </dependency>
+               <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.websvcapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.dd.webservice</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                    </run-dependency>
+                </dependency> 
             </module-dependencies>
             <public-packages/>
         </data>
