@@ -62,11 +62,11 @@ public abstract class StreamSource extends Object {
     public abstract Writer createWriter(Difference[] conflicts) throws IOException ;
     
     /**
-     * Notify, that this stream source is no longer needed. This method, is called
-     * when this object will never be asked for the streams any more and thus can
+     * Close the stream source. This method, is called when this object
+     * will never be asked for the streams any more and thus can
      * release it's resources in this method.
      */
-    public void notifyClosed() {
+    public void close() {
     }
     
     /**
