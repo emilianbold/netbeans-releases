@@ -50,7 +50,7 @@ import java.awt.event.ActionEvent;
  * @author  Petr Kuzel
  * @version 1.0
  */
-public final class CatalogRootNode extends AbstractNode {
+public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
 
     /** Creates new CatalogNode */
     public CatalogRootNode() {
@@ -59,6 +59,7 @@ public final class CatalogRootNode extends AbstractNode {
         setDisplayName (Util.THIS.getString("TEXT_catalog_root")); // NOI18N
         setIconBase("org/netbeans/modules/xml/catalog/resources/catalog-root");  // NOI18N
         setShortDescription(Util.THIS.getString("PROP_catalog_root_desc"));
+        getCookieSet().add(this);
     }
     
     protected SystemAction[] createActions() {
@@ -260,8 +261,8 @@ public final class CatalogRootNode extends AbstractNode {
      * Give to action your own name
      */
     private static final class MountAction extends NodeAction {
-        /** Serial Version UID */        
-        private static final long serialVersionUID = -3608629636833099065L;        
+        /** Serial Version UID */
+        private static final long serialVersionUID = -3608629636833099065L;
         
         public MountAction() {
         }
@@ -275,21 +276,21 @@ public final class CatalogRootNode extends AbstractNode {
         }
         
         protected synchronized boolean enable(Node[] activatedNodes) {
-            return activatedNodes.length > 0;            
+            return activatedNodes.length > 0;
         }
         
         protected synchronized void performAction(Node[] activatedNodes) {
-            if (enable(activatedNodes) == false) return;            
+            if (enable(activatedNodes) == false) return;
             try {
-                CatalogMounter newType = 
-                    ((CatalogRootNode)activatedNodes[0]).new CatalogMounter();
+                Node current = activatedNodes[0];
+                CatalogRootNode me = (CatalogRootNode) current.getCookie(CatalogRootNode.class);
+                CatalogMounter newType = me.new CatalogMounter();
                 newType.create();
             } catch (IOException ex) {
-                //??? ignore
+                Util.THIS.debug(ex);
             } finally {
             }
         }
-        
     }
     
 }
