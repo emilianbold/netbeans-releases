@@ -23,7 +23,7 @@ import java.awt.Image;
 public class DTDOptionsBeanInfo extends org.netbeans.modules.editor.options.PlainOptionsBeanInfo {
 
     public DTDOptionsBeanInfo () {
-        super ("/org/netbeans/modules/editor/resources/htmlOptions"); // NOI18N
+        super ("/org/netbeans/modules/xml/text/resources/dtdEditorOptions");    // NOI18N
     }
 
     protected Class getBeanClass() {
