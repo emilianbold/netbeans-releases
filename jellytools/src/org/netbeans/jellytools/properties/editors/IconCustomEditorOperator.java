@@ -156,7 +156,7 @@ public class IconCustomEditorOperator extends NbDialogOperator {
 
     /** Clicks on "Select File" JButton. */
     public void selectFile() {
-        btSelectFile().push();
+        btSelectFile().pushNoBlock();
     }
 
     //*****************************************

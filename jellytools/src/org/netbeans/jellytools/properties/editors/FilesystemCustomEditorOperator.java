@@ -167,7 +167,7 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
 
     /** Clicks on "Browse" JButton to set Directory. */
     public void browse() {
-        btBrowse().push();
+        btBrowse().pushNoBlock();
     }
 
     /** Clicks on "Add JAR File" JRadioButton. */
@@ -198,7 +198,7 @@ public class FilesystemCustomEditorOperator extends NbDialogOperator {
 
     /** Clicks on "Browse" JButton to select JAR File */
     public void browse2() {
-        btBrowse2().push();
+        btBrowse2().pushNoBlock();
     }
 
     /** Clicks on "Add (other file system type)" JRadioButton. */
