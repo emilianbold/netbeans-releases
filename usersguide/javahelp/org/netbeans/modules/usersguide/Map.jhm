@@ -78,6 +78,7 @@
 <mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
 <mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
 <mapID target="gui.testing" url="gui/gui_testing.html" />
+<!-- Form Editor Connection Wizard : F1 and Help button-->
 <mapID target="gui.connecting.source" url="gui/gui_connectionwizard.html" />
 
 
