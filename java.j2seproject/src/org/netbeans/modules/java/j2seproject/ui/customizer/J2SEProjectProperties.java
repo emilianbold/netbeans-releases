@@ -687,7 +687,7 @@ public class J2SEProjectProperties {
         
         public Object decode(String raw, AntProjectHelper antProjectHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper ) {
             
-            String pe[] = PropertyUtils.tokenizePath( raw );
+            String pe[] = PropertyUtils.tokenizePath( raw == null ? "": raw ); // NOI18N
             List cpItems = new ArrayList( pe.length );
             for( int i = 0; i < pe.length; i++ ) {
                 VisualClassPathItem cpItem;
