@@ -17,7 +17,7 @@ import java.beans.*;
 import java.util.*;
 import javax.swing.event.*;
 
-import org.openide.actions.ToolsAction;
+import org.openide.actions.ActionManager;
 import org.openide.modules.ManifestSection;
 import org.openide.util.actions.SystemAction;
 
@@ -25,7 +25,8 @@ import org.openide.util.actions.SystemAction;
 *
 * @author jtulach
 */
-class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeListener {
+class ModuleActions extends ActionManager
+implements PropertyChangeListener {
   /** array of all actions added by modules */
   private static SystemAction[] array;
   /** of (ModuleItem, List (SystemAction)) */
@@ -33,26 +34,17 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
   /** current module */
   private static Object module;
   
-  /** listeners */
-  private static EventListenerList listeners = new EventListenerList ();
-
   /** instance */
-  private static ModuleActions INSTANCE = new ModuleActions ();  
+  static final ModuleActions INSTANCE = new ModuleActions ();  
   
   static {
     module = INSTANCE;
-  }
-  
-  /** Initializes the model.
-  */
-  public static void initialize () {
-    ToolsAction.setModel (INSTANCE);
   }
 
   /** Array with all activated actions.
   * Can contain null that will be replaced by separators.
   */
-  public SystemAction[] getActions () {
+  public SystemAction[] getContextActions () {
     SystemAction[] a = array;
     if (a != null) {
       return a;
@@ -61,30 +53,11 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
     return a;
   }
     
-  /** Adds change listener to listen on changes of actions
-  */
-  public void addChangeListener (ChangeListener l) {
-    listeners.add (ChangeListener.class, l);
-  }
-    
-  /** Removes change listener to listen on changes of actions
-  */
-  public void removeChangeListener (javax.swing.event.ChangeListener l) {
-    listeners.remove (ChangeListener.class, l);
-  }
-  
   /** Listens on change of modules and if changed,
   * fires change to all listeners.
   */
   private static void fireChange () {
-    Object[] obj = listeners.getListenerList ();
-    if (obj.length == 0) return;
-    
-    ChangeEvent ev = new ChangeEvent (INSTANCE);
-    for (int i = obj.length - 1; i >= 0; i -= 2) {
-      ChangeListener l = (ChangeListener)obj[i];
-      l.stateChanged (ev);
-    }
+    INSTANCE.firePropertyChange(PROP_CONTEXT_ACTIONS, null, null);
   }
 
   /** Change enabled property of an action
@@ -163,6 +136,8 @@ class ModuleActions extends Object implements ToolsAction.Model, PropertyChangeL
 
 /*
 * Log
+*  8    Jaga      1.6.1.0     3/14/00  Jaroslav Tulach ActionManager instead of 
+*       ugly ToolsAction.Model callback.  
 *  7    Gandalf   1.6         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
 *       Microsystems Copyright in File Comment
 *  6    Gandalf   1.5         9/2/99   Jaroslav Tulach #3637

@@ -111,6 +111,12 @@ public class NbTopManager extends TopManager {
   static Repository getDefaultRepository () {
     return defaultRepository;
   }
+  
+  /** Accessor to actions manager.
+  */
+  public ActionManager getActionManager () {
+    return ModuleActions.INSTANCE;
+  }
 
   /** Default repository.
   *
