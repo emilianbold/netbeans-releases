@@ -266,10 +266,12 @@ public abstract class J2eeModuleProvider {
         for (Iterator i=servers.iterator(); i.hasNext();) {
             Server s = (Server) i.next();
             String[] paths = s.getDeploymentPlanFiles(getJ2eeModule().getModuleType());
-            if (paths == null || paths.length < 1)
+            if (paths == null)
                 continue;
             
-            result.addAll(Arrays.asList(paths));
+            for (int j = 0; j < paths.length; j++) {
+                result.add(getDeploymentConfigurationFile(paths[j]));
+            }
         }
         return (File[]) result.toArray(new File[result.size()]);
     }
@@ -319,6 +321,7 @@ public abstract class J2eeModuleProvider {
                 }
                 fireConfigurationFilesChanged(false, fo);
             }
+            startListening();
         }
         public void fileDataCreated(FileEvent e) {
             FileObject fo = e.getFile();
