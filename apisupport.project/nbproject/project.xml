@@ -19,6 +19,24 @@ Microsystems, Inc. All Rights Reserved.
             <path>apisupport/project</path>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.ant.browsetask</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.apisupport.ant</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.debugger.jpda.ant</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.junit</code-name-base>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.projectapi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
