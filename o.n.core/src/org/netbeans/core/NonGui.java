@@ -388,12 +388,13 @@ public class NonGui extends NbTopManager implements Runnable {
                     "javax.swing.beaninfo", // NOI18N
                     "sun.beans.infos" // NOI18N
                 });
+        java.beans.PropertyEditor pe = java.beans.PropertyEditorManager.findEditor(java.lang.Byte.TYPE); // to enforce initialization of registering PE for primitive types
         java.beans.PropertyEditorManager.setEditorSearchPath (
-            new String[] { "org.netbeans.beaninfo.editors", "org.openide.explorer.propertysheet.editors", "sun.beans.editors" }); // NOI18N
+            new String[] { "org.netbeans.beaninfo.editors", "org.openide.explorer.propertysheet.editors" }); // NOI18N
         java.beans.PropertyEditorManager.registerEditor (String[].class, org.openide.explorer.propertysheet.editors.StringArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.MethodParameter[].class, org.openide.explorer.propertysheet.editors.MethodParameterArrayEditor.class);
         java.beans.PropertyEditorManager.registerEditor (org.openide.src.Identifier[].class, org.openide.explorer.propertysheet.editors.IdentifierArrayEditor.class);
-        java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharacterEditor.class);
+        java.beans.PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
 
         // -----------------------------------------------------------------------------------------------------
         // 5. Start logging
