@@ -70,6 +70,9 @@ class ComponentDragger
 
         RADVisualComponent[] currentComponents = targetMetaContainer.getSubComponents();
 
+        Set changedContainers = new HashSet(5);
+        changedContainers.add(targetMetaContainer);
+
         // first create list of components and constraints for target container
         int n = selectedComponents.length + currentComponents.length;
         List newComponents = new ArrayList(n);
@@ -141,6 +144,7 @@ class ComponentDragger
                 else
                     parentCont.remove(metacomp);
 
+                changedContainers.add(parentCont);
                 metacomp.resetConstraintsProperties();
             }
             else { // remove empty space
@@ -169,9 +173,14 @@ class ComponentDragger
             layoutSupport.addComponent(metacomp, constr);
         }
 
-        formDesigner.getModel().fireContainerLayoutChanged(targetMetaContainer,
-                                                           null, null);
+        // fire changes
+        for (Iterator it=changedContainers.iterator(); it.hasNext(); ) {
+            RADVisualContainer cont = (RADVisualContainer) it.next();
+            formDesigner.getModel().fireContainerLayoutChanged(cont,
+                                                               null, null);
+        }
 
+        // select dropped components in designer
         if (formDesigner.getSelectedComponents().size() == 0) {
             for (int i=0; i < selectedComponents.length; i++)
                 formDesigner.addComponentToSelection(selectedComponents[i]);
