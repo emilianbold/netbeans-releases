@@ -3,7 +3,7 @@ Netbeans-Module-Name: Form Module
 
 Name: com/netbeans/developer/modules/loaders/form/FormDataLoader.class
 Netbeans-Module-Class: Loader
-Install-Before: com.netbeans.developer.modules.loaders.java.JavaDataLoader
+Install-Before: com.netbeans.developer.modules.loaders.java.JavaDataObject
 
 Name: com/netbeans/developer/modules/loaders/form/FormLoaderSettings.class
 Netbeans-Module-Class: Option
