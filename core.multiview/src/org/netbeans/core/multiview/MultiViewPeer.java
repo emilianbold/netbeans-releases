@@ -115,6 +115,8 @@ public final class MultiViewPeer  {
         InputMap input = peer.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         KeyStroke stroke = KeyStroke.getKeyStroke("control F10"); //NOI18N
         input.put(stroke, "accesstoggles"); //NOI18N
+//        stroke = (KeyStroke)new GetLeftEditorAction().getValue(Action.ACCELERATOR_KEY);
+//        input.put(stroke, "getLeftEditor");
         input = peer.getInputMap(JComponent.WHEN_FOCUSED);
         input.put(stroke, "accesstoggles"); //NOI18N
         
@@ -140,6 +142,8 @@ public final class MultiViewPeer  {
                peer.close();
            }
         });
+        delegatingMap.put("getLeftEditor", new GetLeftEditorAction());
+        delegatingMap.put("getRightEditor", new GetRightEditorAction());
         peer.setActionMap(delegatingMap);
     }        
     
