@@ -38,6 +38,11 @@ import org.openide.util.NbBundle;
 public class LookupNode extends DataFolder.FolderNode implements NewTemplateAction.Cookie {
     /** extended attribute that signals that this object should not be visible to the user */
     private static final String EA_HIDDEN = "hidden"; // NOI18N
+    private static final String EA_HELPCTX = "helpID"; // NOI18N
+    /** This is quite unsafe, but it's the only way how to test that we got uncustomized
+     * InstanceDataNode's help (which is really of no use to the user).
+     */
+    private static final HelpCtx INSTANCE_DEFAULT_HELP = new HelpCtx("org.openide.loaders.InstanceDataObject"); // NOI18N
 
     /** Constructs this node with given node to filter.
     */
@@ -49,7 +54,25 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     }
     
     public final HelpCtx getHelpCtx () {
-        return new HelpCtx (LookupNode.class);
+        Object o = getDataObject().getPrimaryFile().getAttribute(EA_HELPCTX);
+        if (o != null) {
+            return new HelpCtx(o.toString());
+        }
+        // now try the original DataObject (assume it is a folder-thing)
+        HelpCtx ctx = getDataObject().getHelpCtx();
+        if (ctx != null &&
+            ctx != HelpCtx.DEFAULT_HELP) {
+            return ctx;
+        }
+        // try the parent node:
+        Node n = getParentNode();
+        if (n != null)
+            ctx = n.getHelpCtx();
+        if (ctx == null ||
+            ctx == HelpCtx.DEFAULT_HELP) {
+            ctx = new HelpCtx(LookupNode.class);
+        }
+        return ctx;
     }
 
 
@@ -116,7 +139,7 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     protected LookupNode createChild (DataFolder folder) {
         return new LookupNode (folder);
     }
-
+    
     /** A method to allow subclasses to create different child for any other node then folder.
     * @param node to create child for
     */
@@ -197,6 +220,41 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
         ((Ch)getChildren ()).refreshKey (node);
     }
     
+    private static final class Leaf extends FilterNode {
+        DataObject  data;
+        Node parent;
+        
+        Leaf (Node node, Node parent) {
+            super(node);
+            data = (DataObject)node.getCookie(DataObject.class);
+            this.parent = parent;
+        }
+        
+        public HelpCtx getHelpCtx() {
+            Object o = data.getPrimaryFile().getAttribute(EA_HELPCTX);
+            if (o != null) {
+                return new HelpCtx(o.toString());
+            }
+            // now try the original DataObject (assume it is a folder-thing)
+            HelpCtx ctx = getOriginal().getHelpCtx();
+            if (ctx != null &&
+                ctx != HelpCtx.DEFAULT_HELP &&
+                !INSTANCE_DEFAULT_HELP.equals(ctx)) {
+                return ctx;
+            }
+            // try the parent node:
+            Node n = getParentNode();
+            if (n == null)
+                n = parent;
+            if (n != null)
+                ctx = n.getHelpCtx();
+            if (ctx == null ||
+                ctx == HelpCtx.DEFAULT_HELP)
+                ctx = new HelpCtx(LookupNode.class);
+            return ctx;
+        }
+    }
+    
 
     /** Children for the LookupNode. Creates LookupNodes or
     * LookupItemNodes as filter subnodes...
@@ -243,12 +301,14 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
                     if (fo.isFolder() && !fo.getChildren(false).hasMoreElements()) return null;
                     
                     if (orig instanceof DataFolder) {
-                        node = parent.createChild ((DataFolder) orig);
-                        return new Node[] { node };
+                        return new Node[] { 
+                            parent.createChild ((DataFolder) orig)
+                        };
                     } else {
-                        return new Node[] { orig.getNodeDelegate().cloneNode() };
+                        obj = orig;
                     }
                 }
+                node = new Leaf(node, parent);
             }
             
             node = parent.createChild (node);
