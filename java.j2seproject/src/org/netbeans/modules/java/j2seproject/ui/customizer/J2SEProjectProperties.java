@@ -65,6 +65,8 @@ public class J2SEProjectProperties {
     public static final String DIST_JAR = "dist.jar"; // NOI18N
     public static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
     public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
+    public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
     public static final String DEBUG_CLASSPATH = "debug.classpath"; // NOI18N
     public static final String JAR_COMPRESS = "jar.compress"; // NOI18N
     public static final String MAIN_CLASS = "main.class"; // NOI18N
@@ -124,6 +126,8 @@ public class J2SEProjectProperties {
         new PropertyDescriptor( DIST_JAR, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( JAVAC_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( RUN_CLASSPATH, PROJECT, PATH_PARSER ),
+        new PropertyDescriptor( RUN_JVM_ARGS, PROJECT, STRING_PARSER ),
+        new PropertyDescriptor( RUN_WORK_DIR, PRIVATE, STRING_PARSER ),
         new PropertyDescriptor( DEBUG_CLASSPATH, PROJECT, PATH_PARSER ),
         new PropertyDescriptor( JAR_COMPRESS, PROJECT, BOOLEAN_PARSER ),
         new PropertyDescriptor( MAIN_CLASS, PROJECT, STRING_PARSER ),
@@ -351,6 +355,11 @@ public class J2SEProjectProperties {
                                     }
                                     
                                     if (NO_DEPENDENCIES.equals(pd.name) && newValueEncoded.equals("false")) { // NOI18N
+                                        ep.remove(pd.name);
+                                        continue;
+                                    }
+                                    
+                                    if (RUN_WORK_DIR.equals(pd.name) && newValueEncoded.equals("")) { // NOI18N
                                         ep.remove(pd.name);
                                         continue;
                                     }

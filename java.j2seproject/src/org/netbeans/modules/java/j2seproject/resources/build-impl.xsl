@@ -136,6 +136,7 @@ is divided into following sections:
                 </condition>
                 <property name="run.jvmargs" value=""/>
                 <property name="javac.compilerargs" value=""/>
+                <property name="work.dir" value="${{basedir}}"/>
                 <condition property="no.deps">
                     <and>
                         <istrue value="${{no.dependencies}}"/>
@@ -245,7 +246,7 @@ is divided into following sections:
                         <junit>
                             <xsl:attribute name="showoutput">true</xsl:attribute>
                             <xsl:attribute name="fork">true</xsl:attribute>
-                            <xsl:attribute name="dir">${basedir}</xsl:attribute> <!-- #47474: match <java> -->
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:attribute name="failureproperty">tests.failed</xsl:attribute>
                             <xsl:attribute name="errorproperty">tests.failed</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
@@ -332,6 +333,7 @@ is divided into following sections:
                     </attribute>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>
@@ -367,6 +369,7 @@ is divided into following sections:
                     </element>
                     <sequential>
                         <java fork="true" classname="@{{classname}}">
+                            <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2se:data/j2se:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
                             </xsl:if>

@@ -13,11 +13,15 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import java.io.File;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -63,6 +67,8 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
         vps.register (vms, J2SEProjectProperties.MAIN_CLASS);
         vps.register( jTextFieldArgs, J2SEProjectProperties.APPLICATION_ARGS );
         vps.register( vcs, J2SEProjectProperties.RUN_CLASSPATH );
+        vps.register( jTextVMOptions, J2SEProjectProperties.RUN_JVM_ARGS);
+        vps.register( jTextWorkingDirectory, J2SEProjectProperties.RUN_WORK_DIR);
    
         jButtonMainClass.setVisible( true );
         
@@ -98,18 +104,28 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
         jButtonRemove = new javax.swing.JButton();
         jButtonMoveUp = new javax.swing.JButton();
         jButtonMoveDown = new javax.swing.JButton();
+        jLabelWorkingDirectory = new javax.swing.JLabel();
+        jTextWorkingDirectory = new javax.swing.JTextField();
+        jButtonWorkingDirectoryBrowse = new javax.swing.JButton();
+        jLabelVMOptions = new javax.swing.JLabel();
+        jTextVMOptions = new javax.swing.JTextField();
+        jLabelVMOptionsExample = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EtchedBorder());
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
         jLabelMainClass.setLabelFor(jTextFieldMainClass);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 0);
         add(jLabelMainClass, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 5, 0);
@@ -118,21 +134,25 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 5, 12);
         add(jButtonMainClass, gridBagConstraints);
         jButtonMainClass.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jButtonMainClass"));
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
         jLabelArgs.setLabelFor(jTextFieldArgs);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelArgs, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel"));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         add(jLabelArgs, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -224,15 +244,91 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
         jButtonMoveDown.getAccessibleContext().setAccessibleDescription(java.util.ResourceBundle.getBundle("org/netbeans/modules/java/j2seproject/ui/customizer/Bundle").getString("AD_jButtonMoveDown"));
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
 
+        jLabelWorkingDirectory.setLabelFor(jTextFieldMainClass);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelWorkingDirectory, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(jLabelWorkingDirectory, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(jTextWorkingDirectory, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonWorkingDirectoryBrowse, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse"));
+        jButtonWorkingDirectoryBrowse.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWorkingDirectoryBrowseActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 12);
+        add(jButtonWorkingDirectoryBrowse, gridBagConstraints);
+
+        jLabelVMOptions.setLabelFor(jTextFieldMainClass);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptions, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(jLabelVMOptions, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(jTextVMOptions, gridBagConstraints);
+
+        jLabelVMOptionsExample.setLabelFor(jTextFieldMainClass);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelVMOptionsExample, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_VM_Options_Example"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        add(jLabelVMOptionsExample, gridBagConstraints);
+
     }//GEN-END:initComponents
+
+    private void jButtonWorkingDirectoryBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWorkingDirectoryBrowseActionPerformed
+        JFileChooser chooser = new JFileChooser();
+        FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+        chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        
+        String workDir = jTextWorkingDirectory.getText();
+        if (workDir.equals("")) {
+            workDir = FileUtil.toFile(j2seProperties.getProject().getProjectDirectory()).toString();
+        }
+        chooser.setSelectedFile(new File(workDir));
+        chooser.setDialogTitle(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Working_Directory_Browse_Title"));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
+            File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+            jTextWorkingDirectory.setText(file.toString());
+        }
+    }//GEN-LAST:event_jButtonWorkingDirectoryBrowseActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -244,14 +340,20 @@ public class CustomizerRun extends JPanel implements J2SECustomizer.Panel, HelpC
     private javax.swing.JButton jButtonMoveDown;
     private javax.swing.JButton jButtonMoveUp;
     private javax.swing.JButton jButtonRemove;
+    private javax.swing.JButton jButtonWorkingDirectoryBrowse;
     private javax.swing.JLabel jLabelArgs;
     private javax.swing.JLabel jLabelMainClass;
     private javax.swing.JLabel jLabelRunClasspath;
+    private javax.swing.JLabel jLabelVMOptions;
+    private javax.swing.JLabel jLabelVMOptionsExample;
+    private javax.swing.JLabel jLabelWorkingDirectory;
     private javax.swing.JList jListClasspath;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollClasspath;
     private javax.swing.JTextField jTextFieldArgs;
     private javax.swing.JTextField jTextFieldMainClass;
+    private javax.swing.JTextField jTextVMOptions;
+    private javax.swing.JTextField jTextWorkingDirectory;
     // End of variables declaration//GEN-END:variables
     
     
