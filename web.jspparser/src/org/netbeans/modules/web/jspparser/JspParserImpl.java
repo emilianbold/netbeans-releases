@@ -105,10 +105,12 @@ public class JspParserImpl implements JspParserAPI {
     }
     
     public JspParserAPI.JspOpenInfo getJspOpenInfo(FileObject jspFile, WebModule wm, boolean useEditor) {
+        if (wm == null)
+            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
         FileObject wmRoot = wm.getDocumentBase();
         if (wmRoot == null) {
             // PENDING - we could do a better job here in making up a fallback
-            return new JspParserAPI.JspOpenInfo(false, "8859_1"); // NOI18N
+            return new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"); // NOI18N
         }
         WebAppParseProxy pp = getParseProxy(wm);
         return pp.getJspOpenInfo(jspFile, useEditor);
@@ -241,16 +243,19 @@ public class JspParserImpl implements JspParserAPI {
         }
         
         public boolean equals(Object o) {
+
             if (o instanceof WAParseSupportKey) {
                 WAParseSupportKey k = (WAParseSupportKey)o;
-                return (wm.equals(k.wm) &&
-                        (wmRoot.equals(k.wmRoot)));
+                //Two keys are the same only if the document roots are same.
+                return wmRoot.getPath().equals(k.wmRoot.getPath());
             }
             return false;
         }
         
         public int hashCode() {
-            return wm.hashCode() + wmRoot.hashCode();
+            //return wm.hashCode() + wmRoot.hashCode();
+            // Two keys are the same only if the document roots are same. 
+            return 0;
         }
     }
     
