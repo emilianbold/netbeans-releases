@@ -45,7 +45,7 @@ Microsystems, Inc. All Rights Reserved.
 
    <target name="standalone" depends="jars">
      <copy file="base/run.sh" tofile="${target_dir}/run.sh" />
-
+     <chmod file="${target_dir}/run.sh" perm="a+x"/>
      <mkdir dir="${target_dir}/ParserDB" />
      <copy todir="${target_dir}/ParserDB">
         <fileset dir="../release/system/ParserDB" />
