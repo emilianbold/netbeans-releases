@@ -174,10 +174,16 @@ public final class NbMainExplorer extends CloneableTopComponent
                                            }
                                        }
                                    });*/
-        ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
-        if (mode != null) {
-            mode.requestFocus(toBeActivated);
+        
+        //Bugfix #9815: added check if toBeActivated is null before
+        //request focus is called.
+        if (toBeActivated != null) {
+            ModeImpl mode = (ModeImpl)workspace.findMode(toBeActivated);
+            if (mode != null) {
+                mode.requestFocus(toBeActivated);
+            }
         }
+        //End of bugfix #9815
         //End of bugfix #9352
     }
 
