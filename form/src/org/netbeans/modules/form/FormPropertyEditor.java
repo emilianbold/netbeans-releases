@@ -57,6 +57,10 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     return propertyType;
   }
   
+  RADComponent getRADComponent () {
+    return radComponent;
+  }
+
   RADComponent.RADProperty getRADProperty () {
     return radProperty;
   }
@@ -75,10 +79,6 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
     modifiedEditor.addPropertyChangeListener (this);
   }
 
-  RADComponent getRADComponent () {
-    return radComponent;
-  }
-  
   // -----------------------------------------------------------------------------
   // PropertyChangeListener implementation
 
@@ -311,6 +311,7 @@ public class FormPropertyEditor implements PropertyEditor, PropertyChangeListene
 
 /*
  * Log
+ *  14   Gandalf   1.13        8/17/99  Ian Formanek    no semantic change
  *  13   Gandalf   1.12        8/17/99  Ian Formanek    Fixed work with multiple
  *       property editors
  *  12   Gandalf   1.11        8/1/99   Ian Formanek    NodePropertyEditor 
