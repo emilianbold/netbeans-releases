@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Enumeration;
 import javax.swing.text.JTextComponent;
 import java.awt.Toolkit;
 
@@ -41,10 +42,13 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.FormatterIndentEngine;
 import org.netbeans.modules.editor.IndentEngineFormatter;
+import org.netbeans.modules.editor.SimpleIndentEngine;
 
 import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.text.IndentEngine;
+import org.openide.ServiceType;
+import org.openide.TopManager;
 
 /**
 * Options for the base editor kit
@@ -134,13 +138,15 @@ public class BaseOptions extends OptionSupport {
         = Boolean.getBoolean("netbeans.debug.editor.format"); // NOI18N
     
     private transient Settings.Initializer coloringMapInitializer;
-
+    
     public BaseOptions() {
         this(BaseKit.class, BASE);
     }
 
     public BaseOptions(Class kitClass, String typeName) {
         super(kitClass, typeName);
+
+        getIndentEngine(); // causes initialization of the default indent engine
     }
     
     protected void updateSettingsMap(Class kitClass, Map settingsMap) {
@@ -533,7 +539,17 @@ public class BaseOptions extends OptionSupport {
 
 
     public IndentEngine getIndentEngine() {
-        return (IndentEngine)getSettingValue(NbEditorDocument.INDENT_ENGINE);
+        IndentEngine eng = (IndentEngine)getSettingValue(NbEditorDocument.INDENT_ENGINE);
+        
+        if (eng == null) {
+            // Try to find the default indent engine in Services registry
+            eng = findDefaultIndentEngine();
+            if (eng != null) { // found
+                setIndentEngine(eng);
+            }
+        }
+        
+        return eng;
     }
 
     public void setIndentEngine(IndentEngine eng) {
@@ -553,6 +569,23 @@ public class BaseOptions extends OptionSupport {
                 + getKitClass() + " set to eng=" + eng + ", formatter=" + f); // NOI18N
         }
         
+    }
+
+    /** Return class of the default indentation engine. */
+    protected Class getDefaultIndentEngineClass() {
+        return SimpleIndentEngine.class;
+    }
+
+    private IndentEngine findDefaultIndentEngine() {
+        if (getDefaultIndentEngineClass() != null) {
+            ServiceType.Registry sr = TopManager.getDefault().getServices();
+            Enumeration en = sr.services(getDefaultIndentEngineClass());
+            if (en.hasMoreElements()) {
+                return (IndentEngine)en.nextElement();
+            }
+        }
+        
+        return null;
     }
 
 }
