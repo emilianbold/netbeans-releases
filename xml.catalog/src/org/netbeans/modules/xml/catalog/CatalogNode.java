@@ -36,11 +36,13 @@ import java.awt.event.ActionEvent;
  * @author  Petr Kuzel
  * @version 1.0
  */
-final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener {
+final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeListener, Node.Cookie {
     
     /** Creates new CatalogNode */
     public CatalogNode(CatalogReader catalog) throws IntrospectionException {        
         super(catalog, new CatalogChildren(catalog));
+
+        getCookieSet().add(this);
         
         if (catalog instanceof CatalogDescriptor) {
             
@@ -266,9 +268,11 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             if (enable(activatedNodes) == false) return;
             for (int i = 0; i<activatedNodes.length; i++) {
                 try {
-                    ((CatalogNode)activatedNodes[i]).destroy();
+                    Node me = activatedNodes[i];
+                    CatalogNode self = (CatalogNode) me.getCookie(CatalogNode.class);
+                    self.destroy();
                 } catch (IOException ex) {
-                    //??? ignore
+                    Util.THIS.debug("Cannot unmount XML entity catalog!", ex);
                 }
             }
         }
