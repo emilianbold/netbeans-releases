@@ -32,6 +32,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.modules.web.project.ui.FileChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -170,7 +171,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
      * @return null if canceled selected jars if some jars selected
      */
     public static AntArtifact[] showDialog( String artifactType, Project master ) {
-        
+
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
@@ -180,12 +181,19 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
         
         chooser.setPreferredSize( new Dimension( 650, 360 ) );
         
+        String key = AntArtifactChooser.class.getSimpleName();
+        final File lastChooserLocation = FileChooser.getLastChooserLocation(key);
+        if (lastChooserLocation != null) {
+            chooser.setSelectedFile(lastChooserLocation);
+        }
+
         int option = chooser.showOpenDialog( null ); // Show the chooser
               
         if ( option == JFileChooser.APPROVE_OPTION ) {
             
             File dir = chooser.getSelectedFile();
             dir = FileUtil.normalizeFile (dir);
+            FileChooser.setLastChooserLocation(key, dir);
             Project selectedProject = accessory.getProject( dir );
 
             if ( selectedProject == null ) {
