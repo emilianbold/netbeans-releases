@@ -11,8 +11,6 @@
       <Dimension value="[600, 500]"/>
     </Property>
   </Properties>
-  <SyntheticProperties>
-  </SyntheticProperties>
 
   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout">
     <Property name="horizontalGap" type="int" value="11"/>
@@ -20,7 +18,6 @@
   <SubComponents>
     <Container class="javax.swing.JSplitPane" name="splitPane">
       <Properties>
-        <Property name="dividerSize" type="int" value="5"/>
         <Property name="lastDividerLocation" type="int" value="300"/>
       </Properties>
       <Constraints>
@@ -66,15 +63,15 @@
           <SubComponents>
             <Component class="javax.swing.JList" name="list">
               <Properties>
-                <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-                  <Connection code="this" type="code"/>
-                </Property>
                 <Property name="selectionMode" type="int" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="ListSelectionModel.SINGLE_SELECTION" type="code"/>
                 </Property>
+                <Property name="cellRenderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="this" type="code"/>
+                </Property>
               </Properties>
-
               <Events>
+                <EventHandler event="focusGained" listener="java.awt.event.FocusListener" parameters="java.awt.event.FocusEvent" handler="listFocusGained"/>
                 <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="listValueChanged"/>
               </Events>
             </Component>
@@ -108,13 +105,12 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addButtonActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                  <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="-1" gridY="-1" insetsBottom="5" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+                  <GridBagConstraints gridX="-1" gridY="-1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
                 </Constraint>
               </Constraints>
             </Component>
@@ -127,13 +123,12 @@
                   <ResourceString bundle="org/netbeans/beaninfo/Bundle.properties" key="LoaderActionsPanel.jButton2.text" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
                 </Property>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="separatorButtonActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                  <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="0" gridY="1" insetsBottom="5" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+                  <GridBagConstraints gridX="0" gridY="1" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
                 </Constraint>
               </Constraints>
             </Component>
@@ -147,13 +142,12 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                  <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="0" gridY="2" insetsBottom="11" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+                  <GridBagConstraints gridX="0" gridY="2" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="11" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
                 </Constraint>
               </Constraints>
             </Component>
@@ -167,13 +161,12 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="upButtonActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                  <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="0" gridY="3" insetsBottom="5" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+                  <GridBagConstraints gridX="0" gridY="3" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="5" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
                 </Constraint>
               </Constraints>
             </Component>
@@ -187,13 +180,12 @@
                 </Property>
                 <Property name="enabled" type="boolean" value="false"/>
               </Properties>
-
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="downButtonActionPerformed"/>
               </Events>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-                  <GridBagConstraints anchor="10" fill="2" gridHeight="1" gridWidth="1" gridX="0" gridY="4" insetsBottom="0" insetsLeft="0" insetsRight="0" insetsTop="0" ipadX="0" ipadY="0" weightX="0.0" weightY="0.0"/>
+                  <GridBagConstraints gridX="0" gridY="4" gridWidth="1" gridHeight="1" fill="2" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="10" weightX="0.0" weightY="0.0"/>
                 </Constraint>
               </Constraints>
             </Component>
