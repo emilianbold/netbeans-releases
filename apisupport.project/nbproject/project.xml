@@ -24,7 +24,7 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>4.13</specification-version>
+                        <specification-version>4.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -45,7 +45,6 @@ Microsystems, Inc. All Rights Reserved.
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
-                <!--
                 <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
@@ -54,7 +53,18 @@ Microsystems, Inc. All Rights Reserved.
                         <release-version>1</release-version>
                     </run-dependency>
                 </dependency>
-                -->
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
+                    <run-dependency/>
+                </dependency>
             </module-dependencies>
             <public-packages/>
             <!--

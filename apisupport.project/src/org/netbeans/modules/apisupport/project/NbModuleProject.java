@@ -14,11 +14,25 @@
 package org.netbeans.modules.apisupport.project;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.jar.Manifest;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -26,7 +40,9 @@ import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -43,6 +59,7 @@ final class NbModuleProject implements Project {
     private final AntProjectHelper helper;
     private final GeneratedFilesHelper genFilesHelper;
     private final Lookup lookup;
+    private String displayName;
     
     NbModuleProject(AntProjectHelper helper) {
         this.helper = helper;
@@ -52,9 +69,9 @@ final class NbModuleProject implements Project {
             new SavedHook(),
             new OpenedHook(),
             createActionProvider(),
+            new ClassPathProviderImpl(),
+            new SourceForBinary(),
             // XXX need, in rough descending order of importance:
-            // ClassPathProvider
-            // SourceForBinaryQueryImplementation
             // LogicalViewProvider
             // SubprojectProvider - special impl
             // AntArtifactProvider - should it run netbeans target, or all-foo/bar?
@@ -67,8 +84,55 @@ final class NbModuleProject implements Project {
     }
     
     public String getDisplayName() {
-        // XXX look up localizing bundle
-        return getName();
+        if (displayName == null) {
+            Manifest mf = getManifest();
+            if (mf != null) {
+                String locBundleResource = mf.getMainAttributes().
+                    getValue("OpenIDE-Module-Localizing-Bundle"); // NOI18N
+                if (locBundleResource != null) {
+                    String locBundleResourceBase, locBundleResourceExt;
+                    int idx = locBundleResource.lastIndexOf('.');
+                    if (idx != -1 && idx > locBundleResource.lastIndexOf('/')) {
+                        locBundleResourceBase = locBundleResource.substring(0, idx);
+                        locBundleResourceExt = locBundleResource.substring(idx);
+                    } else {
+                        locBundleResourceBase = locBundleResource;
+                        locBundleResourceExt = "";
+                    }
+                    FileObject srcFO = getSourceDirectory();
+                    if (srcFO != null) {
+                        Iterator it = NbBundle.getLocalizingSuffixes();
+                        while (it.hasNext()) {
+                            String suffix = (String)it.next();
+                            String resource = locBundleResourceBase + suffix +
+                                locBundleResourceExt;
+                            FileObject bundleFO = srcFO.getFileObject(resource);
+                            if (bundleFO != null) {
+                                Properties p = new Properties();
+                                try {
+                                    InputStream is = bundleFO.getInputStream();
+                                    try {
+                                        p.load(is);
+                                    } finally {
+                                        is.close();
+                                    }
+                                    displayName = p.getProperty("OpenIDE-Module-Name"); // NOI18N
+                                    if (displayName != null) {
+                                        break;
+                                    }
+                                } catch (IOException e) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (displayName == null) {
+            displayName = getName();
+        }
+        return displayName;
     }
     
     public String toString() {
@@ -87,6 +151,35 @@ final class NbModuleProject implements Project {
     }
     
     public void removePropertyChangeListener(PropertyChangeListener listener) {
+    }
+    
+    private Manifest getManifest() {
+        String manifestMf = helper.evaluate("manifest.mf"); // NOI18N
+        if (manifestMf == null) {
+            manifestMf = "manifest.mf"; // NOI18N
+        }
+        FileObject manifestFO = helper.resolveFileObject(manifestMf);
+        if (manifestFO != null) {
+            try {
+                InputStream is = manifestFO.getInputStream();
+                try {
+                    return new Manifest(is);
+                } finally {
+                    is.close();
+                }
+            } catch (IOException e) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            }
+        }
+        return null;
+    }
+    
+    private FileObject getSourceDirectory() {
+        String srcDir = helper.evaluate("src.dir"); // NOI18N
+        if (srcDir == null) {
+            srcDir = "src"; // NOI18N
+        }
+        return helper.resolveFileObject(srcDir);
     }
     
     private boolean supportsJavadoc() {
@@ -150,6 +243,97 @@ final class NbModuleProject implements Project {
         
         protected void projectClosed() {
             // ignore for now
+        }
+        
+    }
+    
+    private final class ClassPathProviderImpl implements ClassPathProvider {
+        
+        private ClassPath compile, source, boot;
+        
+        ClassPathProviderImpl() {}
+        
+        public ClassPath findClassPath(FileObject file, String type) {
+            FileObject srcDir = getSourceDirectory();
+            if (srcDir == null) {
+                return null;
+            }
+            if (!FileUtil.isParentOf(srcDir, file)) {
+                // XXX deal with tests too
+                return null;
+            }
+            // XXX listen to changes, etc.
+            if (type.equals(ClassPath.COMPILE) || type.equals(ClassPath.EXECUTE)) {
+                // Should both be the same, hopefully. <run-dependency> in project.xml
+                // means that the module should be enabled, but this module need not
+                // be able to access its classes. <compile-dependency> is what we care about.
+                if (compile == null) {
+                    compile = createCompileClasspath();
+                }
+                return compile;
+            } else if (type.equals(ClassPath.SOURCE)) {
+                if (source == null) {
+                    source = ClassPathSupport.createClassPath(new FileObject[] {srcDir});
+                }
+                return source;
+            } else if (type.equals(ClassPath.BOOT)) {
+                if (boot == null) {
+                    JavaPlatformManager pm = JavaPlatformManager.getDefault();
+                    JavaPlatform jdk = pm.getDefaultPlatform();
+                    boot = jdk.getBootstrapLibraries();
+                }
+                return boot;
+            } else {
+                // XXX JAVADOC?
+                return null;
+            }
+        }
+        
+        private ClassPath createCompileClasspath() {
+            ModuleList ml = ModuleList.getDefault();
+            Element data = helper.getPrimaryConfigurationData(true);
+            Element moduleDependencies = Util.findElement(data,
+                "module-dependencies", NbModuleProjectType.NAMESPACE_SHARED); // NOI18N
+            List/*<Element>*/ deps = Util.findSubElements(moduleDependencies);
+            Iterator it = deps.iterator();
+            List/*<PathResourceImplementation>*/ entries = new ArrayList();
+            String nbrootRel = helper.evaluate("nbroot"); // NOI18N
+            File nbroot = helper.resolveFile(nbrootRel);
+            while (it.hasNext()) {
+                Element dep = (Element)it.next();
+                if (Util.findElement(dep, "compile-dependency", // NOI18N
+                        NbModuleProjectType.NAMESPACE_SHARED) == null) {
+                    continue;
+                }
+                Element cnbEl = Util.findElement(dep, "code-name-base", // NOI18N
+                    NbModuleProjectType.NAMESPACE_SHARED);
+                String cnb = Util.findText(cnbEl);
+                ModuleList.Entry module = ml.getEntry(cnb);
+                if (module == null) {
+                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Warning - could not find dependent module " + cnb + " for " + getName());
+                    continue;
+                }
+                File moduleJar = module.getJarLocation(nbroot);
+                try {
+                    entries.add(ClassPathSupport.createResource(moduleJar.toURI().toURL()));
+                } catch (MalformedURLException e) {
+                    ErrorManager.getDefault().notify(e);
+                }
+            }
+            // XXX add ${cp.extra}
+            return ClassPathSupport.createClassPath(entries);
+        }
+        
+    }
+    
+    private final class SourceForBinary implements SourceForBinaryQueryImplementation {
+        
+        SourceForBinary() {}
+        
+        public FileObject[] findSourceRoot(URL binaryRoot) {
+            // XXX
+            System.err.println("findSourceRoot: " + binaryRoot);
+            return null;
         }
         
     }
