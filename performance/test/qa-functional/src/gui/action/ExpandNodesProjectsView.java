@@ -73,7 +73,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     public void testExpandProjectNode(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
-        project = "jEdit41";
+        project = "jEdit";
         pathToFolderNode = "";
         doMeasurement();
     }
@@ -81,7 +81,7 @@ public class ExpandNodesProjectsView extends testUtilities.PerformanceTestCase {
     public void testExpandSourcePackagesNode(){
         WAIT_AFTER_OPEN = 1000;
         WAIT_AFTER_PREPARE = 2000;
-        project = "jEdit41";
+        project = "jEdit";
         pathToFolderNode = "Source Packages";
         doMeasurement();
     }

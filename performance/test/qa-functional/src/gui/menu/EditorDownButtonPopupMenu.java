@@ -88,7 +88,7 @@ public class EditorDownButtonPopupMenu extends testUtilities.PerformanceTestCase
         Node[] openFileNodes = new Node[files_path.length];
             
         for(int i=0; i<files_path.length; i++) {
-                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit41"),"Source Packages" + '|' +  files_path[i][0] + '|' + files_path[i][1]);
+                openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages" + '|' +  files_path[i][0] + '|' + files_path[i][1]);
         }
             
         new OpenAction().performAPI(openFileNodes);

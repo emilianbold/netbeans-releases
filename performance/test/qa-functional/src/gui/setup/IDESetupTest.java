@@ -17,11 +17,17 @@ import java.beans.PropertyVetoException;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JCheckBoxMenuItem;
+
+import javax.swing.JMenuItem;
 
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JMenuOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 
 
 public class IDESetupTest extends org.netbeans.junit.NbTestCase {
@@ -51,7 +57,12 @@ public class IDESetupTest extends org.netbeans.junit.NbTestCase {
      * Close Memory Toolbar. 
      */
     public void testCloseMemoryToolbar(){
-        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars|Memory","|");
+//        JMenuOperator menu_op = new JMenuOperator(MainWindowOperator.getDefault());
+//        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars");
+//        JCheckBoxMenuItemOperator submenu = new JCheckBoxMenuItemOperator(new ContainerOperator(menu_op.getContainers()[0]), "View|Toolbars|Memory"); //NOI18N 
+//        if(submenu.isSelected())
+        new JMenuBarOperator(MainWindowOperator.getDefault().getJMenuBar()).pushMenu("View|Toolbars|Memory","|"); //NOI18N 
+        
     }
     
     

@@ -48,7 +48,7 @@ public class AutoCommentWindow extends testUtilities.PerformanceTestCase {
     
     protected void initialize() {
         // open a java file in the editor
-        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit41"),"Source Packages|bsh|Parser.java");
+        Node openFile = new Node(new ProjectsTabOperator().getProjectRootNode("jEdit"),"Source Packages|bsh|Parser.java");
         new OpenAction().performAPI(openFile);
         editor = new EditorWindowOperator().getEditor("Parser.java");
     }

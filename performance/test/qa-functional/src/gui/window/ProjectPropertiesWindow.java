@@ -42,7 +42,7 @@ public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     }
     
     protected void initialize() {
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode("jEdit41");
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode("jEdit");
     }
     
     public void prepare() {
@@ -52,7 +52,7 @@ public class ProjectPropertiesWindow extends testUtilities.PerformanceTestCase {
     public ComponentOperator open() {
         // invoke Window / Properties from the main menu
         testNode.performPopupAction("Properties");
-        return new NbDialogOperator("Project Properties - jEdit41");
+        return new NbDialogOperator("Project Properties - jEdit");
     }
     
 }
