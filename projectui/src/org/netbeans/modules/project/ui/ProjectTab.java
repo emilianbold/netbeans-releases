@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.ActionMap;
+import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -37,6 +38,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeModel;
 import org.openide.ErrorManager;
 import org.openide.actions.PopupAction;
+import org.openide.awt.StatusDisplayer;
 
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -50,6 +52,8 @@ import org.openide.nodes.NodeOp;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.*;
 
@@ -272,6 +276,46 @@ public class ProjectTab extends TopComponent
     
     public boolean selectNode( Object object ) {
         return selectNode (object, true);
+    }
+    
+    // Called from the SelectNodeAction
+    
+    private final RequestProcessor RP = new RequestProcessor();
+    
+    public void selectNodeAsync( final Object object ) {
+        
+        setCursor( Utilities.createProgressCursor( this ) );
+        open();
+        requestActive();
+        
+        // Do it in different thread than AWT
+        RP.post( new Runnable() {
+            public void run() {
+                ProjectsRootNode root = (ProjectsRootNode)manager.getRootContext();
+                final Node selectedNode = root.findNode( object );                
+                // Back to AWT
+                SwingUtilities.invokeLater( new Runnable() {
+                    public void run() {
+                        if ( selectedNode != null ) {
+                            try {
+                                manager.setSelectedNodes( new Node[] { selectedNode } );
+                                btv.scrollToNode(selectedNode);
+                                StatusDisplayer.getDefault().setStatusText( "" ); // NOI18N
+                            }
+                            catch ( PropertyVetoException e ) {
+                                // Bad day node found but can't be selected
+                            }
+                        }
+                        else {
+                            StatusDisplayer.getDefault().setStatusText( 
+                                NbBundle.getMessage( ProjectTab.class, "MSG_NodeNotFound" ) ); // NOI18N
+                        }
+                        setCursor( null );        
+                    }
+                } );
+            }
+        } );
+         
     }
     
     public boolean selectNode( Object object, boolean requestFocus ) {

@@ -18,8 +18,10 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
@@ -76,13 +78,13 @@ public class SelectNodeAction extends LookupSensitiveAction {
         refresh( getLookup() );
     }
        
-    protected void actionPerformed( Lookup context ) {        
+    protected void actionPerformed( Lookup context ) {
+        
         FileObject fo = getFileFromLookup( context );
-        if ( fo == null ) {
-            return;
+        if ( fo != null ) {
+            ProjectTab pt  = ProjectTab.findDefault( findIn );      
+            pt.selectNodeAsync( fo );
         }
-        ProjectTab pt  = ProjectTab.findDefault( findIn );
-        pt.selectNode( fo );        
     }
     
     protected void refresh( Lookup context ) {        
