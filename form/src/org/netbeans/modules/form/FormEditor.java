@@ -34,7 +34,6 @@ import org.openide.nodes.*;
 import org.openide.util.*;
 import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
-import org.netbeans.beaninfo.editors.TableModelEditor;
 
 import org.netbeans.modules.form.layoutsupport.*;
 
