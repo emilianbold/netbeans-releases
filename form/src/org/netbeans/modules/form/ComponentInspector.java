@@ -94,6 +94,9 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         setIcon(Utilities.loadImage(iconURL));
         setName(formBundle.getString("CTL_InspectorTitle"));
 
+        // Force winsys to not show tab when this comp is alone
+        putClientProperty("TabPolicy", "HideWhenAlone");
+        
         manager.addPropertyChangeListener(new NodeSelectedListener());
     }
 
