@@ -40,13 +40,14 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
     /** Overrides superclass method. */
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
-            PropertyDescriptor genFieldPD =    new PropertyDescriptor(I18nOptions.PROP_GENERATE_FIELD, I18nOptions.class);
-            PropertyDescriptor advWizardPD =   new PropertyDescriptor(I18nOptions.PROP_ADVANCED_WIZARD, I18nOptions.class);
-            PropertyDescriptor initCodePD =    new PropertyDescriptor(I18nOptions.PROP_INIT_JAVA_CODE, I18nOptions.class);
-            PropertyDescriptor replaceCodePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_JAVA_CODE, I18nOptions.class);
-            PropertyDescriptor regExpPD =      new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
-            PropertyDescriptor i18nRegExpPD =  new PropertyDescriptor(I18nOptions.PROP_I18N_REGULAR_EXPRESSION, I18nOptions.class);
-            PropertyDescriptor lastResPD =     new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE, I18nOptions.class);
+            PropertyDescriptor genFieldPD     = new PropertyDescriptor(I18nOptions.PROP_GENERATE_FIELD, I18nOptions.class);
+            PropertyDescriptor advWizardPD    = new PropertyDescriptor(I18nOptions.PROP_ADVANCED_WIZARD, I18nOptions.class);
+            PropertyDescriptor initCodePD     = new PropertyDescriptor(I18nOptions.PROP_INIT_JAVA_CODE, I18nOptions.class);
+            PropertyDescriptor replaceCodePD  = new PropertyDescriptor(I18nOptions.PROP_REPLACE_JAVA_CODE, I18nOptions.class);
+            PropertyDescriptor regExpPD       = new PropertyDescriptor(I18nOptions.PROP_REGULAR_EXPRESSION, I18nOptions.class);
+            PropertyDescriptor i18nRegExpPD   = new PropertyDescriptor(I18nOptions.PROP_I18N_REGULAR_EXPRESSION, I18nOptions.class);
+            PropertyDescriptor replaceValuePD = new PropertyDescriptor(I18nOptions.PROP_REPLACE_RESOURCE_VALUE, I18nOptions.class);
+            PropertyDescriptor lastResPD      = new PropertyDescriptor(I18nOptions.PROP_LAST_RESOURCE, I18nOptions.class);
 
             // Set expert flags.
             initCodePD.setExpert(true);
@@ -63,6 +64,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             initCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_InitCodeFormat"));
             replaceCodePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceCodeFormat"));
             regExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_RegularExpression"));
+            replaceValuePD.setDisplayName(I18nUtil.getBundle().getString("TXT_ReplaceResourceValue"));
             i18nRegExpPD.setDisplayName(I18nUtil.getBundle().getString("TXT_I18nRegularExpression"));
             
             // Set property editors.
@@ -72,7 +74,7 @@ public class I18nOptionsBeanInfo extends SimpleBeanInfo {
             i18nRegExpPD.setPropertyEditorClass(HelpStringCustomEditor.I18nRegExpEditor.class);
             
             return new PropertyDescriptor[] {
-                genFieldPD, advWizardPD, initCodePD, replaceCodePD, regExpPD, i18nRegExpPD, lastResPD
+                genFieldPD, advWizardPD, initCodePD, replaceCodePD, regExpPD, i18nRegExpPD, replaceValuePD, lastResPD
             };
         } catch(IntrospectionException ie) {
             return null;

@@ -33,25 +33,38 @@ public class I18nOptions extends SystemOption {
     /** Generated serial version UID.  */
     static final long serialVersionUID = -1045171977263973656L;
 
-    /** Property name for generate field. */
+    /** Property name for generate field. 
+     * Sets default value whether should be generated resource bundle field in java sources. */
     public static final String PROP_GENERATE_FIELD = "generateField"; // NOI18N
 
-    /** Property name for advanced wizard. */
+    /** Property name for advanced wizard. 
+     * Indicates wheter I18N Wizard has to show panel with genaration field values for java sources. */
     public static final String PROP_ADVANCED_WIZARD = "advancedWizard"; // NOI18N
     
-    /** Property name for init java code. */
+    /** Property name for init java code.
+     * Format for code which initializes generated resource bundle field in java source. */
     public static final String PROP_INIT_JAVA_CODE = "initJavaCode"; // NOI18N
     
-    /** Property name for replacing java code. */
+    /** Property name for replacing java code.
+     * Format for actual i18n-ized code which replaces found non-i18n-ized hardcoded string. */
     public static final String PROP_REPLACE_JAVA_CODE = "replaceJavaCode"; // NOI18N
     
-    /** Property name for regular expression for finding non-i18n strings. */
+    /** Property name for regular expression for finding non-i18n strings.
+     * Regular expression format which is used for deciding whether found hardcoded string is non-i18n-ized. 
+     * If line with found hardcoded string doesn't satisfy the expression it's non-i18n-ized. */
     public static final String PROP_REGULAR_EXPRESSION = "regularExpression"; // NOI18N
 
-    /** Property name for regular expression for finding i18n strings. */
+    /** Property name for regular expression for finding i18n strings.
+     * Regular expression format which is used for deciding whether found hardcoded string is i18n-ized. 
+     * If line with found hardcoded string satisfies the expression it's i18n-ized. */
     public static final String PROP_I18N_REGULAR_EXPRESSION = "i18nRegularExpression"; // NOI18N
+
+    /** Property name for replace rseource value. 
+     * Indicates wheter values in resources for existing keys has to be replacesed or kept the old ones. */
+    public static final String PROP_REPLACE_RESOURCE_VALUE = "replaceResourceValue"; // NOI18N
     
-    /** Property name for last used resource data object. */
+    /** Property name for last used resource data object.
+     * Hidden property which serializes last resource data object used by i18n module. */
     public static final String PROP_LAST_RESOURCE = "lastResource"; // NOI18N
 
     
@@ -175,7 +188,21 @@ public class I18nOptions extends SystemOption {
         // Stores in class-wide state and fires property changes if needed:
         putProperty(PROP_I18N_REGULAR_EXPRESSION, regExp, true);
     }    
-    
+
+    /** Getter for replace resource value property. */
+    public boolean isReplaceResourceValue() {
+        // Lazy init.
+        if(getProperty(PROP_REPLACE_RESOURCE_VALUE) == null)
+            putProperty(PROP_REPLACE_RESOURCE_VALUE, Boolean.FALSE, true);
+        
+        return ((Boolean)getProperty(PROP_REPLACE_RESOURCE_VALUE)).booleanValue();
+    }
+
+    /** Setter for replacve resource value property. */
+    public void setReplaceResourceValue(boolean replaceResourceValue) {
+        // Stores in class-wide state and fires property changes if needed:
+        putProperty(PROP_REPLACE_RESOURCE_VALUE, new Boolean(replaceResourceValue), true);
+    }
     
     /** Getter for last resource property. */
     public DataObject getLastResource() {
