@@ -66,8 +66,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
             this.addURLButton.setEnabled(enabled);
         }
         this.removeButton.setEnabled(enabled && content.getSelectedIndex()!=-1);
-        this.downButton.setEnabled(enabled && content.getSelectedIndex()!=-1);
-        this.upButton.setEnabled(enabled && content.getSelectedIndex()!=-1);
+        this.downButton.setEnabled(enabled && content.getSelectedIndex()!=-1 && content.getSelectedIndex()!=model.getSize()-1);
+        this.upButton.setEnabled(enabled && content.getSelectedIndex()>0);
     }
 
 
@@ -252,7 +252,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void downResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downResource
         int index = this.content.getSelectedIndex();
-        if (index < 0) {
+        if (index < 0 || content.getSelectedIndex()>=model.getSize()-1) {
             return;
         }
         this.model.moveDown(index);
@@ -261,7 +261,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void upResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upResource
         int index = this.content.getSelectedIndex();
-        if (index < 0) {
+        if (index <= 0) {
             return;
         }
         this.model.moveUp(index);
