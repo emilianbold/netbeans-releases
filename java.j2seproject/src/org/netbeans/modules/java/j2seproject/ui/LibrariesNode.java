@@ -15,6 +15,7 @@ package org.netbeans.modules.java.j2seproject.ui;
 
 
 import java.awt.Dialog;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
@@ -84,7 +85,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser;
  */
 final class LibrariesNode extends AbstractNode {
 
-    private static final String ICON = "org/netbeans/modules/java/j2seproject/ui/resources/libraries";    //NOI18N
+    private static final Image ICON_BADGE = Utilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/libraries-badge.png");    //NOI18N
     static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
@@ -113,7 +114,6 @@ final class LibrariesNode extends AbstractNode {
         super (new LibrariesChildren (eval, helper, refHelper, classPathProperty, classPathIgnoreRef, platformProperty));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
-        this.setIconBase(ICON);
     }
 
     public String getDisplayName () {
@@ -123,6 +123,14 @@ final class LibrariesNode extends AbstractNode {
     public String getName () {
         return this.getDisplayName();
     }    
+    
+    public Image getIcon( int type ) {        
+        return computeIcon( false, type );
+    }
+        
+    public Image getOpenedIcon( int type ) {
+        return computeIcon( true, type );
+    }
 
     public Action[] getActions(boolean context) {        
         return this.librariesNodeActions;
@@ -162,6 +170,13 @@ final class LibrariesNode extends AbstractNode {
         else {
             return folderIconCache;
         }
+    }
+    
+    private Image computeIcon( boolean opened, int type ) {        
+        Icon icon = getFolderIcon(opened);
+        Image image = ((ImageIcon)icon).getImage();
+        image = Utilities.mergeImages(image, ICON_BADGE, 7, 7 );
+        return image;        
     }
 
     //Static inner classes
