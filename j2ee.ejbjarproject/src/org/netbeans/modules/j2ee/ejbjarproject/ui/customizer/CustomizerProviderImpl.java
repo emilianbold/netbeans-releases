@@ -249,14 +249,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         if(servicesSettings != null && servicesSettings.size() > 0) {
             panels.put( services, new CustomizerWSServiceHost( uiProperties, servicesSettings ));
         } else {
-            panels.put( services, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
-                "LBL_CustomizeWsServiceHost_NoWebServices")));
+            panels.put( services, new NoWebServicesPanel());
         }
         if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
             panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
         } else {
-            panels.put( clients, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
-                "LBL_CustomizeWsServiceClientHost_NoWebServiceClients")));
+            panels.put( clients, new NoWebServiceClientsPanel());
         }
         
         panelProvider = new PanelProvider( panels );
@@ -340,6 +338,32 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             gridBagConstraints.weighty = 1.0;
             
             add(label, gridBagConstraints);
+        }
+    }
+    
+    private abstract class LabelPanelWithHelp extends LabelPanel implements HelpCtx.Provider {
+        LabelPanelWithHelp(String text) {
+            super(text);
+        }
+    }
+    
+    private class NoWebServicesPanel extends LabelPanelWithHelp {
+        NoWebServicesPanel() {
+            super(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizeWsServiceHost_NoWebServices"));
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(CustomizerWSServiceHost.class.getName() + "Disabled"); // NOI18N
+        }
+    }
+    
+    private class NoWebServiceClientsPanel extends LabelPanelWithHelp {
+        NoWebServiceClientsPanel() {
+            super(NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_CustomizeWsServiceClientHost_NoWebServiceClients"));
+        }
+        
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(CustomizerWSClientHost.class.getName() + "Disabled"); // NOI18N
         }
     }
 }
