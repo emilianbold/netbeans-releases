@@ -36,6 +36,7 @@ public class NbMerge extends Task {
     private Vector modules = new Vector (); // Vector<String>
     private String targetprefix = "all-";    
     private List topdirs = new ArrayList (); // List<File>
+    private List suppress = new LinkedList (); // List<Suppress>
     
     /** Target directory to unpack to (top of IDE installation). */
     public void setDest (File f) {
@@ -82,6 +83,37 @@ public class NbMerge extends Task {
         return new Topdir ();
     }
 
+    /** Locale to suppress. */
+    public class Suppress {
+        // [PENDING] also support branding here
+        String locale;
+        String iftest;
+        String unlesstest;
+        /** Name of the locale, e.g. <samp>ja</samp>. */
+        public void setLocale (String l) {
+            locale = l;
+        }
+        /** Property which if set will enable the suppression. */
+        public void setIf (String p) {
+            iftest = p;
+        }
+        /** Property which if set will disable the suppression. */
+        public void setUnless (String p) {
+            unlesstest = p;
+        }
+    }
+    /** Add a locale to suppress.
+     * Files matching this locale suffix will not be merged in.
+     * E.g. for the locale <samp>ja</samp>, this will exclude
+     * all files and directories ending in <samp>_ja</samp> as well
+     * as files ending in <samp>_ja.</samp> plus some extension.
+     */
+    public Suppress createSuppress () {
+        Suppress s = new Suppress ();
+        suppress.add (s);
+        return s;
+    }
+
     public void execute () throws BuildException {
         if (topdirs.isEmpty ()) {
             throw new BuildException ("You must set at least one topdir attribute", location);
@@ -107,6 +139,19 @@ public class NbMerge extends Task {
         delete.init ();
         delete.setLocation (location);
         delete.execute ();
+
+        List suppressedlocales = new LinkedList (); // List<String>
+        Iterator it = suppress.iterator ();
+        while (it.hasNext ()) {
+            Suppress s = (Suppress) it.next ();
+            if (s.iftest != null && project.getProperty (s.iftest) == null) {
+                continue;
+            } else if (s.unlesstest != null && project.getProperty (s.unlesstest) != null) {
+                continue;
+            }
+            log ("Suppressing locale: " + s.locale);
+            suppressedlocales.add (s.locale);
+        }
         
         for (int j = 0; j < topdirs.size (); j++) {
             File topdir = (File) topdirs.get (j);
@@ -120,6 +165,13 @@ public class NbMerge extends Task {
                 Copy copy = (Copy) project.createTask ("copy");
                 FileSet fs = new FileSet ();
                 fs.setDir (netbeans);
+                it = suppressedlocales.iterator ();
+                while (it.hasNext ()) {
+                    String locale = (String) it.next ();
+                    fs.createExclude ().setName ("**/*_" + locale);
+                    fs.createExclude ().setName ("**/*_" + locale + ".*");
+                    fs.createExclude ().setName ("**/*_" + locale + "/");
+                }
                 copy.addFileset (fs);
                 copy.setTodir (dest);
                 copy.setIncludeEmptyDirs (true);

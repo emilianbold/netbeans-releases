@@ -313,7 +313,9 @@ workspaceswitcher
 
   <target name="firststart-merge" depends="init,build-messaging">
     <mkdir dir="netbeans"/>
-    <nbmerge dest="netbeans" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-"/>
+    <nbmerge dest="netbeans" topdir=".." modules="openide,openidex,core,${modules}" targetprefix="all-">
+      <suppress locale="ja" unless="netbeans.japanese"/>
+    </nbmerge>
     <chmod perm="ugo+x">
       <fileset dir="netbeans/bin">
         <include name="*.sh"/>
