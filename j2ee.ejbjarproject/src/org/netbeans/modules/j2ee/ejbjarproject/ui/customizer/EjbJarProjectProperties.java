@@ -747,7 +747,8 @@ public class EjbJarProjectProperties {
                         if ( raw == null ) {
                             // New file
                             File file = (File)vcpi.getObject();
-                            String reference = refHelper.createForeignFileReference(file, JavaProjectConstants.ARTIFACT_TYPE_JAR);
+                            // pass null as expected artifact type to always get file reference
+                            String reference = refHelper.createForeignFileReference(file, null);
                             library_tag_value = reference;
                         }
                         else {
