@@ -466,6 +466,7 @@ public class NonGui extends NbTopManager implements Runnable {
         // this indirectly sets system properties for proxy servers with values
         // taken from IDESettings
         SharedClassObject.findObject(IDESettings.class, true);
+        StartLog.logProgress ("IDE settings loaded"); // NOI18N
          
         // -----------------------------------------------------------------------------------------------------
         // Upgrade
