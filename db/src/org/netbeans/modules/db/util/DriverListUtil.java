@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -33,13 +33,13 @@ public class DriverListUtil {
     }
 
     static {
-        names.add("IBM DB2 (local)");
-        drivers.add("COM.ibm.db2.jdbc.app.DB2Driver");
-        urls.add("jdbc:db2:<DB>");
-        
         names.add("IBM DB2 (net)");
         drivers.add("COM.ibm.db2.jdbc.net.DB2Driver");
         urls.add("jdbc:db2://<HOST>:<PORT>/<DB>");
+
+        names.add("IBM DB2 (local)");
+        drivers.add("COM.ibm.db2.jdbc.app.DB2Driver");
+        urls.add("jdbc:db2:<DB>");
         
         names.add("JDBC-ODBC Bridge");
         drivers.add("sun.jdbc.odbc.JdbcOdbcDriver");
@@ -53,6 +53,10 @@ public class DriverListUtil {
         drivers.add("oracle.jdbc.driver.OracleDriver");
         urls.add("jdbc:oracle:thin:@<HOST>:<PORT>:<SID>");
         
+        names.add("PointBase"); //Network Server
+        drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
+        urls.add("jdbc:pointbase://<HOST>[:<PORT>]/<DB>");
+
         names.add("PointBase"); //Embedded Server
         drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
         urls.add("jdbc:pointbase://embedded[:<PORT>]/<DB>");
@@ -60,10 +64,6 @@ public class DriverListUtil {
         names.add("PointBase"); //Mobile Edition
         drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
         urls.add("jdbc:pointbase:<DB>");
-        
-        names.add("PointBase"); //Network Server
-        drivers.add("com.pointbase.jdbc.jdbcUniversalDriver");
-        urls.add("jdbc:pointbase://<HOST>[:<PORT>]/<DB>");
         
         names.add("Cloudscape");
         drivers.add("COM.cloudscape.core.JDBCDriver");
@@ -105,10 +105,6 @@ public class DriverListUtil {
         drivers.add("interbase.interclient.Driver");
         urls.add("jdbc:interbase://<HOST>/<DB>");
         
-        names.add("HSQLDB"); //(in-memory)
-        drivers.add("org.hsqldb.jdbcDriver");
-        urls.add("jdbc:hsqldb:.");
-        
         names.add("HSQLDB"); //(server)
         drivers.add("org.hsqldb.jdbcDriver");
         urls.add("jdbc:hsqldb:hsql://<HOST>[:<PORT>]");
@@ -120,6 +116,10 @@ public class DriverListUtil {
         names.add("HSQLDB"); //(webserver)
         drivers.add("org.hsqldb.jdbcDriver");
         urls.add("jdbc:hsqldb:http://<HOST>[:<PORT>]");
+        
+        names.add("HSQLDB"); //(in-memory)
+        drivers.add("org.hsqldb.jdbcDriver");
+        urls.add("jdbc:hsqldb:.");
         
         names.add("Hypersonic SQL (v1.2 and earlier)");
         drivers.add("hSql.hDriver");
