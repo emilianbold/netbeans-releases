@@ -320,24 +320,6 @@ public class NonGui extends NbTopManager implements Runnable {
     java.beans.PropertyEditorManager.registerEditor (org.openide.src.Identifier[].class, org.openide.explorer.propertysheet.editors.IdentifierArrayEditor.class);
 
 // -----------------------------------------------------------------------------------------------------
-// 2. Parse command-line arguments
-
-    // Set up module-versioning properties, which logger prints.
-    // IMPORTANT: must use an unlocalized resource here.
-    java.util.Properties versions = new java.util.Properties ();
-    try {
-      versions.load (Main.class.getClassLoader ().getResourceAsStream ("org/netbeans/core/Versioning.properties")); // NOI18N
-    } catch (java.io.IOException ioe) {
-      ioe.printStackTrace ();
-    }
-    System.setProperty ("org.openide.specification.version", versions.getProperty ("VERS_Specification_Version")); // NOI18N
-    System.setProperty ("org.openide.version", versions.getProperty ("VERS_Implementation_Version")); // NOI18N
-    System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
-    // For TopLogging and MainWindow only:
-    System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
-
-
-// -----------------------------------------------------------------------------------------------------
 // 5. Start logging
 
     // do logging

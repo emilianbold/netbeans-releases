@@ -84,23 +84,6 @@ public class Plain extends NbTopManager implements Runnable {
   /** Initializaton of modules if user directory provided.
   */
   public void run() {
-    
-    // set proper versioning
-    
-    java.util.Properties versions = new java.util.Properties ();
-    try {
-      versions.load (Main.class.getClassLoader ().getResourceAsStream ("org/netbeans/core/Versioning.properties")); // NOI18N
-    } catch (java.io.IOException ioe) {
-      ioe.printStackTrace ();
-    }
-    System.setProperty ("org.openide.specification.version", versions.getProperty ("VERS_Specification_Version")); // NOI18N
-    System.setProperty ("org.openide.version", versions.getProperty ("VERS_Implementation_Version")); // NOI18N
-    System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
-
-    // set NbBundle recognizer
-    org.openide.util.NbBundle.setClassLoaderFinder(new ClassLoaderFinder());
-    
-    
     String userDir = System.getProperty("modules.dir");
     if (userDir != null) {
       java.io.File f = new java.io.File (userDir);
@@ -111,6 +94,7 @@ public class Plain extends NbTopManager implements Runnable {
     }
   }
   
+/* JST: not needed anymore.
   static class ClassLoaderFinder extends SecurityManager implements org.openide.util.NbBundle.ClassLoaderFinder {
 
     public ClassLoader find() {
@@ -118,6 +102,8 @@ public class Plain extends NbTopManager implements Runnable {
       return classes[Math.min(4, classes.length - 1)].getClassLoader();
     }
   }
+*/
+
 }
 
 /* 

@@ -130,6 +130,23 @@ public abstract class NbTopManager extends TopManager {
   /** the error level code for restarting windows */
   private static final int RESTART_EXIT_CODE = 66;
 
+  /** initializes properties about builds etc. */
+  static {
+    // Set up module-versioning properties, which logger prints.
+    // IMPORTANT: must use an unlocalized resource here.
+    java.util.Properties versions = new java.util.Properties ();
+    try {
+      versions.load (Main.class.getClassLoader ().getResourceAsStream ("org/netbeans/core/Versioning.properties")); // NOI18N
+    } catch (java.io.IOException ioe) {
+      ioe.printStackTrace ();
+    }
+    System.setProperty ("org.openide.specification.version", versions.getProperty ("VERS_Specification_Version")); // NOI18N
+    System.setProperty ("org.openide.version", versions.getProperty ("VERS_Implementation_Version")); // NOI18N
+    System.setProperty ("org.openide.major.version", versions.getProperty ("VERS_Name")); // NOI18N
+    // For TopLogging and MainWindow only:
+    System.setProperty ("netbeans.buildnumber", versions.getProperty ("VERS_Build_Number")); // NOI18N
+  }
+
   /** Constructs a new manager.
   */
   public NbTopManager() {
