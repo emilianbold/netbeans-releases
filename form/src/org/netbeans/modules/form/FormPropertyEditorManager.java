@@ -161,7 +161,11 @@ final public class FormPropertyEditorManager extends Object
             }
         }
 
-        // 5th - add the RADConnectionPropertyEditor for all values
+        // 5th - experimental: add ComponentChooserEditor for Components
+        if (java.awt.Component.class.isAssignableFrom(type))
+            editorsList.add(ComponentChooserEditor.class);
+
+        // 6th - add the RADConnectionPropertyEditor for all values
         editorsList.add(RADConnectionPropertyEditor.class);
 
         edClasses = new Class[editorsList.size()];
@@ -176,12 +180,17 @@ final public class FormPropertyEditorManager extends Object
         ArrayList instancesList = new ArrayList(edClasses.length);
 
         for (int i = 0; i < edClasses.length; i++) {
-            if (RADConnectionPropertyEditor.class.isAssignableFrom(edClasses[i])) {
+            Class edType = edClasses[i];
+            if (RADConnectionPropertyEditor.class.isAssignableFrom(edType)) {
                 instancesList.add(new RADConnectionPropertyEditor(propertyType));
             }
-            else if (PropertyEditor.class.isAssignableFrom(edClasses[i])) {
+            else if (ComponentChooserEditor.class.isAssignableFrom(edType)) {
+                instancesList.add(new ComponentChooserEditor(
+                                        new Class[] { propertyType }));
+            }
+            else if (PropertyEditor.class.isAssignableFrom(edType)) {
                 try {
-                    instancesList.add(edClasses[i].newInstance());
+                    instancesList.add(edType.newInstance());
                 }
                 catch (Exception e) { // ignore
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N

@@ -42,7 +42,8 @@ import org.netbeans.modules.form.codestructure.*;
 
 public class GandalfPersistenceManager extends PersistenceManager {
     static final String NB32_VERSION = "1.0"; // NOI18N
-    static final String CURRENT_VERSION = "1.1"; // NOI18N
+    static final String NB33_VERSION = "1.1"; // NOI18N
+    static final String NB34_VERSION = "1.2"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -66,6 +67,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String XML_SYNTHETIC_PROPERTIES = "SyntheticProperties"; // NOI18N
     static final String XML_AUX_VALUES = "AuxValues"; // NOI18N
     static final String XML_AUX_VALUE = "AuxValue"; // NOI18N
+    static final String XML_A11Y_PROPERTIES = "AccessibilityProperties"; // NOI18N
     static final String XML_SERIALIZED_PROPERTY_VALUE = "SerializedValue"; // NOI18N
     static final String XML_CODE_EXPRESSION = "CodeExpression"; // NOI18N
     static final String XML_CODE_VARIABLE = "CodeVariable"; // NOI18N
@@ -76,8 +78,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
     static final String XML_ORIGIN_META_OBJECT = "ExpressionProvider"; // NOI18N
     static final String XML_STATEMENT_META_OBJECT = "StatementProvider"; // NOI18N
     static final String XML_CODE_CONSTRUCTOR = "CodeConstructor"; // NOI18N
-    static final String XML_CODE_METHOD = "CodeMethod";
-    static final String XML_CODE_FIELD = "CodeField";
+    static final String XML_CODE_METHOD = "CodeMethod"; // NOI18N
+    static final String XML_CODE_FIELD = "CodeField"; // NOI18N
 
     // XML attributes names
     static final String ATTR_FORM_VERSION = "version"; // NOI18N
@@ -480,6 +482,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         try {
             newComponent.initialize(formModel);
             newComponent.initInstance(compClass);
+            newComponent.setInModel(true);
             newComponent.setName(compName);
         }
         catch (Exception ex) {
@@ -526,7 +529,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
 
             String nodeName = childNode.getNodeName();
 
-            if (XML_PROPERTIES.equals(nodeName)) {
+            if (XML_PROPERTIES.equals(nodeName)
+                || XML_A11Y_PROPERTIES.equals(nodeName))
+            {
                 loadComponentProperties(childNode, component);
             }
             else if (XML_EVENTS.equals(nodeName)) {
@@ -2287,7 +2292,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             saveAnyComponent(topComp, buf2, ONE_INDENT, false);
 
             if (!(topComp instanceof RADVisualContainer))
-                raiseFormatVersion(CURRENT_VERSION);
+                raiseFormatVersion(NB33_VERSION);
         }
         addElementClose(buf2, XML_FORM);
 
@@ -2300,7 +2305,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
         // (this is done in the end because the required form version is
         // not determined until all data is saved)
         if (compatFormInfo == null) {
-            raiseFormatVersion(CURRENT_VERSION);
+            raiseFormatVersion(NB33_VERSION);
 
             addElementOpenAttr(buf1, XML_FORM,
                 new String[] { ATTR_FORM_VERSION },
@@ -2417,7 +2422,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
             addElementOpen(buf, XML_SUB_COMPONENTS);
             for (int i = 0; i < children.length; i++) {
                 if (children[i] instanceof RADMenuItemComponent)
-                    raiseFormatVersion(CURRENT_VERSION);
+                    raiseFormatVersion(NB33_VERSION);
 
                 saveAnyComponent(children[i], buf, indent+ONE_INDENT, true);
             }
@@ -2524,7 +2529,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private void saveLayoutCode(LayoutSupportManager layoutSupport,
                                 StringBuffer buf, String indent)
     {
-        raiseFormatVersion(CURRENT_VERSION);
+        raiseFormatVersion(NB33_VERSION);
 
         StringBuffer buf2 = new StringBuffer();
         String subIndent = indent + ONE_INDENT;
@@ -2804,22 +2809,16 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (!JavaCodeGenerator.VALUE_SERIALIZE.equals(
                 component.getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION)))
         {   // save properties only if the component is not to be serialized
-            boolean doSaveProps = false;
-            RADProperty[] props = component.getAllBeanProperties();
-            for (int i = 0; i < props.length; i++) {
-                if (props[i].isChanged()
-                    || props[i].getPreCode() != null
-                    || props[i].getPostCode() != null)
-                {
-                    doSaveProps = true;
-                    break;
-                }
-            }
+            saveProperties(component.getAllBeanProperties(),
+                           XML_PROPERTIES, buf, indent);
 
-            if (doSaveProps) {
-                buf.append(indent); addElementOpen(buf, XML_PROPERTIES);
-                saveProperties(component, buf, indent + ONE_INDENT);
-                buf.append(indent); addElementClose(buf, XML_PROPERTIES);
+            if (component instanceof RADVisualComponent) {
+                // try to save accessibility properties
+                FormProperty[] accProps = ((RADVisualComponent)component)
+                                            .getAccessibilityProperties();
+                if (saveProperties(accProps,
+                                   XML_A11Y_PROPERTIES, buf, indent))
+                    raiseFormatVersion(NB34_VERSION);
             }
         }
 
@@ -2854,13 +2853,31 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
     }
 
-    private void saveProperties(RADComponent component, StringBuffer buf, String indent) {
-        RADProperty[] props = component.getAllBeanProperties();
-        for (int i = 0; i < props.length; i++) {
-            RADProperty prop = (RADProperty) props[i];
+    private boolean saveProperties(FormProperty[] props,
+                                   String blockName,
+                                   StringBuffer buf,
+                                   String indent)
+    {
+        int i=0;
+        do {
+            if (i >= props.length)
+                return false; // nothing saved
+            FormProperty prop = props[i];
+            if (prop.isChanged() || prop.getPreCode() != null
+                                 || prop.getPostCode() != null)
+                break;
+            i++;
+        }
+        while (true);
+
+        buf.append(indent);
+        addElementOpen(buf, blockName);
+
+        for (i=0; i < props.length; i++) {
+            FormProperty prop = props[i];
             if (!prop.isChanged()) {
                 if (prop.getPreCode() != null || prop.getPostCode() != null) {
-                    buf.append(indent);
+                    buf.append(indent + ONE_INDENT);
                     // in this case save only the pre/post code
                     addLeafElementOpenAttr(
                         buf,
@@ -2879,8 +2896,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 continue; // not changed, so do not save value
             }
 
-            saveProperty(prop, prop.getName(), buf, indent);
+            saveProperty(prop, prop.getName(), buf, indent + ONE_INDENT);
         }
+
+        buf.append(indent);
+        addElementClose(buf, blockName);
+
+        return true;
     }
 
     private boolean saveProperty(FormProperty property,
@@ -4741,12 +4763,17 @@ public class GandalfPersistenceManager extends PersistenceManager {
     // --------------
 
     private void raiseFormatVersion(String ver) {
-        if (NB32_VERSION.equals(formatVersion) && CURRENT_VERSION.equals(ver))
-            formatVersion = CURRENT_VERSION;
+        if (ver != formatVersion
+            && (formatVersion == NB32_VERSION
+                || (formatVersion == NB33_VERSION
+                    && ver == NB34_VERSION)))
+            formatVersion = ver;
     }
 
     private boolean isSupportedFormatVersion(String ver) {
-        return NB32_VERSION.equals(ver) || CURRENT_VERSION.equals(ver);
+        return NB32_VERSION.equals(ver)
+               || NB33_VERSION.equals(ver)
+               || NB34_VERSION.equals(ver);
     }
 
     // --------------

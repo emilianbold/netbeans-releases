@@ -766,6 +766,9 @@ class JavaCodeGenerator extends CodeGenerator {
 
         generateComponentInit(comp, initCodeWriter);
         generateComponentEvents(comp, initCodeWriter);
+        if (comp.getParentComponent() == null
+                && comp instanceof RADVisualComponent)
+            generateAccessibilityCode((RADVisualComponent)comp, initCodeWriter);
 
         if (comp instanceof ComponentContainer) {
             RADComponent[] children =((ComponentContainer)comp).getSubBeans();
@@ -786,6 +789,10 @@ class JavaCodeGenerator extends CodeGenerator {
                                         initCodeWriter);
                 } // [PENDING - adding to non-visual containers]
 
+                if (subcomp instanceof RADVisualComponent)
+                    generateAccessibilityCode((RADVisualComponent)subcomp,
+                                              initCodeWriter);
+
                 initCodeWriter.write("\n"); // NOI18N
             }
 
@@ -798,7 +805,7 @@ class JavaCodeGenerator extends CodeGenerator {
             {
                 for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                     RADProperty prop = (RADProperty) it.next();
-                    generatePropertySetter(comp, prop, initCodeWriter);
+                    generatePropertySetter(prop, comp, initCodeWriter);
                 }
                 initCodeWriter.write("\n"); // NOI18N
             }
@@ -982,9 +989,9 @@ class JavaCodeGenerator extends CodeGenerator {
         if (!comp.hasHiddenState() 
                 && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
         {   // not serialized
-            RADProperty[] props = comp.getAllBeanProperties();
+            FormProperty[] props = comp.getAllBeanProperties();
             for (int i = 0; i < props.length; i++) {
-                RADProperty prop = props[i];
+                FormProperty prop = props[i];
                 if ((prop.isChanged()
                      && (constructorProperties == null
                          || constructorProperties.get(prop) == null))
@@ -993,7 +1000,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 {
                     if (!FormUtils.isContainerContentDependentProperty(
                                     comp.getBeanClass(), prop.getName()))
-                        generatePropertySetter(comp, prop, initCodeWriter);
+                        generatePropertySetter(prop, comp, initCodeWriter);
                     else {
                         // hack for properties that can't be set until all
                         // children are added to the container
@@ -1015,9 +1022,28 @@ class JavaCodeGenerator extends CodeGenerator {
                 }
             }
         }
+
         if ((postCode != null) &&(!postCode.equals(""))) { // NOI18N
             initCodeWriter.write(postCode);
             initCodeWriter.write("\n"); // NOI18N
+        }
+    }
+
+    private void generateAccessibilityCode(RADVisualComponent comp,
+                                           Writer initCodeWriter)
+        throws IOException
+    {
+        Object genType = comp.getAuxValue(AUX_CODE_GENERATION);
+        if (!comp.hasHiddenState() 
+                && (genType == null || VALUE_GENERATE_CODE.equals(genType)))
+        {   // not serialized
+            FormProperty[] props = comp.getAccessibilityProperties();
+            for (int i=0; i < props.length; i++) {
+                FormProperty prop = props[i];
+                if (prop.isChanged() || prop.getPreCode() != null
+                                     || prop.getPostCode() != null)
+                    generatePropertySetter(prop, comp, initCodeWriter);
+            }
         }
     }
 
@@ -1059,7 +1085,7 @@ class JavaCodeGenerator extends CodeGenerator {
         {
             for (Iterator it = postProps.iterator(); it.hasNext(); ) {
                 RADProperty prop = (RADProperty) it.next();
-                generatePropertySetter(container, prop, initCodeWriter);
+                generatePropertySetter(prop, container, initCodeWriter);
             }
             initCodeWriter.write("\n"); // NOI18N
         }
@@ -1125,43 +1151,47 @@ class JavaCodeGenerator extends CodeGenerator {
     */
 
     // why is this method synchronized??
-    private synchronized void generatePropertySetter(RADComponent comp,
-                                                     RADProperty prop,
+    private synchronized void generatePropertySetter(FormProperty prop,
+                                                     RADComponent comp,
                                                      Writer initCodeWriter)
-    throws IOException {
+        throws IOException
+    {
         // 1. pre-initialization code
         String preCode = prop.getPreCode();
         if (preCode != null) {
             initCodeWriter.write(preCode);
-            if (!preCode.endsWith("\n")) initCodeWriter.write("\n"); // NOI18N
+            if (!preCode.endsWith("\n"))
+                initCodeWriter.write("\n"); // NOI18N
         }
 
         // 2. property setter code
         if (prop.isChanged()) {
             String javaStr;
-            Method writeMethod;
 
             if ((javaStr = prop.getWholeSetterCode()) != null) {
                 initCodeWriter.write(javaStr);
                 if (!javaStr.endsWith("\n")) // NOI18N
                     initCodeWriter.write("\n"); // NOI18N
             }
-            else if ((javaStr = prop.getJavaInitializationString()) != null
-                      && (writeMethod = prop.getPropertyDescriptor().getWriteMethod()) != null) {
-               // if the setter throws checked exceptions,
-               // we must generate try/catch block around it.
-                Class[] exceptions = writeMethod.getExceptionTypes();
-                if (needTryCode(exceptions)) {
-                    initCodeWriter.write("try {\n"); // NOI18N
-                } else {
-                    exceptions = null;
+            else if ((javaStr = prop.getPartialSetterCode()) != null) {
+                // if the setter throws checked exceptions,
+                // we must generate try/catch block around it.
+                Class[] exceptions = null;
+                if (prop instanceof RADProperty) {
+                    Method writeMethod = ((RADProperty)prop)
+                                    .getPropertyDescriptor().getWriteMethod();
+                    if (writeMethod != null) {
+                        exceptions = writeMethod.getExceptionTypes();
+                        if (needTryCode(exceptions))
+                            initCodeWriter.write("try {\n"); // NOI18N
+                        else
+                            exceptions = null;
+                    }
                 }
 
                 initCodeWriter.write(getVariableGenString(comp));
-                initCodeWriter.write(writeMethod.getName());
-                initCodeWriter.write("("); // NOI18N
                 initCodeWriter.write(javaStr);
-                initCodeWriter.write(");\n"); // NOI18N
+                initCodeWriter.write(";\n"); // NOI18N
 
                 // add the catch code if needed
                 if (exceptions != null)

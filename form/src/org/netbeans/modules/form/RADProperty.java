@@ -185,6 +185,18 @@ public class RADProperty extends FormProperty {
         return null;
     }
 
+    String getPartialSetterCode() {
+        Method writeMethod = desc.getWriteMethod();
+        if (writeMethod == null)
+            return null;
+
+        String str = getJavaInitializationString();
+        if (str == null)
+            return null;
+
+        return writeMethod.getName() + "(" + str + ")"; // NOI18N
+    }
+
     public void setPreCode(String value) {
         if ((preCode == null && value != null)
                 || (preCode != null && !preCode.equals(value))) {

@@ -540,8 +540,8 @@ public abstract class FormProperty extends Node.Property {
     // ------------------------------
     // code generation
 
-    /** Gets the java code initializing the property. It is obtained from
-     * current property editor.
+    /** Gets the java code initializing the property value. It is obtained from
+     * current property editor. Example: "Button 1"
      */
     public String getJavaInitializationString() {
         try {
@@ -573,9 +573,21 @@ public abstract class FormProperty extends Node.Property {
         return null;
     }
 
-    // Property may optionally provide whole java setter code (not only
-    // initialization String).
-    public String getWholeSetterCode() {
+    /** Gets the java code for setting the property value (without the object
+     * on which the property is set, and without semicolon at the end).
+     * This method is optional. Example: setText("Button 1")
+     */
+    // [This method is to be removed in the future.]
+    String getPartialSetterCode() {
+        return null;
+    }
+
+    /** Gets the complete java code for setting the property, including the
+     * semicolon at the end of the line. This method is optional.
+     * Example: jButton1.setText("Button 1");
+     */
+    // [This method is to be removed in the future.]
+    String getWholeSetterCode() {
         return null;
     }
 

@@ -89,6 +89,7 @@ public class FormModel
             topRADComponent = topComp;
             topComp.initialize(this);
             topComp.initInstance(formClass);
+            topComp.setInModel(true);
         }
 
         formBaseClass = formClass;

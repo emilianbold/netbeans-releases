@@ -920,44 +920,17 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
     }
 
     // ------------------------------------
-    // some "hack-classes" for ButtonGroup...
+    // some hacks for ButtonGroup "component" ...
 
     // pseudo-property for buttons - holds ButtonGroup in which button
     // is placed; kind of "reversed" property
     static class ButtonGroupProperty extends RADProperty {
-        ButtonGroupListener listener = null;
-
         ButtonGroupProperty(RADComponent comp) throws IntrospectionException {
-            super(comp, new FakePropertyDescriptor(
-                            "buttonGroup", javax.swing.ButtonGroup.class)); // NOI18N
+            super(comp,
+                  new FakePropertyDescriptor("buttonGroup", // NOI18N
+                                             javax.swing.ButtonGroup.class));
             setAccessType(DETACHED_READ | DETACHED_WRITE);
-            setShortDescription(FormEditor.getFormBundle().getString("HINT_ButtonGroup")); // NOI18N
-        }
-
-        public void setValue(Object value) throws IllegalAccessException,
-                                                  IllegalArgumentException,
-                                                  InvocationTargetException {
-            FormModel formModel = getRADComponent().getFormModel();
-            Object current = propertyValue;
-
-            if (current instanceof RADComponent) {
-                if (value == null)
-                    formModel.removeFormModelListener(listener);
-            }
-            else if (value instanceof RADComponent) {
-                if (listener == null)
-                    listener = new ButtonGroupListener();
-                formModel.addFormModelListener(listener);
-            }
-
-            super.setValue(value);
-        }
-
-        public void restoreDefaultValue() throws IllegalAccessException,
-                                                 InvocationTargetException {
-            if (listener != null)
-                getRADComponent().getFormModel().removeFormModelListener(listener);
-            super.restoreDefaultValue();
+            setShortDescription(FormUtils.getBundleString("HINT_ButtonGroup")); // NOI18N
         }
 
         public boolean supportsDefaultValue() {
@@ -972,28 +945,11 @@ public class RADComponent implements FormDesignValue, java.io.Serializable {
             return new ButtonGroupPropertyEditor();
         }
 
-        public String getWholeSetterCode() {
+        String getWholeSetterCode() {
             String groupName = getJavaInitializationString();
             return groupName != null ?
                 groupName + ".add(" + getRADComponent().getName() + ");" : // NOI18N
                 null;
-        }
-
-        class ButtonGroupListener extends FormModelAdapter {
-            public void componentRemoved(FormModelEvent e) {
-                try {
-                    Object currentGroup = getValue();
-                    RADComponent deletedComp = e.getComponent();
-                    RADComponent thisComp = getRADComponent();
-
-                    if (deletedComp == currentGroup)
-                        setValue(null);
-                    else if (deletedComp == thisComp
-                             || deletedComp.isParentComponent(thisComp))
-                        thisComp.getFormModel().removeFormModelListener(listener);
-                }
-                catch (Exception ex) {} // getValue()/setValue() should not fail
-            }
         }
     }
 
