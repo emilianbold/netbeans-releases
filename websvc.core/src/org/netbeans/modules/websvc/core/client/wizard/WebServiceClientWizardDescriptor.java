@@ -25,6 +25,9 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.templates.support.Templates;
+
 
 /**
  *
@@ -34,6 +37,7 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
     
 	private WizardDescriptor wizardDescriptor;
 	private ClientInfo component = null;
+        private String projectPath;
 	
     public WebServiceClientWizardDescriptor() {
     }
@@ -83,16 +87,35 @@ public class WebServiceClientWizardDescriptor implements WizardDescriptor.Finish
 	
     public boolean isValid()
     { 
-		return component.valid(wizardDescriptor);
+        boolean projectDirValid=true;
+        String illegalChar = null;
+        if (projectPath.indexOf("%")>=0) {
+            projectDirValid=false;
+            illegalChar="%";
+        } else if (projectPath.indexOf("&")>=0) {
+            projectDirValid=false;
+            illegalChar="&";
+        } else if (projectPath.indexOf("?")>=0) {
+            projectDirValid=false;
+            illegalChar="?";
+        }
+        if (!projectDirValid) {
+            wizardDescriptor.putProperty("WizardPanel_errorMessage",NbBundle.getMessage(WebServiceClientWizardDescriptor.class,"MSG_InvalidProjectPath",projectPath,illegalChar));
+            return false;
+            
+        }
+        else return component.valid(wizardDescriptor);
     }
 
 	public void readSettings(Object settings) {
-		wizardDescriptor = (WizardDescriptor) settings;
-		component.read(wizardDescriptor);
+            wizardDescriptor = (WizardDescriptor) settings;
+            component.read(wizardDescriptor);
+            Project project = Templates.getProject(wizardDescriptor);
+            projectPath = project.getProjectDirectory().getPath();
 
-        // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
-        // this name is used in NewFileWizard to modify the title
-        wizardDescriptor.putProperty("NewFileWizard_Title", 
+            // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
+            // this name is used in NewFileWizard to modify the title
+            wizardDescriptor.putProperty("NewFileWizard_Title", 
             NbBundle.getMessage(WebServiceClientWizardDescriptor.class, "LBL_WebServiceClient"));// NOI18N        
 	}
 
