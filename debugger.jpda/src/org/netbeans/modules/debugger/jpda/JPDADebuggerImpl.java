@@ -275,6 +275,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
             // 2) pop obsoleted frames
             JPDAThread t = getCurrentThread ();
+            if (t == null) return;
             CallStackFrame frame = getCurrentCallStackFrame ();
             if (t.getStackDepth () < 2) return;
             try {
