@@ -39,7 +39,6 @@ public class RADConnectionPropertyEditor
                XMLPropertyEditor,
                NamedPropertyEditor
 {
-
     protected PropertyChangeSupport support;
     private Class propertyType;
     private FormModel formModel = null;
@@ -112,23 +111,24 @@ public class RADConnectionPropertyEditor
 
     public String getJavaInitializationString() {
         if (designValue != null) {
-            if (designValue.needsInit) {
+            if (designValue.needsInit)
                 designValue.initialize();
+
+            if (designValue.type == RADConnectionDesignValue.TYPE_VALUE) {
+                if ("java.lang.String".equals(designValue.requiredTypeName)) return "\""+designValue.value+"\""; // NOI18N
+                else if ("long".equals(designValue.requiredTypeName)) return designValue.value+"L"; // NOI18N
+                else if ("float".equals(designValue.requiredTypeName)) return designValue.value+"F"; // NOI18N
+                else if ("double".equals(designValue.requiredTypeName)) return designValue.value+"D"; // NOI18N
+                else return designValue.value;
             }
+            else if (designValue.type == RADConnectionDesignValue.TYPE_CODE)
+                return designValue.userCode;
+            else {
+                if (designValue.radComponent != null
+                        && designValue.radComponent.getCodeExpression() == null)
+                    return null; // invalid component (probably deleted)
 
-            if (designValue.radComponent != null
-                    && designValue.radComponent.getCodeExpression() == null)
-                return null; // invalid component (probably deleted)
-
-            switch (designValue.type) {
-                case RADConnectionDesignValue.TYPE_VALUE:
-                    if ("java.lang.String".equals(designValue.requiredTypeName)) return "\""+designValue.value+"\""; // NOI18N
-                    else if ("long".equals(designValue.requiredTypeName)) return designValue.value+"L"; // NOI18N
-                    else if ("float".equals(designValue.requiredTypeName)) return designValue.value+"F"; // NOI18N
-                    else if ("double".equals(designValue.requiredTypeName)) return designValue.value+"D"; // NOI18N
-                    else return designValue.value;
-                case RADConnectionDesignValue.TYPE_CODE: return designValue.userCode;
-                case RADConnectionDesignValue.TYPE_PROPERTY:
+                if (designValue.type ==  RADConnectionDesignValue.TYPE_PROPERTY) {
                     PropertyDescriptor pd = designValue.getProperty();
                     if (pd == null) return null; // failed to initialize => do not generate code
                     else {
@@ -138,18 +138,21 @@ public class RADConnectionPropertyEditor
                             return designValue.radComponent.getName() + "." + pd.getReadMethod().getName() + "()"; // [FUTURE: Handle indexed properties] // NOI18N
                         }
                     }
-                case RADConnectionDesignValue.TYPE_METHOD:
+                }
+                else if (designValue.type == RADConnectionDesignValue.TYPE_METHOD) {
                     if (designValue.radComponent == formModel.getTopRADComponent()) {
                         return designValue.methodName + "()"; // NOI18N
                     } else {
                         return designValue.radComponent.getName() + "." + designValue.methodName + "()"; // NOI18N
                     }
-                case RADConnectionDesignValue.TYPE_BEAN:
+                }
+                else if (designValue.type ==  RADConnectionDesignValue.TYPE_BEAN) {
                     if (designValue.radComponent == formModel.getTopRADComponent()) {
                         return "this"; // NOI18N
                     } else {
                         return designValue.radComponent.getName();
                     }
+                }
             }
         }
         return null;
@@ -285,24 +288,25 @@ public class RADConnectionPropertyEditor
             if (needsInit)
                 initialize();
 
-            if (radComponent != null && radComponent.getCodeExpression() == null)
-                return FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID"); // NOI18N
+            if (type == TYPE_VALUE)
+                return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
+            else if (type == TYPE_CODE)
+                return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
+            else {
+                if (radComponent != null && radComponent.getCodeExpression() == null)
+                    return FormEditor.getFormBundle().getString("CTL_CONNECTION_INVALID"); // NOI18N
 
-            switch (type) {
-                case TYPE_PROPERTY:
-                    return radComponent == null ? null :
-                           MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
-                case TYPE_METHOD: 
-                    return radComponent == null ? null :
-                           MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
-                case TYPE_VALUE:
-                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_VALUE_CONN"), new Object[] { value });
-                case TYPE_CODE:
-                    return FormEditor.getFormBundle().getString("CTL_CODE_CONN");
-                case TYPE_BEAN:
-                     return radComponent == null ? null :
-                            MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
+                if (radComponent == null)
+                    return null;
+
+                if (type == TYPE_PROPERTY)
+                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_PROPERTY_CONN"), new Object[] { radComponent.getName(), propertyName });
+                else if (type == TYPE_METHOD)
+                    return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_METHOD_CONN"), new Object[] { radComponent.getName(), methodName });
+                else if (type == TYPE_BEAN)
+                     return MessageFormat.format(FormEditor.getFormBundle().getString("FMT_BEAN_CONN"), new Object[] { radComponent.getName() });
             }
+
             throw new IllegalStateException();
         }
 
