@@ -603,7 +603,7 @@ ToDo:
 
   <!-- build javadoc for selected modules -->
   <target name="build-javadoc" depends="init">
-      <for-each startdir=".." target="javadoc" locations="${fixedmodules},${modules}"/>
+      <for-each startdir=".." target="javadoc" locations="${modules}"/>
   </target>
 
   <target name="build-messaging" depends="init">
