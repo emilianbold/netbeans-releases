@@ -785,6 +785,7 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
                 <pathelement location="build/test/unit/classes" />
                 <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
                 <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/insanelib.jar"/>
             </classpath>
             <formatter type="brief" usefile="false"/>
         </junit>
