@@ -370,6 +370,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="getterCheckBox">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ddloaders/multiview/ui/Bundle.properties" key="LBL_Getter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -382,6 +383,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="getterCheckBox2">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ddloaders/multiview/ui/Bundle.properties" key="LBL_Getter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -394,6 +396,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="setterCheckBox">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ddloaders/multiview/ui/Bundle.properties" key="LBL_Setter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
@@ -406,6 +409,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="setterCheckBox2">
       <Properties>
+        <Property name="selected" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/j2ee/ddloaders/multiview/ui/Bundle.properties" key="LBL_Setter" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>

@@ -358,6 +358,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(15, 12, 0, 12);
         add(jLabel11, gridBagConstraints);
 
+        getterCheckBox.setSelected(true);
         getterCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -367,6 +368,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(getterCheckBox, gridBagConstraints);
 
+        getterCheckBox2.setSelected(true);
         getterCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Getter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -376,6 +378,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(getterCheckBox2, gridBagConstraints);
 
+        setterCheckBox.setSelected(true);
         setterCheckBox.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -385,6 +388,7 @@ public class CmpRelationshipsForm extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 12, 0, 5);
         add(setterCheckBox, gridBagConstraints);
 
+        setterCheckBox2.setSelected(true);
         setterCheckBox2.setText(org.openide.util.NbBundle.getMessage(CmpRelationshipsForm.class, "LBL_Setter"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;

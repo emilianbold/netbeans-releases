@@ -79,6 +79,7 @@ class CmpRelationshipsDialogHelper {
         private boolean lastCreateField;
         private boolean lastGetter = true;
         private boolean lastSetter = true;
+        private boolean createCmrFieldChanged = true;
 
         private void init() {
             ejbComboBox.setModel(new DefaultComboBoxModel(entityNames));
@@ -86,7 +87,12 @@ class CmpRelationshipsDialogHelper {
             lastCreateField = isCreateCmrField();
             multiplicityOneRadioButton.addActionListener(listener);
             multiplicityManyRadioButton.addActionListener(listener);
-            createCmrFieldCheckBox.addActionListener(listener);
+            createCmrFieldCheckBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    createCmrFieldChanged = true;
+                    listener.validate();
+                }
+            });
         }
 
         private void processResult(RelationshipHelper.RelationshipRoleHelper helper) {
@@ -289,27 +295,30 @@ class CmpRelationshipsDialogHelper {
         public void setFieldStates(FormRoleHelper opositeRole) {
             lastCreateField = isCreateCmrField();
             String fieldName = getFieldName();
-            if (lastCreateField) {
-                if (fieldName.length() == 0) {
-                    setFieldName(lastFieldName);
+            if (createCmrFieldChanged) {
+                createCmrFieldChanged = false;
+                if (lastCreateField) {
+                    if (fieldName.length() == 0) {
+                        setFieldName(lastFieldName);
+                    }
+                    fieldNameTextField.setEnabled(true);
+                    setLocalGetter(lastGetter);
+                    getterCheckBox.setEnabled(true);
+                    setLocalSetter(lastSetter);
+                    setterCheckBox.setEnabled(true);
+                } else {
+                    lastGetter = getterCheckBox.isSelected();
+                    lastSetter = setterCheckBox.isSelected();
+                    if (fieldName.length() > 0) {
+                        lastFieldName = fieldName;
+                    }
+                    setFieldName(null);
+                    fieldNameTextField.setEnabled(false);
+                    setLocalGetter(false);
+                    getterCheckBox.setEnabled(false);
+                    setLocalSetter(false);
+                    setterCheckBox.setEnabled(false);
                 }
-                fieldNameTextField.setEnabled(true);
-                setLocalGetter(lastGetter);
-                getterCheckBox.setEnabled(true);
-                setLocalSetter(lastSetter);
-                setterCheckBox.setEnabled(true);
-            } else {
-                lastGetter = getterCheckBox.isSelected();
-                lastSetter = setterCheckBox.isSelected();
-                if (fieldName.length() > 0) {
-                    lastFieldName = fieldName;
-                }
-                setFieldName(null);
-                fieldNameTextField.setEnabled(false);
-                setLocalGetter(false);
-                getterCheckBox.setEnabled(false);
-                setLocalSetter(false);
-                setterCheckBox.setEnabled(false);
             }
             boolean opositeMultiple = opositeRole.isMultiple();
             String fieldType = getFieldType();
@@ -372,8 +381,11 @@ class CmpRelationshipsDialogHelper {
         form.getFieldNameTextField().getDocument().addDocumentListener(dialogListener);
         form.getFieldNameTextField2().getDocument().addDocumentListener(dialogListener);
         form.getCreateCmrFieldCheckBox().addActionListener(dialogListener);
+        form.getCreateCmrFieldCheckBox2().addActionListener(dialogListener);
         form.getRoleNameTextField().getDocument().addDocumentListener(dialogListener);
         form.getRoleNameTextField2().getDocument().addDocumentListener(dialogListener);
+        form.getEjbComboBox().addActionListener(dialogListener);
+        form.getEjbComboBox2().addActionListener(dialogListener);
         dialogListener.validateFields();
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
@@ -507,21 +519,23 @@ class CmpRelationshipsDialogHelper {
         }
 
         private void validateFields() {
-            String s1 = roleA.validateFieldName();
-            if (s1 != null) {
-                errorLabel.setText(s1);
+            if (roleA.getRoleName().equals(roleB.getRoleName())) {
+                errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
                 dialogDescriptor.setValid(false);
             } else {
-                String s2 = roleB.validateFieldName();
-                if (s2 != null) {
-                    errorLabel.setText(s2);
-                    dialogDescriptor.setValid(false);
-                } else if (roleA.getRoleName().equals(roleB.getRoleName())) {
-                    errorLabel.setText(Utils.getBundleMessage("MSG_SameRoleNames"));
+                String s1 = roleA.validateFieldName();
+                if (s1 != null) {
+                    errorLabel.setText(s1);
                     dialogDescriptor.setValid(false);
                 } else {
-                    errorLabel.setText(" ");
-                    dialogDescriptor.setValid(true);
+                    String s2 = roleB.validateFieldName();
+                    if (s2 != null) {
+                        errorLabel.setText(s2);
+                        dialogDescriptor.setValid(false);
+                    } else {
+                        errorLabel.setText(" ");
+                        dialogDescriptor.setValid(true);
+                    }
                 }
             }
         }
