@@ -47,6 +47,17 @@ public class SetThreadName extends Benchmark {
 
     /**
      */
+    public void testSetFixedName() throws Exception {
+        int count = getIterationCount();
+
+        while( count-- > 0 ) {
+	    t.setName("Thread #A");
+	    t.setName("Thread #B");
+        }
+    }
+
+    /**
+     */
     public void testCreateName() throws Exception {
         int count = getIterationCount();
 
