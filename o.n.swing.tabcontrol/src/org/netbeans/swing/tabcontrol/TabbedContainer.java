@@ -12,8 +12,6 @@
  */
 
 package org.netbeans.swing.tabcontrol;
-
-import java.awt.FocusTraversalPolicy;
 import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.netbeans.swing.tabcontrol.plaf.DefaultTabbedContainerUI;
 
@@ -314,10 +312,16 @@ public class TabbedContainer extends JComponent {
         //A few borders and such will check this
         //@see org.netbeans.swing.plaf.gtk.AdaptiveMatteBorder
         putClientProperty ("viewType", new Integer(type)); //NOI18N
-//        setFocusCycleRoot(true);
+        
+        // #54264 have this coctail of setters to fix tab key handling.
+        // let this component act as focus root cycle and let tab key iterate just the content
+        // of the active TC. that was keyboard focus won't get lost or transfered out of the mode.
+        
+        setFocusTraversalKeysEnabled(false);
+        setFocusTraversalKeys(KeyboardFocusManager.UP_CYCLE_TRAVERSAL_KEYS, Collections.EMPTY_SET);
+        setFocusCycleRoot(true);
         setFocusable(true);
-// ignore traversal policy - #46922        
-//        setFocusTraversalPolicy(new TCFTP());
+        setFocusTraversalPolicy(new TCFTP());
     }
 
     /**
@@ -821,39 +825,56 @@ public class TabbedContainer extends JComponent {
     }
     
     /**
-     * simple traversal policy..
+     * "simple" traversal policy.. inspired by Swing's LayoutFocusTraversalPolicy
+     * what we need here is to iterate just the content of the Mode/tabbedContainer, meaning
+     * just the content of active TopComponent.
      */
-/*    private final class TCFTP extends FocusTraversalPolicy {
-        private Component getSel() {
-            if (getModel().size() == 0 || getSelectionModel().getSelectedIndex() == -1) {
-                return null;
+    private final class TCFTP extends ContainerOrderFocusTraversalPolicy {
+        private SwingDefaultFocusTraversalPolicy defaultSwing;
+        public TCFTP() {
+            defaultSwing = new SwingDefaultFocusTraversalPolicy();
+        }
+
+        protected boolean accept(Component aComponent) {
+            boolean retValue;
+            retValue = super.accept(aComponent);
+            if (!retValue) {
+                return false;
+            } else if (TabbedContainer.this == aComponent) {
+                // kick the TabbedContainer, is focusable just to be able to act as focus cycle root.
+                return false;
+            } 
+            // these conditions are copied from the LayoutFocusTraversalPolicy
+            else if (aComponent instanceof JTable) {
+                // JTable only has ancestor focus bindings, we thus force it
+                // to be focusable by returning true here.
+                return true;
+            } else if (aComponent instanceof JComboBox) {
+                JComboBox box = (JComboBox)aComponent;
+                return box.getUI().isFocusTraversable(box);
+            } else if (aComponent instanceof JComponent) {
+                JComponent jComponent = (JComponent)aComponent;
+                InputMap inputMap = jComponent.getInputMap(JComponent.WHEN_FOCUSED);
+                while (inputMap != null && inputMap.size() == 0) {
+                    inputMap = inputMap.getParent();
+                }
+                if (inputMap != null) {
+                    return true;
+                }
             }
-            Component sel = getComponentConverter().getComponent(getModel().getTab(getSelectionModel().getSelectedIndex()));
-            if (sel != null) {
-                return sel;
-            }
-            return null;
-        }
-        
-        public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {
-            return null;
-        }
-
-        public Component getComponentBefore(Container focusCycleRoot, Component aComponent) {
-            return null;
-        }
-
-        public Component getDefaultComponent(Container focusCycleRoot) {
-            return getSel();
-        }
-
-        public Component getFirstComponent(Container focusCycleRoot) {
-            return getSel();
-        }
-
-        public Component getLastComponent(Container focusCycleRoot) {
-            return getSel();
+            return defaultSwing.accept(aComponent);
+            
         }
     }
-*/
+    
+    // Create our own subclass and change accept to public so that we can call
+    // accept.
+    static class SwingDefaultFocusTraversalPolicy
+        extends java.awt.DefaultFocusTraversalPolicy
+    {
+        public boolean accept(Component aComponent) {
+        	return super.accept(aComponent);
+        }
+    }
+
 }
