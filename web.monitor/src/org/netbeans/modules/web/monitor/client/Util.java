@@ -215,9 +215,6 @@ public class Util  {
 		}
 	    }
 	}
-	if(debug) 
-	    System.out.println
-		(md.getRequestData().getHeaders().getHashtable().get("Cookie"));   //NOI18N
     }
 
     /**

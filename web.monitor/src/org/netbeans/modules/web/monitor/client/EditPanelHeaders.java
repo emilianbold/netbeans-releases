@@ -126,14 +126,26 @@ public class EditPanelHeaders extends DataDisplay {
 		    if (pe.getDialogOK()) {
 
 			if(debug) log("Dialog returned OK"); // NOI18N
-			String name = pe.getName();
-			String value = pe.getValue();
-			Param newParam = new Param(name, value);
-			Headers hd = monitorData.getRequestData().getHeaders();
-			int nth = hd.addParam(newParam);
-			if(debug) log("Headers are " // NOI18N
-						     + hd.toString()); 
+			
+			String name = pe.getName(); 
+			int status = 0; 
 
+			if(name.equalsIgnoreCase("cookie"))  
+			    status = monitorData.getRequestData().addCookie(pe.getValue()); 
+			else 
+			    status = monitorData.getRequestData().getHeaders().addParam(pe.getName(), pe.getValue());
+
+			if(debug) 
+			    log("Headers are " + // NOI18N
+				monitorData.getRequestData().getHeaders().toString()); 
+			// if(status == 1) { /
+			//  The new value was added to an existing header
+		        // }
+			// if(status == -1) {
+			//  The new value was not added because it was
+			//  already in there.
+		        //}
+			    
 			redisplayData();
 		    }
 		}});

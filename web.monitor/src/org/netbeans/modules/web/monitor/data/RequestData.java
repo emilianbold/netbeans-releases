@@ -207,15 +207,15 @@ public class RequestData extends BaseBean {
 
     public String getCookieString() {
 	Param[] headers = getHeaders().getParam();
-	String cookieStr = null;
+	StringBuffer cookieStr = new StringBuffer(); 
 	int len = headers.length;
 	for(int j=0; j<len; ++j) {
 	    if(headers[j].getName().equalsIgnoreCase(COOKIE)) { 
-		cookieStr = headers[j].getValue();
-		break;
+		cookieStr.append(headers[j].getValue());
+		cookieStr.append(";"); 
 	    }
 	}
-	return cookieStr;
+	return cookieStr.toString();
     }
     
 	    
@@ -252,7 +252,8 @@ public class RequestData extends BaseBean {
     public Param[] getCookiesAsParams() {
 
 	String cookieStr = getCookieString();
-	 	
+	if(debug) log("cookie string is " + cookieStr); 
+
 	if(cookieStr == null || cookieStr.equals(""))  //NOI18N
 	    return new Param[0];
 		
@@ -264,6 +265,7 @@ public class RequestData extends BaseBean {
 	while (tok.hasMoreTokens()) {
 		
 	    String token = tok.nextToken();
+	    if(debug) log("token is " + token); 
 	    int i = token.indexOf("="); // NOI18N
 	    if (i > -1) {
 
@@ -271,6 +273,7 @@ public class RequestData extends BaseBean {
 		String value = token.substring(i+1, token.length()).trim();
 		value=stripQuote(value);
 		cookies.addElement(new Param(name, value));
+		if(debug) log(name + "=" + value); 
 	    }
 	}
 	int numCookies = cookies.size();
@@ -290,7 +293,7 @@ public class RequestData extends BaseBean {
      * the request. 
      */
      
-    public void addCookie(String ckname, String ckvalue) {
+    public int addCookie(String ckname, String ckvalue) {
 
 	boolean debug = false; 
 
@@ -315,7 +318,7 @@ public class RequestData extends BaseBean {
 	    buf.append(ckvalue); 
 	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
 	    setCookieHeader(buf.toString()); 
-	    return;
+	    return 1;
 	}
 
 	for(int i=0; i<len; ++i) {
@@ -336,7 +339,7 @@ public class RequestData extends BaseBean {
 	    buf.append(ckvalue);
 	    headers[i].setValue(buf.toString());
 	    if(debug) log("New cookie string is " + buf.toString()); //NOI18N
-	    return; 
+	    return 1; 
 	}
 	 
 	// There were no cookies, create a new header
@@ -346,6 +349,19 @@ public class RequestData extends BaseBean {
 	buf.append(ckvalue); 
 	if(debug) log("New cookie string is " + buf.toString()); //NOI18N
 	setCookieHeader(buf.toString()); 
+	return 0;
+    }
+
+
+    /**
+     * This method is used by EditPanelHeader in case the added header
+     * turns out to be a cookie. 
+     */
+    public int addCookie(String ckstr) { 
+	int index = ckstr.indexOf("="); 
+	if(index == -1) return addCookie(ckstr, ""); 
+	else if(index == ckstr.length()-1) return addCookie(ckstr, ""); 
+	return addCookie(ckstr.substring(0,index), ckstr.substring(index+1)); 
     }
 
     public void setCookieHeader(String cookies) { 

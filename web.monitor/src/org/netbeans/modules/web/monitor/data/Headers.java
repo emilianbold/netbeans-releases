@@ -73,39 +73,37 @@ public class Headers extends BaseBean {
 	return (Param[])this.getValues(PARAM);
     }
 
-    public Hashtable getHashtable() {
 
-	Param[] headers =  (Param[])this.getValues(PARAM);
-	int numHeaders = headers.length;
-	Hashtable ht = new Hashtable(numHeaders);
-	
-	for(int i=0; i<numHeaders; ++i) {
-	    String name =  headers[i].getAttributeValue("name"); // NOI18N
-	    String value = headers[i].getAttributeValue("value"); // NOI18N
-	    ht.put(name, value);
-	}	
-	return ht;
-    }
-
-    // This ain't working
-    /*
-    public void setHashtable(Hashtable ht) {
-
-	int numHeaders = ht.size();
-	
-	Param[] headers = new Param[numHeaders];
-	
-	Enumeration e = ht.keys();	
-	int num = 0;
-	while(e.hasMoreElements()) {
-	    String name = (String)e.nextElement();
-	    String value= (String)(ht.get(name));
-	    headers[num] = new Param(name, value);
-	    ++num;
+    //
+    public String getHeader(String name) {
+	int len = this.size(PARAM);
+	for(int i=0; i<len; ++i) { 
+	    if(getParam(i).getName().equalsIgnoreCase(name))
+		return getParam(i).getValue();
 	}
-	this.setParam(headers); 
+	return "";
     }
-    */
+
+    //
+    public boolean containsHeader(String name) {
+	int len = this.size(PARAM);
+	for(int i=0; i<len; ++i) { 
+	    if(getParam(i).getName().equalsIgnoreCase(name))
+		return true; 
+	}
+	return false;
+    }
+
+    //
+    public Enumeration getHeaders(String name) {
+	int len = this.size(PARAM);
+	Vector v = new Vector();
+	for(int i=0; i<len; ++i) { 
+	    if(getParam(i).getName().equalsIgnoreCase(name))
+		v.add(getParam(i).getValue());
+	}
+	return v.elements();
+    }
 
     // Return the number of properties
     public int sizeParam() {
@@ -116,6 +114,44 @@ public class Headers extends BaseBean {
     public int addParam(Param value) {
 	return this.addValue(PARAM, value);
     }
+
+    /**
+     * Contingently adds a new header of name and value. 
+     * We check if a header of the name already exists. If it doesn't,
+     * we return 0 and add a new header to the list. If one does
+     * exist, we check if the value is already in the list. If it
+     * isn't, we add it at the end and return 1. If it's already there
+     * we do nothing and return -1. 
+     * 
+     */ 
+    public int addParam(String name, String value) {
+	Param[] params = getParam();
+	int len = params.length; 
+	int index = -1; 
+	for(int i=0; i<len; ++i) {
+	    if(name.equals(params[i].getName())) {
+		index = i;
+		break;
+	    }
+	}
+	if(index == -1) {
+	    addParam(new Param(name, value)); 
+	    return 0; 
+	} 
+	else { 
+	    String oldValue = params[index].getValue(); 
+	    StringTokenizer st = new StringTokenizer(oldValue, " ,");
+	    while(st.hasMoreTokens()) { 
+		String val = st.nextToken(); 
+		// This parameter was already added, return -1
+		if(value.equals(val)) return -1; 
+	    }		
+	    Param p = new Param(name, oldValue.concat(", ").concat(value));
+	    setParam(index, p);
+	    return 1;
+	}
+    }
+
 
     //
     // Remove an element using its reference
