@@ -32,12 +32,8 @@ import org.netbeans.tax.*;
  */
 public class TreeObjectListProxyListener implements PropertyChangeListener {
 
-    /** */
     private final TreeObjectList list;
-    
-    /** */
-    private final Set listeners = new HashSet();
-
+    private PropertyChangeSupport changeSupport;
         
     /** Creates new TreeObjectListListener */
     public TreeObjectListProxyListener(TreeObjectList list) {
@@ -72,30 +68,20 @@ public class TreeObjectListProxyListener implements PropertyChangeListener {
     /**
      */
     private void forward(final PropertyChangeEvent e) {
-        // forwarding
-        Set peers = new HashSet();
-        synchronized (listeners) {
-             peers.addAll(listeners);
-        }
-        for (Iterator it = peers.iterator(); it.hasNext();) {
-            PropertyChangeListener next = (PropertyChangeListener) it.next();
-            if (next != null) next.propertyChange(e);
-        }
-    }
-    
-    /** Be friendly to WeakListener */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        if (l == null)
-            return;
-        listeners.remove(l);
+        if (changeSupport != null)
+            changeSupport.firePropertyChange(e);
     }
 
-    /**
-     */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        if (l == null)
-            return;
-        listeners.add(l);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        synchronized (this) {
+            if (changeSupport == null)
+                changeSupport = new PropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(l);
     }
 
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if (changeSupport != null)
+            changeSupport.removePropertyChangeListener(l);
+    }
 }

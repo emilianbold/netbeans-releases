@@ -15,6 +15,7 @@ package org.netbeans.modules.settings.convertors;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 
@@ -405,8 +406,10 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         /** property means setting file content is changed */
         public static final String PROP_FILE_CHANGED = "fileChanged"; //NOI18N
         
-        /** Utility field holding list of PropertyChangeListeners.  */
-        private java.util.ArrayList propertyChangeListenerList;
+        /** support for PropertyChangeListeners */
+        private PropertyChangeSupport changeSupport;
+        /** the number of registered PropertyChangeListeners */
+        private int propertyChangeListenerCount = 0;
         
         /** setting is already changed */
         private boolean isChanged = false;
@@ -502,11 +505,14 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
          * listening to events comming from the setting object and file object.
          * @param listener The listener to register.
          */
-        public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-            if (propertyChangeListenerList == null ) {
-                propertyChangeListenerList = new java.util.ArrayList();
+        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+            if (changeSupport == null || propertyChangeListenerCount <= 0) {
                 Object inst = instance.get();
                 if (inst == null) return;
+                if (changeSupport == null) {
+                    changeSupport = new PropertyChangeSupport(this);
+                    propertyChangeListenerCount = 0;
+                }
                 Convertor conv = initConvertor();
                 if (conv != null) {
                     conv.registerSaver(inst, this);
@@ -514,15 +520,21 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
                     registerPropertyChangeListener(inst);
                 }
             }
-            propertyChangeListenerList.add(listener);
+            propertyChangeListenerCount++;
+            changeSupport.addPropertyChangeListener(listener);
         }
         
         /** Removes PropertyChangeListener from the list of listeners.
          * @param listener The listener to remove.
          */
-        public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-            if (propertyChangeListenerList != null && !propertyChangeListenerList.isEmpty()) {
-                propertyChangeListenerList.remove(listener);
+        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+            if (changeSupport == null)
+                return;
+            
+            propertyChangeListenerCount--;
+            changeSupport.removePropertyChangeListener(listener);
+
+            if (propertyChangeListenerCount == 0) {
                 Object inst = instance.get();
                 if (inst == null) return;
                 
@@ -595,15 +607,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
          * @see #PROP_SAVE
          */
         private void firePropertyChange(String name) {
-            java.util.ArrayList list;
-            synchronized (this) {
-                if (propertyChangeListenerList == null) return;
-                list = (java.util.ArrayList)propertyChangeListenerList.clone();
-            }
-            PropertyChangeEvent event = new PropertyChangeEvent(this, name, null, null);
-            for (int i = 0; i < list.size(); i++) {
-                ((java.beans.PropertyChangeListener)list.get(i)).propertyChange(event);
-            }
+            if (changeSupport != null)
+                changeSupport.firePropertyChange(name, null, null);
         }
 
         /** force to finish scheduled request */

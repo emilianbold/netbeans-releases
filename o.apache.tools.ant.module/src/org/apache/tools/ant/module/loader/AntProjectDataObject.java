@@ -86,7 +86,6 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
 
     public void propertyChange (PropertyChangeEvent ev) {
         String prop = ev.getPropertyName ();
-        //System.err.println("APDO.propertyChange: " + prop);
         if (prop == null || prop.equals (DataObject.PROP_PRIMARY_FILE)) { // #11979
             // XXX this might be better handled by overriding FileEntry.rename/move:
             ((AntProjectSupport) getCookie (AntProjectSupport.class)).setFileObject (getPrimaryFile ());

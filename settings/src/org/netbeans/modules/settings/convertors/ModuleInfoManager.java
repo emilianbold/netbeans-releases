@@ -13,7 +13,7 @@
 
 package org.netbeans.modules.settings.convertors;
 
-import java.beans.PropertyChangeListener;
+import java.beans.*;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Iterator;
@@ -151,7 +151,7 @@ final class ModuleInfoManager {
         private boolean aModuleHasBeenChanged = false;
         private boolean wasModuleEnabled;
         private ModuleInfo mi;
-        private java.util.ArrayList propertyChangeListenerList;
+        private PropertyChangeSupport changeSupport;
         
         public PCL(ModuleInfo mi) {
             this.mi = mi;
@@ -190,30 +190,22 @@ final class ModuleInfoManager {
             }
         }
 
-        public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
-            if (propertyChangeListenerList == null ) {
-                propertyChangeListenerList = new java.util.ArrayList();
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            synchronized (this) {
+                if (changeSupport == null)
+                    changeSupport = new PropertyChangeSupport(this);
             }
-            propertyChangeListenerList.add(listener);
+            changeSupport.addPropertyChangeListener(listener);
         }
         
-        public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
-            if (propertyChangeListenerList != null ) {
-                propertyChangeListenerList.remove(listener);
-            }
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            if (changeSupport != null)
+                changeSupport.removePropertyChangeListener(listener);
         }
         
         private void firePropertyChange() {
-            java.util.ArrayList list;
-            synchronized (this) {
-                if (propertyChangeListenerList == null) return;
-                list = (java.util.ArrayList) propertyChangeListenerList.clone();
-            }
-            java.beans.PropertyChangeEvent event =
-                new java.beans.PropertyChangeEvent(this, ModuleInfo.PROP_ENABLED, null, null);
-            for (int i = 0; i < list.size(); i++) {
-                ((java.beans.PropertyChangeListener)list.get(i)).propertyChange(event);
-            }
+            if (changeSupport != null)
+                changeSupport.firePropertyChange(ModuleInfo.PROP_ENABLED, null, null);
         }
     }
     

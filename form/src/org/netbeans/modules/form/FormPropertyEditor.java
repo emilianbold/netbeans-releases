@@ -43,8 +43,8 @@ public class FormPropertyEditor implements PropertyEditor,
     private WeakReference propertyEnv;
 
     private PropertyEditor[] allEditors;
-    private ArrayList listeners;
-
+    private PropertyChangeSupport changeSupport;
+    
     /** Crates a new FormPropertyEditor */
     FormPropertyEditor(FormProperty property) {
         this.property = property;
@@ -343,11 +343,12 @@ public class FormPropertyEditor implements PropertyEditor,
      * @param listener  An object to be invoked when a PropertyChange
      *		event is fired.
      */
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        if (listeners == null)
-            listeners = new ArrayList();
-
-        listeners.add(l);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        synchronized (this) {
+            if (changeSupport == null)
+                changeSupport = new PropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(l);
     }
 
     /**
@@ -355,31 +356,17 @@ public class FormPropertyEditor implements PropertyEditor,
      *
      * @param listener  The PropertyChange listener to be removed.
      */
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        if (listeners != null)
-            listeners.remove(l);
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if (changeSupport != null)
+            changeSupport.removePropertyChangeListener(l);
     }
 
     /**
      * Report that we have been modified to any interested listeners.
-     *
-     * @param source  The PropertyEditor that caused the event.
      */
     void firePropertyChange() {
-        java.util.List targets;
-        synchronized(this) {
-            if (listeners == null)
-                return;
-            targets = (ArrayList) listeners.clone();
-        }
-
-        PropertyChangeEvent evt = new PropertyChangeEvent(this, null, null, null);
-
-        for (int i = 0; i < targets.size(); i++) {
-            PropertyChangeListener target = (PropertyChangeListener)
-                                            targets.get(i);
-            target.propertyChange(evt);
-        }
+        if (changeSupport != null)
+            changeSupport.firePropertyChange(null, null, null);
     }
 
     // -------------

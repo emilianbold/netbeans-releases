@@ -45,7 +45,7 @@ public class ComponentChooserEditor implements PropertyEditor,
 
     private ComponentRef value;
 
-    private Vector listeners;
+    private PropertyChangeSupport changeSupport;
 
     public ComponentChooserEditor() {
     }
@@ -114,19 +114,17 @@ public class ComponentChooserEditor implements PropertyEditor,
         return value != null ? value.getJavaInitString() : null;
     }
 
-    public synchronized void addPropertyChangeListener(
-                                 PropertyChangeListener listener)
-    {
-	if (listeners == null)
-	    listeners = new java.util.Vector();
-	listeners.addElement(listener);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        synchronized (this) {
+            if (changeSupport == null)
+                changeSupport = new PropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(l);
     }
 
-    public synchronized void removePropertyChangeListener(
-                                 PropertyChangeListener listener)
-    {
-	if (listeners != null)
-            listeners.removeElement(listener);
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if (changeSupport != null)
+            changeSupport.removePropertyChangeListener(l);
     }
 
     public boolean isPaintable() {
@@ -262,18 +260,8 @@ public class ComponentChooserEditor implements PropertyEditor,
     // ------
 
     protected final void firePropertyChange() {
-	Vector targets;
-	synchronized (this) {
-	    if (listeners == null)
-	    	return;
-	    targets = (Vector) listeners.clone();
-	}
-
-        PropertyChangeEvent evt = new PropertyChangeEvent(
-                                          this, null, null, null);
-
-	for (int i=0; i < targets.size(); i++)
-            ((PropertyChangeListener)targets.elementAt(i)).propertyChange(evt);
+        if (changeSupport != null)
+            changeSupport.firePropertyChange(null, null, null);
     }
 
     // ------------

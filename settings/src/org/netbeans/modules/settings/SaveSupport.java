@@ -13,6 +13,7 @@
 
 package org.netbeans.modules.settings;
 
+import java.beans.*;
 import java.io.IOException;
 
 import org.openide.ErrorManager;
@@ -38,8 +39,9 @@ final class SaveSupport {
      */
     static final String EA_NAME = "name"; // NOI18N
     
-    /** Utility field holding list of PropertyChangeListeners. */
-    private java.util.ArrayList propertyChangeListenerList;
+    /** support for PropertyChangeListeners */
+    private PropertyChangeSupport changeSupport;
+    
     /** convertor for possible format upgrade */
     private Convertor convertor;
     /** SaveCookie implementation */
@@ -125,9 +127,9 @@ final class SaveSupport {
      * listening to events comming from the setting object and file object.
      * @param listener The listener to register.
      */
-    public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
-        if (propertyChangeListenerList == null ) {
-            propertyChangeListenerList = new java.util.ArrayList();
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        if (changeSupport == null) {
+            changeSupport = new PropertyChangeSupport(this);
             Object inst = instance.get();
             if (inst == null) return;
             Convertor conv = initConvertor();
@@ -135,15 +137,15 @@ final class SaveSupport {
                 conv.registerSaver(inst, instToSave);
             }
         }
-        propertyChangeListenerList.add(listener);
+        changeSupport.addPropertyChangeListener(listener);
     }
     
     /** Removes PropertyChangeListener from the list of listeners.
      * @param listener The listener to remove.
      */
-    public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
-        if (propertyChangeListenerList != null ) {
-            propertyChangeListenerList.remove(listener);
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        if (changeSupport != null) {
+            changeSupport.removePropertyChangeListener(listener);
             Object inst = instance.get();
             if (inst == null) return;
             Convertor conv = getConvertor();
@@ -159,16 +161,8 @@ final class SaveSupport {
      * @see #PROP_SAVE
      */
     private void firePropertyChange(String name) {
-        java.util.ArrayList list;
-        synchronized (this) {
-            if (propertyChangeListenerList == null) return;
-            list = (java.util.ArrayList)propertyChangeListenerList.clone();
-        }
-        java.beans.PropertyChangeEvent event =
-            new java.beans.PropertyChangeEvent(this, name, null, null);
-        for (int i = 0; i < list.size(); i++) {
-            ((java.beans.PropertyChangeListener)list.get(i)).propertyChange(event);
-        }
+        if (changeSupport != null)
+            changeSupport.firePropertyChange(name, null, null);
     }
     
     /** called by ScheduledRequest in order to perform the request */

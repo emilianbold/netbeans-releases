@@ -313,22 +313,6 @@ final public class GridBagCustomizer extends JPanel implements Customizer
                 ex.printStackTrace();
             }
         }
-/*        Node.Property nps[] = p.getComponent().getConstraintsProperties(); //constr.getProperties();
-
-        for (int i = 0; i < nps.length; i++) {
-            if (nps[i].getName().equals(name))
-                try {
-                    Object oldValue = nps[i].getValue();
-                    nps[i].setValue(value);
-//                    p.getNode().propertyChange(name, oldValue, value);
-                }
-                catch (java.lang.IllegalAccessException e) {
-                    org.openide.TopManager.getDefault().notifyException(e);
-                }
-                catch (java.lang.reflect.InvocationTargetException e) {
-                    org.openide.TopManager.getDefault().notifyException(e);
-                }
-        } */
     }
 
     // -----------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -58,16 +59,16 @@ public class AntActionInstance implements
     private static final long serialVersionUID = 295629651296596532L;
     
     private final AntProjectCookie proj;
-    private transient Set listeners = new HashSet (1); // Set<PropertyChangeListener>
+    private transient PropertyChangeSupport changeSupport;
     
     public AntActionInstance (AntProjectCookie proj) {
         this.proj = proj;
         proj.addChangeListener (WeakListener.change (this, proj));
     }
-    
+
     private void readObject (ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject ();
-        listeners = new HashSet (1);
+        changeSupport = null;
     }
     
     // InstanceCookie:
@@ -152,15 +153,16 @@ public class AntActionInstance implements
     }
     
     public final void addPropertyChangeListener (PropertyChangeListener listener) {
-        synchronized (listeners) {
-            listeners.add (listener);
+        synchronized (this) {
+            if (changeSupport == null)
+                changeSupport = new PropertyChangeSupport(this);
         }
+        changeSupport.addPropertyChangeListener(listener);
     }
     
     public final void removePropertyChangeListener (PropertyChangeListener listener) {
-        synchronized (listeners) {
-            listeners.remove (listener);
-        }
+        if (changeSupport != null)
+            changeSupport.removePropertyChangeListener(listener);
     }
     
     // Presenter.Menu:
@@ -180,19 +182,13 @@ public class AntActionInstance implements
     public void stateChanged (ChangeEvent ignore) {
         // Ant script changed; maybe the project name changed with it.
         // Or maybe it is now misparsed.
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet (listeners).iterator ();
-        }
-        PropertyChangeEvent ev1 = new PropertyChangeEvent (this, Action.NAME, null, getValue (Action.NAME));
-        PropertyChangeEvent ev2 = new PropertyChangeEvent (this, "enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
-        PropertyChangeEvent ev3 = new PropertyChangeEvent (this, Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
-        while (it.hasNext ()) {
-            PropertyChangeListener listener = (PropertyChangeListener) it.next ();
-            listener.propertyChange (ev1);
-            listener.propertyChange (ev2);
-            listener.propertyChange (ev3);
-        }
+
+        if (changeSupport == null)
+            return;
+        
+        changeSupport.firePropertyChange(Action.NAME, null, getValue (Action.NAME));
+        changeSupport.firePropertyChange("enabled", null, isEnabled () ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        changeSupport.firePropertyChange(Action.MNEMONIC_KEY, null, getValue (Action.MNEMONIC_KEY));
     }
     
 }

@@ -94,8 +94,8 @@ public abstract class FormProperty extends Node.Property {
     FormPropertyEditor formPropertyEditor;
     PropertyEditor currentEditor;
 
-    private ArrayList propListeners;
-    private ArrayList vetoListeners;
+    private PropertyChangeSupport changeSupport;
+    private VetoableChangeSupport vetoableChangeSupport;
     private boolean fireChanges = true;
 
 //    private DesignValueListener designValueListener = null;
@@ -662,30 +662,30 @@ public abstract class FormProperty extends Node.Property {
 
     // ----------------------------
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener l) {
-        if (propListeners == null)
-            propListeners = new ArrayList();
-        else
-            propListeners.remove(l); // do not allow duplicates
-        propListeners.add(l);
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        synchronized (this) {
+            if (changeSupport == null)
+                changeSupport = new PropertyChangeSupport(this);
+        }
+        changeSupport.addPropertyChangeListener(l);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener l) {
-        if (propListeners != null)
-            propListeners.remove(l);
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if (changeSupport != null)
+            changeSupport.removePropertyChangeListener(l);
     }
 
-    public synchronized void addVetoableChangeListener(VetoableChangeListener l) {
-        if (vetoListeners == null)
-            vetoListeners = new ArrayList();
-        else
-            vetoListeners.remove(l); // do not allow duplicates
-        vetoListeners.add(l);
+    public void addVetoableChangeListener(VetoableChangeListener l) {
+        synchronized (this) {
+            if (vetoableChangeSupport == null)
+                vetoableChangeSupport = new VetoableChangeSupport(this);
+        }
+        vetoableChangeSupport.addVetoableChangeListener(l);
     }
 
-    public synchronized void removeVetoableChangeListener(VetoableChangeListener l) {
-        if (vetoListeners != null)
-            vetoListeners.remove(l);
+    public void removeVetoableChangeListener(VetoableChangeListener l) {
+        if (vetoableChangeSupport != null)
+            vetoableChangeSupport.removeVetoableChangeListener(l);
     }
 
     public boolean isChangeFiring() {
@@ -746,25 +746,12 @@ public abstract class FormProperty extends Node.Property {
     private void firePropertyChange(String propName, Object old, Object current)
         throws PropertyVetoException
     {
-        ArrayList vetoTargets = null;
-        ArrayList propTargets = null;
-        synchronized (this) {
-            if (vetoListeners != null && propName != CURRENT_EDITOR)
-                vetoTargets = (ArrayList)vetoListeners.clone();
-            if (propListeners != null)
-                propTargets = (ArrayList)propListeners.clone();
-            else if (vetoListeners == null || propName == CURRENT_EDITOR)
-                return;
+        if (vetoableChangeSupport != null && !CURRENT_EDITOR.equals(propName)) {
+            vetoableChangeSupport.fireVetoableChange(propName, old, current);
         }
-
-        PropertyChangeEvent ev = new PropertyChangeEvent(this,
-                                         propName, old, current);
-        if (vetoTargets != null)
-            for (int i=0, n=vetoTargets.size(); i < n; i++)
-                ((VetoableChangeListener)vetoTargets.get(i)).vetoableChange(ev);
-        if (propTargets != null)
-            for (int i=0, n=propTargets.size(); i < n; i++)
-                ((PropertyChangeListener)propTargets.get(i)).propertyChange(ev);
+        if (changeSupport != null) {
+            changeSupport.firePropertyChange(propName, old, current);
+        }
     }
 
     // ----------------------------
