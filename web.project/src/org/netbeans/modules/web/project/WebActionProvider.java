@@ -356,13 +356,19 @@ class WebActionProvider implements ActionProvider {
         if ( findBuildXml() == null ) {
             return false;
         }
+        if ( command.equals( COMMAND_DEBUG_SINGLE ) ) {
+            return findJavaSources(context) != null || findJsps(context) != null;
+        }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findJavaSources( context ) != null || findJsps (context) != null;
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             // test for jsps
-            FileObject jsps [] = findJsps (context);
-            if (jsps != null && jsps.length >0) return true;
+            FileObject files [] = findJsps (context);
+            if (files != null && files.length >0) return true;
+            // test for html pages
+            files = findHtml(context);
+            if (files != null && files.length >0) return true;
             // test for servlets
             FileObject[] javaFiles = findJavaSources(context);
             if (javaFiles!=null && javaFiles.length > 0) {
@@ -388,6 +394,43 @@ class WebActionProvider implements ActionProvider {
     
     // Private methods -----------------------------------------------------
     
+    /*
+     * copied from ActionUtils and reworked so that it checks for mimeType of files, and DOES NOT include files with suffix 'suffix'
+     */
+    private static FileObject[] findSelectedFilesByMimeType(Lookup context, FileObject dir, String mimeType, String suffix, boolean strict) {
+        if (dir != null && !dir.isFolder()) {
+            throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
+        }
+        List/*<FileObject>*/ files = new ArrayList();
+        Iterator it = context.lookup(new Lookup.Template(DataObject.class)).allInstances().iterator();
+        while (it.hasNext()) {
+            DataObject d = (DataObject)it.next();
+            FileObject f = d.getPrimaryFile();
+            boolean matches = FileUtil.toFile(f) != null;
+            if (dir != null) {
+                matches &= (FileUtil.isParentOf(dir, f) || dir == f);
+            }
+            if (mimeType != null) {
+                matches &= f.getMIMEType().equals(mimeType);
+            }
+            if (suffix != null) {
+                matches &= !f.getNameExt().endsWith(suffix);
+            }
+            // Generally only files from one project will make sense.
+            // Currently the action UI infrastructure (PlaceHolderAction)
+            // checks for that itself. Should there be another check here?
+            if (matches) {
+                files.add(f);
+            } else if (strict) {
+                return null;
+            }
+        }
+        if (files.isEmpty()) {
+            return null;
+        }
+        return (FileObject[])files.toArray(new FileObject[files.size()]);
+    }
+    
     
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     
@@ -402,13 +445,22 @@ class WebActionProvider implements ActionProvider {
         return files;
     }
     
+    private FileObject[] findHtml(Lookup context) {
+        FileObject webDir = project.getWebModule ().getDocumentBase ();
+        FileObject[] files = null;
+        if (webDir != null) {
+            files = findSelectedFilesByMimeType(context, webDir, "text/html", null, true);
+        }
+        return files;
+    }
+    
     /** Find selected jsps
      */
     private FileObject[] findJsps(Lookup context) {
         FileObject webDir = project.getWebModule ().getDocumentBase ();
         FileObject[] files = null;
         if (webDir != null) {
-            files = ActionUtils.findSelectedFiles(context, webDir, ".jsp", true);
+            files = findSelectedFilesByMimeType(context, webDir, "text/x-jsp", ".jspf", true);
         }
         return files;
     }
