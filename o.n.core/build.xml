@@ -88,6 +88,57 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules"/>
   </target>
 
+  <target name="lib-modules" description="Create a standalone Modules API and implementation.">
+    <mkdir dir="modules-lib/src"/>
+    <copy todir="modules-lib/src">
+      <fileset dir="../openide/src">
+        <include name="org/openide/modules/SpecificationVersion.java"/>
+        <include name="org/openide/modules/ModuleInfo.java"/>
+        <include name="org/openide/modules/ModuleInstall.java"/>
+        <include name="org/openide/modules/Dependency.java"/>
+      </fileset>
+      <fileset dir="src">
+        <include name="org/netbeans/core/modules/ChangeFirer.java"/>
+        <include name="org/netbeans/core/modules/DuplicateException.java"/>
+        <include name="org/netbeans/core/modules/Events.java"/>
+        <include name="org/netbeans/core/modules/InvalidException.java"/>
+        <include name="org/netbeans/core/modules/JarClassLoader.java"/>
+        <include name="org/netbeans/core/modules/ManifestSection.java"/>
+        <include name="org/netbeans/core/modules/Module.java"/>
+        <include name="org/netbeans/core/modules/ModuleInstaller.java"/>
+        <include name="org/netbeans/core/modules/ModuleManager.java"/>
+        <include name="org/netbeans/core/modules/ProxyClassLoader.java"/>
+        <include name="org/netbeans/core/modules/Util.java"/>
+      </fileset>
+    </copy>
+    <ant dir="../openide" target="lib-util"/>
+    <javac srcdir="modules-lib/src" destdir="modules-lib/src">
+      <exclude name="org/netbeans/core/modules/ManifestSection.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide-util.jar"/>
+      </classpath>
+    </javac>
+    <ant dir="../openide" target="jars"/>
+    <javac srcdir="modules-lib/src" destdir="modules-lib/src">
+      <include name="org/netbeans/core/modules/ManifestSection.java"/>
+      <classpath>
+        <pathelement location="../openide/netbeans/lib/openide.jar"/>
+      </classpath>
+    </javac>
+    <tstamp>
+      <format property="buildnumber-default" pattern="yyyyMMddHHmm"/>
+    </tstamp>
+    <property name="buildnumber" value="${buildnumber-default}"/>
+    <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest-modules.mf" tofile="modules-lib/manifest-modules-subst.mf" filtering="on"/>
+    <jar jarfile="modules-lib/modules.jar" manifest="modules-lib/manifest-modules-subst.mf">
+      <fileset dir="modules-lib/src">
+        <exclude name="**/*.java"/>
+        <exclude name="org/netbeans/core/modules/ManifestSection$*Section*.class"/>
+      </fileset>
+    </jar>
+  </target>
+
   <target name="clean">
     <delete>
       <fileset dir="src">
@@ -98,6 +149,7 @@ Microsystems, Inc. All Rights Reserved.
       </fileset>
     </delete>
     <delete dir="netbeans"/>
+    <delete dir="modules-lib"/>
   </target>
 
 </project>
