@@ -43,6 +43,8 @@ public class IndexListNodeInfo extends DatabaseNodeInfo {
                 Object value;
                 while (rs.next()) {
                     rset = drvSpec.getRow();
+                    if (rset == null)
+                        continue;
                     if (rset.get(new Integer(6)) != null) {
                         info = (IndexNodeInfo)DatabaseNodeInfo.createNodeInfo(this, DatabaseNode.INDEX, rset);
                         if (info != null) {
