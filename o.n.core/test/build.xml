@@ -36,7 +36,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- properties just for compiler -->
     <property name="build.compiler.deprecation" value="off"/>
     <!-- should be default ON, because it helps to find problems -->
-    <property name="build.compiler.debug" value="off"/>
+    <property name="build.compiler.debug" value="on"/>
     
     <!-- These in/excludes will be added to xtest.pattern    -->
     <!-- if you want to use these properties, you should use -->
