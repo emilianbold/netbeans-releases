@@ -35,6 +35,9 @@ public class AttachingSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
+        String processName = (String) info.lookupFirst (String.class);
+        if (processName != null)
+            return processName;
         if (sadic.getHostName () != null)
             return sadic.getHostName () + ":" + sadic.getPortNumber ();
         return LaunchingSessionProvider.findUnique 

@@ -38,6 +38,9 @@ public class LaunchingSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
+        String processName = (String) info.lookupFirst (String.class);
+        if (processName != null)
+            return processName;
         String sessionName = launchingCookie.getClassName ();
         int i = sessionName.lastIndexOf ('.');
         if (i >= 0) 

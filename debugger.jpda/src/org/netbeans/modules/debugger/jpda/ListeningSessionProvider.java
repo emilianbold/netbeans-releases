@@ -38,6 +38,9 @@ public class ListeningSessionProvider extends SessionProvider {
     };
     
     public String getSessionName () {
+        String processName = (String) info.lookupFirst (String.class);
+        if (processName != null)
+            return processName;
         if (smadic.getSharedMemoryName () != null)
             return "listenning:" + smadic.getSharedMemoryName ();
         return "listenning:" + smadic.getPortNumber ();

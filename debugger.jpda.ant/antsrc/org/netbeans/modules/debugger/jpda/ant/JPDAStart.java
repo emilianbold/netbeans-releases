@@ -206,7 +206,7 @@ public class JPDAStart extends Task implements Runnable {
                 }                
                 
                 debug ("Debugger started");
-                JPDADebugger.startListening (lc, args, new Object[] {sourcePath});
+                JPDADebugger.startListening (lc, args, new Object[] {sourcePath, getName ()});
             } catch (Throwable e) {
                 lock [1] = e;
             } finally {

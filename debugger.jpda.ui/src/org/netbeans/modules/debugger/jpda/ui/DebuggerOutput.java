@@ -15,6 +15,9 @@ package org.netbeans.modules.debugger.jpda.ui;
 
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.ActionsManagerListener;
@@ -46,6 +49,8 @@ PropertyChangeListener {
 
     //private static final int    where = IOManager.STATUS_OUT + IOManager.STD_OUT;
 
+    private static Set          managers = new HashSet ();
+    
     private JPDADebugger        debugger;
     private DebuggerEngine      engine;
     private EngineContext       engineContext;
@@ -58,7 +63,22 @@ PropertyChangeListener {
         this.engine = engine;
         engineContext = (EngineContext) engine.lookupFirst (EngineContext.class);
         
-        ioManager = new IOManager ();
+        // close old tabs
+        if (DebuggerManager.getDebuggerManager ().getSessions ().length == 1) {
+            Iterator i = managers.iterator ();
+            while (i.hasNext ())
+                ((IOManager) i.next ()).close ();
+            managers = new HashSet ();
+        }
+        
+        // open new tab
+        String title = (String) engine.lookupFirst (String.class);
+        if (title == null)
+            title = NbBundle.getBundle (IOManager.class).getString 
+                ("CTL_DebuggerConsole_Title");
+        ioManager = new IOManager (title);
+        managers.add (ioManager);
+        
         debugger.addPropertyChangeListener (
             JPDADebugger.PROP_STATE,
             this
@@ -75,7 +95,6 @@ PropertyChangeListener {
             JPDADebugger.PROP_STATE,
             this
         );
-        ioManager.stop ();
         debugger = null;
         engine = null;
         engineContext = null;

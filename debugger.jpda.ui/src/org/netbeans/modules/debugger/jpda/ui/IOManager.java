@@ -56,12 +56,9 @@ public class IOManager {
     // init ....................................................................
     
     public IOManager (
+        String title
     ) {
-        InputOutput debuggerIO = IOProvider.getDefault ().getIO ( 
-            NbBundle.getBundle (IOManager.class).getString 
-                ("CTL_DebuggerConsole_Title"), 
-            true
-        );
+        debuggerIO = IOProvider.getDefault ().getIO (title, true);
         debuggerIO.setFocusTaken (false);
         debuggerOut = debuggerIO.getOut ();
     }
@@ -113,10 +110,8 @@ public class IOManager {
             task.schedule (500);
     }
 
-    /**
-     * Stops communication between InputOutput and process.
-     */
-    public void stop () {
+    void close () {
+        debuggerIO.closeInputOutput ();
     }
     
     
