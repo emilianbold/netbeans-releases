@@ -16,6 +16,9 @@ package org.netbeans.modules.java.j2seproject.applet;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import org.netbeans.jmi.javamodel.JavaClass;
+import org.netbeans.jmi.javamodel.UnresolvedClass;
+import org.netbeans.modules.javacore.api.JavaModel;
 
 import org.openide.*;
 import org.openide.modules.SpecificationVersion;
@@ -47,6 +50,9 @@ public class AppletSupport {
     /** constant for class extension */
     private static final String CLASS_EXT = "class"; // NOI18N
 
+    private final static String POLICY_FILE_NAME = "applet";
+    private final static String POLICY_FILE_EXT = "policy";
+        
     private AppletSupport() {}
 
     // Used only from unit tests to suppress detection of applet. If value
@@ -71,6 +77,7 @@ public class AppletSupport {
     }
     
     public static String getAppletClassName(Object obj) {
+                
         if ((obj == null) || !(obj instanceof SourceCookie)) {
             return null;
         }
@@ -80,9 +87,14 @@ public class AppletSupport {
         ClassElement[] classes = source.getClasses();
         boolean isApplet = false;
         for (int i = 0; i < classes.length; i++) {
-            if (classes[i].isDeclaredAsApplet()) {
-                fullName = classes[i].getName().getFullName ();
-                return fullName;
+            JavaClass applet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("java.applet.Applet");
+            JavaClass jApplet = (JavaClass)JavaModel.getDefaultExtent().getType().resolve("javax.swing.JApplet");
+            JavaClass javaClass = (JavaClass)JavaModel.getDefaultExtent().getType().resolve(classes[i].getName().getFullName());
+            if (!(javaClass instanceof UnresolvedClass)) {
+                if (javaClass.isSubTypeOf(applet) || (javaClass.isSubTypeOf(jApplet))) {
+                    fullName = classes[i].getName().getFullName ();
+                    return fullName;
+                }
             }
         }
         return null;
@@ -115,6 +127,33 @@ public class AppletSupport {
         return htmlFile;
     }
 
+    /**
+    * @return html file with the same name as applet
+    */
+    public static FileObject generateSecurityPolicy(FileObject projectDir) {
+
+        FileObject policyFile = projectDir.getFileObject(POLICY_FILE_NAME, POLICY_FILE_EXT);
+        
+        try {
+            if (policyFile == null) {
+                policyFile = projectDir.createData(POLICY_FILE_NAME, POLICY_FILE_EXT);
+            }        
+            FileLock lock = policyFile.lock();
+            PrintWriter writer = null;
+            try {
+                writer = new PrintWriter(policyFile.getOutputStream(lock));
+                fillInPolicyFile(writer);
+            } finally {
+                lock.releaseLock();
+                if (writer != null)
+                    writer.close();
+            }
+        } catch (IOException ioe) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Problem when generating applet policy file: " + ioe); //NOI18N
+        }
+        return policyFile;
+    }
+    
     /**
     * @return URL of the html file with the same name as sibling
     */
@@ -212,6 +251,18 @@ public class AppletSupport {
 
         writer.println("</BODY>"); // NOI18N
         writer.println("</HTML>"); // NOI18N
+        writer.flush();
+    }
+
+
+
+    /** fills in policy file with all permissions granted
+    * @param writer is a file to be filled
+    */
+    private static void fillInPolicyFile(PrintWriter writer) {
+        writer.println("grant {"); // NOI18N
+        writer.println("permission java.security.AllPermission;"); // NOI18N
+        writer.println("};"); // NOI18N
         writer.flush();
     }
 }
