@@ -268,12 +268,12 @@ public final class GlobalPathRegistry {
      * @return an immutable set of <code>FileObject</code> source roots
      */
     public synchronized Set/*<FileObject>*/ getSourceRoots() {
-        if (sourceRoots == null) {
-            sourceRoots = new LinkedHashSet();
+        if (this.sourceRoots == null) {
+            Set newSourceRoots = new LinkedHashSet();
             Iterator it = getPaths(ClassPath.SOURCE).iterator();
             while (it.hasNext()) {
                 ClassPath sp = (ClassPath)it.next();
-                sourceRoots.addAll(Arrays.asList(sp.getRoots()));
+                newSourceRoots.addAll(Arrays.asList(sp.getRoots()));
             }
             Set/*<ClassPath>*/ compileAndBootPaths = new LinkedHashSet(getPaths(ClassPath.COMPILE));
             compileAndBootPaths.addAll(getPaths(ClassPath.BOOT));
@@ -287,9 +287,10 @@ public final class GlobalPathRegistry {
                     result.addChangeListener(this.resultListener);
                     this.results.add (result);
                     FileObject[] someRoots = result.getRoots();
-                    sourceRoots.addAll(Arrays.asList(someRoots));
+                    newSourceRoots.addAll(Arrays.asList(someRoots));
                 }
             }
+            this.sourceRoots = newSourceRoots;            
         }
         return sourceRoots;
     }
