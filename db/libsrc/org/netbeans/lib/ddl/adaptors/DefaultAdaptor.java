@@ -458,7 +458,7 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 	{
 		String product = (String)properties.get(PROP_PRODUCTNAME);
 		if (product == null) {
-			if (dmd != null) product = dmd.getDatabaseProductName();
+			if (dmd != null) product = dmd.getDatabaseProductName().trim();
 			else return NOT_SET_STRING;
 			properties.put(PROP_PRODUCTNAME, product);
 		}
@@ -3934,6 +3934,8 @@ public class DefaultAdaptor implements DatabaseMetaDataAdaptor, Serializable
 
 /*
  * <<Log>>
+ *  7    Gandalf   1.6         11/1/99  Radko Najman    dmd.getDatabaseProductName().trim()
+ *       
  *  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  5    Gandalf   1.4         9/30/99  Slavek Psenicka 
