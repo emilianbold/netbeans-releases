@@ -36,6 +36,7 @@ import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.beans.PropertyEditor;
 
 /**
  *
@@ -394,17 +395,41 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     protected void createPasteTypes(Transferable t, java.util.List s) {
         boolean isRADComponentFlavor = false;
 
-        if ((component instanceof RADVisualContainer) &&
-            (t.isDataFlavorSupported(RAD_COMPONENT_COPY_FLAVOR) || t.isDataFlavorSupported(RAD_COMPONENT_CUT_FLAVOR))) {
-            s.add(new RADPaste(t));
-            isRADComponentFlavor = true;
-        }
+        if (t.isDataFlavorSupported(RAD_COMPONENT_COPY_FLAVOR)
+                || t.isDataFlavorSupported(RAD_COMPONENT_CUT_FLAVOR)) {
+            try {
+                // hack for menus (if the component being copied is
+                // a menu-item it can be copied only into another menu)
+                Object transComp = t.getTransferData(t.getTransferDataFlavors()[0]);
+                boolean transMenu;
+                if (transComp instanceof RADMenuComponent) { // exclude menu bars
+                    int menuType = ((RADMenuComponent)transComp).getMenuItemType();
+                    transMenu = menuType != RADMenuItemComponent.T_MENUBAR
+                                && menuType != RADMenuItemComponent.T_JMENUBAR;
+                }
+                else transMenu = false;
+                boolean transMenuItem = !transMenu 
+                                      && transComp instanceof RADMenuItemComponent;
 
-        // if there is not a RADComponent in the clipboard, try if it is not InstanceCookie
-        if (!isRADComponentFlavor) {
+                if (component instanceof RADVisualContainer) {
+                    if (!transMenu && !transMenuItem)
+                        s.add(new RADPaste(t));
+                }
+                else if (component instanceof RADMenuComponent) {
+                    int menuType = ((RADMenuComponent)component).getMenuItemType();
+                    if (transMenu || (transMenuItem 
+                                   && (menuType != RADMenuItemComponent.T_MENUBAR
+                                && menuType != RADMenuItemComponent.T_JMENUBAR)))
+                    s.add(new RADPaste(t));
+                }
+            }
+            catch (UnsupportedFlavorException e) {} // should not happen
+            catch (java.io.IOException e) {} // should not happen
+        }
+        else { // if there is not a RADComponent in the clipboard,
+               // try if it is not InstanceCookie
             InstanceCookie ic =(InstanceCookie)NodeTransfer.cookie(t, NodeTransfer.COPY, InstanceCookie.class);
             if (ic != null) {
-                //        System.out.println("Pasting instance: "+ic.instanceName()); // NOI18N
                 s.add(new InstancePaste(ic));
             }
         }
@@ -532,13 +557,17 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
 
     private RADComponent makeCopy(RADComponent original, boolean assignName) {
         RADComponent copyComponent;
-        if (original instanceof RADVisualContainer) {
+        if (original instanceof RADVisualContainer)
             copyComponent = new RADVisualContainer();
-        } else if (original instanceof RADVisualComponent) {
+        else if (original instanceof RADVisualComponent)
             copyComponent = new RADVisualComponent();
-        } else {
+        else if (original instanceof RADMenuComponent)
+            copyComponent = new RADMenuComponent();
+        else if (original instanceof RADMenuItemComponent)
+            copyComponent = new RADMenuItemComponent();
+        else
             copyComponent = new RADComponent();
-        }
+
         copyComponent.initialize(component.getFormManager());
         copyComponent.setComponent(original.getBeanClass());
         //if (assignName) copyComponent.setName(component.getFormManager().getVariablesPool().getNewName(original.getBeanClass()));
@@ -556,13 +585,13 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         }
 
         // 2. copy subcomponents
-        if (original instanceof RADVisualContainer) { // [FUTURE - non visual containers]
-            RADComponent[] originalSubs =((RADVisualContainer)original).getSubBeans();
+        if (original instanceof ComponentContainer) { // [FUTURE - non visual containers]
+            RADComponent[] originalSubs =((ComponentContainer)original).getSubBeans();
             RADComponent[] newSubs = new RADComponent[originalSubs.length];
             for (int i = 0; i < originalSubs.length; i++) {
                 newSubs[i] = makeCopy(originalSubs [i], true);
             }
-            ((RADVisualContainer)copyComponent).initSubComponents(newSubs);
+            ((ComponentContainer)copyComponent).initSubComponents(newSubs);
         }
 
 
@@ -571,9 +600,22 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
         for (int i = 0; i < originalProps.length; i++) {
             try {
                 if (originalProps[i].isChanged()) {
-                    RADComponent.RADProperty newProperty = copyComponent.getPropertyByName(originalProps[i].getName());
-                    newProperty.setValue(FormUtils.cloneObject(originalProps[i].getValue()));
-                    newProperty.setChanged(true);
+                    RADComponent.RADProperty originalProp = originalProps[i];
+                    RADComponent.RADProperty newProp = copyComponent.getPropertyByName(originalProp.getName());
+                    newProp.setValue(FormUtils.cloneObject(originalProp.getValue()));
+                    // current PropertyEditor should be cloned too...
+                    PropertyEditor currEd = originalProp.getCurrentEditor();
+                    PropertyEditor newEd = newProp.getCurrentEditor();
+                    if (currEd != null && (newEd == null || !currEd.getClass()
+                                                    .equals(newEd.getClass()))) {
+                        if (currEd instanceof RADConnectionPropertyEditor)
+                            newEd = new RADConnectionPropertyEditor(
+                                newProp.getPropertyDescriptor().getPropertyType());
+                        else
+                            newEd = (PropertyEditor)currEd.getClass().newInstance();
+                        newProp.setCurrentEditor(newEd);
+                    }
+                    newProp.setChanged(true);
                 }
             } catch (Exception e) {
                 // ignore property with problem
@@ -654,7 +696,12 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
-                    pasteManager.addNonVisualComponent(newCopy, null);
+                    if (radComponent instanceof RADMenuItemComponent
+                            && component instanceof RADMenuComponent)
+                        pasteManager.addNonVisualComponent(newCopy, 
+                                                 (ComponentContainer)component);
+                    else 
+                        pasteManager.addNonVisualComponent(newCopy, null);
                     pasteManager.fireCodeChange();
                 }
                 return null;
@@ -668,7 +715,12 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
                     pasteManager.getFormTopComponent().validate();
                     pasteManager.fireCodeChange();
                 } else {
-                    pasteManager.addNonVisualComponent(radComponent, null);
+                    if (radComponent instanceof RADMenuItemComponent
+                            && component instanceof RADMenuComponent)
+                        pasteManager.addNonVisualComponent(radComponent, 
+                                                 (ComponentContainer)component);
+                    else 
+                        pasteManager.addNonVisualComponent(radComponent, null);
                     pasteManager.fireCodeChange();
                 }
 

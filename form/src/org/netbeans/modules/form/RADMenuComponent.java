@@ -248,6 +248,12 @@ public class RADMenuComponent extends RADMenuItemComponent implements ComponentC
         }
     }
 
+    void freeMenu() {
+        for (int i=0, n=subComponents.size(); i < n; i++)
+            ((RADMenuItemComponent)subComponents.get(i)).freeMenu();
+        super.freeMenu();
+    }
+
     // -----------------------------------------------------------------------------
     // Debug methods
 

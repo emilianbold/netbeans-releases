@@ -169,13 +169,12 @@ public class RADMenuItemComponent extends RADComponent {
         return null;
     }
     
-    static void freeMenu(FormManager2 manager, Object awtMenu) {
-        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(manager);
-        if (dtm != null) {
-            dtm.removeDesignTime(awtMenu);
-        }
+    void freeMenu() {
+        DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.get(getFormManager());
+        if (dtm != null)
+            dtm.removeDesignTime(getBeanInstance());
     }
-    
+
     static void freeDesignTimeMenus(FormManager2 manager) {
         DesignTimeMenus dtm =(DesignTimeMenus) menusByFM.remove(manager);
         if (dtm != null) {
@@ -254,7 +253,7 @@ public class RADMenuItemComponent extends RADComponent {
                     jm.setActionCommand(m.getActionCommand());
                     jm.setEnabled(m.isEnabled());
                     jm.setFont(m.getFont());
-                    jm.setLabel(m.getLabel());
+                    jm.setText(m.getLabel());
                     jm.setName(m.getName());
                     jm.getPopupMenu().setLightWeightPopupEnabled(false);
                     break;
@@ -273,7 +272,7 @@ public class RADMenuItemComponent extends RADComponent {
                     jmi.setActionCommand(mi.getActionCommand());
                     jmi.setEnabled(mi.isEnabled());
                     jmi.setFont(mi.getFont());
-                    jmi.setLabel(mi.getLabel());
+                    jmi.setText(mi.getLabel());
                     jmi.setName(mi.getName());
                     break;
                 case T_CHECKBOXMENUITEM:
@@ -282,7 +281,7 @@ public class RADMenuItemComponent extends RADComponent {
                     jcm.setActionCommand(cm.getActionCommand());
                     jcm.setEnabled(cm.isEnabled());
                     jcm.setFont(cm.getFont());
-                    jcm.setLabel(cm.getLabel());
+                    jcm.setText(cm.getLabel());
                     jcm.setName(cm.getName());
                     jcm.setState(cm.getState());
                     break;
