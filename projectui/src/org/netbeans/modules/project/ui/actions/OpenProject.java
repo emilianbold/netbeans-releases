@@ -24,6 +24,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectChooserAccessory;
 import org.netbeans.modules.project.ui.ProjectTab;
+import org.netbeans.modules.project.ui.ProjectUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -73,6 +74,9 @@ public class OpenProject extends BasicAction {
                         OpenProjectList.getDefault().setMainProject( project );
                     }
                     final ProjectTab ptLogial  = ProjectTab.findDefault (ProjectTab.ID_LOGICAL);
+                    
+                    // open project files
+                    ProjectUtilities.openProjectFiles (project);
                     
                     // invoke later to select the being opened project if the focus is outside ProjectTab
                     SwingUtilities.invokeLater (new Runnable () {

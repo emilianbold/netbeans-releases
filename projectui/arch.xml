@@ -698,6 +698,9 @@ Microsystems, Inc. All Rights Reserved.
    details given in the particular interfaces. E.g.
    <code>LogicalViewProvider</code> is sought out in project lookups when
    displaying the logical view.
+   The UI uses <code>AuxiliaryConfiguration</code> to store list of files opened
+   in the project in an instant closing the project. Will be used for reopen these
+   files when this project opens.
   </p>
  </answer>
 

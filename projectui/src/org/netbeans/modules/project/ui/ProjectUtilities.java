@@ -16,6 +16,8 @@ package org.netbeans.modules.project.ui;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.io.File;
 
@@ -24,22 +26,28 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-
-
-import org.openide.util.Utilities;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 
 /** The util methods for projectui module.
@@ -47,8 +55,11 @@ import org.openide.windows.WindowManager;
  * @author  Jiri Rechtacek
  */
 public class ProjectUtilities {
+    static final String OPEN_FILES_NS = "http://www.netbeans.org/ns/projectui-open-files/1"; // NOI18N
+    static final String OPEN_FILES_ELEMENT = "open-files"; // NOI18N
+    static final String FILE_ELEMENT = "file"; // NOI18N
     
-    /** Creates a new instance of CloseAllProjectDocuments */
+    /** Creates a new instance of ProjectUtilities */
     private ProjectUtilities () {
     }
     
@@ -59,47 +70,8 @@ public class ProjectUtilities {
      * @param p project to close
      * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
      */    
-    final public static boolean closeAllDocuments (Project[] projects) {
-        if (projects == null) {
-            throw new IllegalArgumentException ("No proects are specified."); // NOI18N
-        }
-        
-        if (projects.length == 0) {
-            // no projects to close, no documents will be closed
-            return true;
-        }
-        List/*Project*/ listOfProjects = Arrays.asList (projects);
-        Set/*DataObject*/ modifiedFiles = new HashSet ();
-        Set/*TopComponent*/ tc2close = new HashSet ();
-        Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
-        TopComponent[] openTCs = editorMode.getTopComponents ();
-        for (int i = 0; i < openTCs.length; i++) {
-            DataObject dobj = (DataObject)openTCs[i].getLookup ().lookup (DataObject.class);
-            if (dobj != null) {
-              FileObject fobj = dobj.getPrimaryFile ();
-              Project owner = FileOwnerQuery.getOwner (fobj);
-              if (listOfProjects.contains (owner)) {
-                  modifiedFiles.add (dobj);
-                  tc2close.add (openTCs[i]);
-              }
-            }
-        }
-        
-        if (modifiedFiles.isEmpty ()) {
-            return true;
-        }
-        
-        boolean result = ExitDialog.showDialog (modifiedFiles);
-        
-        if (result) {
-            // close documents
-            Iterator it = tc2close.iterator ();
-            while (it.hasNext ()) {
-                ((TopComponent)it.next ()).close ();
-            }
-        }
-        
-        return result;
+    public static boolean closeAllDocuments (Project[] projects) {
+        return closeAllDocuments (projects, false);
     }
     
     /** Closes all documents of the given project in editor area. If some documents
@@ -108,7 +80,7 @@ public class ProjectUtilities {
      * @param p project to close
      * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
      */    
-    final public static boolean closeAllDocuments (Project p) {
+    public static boolean closeAllDocuments (Project p) {
         if (p == null) {
             throw new IllegalArgumentException ("No specified project."); // NOI18N
         }
@@ -123,14 +95,14 @@ public class ProjectUtilities {
      *
      * @param newDo new data object
      */   
-    final public static void openAndSelectNewObject (final DataObject newDo) {
+    public static void openAndSelectNewObject (final DataObject newDo) {
         // call the preferred action on main class
         Mutex.EVENT.writeAccess (new Runnable () {
             public void run () {
                 final Node node = newDo.getNodeDelegate ();
                 Action a = node.getPreferredAction();
                 if (a instanceof ContextAwareAction) {
-                    a = ((ContextAwareAction)a).createContextAwareInstance(node.getLookup ());
+                    a = ((ContextAwareAction) a).createContextAwareInstance(node.getLookup ());
                 }
                 if (a != null) {
                     a.actionPerformed(new ActionEvent(node, ActionEvent.ACTION_PERFORMED, "")); // NOI18N
@@ -161,7 +133,7 @@ public class ProjectUtilities {
      * @param extension extension of created file
      * @return localized error message or null if all right
      */    
-    final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
+    public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();
             sb.append (newObjectName);
@@ -238,6 +210,166 @@ public class ProjectUtilities {
                 ErrorManager.getDefault ().notify (ErrorManager.INFORMATIONAL, npe);
             }
         }
+    }
+    
+    /** Closes all documents in editor area which are owned by one of given projects.
+     * If some documents are modified then an user is notified by Save/Discard/Cancel dialog.
+     * Dialog is showed only once for all project's documents together.
+     * If 'storeDocuments' is true then URLs of closed documents are store to private
+     * <code>project.xml</code>.
+     *
+     * @param p project to close
+     * @param storeDocuments will be documents stored to private
+     * @return false if an user cancel the Save/Discard/Cancel dialog, true otherwise
+     */    
+    public static boolean closeAllDocuments (Project[] projects, boolean storeDocuments) {
+        if (projects == null) {
+            throw new IllegalArgumentException ("No projects are specified."); // NOI18N
+        }
+        
+        if (projects.length == 0) {
+            // no projects to close, no documents will be closed
+            return true;
+        }
+
+        List/*<Project>*/ listOfProjects = Arrays.asList (projects);
+        Set/*<DataObject>*/ openFiles = new HashSet ();
+        Set/*<TopComponent>*/ tc2close = new HashSet ();
+        Map/*<Project, SortedSet<String>>*/ urls4project = new HashMap ();
+        Mode editorMode = WindowManager.getDefault ().findMode (CloneableEditorSupport.EDITOR_MODE);
+        TopComponent[] openTCs = editorMode.getTopComponents ();
+        for (int i = 0; i < openTCs.length; i++) {
+            DataObject dobj = (DataObject) openTCs[i].getLookup ().lookup (DataObject.class);
+            if (dobj != null) {
+              FileObject fobj = dobj.getPrimaryFile ();
+              Project owner = FileOwnerQuery.getOwner (fobj);
+              if (listOfProjects.contains (owner)) {
+                  openFiles.add (dobj);
+                  tc2close.add (openTCs[i]);
+                  if (!urls4project.containsKey (owner)) {
+                      // add project
+                      urls4project.put (owner, new TreeSet ());
+                  }
+                  URL url = null;
+                  try {
+                      url = dobj.getPrimaryFile ().getURL ();
+                      ((SortedSet)urls4project.get (owner)).add (url.toExternalForm ());
+                  } catch (FileStateInvalidException fsie) {
+                      assert false : "FileStateInvalidException in " + dobj.getPrimaryFile ();
+                  }
+              }
+            }
+        }
+
+        if (openFiles.isEmpty ()) {
+            return true;
+        }
+        
+        boolean result = ExitDialog.showDialog (openFiles);
+        
+        if (result) {
+            // store project's documents
+            // loop all project being closed
+            Iterator loop = urls4project.keySet ().iterator ();
+            Project p;
+            while (loop.hasNext ()) {
+                p = (Project) loop.next ();
+                storeProjectOpenFiles (p, (SortedSet)urls4project.get (p));
+            }
+            
+            // close documents
+            Iterator it = tc2close.iterator ();
+            while (it.hasNext ()) {
+                ((TopComponent)it.next ()).close ();
+            }
+        }
+        
+        return result;
+    }
+    
+    static private void cleaupAuxiliaryConfiguration (Project[] projects) {
+        for (int i = 0; i < projects.length; i++) {
+            AuxiliaryConfiguration aux = (AuxiliaryConfiguration) projects[i].getLookup ().lookup (AuxiliaryConfiguration.class);
+            if (aux != null) {
+                // clean-up files before adding new one
+                aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+            }
+        }
+    }
+    
+    static private void storeProjectOpenFiles (Project p, SortedSet/*<String>*/ urls) {
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup ().lookup (AuxiliaryConfiguration.class);
+        if (aux != null) {
+            
+            aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+
+            Document xml = XMLUtil.createDocument (OPEN_FILES_ELEMENT, OPEN_FILES_NS, null, null);
+            Element fileEl;
+            
+            Element openFiles = xml.createElementNS (OPEN_FILES_NS, OPEN_FILES_ELEMENT);
+            
+            // loop all open files of given project
+            Iterator it = urls.iterator ();
+            while (it.hasNext ()) {
+                fileEl = openFiles.getOwnerDocument ().createElement (FILE_ELEMENT);
+                String xxx = (String)it.next ();
+                fileEl.appendChild (fileEl.getOwnerDocument ().createTextNode (xxx));
+                openFiles.appendChild (fileEl);
+            }
+            
+            aux.putConfigurationFragment (openFiles, false);
+        }
+    }
+    
+    /** Opens the project's files read from the private <code>project.xml</code> file
+     * 
+     * @param p project
+     */
+    public static void openProjectFiles (Project p) {
+        AuxiliaryConfiguration aux = (AuxiliaryConfiguration) p.getLookup ().lookup (AuxiliaryConfiguration.class);
+        
+        if (aux == null) {
+            return ;
+        }
+        
+        Element openFiles = aux.getConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
+        if (openFiles == null) {
+            return;
+        }
+
+        NodeList list = openFiles.getElementsByTagName (FILE_ELEMENT);
+        if (list == null) {
+            return ;
+        }
+        
+        FileObject fo = null;
+        DataObject dobj;
+        String url;
+        for (int i = 0; i < list.getLength (); i++) {
+            url = list.item (i).getChildNodes ().item (0).getNodeValue ();
+            try {
+                fo = URLMapper.findFileObject (new URL (url));
+                if (fo == null) {
+                    continue;
+                }
+                dobj = DataObject.find (fo);
+                EditCookie ec = (EditCookie) dobj.getCookie (EditCookie.class);
+                OpenCookie oc = (OpenCookie) dobj.getCookie (OpenCookie.class);
+                if (ec != null) {
+                    ((EditCookie) ec).edit ();
+                } else if (oc != null) {
+                    ((OpenCookie) oc).open ();
+
+                }
+            } catch (MalformedURLException mue) {
+                assert false : "MalformedURLException in " + url;
+            } catch (DataObjectNotFoundException donfo) {
+                assert false : "DataObject must exist for " + fo;
+            }
+        }
+        
+        // clean-up stored files
+        aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
     }
     
 }

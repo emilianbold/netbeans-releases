@@ -13,30 +13,20 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Map;
-import java.util.StringTokenizer;
-import java.util.WeakHashMap;
-import junit.framework.Assert;
 import org.netbeans.api.project.Project;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.xml.XMLUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * Help set up org.netbeans.api.project.*Test.
@@ -145,4 +135,91 @@ public final class TestSupport {
                 
     }
     
+    public static AuxiliaryConfiguration createAuxiliaryConfiguration () {
+        return new MemoryAuxiliaryConfiguration ();
+    }
+    
+    private static class MemoryAuxiliaryConfiguration implements AuxiliaryConfiguration {
+        private Document xml = XMLUtil.createDocument ("private", "http://www.netbeans.org/ns/j2se-project-private/1", null, null);
+
+        public Element getConfigurationFragment (String elementName, String namespace, boolean shared) {
+            if (shared) {
+                assert false : "Shared not implemented";
+            }
+            Element root = xml.getDocumentElement ();
+            Element data = findElement (root, elementName, namespace);
+            if (data != null) {
+                return  (Element) data.cloneNode (true);
+            } else {
+                //return xml.createElementNS (namespace, elementName);
+                return null;
+            }
+        }
+        
+        public void putConfigurationFragment(Element fragment, boolean shared) throws IllegalArgumentException {
+            if (shared) {
+                assert false : "Shared not implemented";
+            }
+            
+            Element root = xml.getDocumentElement ();
+            Element existing = findElement (root, fragment.getLocalName (), fragment.getNamespaceURI ());
+            // XXX first compare to existing and return if the same
+            if (existing != null) {
+                root.removeChild (existing);
+            }
+            // the children are alphabetize: find correct place to insert new node
+            Node ref = null;
+            NodeList list = root.getChildNodes ();
+            for (int i=0; i<list.getLength (); i++) {
+                Node node  = list.item (i);
+                if (node.getNodeType () != Node.ELEMENT_NODE) {
+                    continue;
+                }
+                int comparison = node.getNodeName ().compareTo (fragment.getNodeName ());
+                if (comparison == 0) {
+                    comparison = node.getNamespaceURI ().compareTo (fragment.getNamespaceURI ());
+                }
+                if (comparison > 0) {
+                    ref = node;
+                    break;
+                }
+            }
+            root.insertBefore (root.getOwnerDocument ().importNode (fragment, true), ref);
+        }
+        
+        public boolean removeConfigurationFragment (String elementName, String namespace, boolean shared) throws IllegalArgumentException {
+            if (shared) {
+                assert false : "Shared not implemented";
+            }
+
+            Element root = xml.getDocumentElement ();
+            Element data = findElement (root, elementName, namespace);
+            if (data != null) {
+                root.removeChild (data);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    
+    // copied from org.netbeans.modules.project.ant.Util
+    private static Element findElement(Element parent, String name, String namespace) {
+        Element result = null;
+        NodeList l = parent.getChildNodes();
+        int len = l.getLength();
+        for (int i = 0; i < len; i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element)l.item(i);
+                if (name.equals(el.getLocalName()) && namespace.equals(el.getNamespaceURI())) {
+                    if (result == null) {
+                        result = el;
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+        return result;
+    }
 }
