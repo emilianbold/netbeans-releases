@@ -50,6 +50,13 @@ Microsystems, Inc. All Rights Reserved.
 
     <start-server>org.netbeans.modules.tomcat5.ide.StartTomcat</start-server>
     
+    <incremental-deploy>org.netbeans.modules.tomcat5.ide.StartTomcat</incremental-deploy>
+    
+    <file-deployment-layout>org.netbeans.modules.tomcat5.ide.StartTomcat</file-deployment-layout>
+    
+    <module-url-resolver>org.netbeans.modules.tomcat5.ide.StartTomcat</module-url-resolver>
+    
+    <deployment-plan-splitter>org.netbeans.modules.tomcat5.ide.StartTomcat</deployment-plan-splitter>
     <!--
     incremental-deploy?, inplace-deploy?, start-server?)>
     -->

@@ -121,9 +121,19 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
             else {
                 FileInputStream in = new FileInputStream (deplPlan);
                 Context ctx = Context.createGraph (in);
-                tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
-                command = "install?update=true&config="+deplPlan.toURI ()+ // NOI18N
-                    "&war="+docBase; // NOI18N
+                //PENDING #37763
+//                tmId = new TomcatModule (t, ctx.getAttributeValue ("path")); // NOI18N
+//                command = "install?update=true&config="+deplPlan.toURI ()+ // NOI18N
+//                    "&war="+docBase; // NOI18N
+                if (wmfile.isDirectory ()) {
+                    ctxPath = "/"+wmfile.getName ();    // NOI18N
+                }
+                else {
+                    ctxPath = "/"+wmfile.getName ().substring (0, wmfile.getName ().lastIndexOf ('.'));    // NOI18N
+                }
+                ctxPath = ctx.getAttributeValue ("path");
+                tmId = new TomcatModule (t, ctxPath); // NOI18N
+                command = "deploy?update=true&path="+ctxPath+"&war="+docBase; // NOI18N
             }
             
             // call the command
@@ -138,6 +148,14 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         
     }
     
+    public void initialDeploy (Target t, String path) {
+        this.tmId = new TomcatModule (t, path);
+        command = "deploy?path="+tmId.getPath (); // NOI18N
+        cmdType = CommandType.DISTRIBUTE;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+
     public void remove (TomcatModule tmId) {
         this.tmId = tmId;
         command = "remove?path="+tmId.getPath (); // NOI18N
@@ -160,6 +178,15 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         this.tmId = tmId;
         command = "stop?path="+tmId.getPath (); // NOI18N
         cmdType = CommandType.STOP;
+        pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
+        rp ().post (this, 0, Thread.NORM_PRIORITY);
+    }
+    
+    /** Reloads web module. */
+    public void reload (TomcatModule tmId) {
+        this.tmId = tmId;
+        command = "reload?path="+tmId.getPath (); // NOI18N
+        cmdType = CommandType.REDEPLOY;
         pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, "", StateType.RUNNING));
         rp ().post (this, 0, Thread.NORM_PRIORITY);
     }
@@ -188,14 +215,14 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String ctx = ltok.nextToken ();
                     String s = ltok.nextToken ();
                     String tag = ltok.nextToken ();
-                    String path = ltok.nextToken ();
+                    String path = line.substring (ctx.length () + s.length () + tag.length () + 3);
                     if ("running".equals (s)
                     &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_RUNNING) {
-                        modules.add (new TomcatModule (t, path));
+                        modules.add (new TomcatModule (t, ctx));
                     }
                     if ("stopped".equals (s)
                     &&  state == TomcatManager.ENUM_AVAILABLE || state == TomcatManager.ENUM_NONRUNNING) {
-                        modules.add (new TomcatModule (t, path));
+                        modules.add (new TomcatModule (t, ctx));
                     }
                 }
                 catch (java.util.NoSuchElementException e) {

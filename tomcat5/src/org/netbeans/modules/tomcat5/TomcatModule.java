@@ -62,4 +62,7 @@ public class TomcatModule implements TargetModuleID {
         }
     }
     
+    public String toString () {
+        return getModuleID ();
+    }
 }
