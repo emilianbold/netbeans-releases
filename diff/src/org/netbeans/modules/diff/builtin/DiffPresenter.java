@@ -81,7 +81,6 @@ public class DiffPresenter extends javax.swing.JPanel {
         servicesPanel = new javax.swing.JPanel();
         providerLabel = new javax.swing.JLabel();
         visualizerLabel = new javax.swing.JLabel();
-        emptyLabel = new javax.swing.JLabel();
         visualizerPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -91,8 +90,8 @@ public class DiffPresenter extends javax.swing.JPanel {
         providerLabel.setText(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Provider"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         servicesPanel.add(providerLabel, gridBagConstraints);
 
         visualizerLabel.setText(org.openide.util.NbBundle.getMessage(DiffPresenter.class, "LBL_Visualizer"));
@@ -101,12 +100,6 @@ public class DiffPresenter extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         servicesPanel.add(visualizerLabel, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        servicesPanel.add(emptyLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -129,7 +122,6 @@ public class DiffPresenter extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel emptyLabel;
     private javax.swing.JLabel providerLabel;
     private javax.swing.JPanel servicesPanel;
     private javax.swing.JLabel visualizerLabel;
@@ -168,7 +160,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 15);
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            //gridBagConstraints.weightx = 1.0;
+            if (!diffInfo.isChooseVisualizers()) gridBagConstraints.weightx = 1.0;
             gridBagConstraints.gridx = 1;
             servicesPanel.add(panel, gridBagConstraints);
             providerLabel.setLabelFor(panel);
@@ -200,7 +192,7 @@ public class DiffPresenter extends javax.swing.JPanel {
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            //gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weightx = 1.0;
             gridBagConstraints.gridx = 3;
             servicesPanel.add(panel, gridBagConstraints);
             visualizerLabel.setLabelFor(panel);
