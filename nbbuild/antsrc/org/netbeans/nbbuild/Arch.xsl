@@ -18,37 +18,37 @@
             </head>
             <body>
             
-                <H1>NetBeans Architecture Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></H1>
+                <h1>NetBeans Architecture Answers for <xsl:value-of select="api-answers/@module" /><xsl:text> module</xsl:text></h1>
                 
                 <xsl:variable name="qver" select="substring-before(substring-after(api-answers/api-questions/@version,'Revision: '),' $')" />
                 <xsl:variable name="aver" select="substring-before(substring-after(api-answers/@version,'Revision:'),' $')" />
                 <xsl:variable name="afor" select="api-answers/@question-version" />
                 
-                <UL>
-                <LI><B>Author:</B> <xsl:value-of select="api-answers/@author" /></LI>
-                <LI><B>Version of answers:</B> <xsl:value-of select="$aver" /></LI>
-                <LI><B>Answers for questions:</B> <xsl:value-of select="$afor" /></LI>
-                <LI><B>Version of questions:</B> <xsl:value-of select="$qver" /></LI>
-                </UL>
+                <ul>
+                <li><b>Author:</b> <xsl:value-of select="api-answers/@author" /></li>
+                <li><b>Version of answers:</b> <xsl:value-of select="$aver" /></li>
+                <li><b>Answers for questions:</b> <xsl:value-of select="$afor" /></li>
+                <li><b>Version of questions:</b> <xsl:value-of select="$qver" /></li>
+                </ul>
                 
                 <xsl:if test="not($qver=$afor)">
-                    <B> WARNING: Version of questions is different than 
+                    <b> WARNING: Version of questions is different than 
                         those that these answers are written for! 
                         Is: "<xsl:value-of select="$qver"/>" and should 
                         be "<xsl:value-of select="$afor" />".
-                    </B>
+                    </b>
                 </xsl:if>
             
                 <xsl:apply-templates />    
                 
-                <HR/>
+                <hr/>
                 
                 <h2>Interfaces table</h2>
                 
                 <xsl:variable name="all_interfaces" select="//api" />
                 
                 <xsl:if test="not($all_interfaces)" >
-                    <B> WARNING: No imported or exported interfaces! </B>
+                    <b> WARNING: No imported or exported interfaces! </b>
                 </xsl:if>
              
                 <table border="1" >   
@@ -64,7 +64,7 @@
                     </xsl:for-each>
                 </table>
                 
-                <HR/>
+                <hr/>
                 
                 <xsl:variable name="all_properties" select="//property" />
                 <xsl:if test="$all_properties">
@@ -82,7 +82,7 @@
                             <xsl:call-template name="property" />
                         </xsl:for-each>
                     </table>
-                    <HR/>
+                    <hr/>
                 </xsl:if>
             </body>
         </html>
@@ -93,11 +93,11 @@
         <h2>
             <xsl:value-of select="@name" />
         </h2>
-        <UL>
+        <ul>
             <xsl:for-each select="question">
                 <xsl:call-template name="answer" />
             </xsl:for-each>
-        </UL>
+        </ul>
     </xsl:template>
     
 
