@@ -22,7 +22,10 @@ import org.openide.execution.*;
 import org.openide.src.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
+import org.openide.util.Task;
 import java.lang.reflect.*;
+import org.openide.cookies.*;
+
 import java.util.*;
 /**
  *
@@ -95,9 +98,14 @@ class TestUtil extends Object {
     }
         
     static public boolean isTestClassFile(String packageName) {
-        // definitely not that easy !!!! -- need to work on it
-        //System.err.println("TestUtil.isTestClassFile packageName = "+packageName);
-        return packageName.endsWith(getTestClassSuffix());
+        boolean result = true;
+        if (getTestClassPrefix() != null) {
+            result &= packageName.startsWith(getTestClassPrefix());
+        }
+        if (getTestClassSuffix() != null) {
+            result &= packageName.endsWith(getTestClassSuffix());
+        }
+        return result;
     }    
     
     //
@@ -139,9 +147,14 @@ class TestUtil extends Object {
 
     
     static public boolean isTestSuiteFile(String packageName) {
-        // again need to work on that
-        //System.err.println("TestUtil.isTestSuiteFile packageName = "+packageName);
-        return packageName.endsWith(getTestSuiteSuffix());
+        boolean result = true;
+        if (getTestSuitePrefix() != null) {
+            result &= packageName.startsWith(getTestSuitePrefix());
+        }
+        if (getTestSuiteSuffix() != null) {
+            result &= packageName.endsWith(getTestSuiteSuffix());
+        }
+        return result;
     }    
     
     // other misc methods
@@ -226,5 +239,118 @@ class TestUtil extends Object {
                 !fileSystem.isReadOnly() &&
                 !capability.capableOf(capability.DOC));
     }
+    
+
+    // make sure the class element is parsed, so it cannot return
+    // wrong results
+    static void parseClassElement(ClassElement ce) {
+        //System.err.println("$$$$$$$ Parsing class element :"+ce.getVMName());
+        SourceElement se = ce.getSource();
+        int sourceStatus = se.getStatus();
+        if ((sourceStatus != SourceElement.STATUS_OK)&(sourceStatus != SourceElement.STATUS_ERROR)) {
+            //System.err.println("$$$$$ Parsing ....");
+            Task parser = se.prepare();
+            parser.waitFinished();
+        } 
+        if (se.getStatus() == SourceElement.STATUS_OK) {
+            //System.err.println("$$$$$$ SourceElement is OK ....");
+        } else {
+            //System.err.println("$!!!!! SourceElement is in status:"+se.getStatus());
+        }
+    }
+    
+    
+    static boolean anyInterfaceImplementsName(Identifier[] interfaces, String name) {
+        for (int i=0; i < interfaces.length; i++) {
+            if (interfaces[i].getFullName().equals(name)) {
+                return true;
+            }
+        }
+        // hmm, it does not seem to 
+        // let's try parent interfaces (if any)
+        for (int i=0; i < interfaces.length; i++) {
+            ClassElement interfaceClassElement = ClassElement.forName(interfaces[i].getFullName());
+            if (interfaceClassElement != null) {
+                // make sure this class element is parsed
+                parseClassElement(interfaceClassElement);
+                Identifier[] parentInterfaces = interfaceClassElement.getInterfaces();
+                if (parentInterfaces != null) {
+                    boolean result = anyInterfaceImplementsName(parentInterfaces, name);
+                    if (result == true) {
+                       // great - we found it
+                       return true;
+                    } 
+                    // otherwise continue
+                }
+            }
+        }
+        // hmm, this branch does not seem to implement the interface name
+        return false;
+    }
+    
+        
+    
+    // is ClassElement a Test class ?
+    static boolean isClassElementImplementingTestInterface(ClassElement ce) {        
+        
+        boolean result = false;
+        ClassElement classElement = ce;
+        while (classElement != null) {
+            //System.err.println("############### Tested ClassElement:"+classElement.getVMName());
+            // make sure it is correctly parsed
+            parseClassElement(classElement);
+            Identifier superClass = classElement.getSuperclass();
+            //System.err.println("Tested superClass :"+superClass);
+            Identifier[] interfaces = classElement.getInterfaces();            
+            // check the supperclass (if available)            
+            if (superClass != null) {
+                String superClassName = superClass.getFullName();                
+                //System.err.println("Tested ClassElement superclassFullName:"+superClassName);
+                // shortcut !!!
+                classElement = ClassElement.forName(superClassName);                
+                if (classElement != null) {                    
+                    //System.err.println("!! Tested SuperClassElement.getVMName()"+classElement.getVMName());
+                    parseClassElement(classElement);
+                    if ("junit.framework.TestCase".equals(classElement.getVMName())) {
+                        return true;
+                    }
+                } else {
+                    //System.err.println("!!! superClassElement is null !!!!!");
+                }
+            } else {
+                // no super class - go on
+                //System.err.println("No superclass");
+                classElement = null;
+            }
+            
+            // now check the interfaces            
+            if (anyInterfaceImplementsName(interfaces,"junit.framework.Test")) {
+                // we found it
+                return true;
+            }
+            // otherwise continue in our search
+        }
+        // not implemented (or class has no superclass)
+        return false;
+    }    
+    
+    static ClassElement getClassElementFromFileObject(FileObject fo) throws DataObjectNotFoundException {
+        return getClassElementFromDataObject(DataObject.find(fo));
+    }
+    
+    
+    static ClassElement getClassElementFromDataObject(DataObject dO) {
+        SourceCookie    sc;
+        SourceElement   se;
+
+        sc = (SourceCookie) dO.getCookie(SourceCookie.class);
+        se = sc.getSource();
+        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
+    }
+    
+    static ClassElement getClassElementCookie(DataObject doTarget, String name) {
+        return (ClassElement) doTarget.getNodeDelegate().getChildren().findChild(name).getCookie(ClassElement.class);
+    }    
+    
 }
     

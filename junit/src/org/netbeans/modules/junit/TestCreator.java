@@ -29,6 +29,7 @@ import org.openide.src.*;
 import org.openide.filesystems.*;
 import org.openide.cookies.SourceCookie;
 import org.openide.cookies.SourceCookie.Editor;
+import org.openide.util.Task;
 
 /**
  *
@@ -122,7 +123,7 @@ public class TestCreator extends java.lang.Object {
         //System.err.println("isClassTestable: class name="+ce.getVMName());
         
         // check whether class implements test interfaces
-        if (isClassElementImplementingTestInterface(ce)) {
+        if (TestUtil.isClassElementImplementingTestInterface(ce)) {
             //System.err.println("!!Class implements Test Interface");
             if ( ! settings.isGenerateTestsFromTestClasses()) {
                 // we don't want to generate tests from test classes                
@@ -161,71 +162,7 @@ public class TestCreator extends java.lang.Object {
     }
     
     
-    private static boolean anyInterfaceImplementsName(Identifier[] interfaces, String name) {
-        for (int i=0; i < interfaces.length; i++) {
-            if (interfaces[i].getFullName().equals(name)) {
-                return true;
-            }
-        }
-        // hmm, it does not seem to 
-        // let's try parent interfaces (if any)
-        for (int i=0; i < interfaces.length; i++) {
-            ClassElement interfaceClassElement = ClassElement.forName(interfaces[i].getFullName());
-            if (interfaceClassElement != null) {
-                Identifier[] parentInterfaces = interfaceClassElement.getInterfaces();
-                if (parentInterfaces != null) {
-                    boolean result = anyInterfaceImplementsName(parentInterfaces, name);
-                    if (result == true) {
-                       // great - we found it
-                       return true;
-                    } 
-                    // otherwise continue
-                }
-            }
-        }
-        // hmm, this branch does not seem to implement the interface name
-        return false;
-    }
-    
-        
-    
-    // is ClassElement a Test class ?
-    private static boolean isClassElementImplementingTestInterface(ClassElement ce) {        
-        
-        boolean result = false;
-        ClassElement classElement = ce;
-        while (classElement != null) {            
-            //System.err.println("###############Tested ClassElement:"+classElement.getVMName());
-            Identifier superClass = classElement.getSuperclass();
-            //System.err.println("Tested superClass :"+superClass);
-            Identifier[] interfaces = classElement.getInterfaces();            
-            // check the supperclass (if available)            
-            if (superClass != null) {
-                String superClassName = superClass.getFullName();                
-                //System.err.println("Tested ClassElement superclassFullName:"+superClassName);
-                // shortcut !!!
-                classElement = ClassElement.forName(superClassName);
-                if (classElement != null) {
-                    //System.err.println("Testes SuperClassElement.getVMName()"+classElement.getVMName());
-                    if ("junit.framework.TestCase".equals(classElement.getVMName())) {
-                        return true;
-                    }
-                }
-            } else {
-                // no super class - go on
-                classElement = null;
-            }
-            
-            // now check the interfaces            
-            if (anyInterfaceImplementsName(interfaces,"junit.framework.Test")) {
-                // we found it
-                return true;
-            }
-            // otherwise continue in our search
-        }
-        // not implemented (or class has no superclass)
-        return false;
-    }
+
 
 
     

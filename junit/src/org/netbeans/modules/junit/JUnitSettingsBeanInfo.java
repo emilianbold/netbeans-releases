@@ -232,7 +232,11 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
 
         public String[] getTags () {
             TreeSet t = new TreeSet(displays);
-            return (String []) t.toArray(new String[displays.size() - 1]);
+            if (displays.size() > 0) {
+                return (String []) t.toArray(new String[displays.size() - 1]);
+            } else {
+                return new String[0];
+            }
         }
 
         public String getAsText () {
@@ -309,15 +313,29 @@ public class JUnitSettingsBeanInfo extends SimpleBeanInfo {
     public static class FileSystemPropEd extends SortedListPropEd {
         public FileSystemPropEd() {
             // default value, when no file system is selected
-            put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "", SHOW_IN_LIST | IS_DEFAULT);
+            // 
             
-            Enumeration fss = Repository.getDefault().getFileSystems();
-            while (fss.hasMoreElements()) {
-                FileSystem fs = (FileSystem) fss.nextElement();
+            int fsCounter = 0;            
+            Enumeration fss = Repository.getDefault().getFileSystems();            
+            while (fss.hasMoreElements()) {                
+                FileSystem fs = (FileSystem) fss.nextElement();                
                 if (TestUtil.isSupportedFileSystem(fs)) {
-                    put(fs.getDisplayName(), fs.getSystemName(), SHOW_IN_LIST);
+                    fsCounter++;
+                    int propertyState;
+                    if (fsCounter == 1) {
+                        propertyState =  SHOW_IN_LIST | IS_DEFAULT;
+                    } else {
+                        propertyState = SHOW_IN_LIST;
+                    }
+                    put(fs.getDisplayName(), fs.getSystemName(), propertyState);
                 }
             }
+            
+            if (fsCounter == 0) {
+                put(NbBundle.getMessage(JUnitSettingsBeanInfo.class, "LBL_no_file_system_selected"), "", SHOW_IN_LIST | IS_DEFAULT);
+            }
+            
+            
         }
     }
 

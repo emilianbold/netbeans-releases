@@ -174,7 +174,7 @@ public class CreateTestAction extends CookieAction {
             doTarget = getTestClass(fsTest, TestUtil.getTestSuiteFullName(fo), doSuiteT);
 
             // generate the test suite for all listed test classes
-            classTarget = getClassElementFromDO(doTarget);
+            classTarget = TestUtil.getClassElementFromDataObject(doTarget);
 
             progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
 
@@ -223,14 +223,14 @@ public class CreateTestAction extends CookieAction {
             String          name;
             
             try {
-                classSource = getClassElementFromDO(DataObject.find(foSource));
+                classSource = TestUtil.getClassElementFromDataObject(DataObject.find(foSource));
                 if (null != classSource) {
                     if (TestCreator.isClassTestable(classSource)) {
                         // find the test class, if it exists or create one from active template
                         doTarget = getTestClass(fsTest, TestUtil.getTestClassFullName(foSource), doTestT);
 
                         // generate the test of current node
-                        classTarget = getClassElementFromDO(doTarget);
+                        classTarget = TestUtil.getClassElementFromDataObject(doTarget);
 
                         progress.setMessage(msgCreating + classTarget.getName().getFullName() + " ...");
 
@@ -262,18 +262,7 @@ public class CreateTestAction extends CookieAction {
             throw new CreateTestCanceledException();
     }
     
-    private ClassElement getClassElementFromDO(DataObject dO) {
-        SourceCookie    sc;
-        SourceElement   se;
 
-        sc = (SourceCookie) dO.getCookie(SourceCookie.class);
-        se = sc.getSource();
-        return se.getClass(Identifier.create(dO.getPrimaryFile().getName()));
-    }
-    
-    private ClassElement getClassElementCookie(DataObject doTarget, String name) {
-        return (ClassElement) doTarget.getNodeDelegate().getChildren().findChild(name).getCookie(ClassElement.class);
-    }
     
     private DataObject getTestClass(FileSystem fsTest, String testClassName, DataObject doTemplate) throws IOException, DataObjectNotFoundException {
         FileObject      fo;

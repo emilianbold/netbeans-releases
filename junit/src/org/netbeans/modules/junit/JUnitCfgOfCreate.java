@@ -166,9 +166,10 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
         Enumeration fss;
         
         // insert the default value
-        item = new Pair(NbBundle.getMessage(JUnitCfgOfCreate.class, "LBL_no_file_system_selected"), null);
-        cboFileSystem.addItem(item);
-        cboFileSystem.setSelectedItem(item);
+        //item = new Pair(NbBundle.getMessage(JUnitCfgOfCreate.class, "LBL_no_file_system_selected"), null);
+        //cboFileSystem.addItem(item);
+        //cboFileSystem.setSelectedItem(item);
+                
         
         fss = Repository.getDefault().getFileSystems();
         while (fss.hasMoreElements()) {
@@ -209,6 +210,8 @@ public class JUnitCfgOfCreate extends javax.swing.JPanel {
     }
     
     /** Displays dialog and updates JUnit options according to the user's settings. */
+    // not actually the cleanes implementation with the argument, but it
+    // will work for the time being ...
     public static boolean configure() {
         // check if the dialog can be displayed
         if (!JUnitSettings.getDefault().isCfgCreateEnabled())
