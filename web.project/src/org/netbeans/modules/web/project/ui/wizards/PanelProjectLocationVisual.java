@@ -20,7 +20,8 @@ import java.text.MessageFormat;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.web.project.ui.FoldersListSettings;
+
+import org.netbeans.modules.web.project.ui.*;
 import org.netbeans.modules.web.project.Utils;
 
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -30,7 +31,6 @@ import org.openide.WizardValidationException;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.filesystems.FileUtil;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
@@ -151,20 +151,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String command = evt.getActionCommand();
         
         if ("BROWSE".equals(command)) { //NOI18N
-            JFileChooser chooser = new JFileChooser();
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+            JFileChooser chooser = FileChooser.createDirectoryChooser(
+                    "PanelProjectLocationVisual.browseLocationAction", projectLocationTextField.getText()); //NOI18N
             chooser.setDialogTitle(getBundleResource("LBL_NWP1_SelectProjectLocation")); //NOI18N
-            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            String path = projectLocationTextField.getText();
-            if (path.length() > 0) {
-                File f = new File(path);
-                if (f.exists())
-                    chooser.setSelectedFile(f);
-            }
             if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
                 File projectDir = chooser.getSelectedFile();
                 projectLocationTextField.setText(projectDir.getAbsolutePath());
-            }            
+            }
             panel.fireChangeEvent();
         }
     }//GEN-LAST:event_browseLocationAction
@@ -300,14 +293,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     private javax.swing.JLabel projectNameLabel;
     protected javax.swing.JTextField projectNameTextField;
     // End of variables declaration//GEN-END:variables
-        
-    private static JFileChooser createChooser() {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-        
-        return chooser;
-    }
 
     private String validFreeProjectName(final File parentFolder, final String formater, final int index) {
         String name = MessageFormat.format(formater, new Object[] {new Integer (index)});                
@@ -317,22 +302,22 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts();
     }
     
     public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts();
     }
     
     public void removeUpdate(DocumentEvent e) {
-        updateTexts(e);
+        updateTexts();
     }
     // End if implementation of DocumentListener -------------------------------
     
     
     /** Handles changes in the project name and project directory
      */
-    private void updateTexts(DocumentEvent e) {
+    private void updateTexts() {
         panel.fireChangeEvent(); // Notify that the panel changed
     }
 }
