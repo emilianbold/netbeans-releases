@@ -15,6 +15,7 @@ package org.netbeans.swing.plaf.winxp;
 
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
+import javax.swing.plaf.FontUIResource;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
 import org.netbeans.swing.plaf.util.UIBootstrapValue;
@@ -58,11 +59,33 @@ public final class XPLFCustoms extends LFCustoms {
         if (in != null) {
             fontsize = in.intValue();
         }
+        return new Object[] {
+            //Changes default fonts to Tahoma based ones, for consistent Windows look
+            "Button.font", patch2Tahoma("Button.font"), //NOI18N
+            "CheckBox.font", patch2Tahoma("CheckBox.font"), //NOI18N
+            "ComboBox.font", patch2Tahoma("ComboBox.font"), //NOI18N
+            "EditorPane.font", patch2Tahoma("EditorPane.font"), //NOI18N
+            "Label.font", patch2Tahoma("Label.font"), //NOI18N
+            "List.font", patch2Tahoma("List.font"), //NOI18N
+            "RadioButton.font", patch2Tahoma("RadioButton.font"), //NOI18N
+            "Panel.font", patch2Tahoma("Panel.font"), //NOI18N
+            "PasswordField.font", patch2Tahoma("PasswordField.font"), //NOI18N
+            "ProgressBar.font", patch2Tahoma("ProgressBar.font"), //NOI18N
+            "ScrollPane.font", patch2Tahoma("ScrollPane.font"), //NOI18N
+            "Spinner.font", patch2Tahoma("Spinner.font"), //NOI18N
+            "TabbedPane.font", patch2Tahoma("TabbedPane.font"), //NOI18N
+            "Table.font", patch2Tahoma("Table.font"), //NOI18N
+            "TableHeader.font", patch2Tahoma("TableHeader.font"), //NOI18N
+            "TextField.font", patch2Tahoma("TextField.font"), //NOI18N
+            "TextPane.font", patch2Tahoma("TextPane.font"), //NOI18N
+            "TitledBorder.font", patch2Tahoma("TitledBorder.font"), //NOI18N
+            "ToggleButton.font", patch2Tahoma("ToggleButton.font"), //NOI18N
+            "Tree.font", patch2Tahoma("Tree.font"), //NOI18N
+            "Viewport.font", patch2Tahoma("Viewport.font"), //NOI18N
+            
             //Work around a bug in windows which sets the text area font to
             //"MonoSpaced", causing all accessible dialogs to have monospaced text
-        return new Object[] {
-            "TextArea.font",
-            new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize))
+            "TextArea.font", new GuaranteedValue ("Label.font", new Font("Dialog", Font.PLAIN, fontsize))
         }; //NO18N
     }
 
@@ -123,6 +146,21 @@ public final class XPLFCustoms extends LFCustoms {
             UIManager.put (key, new ColorUIResource(c));
         }
     }
+    
+    /** Takes given font uiresource and creates Tahoma based font of same style
+     * and size.
+     */
+    private FontUIResource patch2Tahoma(String uiResource) {
+        Font originalFont = UIManager.getFont(uiResource);
+        FontUIResource result;
+        if (originalFont != null) {
+            result = new FontUIResource("Tahoma", originalFont.getStyle(), originalFont.getSize());
+        } else {
+            result = new FontUIResource("Tahoma", Font.PLAIN, 11);
+        }
+        return result;
+    }     
+   
     
     protected Object[] additionalKeys() {
         Object[] kv = new XPEditorColorings("").createKeysAndValues();
