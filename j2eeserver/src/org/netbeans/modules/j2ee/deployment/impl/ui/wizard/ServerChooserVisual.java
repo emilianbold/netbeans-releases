@@ -84,7 +84,10 @@ public class ServerChooserVisual extends javax.swing.JPanel {
     
     public void store(AddServerInstanceWizard wizard) {
         wizard.putProperty(AddServerInstanceWizard.PROP_DISPLAY_NAME, displayNameEditField.getText());
-        wizard.putProperty(AddServerInstanceWizard.PROP_SERVER, ((ServerAdapter)serverComboBox.getSelectedItem()).getServer());
+        Object selectedItem = serverComboBox.getSelectedItem();
+        if (selectedItem != null) {
+            wizard.putProperty(AddServerInstanceWizard.PROP_SERVER, ((ServerAdapter)selectedItem).getServer());
+        }
     }
     
     public boolean isValid() {
