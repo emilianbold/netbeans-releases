@@ -252,7 +252,7 @@ public class FindPerformer implements ActionPerformer {
         final FindPanel panel = new FindPanel();
         DialogDescriptor dd = new DialogDescriptor(
             panel,
-            NbBundle.getBundle(PropertiesModule.class).getString("LBL_Title"), // title
+            NbBundle.getBundle(FindPerformer.class).getString("LBL_Title"), // title
             false, // modal
             new JButton[0], // empty options, we provide our owns
             null, // initvalue
@@ -290,10 +290,12 @@ public class FindPerformer implements ActionPerformer {
                     if(findString != null && !findString.trim().equals("")) {
 
                         history.add(findString.intern());
-//                        panel.getComboBox().setModel(new DefaultComboBoxModel(history.toArray()));
                         
                         performSearch();
                     }
+                    
+                    // For case previous search results need to be erased.
+                    table.repaint();
                 }
             }
         );
@@ -331,15 +333,11 @@ public class FindPerformer implements ActionPerformer {
     /** Closes find dialog if one is opened. */
     public void closeFindDialog() {
         if(findDialog != null) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    synchronized(findDialog) {
-                        findDialog.setVisible(false);
-                        findDialog.dispose();
-                        findDialog = null;
-                    }
-                }
-            });
+            synchronized(findDialog) {
+                findDialog.setVisible(false);
+                findDialog.dispose();
+                findDialog = null;
+            }
         }
     }
 
@@ -446,8 +444,8 @@ public class FindPerformer implements ActionPerformer {
      * @param startColumn Ccolumn index of cell to start the search.
      * @param startRow Row index of cell to start the search. 
      * @param startOffset Offset from start the search.
-     * @return Array of inetegers where first is column index, second row index, third offset.
-     *         In case no thing was found null is returned. */
+     * @return srray of integers where first is column index, second row index, third offset,
+     *         in case no thing was found null is returned */
     private int[] search(int startRow, int startColumn, int startOffset) {
         // Helper for reseting startOffset after first iteration.
         boolean firstIteration = true;

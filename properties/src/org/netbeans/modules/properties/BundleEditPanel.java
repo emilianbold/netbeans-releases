@@ -87,34 +87,6 @@ public class BundleEditPanel extends JPanel {
         // Sets renderer.
         table.setDefaultRenderer(PropertiesTableModel.StringPair.class, new TableViewRenderer());
 
-        // selection listeners
-        rowSelections = table.getSelectionModel();
-
-        rowSelections.addListSelectionListener(
-            new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    rowSelections = (ListSelectionModel)e.getSource();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            selectionChanged();
-                        }
-                    });
-                }
-            });
-        
-        columnSelections = table.getColumnModel().getSelectionModel();
-        columnSelections.addListSelectionListener(
-            new ListSelectionListener() {
-                public void valueChanged(ListSelectionEvent e) {
-                    columnSelections = (ListSelectionModel)e.getSource();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            selectionChanged();
-                        }
-                    });
-                }
-            });
-            
         // property change listener - listens to editing state of the table
         table.addPropertyChangeListener(new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -148,53 +120,6 @@ public class BundleEditPanel extends JPanel {
         TableCellEditor cellEdit = table.getCellEditor();
         if (cellEdit != null)
             cellEdit.stopCellEditing();
-    }
-
-    /** Selection changed event handler. */
-    private void selectionChanged() {
-        // label for the key/value
-        if (columnSelections.isSelectionEmpty() || (columnSelections.getMaxSelectionIndex() > 0))
-            valueLabel.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_ValueLabel"));
-        else
-            valueLabel.setText(NbBundle.getBundle(PropertiesOpen.class).getString("LBL_KeyLabel"));
-
-        // remove button
-        if (rowSelections.isSelectionEmpty() ||
-                rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex()) {
-            removeButton.setEnabled(false);
-        } else {
-            removeButton.setEnabled(true);
-        }
-
-        // fields at the bottom
-        if (rowSelections.isSelectionEmpty() || columnSelections.isSelectionEmpty() ||
-                rowSelections.getMinSelectionIndex()    != rowSelections.getMaxSelectionIndex() ||
-                columnSelections.getMinSelectionIndex() != columnSelections.getMaxSelectionIndex()) {
-            if (!table.isEditing()) {
-                textComment.setText("");
-                textValue.setText("");
-            }
-        } else {
-            if (!table.isEditing()) {
-                PropertiesTableModel.StringPair sp =
-                    (PropertiesTableModel.StringPair)table.getModel().getValueAt(rowSelections.getMinSelectionIndex(),
-                            columnSelections.getMinSelectionIndex());
-                textComment.setText(sp.getComment());
-                textValue.setText(sp.getValue());
-
-                //          boolean edit = table.editCellAt(rowSelections.getMinSelectionIndex(),
-                //                                           columnSelections.getMinSelectionIndex());
-            }
-
-            // the selection is ok - set cell editable if:
-            // 1) it is not going to be edited as a search result (client property TABLE_SEARCH_RESULT)
-            // 2) and if it is not already editing this field
-            if (table.getClientProperty(FindPerformer.TABLE_SEARCH_RESULT) == null 
-                && (table.getEditingRow() != rowSelections.getMinSelectionIndex()
-                || table.getEditingColumn() != columnSelections.getMinSelectionIndex()) ) {
-                    table.editCellAt(rowSelections.getMinSelectionIndex(), columnSelections.getMinSelectionIndex());
-            }
-        }
     }
 
     /** Updates the enabled status of the fields */
@@ -258,22 +183,18 @@ public class BundleEditPanel extends JPanel {
         autoResizeCheck = new javax.swing.JCheckBox();
         setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints1;
-        
         tablePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints2;
+        table.setCellSelectionEnabled(true);
+        scrollPane.setViewportView(table);
         
+        gridBagConstraints2 = new java.awt.GridBagConstraints();
+        gridBagConstraints2.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints2.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints2.weightx = 1.0;
+        gridBagConstraints2.weighty = 1.0;
+        tablePanel.add(scrollPane, gridBagConstraints2);
         
-          table.setCellSelectionEnabled(true);
-            scrollPane.setViewportView(table);
-            
-            gridBagConstraints2 = new java.awt.GridBagConstraints();
-          gridBagConstraints2.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints2.insets = new java.awt.Insets(12, 12, 0, 11);
-          gridBagConstraints2.weightx = 1.0;
-          gridBagConstraints2.weighty = 1.0;
-          tablePanel.add(scrollPane, gridBagConstraints2);
-          
-          
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridwidth = 2;
         gridBagConstraints1.fill = java.awt.GridBagConstraints.BOTH;
@@ -281,60 +202,52 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints1.weighty = 1.0;
         add(tablePanel, gridBagConstraints1);
         
-        
         valuePanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints3;
-        
         commentLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_CommentLabel"));
-          gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
-          gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
-          valuePanel.add(commentLabel, gridBagConstraints3);
-          
-          
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        valuePanel.add(commentLabel, gridBagConstraints3);
         
-          textComment.setLineWrap(true);
-            textComment.setRows(3);
-            textComment.setEditable(false);
-            textComment.setEnabled(false);
-            jScrollPane2.setViewportView(textComment);
-            
-            gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
-          gridBagConstraints3.weightx = 1.0;
-          gridBagConstraints3.weighty = 1.0;
-          valuePanel.add(jScrollPane2, gridBagConstraints3);
-          
-          
+        textComment.setLineWrap(true);
+        textComment.setEditable(false);
+        textComment.setRows(3);
+        textComment.setEnabled(false);
+        jScrollPane2.setViewportView(textComment);
+        
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints3.insets = new java.awt.Insets(11, 11, 0, 0);
+        gridBagConstraints3.weightx = 1.0;
+        gridBagConstraints3.weighty = 1.0;
+        valuePanel.add(jScrollPane2, gridBagConstraints3);
+        
         valueLabel.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_ValueLabel"));
-          gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.gridx = 0;
-          gridBagConstraints3.gridy = 1;
-          gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints3.insets = new java.awt.Insets(11, 11, 11, 0);
-          gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
-          valuePanel.add(valueLabel, gridBagConstraints3);
-          
-          
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 0;
+        gridBagConstraints3.gridy = 1;
+        gridBagConstraints3.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints3.insets = new java.awt.Insets(11, 11, 11, 0);
+        gridBagConstraints3.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        valuePanel.add(valueLabel, gridBagConstraints3);
         
-          textValue.setLineWrap(true);
-            textValue.setRows(3);
-            textValue.setEditable(false);
-            textValue.setEnabled(false);
-            jScrollPane3.setViewportView(textValue);
-            
-            gridBagConstraints3 = new java.awt.GridBagConstraints();
-          gridBagConstraints3.gridx = 1;
-          gridBagConstraints3.gridy = 1;
-          gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
-          gridBagConstraints3.insets = new java.awt.Insets(7, 11, 11, 0);
-          gridBagConstraints3.weightx = 1.0;
-          gridBagConstraints3.weighty = 1.0;
-          valuePanel.add(jScrollPane3, gridBagConstraints3);
-          
-          
+        textValue.setLineWrap(true);
+        textValue.setEditable(false);
+        textValue.setRows(3);
+        textValue.setEnabled(false);
+        jScrollPane3.setViewportView(textValue);
+        
+        gridBagConstraints3 = new java.awt.GridBagConstraints();
+        gridBagConstraints3.gridx = 1;
+        gridBagConstraints3.gridy = 1;
+        gridBagConstraints3.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints3.insets = new java.awt.Insets(7, 11, 11, 0);
+        gridBagConstraints3.weightx = 1.0;
+        gridBagConstraints3.weighty = 1.0;
+        valuePanel.add(jScrollPane3, gridBagConstraints3);
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 0;
         gridBagConstraints1.gridy = 1;
@@ -342,57 +255,58 @@ public class BundleEditPanel extends JPanel {
         gridBagConstraints1.weightx = 1.0;
         add(valuePanel, gridBagConstraints1);
         
-        
         buttonPanel.setLayout(new java.awt.GridBagLayout());
         java.awt.GridBagConstraints gridBagConstraints4;
-        
         addButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_AddPropertyButton"));
-          addButton.addActionListener(new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent evt) {
-                  addButtonActionPerformed(evt);
-              }
-          }
-          );
-          gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.gridx = 0;
-          gridBagConstraints4.gridy = 1;
-          gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints4.insets = new java.awt.Insets(11, 11, 0, 11);
-          gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
-          gridBagConstraints4.weighty = 1.0;
-          buttonPanel.add(addButton, gridBagConstraints4);
-          
-          
+        
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        }
+        );
+        
+        gridBagConstraints4 = new java.awt.GridBagConstraints();
+        gridBagConstraints4.gridx = 0;
+        gridBagConstraints4.gridy = 1;
+        gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints4.insets = new java.awt.Insets(11, 11, 0, 11);
+        gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints4.weighty = 1.0;
+        buttonPanel.add(addButton, gridBagConstraints4);
+        
         removeButton.setText(NbBundle.getBundle(BundleEditPanel.class).getString("LBL_RemovePropertyButton"));
-          removeButton.addActionListener(new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent evt) {
-                  removeButtonActionPerformed(evt);
-              }
-          }
-          );
-          gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.gridx = 0;
-          gridBagConstraints4.gridy = 2;
-          gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
-          gridBagConstraints4.insets = new java.awt.Insets(5, 11, 11, 11);
-          gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
-          buttonPanel.add(removeButton, gridBagConstraints4);
-          
-          
+        
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeButtonActionPerformed(evt);
+            }
+        }
+        );
+        
+        gridBagConstraints4 = new java.awt.GridBagConstraints();
+        gridBagConstraints4.gridx = 0;
+        gridBagConstraints4.gridy = 2;
+        gridBagConstraints4.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints4.insets = new java.awt.Insets(5, 11, 11, 11);
+        gridBagConstraints4.anchor = java.awt.GridBagConstraints.SOUTH;
+        buttonPanel.add(removeButton, gridBagConstraints4);
+        
         autoResizeCheck.setSelected(true);
-          autoResizeCheck.setText(NbBundle.getBundle(PropertiesModule.class).getString("CTL_AutoResize"));
-          autoResizeCheck.addActionListener(new java.awt.event.ActionListener() {
-              public void actionPerformed(java.awt.event.ActionEvent evt) {
-                  autoResizeCheckActionPerformed(evt);
-              }
-          }
-          );
-          gridBagConstraints4 = new java.awt.GridBagConstraints();
-          gridBagConstraints4.insets = new java.awt.Insets(12, 12, 0, 11);
-          gridBagConstraints4.anchor = java.awt.GridBagConstraints.NORTHWEST;
-          buttonPanel.add(autoResizeCheck, gridBagConstraints4);
-          
-          
+        autoResizeCheck.setText(NbBundle.getBundle(BundleEditPanel.class).getString("CTL_AutoResize"));
+        
+        autoResizeCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoResizeCheckActionPerformed(evt);
+            }
+        }
+        );
+        
+        gridBagConstraints4 = new java.awt.GridBagConstraints();
+        gridBagConstraints4.insets = new java.awt.Insets(12, 12, 0, 11);
+        gridBagConstraints4.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        buttonPanel.add(autoResizeCheck, gridBagConstraints4);
+        
         gridBagConstraints1 = new java.awt.GridBagConstraints();
         gridBagConstraints1.gridx = 1;
         gridBagConstraints1.gridy = 1;
