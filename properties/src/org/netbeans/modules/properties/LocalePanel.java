@@ -136,7 +136,7 @@ public class LocalePanel extends JPanel {
         new Locale("nl", "NL", ""), // NOI18N // Dutch Netherlands 
         new Locale("nl", "NL", "EURO"), // NOI18N // Dutch Netherlands 
         new Locale("no", "NO", ""), // NOI18N // Norwegian (Nynorsk) Norway 
-        new Locale("no", "NO", "B"), // NOI18N // Norwegian (Bokmål) Norway 
+        new Locale("no", "NO", "B"), // NOI18N // Norwegian (Bokmal) Norway 
         new Locale("pl", "PL", ""), // NOI18N // Polish Poland 
         new Locale("pt", "BR", ""), // NOI18N // Portuguese Brazil 
         new Locale("pt", "PT", ""), // NOI18N // Portuguese Portugal 
