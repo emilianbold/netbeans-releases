@@ -3161,10 +3161,25 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </echo>
   </target>
 
+  <target name="sanity-build-from-source-pkg" depends="build-source">
+    <available file="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"
+               property="pkg.available"/>
+    <fail message="Source package ${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip not available" unless="pkg.available"/>
+    <delete dir="testbuild"/>
+    <mkdir dir="testbuild"/>
+    <unzip dest="testbuild" src="${netbeans.build.dir}/${cluster.name}-src-${buildnum}.zip"/>
+    <ant antfile="testbuild/nbbuild/build.xml" inheritall="false" target="build-platform">
+        <property name="scrambler2" value="${scrambler2}"/>
+    </ant>
+    <delete dir="testbuild"/>
+  </target>
+
   <target name="build-source"
-    depends="bootstrap"
+    depends="bootstrap,set-buildnumber"
     description="Packages sources needed to compile given by cluster.name (can be specified by -Dcluster.name=nb.cluster.platform"
+    if="cluster.name"
   >
+    <property name="buildnum" value="dev-${buildnumber}"/>
     <echo message="Packaging sources of ${cluster.name} modules"/>
     <resolve name="cluster-modules" property="${cluster.name}"/>
     <mkdir dir="${netbeans.build.dir}"/>

@@ -164,8 +164,18 @@ public class PrintCvsModules extends Task {
                     String modname = (String)it.next ();
                     set.createInclude ().setName (modname + "/external/*");
                 }
-                set.createExclude ().setName ("**/*.scrambled");
                 set.createExclude ().setName ("**/unscrambling.log");
+                // walk through selected files and explicitly exclude unscrambled files
+                org.apache.tools.ant.DirectoryScanner ds = set.getDirectoryScanner(this.getProject());
+                ds.scan();
+                String[] includedFiles = ds.getIncludedFiles();
+                for (int i=0; i < includedFiles.length; i++) {
+                    if (includedFiles[i].endsWith(".scrambled")) {
+                        String ne = includedFiles[i].substring(0,includedFiles[i].length()-10);
+                        log("Setting exclude for unscrambled file "+ne, Project.MSG_VERBOSE);
+                        set.createExclude().setName(ne);
+                    }
+                }
                 getProject ().addReference (selectorId, set);
             }
         }
