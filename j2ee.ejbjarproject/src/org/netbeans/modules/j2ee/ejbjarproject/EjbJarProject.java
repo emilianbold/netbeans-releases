@@ -55,6 +55,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -504,6 +505,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     }
 
     private void checkLibraryFolder (FileObject fo) {
+        if (!FileUtil.isArchiveFile(fo))
+            return;
+        
         if (fo.getParent ().equals (libFolder)) {
             EjbJarProjectClassPathExtender cpExt = (EjbJarProjectClassPathExtender)getLookup ().lookup (EjbJarProjectClassPathExtender.class);
             if (cpExt == null) {
@@ -601,8 +605,15 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     EjbJarProjectClassPathExtender cpExt = (EjbJarProjectClassPathExtender)EjbJarProject.this.getLookup().lookup(EjbJarProjectClassPathExtender.class);
                     libFolder = helper.resolveFileObject(libFolderName);
                     if (cpExt != null) {
-                        FileObject libs [] = libFolder.getChildren ();
-                        cpExt.addArchiveFiles(EjbJarProjectProperties.JAVAC_CLASSPATH, libs, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
+                        FileObject children [] = libFolder.getChildren ();
+                        List libs = new LinkedList();
+                        for (int i = 0; i < children.length; i++) {
+                            if (FileUtil.isArchiveFile(children[i]))
+                                libs.add(children[i]);
+                        }
+                        FileObject[] libsArray = new FileObject[libs.size()];
+                        libs.toArray(libsArray);
+                        cpExt.addArchiveFiles(EjbJarProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.ELEMENT_INCLUDED_LIBRARIES);
                         libFolder.addFileChangeListener (EjbJarProject.this);
                     }
                     else
