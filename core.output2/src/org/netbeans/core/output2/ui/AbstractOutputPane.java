@@ -601,7 +601,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         
         public void paint(Graphics g) {
             JTextComponent component = textView;
-            if(isVisible() && y >= fontHeight) {
+            if(isVisible() && y >= 0) {
                 try {
                     TextUI mapper = component.getUI();
                     Rectangle r = mapper.modelToView(component, getDot(), Position.Bias.Forward);
@@ -632,7 +632,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
                 } catch (BadLocationException e) {
                     // can't render I guess
-                    //System.err.println("Can't render cursor");
+//                    System.err.println("Can't render cursor");
                 }
             }
         }    
