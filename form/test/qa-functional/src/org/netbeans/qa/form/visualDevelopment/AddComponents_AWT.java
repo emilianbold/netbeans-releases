@@ -113,15 +113,17 @@ public class AddComponents_AWT extends JellyTestCase {
             formDesigner.clickOnComponent(formDesigner.componentLayer().getSource(), new Point(20,100));
         }        
         
-        // close form editor window
-        log("Try to close Form Editor window ");
-        formDesigner.close();
-        log(" - ok");
-        
+       
         // try compile created source file and check compile errors
         formnode.compile();
         
         log("All components from Component Palette : " + categoryName + " - were added to " + fileName);
+
+        // close form editor window
+        log("Try to close Form Editor window ");
+        formDesigner.close();
+        log(" - ok");
+
      
     }
     
