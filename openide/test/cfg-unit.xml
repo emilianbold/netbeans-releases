@@ -26,7 +26,7 @@ Microsystems, Inc. All Rights Reserved.
 <mconfig name="openide unit test config">
 
     <!-- Tests which should be run before commit to validate IDE. -->
-    <testbag testattribs="commit" executor="code" name="Before Commit Validation" resultsprocessor="unit">
+    <testbag testattribs="commit" executor="code" name="Before Commit Validation">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/loaders/*Folder*.class"/>                
@@ -48,11 +48,10 @@ Microsystems, Inc. All Rights Reserved.
                 <exclude name="org/openide/windows/TopComponentGetLookupOverridenTest.class"/>
                 <exclude name="org/openide/windows/TopComponentGetLookupTest.class"/>
             </patternset>
-        </testset>      
+        </testset>
     </testbag>
-
-    <testbag testattribs="stable" executor="code" name="testbag_1" resultsprocessor="unit">
-
+    
+    <testbag testattribs="stable" executor="code" name="testbag_1">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/actions/*Test.class"/>
@@ -124,10 +123,10 @@ Microsystems, Inc. All Rights Reserved.
                 <!-- run also wizard's tests -->
                 <include name="org/openide/WizardDescTest.class"/>
             </patternset>
-        </testset>      
+        </testset>
     </testbag>
-
-    <testbag testattribs="stable" executor="code" name="testbag_windows" resultsprocessor="unit">
+    
+    <testbag testattribs="stable" executor="code" name="testbag_windows">
         <testset dir="unit/src">
             <patternset>
                 <!-- run also window system tests -->
@@ -135,8 +134,8 @@ Microsystems, Inc. All Rights Reserved.
             </patternset>
         </testset>
     </testbag>
-  
-    <testbag testattribs="stable" executor="ide" name="testbag_2" resultsprocessor="unit">
+    
+    <testbag testattribs="stable" executor="ide" name="testbag_2">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/explorer/propertysheet/DefaultPropertyModelTest.class"/>
@@ -147,22 +146,22 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/util/UtilProgressCursorTest.class"/>
 		<!-- excluded, a problem in infrastructure, the component is not showed -->
                 <exclude name="org/openide/explorer/view/DefaultActionTest.class"/>
-                <include name="org/openide/explorer/view/TTVTest.class"/>               
+                <include name="org/openide/explorer/view/TTVTest.class"/>
             </patternset>
-        </testset>        
-    </testbag>
-
-    <testbag testattribs="stable,fs" executor="ide" name="testbag_fs_ide" resultsprocessor="unit">
-        <testset dir="unit/src">
-            <patternset>
-                <include  name="org/openide/filesystems/SystemFileSystemTest.class"/>                                         
-            </patternset>
-        </testset>        
+        </testset>
     </testbag>
     
-    <testbag testattribs="failing" executor="code" name="testbag_3" resultsprocessor="unit">
+    <testbag testattribs="stable,fs" executor="ide" name="testbag_fs_ide">
         <testset dir="unit/src">
-            <patternset>                
+            <patternset>
+                <include  name="org/openide/filesystems/SystemFileSystemTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="failing" executor="code" name="testbag_3">
+        <testset dir="unit/src">
+            <patternset>
                 <!-- See above. -->
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart1"/>
                 <include name="org/openide/loaders/DataLoaderTest.class/testFindTwoPart3"/>
@@ -187,41 +186,41 @@ Microsystems, Inc. All Rights Reserved.
                 <include name="org/openide/explorer/propertysheet/FindHelpTest.class/testFindHelpOnPropertySheetRow"/>
                 <include name="org/openide/explorer/ExplorerPanelTest.class/testSelectedNodesInDeserializedPanel"/>
             </patternset>
-        </testset>      
+        </testset>
     </testbag>
-
-    <testbag testattribs="failing" executor="ide" name="testbag_4" resultsprocessor="unit">
+    
+    <testbag testattribs="failing" executor="ide" name="testbag_4">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/openide/loaders/CreateFromTemplate.class"/>
             </patternset>
-        </testset>      
+        </testset>
     </testbag>
-
+    
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="code" name="testbag_empty">
         <testset dir="unit/src"/>
     </testbag>
-    <testbag testattribs="emptyide" executor="ide" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="emptyide" executor="ide" name="testbag_empty">
         <testset dir="unit/src"/>
     </testbag>
-
-    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    
+    <testbag testattribs="dev" executor="code" name="testbag_dev">
         <testset dir="unit/src">
             <patternset>
                 <!-- Add your own code tests -->
             </patternset>
         </testset>
     </testbag>
-
-        
-    <executor name="code" antfile="build.xml" target="runcodetest"/>
     
-    <executor name="ide" antfile="build.xml" target="runidetest"/>
-
-    <compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>
-
-    <resultsprocessor name="unit" antfile="build.xml" target="test_report" default="true"/>
+    <!--<executor name="code" antfile="build.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build.xml" target="runidetest"/>-->
+    <executor name="code" antfile="build-unit.xml" target="runcodetest"/>
+    <executor name="ide" antfile="build-unit.xml" target="runidetest"/>
+    
+    <!--<compiler name="unit-compiler" antfile="build.xml" target="unit-compiler" default="true"/>-->
+    <compiler name="unit-compiler" antfile="build-unit.xml" target="unit-compiler" default="true"/>
+    
 </mconfig>
