@@ -536,6 +536,7 @@ public final class ColorEditor implements PropertyEditor {
 
 /*
  * Log
+ *  6    Gandalf   1.5         2/5/99   David Simonek   
  *  5    Gandalf   1.4         2/5/99   Petr Hamernik   bugfix
  *  4    Gandalf   1.3         2/4/99   David Simonek   bugfix #1038
  *  3    Gandalf   1.2         2/4/99   Petr Hamernik   
