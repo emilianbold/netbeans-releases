@@ -562,7 +562,7 @@ public class TargetServer {
             }
         }
         
-        File plan = dtarget.getConfigurationFile();
+        File plan = null;
         DeployableObject deployable = null;
         DeploymentConfigurationProvider dcp = dtarget.getDeploymentConfigurationProvider();
         if (dcp != null)
@@ -587,6 +587,7 @@ public class TargetServer {
                 }
                 
                 ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
+                plan = dtarget.getConfigurationFile();
                 po = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
                 handleDeployProgress(ui, po);
             }
@@ -611,6 +612,7 @@ public class TargetServer {
                 
                 ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
                 TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
+                if (plan == null) plan = dtarget.getConfigurationFile();
                 po = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
                 handleDeployProgress(ui, po);
             }
