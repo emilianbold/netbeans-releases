@@ -95,7 +95,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         timer = new Timer(0, new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 final TagLibParseSupport sup = (TagLibParseSupport)getDataObject().getCookie(TagLibParseSupport.class);
-                if (sup != null) {
+                if (sup != null && WebModule.getWebModule(getDataObject().getPrimaryFile())!= null) {
                     sup.autoParse().addTaskListener(new TaskListener() {
                         public void taskFinished(Task t) {
                             notifyParsingDone(sup);

@@ -316,7 +316,7 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie {
             //test whether the parsing task has been cancelled -
             //someone called EditorCookie.close() during the parsing was waiting
             //on openedLock
-            if(!parsingTaskCancelled) {
+            if(!parsingTaskCancelled && getWebModule(jspFile) != null) {
                 JspParserAPI parser = JspParserFactory.getJspParser();
                 // assert parser != null;
                 if (parser == null) {
