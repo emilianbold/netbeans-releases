@@ -144,7 +144,9 @@ public abstract class SearchType extends ServiceType implements Cloneable {
 
 
     /** Enumeration of all SearchTypes in the system.
-     * @return enumeration of SearchType instances */
+     * @return enumeration of SearchType instances
+     * @deprecated Please use {@link org.openide.util.Lookup} instead.
+     */
     public static Enumeration enumerateSearchTypes () {
         return TopManager.getDefault().getServices().services(SearchType.class);
     }
