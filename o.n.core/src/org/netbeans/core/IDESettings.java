@@ -72,7 +72,7 @@ public class IDESettings extends SystemOption {
     /** files that should be ignored 
      * 
      * DO NOT CHANGE THIS PROPERTY NAME without checking that
-     * this property name was changed also in GlobalVisibilityQuery
+     * this property name was changed also in GlobalVisibilityQueryImpl
      * in module org.netbeans.modules.masterfs.
      *   
      */
@@ -108,7 +108,7 @@ public class IDESettings extends SystemOption {
     private static int uiMode = 2; // MDI default
     
     /**
-     * GlobalVisibilityQuery in module org.netbeans.modules.masterfs reads this property (hidden dependency).   
+     * GlobalVisibilityQueryImpl in module org.netbeans.modules.masterfs reads this property (hidden dependency).   
      */ 
     private static String ignoredFiles = "^(CVS|SCCS|vssver\\.scc|#.*#|%.*%|\\.(cvsignore|svn|DS_Store))$|^\\.[#_]|~$"; //NOI18N    
 
