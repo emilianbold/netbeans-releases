@@ -89,7 +89,7 @@ Microsystems, Inc. All Rights Reserved.
     <nbinstaller action="reinstall" module="netbeans/modules/extbrowser.jar"/>
   </target>
 
-  <target name="javadoc" description="Build applet module API documentation.">
+  <target name="javadoc" description="Build extbrowser module API documentation.">
     <tstamp/>
     <property name="apis-footer" value="&lt;font size=-2 color=gray&gt;Built on ${TODAY}.&amp;nbsp;&amp;nbsp;|&amp;nbsp;&amp;nbsp;Portions Copyright 1997-2003 Sun Microsystems, Inc. All rights reserved.&lt;/font&gt;"/>
     <echo message="Build extbrowser module API documentation..."/>

@@ -17,45 +17,71 @@ import java.awt.Image;
 import java.beans.*;
 
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
-
-    private static BeanDescriptor descr = null; 
 
     private static PropertyDescriptor[] properties = null; 
 
     public BeanDescriptor getBeanDescriptor() {
-        if (descr == null) {
-            descr = new BeanDescriptor (ExtWebBrowser.class);
-            descr.setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "CTL_ExtBrowserName"));
-            descr.setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_ExtBrowserName"));
-        }
-	return descr;
+        return new BeanDescriptor(ExtWebBrowser.class);
     }
 
     public PropertyDescriptor[] getPropertyDescriptors() {
         if (properties == null) {
-            try {
-                properties = new PropertyDescriptor [] {
-                    new PropertyDescriptor (ExtWebBrowser.PROP_DESCRIPTION, ExtWebBrowser.class, "getDescription", null),    // NOI18N
-                    new PropertyDescriptor (ExtWebBrowser.PROP_BROWSER_EXECUTABLE, ExtWebBrowser.class, "getBrowserExecutable", "setBrowserExecutable")    // NOI18N
-                };
-                properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_Description"));
-                properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_Description"));
-                properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
-                properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
-            } catch (IntrospectionException ie) {
-                org.openide.ErrorManager.getDefault().notify(ie);
-                return null;
+            if (Utilities.isWindows()) {
+                try {
+                    properties = new PropertyDescriptor [] {
+                                        new PropertyDescriptor(ExtWebBrowser.PROP_BROWSER_EXECUTABLE, ExtWebBrowser.class),
+                                        new PropertyDescriptor(ExtWebBrowser.PROP_BROWSER_START_TIMEOUT, ExtWebBrowser.class),
+                                        new PropertyDescriptor(ExtWebBrowser.PROP_DDE_ACTIVATE_TIMEOUT, ExtWebBrowser.class),
+                                        new PropertyDescriptor(ExtWebBrowser.PROP_DDE_OPENURL_TIMEOUT, ExtWebBrowser.class)
+                                     };
+                                     
+                    properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
+                    properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
+                    
+                    properties[1].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_BROWSER_START_TIMEOUT"));
+                    properties[1].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_BROWSER_START_TIMEOUT"));
+                    properties[1].setExpert(Boolean.TRUE.booleanValue());
+
+                    properties[2].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_DDE_ACTIVATE_TIMEOUT"));
+                    properties[2].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_DDE_ACTIVATE_TIMEOUT"));
+                    properties[2].setExpert(Boolean.TRUE.booleanValue());
+                    properties[2].setHidden(true);
+
+                    properties[3].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_DDE_OPENURL_TIMEOUT"));
+                    properties[3].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_DDE_OPENURL_TIMEOUT"));
+                    properties[3].setExpert(Boolean.TRUE.booleanValue());
+                    properties[3].setHidden(true);
+
+                } catch (IntrospectionException ie) {
+                    org.openide.ErrorManager.getDefault().notify(ie);
+                    return null;
+                }
+            } else {
+                try {
+                    properties = new PropertyDescriptor [] {
+                                        new PropertyDescriptor (ExtWebBrowser.PROP_BROWSER_EXECUTABLE, ExtWebBrowser.class),
+                                     };
+                                     
+                    properties[0].setDisplayName (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "PROP_browserExecutable"));
+                    properties[0].setShortDescription (NbBundle.getMessage (ExtWebBrowserBeanInfo.class, "HINT_browserExecutable"));
+                    
+                } catch (IntrospectionException ie) {
+                    org.openide.ErrorManager.getDefault().notify(ie);
+                    return null;
+                }
             }
         }
         return properties;
     }
 
     /**
-    * Returns the IceBrowserSettings' icon. 
+    * Returns the icon. 
     */
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
+    
 }
