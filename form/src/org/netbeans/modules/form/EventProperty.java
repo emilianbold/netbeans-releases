@@ -124,9 +124,11 @@ class EventProperty extends PropertySupport.ReadWrite {
                 }
             }
             else { // no handlers yet, add a new one
-                change = new Change();
-                change.getAdded().add((String)val);
-                newSelectedHandler = (String) val;
+                if (!"".equals(val)) {
+                    change = new Change();
+                    change.getAdded().add((String)val);
+                    newSelectedHandler = (String) val;
+                }
             }
         }
         else if (val == null) {
@@ -303,6 +305,19 @@ class EventProperty extends PropertySupport.ReadWrite {
                 String annotation = FormUtils.getFormattedBundleString(
                                         "FMT_MSG_InvalidJavaIdentifier", // NOI18N
                                         new Object [] { txt } );
+                ErrorManager.getDefault().annotate(
+                    iae, ErrorManager.ERROR, "Not a java identifier", // NOI18N
+                    annotation, null, null);
+                throw iae;
+            }
+            if ("".equals(txt) && (this.getValue() == null)) {
+                // empty string entered when no event handler exist
+                invalidValueTried = true;
+                IllegalArgumentException iae = new IllegalArgumentException();
+                String emptyStringTxt = FormUtils.getBundleString("FMT_MSG_EmptyString"); // NOI18N
+                String annotation = FormUtils.getFormattedBundleString(
+                                        "FMT_MSG_InvalidJavaIdentifier", // NOI18N
+                                        new Object [] { emptyStringTxt } );
                 ErrorManager.getDefault().annotate(
                     iae, ErrorManager.ERROR, "Not a java identifier", // NOI18N
                     annotation, null, null);
