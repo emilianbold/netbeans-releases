@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.StringTokenizer;
 import javax.enterprise.deploy.shared.ActionType;
 import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.StateType;
@@ -217,56 +218,91 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             }
             FileObject baseDirFO = targetFolder.createFolder (baseDir.getName ());
             // create directories
-            String [] subdirs = new String [] { "conf", "logs", "work", "temp" /*, "webapps"*/ };
+            String [] subdirs = new String [] { 
+                "conf",   // NOI18N
+                "conf/Catalina",   // NOI18N
+                "conf/Catalina/localhost",   // NOI18N
+                "logs",   // NOI18N
+                "work",   // NOI18N
+                "temp"    // NOI18N
+                /*, "webapps"*/ 
+            };
             for (int i = 0; i<subdirs.length; i++) {
-                baseDirFO.createFolder (subdirs[i]);
+                StringTokenizer stok = new StringTokenizer (subdirs[i], "/"); // NOI18N
+                FileObject dest = baseDirFO;
+                String folder = null;
+                while (stok.hasMoreTokens ()) {
+                    folder = stok.nextToken ();
+                    if (stok.hasMoreTokens ()) {
+                        dest = dest.getFileObject (folder);
+                    }
+                }
+                dest.createFolder (folder);
             }
             // copy config files
-            File confDir = new File (baseDir, "conf");  // NOI18N
             String [] files = new String [] { 
-                "catalina", // NOI18N
-                "catalina", // NOI18N 
-                "web"       // NOI18N
+                "conf/catalina.policy",   // NOI18N
+                "conf/catalina.properties",   // NOI18N
+                "conf/server.xml",   // NOI18N
+                "conf/tomcat-users.xml",   // NOI18N
+                "conf/web.xml",   // NOI18N
+                "conf/Catalina/localhost/admin.xml",   // NOI18N
+                "conf/Catalina/localhost/manager.xml",   // NOI18N
             };
-            String [] exts = new String [] { 
-                "policy",     // NOI18N 
-                "properties", // NOI18N
-                "xml"          // NOI18N
+            String [] patternFrom = new String [] { 
+                null, 
+                null, 
+                "appBase=\"webapps\"",   // NOI18N
+                "</tomcat-users>",   // NOI18N
+                null, 
+                null, 
+                null 
             };
-            File homeConfDir = new File (homeDir, "conf"); // NOI18N
-            FileObject [] homeFO = FileUtil.fromFile (homeConfDir);
-            FileObject baseConfFO = baseDirFO.getFileObject ("conf");
-            if (homeFO.length == 0 || baseConfFO == null) {
-                TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find FileObject for home dir or base dir");
-                return null;
-            }       
+            String [] patternTo = new String [] { 
+                null, 
+                null, 
+                "appBase=\""+new File (homeDir, "webapps").getAbsolutePath ()+"\"",   // NOI18N
+                "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>",   // NOI18N
+                null, 
+                null, 
+                null 
+            };
             for (int i = 0; i<files.length; i++) {
-                FileObject source = homeFO[0].getFileObject (files[i], exts[i]);
+                // get folder from, to, name and ext
+                int slash = files[i].lastIndexOf ('/');
+                int dot = files[i].lastIndexOf ('.');
+                String sfolder = files[i].substring (0, slash);
+                String sname = files[i].substring (slash+1, dot);
+                String sext = files[i].substring (dot+1);
+                File fromDir = new File (homeDir, sfolder); // NOI18N
+                File toDir = new File (baseDir, sfolder); // NOI18N
+                FileObject [] fromFO = FileUtil.fromFile (fromDir);
+                FileObject toFO = baseDirFO.getFileObject (sfolder);
+                if (fromFO.length == 0 || toFO == null) {
+                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find FileObject for home dir or base dir");
+                    return null;
+                }       
+                
+                FileObject source = fromFO[0].getFileObject (sname, sext);
                 if (source == null) {
-                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find config file "+files[i]+"."+exts[i]);
+                    TomcatFactory.getEM ().log (ErrorManager.INFORMATIONAL, "Cannot find config file "+sname+"."+sext);
                     return null;
                 }
-                FileUtil.copyFile (homeFO[0].getFileObject (files[i], exts[i]), baseConfFO, files[i], exts[i]);
-            }
-            // modify server.xml
-            if (!copyAndPatch (
-                new File (homeConfDir, "server.xml"), 
-                new File (confDir, "server.xml"), 
-                "appBase=\"webapps\"",
-                "appBase=\""+new File (homeDir, "webapps").getAbsolutePath ()+"\""
-                )) {
-                ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file server.xml");
-                return null;
-            }
-            // modify tomcat-users.xml
-            if (!copyAndPatch (
-                new File (homeConfDir, "tomcat-users.xml"), 
-                new File (confDir, "tomcat-users.xml"), 
-                "</tomcat-users>",
-                "<user username=\"ide\" password=\"ide_manager\" roles=\"admin,manager\"/>\n</tomcat-users>"
-                )) {
-                // might not be a bug
-                ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file tomcat-users.xml");
+                if (patternTo[i] == null) {
+                    FileUtil.copyFile (source, toFO, sname, sext);
+                }
+                else {
+                    // use patched version
+                    if (!copyAndPatch (
+                        new File (fromDir, files[i].substring (slash+1)), 
+                        new File (toDir, files[i].substring (slash+1)), 
+                        patternFrom[i],
+                        patternTo[i]
+                        )) {
+                        ErrorManager.getDefault ().log (ErrorManager.INFORMATIONAL, "Cannot create config file "+files[i]);
+                        return null;
+                    }
+                }
             }
         }
         catch (java.io.IOException ioe) {
