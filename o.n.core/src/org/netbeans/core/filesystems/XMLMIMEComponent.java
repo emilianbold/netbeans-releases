@@ -15,6 +15,7 @@ package org.netbeans.core.filesystems;
 
 import java.io.*;
 import java.util.*;
+import java.lang.ref.*;
 
 import org.xml.sax.*;
 import org.xml.sax.ext.*;
@@ -38,29 +39,22 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
     private short state = INIT;
     
     // template obtained form parsed description
-    private Smell template = new Smell();
+    private final Smell template = new Smell();
 
-    // cached and reused parser used for sniffing
-    private static SniffingParser sniffingParser = null;
+    // cached and reused parser used for sniffing    
+    private static final LocalSniffingParser local = new LocalSniffingParser();
 
     // FileObjectFilter ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     public boolean acceptFileObject(FileObject fo) {
 
-        // it may come from arbitrary thread        
+        // it may come from arbitrary thread
+        // retrive per thread instance
         
-        synchronized (this) {   // lazy initialization = performance penalty
-            
-            if (sniffingParser == null) {
-                sniffingParser = new SniffingParser();
-            }
-        }
-
-        Smell print = sniffingParser.sniff(fo);
+        SniffingParser sniffer = (SniffingParser) local.get();
+        Smell print = sniffer.sniff(fo);
         return template.match(print);
     }
-
-
 
     // XML description -> memory representation ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -174,9 +168,68 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
      * Create just one shared parser instance per thread.
      * Consequently one instance cannot be run in paralel eliminating need for sync.
      */
-    private static class ParserPool extends ThreadLocal {
+    private static class LocalSniffingParser extends ThreadLocal {
         
-        protected Object initialValue() {
+        private WeakReference wref = null;
+        
+        protected Object initialValue() {            
+            SniffingParser parser = new SniffingParser();
+            wref = new WeakReference(parser);
+            return wref;
+        }
+        
+        public Object get() {
+            WeakReference cache = (WeakReference) super.get();
+            Object cached = cache.get();
+            if (cached == null) {
+                cached = new SniffingParser();
+                wref = new WeakReference(cached);                
+                super.set(wref);
+            }
+            return cached;            
+        }
+        
+        public void set(Object data) {
+            // we are read only!
+        }
+    }
+
+        
+    /**
+     * Parser that test XML Document header.
+     */
+    private static class SniffingParser extends DefaultParser implements LexicalHandler {
+
+        SniffingParser() {
+            super(null);
+        }
+
+        // last succesfully sniffed fileobject
+        private FileObject lastFileObject = null;
+        
+        private Smell print = null;
+        
+        // the only way how to stop parser is throwing an exception
+        private static final SAXException STOP = new SAXException("STOP");  //NOI18N
+
+        /**
+         * Go ahead and retrieve a print
+         */
+        protected Smell sniff(FileObject fo) {
+
+            if (fo == null) return null;
+            
+            if (fo.equals(lastFileObject)) return print;
+
+            print = new Smell();
+            parse(fo);
+            if (this.state == ERROR) return null;
+            
+            lastFileObject = fo;
+            return print;
+        }
+        
+        protected XMLReader createXMLReader() {
             XMLReader parser = null;
             
             try {
@@ -193,60 +246,12 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
             }
             return parser;
         }
-    }
-
-        
-    /**
-     * Parser that test XML Document header.
-     */
-    private static class SniffingParser extends DefaultParser implements LexicalHandler {
-
-        SniffingParser() {
-            super(null);
-        }
-
-        // result of sniffing
-        private Smell print = null;
-     
-        // parser pool
-        private static final ThreadLocal pool = new ParserPool();
-
-        // One element cache <FileObject, ParsedData>
-        private static ThreadLocal cache = new ThreadLocal();
-
-        // the only way how to stop parser is throwing an exception
-        private static final SAXException STOP = new SAXException("STOP");  //NOI18N
-
-        /**
-         * Go ahead and retrieve a print
-         */
-        protected Smell sniff(FileObject fo) {
-            
-            Object[] cached = (Object[]) cache.get();
-            
-            if (cached != null && fo.equals(cached[0])) {
-                return (Smell) cached[1];                
-                
-            } else {
-                
-                print = new Smell();                  
-                parse(fo);
-                if (this.state == ERROR) print = null;
-                
-                cache.set(new Object[] {fo, print});
-                return print;
-            }
-        }
-        
-        protected XMLReader createXMLReader() {
-            return (XMLReader) pool.get();
-        }
         
         protected Exception stopException() {
             return STOP;
         }        
         
-        public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
+        public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {            
             if (namespaceURI != null) {
                 print.addElementNS(namespaceURI);
             }
@@ -393,6 +398,9 @@ final class XMLMIMEComponent extends DefaultParser implements MIMEComponent {
         
         private boolean attMatch(Smell t) {
 
+            if (attns == null) return true;
+            if (t.attns == null) return false;
+            
             // all attributes must match by name ...
             for (int i = 0 ; i<attns.length; i++) {
                 int match = Util.indexOf(t.attns, attns[i]);

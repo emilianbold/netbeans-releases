@@ -68,7 +68,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
     // It implements InstanceCookie because it is added to environment of XML document.
     // The cookie return itself i.e. MIMEResolver to be searchable by Lookup.
     //
-    private class Impl extends MIMEResolver implements InstanceCookie {
+    static class Impl extends MIMEResolver implements InstanceCookie {
 
         // This file object describes rules that drive ths instance
         private final FileObject data;
@@ -78,7 +78,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                 
         private short state = DescParser.INIT;
         
-        private Impl(FileObject obj) {
+        Impl(FileObject obj) {
             if (DEBUG) System.err.println("MIMEResolverImpl.Impl.<init>(" + obj + ")");  // NOI18N
             data = obj;
         }
@@ -152,7 +152,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
      * Resonsible for parsing backend FileObject and filling resolvers
      * in memory structure according to it.
      */
-    private class DescParser extends DefaultParser {
+    private static class DescParser extends DefaultParser {
 
         private FileElement[] template = null;
         
@@ -186,6 +186,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private static final String NAME = "name"; // NOI18N
         private static final String MAGIC = "magic"; // NOI18N
         private static final String HEX = "hex"; // NOI18N
+        private static final String MASK = "mask"; // NOI18N
         private static final String VALUE = "text"; // NOI18N
         private static final String EXIT = "exit"; // NOI18N
         private static final String XML_RULE_COMPONENT = "xml-rule";  // NOI18N
@@ -233,10 +234,22 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
                     } else if (MAGIC.equals(qName)) {
 
                         s = atts.getValue(HEX); if (s == null) error();
+                        String mask = atts.getValue(MASK);                            
+                        
                         char[] chars = s.toCharArray();
+                        byte[] mask_bytes = null;  // mask is optional
+                                                
                         try {
+                        
+                            if (mask != null) {
+                                char[] mask_chars = mask.toCharArray();
+                                mask_bytes = XMLUtil.fromHex(mask_chars, 0, mask_chars.length);
+                            }
+                        
                             byte[] magic = XMLUtil.fromHex(chars, 0, chars.length);
-                            template[0].fileCheck.magic = magic;
+                            if (template[0].fileCheck.setMagic(magic, mask_bytes) == false) {
+                                error();
+                            }
                         } catch (IOException ioex) {
                             error();
                         }
@@ -391,6 +404,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private String[] fatts;
         private String[] vals;   // contains null or value of attribute at the same index
         private byte[]   magic;
+        private byte[]   mask;
 
         private void addExt(String ext) {
             exts = Util.addString(exts, ext);
@@ -403,6 +417,19 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
         private void addAttr(String name, String value) {
             fatts = Util.addString(fatts, name);
             vals = Util.addString(vals, name);
+        }
+
+        private boolean setMagic(byte[] magic, byte[] mask) {
+            if (magic == null) return true;
+            if (mask != null && magic.length != mask.length) return false;            
+            this.magic = magic;
+            if (mask != null) {
+                this.mask = mask;
+                for (int i = 0; i<mask.length; i++) {
+                    this.magic[i] &= mask[i];
+                }
+            }
+            return true;
         }
         
         private boolean accept(FileObject fo) throws IOException {
@@ -424,7 +451,7 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
 
                     int l = s.indexOf(';');
                     if (i>=0) s = s.substring(0, l-1);
-                    s = s.toLowerCase();                
+                    s = s.toLowerCase();
                     if (s.equals(mimes[i])) return true;
 
                     // RFC3023; allows "+xml" suffix
@@ -437,9 +464,43 @@ public final class MIMEResolverImpl extends XMLEnvironmentProvider implements En
             
             if (magic != null) {
                 byte[] header = new byte[magic.length];
-                if (magic.length == fo.getInputStream().read(header, 0, magic.length)) {
+
+//                System.err.println("FO" + fo);
+                
+//                String m = mask == null ? "" : " mask " + XMLUtil.toHex(mask, 0, mask.length);
+//                System.err.println("Magic test " + XMLUtil.toHex(magic, 0, magic.length) + m);
+                
+                // fetch header
+                
+                InputStream in = fo.getInputStream();
+                boolean unexpectedEnd = false;
+                for (int i = 0; i<magic.length; ) {
+                    try {
+                        int read = in.read(header, i, magic.length-i);
+                        if (read < 0) unexpectedEnd = true;
+                        i += read;
+                    } catch (IOException ex) {
+                        unexpectedEnd = true;
+                        break;
+                    }
+                    if (unexpectedEnd) break;
+                }
+
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    // closed
+                }
+                
+                
+//                System.err.println("Header " + XMLUtil.toHex(header, 0, header.length));
+                
+                // compare it
+                
+                if ( unexpectedEnd == false ) {
                     boolean diff = false;
-                    for (int i = magic.length -1 ; i>=0; i--) {
+                    for (int i=0  ; i<magic.length; i++) {
+                        if (mask != null) header[i] &= mask[i];
                         if (magic[i] != header[i]) {
                             diff = true;
                             break;
