@@ -483,45 +483,47 @@ public class DetectPanel extends javax.swing.JPanel {
 	 has entered. Stores user-customized display name into the Platform.
 	 */
         public void storeSettings(Object settings) {
-            assert platform instanceof J2SEPlatformImpl;                        
-            String name = component.getPlatformName();
-            platform.setDisplayName (name);
-            String antName = createAntName (name);
-            platform.setAntName (antName);
-            List src = new ArrayList ();
-            List jdoc = new ArrayList ();
-            String srcPath = this.component.getSources();
-            if (srcPath!=null) {
-                File f = new File (srcPath);
-                try {
-                    URL url = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(url)) {
-                        src.add (ClassPathSupport.createResource(FileUtil.getArchiveRoot(url)));
+            if (isValid()) {
+                assert platform instanceof J2SEPlatformImpl;
+                String name = component.getPlatformName();
+                platform.setDisplayName (name);
+                String antName = createAntName (name);
+                platform.setAntName (antName);
+                List src = new ArrayList ();
+                List jdoc = new ArrayList ();
+                String srcPath = this.component.getSources();
+                if (srcPath!=null) {
+                    File f = new File (srcPath);
+                    try {
+                        URL url = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(url)) {
+                            src.add (ClassPathSupport.createResource(FileUtil.getArchiveRoot(url)));
+                        }
+                        else {
+                            src.add (ClassPathSupport.createResource(url));
+                        }
+                    }catch (MalformedURLException mue) {
+                        ErrorManager.getDefault().notify (mue);
                     }
-                    else {
-                        src.add (ClassPathSupport.createResource(url));
-                    }
-                }catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify (mue);
                 }
-            }
-            String jdocPath = this.component.getJavadoc();
-            if (jdocPath!=null) {
-                File f = new File (jdocPath);
-                try {
-                    URL url = f.toURI().toURL();
-                    if (FileUtil.isArchiveFile(url)) {
-                        jdoc.add (FileUtil.getArchiveRoot(url));
+                String jdocPath = this.component.getJavadoc();
+                if (jdocPath!=null) {
+                    File f = new File (jdocPath);
+                    try {
+                        URL url = f.toURI().toURL();
+                        if (FileUtil.isArchiveFile(url)) {
+                            jdoc.add (FileUtil.getArchiveRoot(url));
+                        }
+                        else {
+                            jdoc.add (url);
+                        }
+                    } catch (MalformedURLException mue) {
+                        ErrorManager.getDefault().notify (mue);
                     }
-                    else {
-                        jdoc.add (url);
-                    }
-                } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify (mue);
                 }
+                ((J2SEPlatformImpl)platform).setSourceFolders (ClassPathSupport.createClassPath(src));
+                ((J2SEPlatformImpl)platform).setJavadocFolders (jdoc);
             }
-            ((J2SEPlatformImpl)platform).setSourceFolders (ClassPathSupport.createClassPath(src));
-            ((J2SEPlatformImpl)platform).setJavadocFolders (jdoc);
         }
 
         /**
