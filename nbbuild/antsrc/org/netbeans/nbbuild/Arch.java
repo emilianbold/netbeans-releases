@@ -233,7 +233,8 @@ public class Arch extends Task implements ErrorHandler {
             log("Transforming " + questionsFile + " into " + output);
             
             javax.xml.transform.Transformer t = javax.xml.transform.TransformerFactory.newInstance().newTransformer(ss);
-            javax.xml.transform.Result r = new javax.xml.transform.stream.StreamResult (output);
+            OutputStream os = new BufferedOutputStream (new FileOutputStream (output));
+            javax.xml.transform.stream.StreamResult r = new javax.xml.transform.stream.StreamResult (os);
             if (stylesheet == null) {
                 stylesheet = this.getProject ().getProperty ("arch.stylesheet");
             }
@@ -264,6 +265,9 @@ public class Arch extends Task implements ErrorHandler {
                 t.setParameter("arch.when", when);
             }
             t.transform(qSource, r);
+            os.close ();
+        } catch (IOException ex) {
+            throw new BuildException (ex);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
             throw new BuildException (ex);
         } catch (javax.xml.transform.TransformerException ex) {
