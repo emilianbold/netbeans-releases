@@ -279,7 +279,7 @@ Microsystems, Inc. All Rights Reserved.
  	<antcall target="copy-user-jars"/>
 
         <ideexec dir="${netbeans.home}/bin" executable="${netbeans.home}/bin/runide.exe" 
-              os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000"
+              os="Windows 95 Windows 98 Windows Me Windows NT Windows 2000 Windows XP"
               failonerror="no" timeout="${xtest.timeout}">
 	    	  <arg line="${args}"/>
         </ideexec>
