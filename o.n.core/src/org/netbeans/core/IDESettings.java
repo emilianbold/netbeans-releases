@@ -56,6 +56,13 @@ public class IDESettings extends SystemOption {
     /** sorting style of Modules node */
     public static final String PROP_MODULES_SORT_MODE = "modulesSortMode"; // NOI18N
 
+    /** proxy host VM property key */
+    public static final String KEY_PROXY_HOST = "http.proxyHost"; // NOI18N
+    /** proxy port VM property key */
+    public static final String KEY_PROXY_PORT = "http.proxyPort"; // NOI18N
+    /** non proxy hosts VM property key */
+    public static final String KEY_NON_PROXY_HOSTS = "http.nonProxyHosts"; // NOI18N
+    
     public static final int MODULES_SORT_UNSORTED = 0;
     public static final int MODULES_SORT_DISPLAYNAME = 1;
     public static final int MODULES_SORT_CODENAME = 2;
@@ -72,6 +79,13 @@ public class IDESettings extends SystemOption {
 
     private static Hashtable alreadyLoadedBeans = new Hashtable();
 
+    private static boolean useProxy = false;
+    private static String proxyHost = System.getProperty(KEY_PROXY_HOST, "");
+    private static String proxyPort = System.getProperty(KEY_PROXY_PORT, "");
+    // do not use proxy for 'localhost'
+    // [PENDING] should be a user-modifiable property
+    private static String nonProxyHosts = "localhost";  // NOI18N
+    
     // ------------------------------------------
     // property access methods
 
@@ -182,50 +196,67 @@ public class IDESettings extends SystemOption {
     /** Getter for proxy set flag.
     */
     public boolean getUseProxy () {
-        String host = System.getProperty ("proxySet");
-        if ((host != null) && (host.equals ("true"))) return true; // NOI18N
-        else return false;
+        return useProxy;
     }
 
     /** Setter for proxy set flag.
     */
     public void setUseProxy (boolean value) {
-        if (value) {
-            System.setProperty ("proxySet", "true"); // NOI18N
-        } else {
-            System.setProperty ("proxySet", "false"); // NOI18N
+        if (useProxy != value) {
+            boolean oldValue = useProxy;
+            useProxy = value;
+            if (value) {
+                // apply the current proxyHost:proxyPort settings
+                System.setProperty(KEY_PROXY_HOST, getProxyHost());
+                System.setProperty(KEY_PROXY_PORT, getProxyPort());
+                System.setProperty(KEY_NON_PROXY_HOSTS, nonProxyHosts);
+            } else {
+                // reset properties so that they don't apply
+                System.setProperty(KEY_PROXY_HOST, "");
+                System.setProperty(KEY_PROXY_PORT, "");
+                System.setProperty(KEY_NON_PROXY_HOSTS, "");
+            }
+            // notify listeners
+            firePropertyChange(PROP_USE_PROXY, new Boolean(oldValue), new Boolean(value));
         }
-        firePropertyChange (PROP_USE_PROXY, null, null);
     }
 
     /** Getter for proxy host.
     */
     public String getProxyHost () {
-        String host = System.getProperty ("proxyHost");
-        if (host == null) host = ""; // NOI18N
-        return host;
+        return proxyHost;
     }
 
     /** Setter for proxy host.
     */
     public void setProxyHost (String value) {
-        System.setProperty ("proxyHost", value); // NOI18N
-        firePropertyChange (PROP_PROXY_HOST, null, null);
+        if (!proxyHost.equals(value)) {
+            String oldValue = proxyHost;
+            proxyHost = value;
+            if (getUseProxy()) {
+                System.setProperty(KEY_PROXY_HOST, proxyHost);
+            }
+            firePropertyChange(PROP_PROXY_HOST, oldValue, proxyHost);
+        }
     }
 
     /** Getter for proxy port.
     */
     public String getProxyPort () {
-        String port = System.getProperty ("proxyPort");
-        if (port == null) port = ""; // NOI18N
-        return port;
+        return proxyPort;
     }
 
     /** Setter for proxy port.
     */
     public void setProxyPort (String value) {
-        System.setProperty ("proxyPort", value); // NOI18N
-        firePropertyChange (PROP_PROXY_PORT, null, null);
+        if (!proxyPort.equals(value)) {
+            String oldValue = proxyPort;
+            proxyPort = value;
+            if (getUseProxy()) {
+                System.setProperty (KEY_PROXY_PORT, proxyPort);
+            }
+            firePropertyChange(PROP_PROXY_PORT, oldValue, proxyPort);
+        }
     }
 
     /** Getter for showing file extensions.
