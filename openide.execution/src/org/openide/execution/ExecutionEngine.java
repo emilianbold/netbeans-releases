@@ -13,9 +13,12 @@
 
 package org.openide.execution;
 
-import java.security.PermissionCollection;
+import java.security.AllPermission;
 import java.security.CodeSource;
-
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import org.openide.util.Lookup;
+import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
 /**
@@ -60,13 +63,82 @@ public abstract class ExecutionEngine extends Object {
     */
     protected abstract NbClassPath createLibraryPath ();
     
-    /** Method to obtain default instance of the engine.
-     * @return the engine
+    /**
+     * Obtains default instance of the execution engine.
+     * If default {@link Lookup} contains an instance of {@link ExecutionEngine},
+     * that is used. Otherwise, a trivial basic implementation is returned with
+     * the following behavior:
+     * <ul>
+     * <li>{@link #execute} just runs the runnable immediately and pretends to be done.
+     * <li>{@link #createPermissions} just uses {@link AllPermission}. No I/O redirection
+     *     or {@link System#exit} trapping is done.
+     * <li>{@link #createLibraryPath} produces an empty path.
+     * </ul>
+     * This basic implementation is helpful in unit tests and perhaps in standalone usage
+     * of other libraries.
+     * @return some execution engine implementation (never null)
      * @since 2.16
      */
-    public static ExecutionEngine getDefault () {
-        return (ExecutionEngine)
-            org.openide.util.Lookup.getDefault().lookup(ExecutionEngine.class);
+    public static ExecutionEngine getDefault() {
+        ExecutionEngine ee = (ExecutionEngine) Lookup.getDefault().lookup(ExecutionEngine.class);
+        if (ee == null) {
+            ee = new Trivial();
+        }
+        return ee;
+    }
+    
+    /**
+     * Dummy fallback implementation, useful for unit tests.
+     */
+    private static final class Trivial extends ExecutionEngine {
+        
+        public Trivial() {}
+
+        protected NbClassPath createLibraryPath() {
+            return new NbClassPath(new String[0]);
+        }
+
+        protected PermissionCollection createPermissions(CodeSource cs, InputOutput io) {
+            PermissionCollection allPerms = new Permissions();
+            allPerms.add(new AllPermission());
+            allPerms.setReadOnly();
+            return allPerms;
+        }
+
+        public ExecutorTask execute(String name, Runnable run, InputOutput io) {
+            int resultValue = 0;
+            try {
+                run.run();
+            } catch (RuntimeException x) {
+                x.printStackTrace();
+                resultValue = 1;
+            }
+            return new ET(run, resultValue, name);
+        }
+        
+        private static final class ET extends ExecutorTask {
+            
+            private final int resultValue;
+            private final String name;
+            
+            public ET(Runnable run, int resultValue, String name) {
+                super(run);
+                this.resultValue = resultValue;
+                this.name = name;
+            }
+            
+            public void stop() {}
+            
+            public int result() {
+                return resultValue;
+            }
+            
+            public InputOutput getInputOutput() {
+                return IOProvider.getDefault().getIO(name, true);
+            }
+            
+        }
+        
     }
 
 }

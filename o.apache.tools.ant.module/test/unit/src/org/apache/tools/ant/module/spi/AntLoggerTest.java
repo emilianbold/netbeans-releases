@@ -13,20 +13,21 @@
 
 package org.apache.tools.ant.module.spi;
 
-import java.io.*;
-import java.security.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.apache.tools.ant.module.api.AntTargetExecutor;
 import org.apache.tools.ant.module.xml.AntProjectSupport;
 import org.netbeans.junit.NbTestCase;
-import org.openide.LifecycleManager;
-import org.openide.execution.*;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.windows.*;
 
 // For debugging info, add to nbproject/private/private.properties:
 // test-unit-sys-prop.org.apache.tools.ant.module.bridge.impl.NbBuildLogger.LOG_AT_WARNING=true
@@ -196,9 +197,6 @@ public class AntLoggerTest extends NbTestCase {
                 setLookups(new Lookup[] {
                     Lookups.fixed(new Object[] {
                         new IFL(),
-                        new IOP(),
-                        new EE(),
-                        new LM(),
                         Class.forName("org.netbeans.modules.masterfs.MasterURLMapper").newInstance(),
                         LOGGER,
                     }),
@@ -230,89 +228,4 @@ public class AntLoggerTest extends NbTestCase {
         }
     }
 
-    /**
-     * Dummy I/O support. No StandardLogger in lookup anyway, so
-     * should not be used for anything.
-     */
-    private static final class IOP extends IOProvider implements InputOutput {
-        public IOP() {}
-        public InputOutput getIO(String name, boolean newIO) {
-            return this;
-        }
-        public OutputWriter getStdOut() {
-            return new NullOW();
-        }
-        public OutputWriter getOut() {
-            return new NullOW();
-        }
-        public Reader getIn() {
-            return new StringReader("");
-        }
-        public OutputWriter getErr() {
-            return new NullOW();
-        }
-        public void closeInputOutput() {}
-        public boolean isClosed() {
-            return false;
-        }
-        public void setOutputVisible(boolean value) {}
-        public void setErrVisible(boolean value) {}
-        public void setInputVisible(boolean value) {}
-        public void select() {}
-        public boolean isErrSeparated() {
-            return false;
-        }
-        public void setErrSeparated(boolean value) {}
-        public boolean isFocusTaken() {
-            return false;
-        }
-        public void setFocusTaken(boolean value) {}
-        public Reader flushReader() {
-            return getIn();
-        }
-        private static final class NullOW extends OutputWriter {
-            public NullOW() {
-                super(new StringWriter());
-            }
-            public void println(String s, OutputListener l) throws IOException {}
-            public void reset() throws IOException {}
-        }
-    }
-
-    private static final class EE extends ExecutionEngine {
-        public EE() {}
-        public ExecutorTask execute(String name, Runnable run, InputOutput io) {
-            try {
-                run.run();
-            } catch (RuntimeException x) {
-                x.printStackTrace();
-            }
-            return new ET(run);
-        }
-        protected PermissionCollection createPermissions(CodeSource cs, InputOutput io) {
-            return null;
-        }
-        protected NbClassPath createLibraryPath() {
-            return null;
-        }
-        private static final class ET extends ExecutorTask {
-            public ET(Runnable run) {
-                super(run);
-            }
-            public void stop() {}
-            public int result() {
-                return 0;
-            }
-            public InputOutput getInputOutput() {
-                return new IOP();
-            }
-        }
-    }
-
-    private static final class LM extends LifecycleManager {
-        public LM() {}
-        public void saveAll() {}
-        public void exit() {}
-    }
-    
 }
