@@ -27,28 +27,30 @@ from the main menu. The Runtime window appears.</li>
 <p>A Tomcat Server's instance property sheet has two sections:</p>
 <h3>Properties Section</h3>
 <ul>
-	<li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
+	<li><b>Display Name.</b> Specifies the Tomcat Server's name for display
+    purposes in the Runtime window.</li>
+   <li><b>Server Port.</b> Specifies the number of the TCP/IP port that the server listens 
     on. The URL for a web application that is deployed on the server is derived from 
     the host's URL and the server port, such as <tt>http://localhost:8086</tt>.</li>
-  <li><b>Admin Port.</b> Specifies the number of the TCP/IP port that the server's administrative 
+   <li><b>Admin Port.</b> Specifies the number of the TCP/IP port that the server's administrative 
     server listens to.</li>
     <li><b>User.</b> Specifies the user name that the IDE uses to log into the server's manager 
     application. The user must be associated with the manager role. The first 
-    time the IDE starts the bundled Tomcat server, such as through the Start/Stop Server menu 
+    time the IDE starts the bundled Tomcat Server, such as through the Start/Stop Server menu 
     action or by executing a web component from the IDE, the IDE adds an admin 
     user with a randomly-generated password to the <i>tomcat-base-path</i><tt>/conf/tomcat-users.xml</tt> 
     file. (Right-click the Tomcat Server instance node in the Runtime window and select Properties.
     In the Properties dialog box, the Base Directory property points to the <tt><i>base-dir directory</i></tt>.)
     The admin user entry in the <tt>tomcat-users.xml</tt> file looks similar to the following: 
     <PRE>  &lt;user username=&quot;ide&quot; password=&quot;woiehh&quot; roles=&quot;manager&quot;/&gt;</PRE>
-  </li>
-  <li><b>Password.</b> Specifies the user's password. See the explanation for the User property above for details.</li>
-  <li><b>Home Directory.</b> Specifies the home directory for the server on your local system. 
-    This property is set when you add a Tomcat server to the Server Registry. 
+   </li>
+   <li><b>Password.</b> Specifies the user's password. See the explanation for the User property above for details.</li>
+   <li><b>Home Directory.</b> Specifies the home directory for the server on your local system. 
+    This property is set when you add a Tomcat Server to the Server Registry. 
     This location is where Tomcat expects to find its own binaries and any libraries 
     that are used by web applications but which are not part of Tomcat itself.</li>
-  <li><b>Base Directory.</b> Specifies the base directory for the Tomcat server. You can 
-    set this property when you add a Tomcat server to the Server Registry. If 
+   <li><b>Base Directory.</b> Specifies the base directory for the Tomcat Server. You can 
+    set this property when you add a Tomcat Server to the Server Registry. If 
     you set a base directory, then that is where the Tomcat configuration files 
      reside. One reason for specifying a separate base directory is to allow 
     more than one user to use the same server. If no base directory is specified, 
@@ -62,11 +64,21 @@ from the main menu. The Runtime window appears.</li>
     HTTP monitor's declaration from the server. However the monitor's libraries 
     remain deployed to the server.<br> 
     When you disable the HTTP Monitor, you do not need to restart the server for 
-    the change to take affect.
+    the change to take affect.</li>
     <li><b>Open Context Log on Run.</b> If selected, this checkbox enables the context
     log to be opened while the web application is being deployed. You can watch
     the stack trace as it builds.</li>
-  </li>
+    <li><b>Use Security Manager.</b> If selected, this checkbox enables the Tomcat Server
+    to be started with the <tt>-security</tt> option. The security policy implemented by the
+    Security Manager are configured in the <tt>catalina.policy</tt> file, which is in the
+    Tomcat <tt>conf</tt> folder. For details, see
+ <p><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <param name="content" value="http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html">
+        <param name="text" value="<html><u>http://jakarta.apache-korea.org/tomcat/tomcat-5.0-doc/security-manager-howto.html</u></html>">
+        <param name="textFontSize" value="medium">
+        <param name="textColor" value="blue">
+</object></p>
+  
 </ul>
 <h3>Debugger Section</h3>
 <ul>
