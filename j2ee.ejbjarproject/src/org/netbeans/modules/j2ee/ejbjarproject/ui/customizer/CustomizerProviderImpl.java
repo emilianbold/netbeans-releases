@@ -248,7 +248,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             panels.put( services, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
                 "LBL_CustomizeWsServiceHost_NoWebServices")));
         }
-        if(servicesSettings != null && servicesSettings.size() > 0) {
+        if(serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
             panels.put( clients, new CustomizerWSClientHost( uiProperties, serviceClientsSettings ));
         } else {
             panels.put( clients, new LabelPanel(NbBundle.getMessage(CustomizerProviderImpl.class, 
