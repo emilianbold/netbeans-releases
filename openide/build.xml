@@ -781,6 +781,14 @@ Set jmf.home to the location of your JMF installation to continue."/>
 	 compress="true"/>
   </target>
 
+  <target name="nb-api-tutorial" description="Make Open APIs Getting Started Tutorial.">
+    <zip zipfile="nb-api-tutorial.zip">
+      <fileset dir="api/doc/tutorial">
+        <exclude name="README.txt"/>
+      </fileset>
+    </zip>
+  </target>
+
   <target name="clean" description="Remove all build products.">
     <delete>
       <fileset dir="src">
@@ -799,6 +807,7 @@ Set jmf.home to the location of your JMF installation to continue."/>
     <delete file="OpenAPIs.zip"/>
     <delete file="OpenAPIs.tar.gz"/>
     <delete file="OpenAPIs.tar.bz2"/>
+    <delete file="nb-api-tutorial.zip"/>
     <delete dir="examplemodules"/>
     <delete dir="compatkit-work"/>
     <delete dir="standalone"/>
