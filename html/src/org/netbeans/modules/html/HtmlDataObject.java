@@ -69,10 +69,10 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
 
     /** Creates new Cookie */
     public Node.Cookie createCookie(Class klass) {
-        if (klass == HtmlEditorSupport.class) {
+        if (klass.isAssignableFrom (HtmlEditorSupport.class)) {
             HtmlEditorSupport es = new HtmlEditorSupport(this);
             return es;
-        } else if (klass == ViewSupport.class) {
+        } else if (klass.isAssignableFrom (ViewSupport.class)) {
             return new ViewSupport(getPrimaryEntry());
         } else {
             return null;
