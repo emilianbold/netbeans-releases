@@ -24,7 +24,7 @@ import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 import com.netbeans.editor.Coloring;
 import com.netbeans.editor.Settings;
-import com.netbeans.editor.DefaultSettings;
+import com.netbeans.editor.BaseSettingsInitializer;
 import com.netbeans.developer.editors.FontEditor;
 import com.netbeans.developer.editors.ColorEditor;
 
@@ -60,8 +60,8 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
   /** Creates new form ColoringEditorPanel */
   public ColoringEditorPanel() {
 
-    value = new ColoringBean(DefaultSettings.defaultColoring, "null", // NOI18N
-        DefaultSettings.defaultColoring, true );
+    value = new ColoringBean(BaseSettingsInitializer.defaultColoring, "null", // NOI18N
+        BaseSettingsInitializer.defaultColoring, true );
 
     initComponents ();
     
@@ -94,7 +94,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
       public void propertyChange( PropertyChangeEvent evt ) {
         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
           Color newValue = (Color)fgColorPanel.getValue();
-          setValueImpl( Coloring.changeForeColor( value.coloring, newValue ) );
+          setValueImpl( Coloring.changeForeColor( value.coloring, newValue, Coloring.COLOR_MODE_DEFAULT ) );
         }
       }
     } );
@@ -112,7 +112,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
       public void propertyChange( PropertyChangeEvent evt ) {
         if( PropWithDefaultPanel.PROP_VALUE.equals( evt.getPropertyName() ) ) {
           Color newValue = (Color)bgColorPanel.getValue();
-          setValueImpl( Coloring.changeBackColor( value.coloring, newValue ) );
+          setValueImpl( Coloring.changeBackColor( value.coloring, newValue, Coloring.COLOR_MODE_DEFAULT ) );
         }
       }
     } );
@@ -398,6 +398,7 @@ public class ColoringEditorPanel extends javax.swing.JPanel {
 
 /*
  * Log
+ *  18   Jaga      1.12.1.3.1.03/15/00  Miloslav Metelka after structural change
  *  17   Gandalf-post-FCS1.12.1.3    3/8/00   Petr Nejedly    fix for 
  *       firePropertyChange
  *  16   Gandalf-post-FCS1.12.1.2    3/1/00   Petr Nejedly    
