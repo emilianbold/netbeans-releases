@@ -56,12 +56,10 @@ public class Column extends PropertySupport.ReadWrite {
     }
 
     int getColumnWidth () {
-        System.out.println("getColumnWidth " + columnModel.getID () + " : " + columnModel.getColumnWidth ());
         return columnModel.getColumnWidth ();
     }
     
     void setColumnWidth (int width) {
-        System.out.println("setColumnWidth " + columnModel.getID () + " : " + width);
         columnModel.setColumnWidth (width);
     }
     

@@ -170,7 +170,6 @@ ExplorerManager.Provider, PropertyChangeListener {
                     getColumn (0);
                 if (tc == null) continue;
                 int width = tc.getWidth ();
-                System.out.println("setCW for Default col ");
                 column.setColumnWidth (width);
             } else {
                 int order = column.getOrderNumber ();
@@ -180,13 +179,6 @@ ExplorerManager.Provider, PropertyChangeListener {
                     getColumn (order + 1);
                 if (tc == null) continue;
                 int width = tc.getWidth ();
-
-    //                int index = ((NodeTableModel) treeTable.getTable ().getModel ()).
-    //                    getVisibleIndex (order);
-    //                if (index == -1) continue;
-    //                int width = treeTable.getTable ().getColumnModel ().
-    //                    getColumn (index + 1).getPreferredWidth ();
-                System.out.println("setCW for " + tc.getHeaderValue ());
                 column.setColumnWidth (width);
             }
         }
