@@ -162,7 +162,7 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <echo message="Building module ant/docs..."/>
     <ant dir="../ant/docs" target="netbeans"/>
   </target>
-  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite">
+  <target name="all-apisupport" depends="all-openide,all-core,all-core/javahelp,all-jarpackager,all-apisupport/lite,all-java/api">
     <echo message="Building module apisupport..."/>
     <ant dir="../apisupport" target="netbeans"/>
   </target>
