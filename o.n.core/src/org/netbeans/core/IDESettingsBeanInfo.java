@@ -23,12 +23,11 @@ import javax.swing.UIManager;
 /** A BeanInfo for global IDE settings.
 *
 * @author Ian Formanek
-* @version 0.14, May 20, 1998
 */
 public class IDESettingsBeanInfo extends SimpleBeanInfo {
   /** Icons for compiler settings objects. */
-  Image icon;
-  Image icon32;
+  private static Image icon;
+  private static Image icon32;
 
   /** Array of property descriptors. */
   private static PropertyDescriptor[] desc;
@@ -88,12 +87,6 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
     }
   }
 
-  /** Creates a new IDESettingsBeanInfo */
-  public IDESettingsBeanInfo () {
-    icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif");
-    icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif");
-  }
-
   /** Provides an explicit property info. */
   public PropertyDescriptor[] getPropertyDescriptors() {
     return desc;
@@ -101,6 +94,10 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
   /** Returns the IDESettings' icon */
   public Image getIcon(int type) {
+    if (icon == null) {
+      icon = loadImage("/com/netbeans/developer/impl/resources/ideSettings.gif");
+      icon32 = loadImage ("/com/netbeans/developer/impl/resources/ideSettings32.gif");
+    }
     if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
       return icon;
     else
@@ -173,6 +170,7 @@ public class IDESettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  11   Gandalf   1.10        8/7/99   Ian Formanek    Cleaned loading of icons
  *  10   Gandalf   1.9         8/1/99   Ian Formanek    Got rid of Output 
  *       Details property
  *  9    Gandalf   1.8         7/24/99  Ian Formanek    Printing stack trace on 
