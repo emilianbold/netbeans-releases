@@ -22,7 +22,7 @@ import org.openide.filesystems.*;
 import org.xml.sax.*;
 import java.util.Map;
 import org.openide.util.NbBundle;
-import java.net.URL;
+import org.openide.loaders.DataObject;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.web.WebApp} object)
@@ -33,6 +33,7 @@ import java.net.URL;
 public final class DDProvider {
     private static DDProvider ddProvider;
     private Map ddMap;
+    private Map dataObjectMap;
     private Map baseBeanMap;
     private Map errorMap;
     private FCA fileChangeListener;
@@ -42,6 +43,7 @@ public final class DDProvider {
     /** Creates a new instance of WebModule */
     private DDProvider() {
         ddMap=new java.util.HashMap(5);
+        dataObjectMap = new java.util.HashMap(5);
         baseBeanMap=new java.util.HashMap(5);
         errorMap=new java.util.HashMap(5);
         fileChangeListener = new FCA ();
@@ -57,6 +59,25 @@ public final class DDProvider {
     }
     
 
+    private DataObject getDataObject(FileObject fileObject) {
+        return (DataObject) dataObjectMap.get(fileObject);
+    }
+
+    public synchronized WebApp getDDRoot(DataObject dataObject) {
+        final FileObject primaryFile = dataObject.getPrimaryFile();
+        WebAppProxy webAppProxy = null;
+        try {
+            webAppProxy = getFromCache(primaryFile);
+        } catch (IOException e) {
+            webAppProxy = null;
+        }
+        if (webAppProxy == null) {
+            webAppProxy = new WebAppProxy(null, null);
+        }
+        dataObjectMap.put(primaryFile, dataObject);
+        return webAppProxy;
+    }
+
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor
@@ -65,7 +86,7 @@ public final class DDProvider {
      * @return WebApp object - root of the deployment descriptor bean graph
      */
     public WebApp getDDRoot(FileObject fo) throws java.io.IOException {
-        
+
         WebAppProxy webApp = getFromCache (fo);
         if (webApp!=null) return webApp;
         
@@ -289,6 +310,9 @@ public final class DDProvider {
     private class FCA extends FileChangeAdapter {
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
+                if (getDataObject(fo) != null) {
+                    return;
+                }
                 try {
                     WebAppProxy webApp = getFromCache (fo);
                     WebApp orig = getOriginalFromCache (fo);

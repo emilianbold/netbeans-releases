@@ -13,18 +13,23 @@
 
 package org.netbeans.modules.j2ee.dd.api.ejb;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.schema2beans.Common;
-import org.openide.filesystems.*;
-import org.xml.sax.*;
-import java.util.Map;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Provides access to Deployment Descriptor root ({@link org.netbeans.modules.j2ee.dd.api.ejb.EjbJar} object)
@@ -37,13 +42,15 @@ public final class DDProvider {
     private static final String EJB_11_DOCTYPE = "-//Sun Microsystems, Inc.//DTD Enterprise JavaBeans 1.1//EN"; //NOI18N
     private static final DDProvider ddProvider = new DDProvider();
     private Map ddMap;
-    
+    private Map dataObjectMap;
+
     static java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/dd/Bundle");
-    
+
     /** Creates a new instance of EjbModule */
     private DDProvider() {
         //ddMap=new java.util.WeakHashMap(5);
-        ddMap = new java.util.HashMap(5);
+        ddMap = new HashMap(5);
+        dataObjectMap = new HashMap(5);
     }
     
     /**
@@ -53,7 +60,21 @@ public final class DDProvider {
     public static DDProvider getDefault() {
         return ddProvider;
     }
-    
+
+    private DataObject getDataObject(FileObject fileObject) {
+        return (DataObject) dataObjectMap.get(fileObject);
+    }
+
+    public synchronized EjbJar getDDRoot(DataObject dataObject) {
+        final FileObject primaryFile = dataObject.getPrimaryFile();
+        EjbJarProxy ejbJarProxy = getFromCache(primaryFile);
+        if (ejbJarProxy == null) {
+            ejbJarProxy = new EjbJarProxy(null, null);
+        }
+        dataObjectMap.put(primaryFile, dataObject);
+        return ejbJarProxy;
+    }
+
     /**
      * Returns the root of deployment descriptor bean graph for given file object.
      * The method is useful for clints planning to read only the deployment descriptor
@@ -70,6 +91,9 @@ public final class DDProvider {
         fo.addFileChangeListener(new FileChangeAdapter() {
             public void fileChanged(FileEvent evt) {
                 FileObject fo=evt.getFile();
+                if (getDataObject(fo) != null) {
+                    return;
+                }
                 try {
                     EjbJarProxy ejbJarProxy = getFromCache (fo);
                     String version = null;
@@ -113,7 +137,6 @@ public final class DDProvider {
         
         try {
             DDParse parseResult = parseDD(fo);
-            SAXParseException error = parseResult.getWarning();
             EjbJar original = createEjbJar(parseResult);
             ejbJarProxy = new EjbJarProxy(original,parseResult.getVersion());
             setProxyErrorStatus(ejbJarProxy, parseResult);
@@ -201,7 +224,7 @@ public final class DDProvider {
           
           return jar;
     }
-  
+
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
@@ -311,7 +334,7 @@ public final class DDProvider {
         }
         
         /**
-         * @return version of deployment descriptor. 
+         * Extracts version of deployment descriptor. 
          */
         private void extractVersion () {
             // first check the doc type to see if there is one

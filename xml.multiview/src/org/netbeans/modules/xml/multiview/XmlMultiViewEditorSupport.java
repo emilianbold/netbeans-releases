@@ -22,8 +22,6 @@ import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -41,6 +39,7 @@ import org.openide.windows.WindowManager;
 import javax.swing.text.StyledDocument;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.OutputStream;
 
 /**
  * XmlMultiviewEditorSupport.java
@@ -98,16 +97,6 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
         return mvtc;
     }
 
-    protected Task reloadDocument() {
-        final Task task = super.reloadDocument();
-        task.addTaskListener(new TaskListener() {
-            public void taskFinished(Task task) {
-                dObj.documentUpdated();
-            }
-        });
-        return task;
-    }
-
     /** Focuses existing component to view, or if none exists creates new.
     * The default implementation simply calls {@link #open}.
     * @see org.openide.cookies.EditCookie#edit
@@ -163,6 +152,15 @@ public class XmlMultiViewEditorSupport extends DataEditorSupport implements Seri
                 }
             });
         }
+    }
+
+    public void save(String s) throws IOException {
+        System.out.println(s);
+        notifyUnmodified();
+        final OutputStream outputStream = ((Env) env).outputStream();
+        outputStream.write(s.getBytes());
+        outputStream.close();
+        notifyUnmodified();
     }
 
     /** A description of the binding between the editor support and the object.

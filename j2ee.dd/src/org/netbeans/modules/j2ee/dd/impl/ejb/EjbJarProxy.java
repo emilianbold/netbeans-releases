@@ -14,6 +14,7 @@
 package org.netbeans.modules.j2ee.dd.impl.ejb;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
+import org.openide.loaders.DataObject;
 
 import java.math.BigDecimal;
 
@@ -26,7 +27,6 @@ public class EjbJarProxy implements EjbJar {
     private String version;
     private java.util.List listeners;
     public boolean writing=false;
-    private OutputProvider outputProvider;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
     
@@ -330,29 +330,28 @@ public class EjbJarProxy implements EjbJar {
     
     public void write(org.openide.filesystems.FileObject fo) throws java.io.IOException {
         if (ejbJar!=null) {
-            try {
+            // trying to use OutputProvider for writing changes
+            DataObject dobj = DataObject.find(fo);
+            if (dobj != null && dobj instanceof EjbJarProxy.OutputProvider) {
+                ((EjbJarProxy.OutputProvider) dobj).write(this);
+            } else {
                 org.openide.filesystems.FileLock lock = fo.lock();
                 try {
                     java.io.OutputStream os = fo.getOutputStream(lock);
                     try {
-                        writing=true;
+                        writing = true;
                         write(os);
                     } finally {
                         os.close();
                     }
-                } 
-                finally {
+                } finally {
                     lock.releaseLock();
                 }
-            } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
-                // trying to use OutputProvider for writing changes
-                org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
-                if (dobj!=null && dobj instanceof EjbJarProxy.OutputProvider)
-                    ((EjbJarProxy.OutputProvider)dobj).write(this);
-                else throw ex;
             }
+
+
         }
-    }    
+    }
     
     public Object clone() {
         EjbJarProxy proxy = null;
@@ -385,10 +384,6 @@ public class EjbJarProxy implements EjbJar {
     
     public void setWriting(boolean writing) {
         this.writing=writing;
-    }
-    
-    public void setOutputProvider(OutputProvider iop) {
-        this.outputProvider=iop;
     }
 
     public org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans getEnterpriseBeans() {

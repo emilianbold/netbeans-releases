@@ -17,7 +17,6 @@ public class WebAppProxy implements WebApp {
     private String version;
     private java.util.List listeners;
     public boolean writing=false;
-    private OutputProvider outputProvider;
     private org.xml.sax.SAXParseException error;
     private int ddStatus;
     
@@ -905,26 +904,23 @@ public class WebAppProxy implements WebApp {
     
     public void write(org.openide.filesystems.FileObject fo) throws java.io.IOException {
         if (webApp!=null) {
-            try {
+            // trying to use OutputProvider for writing changes
+            org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
+            if (dobj != null && dobj instanceof WebAppProxy.OutputProvider) {
+                ((WebAppProxy.OutputProvider) dobj).write(this);
+            } else {
                 org.openide.filesystems.FileLock lock = fo.lock();
                 try {
                     java.io.OutputStream os = fo.getOutputStream(lock);
                     try {
-                        writing=true;
+                        writing = true;
                         write(os);
                     } finally {
                         os.close();
                     }
-                } 
-                finally {
+                } finally {
                     lock.releaseLock();
                 }
-            } catch (org.openide.filesystems.FileAlreadyLockedException ex) {
-                // trying to use OutputProvider for writing changes
-                org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
-                if (dobj!=null && dobj instanceof WebAppProxy.OutputProvider)
-                    ((WebAppProxy.OutputProvider)dobj).write(this);
-                else throw ex;
             }
         }
     }    
@@ -956,12 +952,8 @@ public class WebAppProxy implements WebApp {
     public void setWriting(boolean writing) {
         this.writing=writing;
     }
-    
-    public void setOutputProvider(OutputProvider iop) {
-        this.outputProvider=iop;
-    }
-    
-    /** Contract between friend modules that enables 
+
+    /** Contract between friend modules that enables
     * a specific handling of write(FileObject) method for targeted FileObject
     */
     public static interface OutputProvider {

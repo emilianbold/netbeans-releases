@@ -67,6 +67,8 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     };
     private final RequestProcessor requestProcessor = new RequestProcessor();
 
+    private boolean doWrite = false;
+
     /** Creates a new instance of XmlMultiViewDataObject */
     public XmlMultiViewDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
@@ -238,19 +240,17 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 return;
             }
         }
-        final String newDoc = generateDocumentFromModel();
         try {
-            javax.swing.text.Document doc = getEditorSupport().openDocument();
-            Utils.replaceDocument(doc, newDoc);
+            Utils.replaceDocument(getEditorSupport().openDocument(), generateDocumentFromModel());
         } catch (javax.swing.text.BadLocationException e) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         } catch (IOException e) {
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         } finally {
             changedFromUI = false;
         }
     }
-    
+
     /** Display Name for MultiView editor
      */
     protected String getDisplayName() {
@@ -330,6 +330,11 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
     }
 
+    public void writeModel() {
+        doWrite = !isModified();
+        synchronizeModel(true, 0);
+    }
+
     public void modelChanged() {
         synchronizeModel(true);
     }
@@ -345,7 +350,19 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             updatingFromModel = true;
             updateFromModel = false;
             try {
-                updateDocument();
+                final boolean doWrite = this.doWrite;
+                this.doWrite = false;
+                if (doWrite) {
+                    System.out.println("*** save *********************************");
+                    try {
+                        editor.save(generateDocumentFromModel());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        updateDocument();
+                    }
+                } else {
+                    updateDocument();
+                }
             } finally {
                 updatingFromModel = false;
             }
@@ -364,8 +381,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
 
     private void synchronizeModel(boolean updateFromModel) {
+        synchronizeModel(updateFromModel, updateFromModel ? UPDATE_FROM_MODEL_DELAY : UPDATE_MODEL_DELAY);
+    }
+
+    private void synchronizeModel(boolean updateFromModel, final int delay) {
         this.updateFromModel = updateFromModel;
-        getSynchronizeModelTask().schedule(updateFromModel ? UPDATE_FROM_MODEL_DELAY : UPDATE_MODEL_DELAY);
+        getSynchronizeModelTask().schedule(delay);
     }
 
     private RequestProcessor.Task getSynchronizeModelTask() {
@@ -393,7 +414,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         return !isModified();
     }
 
-    protected void waitForSync() {
+    public void waitForSync() {
         if (synchronizeModelTask != null) {
             synchronizeModelTask.waitFinished();
         }

@@ -107,6 +107,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
             Sources sources = ProjectUtils.getSources(project);
             sources.addChangeListener(this);
         }
+        ejbJar = (EjbJarProxy) DDProvider.getDefault().getDDRoot(this);
         refreshSourceFolders();
     }
 
@@ -211,7 +212,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      * Method from EjbJarProxy.OutputProvider
      */
     public void write(EjbJar ejbJarProxy) throws IOException {
-        modelChanged();
+        writeModel();
     }
 
     /**
@@ -398,7 +399,7 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
                     if (ejbJar.getOriginal() != null) {
                         ejbJar.merge(newEjbJar, EjbJar.MERGE_UPDATE);
                     } else {
-                        ejbJar.setOriginal(newEjbJar);
+                        ejbJar.setOriginal(newEjbJar.getOriginal());
                     }
                 }
                 parseable = true;
