@@ -56,6 +56,8 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
                 SystemAction.findObject(TestAction.class, true);
     private FormEditorAction inspectorAction = (FormEditorAction)
                 SystemAction.findObject(FormEditorAction.class, true);
+    private ReloadAction reloadAction = (ReloadAction)
+                SystemAction.findObject(ReloadAction.class, true);
 
     private DeleteAction deleteAction = (DeleteAction)
                 SystemAction.findObject(DeleteAction.class, true);
@@ -229,6 +231,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         if (form == null) {
             testAction.setFormModel(null);
             inspectorAction.setEnabled(false);
+            reloadAction.setForm(null);
 
             // swing memory leak workaround
             remove(split);
@@ -239,6 +242,7 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         else {
             testAction.setFormModel(form.getFormModel());
             inspectorAction.setEnabled(true);
+            reloadAction.setForm(form);
 
             Node formNode = form.getFormRootNode();
             // XXX how can it be null?

@@ -15,7 +15,9 @@ package org.netbeans.modules.form;
 
 import java.text.MessageFormat;
 import org.openide.nodes.*;
-import org.openide.cookies.*;
+import org.openide.actions.PropertiesAction;
+import org.openide.util.actions.SystemAction;
+import org.netbeans.modules.form.actions.*;
 
 /**
  * This class represents the root node of the form (displayed as root in
@@ -43,6 +45,16 @@ class FormRootNode extends FormNode {
 
     public boolean canDestroy() {
         return false;
+    }
+
+    protected SystemAction[] createActions() {
+        return new SystemAction[] {
+            SystemAction.get(ReloadAction.class),
+            null,
+            SystemAction.get(GotoEditorAction.class),
+            null,
+            SystemAction.get(PropertiesAction.class) 
+        };
     }
 
     void updateName(String name) {
