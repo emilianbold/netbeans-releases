@@ -861,15 +861,22 @@ class JavaCodeGenerator extends CodeGenerator {
                 CreationDescriptor.Creator creator =
                     desc.findBestCreator(comp.getAllBeanProperties(),
                                          CreationDescriptor.CHANGED_ONLY);
-
-                initCodeWriter.write(varBuf.toString());
-
+                
                 Class[] exceptions = creator.getExceptionTypes();
-                if (!generateTryCode(exceptions, initCodeWriter))
-                    exceptions = null;
-                else {
-                    initCodeWriter.write(";\n");
+                boolean generateTryCode = needToGenerateTryCode(exceptions);
+                
+                if (!generateTryCode)
+                    initCodeWriter.write(varBuf.toString());
+                else if ((varType & declareMask) == CodeVariable.LOCAL) {
+                    initCodeWriter.write(varBuf.toString());
+                    initCodeWriter.write(";\n"); // NOI18N
+                }
+                
+                if (generateTryCode) {
+                    initCodeWriter.write("try {\n"); // NOI18N
                     initCodeWriter.write(var.getName());
+                } else {
+                    exceptions = null;
                 }
 
                 initCodeWriter.write(" = "); // NOI18N
@@ -1104,8 +1111,11 @@ class JavaCodeGenerator extends CodeGenerator {
                // if the setter throws checked exceptions,
                // we must generate try/catch block around it.
                 Class[] exceptions = writeMethod.getExceptionTypes();
-                if (!generateTryCode(exceptions, initCodeWriter))
+                if (needToGenerateTryCode(exceptions)) {
+                    initCodeWriter.write("try {\n"); // NOI18N
+                } else {
                     exceptions = null;
+                }
 
                 initCodeWriter.write(getVariableGenString(comp));
                 initCodeWriter.write(writeMethod.getName());
@@ -1168,8 +1178,11 @@ class JavaCodeGenerator extends CodeGenerator {
             if (shouldGenerate) {
                 Method eventAddMethod = eventSetDesc.getAddListenerMethod();
                 Class[] exceptions = eventAddMethod.getExceptionTypes();
-                if (!generateTryCode(exceptions, initCodeWriter))
+                if (needToGenerateTryCode(exceptions)) {
+                    initCodeWriter.write("try {\n"); // NOI18N
+                } else {
                     exceptions = null;
+                }
 
                 // beginning of the addXXXListener
                 initCodeWriter.write(variablePrefix);
@@ -1303,7 +1316,7 @@ class JavaCodeGenerator extends CodeGenerator {
         }
     }
 
-    private boolean generateTryCode(Class[] exceptions, Writer initCodeWriter)
+    private boolean needToGenerateTryCode(Class[] exceptions)
         throws IOException
     {
         if (exceptions != null)
@@ -1311,7 +1324,6 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (Exception.class.isAssignableFrom(exceptions[i])
                     && !RuntimeException.class.isAssignableFrom(exceptions[i]))
                 {
-                    initCodeWriter.write("try {\n"); // NOI18N
                     return true;
                 }
 
