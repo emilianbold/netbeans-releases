@@ -27,7 +27,6 @@ import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtEditorUI;
 import org.netbeans.editor.ext.ExtKit;
-import org.openide.TopManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.actions.ActionPerformer;
@@ -316,9 +315,7 @@ public class NbEditorUI extends ExtEditorUI {
                         }
 
                         if (saClass != null) {
-                            if (NbEditorUtilities.getTopManager() != null) {
-                                systemAction = SystemAction.get(saClass);
-                            }
+                            systemAction = SystemAction.get(saClass);
                         }
                     }
                 }

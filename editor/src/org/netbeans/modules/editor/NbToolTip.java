@@ -15,7 +15,6 @@ package org.netbeans.modules.editor;
 
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
-import org.openide.TopManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotation;
@@ -35,6 +34,7 @@ import org.openide.cookies.InstanceCookie;
 import java.util.Enumeration;
 import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
+import org.openide.filesystems.Repository;
 
 /**
 * ToolTip annotations reading and refreshing
@@ -85,7 +85,7 @@ public class NbToolTip extends FileChangeAdapter {
                 System.err.println("Searching for tooltip annotations for mimeType=" + mimeType);
             }
 
-            FileObject annoFolder = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            FileObject annoFolder = Repository.getDefault().getDefaultFileSystem().
             findResource("Editors/" + mimeType + "/ToolTips"); //NOI18N
         
             if (debug) {

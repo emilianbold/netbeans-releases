@@ -24,11 +24,11 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
-import org.openide.TopManager;
 import org.openide.actions.CustomizeBeanAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.Repository;
 import org.openide.util.WeakListener;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
@@ -115,7 +115,7 @@ public class AllOptionsNode extends FilterNode {
                     }
                 };
                 
-                FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
+                FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
                 
                 if (moduleRegistry !=null){ //NOI18N
                     moduleRegistry.addFileChangeListener(

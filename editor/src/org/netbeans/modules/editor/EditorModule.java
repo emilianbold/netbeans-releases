@@ -34,7 +34,6 @@ import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.netbeans.modules.editor.options.JavaPrintOptions;
 import org.netbeans.modules.editor.options.HTMLPrintOptions;
 import org.netbeans.modules.editor.options.PlainPrintOptions;
-import org.openide.TopManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -77,6 +76,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.RepositoryEvent;
 import org.openide.filesystems.RepositoryReorderedEvent;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.util.Lookup;
 
 
@@ -123,8 +123,6 @@ public class EditorModule extends ModuleInstall {
     
     /** Module installed again. */
     public void restored () {
-
-
         LocaleSupport.addLocalizer(new NbLocalizer(AllOptions.class));
         LocaleSupport.addLocalizer(new NbLocalizer(BaseKit.class));
         LocaleSupport.addLocalizer(new NbLocalizer(JavaSettingsNames.class));
@@ -209,11 +207,11 @@ public class EditorModule extends ModuleInstall {
 //        }
 
         operationListener = new RepositOperations();
-        TopManager.getDefault().getLoaderPool().addOperationListener(operationListener);
+        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).addOperationListener(operationListener);
 
         if (repoListen==null){
             repoListen=new RepositListener();
-            Repository repo = TopManager.getDefault().getRepository();
+            Repository repo = Repository.getDefault();
             if (repo!=null){
                 repo.addRepositoryListener(repoListen);
             }
@@ -225,7 +223,7 @@ public class EditorModule extends ModuleInstall {
     public void uninstalled() {
 
         if (repoListen!=null){
-            Repository repo = TopManager.getDefault().getRepository();
+            Repository repo = Repository.getDefault();
             if (repo!=null){
                 repo.removeRepositoryListener(repoListen);
             }
@@ -233,7 +231,7 @@ public class EditorModule extends ModuleInstall {
         
         AllOptionsFolder.unregisterModuleRegListener();
         
-        TopManager.getDefault().getLoaderPool().removeOperationListener(operationListener);
+        ((DataLoaderPool)Lookup.getDefault().lookup(DataLoaderPool.class)).removeOperationListener(operationListener);
         operationListener = null;
         
         // Options
@@ -242,17 +240,6 @@ public class EditorModule extends ModuleInstall {
         for (int i = 0; i < printOpts.length; i++) {
             ps.removeOption((SystemOption)SharedClassObject.findObject(printOpts[i], true));
         }
-
-        Node node = TopManager.getDefault().getPlaces().nodes().session();
-        Node[] ch = node.getChildren().getNodes();
-        Node[] uninstall =new Node[1];
-        for (int i=0; i<ch.length; i++){
-            if (ch[i].getClass().equals(org.netbeans.modules.editor.options.AllOptionsNode.class)){
-                uninstall[0]=ch[i];
-            }
-        }
-        if (uninstall[0]!=null)
-            node.getChildren().remove(uninstall);
 
         // unregister our registry
         try {
@@ -334,7 +321,7 @@ public class EditorModule extends ModuleInstall {
         }
 
         private Object findKit(String type) {
-            FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
+            FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors/" + type + "/EditorKit.instance");
             if (fo == null) return null;
 
             DataObject dobj;

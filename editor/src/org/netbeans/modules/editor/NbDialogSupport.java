@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
 import org.netbeans.editor.DialogSupport;
-import org.openide.TopManager;
 import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import java.util.HashMap;
@@ -79,7 +78,7 @@ public class NbDialogSupport implements DialogSupport.DialogFactory {
      *   events.
      */
     public Dialog createDialog(String title, JPanel panel,boolean modal,JButton[] buttons,boolean sideButtons,int defaultIndex,int cancelIndex,ActionListener listener) {
-        Dialog d = TopManager.getDefault().createDialog(
+        Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(
                 new DialogDescriptor( panel, title, modal, buttons,
                 defaultIndex == -1 ? buttons[0] : buttons[defaultIndex],
                     sideButtons ? DialogDescriptor.RIGHT_ALIGN : DialogDescriptor.BOTTOM_ALIGN,

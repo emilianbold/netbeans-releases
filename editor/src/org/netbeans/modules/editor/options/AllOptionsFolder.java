@@ -16,7 +16,6 @@ package org.netbeans.modules.editor.options;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
 import org.openide.loaders.DataFolder;
-import org.openide.TopManager;
 import org.openide.loaders.DataObject;
 import java.io.IOException;
 import org.openide.nodes.Node;
@@ -46,6 +45,7 @@ import javax.swing.SwingUtilities;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
+import org.openide.filesystems.Repository;
 import org.openide.options.SystemOption;
 
 
@@ -98,12 +98,12 @@ public class AllOptionsFolder{
         synchronized (AllOptionsFolder.class){
             if (mimeFolder!=null) return mimeFolder;
 
-            FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            FileObject f = Repository.getDefault().getDefaultFileSystem().
             findResource(FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
 
             // MIME folder doesn't exist, let's create it
             if (f==null){
-                FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                FileObject fo = Repository.getDefault().getDefaultFileSystem().
                 findResource(AllOptionsFolder.FOLDER);
                 String fName = "text/"+BaseOptions.BASE; //NOI18N
 
@@ -121,7 +121,7 @@ public class AllOptionsFolder{
                         ioe.printStackTrace();
                     }
 
-                    f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                    f = Repository.getDefault().getDefaultFileSystem().
                     findResource(AllOptionsFolder.FOLDER+"/text/"+BaseOptions.BASE); //NOI18N
                 }
             }
@@ -151,7 +151,7 @@ public class AllOptionsFolder{
         List retList = new ArrayList();
         String[] MIMES = new String[] {"text", "application"};  //#25246 application/xml-dtd
         for (int in = 0; in<MIMES.length; in++) {
-            FileObject mainFolderFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            FileObject mainFolderFO = Repository.getDefault().getDefaultFileSystem().
             findResource(AllOptionsFolder.FOLDER+"/" + MIMES[in]); //NOI18N
             if (mainFolderFO != null){
                 DataFolder mainFolder = DataFolder.findFolder(mainFolderFO);
@@ -160,7 +160,7 @@ public class AllOptionsFolder{
                     for (int i=0; i<subFolders.length; i++){
                         if (!(subFolders[i] instanceof DataFolder)) continue;
                         DataFolder subFolder = (DataFolder) subFolders[i];
-                        FileObject optionInstance = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                        FileObject optionInstance = Repository.getDefault().getDefaultFileSystem().
                         findResource(subFolder.getPrimaryFile().getPackageName('/')+"/"+AllOptionsFolder.OPTION_FILE_NAME);
                         if (optionInstance == null) continue;
                         try{
@@ -210,7 +210,7 @@ public class AllOptionsFolder{
                         NotifyDescriptor.WARNING_MESSAGE
                         );
                         
-                        TopManager.getDefault().notify(msg);
+                        org.openide.DialogDisplayer.getDefault().notify(msg);
                     }
                 }
                 );
@@ -221,7 +221,7 @@ public class AllOptionsFolder{
     }
     
     public static void unregisterModuleRegListener(){
-        FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
+        FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
 
         if (moduleRegistry !=null){ //NOI18N
             if (moduleRegListener!=null)
@@ -233,7 +233,7 @@ public class AllOptionsFolder{
     public static synchronized AllOptionsFolder getDefault(){
         // try to find the itutor XML settings
         if (settingsFolder!=null) return settingsFolder;
-        org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
         findResource(FOLDER);
         if (f==null) return null;
         
@@ -251,7 +251,7 @@ public class AllOptionsFolder{
                         }
                     };
 
-                    FileObject moduleRegistry = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource("Modules"); //NOI18N
+                    FileObject moduleRegistry = Repository.getDefault().getDefaultFileSystem().findResource("Modules"); //NOI18N
 
                     if (moduleRegistry !=null){ //NOI18N
                         moduleRegistry.addFileChangeListener(moduleRegListener);
@@ -401,7 +401,7 @@ public class AllOptionsFolder{
     public void loadMIMEOption(Class kitClass, boolean processOldTypeOption){
         String contentType = BaseKit.getKit(kitClass).getContentType();
         if (contentType == null) return;
-        FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        FileObject optionFO = Repository.getDefault().getDefaultFileSystem().
         findResource(FOLDER+"/"+contentType+"/"+OPTION_FILE_NAME); //NOI18N
         if (optionFO == null) {
             // old type of BaseOptions.

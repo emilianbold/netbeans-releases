@@ -33,12 +33,12 @@ import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Keymap;
 import org.netbeans.editor.ActionFactory;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.FindDialogSupport;
 import org.netbeans.editor.ext.GotoDialogSupport;
-import org.openide.TopManager;
 import org.openide.windows.TopComponent;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.Presenter;
@@ -62,6 +62,7 @@ import org.netbeans.editor.SettingsNames;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.modules.editor.options.OptionUtilities;
 import org.netbeans.modules.editor.options.AllOptionsFolder;
+import org.openide.util.Lookup;
 
 /**
 * Java editor kit with appropriate document
@@ -215,33 +216,32 @@ public class NbEditorKit extends ExtKit {
                     if (tc != null) {
                         // Add all the actions
                         SystemAction[] actions = tc.getSystemActions();
-                        TopManager tm = NbEditorUtilities.getTopManager();
-                        if (tm != null) { // IDE initialized
-                            for (int i = 0; i < actions.length; i++) {
-                                Action action = actions[i];
-                                if(action instanceof org.openide.util.ContextAwareAction) {
-                                    action = ((org.openide.util.ContextAwareAction)action)
-                                            .createContextAwareInstance(tc.getLookup());
-                                }
-                                
-                                if (action instanceof Presenter.Popup) {
-                                    JMenuItem item = ((Presenter.Popup)action).getPopupPresenter();
-                                    if (item != null && !(item instanceof JMenu)) {
+                        for (int i = 0; i < actions.length; i++) {
+                            Action action = actions[i];
+                            if(action instanceof org.openide.util.ContextAwareAction) {
+                                action = ((org.openide.util.ContextAwareAction)action)
+                                        .createContextAwareInstance(tc.getLookup());
+                            }
+
+                            if (action instanceof Presenter.Popup) {
+                                JMenuItem item = ((Presenter.Popup)action).getPopupPresenter();
+                                if (item != null && !(item instanceof JMenu)) {
+                                    Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+                                    if (km!=null){
                                         KeyStroke[] keys
-                                            = tm.getGlobalKeymap().getKeyStrokesForAction(action);
+                                            = km.getKeyStrokesForAction(action);
                                         if (keys != null && keys.length > 0) {
                                             item.setAccelerator(keys[0]);
                                         }
-
                                     }
-
-                                    if (item != null) {
-                                        popupMenu.add(item);
-                                    }
-
-                                } else if (action == null) {
-                                    popupMenu.addSeparator();
                                 }
+
+                                if (item != null) {
+                                    popupMenu.add(item);
+                                }
+
+                            } else if (action == null) {
+                                popupMenu.addSeparator();
                             }
                         }
                     }
@@ -250,29 +250,28 @@ public class NbEditorKit extends ExtKit {
 
                 } else { // not cloneable-editor actions
                     Class saClass = null;
-                    TopManager tm = NbEditorUtilities.getTopManager();
                     try {
-                        if (tm != null) {
-                            saClass = Class.forName(actionName, false, tm.systemClassLoader());
-                        }
+                        ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                        saClass = Class.forName(actionName, false, loader);
                     } catch (Throwable t) {
                     }
 
                     if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
-                        if (tm != null) { // IDE initialized
-                            SystemAction sa = SystemAction.get(saClass);
-                            if (sa instanceof Presenter.Popup) {
-                                JMenuItem item = ((Presenter.Popup)sa).getPopupPresenter();
-                                if (item != null && !(item instanceof JMenu)) {
-                                    KeyStroke[] keys = tm.getGlobalKeymap().getKeyStrokesForAction(sa);
+                        SystemAction sa = SystemAction.get(saClass);
+                        if (sa instanceof Presenter.Popup) {
+                            JMenuItem item = ((Presenter.Popup)sa).getPopupPresenter();
+                            if (item != null && !(item instanceof JMenu)) {
+                                Keymap km = (Keymap)Lookup.getDefault().lookup(Keymap.class);
+                                if (km!=null){
+                                    KeyStroke[] keys = km.getKeyStrokesForAction(sa);
                                     if (keys != null && keys.length > 0) {
                                         item.setAccelerator(keys[0]);
                                     }
                                 }
+                            }
 
-                                if (item != null) {
-                                    popupMenu.add(item);
-                                }
+                            if (item != null) {
+                                popupMenu.add(item);
                             }
                         }
 
@@ -327,15 +326,10 @@ public class NbEditorKit extends ExtKit {
     public static class NbUndoAction extends ActionFactory.UndoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (NbEditorUtilities.getTopManager() != null) {
-                // Delegate to system undo action
-                UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
-                if (ua != null && ua.isEnabled()) {
-                    ua.actionPerformed(evt);
-                }
-
-            } else {
-                super.actionPerformed(evt, target);
+            // Delegate to system undo action
+            UndoAction ua = (UndoAction)SystemAction.get(UndoAction.class);
+            if (ua != null && ua.isEnabled()) {
+                ua.actionPerformed(evt);
             }
         }
 
@@ -344,15 +338,10 @@ public class NbEditorKit extends ExtKit {
     public static class NbRedoAction extends ActionFactory.RedoAction {
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (NbEditorUtilities.getTopManager() != null) {
-                // Delegate to system redo action
-                RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
-                if (ra != null && ra.isEnabled()) {
-                    ra.actionPerformed(evt);
-                }
-
-            } else {
-                super.actionPerformed(evt, target);
+            // Delegate to system redo action
+            RedoAction ra = (RedoAction)SystemAction.get(RedoAction.class);
+            if (ra != null && ra.isEnabled()) {
+                ra.actionPerformed(evt);
             }
         }
 

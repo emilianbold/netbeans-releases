@@ -45,7 +45,6 @@ import org.netbeans.editor.BaseDocument;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.AnnotationDesc;
 import org.openide.ErrorManager;
-import org.openide.TopManager;
 
 /**
 * BaseDocument extension managing the readonly blocks of text
@@ -183,11 +182,11 @@ NbDocument.Printable, NbDocument.CustomEditor, NbDocument.Annotatable {
             try {
                 a.detachListeners();
             } catch (NullPointerException ex) {
-                TopManager.getDefault().getErrorManager().annotate(ex, ErrorManager.INFORMATIONAL, 
+                ErrorManager.getDefault().annotate(ex, ErrorManager.INFORMATIONAL, 
                     "Editor module received request to remove annotation which does not exist in the document. "+
                     "Cause of this error is either in OpenIDE module or in module which originated the annotation. "+
                     "Annotation class = "+annotation, null, null, null);
-                TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ex);
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                 return;
             }
             getAnnotations().removeAnnotation(a);

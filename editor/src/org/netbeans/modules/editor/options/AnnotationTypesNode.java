@@ -33,7 +33,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
-import org.openide.TopManager;
+import org.openide.ErrorManager;
 import org.openide.actions.CustomizeBeanAction;
 
 /** Node representing the Annotation Types in Options window.
@@ -171,7 +171,7 @@ public class AnnotationTypesNode extends AbstractNode {
                 try {
                     list.add(new AnnotationTypesSubnode(type));
                 } catch (IntrospectionException e) {
-                    TopManager.getDefault().getErrorManager().notify(e);
+                    ErrorManager.getDefault().notify(e);
                     continue;
                 }
             }

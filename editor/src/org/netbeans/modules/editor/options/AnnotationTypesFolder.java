@@ -18,7 +18,6 @@ import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
 import org.openide.loaders.DataFolder;
-import org.openide.TopManager;
 import org.openide.loaders.DataObject;
 import java.util.Map;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ import org.openide.filesystems.FileLock;
 import java.lang.Exception;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.Repository;
 
 /** Representation of the "Editors/AnnotationTypes" folder. All
  * instances created through the createInstance() method are
@@ -90,7 +90,7 @@ public class AnnotationTypesFolder extends FolderInstance{
             return folder;
         }
         
-        FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource(FOLDER);
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(FOLDER);
         if (f == null) {
             return null;
         }

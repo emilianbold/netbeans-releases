@@ -22,13 +22,13 @@ import java.util.MissingResourceException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
-import org.openide.TopManager;
 import org.openide.explorer.propertysheet.PropertyPanel;
 import org.openide.explorer.propertysheet.PropertyModel;
 
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.LocaleSupport;
 import org.netbeans.editor.SettingsNames;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -126,7 +126,8 @@ public class ColoringArrayEditorPanel extends javax.swing.JPanel {
 
         // Obtain name of the kits type
         try {
-            Class kitClass = Class.forName( (String)map.get( null ), true, TopManager.getDefault ().systemClassLoader () );
+            ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class kitClass = Class.forName( (String)map.get( null ), true, l );
             typeName = OptionSupport.getTypeName( kitClass );
         } catch( ClassNotFoundException e ) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);

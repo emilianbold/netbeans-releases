@@ -31,13 +31,13 @@ import java.util.MissingResourceException;
 import java.net.MalformedURLException;
 import javax.swing.Action;
 import org.netbeans.modules.editor.options.AnnotationTypeActionsFolder;
-import org.openide.TopManager;
 import java.util.List;
 import java.util.ArrayList;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.HashMap;
+import org.openide.ErrorManager;
 
 /** Processor of the XML file. The result of parsing is instance of AnnotationType
  * class.
@@ -141,7 +141,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
                 at.putProp(AnnotationType.PROP_FILE, xmlDataObject.getPrimaryFile());
                 annotationType = at;
             } catch (Exception e) { 
-                TopManager.getDefault().getErrorManager().notify(e);
+                ErrorManager.getDefault().notify(e);
             }
 
         }
@@ -160,7 +160,7 @@ public class AnnotationTypeProcessor implements XMLDataObject.Processor, Instanc
 
 	private void rethrow(Exception e) throws SAXException {
             SAXException saxe = new SAXException(e);
-	    TopManager.getDefault().getErrorManager().copyAnnotation(saxe, e);
+	    ErrorManager.getDefault().copyAnnotation(saxe, e);
             throw saxe;
 	}
 

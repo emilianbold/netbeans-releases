@@ -27,6 +27,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 
 /**
@@ -79,7 +80,8 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         
         Class kitClass = null;
         try {
-            kitClass = Class.forName( kitClassName, true, TopManager.getDefault().systemClassLoader() );
+            ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            kitClass = Class.forName( kitClassName, true, loader);
         } catch( ClassNotFoundException e ) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, e);
             return;
@@ -491,7 +493,7 @@ public class KeyBindingsEditorPanel extends javax.swing.JPanel {
         }
 
         KeySequence getKeySequence() {
-            dial = TopManager.getDefault().createDialog(dd);
+            dial = org.openide.DialogDisplayer.getDefault().createDialog(dd);
             input.requestFocus();  // Place caret in it, hopefully
             dial.show(); // let the user tell us their wish, result will be stored in retVal
             return retVal;

@@ -19,7 +19,6 @@ import java.util.List;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.openide.nodes.BeanNode;
 import org.openide.nodes.Node;
-import org.openide.TopManager;
 import org.openide.ErrorManager;
 import org.openide.actions.CustomizeBeanAction;
 import org.openide.util.actions.SystemAction;
@@ -55,7 +54,7 @@ public class MIMEOptionNode extends BeanNode {
         try {
             return new MIMEOptionNode((BaseOptions)getBean());
         } catch (IntrospectionException ie) {
-            TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, ie);
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ie);
             return super.cloneNode();
         }
     }    

@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.openide.TopManager;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.TaskListener;
@@ -76,7 +76,7 @@ implements TaskListener{
     public static synchronized InstalledOptionsFolder getDefault(){
         if (settingsFolder!=null) return settingsFolder;
         
-        org.openide.filesystems.FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        org.openide.filesystems.FileObject f = Repository.getDefault().getDefaultFileSystem().
         findResource(FOLDER);
         if (f==null) return null;
         

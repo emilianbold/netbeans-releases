@@ -18,7 +18,6 @@ import org.openide.loaders.FolderInstance;
 import org.openide.cookies.InstanceCookie;
 import java.lang.ClassNotFoundException;
 import org.openide.loaders.DataFolder;
-import org.openide.TopManager;
 import org.openide.loaders.DataObject;
 import java.util.Map;
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import java.util.Iterator;
 import org.netbeans.editor.AnnotationTypes;
 import java.util.LinkedList;
 import javax.swing.Action;
+import org.openide.filesystems.Repository;
 
 /** Processing of folders with annotation types actions.
  *
@@ -54,7 +54,7 @@ public class AnnotationTypeActionsFolder extends FolderInstance{
     /** Factory method for AnnotationTypeActionsFolder instance. */
     public static boolean readActions(AnnotationType type, String subFolder) {
 
-        FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().findResource(FOLDER + subFolder);
+        FileObject f = Repository.getDefault().getDefaultFileSystem().findResource(FOLDER + subFolder);
         if (f == null) {
             return false;
         }

@@ -16,7 +16,6 @@ package org.netbeans.modules.editor.options;
 import java.awt.Insets;
 
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
@@ -79,7 +78,7 @@ public class ScrollInsetsCustomEditor extends javax.swing.JPanel implements Enha
         try {
             return getValue();
         } catch (NumberFormatException e) {
-            TopManager.getDefault().notify( new NotifyDescriptor.Message(
+            org.openide.DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(
                                                 getBundleString("SIC_InvalidValue"), // NOI18N
                                                 NotifyDescriptor.ERROR_MESSAGE
                                             ) );

@@ -17,7 +17,6 @@ import java.awt.Insets;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 

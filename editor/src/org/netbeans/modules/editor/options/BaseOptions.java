@@ -50,7 +50,6 @@ import org.openide.options.SystemOption;
 import org.openide.util.HelpCtx;
 import org.openide.text.IndentEngine;
 import org.openide.ServiceType;
-import org.openide.TopManager;
 import java.beans.IntrospectionException;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -78,6 +77,7 @@ import java.io.File;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 
 
 
@@ -238,7 +238,7 @@ public class BaseOptions extends OptionSupport {
         final String contentType = BaseKit.getKit(getKitClass()).getContentType();
         if (contentType == null) return;
         
-        FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
+        FileObject optionFO = Repository.getDefault().getDefaultFileSystem().
         findResource(AllOptionsFolder.FOLDER+"/"+contentType+"/"+AllOptionsFolder.OPTION_FILE_NAME); //NOI18N
         if (optionFO!=null && FileUtil.toFile(optionFO)!=null){
             try{
@@ -288,12 +288,12 @@ public class BaseOptions extends OptionSupport {
             // return already initialized folder
             if (settingsFolder!=null) return settingsFolder;
             
-            FileObject f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+            FileObject f = Repository.getDefault().getDefaultFileSystem().
             findResource(AllOptionsFolder.FOLDER+"/"+name); //NOI18N
             
             // MIME folder doesn't exist, let's create it
             if (f==null){
-                FileObject fo = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                FileObject fo = Repository.getDefault().getDefaultFileSystem().
                 findResource(AllOptionsFolder.FOLDER);
                 
                 if (fo != null){
@@ -311,7 +311,7 @@ public class BaseOptions extends OptionSupport {
                         ioe.printStackTrace();
                     }
                     
-                    f = TopManager.getDefault().getRepository().getDefaultFileSystem().
+                    f = Repository.getDefault().getDefaultFileSystem().
                     findResource(AllOptionsFolder.FOLDER+"/"+name);
                 }
             }
@@ -1299,11 +1299,7 @@ public class BaseOptions extends OptionSupport {
     
     private IndentEngine findDefaultIndentEngine() {
         if (getDefaultIndentEngineClass() != null) {
-            ServiceType.Registry sr = TopManager.getDefault().getServices();
-            Enumeration en = sr.services(getDefaultIndentEngineClass());
-            if (en.hasMoreElements()) {
-                return (IndentEngine)en.nextElement();
-            }
+            return (IndentEngine) Lookup.getDefault().lookup(getDefaultIndentEngineClass());
         }
         
         return null;

@@ -24,7 +24,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
-import org.openide.TopManager;
 
 
 /**
@@ -214,7 +213,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
         if( abbrev != null ) input.setAbbrev( abbrev ); // preset value
 
         DialogDescriptor dd = new DialogDescriptor ( input, getBundleString("AEP_EnterAbbrev" ) ); // NOI18N
-        Dialog dial = TopManager.getDefault().createDialog(dd);
+        Dialog dial = org.openide.DialogDisplayer.getDefault().createDialog(dd);
         input.requestFocus();  // Place caret in it, hopefully
         dial.show(); // let the user tell us their wish
 
@@ -236,7 +235,7 @@ public class AbbrevsEditorPanel extends javax.swing.JPanel {
                     NotifyDescriptor.WARNING_MESSAGE
                     );
                     
-                    TopManager.getDefault().notify(NDConfirm);
+                    org.openide.DialogDisplayer.getDefault().notify(NDConfirm);
                     if (NDConfirm.getValue()!=NDConfirm.YES_OPTION){
                         return null;
                     }

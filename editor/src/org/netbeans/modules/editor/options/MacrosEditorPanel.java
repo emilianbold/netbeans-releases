@@ -214,7 +214,7 @@ public class MacrosEditorPanel extends javax.swing.JPanel {
         if( macro != null ) input.setMacro( macro ); // preset value
 
         DialogDescriptor dd = new DialogDescriptor ( input, getBundleString( "MEP_EnterMacro" ) ); // NOI18N
-        Dialog dial = TopManager.getDefault().createDialog(dd);
+        Dialog dial = org.openide.DialogDisplayer.getDefault().createDialog(dd);
         input.requestFocus();  // Place caret in it, hopefully
         dial.show(); // let the user tell us their wish
 
