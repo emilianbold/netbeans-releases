@@ -157,7 +157,11 @@ public class J2SEProjectUtil {
                 // now it is only important top-level class with the same 
                 // name as file. Continue if the file name differs
                 // from top level class name.
-                if (!clazz.getSimpleName ().equals (((JMManager)JMManager.getManager ()).getFileObject (res).getName ()))
+                assert JMManager.getManager () != null : "JavaMetamodelManager manager is provided."; // NOI18N
+                assert JMManager.getManager () instanceof JMManager : "JavaMetamodelManager <" +JMManager.getManager ().getClass ()+ "> is instanceof JMManager"; // NOI18N
+                JMManager mmmanager = (JMManager)JMManager.getManager ();
+                assert mmmanager.getFileObject (res) != null : "FileObject found for the resource " + res;
+                if (!clazz.getSimpleName ().equals (mmmanager.getFileObject (res).getName ()))
                     continue;
 
                 for (Iterator j = clazz.getFeatures ().iterator(); j.hasNext ();) {
