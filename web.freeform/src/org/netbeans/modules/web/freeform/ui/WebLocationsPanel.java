@@ -45,6 +45,8 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
 
     private AntProjectHelper projectHelper;
     
+    private String srcFolder;
+    
     /** Creates new form WebLocations */
     public WebLocationsPanel() {
         initComponents();
@@ -65,7 +67,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             String docroot = getLocationDisplayName(projectEvaluator, baseFolder, wm.docRoot);
             String classpath = getLocationDisplayName(projectEvaluator, baseFolder, wm.classpath);
             jTextFieldWeb.setText(docroot);
-            jTextFieldSrc.setText(classpath);
+            srcFolder = classpath;
             jTextFieldContextPath.setText(wm.contextPath);
 
             if (wm.j2eeSpecLevel.equals("1.4"))
@@ -109,15 +111,10 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         jLabel2 = new javax.swing.JLabel();
         jTextFieldWeb = new javax.swing.JTextField();
         jButtonWeb = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jTextFieldSrc = new javax.swing.JTextField();
-        jButtonSrc = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         jTextFieldContextPath = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         jComboBoxJ2eeLevel = new javax.swing.JComboBox();
-
-        FormListener formListener = new FormListener();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -148,7 +145,11 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocation_A11YDesc"));
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonWeb, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "BTN_BasicProjectInfoPanel_browseAntScript"));
-        jButtonWeb.addActionListener(formListener);
+        jButtonWeb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButtonWebActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -158,35 +159,6 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(jButtonWeb, gridBagConstraints);
         jButtonWeb.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_WebPagesLocationBrowse_A11YDesc"));
-
-        jLabel3.setLabelFor(jTextFieldSrc);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_JavaSourcesLocation_Label"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabel3, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jTextFieldSrc, gridBagConstraints);
-        jTextFieldSrc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_JavaSourcesLocation_A11YDesc"));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonSrc, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "BTN_BasicProjectInfoPanel_browseProjectFolder"));
-        jButtonSrc.addActionListener(formListener);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jButtonSrc, gridBagConstraints);
-        jButtonSrc.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_JavaSourcesLocationBrowse_A11YDesc"));
 
         jLabel4.setLabelFor(jTextFieldContextPath);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "LBL_WebPagesPanel_ContextPath_Label"));
@@ -226,27 +198,7 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         add(jComboBoxJ2eeLevel, gridBagConstraints);
         jComboBoxJ2eeLevel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WebLocationsPanel.class, "ACS_LBL_WebPagesPanel_J2EESpecLevel_A11YDesc"));
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    private class FormListener implements java.awt.event.ActionListener {
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-            if (evt.getSource() == jButtonWeb) {
-                WebLocationsPanel.this.jButtonWebActionPerformed(evt);
-            }
-            else if (evt.getSource() == jButtonSrc) {
-                WebLocationsPanel.this.jButtonSrcActionPerformed(evt);
-            }
-        }
     }//GEN-END:initComponents
-
-    private void jButtonSrcActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSrcActionPerformed
-        JFileChooser chooser = createChooser(getSrcPackagesLocation().getAbsolutePath());
-        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
-            setSrcPackages(chooser.getSelectedFile());
-        }
-    }//GEN-LAST:event_jButtonSrcActionPerformed
 
     private void jButtonWebActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonWebActionPerformed
         JFileChooser chooser = createChooser(getWebPagesLocation().getAbsolutePath());
@@ -256,16 +208,13 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }//GEN-LAST:event_jButtonWebActionPerformed
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButtonSrc;
     private javax.swing.JButton jButtonWeb;
     private javax.swing.JComboBox jComboBoxJ2eeLevel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JTextField jTextFieldContextPath;
-    private javax.swing.JTextField jTextFieldSrc;
     private javax.swing.JTextField jTextFieldWeb;
     // End of variables declaration//GEN-END:variables
     
@@ -350,11 +299,11 @@ public class WebLocationsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
 
     private void setSrcPackages(final File file) {
-        jTextFieldSrc.setText(relativizeFile(file));
+        srcFolder = relativizeFile(file);
     }
 
     protected File getSrcPackagesLocation() {
-        return getAsFile(jTextFieldSrc.getText());
+        return getAsFile(srcFolder);
 
     }
 
