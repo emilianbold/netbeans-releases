@@ -41,7 +41,7 @@ workspaceswitcher
         <!-- Needed for CheckLinks: -->
         <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
         <!-- For running inside IDE, to pick up ant.jar -->
-        <pathelement location="${netbeans.library.path}"/>
+        <pathelement path="${netbeans.library.path}"/>
       </classpath>
     </javac>
     <jar jarfile="nbantext.jar" basedir="antsrc">
