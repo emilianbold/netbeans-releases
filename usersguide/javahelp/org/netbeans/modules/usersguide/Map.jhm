@@ -32,6 +32,7 @@
 <mapID target="modules.manage" url="modules/managingmods.html" />
 <mapID target="ide.newmodule" url="modules/newmodule.html" />
 <mapID target="ide.autoupdate" url="modules/autoupdate.html" />
+<mapID target="configure.module" url="modules/module.html" />
 
 <mapID target="project" url="project/project.html" />
 <mapID target="project.adding-existing" url="project/project_adding-existing.html" />
@@ -533,7 +534,6 @@
 <mapID target="configure.tbcreate" url="configure/tb_create.html" />
 <mapID target="configure.tbdelete" url="configure/tb_delete.html" />
 <mapID target="configure.output" url="configure/output.html" />
-<mapID target="configure.module" url="configure/module.html" />
 <mapID target="configure.system.settings" url="configure/system_settings.html" />
 
 <mapID target="shortcuts.editor" url="shortcuts/editorcuts.html" />
