@@ -194,16 +194,27 @@ public class CreateTestAction extends TestAction {
                 String message;
                 if (results.getSkipped().size() == 1) {
                     // one class? report it
-                    String className =
-                            ((JavaClass) results.getSkipped().iterator().next())
-                            .getName();
+                    CreationResults.SkippedClass skippedClass = 
+                            (CreationResults.SkippedClass)results.getSkipped().iterator().next();
+                            
+                    
                     message = NbBundle.getMessage(CreateTestAction.class,
                                                   "MSG_skipped_class",  //NOI18N
-                                                  className);
+                                                  skippedClass.cls.getName(),
+                                                  strReason(skippedClass.reason, "COMMA", "AND")); //NOI18n
                 } else {
                     // more classes, report a general error
+                    // combine the results
+                    Iterator it = results.getSkipped().iterator();
+                    TestCreator.TesteableResult reason = TestCreator.TesteableResult.OK;
+                    while (it.hasNext()) {
+                        CreationResults.SkippedClass sc = (CreationResults.SkippedClass)it.next();
+                        reason = TestCreator.TesteableResult.combine(reason, sc.reason);
+                    }
+                    
                     message = NbBundle.getMessage(CreateTestAction.class,
-                                                  "MSG_skipped_classes");
+                                                  "MSG_skipped_classes", // NOI18N
+                                                  strReason(reason, "COMMA", "OR"));// NOI18N
                 }
                 TestUtil.notifyUser(message,
                                     NotifyDescriptor.INFORMATION_MESSAGE);
@@ -220,7 +231,35 @@ public class CreateTestAction extends TestAction {
                 }
             }
         }
-        
+
+        /**
+         * A helper method to create the reason string from a result
+         * and two message bundle keys that indicate the separators to be used instead
+         * of "," and " and " in a connected reason like: 
+         * "abstract, package-private and without testeable methods".
+         *<p>
+         * The values of the keys are expected to be framed by two extra characters
+         * (e.g. as in " and "), which are stripped off. These characters serve to 
+         * preserve the spaces in the properties file.
+         *
+         * @param reason the TestCreator.TesteableResult to represent
+         * @param commaKey bundle key for the connective to be used instead of ", "
+         * @param andKey   bundle key for the connective to be used instead of "and"
+         * @return String composed of the reasons contained in
+         *         <code>reason</code> separated by $commaKey and
+         *         $andKey
+         */
+        private static String strReason(TestCreator.TesteableResult reason, String commaKey, String andKey) {
+	    String strComma = NbBundle.getMessage(CreateTestAction.class,commaKey);
+            String strAnd = NbBundle.getMessage(CreateTestAction.class,andKey);
+            String strReason = reason.getReason( // string representation of the reasons
+                            strComma.substring(1, strComma.length()-1),
+                            strAnd.substring(1, strAnd.length()-1));
+
+	    return strReason;
+
+        }
+
         /**
          * Loads a test template.
          * If the template loading fails, displays an error message.
@@ -457,12 +496,13 @@ public class CreateTestAction extends TestAction {
                 
                 JavaClass theClass = (JavaClass)el;
                 
-                if (skipNonTestable && !testCreator.isClassTestable(theClass)) {
+                TestCreator.TesteableResult testeable;
+                if (skipNonTestable && (testeable = testCreator.isClassTestable(theClass)).isFailed()) {
                     if (progress != null) {
                         // ignoring because untestable
                         progress.setMessage(
-                                getIgnoringMsg(theClass.getName()), false);
-                        result.addSkipped(theClass);
+                                getIgnoringMsg(theClass.getName(), testeable.toString()), false);
+                        result.addSkipped(theClass, testeable);
                     }
                     continue;
                 }
@@ -598,11 +638,11 @@ public class CreateTestAction extends TestAction {
             return MessageFormat.format(fmt, new Object[] { sourceName });
         }
         
-        private static String getIgnoringMsg(String sourceName) {
+        private static String getIgnoringMsg(String sourceName, String reason) {
             String fmt = NbBundle.getMessage(
                     CreateTestAction.class,
                     "FMT_generator_status_ignoring");                   //NOI18N
-            return MessageFormat.format(fmt, new Object[] { sourceName });
+            return MessageFormat.format(fmt, new Object[] { sourceName});
         }
         
         
@@ -625,8 +665,21 @@ public class CreateTestAction extends TestAction {
         public static class CreationResults {
             public static final CreationResults EMPTY = new CreationResults();
             
+            /**
+             * Class for holding skipped java class together with the reason
+             * why it was skipped.
+             */
+            public static final class SkippedClass {
+                public final JavaClass cls;
+                public final TestCreator.TesteableResult reason;
+                public SkippedClass(JavaClass cls, TestCreator.TesteableResult reason) {
+                    this.cls = cls;
+                    this.reason = reason;
+                }
+            }
+            
             Set created; // Set< createdTest : DataObject >
-            Set skipped; // Set< sourceClass : JavaClass >
+            Set skipped; // Set< SkippedClass >
             boolean abborted = false;
             
             public CreationResults() { this(20);}
@@ -662,13 +715,13 @@ public class CreateTestAction extends TestAction {
              * skipped classes.
              * @return true if it was added, false if it was present before
              */
-            public boolean addSkipped(JavaClass c) {
-                return skipped.add(c);
+            public boolean addSkipped(JavaClass c, TestCreator.TesteableResult reason) {
+                return skipped.add(new SkippedClass(c, reason));
             }
             
             /**
              * Returns a set of classes that were skipped in the process.
-             * @return Set<JavaClass>
+             * @return Set<SkippedClass>
              */
             public Set getSkipped() {
                 return skipped;

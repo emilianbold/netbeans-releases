@@ -23,6 +23,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.DiffElement;
 import org.netbeans.modules.javacore.jmiimpl.javamodel.ResourceImpl;
+import org.openide.ErrorManager;
 
 import org.openide.util.NbBundle;
 import org.netbeans.jmi.javamodel.*;
@@ -146,6 +147,7 @@ public final class TestCreator {
             loadDefaults();
         }
     }
+
     
     /**
      * Loads default settings from <code>JUnitSettings</code>.
@@ -491,44 +493,47 @@ public final class TestCreator {
      * is testable.
      *
      * @param  jc  class to be checked
-     * @return  <code>true</code> if the class passes all criteria given
-     *          by the current configuration so that test class should be
-     *          created for it, <code>false</code> otherwise
+     * @return  TesteableResult that isOk, if the class is testeable or carries
+     *          the information why the class is not testeable
      */
-    public boolean isClassTestable(JavaClass jc) {
+    public TesteableResult isClassTestable(JavaClass jc) {
         assert jc != null;
         
         JavaModel.getJavaRepository().beginTrans(true);
         try {
             
+            TesteableResult result = TesteableResult.OK;
+            
             /*
              * If the class is a test class and test classes should be skipped,
              * do not check nested classes (skip all):
              */
-            if (skipTestClasses
-                    && TestUtil.isClassImplementingTestInterface(jc)) {
-                return false;
-            }
-            
             /* Check if the class itself (w/o nested classes) is testable: */
             final int modifiers = jc.getModifiers();
-            if ((Modifier.isPublic(modifiers)
-                   || (!skipPkgPrivateClasses && !Modifier.isPrivate(modifiers)))
-                && (!skipAbstractClasses || !Modifier.isAbstract(modifiers))
-                && (Modifier.isStatic(modifiers) || !jc.isInner())
-                && (hasTestableMethods(jc))
-                && (!skipExceptionClasses || !TestUtil.isClassException(jc))) {
-                return true;
-            }
+
+            if (skipTestClasses && TestUtil.isClassImplementingTestInterface(jc)) 
+                result = TesteableResult.combine(result, TesteableResult.TEST_CLASS);
+            if (skipPkgPrivateClasses && !Modifier.isPublic(modifiers) && !Modifier.isPrivate(modifiers))
+                result = TesteableResult.combine(result, TesteableResult.PACKAGE_PRIVATE_CLASS);
+            if (skipAbstractClasses && Modifier.isAbstract(modifiers))
+                result = TesteableResult.combine(result, TesteableResult.ABSTRACT_CLASS);
+            if (!Modifier.isStatic(modifiers) && jc.isInner())
+                result = TesteableResult.combine(result, TesteableResult.NONSTATIC_INNER_CLASS);
+            if (!hasTestableMethods(jc))
+                result = TesteableResult.combine(result, TesteableResult.NO_TESTEABLE_METHODS);
+            if (skipExceptionClasses && TestUtil.isClassException(jc)) 
+                result = TesteableResult.combine(result, TesteableResult.EXCEPTION_CLASS);
             
-            /* ... No. But maybe one of its nested classes is testable: */
-            Iterator it  = TestUtil.collectFeatures(jc, JavaClass.class, 0, true).iterator();
-            while (it.hasNext()) {
-                if (isClassTestable((JavaClass)it.next())) return true;
-            }
             
-            /* ... No. So there is nothing to test in this class. */
-            return false;
+            /* Not testeable. But maybe one of its nested classes is testable: */
+            if (result.isFailed()) {
+                Iterator it  = TestUtil.collectFeatures(jc, JavaClass.class, 0, true).iterator();
+                while (it.hasNext()) {
+                    if (isClassTestable((JavaClass)it.next()).isTesteable()) 
+                        return TesteableResult.OK;
+                }
+            }
+            return result;
         } finally {
             JavaModel.getJavaRepository().endTrans();
         }
@@ -792,7 +797,7 @@ public final class TestCreator {
             JavaClass theClass = (JavaClass)itInner.next();
             JavaModelPackage pkg = ((JavaModelPackage)tgtClass.refImmediatePackage());
             
-            if (isClassTestable(theClass)) {
+            if (isClassTestable(theClass).isTesteable()) {
                 // create new test class
                 JavaClass innerTester;
                 String    name = TestUtil.getTestClassName(theClass.getSimpleName());
@@ -1177,6 +1182,124 @@ public final class TestCreator {
         
         return tabString;
     }
-    
+
+
+    /**
+     * Helper class representing reasons for skipping a class in the test 
+     * generation process. The class enumerates known reasons, why a class may 
+     * not be considered testeable, allows to combine the reasons and provide 
+     * human-readable representation  of them.
+     **/
+    public static final class TesteableResult {
+        // bitfield of reasons for skipping a class
+        private long reason;
+        
+        // reason constants
+        public static final TesteableResult OK = new TesteableResult(0);
+        public static final TesteableResult PACKAGE_PRIVATE_CLASS = new TesteableResult(1);
+        public static final TesteableResult NO_TESTEABLE_METHODS = new TesteableResult(2);
+        public static final TesteableResult TEST_CLASS = new TesteableResult(4);
+        public static final TesteableResult ABSTRACT_CLASS = new TesteableResult(8);
+        public static final TesteableResult NONSTATIC_INNER_CLASS = new TesteableResult(16);
+        public static final TesteableResult EXCEPTION_CLASS = new TesteableResult(32);
+
+
+        // bundle keys for reason descriptions
+        private static final String [] reasonBundleKeys = {
+            "TesteableResult_PkgPrivate", 
+            "TesteableResult_NoTesteableMethods",
+            "TesteableResult_TestClass",
+            "TesteableResult_AbstractClass",
+            "TesteableResult_NonstaticInnerClass",
+            "TesteableResult_ExceptionClass"};
+        
+        private TesteableResult(long reason) {
+            this.reason = reason;
+        }
+        
+        /**
+         * Combine two result reasons into a new one.
+         *
+         * The combination is the union
+         * of the failure reasons represented by the two results. Thus,
+         * if both are success (no failure), the combination is a success. If 
+         * some of them is failed, the result is failed.
+         *
+         * @param lhs the first TesteableResult
+         * @param rhs the second TesteableResult
+         * @return a new TesteableResult representing the combination of the two 
+         *         results
+         **/
+        public static TesteableResult combine(TesteableResult lhs, TesteableResult rhs) {
+            return new TesteableResult(lhs.reason | rhs.reason);
+        }
+
+        /**
+         * Returns true if the result is for a testable class.
+         * @return true or false
+         */
+        public boolean isTesteable() { return reason == 0;}
+        
+        /**
+         * Returns true if the result is for a non-testeable class.
+         * @return true if the result is for a non-testeable class.
+         */
+        public boolean isFailed() { return reason != 0;}
+        
+        /**
+         * Returns a human-readable representation of the reason. If the reason 
+         * is a combination of multiple reasons, they are separated with ",".
+         * @return String
+         */
+        public String getReason() { return getReason(", ", ", ");}
+
+        /**
+         * Returns {@link #getReason()}.
+         * @return String
+         */
+        public String toString() { 
+            return getReason(", ", ", ");
+        }
+        
+        /** 
+         * Returns a human-readable representation of the reason. If the reason 
+         * is a combination of multiple reasons, they are separated with 
+         * <code>separ</code> except for the last reason, which is separated 
+         * with <code>terminalSepar</code>
+         * <p>
+         * For example: getReason(", ", " or ") might return 
+         * "abstract, package private or without testeable methods".
+         *
+         * @return String
+         */
+        
+        public String getReason(String separ, String terminalSepar) {
+            try {
+                ResourceBundle bundle = NbBundle.getBundle(TestCreator.class);
+                if (reason == 0) { return bundle.getString("TesteableResult_OK"); }
+                
+                else {
+                    String str = "";
+                    boolean lastPrep = true;
+                    for (long i = 0, r = reason; r>0;r >>= 1, i++) {
+                        if ((r & 1) != 0) {
+                            if (str.length()>0) 
+                                if (lastPrep) {
+                                    str = terminalSepar + str;
+                                    lastPrep = false;
+                                } else 
+                                    str = separ + str;
+                            str = bundle.getString(reasonBundleKeys[(int)i]) + str;
+                        }
+                    } 
+                    return str;
+                }
+            } catch (MissingResourceException ex) {
+                ErrorManager.getDefault().notify(ex);
+                return "";
+            }
+        }
+    }
+
     
 }
