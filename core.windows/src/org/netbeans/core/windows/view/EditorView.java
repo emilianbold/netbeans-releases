@@ -64,12 +64,17 @@ public class EditorView extends ViewElement {
         return bounds;
     }
     
+    private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     
     private EditorAreaComponent getEditorAreaComponent() {
         if(editorAreaComponent == null) {
             editorAreaComponent = new EditorAreaComponent(this, windowDnDManager);
         }
-        
+
+        // Workaround for #42640
+        if (isGtk && !editorAreaComponent.isValid()) {
+            editorAreaComponent.repaint();
+        }
         return editorAreaComponent;
     }
     
