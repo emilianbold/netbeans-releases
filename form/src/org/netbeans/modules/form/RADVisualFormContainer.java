@@ -32,7 +32,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     public static final String PROP_GENERATE_POSITION = "generatePosition"; // NOI18N
     public static final String PROP_GENERATE_SIZE = "generateSize"; // NOI18N
     public static final String PROP_GENERATE_CENTER = "generateCenter"; // NOI18N
-    public static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
 
     public static final int GEN_BOUNDS = 0;
     public static final int GEN_PACK = 1;
@@ -45,8 +44,6 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     private boolean generateSize = true;
     private boolean generateCenter = true;
     private int formSizePolicy = GEN_NOTHING;
-    private Dimension designerSize;
-
 
     // ------------------------------------------------------------------------------
     // Form synthetic properties
@@ -95,9 +92,8 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
         formSize = value;
         getFormModel().fireSyntheticPropertyChanged(this, PROP_FORM_SIZE, old, value);
         
-        if (getFormSizePolicy() == GEN_BOUNDS && !getDesignerSize().equals(value)) {
+        if (getFormSizePolicy() == GEN_BOUNDS && !getDesignerSize().equals(value))
             setDesignerSize(value);
-        }
         
         if (getNodeReference() != null) { // propagate the change to node
             getNodeReference().firePropertyChangeHelper(PROP_FORM_SIZE, old, value);
@@ -105,21 +101,22 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
     }
     
     public Dimension getDesignerSize() {
-        if (designerSize == null) {
-            designerSize = new Dimension(400, 300);
+        Dimension size = (Dimension) getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+        if (size == null) {
+            size = new Dimension(400, 300);
+            setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, size);
         }
-        return designerSize;
+        return size;
     }
 
     public void setDesignerSize(Dimension value) {
-        Object old = designerSize;
-        designerSize = value;
-        getFormModel().fireSyntheticPropertyChanged(this, PROP_DESIGNER_SIZE, old, value);
+        Object old = getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+        setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, value);
+        getFormModel().fireSyntheticPropertyChanged(
+            this, FormDesigner.PROP_DESIGNER_SIZE, old, value);
 
-        if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value)) {
+        if (getFormSizePolicy() == GEN_BOUNDS && !getFormSize().equals(value))
             setFormSize(value);
-        }        
-        
     }
 
     public boolean getGeneratePosition() {
@@ -331,25 +328,26 @@ public class RADVisualFormContainer extends RADVisualContainer implements FormCo
             }
         };
 
-        Node.Property designerSizeProperty = new PropertySupport.ReadWrite(
-            PROP_DESIGNER_SIZE,
+        Node.Property designerSizeProperty = new PropertySupport.ReadOnly(
+            FormDesigner.PROP_DESIGNER_SIZE,
             Dimension.class,
             FormEditor.getFormBundle().getString("MSG_DesignerSize"), // NOI18N
             FormEditor.getFormBundle().getString("HINT_DesignerSize")) // NOI18N
         {
-            public Object getValue() throws
-                IllegalAccessException, IllegalArgumentException, java.lang.reflect.InvocationTargetException {
+            public Object getValue()
+                throws IllegalAccessException, IllegalArgumentException,
+                       java.lang.reflect.InvocationTargetException
+            {
                 return getDesignerSize();
             }
 
-            public void setValue(Object val) throws IllegalAccessException,
-                                                    IllegalArgumentException, java.lang.reflect.InvocationTargetException {
-                if (!(val instanceof Dimension)) throw new IllegalArgumentException();
+            public void setValue(Object val)
+                throws IllegalAccessException, IllegalArgumentException,
+                       java.lang.reflect.InvocationTargetException
+            {
+                if (!(val instanceof Dimension))
+                    throw new IllegalArgumentException();
                 setDesignerSize((Dimension)val);
-            }
-
-            public boolean canWrite() {
-                return false;
             }
         };
 

@@ -45,6 +45,7 @@ import org.netbeans.lib.awtextra.*;
 
 public class FormDesigner extends TopComponent
 {
+    public static final String PROP_DESIGNER_SIZE = "designerSize"; // NOI18N
     private JLayeredPane layeredPane;
 
     private ComponentLayer componentLayer;
@@ -325,12 +326,7 @@ public class FormDesigner extends TopComponent
             resetTopDesignComponent(false);
             updateName(formModel.getName());
             handleLayer.setViewOnly(formModel.isReadOnly());
-            RADComponent topRADComponent = formModel.getTopRADComponent();
-            if (topRADComponent instanceof RADVisualFormContainer) {
-                Dimension formSize = ((RADVisualFormContainer)topRADComponent).getDesignerSize();
-                fdPanel.updatePanel(formSize);
-            }
-            else fdPanel.updatePanel(null);
+            fdPanel.updatePanel(getDesignerSize());
         }
         else formEditorSupport = null;
     }
@@ -553,6 +549,25 @@ public class FormDesigner extends TopComponent
             while (true);
             return comp;
         }
+    }
+
+    private Dimension getDesignerSize() {
+        RADComponent metacomp = formModel.getTopRADComponent();
+        if (metacomp == null)
+            return null;
+
+        Dimension size = (Dimension) metacomp.getAuxValue(PROP_DESIGNER_SIZE);
+        if (size == null) {
+            size = new Dimension(400, 300);
+            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
+        }
+        return size;
+    }
+
+    private void setDesignerSize(Dimension size) {
+        RADComponent metacomp = formModel.getTopRADComponent();
+        if (metacomp != null)
+            metacomp.setAuxValue(PROP_DESIGNER_SIZE, size);
     }
 
     // ------------------
@@ -791,18 +806,15 @@ public class FormDesigner extends TopComponent
         if (comp == null)
             return false;
 
-        boolean requireLayer = false; // if the original component cannot be used
         comp = comp.getParent();
         while (comp != null && comp.getClass() != ComponentLayer.class) {
-            if (!JComponent.class.isAssignableFrom(comp.getClass())) {
-                requireLayer = true;
-                break;
-            }
+            if (!JComponent.class.isAssignableFrom(comp.getClass()))
+                return false;
             comp = comp.getParent();
         }
 
         return InPlaceEditLayer.supportsEditingFor(metacomp.getBeanClass(),
-                                                   requireLayer);
+                                                   false);
     }
 
     private void notifyCannotEditInPlace() {
@@ -861,10 +873,8 @@ public class FormDesigner extends TopComponent
         }
 
         public void syntheticPropertyChanged(FormModelEvent e) {
-            if (RADVisualFormContainer.PROP_DESIGNER_SIZE.equals(e.getPropertyName())) {
-                Dimension formSize = (Dimension)e.getPropertyNewValue();
-                fdPanel.updatePanel(formSize);
-            }
+            if (PROP_DESIGNER_SIZE.equals(e.getPropertyName()))
+                fdPanel.updatePanel(getDesignerSize());
         }
         
     }
@@ -1168,11 +1178,8 @@ public class FormDesigner extends TopComponent
             
             fdPanel.updatePanel(new Dimension(w, h));
             
-            if (resizingFinished) {
-                RADComponent component = formDesigner.getModel().getTopRADComponent();
-                if (component instanceof RADVisualFormContainer)
-                    ((RADVisualFormContainer) component).setDesignerSize(new Dimension(w, h));
-            }
+            if (resizingFinished)
+                formDesigner.setDesignerSize(new Dimension(w, h));
             
             setStatusText("FMT_MSG_RESIZING_FORMDESIGNER", // NOI18N
                             new Object[] { new Integer(w).toString(), new Integer(h).toString() } );

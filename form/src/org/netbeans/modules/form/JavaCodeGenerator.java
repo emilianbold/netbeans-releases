@@ -146,8 +146,9 @@ class JavaCodeGenerator extends CodeGenerator {
      */
 
     public Node.Property[] getSyntheticProperties(final RADComponent component) {
-        Node.Property[] props = new Node.Property[] {
-            new PropertySupport.ReadWrite(
+        java.util.List propList = new ArrayList();
+        if (component != formModel.getTopRADComponent()) {
+            propList.add(new PropertySupport.ReadWrite(
                 "variableName", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_VariableName"), // NOI18N
@@ -169,9 +170,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate;
                 }
-            },
+            });
 
-            new PropertySupport.ReadWrite(
+            propList.add(new PropertySupport.ReadWrite(
                 "modifiers", // NOI18N
                 Integer.class,
                 FormEditor.getFormBundle().getString("MSG_JC_VariableModifiers"), // NOI18N
@@ -247,9 +248,9 @@ class JavaCodeGenerator extends CodeGenerator {
                                            | Modifier.TRANSIENT
                                            | Modifier.VOLATILE);
                 }
-            },
+            });
 
-            new PropertySupport.ReadWrite(
+            propList.add(new PropertySupport.ReadWrite(
                 "useLocalVariable", // NOI18N
                 Boolean.TYPE,
                 FormEditor.getFormBundle().getString("MSG_JC_UseLocalVar"), // NOI18N
@@ -318,9 +319,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate;
                 }
-            },
+            });
 
-            new PropertySupport.ReadWrite(
+            propList.add(new PropertySupport.ReadWrite(
                 "codeGeneration", // NOI18N
                 Integer.TYPE,
                 FormEditor.getFormBundle().getString("MSG_JC_CodeGeneration"), // NOI18N
@@ -361,8 +362,9 @@ class JavaCodeGenerator extends CodeGenerator {
                 public PropertyEditor getPropertyEditor() {
                     return new CodeGenerateEditor(component);
                 }
-            },
-            new CodePropertySupportRW(
+            });
+
+            propList.add(new CodePropertySupportRW(
                 "creationCodePre", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_PreCreationCode"), // NOI18N
@@ -385,8 +387,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     return value;
                 }
-            },
-            new CodePropertySupportRW(
+            });
+
+            propList.add(new CodePropertySupportRW(
                 "creationCodePost", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_PostCreationCode"), // NOI18N
@@ -409,8 +412,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     return value;
                 }
-            },
-            new CodePropertySupportRW(
+            });
+
+            propList.add(new CodePropertySupportRW(
                 "initCodePre", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_PreInitCode"), // NOI18N
@@ -433,8 +437,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     return value;
                 }
-            },
-            new CodePropertySupportRW(
+            });
+
+            propList.add(new CodePropertySupportRW(
                 "initCodePost", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_PostInitCode"), // NOI18N
@@ -457,8 +462,9 @@ class JavaCodeGenerator extends CodeGenerator {
                     }
                     return value;
                 }
-            },
-            new PropertySupport.ReadWrite(
+            });
+
+            propList.add(new PropertySupport.ReadWrite(
                 "serializeTo", // NOI18N
                 String.class,
                 FormEditor.getFormBundle().getString("MSG_JC_SerializeTo"), // NOI18N
@@ -485,17 +491,12 @@ class JavaCodeGenerator extends CodeGenerator {
                 public boolean canWrite() {
                     return JavaCodeGenerator.this.canGenerate;
                 }
-            }
-        };
+            });
 
-        Integer generationType =(Integer) component.getAuxValue(AUX_CODE_GENERATION);
-        if ((generationType == null) ||(generationType.equals(VALUE_GENERATE_CODE))) {
-            Node.Property[] moreProps = new Node.Property[props.length + 1];
-            for (int i=0, n=props.length; i<n; i++) {
-                moreProps [i] = props [i];
-            }
-            moreProps [moreProps.length -1] =
-                new CodePropertySupportRW(
+            Integer generationType = (Integer)
+                component.getAuxValue(AUX_CODE_GENERATION);
+            if (generationType == null || generationType.equals(VALUE_GENERATE_CODE)) {
+                propList.add(new CodePropertySupportRW(
                     "creationCodeCustom", // NOI18N
                     String.class,
                     FormEditor.getFormBundle().getString("MSG_JC_CustomCreationCode"), // NOI18N
@@ -525,11 +526,45 @@ class JavaCodeGenerator extends CodeGenerator {
                         Integer genType =(Integer)component.getAuxValue(AUX_CODE_GENERATION);
                         return((genType == null) ||(genType.equals(VALUE_GENERATE_CODE)));
                     }
-                };
-            return moreProps;
-        } else {
-            return props;
+                });
+            }
         }
+        else if (java.awt.Component.class.isAssignableFrom(
+                                              component.getBeanClass()))
+        {
+            propList.add(new PropertySupport.ReadOnly(
+                FormDesigner.PROP_DESIGNER_SIZE,
+                Dimension.class,
+                FormEditor.getFormBundle().getString("MSG_DesignerSize"), // NOI18N
+                FormEditor.getFormBundle().getString("HINT_DesignerSize")) // NOI18N
+            {
+                public Object getValue()
+                    throws IllegalAccessException, IllegalArgumentException,
+                           java.lang.reflect.InvocationTargetException
+                {
+                    Dimension size = (Dimension)
+                        component.getAuxValue(FormDesigner.PROP_DESIGNER_SIZE);
+                    if (size == null) {
+                        size = new Dimension(400, 300);
+                        component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, size);
+                    }
+                    return size;
+                }
+
+                public void setValue(Object val)
+                    throws IllegalAccessException, IllegalArgumentException,
+                           java.lang.reflect.InvocationTargetException
+                {
+                    if (!(val instanceof Dimension))
+                        throw new IllegalArgumentException();
+                    component.setAuxValue(FormDesigner.PROP_DESIGNER_SIZE, val);
+                }
+            });
+        }
+
+        Node.Property[] props = new Node.Property[propList.size()];
+        propList.toArray(props);
+        return props;
     }
 
     //
