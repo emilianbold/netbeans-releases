@@ -748,7 +748,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     private String createTopComponentNonPersistentID (TopComponent tc, String preferredID) {
-        String compName = preferredID;
+        String compName = preferredID.toUpperCase();
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
             compName = DEFAULT_TC_NAME;
@@ -777,7 +777,7 @@ public final class PersistenceManager implements PropertyChangeListener {
     }
     
     private String createTopComponentPersistentID (TopComponent tc, String preferredID) {
-        String compName = preferredID;
+        String compName = preferredID.toUpperCase();
         // be prepared for null names, empty names and convert to filesystem friendly name
         if ((compName == null) || (compName.length() == 0)) {
             compName = DEFAULT_TC_NAME;
