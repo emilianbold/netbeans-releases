@@ -136,9 +136,9 @@
 	<mapID target="org.netbeans.modules.web.project.ui.customizer.WebCustomizer" url="web/csh/dbox_projprops/WebCustomizer.html" />
 
 	<!-- The Web Sources panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/SourceFoldersPanel.html" />
+	<mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html.html" />
 	<!-- The Sources Folder panel in Project Properties for a Free-Form Web Application: -->
-	<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="web/csh/dbox_projprops_freeform/WebLocationsPanel.html" />
+	<mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="web/csh/dbox_projprops_freeform/SourceFoldersPanel.html" />
 	<!-- The Classpath panel in Project Properties for a Free-Form Web Application: -->
 	<mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="web/csh/dbox_projprops_freeform/ClasspathPanel.html" />
 	<!-- The Output Folder panel in Project Properties for a Free-Form Web Application: -->
