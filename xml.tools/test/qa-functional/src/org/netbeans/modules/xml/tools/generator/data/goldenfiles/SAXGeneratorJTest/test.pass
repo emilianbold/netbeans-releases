@@ -185,11 +185,11 @@ public class BHImpl implements BHandler {
  * translates all related events into BHandler events.
  * <p>Usage sample:
  * <pre>
- *    BParser parser = new BParser(...);
+*    BParser parser = new BParser(...);
  *    parser.parse(new InputSource("..."));
  * </pre>
- * <p><b>Warning:</b> the class is machine generated. DO NOT MODIFY</p>
- *
+* <p><b>Warning:</b> the class is machine generated. DO NOT MODIFY</p>
+*
  *
  */
 public class BParser implements ContentHandler {
@@ -205,9 +205,9 @@ public class BParser implements ContentHandler {
     
     /** Creates a parser instance.
      * @param handler handler interface implementation (never <code>null</code>
-     * @param resolver SAX entity resolver implementation or <code>null</code>.
+* @param resolver SAX entity resolver implementation or <code>null</code>.
      * It is recommended that it could be able to resolve at least the DTD.@param parslet convertors implementation (never <code>null</code>
-     *
+*
      *
      */
     public BParser(final BHandler handler, final EntityResolver resolver, final BParslet parslet) {

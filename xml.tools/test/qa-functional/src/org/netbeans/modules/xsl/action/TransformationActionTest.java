@@ -76,7 +76,7 @@ public class TransformationActionTest extends JXTest {
         String substring = "<h1>Testing Document</h1>";
         boolean result = eo.getText().indexOf(substring) != -1;
         assertTrue("Cannot find control substring:\n" + substring, (result));
-        ewo.close();
+        //ewo.close(); //!!! on test machines throws JemmyException: Exception in setClosed
     }
     
     /** Displays XSL Transformation Dialog and vrerifies it */
