@@ -76,7 +76,7 @@ is the proper place.
 
     <changes>
 
-        <change id="OpenProjects.open+close">
+        <change id="OpenProjects.open-close">
             <api name="general"/>
             <summary>Added open and close methods into <code>OpenProjects</code> class</summary>
             <version major="1" minor="2"/>
