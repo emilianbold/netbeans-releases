@@ -95,6 +95,16 @@ public class PaletteItem implements java.io.Serializable {
     return org.openide.util.Utilities.getShortClassName (getItemClass ());
   }
   
+  public String getDisplayName () {
+    String name = getName ();
+    if (name.endsWith ("BorderInfo")) {
+      return name.substring (0, name.length () - 4); // remove the "Info" from BorderInfo classes
+    } else if (name.endsWith ("Layout") && name.startsWith ("Design")) {
+      return name.substring (6); // remove the "Design" from DesignXXXLayout classes
+    }
+    return name;
+  }
+
   public Object getSharedInstance () throws InstantiationException, IllegalAccessException {
     Object sharedObject;
     if ((sharedReference == null) || ((sharedObject = sharedReference.get ()) == null)) {
@@ -162,6 +172,9 @@ public class PaletteItem implements java.io.Serializable {
 
 /*
  * Log
+ *  11   Gandalf   1.10        7/16/99  Ian Formanek    Fixed bug 1855 - 
+ *       Tooltips of borders in Component Pallete print *BorderInfo probably 
+ *       instead of *Border .
  *  10   Gandalf   1.9         7/8/99   Ian Formanek    PopupMenu recognized as 
  *       menu component
  *  9    Gandalf   1.8         7/3/99   Ian Formanek    isMenu added
