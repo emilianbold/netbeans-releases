@@ -14,13 +14,21 @@ Microsystems, Inc. All Rights Reserved.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
 <filesystem>
   <folder name="Services">
-    <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings"/>
-    <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings"/>
-    <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings"/>
-    <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings"/>
-    <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings"/>
+    <folder name="Diffs">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+      <file name="org-netbeans-modules-diff-builtin-DefaultDiff.settings" url="DefaultDiff.settings"/>
+    </folder>
+    <folder name="DiffProviders">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+      <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings" url="CmdlineDiffProvider.settings"/>
+      <file name="org-netbeans-modules-diff-builtin-provider-BuiltInDiffProvider.settings" url="BuiltInDiffProvider.settings"/>
+    </folder>
+    <folder name="DiffVisualizers">
+      <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
+      <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings" url="GraphicalDiffVisualizer.settings"/>
+      <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings" url="TextDiffVisualizer.settings"/>
+    </folder>
 
-    <!--
     <folder name="Hidden"> 
       <file name="org-netbeans-modules-diff-DiffSettings.settings" url="DiffSettings.settings">
         <attr name="SystemFileSystem.layer" stringValue="project"/>
@@ -28,7 +36,6 @@ Microsystems, Inc. All Rights Reserved.
         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
       </file>
     </folder>
-    -->
 
     <!--
     <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
@@ -43,8 +50,35 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Services">
       <folder name="IDEConfiguration">
         <folder name="ServerAndExternalToolSettings">
+          <!--
           <file name="org-netbeans-modules-diff-DiffSettingsNode.instance">
           </file>
+          -->
+
+          <file name="org-netbeans-modules-diff-DiffSettings.shadow">
+<![CDATA[Services/Hidden/org-netbeans-modules-diff-DiffSettings.settings
+SystemFileSystem
+]]>
+          </file>
+          <folder name="DiffTypes">
+            <file name="Diffs.shadow">
+<![CDATA[Services/Diffs
+SystemFileSystem
+]]>
+            </file>
+            <file name="DiffProviders.shadow">
+<![CDATA[Services/DiffProviders
+SystemFileSystem
+]]>
+            </file>
+            <file name="DiffVisualizers.shadow">
+<![CDATA[Services/DiffVisualizers
+SystemFileSystem
+]]>
+            </file>
+          </folder>
+          <attr name="org-netbeans-modules-diff-DiffSettings.shadow/DiffTypes" boolvalue="true"/>
+
         </folder>
       </folder>
     </folder>

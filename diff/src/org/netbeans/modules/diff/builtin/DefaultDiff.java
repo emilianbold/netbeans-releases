@@ -63,6 +63,13 @@ public class DefaultDiff extends Diff {
     }
     
     /**
+     * Get the display name of this diff provider.
+     */
+    public String getDisplayName() {
+        return NbBundle.getMessage(DefaultDiff.class, "DefaultDiff.displayName");
+    }
+    
+    /**
      * Show the visual representation of the diff between two sources.
      * @param name1 the name of the first source
      * @param title1 the title of the first source
@@ -95,6 +102,7 @@ public class DefaultDiff extends Diff {
         return tp;
     }
     
+    /*
     private boolean initPanel() throws IOException {
         Lookup.Result providersResult = Lookup.getDefault().lookup(new Lookup.Template(DiffProvider.class));
         Lookup.Item[] providers = new Lookup.Item[providersResult.allItems().size()];
@@ -136,12 +144,42 @@ public class DefaultDiff extends Diff {
         diffPanel.showVisualizerChooser(true);
         diffPanel.setProviders(providersDisplayNames);
         diffPanel.setVisualizers(visualizersDisplayNames);
+        diffPanel.setVisualizer((DiffVisualizer) visualizers[0].getInstance());
         diffPanel.addProvidersChangeListener(new ProvidersChangeListener());
         diffPanel.addVisualizersChangeListener(new VisualizerChangeListener());
         showDiff();
         return true;
     }
+     */
     
+    private boolean initPanel() throws IOException {
+        DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        DiffVisualizer visualizer = (DiffVisualizer) Lookup.getDefault().lookup(DiffVisualizer.class);
+        diffPanel.setProvider(provider);
+        diffPanel.setVisualizer(visualizer);
+        ServicesChangeListener l = new ServicesChangeListener();
+        diffPanel.addProvidersChangeListener(l);
+        diffPanel.addVisualizersChangeListener(l);
+        showDiff(provider, visualizer);
+        return true;
+    }
+    
+    private synchronized void showDiff(DiffProvider p, DiffVisualizer v) throws IOException {
+        Difference[] diffs = p.computeDiff(new StringReader(buffer1),
+                                           new StringReader(buffer2));
+        Component c = v.createView(diffs, name1, title1, new StringReader(buffer1),
+                                   name2, title2, new StringReader(buffer2), MIMEType);
+        diffPanel.setVisualizer(c);
+        tp.setName(c.getName());
+        if (c instanceof TopComponent) {
+            TopComponent vtp = (TopComponent) c;
+            tp.setToolTipText(vtp.getToolTipText());
+            tp.setIcon(vtp.getIcon());
+        }
+        c.requestFocus();
+    }
+    
+    /*
     private synchronized void showDiff() throws IOException {
         //System.out.println("showDiff("+defaultProviderName+", "+defaultVisualizerName+")");
         Lookup.Item pItem = (Lookup.Item) providersMap.get(defaultProviderName);
@@ -163,6 +201,7 @@ public class DefaultDiff extends Diff {
         }
         c.requestFocus();
     }
+     */
     
     private void cpStream(Reader in, Writer out) throws IOException {
         char[] buff = new char[1024];
@@ -174,13 +213,31 @@ public class DefaultDiff extends Diff {
         out.close();
     }
     
+    private class ServicesChangeListener implements java.beans.PropertyChangeListener {
+        
+        /**
+         * This method gets called when a bound property is changed.
+         * @param evt A PropertyChangeEvent object describing the event source
+         *  	and the property that has changed.
+         */
+        public void propertyChange(java.beans.PropertyChangeEvent evt) {
+            try {
+                showDiff(diffPanel.getProvider(), diffPanel.getVisualizer());
+            } catch (IOException ioex) {
+                TopManager.getDefault().notifyException(ioex);
+            }
+        }
+        
+    }
+    
+    /*
     private class ProvidersChangeListener implements ItemListener {
         
         /**
          * Invoked when an item has been selected or deselected.
          * The code written for this method performs the operations
          * that need to occur when an item is selected (or deselected).
-         */
+         *
         public void itemStateChanged(ItemEvent e) {
             if (e.SELECTED == e.getStateChange()) {
                 defaultProviderName = (String) e.getItem();
@@ -200,10 +257,11 @@ public class DefaultDiff extends Diff {
          * Invoked when an item has been selected or deselected.
          * The code written for this method performs the operations
          * that need to occur when an item is selected (or deselected).
-         */
+         *
         public void itemStateChanged(ItemEvent e) {
             if (e.SELECTED == e.getStateChange()) {
-                defaultVisualizerName = (String) e.getItem();
+                //defaultVisualizerName = (String) e.getItem();
+                System.out.println("visualizer = "+e.getItem());
                 try {
                     showDiff();
                 } catch (IOException ioex) {
@@ -213,6 +271,7 @@ public class DefaultDiff extends Diff {
         }
         
     }
+     */
     
     private static class DiffTopComponent extends TopComponent {
         
