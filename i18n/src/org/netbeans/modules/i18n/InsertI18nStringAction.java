@@ -46,21 +46,23 @@ import org.openide.windows.Workspace;
 /**
  * Insert internationalized string at caret position (if it is not in guarded block).
  *
- * @author   Petr Jiricka
+ * @author   Petr Jiricka, Peter Zavadsky
  */
 public class InsertI18nStringAction extends CookieAction {
 
-    /** Weak reference to top component to which the i18n string will be added. */
-    private WeakReference topComponentWRef = new WeakReference(null);
-    
     /** Generated serial version UID. */
     static final long serialVersionUID =-7002111874047983222L;       
+    
+    /** Weak reference to top component to which the i18n string will be added. */
+    private WeakReference topComponentWRef = new WeakReference(null);
+
+    /** Position to insert the new i18n-string. */
+    private int position;
     
     
     /** 
      * Actually performs InsertI18nStringAction. Implements superclass abstract method.
-     * @param activatedNodes currently activated nodes
-     */
+     * @param activatedNodes currently activated nodes */
     protected void performAction (final Node[] activatedNodes) {
         final EditorCookie editorCookie = (EditorCookie)(activatedNodes[0]).getCookie(EditorCookie.class);
         if(editorCookie == null)
@@ -77,18 +79,18 @@ public class InsertI18nStringAction extends CookieAction {
         
         if(panes == null || panes.length == 0)
             return;
-        
-        // Set position. 
-        int position = panes[0].getCaret().getDot();
 
+        // Set insert position. 
+        position = panes[0].getCaret().getDot();
+        
         // If there is a i18n action in run on the same editor, cancel it.
         I18nManager.getDefault().cancel();
 
         try {
-            addPanel(dataObject, position);
+            addPanel(dataObject);
         } catch(IOException ioe) {
             if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
-                System.err.println("I18N: Document could noy be loaded for "+dataObject.getName()); // NOI18N
+                System.err.println("I18N: Document could not be loaded for "+dataObject.getName()); // NOI18N
             
             return;
         }
@@ -98,7 +100,7 @@ public class InsertI18nStringAction extends CookieAction {
     }
 
     /** Create panel used for specifying i18n string. */
-    private JPanel createPanel(final DataObject dataObject, final int position) throws IOException { //  TEMP
+    private JPanel createPanel(final DataObject dataObject) throws IOException { //  TEMP
         I18nSupport.Factory factory = FactoryRegistry.getFactory(dataObject.getClass().getName());
         
         if(factory == null)
@@ -165,7 +167,7 @@ public class InsertI18nStringAction extends CookieAction {
                         // PENDING, should not be performed here -> capability moves to i18n wizard.
                         if(support.hasAdditionalCustomizer())
                             support.performAdditionalChanges();
-                        
+
                         // Replace string.
                         support.getDocument().insertString(position, i18nString.getReplaceString(), null);
 
@@ -200,11 +202,11 @@ public class InsertI18nStringAction extends CookieAction {
     }
     
     /** Adds panel to top component in split pane. */
-    private void addPanel(DataObject sourceDataObject, int position) throws IOException {
+    private void addPanel(DataObject sourceDataObject) throws IOException {
         TopComponent topComponent = (TopComponent)topComponentWRef.get();
 
         if(topComponent == null) {
-            JPanel panel = createPanel(sourceDataObject, position);
+            JPanel panel = createPanel(sourceDataObject);
             
             // actually create the dialog as top component
             topComponent = new TopComponent() {
