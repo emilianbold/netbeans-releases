@@ -72,11 +72,17 @@ Microsystems, Inc. All Rights Reserved.
       <fileset dir="src" excludesfile="${nbext}/standard-jar-excludes.txt">
           <include name="org/**"/>
           <exclude name="**/jsr88/**"/>
+          <exclude name="**/jsr77/**"/>
       </fileset>
     </locjar>
     <jar compress="false" jarfile="netbeans/modules/ext/testjsr88.jar">
        <fileset dir="src" excludesfile="${nbext}/standard-jar-excludes.txt">
           <include name="org/netbeans/tests/j2eeserver/plugin/jsr88/**"/>
+       </fileset>
+    </jar> 
+    <jar compress="false" jarfile="netbeans/modules/ext/testjsr77.jar">
+       <fileset dir="src" excludesfile="${nbext}/standard-jar-excludes.txt">
+          <include name="org/netbeans/tests/j2eeserver/plugin/jsr77/**"/>
        </fileset>
     </jar> 
   </target>
@@ -94,6 +100,9 @@ Microsystems, Inc. All Rights Reserved.
         <fileset dir="${nbroot}/core/external">
           <include name="xml-apis*.jar"/> <!-- PENDING remove when move to 1.4 build -->
           <include name="crimson*.jar"/>
+        </fileset>
+        <fileset dir="${nbroot}/openide/netbeans/lib">
+          <include name="*.jar"/>
         </fileset>
       </classpath>
     </javac>
