@@ -344,6 +344,15 @@ public final class SourceRoots {
         }
         return rootName;
     }
+    
+    /** 
+     * Returns true if this SourceRoots instance represents source roots belonging to
+     * the tests compilation unit.
+     * @return boolean
+     */
+    public boolean isTest () {
+        return this.isTest;
+    }
 
     private void resetCache (boolean isXMLChange, String propName) {
         boolean fire = false;

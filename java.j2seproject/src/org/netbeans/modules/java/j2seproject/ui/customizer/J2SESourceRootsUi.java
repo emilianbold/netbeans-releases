@@ -176,7 +176,12 @@ final class J2SESourceRootsUi {
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
-                chooser.setDialogTitle( NbBundle.getMessage( J2SESourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
+                if (this.sourceRoots.isTest()) {
+                    chooser.setDialogTitle( NbBundle.getMessage( J2SESourceRootsUi.class, "LBL_TestFolder_DialogTitle" )); // NOI18N
+                }
+                else {
+                    chooser.setDialogTitle( NbBundle.getMessage( J2SESourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
+                }    
                 File curDir = this.lastUsedDir;
                 if (curDir == null) {
                     curDir = FileUtil.toFile(this.project.getProjectDirectory());
