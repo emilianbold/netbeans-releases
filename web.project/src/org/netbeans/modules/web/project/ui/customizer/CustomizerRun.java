@@ -36,13 +36,8 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_A11YDesc")); //NOI18N
         
-        ProjectWebModule wm = (ProjectWebModule) uiProperties.getProject().getLookup().lookup(ProjectWebModule.class);
-        
-//        if (webProperties.get(WebProjectProperties.CONTEXT_PATH) == null)
-        if (jTextFieldContextPath.getText().trim().length() == 0)
-                jTextFieldContextPath.setText(wm.getContextPath());
-        
         // disable editing context path if deployment descriptor does not exist
+        ProjectWebModule wm = (ProjectWebModule) uiProperties.getProject().getLookup().lookup(ProjectWebModule.class);        
         jTextFieldContextPath.setEnabled(wm.getDeploymentDescriptor() != null);             
 
         jTextFieldJ2EE.setDocument( uiProperties.J2EE_PLATFORM_MODEL );

@@ -317,11 +317,20 @@ public class WebProjectProperties {
         
         // CustomizerRun
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
-        CONTEXT_PATH_MODEL = projectGroup.createStringDocument(evaluator, CONTEXT_PATH);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ));
-
+        CONTEXT_PATH_MODEL = projectGroup.createStringDocument(evaluator, CONTEXT_PATH);
+        try {
+            String contextPath = CONTEXT_PATH_MODEL.getText(0, CONTEXT_PATH_MODEL.getLength());
+            if (contextPath == null || contextPath.length() == 0) {
+                ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
+                contextPath = wm.getContextPath();
+                CONTEXT_PATH_MODEL.insertString(0, contextPath, null);
+            }            
+        } catch (BadLocationException exc) {
+            //PENDING
+        }
     }
 
     public void save() {
@@ -341,7 +350,9 @@ public class WebProjectProperties {
             //it is easier to preset them instead of reading them here again
             if (cp != null && cp.length() != 0) {
                 ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);
-                wm.setContextPath(serverId, cp);
+                String oldCP = wm.getContextPath(serverId);
+                if (!cp.equals(oldCP))
+                    wm.setContextPath(serverId, cp);
             }
             
             //temporary fix for issue #54454 - deadlock when upgrading project.xml
