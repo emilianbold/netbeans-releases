@@ -101,6 +101,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-core-actions-ExecutionViewAction.instance"/>
             <file name="org-openide-actions-OpenLocalExplorerAction.instance"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.instance"/>
+            <file name="org-netbeans-core-actions-PreviousWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-NextWorkspaceAction.instance"/>
             <file name="org-netbeans-core-actions-OutputWindowAction.instance"/>
             <file name="org-openide-actions-PropertiesAction.instance"/>
@@ -112,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
             <file name="org-openide-actions-CloneViewAction.instance"/>
             <file name="org-netbeans-core-actions-DockingAction.instance"/>
+            <file name="org-openide-actions-PreviousTabAction.instance"/>
             <file name="org-openide-actions-NextTabAction.instance"/>
             <file name="org-netbeans-core-actions-OpenedWindowsAction.instance"/>
             <file name="org-openide-actions-UndockAction.instance"/>
