@@ -91,7 +91,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, A
                     // if file does not exist (e.g. build/classes folder
                     // was not created yet) then corresponding File will
                     // not be ended with slash. Fix that.
-                    if (f.getPath().toLowerCase().endsWith(".jar")) {
+                    if (f.getPath().toLowerCase().endsWith(".jar") || (f.getPath().toLowerCase().endsWith(".zip"))) {
                         entry = FileUtil.getArchiveRoot(f.toURI().toURL());
                     } else {
                         entry = f.toURI().toURL();
