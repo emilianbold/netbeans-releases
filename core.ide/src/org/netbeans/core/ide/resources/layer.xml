@@ -79,5 +79,19 @@ SystemFileSystem
         <file name="AllRoots.instance_hidden" />
         <file name="Home.instance_hidden" />
     </folder>
+
+    <folder name="Toolbars">
+        <!-- remove workspace switcher and status line from toolbars for ide -->
+        <folder name="WorkspaceSwitcher_hidden">
+        </folder>
+        <folder name="StatusLine_hidden">
+        </folder>
+        
+        <!-- specify toolbar config for ide, overrides configuration from core/ui.
+             if you modify this file, please review
+             org/netbeans/core/ui/resources/Standard.xml also, and sync
+             the changes if appropriate -->
+        <file name="Standard.xml" url="Standard.xml"/>
+    </folder> <!-- Toolbars -->
         
 </filesystem>

@@ -41,13 +41,24 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Toolbars">
         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
 
-        <file name="Standard.xml" url="Standard.xml"/> <!-- pending how to work with toolbars settings -->
-
+        <!-- 
+            Specifying file Standard.xml on this place in your layer will
+            override default toolbar configuration.
+            File should contain description of toolbar configuration, for syntax
+            reference see for example Standard.xml file in core/ui.
+        -->   
+        
+        <!--
+            If you wish to have no toolbars at all, make all subfolders and 
+            configuration hidden (using _hidden suffix) and run system with
+            command line option -J-Dnetbeans.windows.no_wswitcher
+        -->
+        
         <!--
             Adding Actions into subfolders of this folder in xml-layer
             of your module will customize the MainWindow toolbars.
         -->
-        
+
     </folder>
 
     <!-- 
