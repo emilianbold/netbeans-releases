@@ -25,7 +25,14 @@ options into multiple lines.
 <blockquote>Prints descriptions of common startup parameters.</blockquote>
 <tt>-jdkhome</tt> <i>jdk-home-dir</i></td>
 <blockquote>Uses the specified version of the Java<sup><small>TM</small></sup> 2 SDK instead of the default SDK. By default on 
-Microsoft Windows systems, the loader looks into the registry and uses the latest SDK available.</blockquote>
+Microsoft Windows systems, the loader looks into the registry and uses the latest SDK available.
+<p>
+You should back up your user directory before you upgrade the SDK that the IDE uses. 
+If you later need to revert to the previous JDK, switch to the backed up 
+user directory to ensure that you do not lose any settings.</p>
+<p>To switch the IDE's user directory, use the <tt>-userdir</tt> switch that is detailed below.</p>
+</blockquote>
+
 <tt>-classic</tt><blockquote>Uses the classic JVM<sup><small>TM</small></sup> software, instead of the default 
 Java HotSpot<sup><small>TM</small></sup> Client virtual machine.</blockquote>
 <tt>-cp:p</tt> <i>additional-classpath</i><blockquote>Prefixes the specified class path to the IDE's class path.</blockquote>
@@ -40,10 +47,18 @@ If this option is not used, the IDE uses the <tt>javax.swing.plaf.metal.MetalLoo
 the IDE's user interface. If this option is not used, the font size is 11 points.</blockquote>
 <tt>-locale</tt> <i>language</i><tt>[:</tt><i>country</i><tt>[:</tt><i>variant</i><tt>]]</tt><blockquote>Uses the specified locale.</blockquote>
 <tt>-userdir</tt> <i>userdir</i><blockquote>Explicitly specifies the user directory,
- which is the location where user settings are stored.  If this option is not used in UNIX environments, the
-      location is <i>HOME</i><tt>/nbuser33</tt>. On Microsoft Windows systems, the launcher asks the user
-      to specify the user directory and stores the value in the registry for later use.</blockquote>
-
+ which is the location where user settings are stored.  
+ <p>If this option is not used in UNIX<sup>&reg;</sup> environments, the
+      user directory is set in the <i>HOME</i> directory by default. If this option is not set on Microsoft Windows systems, 
+      the user directory is the one you specified when you first launched the IDE.</p>
+      <p>You can determine the current user directory in the About dialog box. Choose Help 
+<img src="../images/arrow.gif" alt="and choose">&nbsp;About. Then click the 
+Detail Tab and look at the User Dir field.</p></blockquote>
+<tt>-J-Dnetbeans.debugger.jpda.transport=dt_shmem</tt> <i>userdir</i>
+<blockquote>Forces the IDE to use the shared memory connection when
+starting a debugging session with the Debug <img src="../images/arrow.gif" alt="and choose">&nbsp;Start command.  
+This parameter has no effect when you attach
+the debugger to an already running process.</blockquote>
 
 
 

@@ -15,9 +15,9 @@
 <p>
 A style sheet includes a set of stylistic rules that describe how to
 present HTML pages, including the size, color, and font of the text.
-You can replace the existing style sheet with your own style sheet for the following HTML pages in the IDE.
+You can replace the existing style sheet with your own style sheet for the following HTML pages in the IDE:
 <ul>
-<li>Readme and What's New
+<li>Readme and Changes document
 </li>
 <li>Javadoc documentation
 </li>
@@ -25,19 +25,19 @@ You can replace the existing style sheet with your own style sheet for the follo
 </li>
 </ul>
 <p>
-<b>To change the stylesheet for <tt>README.html</tt> and <tt>WHATISNEW.html</tt>:</b>
+<b>To change the style sheet for <tt>README.html</tt> and <tt>CHANGES.html</tt>:</b>
 </p>
 <ol>
-<li>Go to the top-level of the IDE installation directory.
+<li>Go to the top level of the IDE installation directory.
 <p>
-This directory is the directory in which 
-which <tt>README.html</tt> and <tt>WHATISNEW.html</tt> reside.
+This directory is the directory in 
+which <tt>README.html</tt> and <tt>CHANGES.html</tt> reside.
 </li>
-<li>Edit or replace the <tt>.css</tt> file.
+<li>Edit or overwrite the <tt>.css</tt> file.
 </li>
 </ol>
 <p>
-<b>To change the stylesheet for Javadoc documentation:</b>
+<b>To change the style sheet for Javadoc documentation:</b>
 </p>
 <ol>
 <li>From the main window, choose Tools <img src="../images/arrow.gif" alt="and 
@@ -48,18 +48,40 @@ choose">&nbsp;Options.
 <li>Select Standard Doclet.
 </li>
 <li>In the property sheet, scroll down to the Style Sheet File property 
-and enter the filename of the style sheet to use to generate Javadoc documentation.
+and type the file name of the style sheet that you want to use to generate Javadoc documentation.
 </li>
 </ol>
 <p>
-<b>To change the stylesheet for the online help:</b>
+<b>To change the style sheet for the online help:</b>
 </p>
 <ol>
-<li>In the IDE's installation directory, go to
-<tt>/docs/org/netbeans/modules/usersguide</tt>
+<li>Change to the <tt>modules/docs</tt> directory
+in your installation directory and view the JAR files in that directory.
 </li>
-<li>Edit or replace the <tt>ide.css</tt> file.
+<li>Type the command:
+<p>
+<tt>jar xf </tt><i>jar-file</i>
+</p>
+<p>
+For <i>jar-file,</i> use the file name of the JAR file from which you want to extract
+files. 
+For example, to extract the core online help, change directory to
+your <i>installation-dir</i>/<tt>modules/docs</tt> and type the command
+<tt>jar xf usersguide.jar</tt>.
+
+</p>
+<p>
+The Jar tool makes copies of the desired files and writes them to the current direct
+ory, reproducing the directory structure that the files have in the archive.  
+</p>
 </li>
+<li>Change to  <i>installation-dir</i><tt>/modules/docs/org/netbeans/modules/usersguide</tt>.
+</li>
+<li>Edit or overwrite the <tt>.css</tt> file.
+</li>
+<li>View the help in the IDE web browser.
+See <a href="alternate_browser.html">Displaying Help in an Alternate Browser</a>
+for instructions on where to begin browsing.
 </ol>
 <table>
 <tr>

@@ -17,7 +17,8 @@ You can configure the IDE to use either the internal Swing HTML web
 browser or external web browser.
 Both types of browsers enable you to view external and 
 local web pages, including online help and Javadoc documentation.
-The Swing HTML browser provides the highest level of integration with the IDE--you can embed an internal browser into another IDE window or an MDI frame.   </p>
+The Swing HTML browser provides the highest level of integration with the IDE because you can embed an internal browser into another IDE window or an MDI frame.
+</p>
 <p>
 The preferred browser for use with the IDE is an external browser,
 which provides more functionality than an internal
@@ -32,19 +33,21 @@ A simple browser that executes a specified command when asked
 to display a URL.  Users will typically customize this browser
 to run Netscape Navigator<sup><small>TM</small></sup>.  
 </li>
-<li><b>External browser (Windows)</b>. The Internet Explorer browser.  
+<li><b>External browser (Windows)</b>. The HTML browser, such as Internet
+Explorer or Netscape Navigator, set as the default browser on your Microsoft Windows platforms.  
 </li>
-<li><b>External browser (Unix)</b>.
-The Netscape Navigator browser.  
+<li><b>External browser (UNIX)</b>.
+The HTML browser set as the default browser in the UNIX environment.  
 </li>
 </ul>
 <p>
 At startup, the default browser is the Microsoft Windows or UNIX external
 browser, depending on your platform.  
-By default, the IDE uses the same browser for displaying HTML pages and JSPs,
+By default, the IDE uses the same browser for displaying HTML pages and when
+executing JSPs and servlets,
 unless you explicitly set the JSP browser. 
 <p>
-<b>To change the default browser for HTML pages:</b></p>
+<b>To change the default browser used by all pages in the IDE:</b></p>
 <ol>
 <li>
 From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Setup Wizard.
@@ -53,13 +56,13 @@ From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose"
 </li>
 </ol>
 <p>
-<b>To change the default browser for JSPs and servlets:</b>
+<b>To change the default browser for executing JSPs and servlets:</b>
 </p>
 <ol>
 <li>
 From the main menu, choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.
 </li>
-<li>In the Options window, expand the Building node and select the JSP & Servlets node.
+<li>In the Options window, expand the Debugging and Executing node and select the JSP & Servlets Settings node.
 </li>
 <li>Click the value for the Web browser property and select
 a browser type from the combo box.

@@ -36,23 +36,31 @@ value from the combo box.</li>
 <li>If an ellipsis (...) button appears, you can click the ellipsis button to open a property editor.</li>
 </ul>
 
+<h3>Levels of Settings</h3>
+
 <p>The IDE can store settings at three levels:</p>
 
 <ul>
 <li><b>Default.</b>&nbsp;  Holds the default settings that come with the IDE installation. You cannot change 
-the default settings, but you can override the default settings at the user or project level.
+the default settings, but you can override the default settings at the user level or project level.
 If you modify a setting that is defined only in the Default level, a definition with your modified values 
-is moved to the User level.</li>
+is moved to the User or Project level. </li>
 <li><b>User.</b>&nbsp;  Like default settings, settings defined at the User level apply to all of your projects. Settings 
 defined at the User level override settings at the Default level.</li>
 <li><b>Project.</b>&nbsp;  Settings configured at the Project level apply only to the project in which they are configured. 
 Any settings configured at the Project level override user settings and default settings. </li>
 </ul>
 
+<p>By default, changes to general IDE settings are applied at the User 
+level. Changes to settings that are more likely to vary by project 
+are applied at the Project level. For example, unless you specify otherwise, 
+changes to settings for compiling, running, and debugging are applied to the Project level.</p>
+
 <p>The cells in the column under the Show Levels (&lt;&lt;) button indicate whether the corresponding settings 
 are defined at the level of the current project or not. If the cell corresponding to the node you are configuring 
-is empty, any changes that you make in the property sheet are applied at the User level. If the cell 
-contains the <img src="images/project.gif" alt="Project Setting">&nbsp;icon, any changes that you make in the property sheet are applied only to the current project. </p>
+is empty, any changes that you have made in the property sheet are applied at the User level. If the cell 
+contains the <img src="images/project.gif" alt="Project Setting">&nbsp;icon, any changes that you have made 
+in the property sheet are applied only to the current project. </p>
 
 <p>You can see a table view of how the settings are stored by clicking the 
 Show Levels (&lt;&lt;) cell. There are columns for project, user, and default settings. Each row 
@@ -75,6 +83,7 @@ inherited from a higher level.</td></tr>
 ignored.</td></tr>
 </table>
 
+
 <p><b>To configure a setting only for the current project:</b></p>
 <ol>
 <li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
@@ -82,6 +91,19 @@ ignored.</td></tr>
 levels for the settings.</li>
 <li>Navigate to and select the node for the settings you want to configure.</li>
 <li>Click the cell in the Projects column for the settings node you have selected. Choose 
+Define Here.
+<p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the Origin of 
+Setting (&lt;&lt;) column.</p></li>
+<li>In the property sheet, configure the desired settings.</li>
+</ol>
+
+<p><b>To configure a setting for all projects:</b></p>
+<ol>
+<li>Choose Tools <img src="../images/arrow.gif" alt="and choose">&nbsp;Options.</li>
+<li>In the top row of cells, click the Origin of Setting (&lt;&lt;) cell to display the 
+levels for the settings.</li>
+<li>Navigate to and select the node for the settings you want to configure.</li>
+<li>Click the cell in the User column for the settings node you have selected. Choose 
 Define Here.
 <p>The <img src="images/project.gif" alt="Project Setting">&nbsp;icon appears in the Origin of 
 Setting (&lt;&lt;) column.</p></li>

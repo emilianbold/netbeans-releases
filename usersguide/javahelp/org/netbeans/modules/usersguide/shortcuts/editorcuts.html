@@ -25,6 +25,7 @@ Shortcuts are available for the following operations:
 <li><a href="#modcode">Modifying Code</a>
 <li><a href="#openfiles">Opening Files</a>
 <li><a href="#usebkmks">Using Bookmarks</a>
+<li><a href="#annotations">Cycling Through Annotations</a>
 </ul></p>
 
 <a name="mvpt"></a>
@@ -233,11 +234,6 @@ insertion point lowercase.</td>
 <td>Reverses the case of the selected characters or the character to
 the right of the insertion point.</td>
 </tr>
-<tr>
-<td valign="top">Alt-U, F</td>
-<td>Reverses the case of the first character of the identifier the
-insertion point is on.</td>
-</tr>
 </table></p>
 
 <a name="macros"></a>
@@ -413,6 +409,14 @@ the left.</td>
 <td>Opens the Java code completion dialog box.</td>
 </tr>
 <tr>
+<td valign="top">Ctrl-\</td>
+<td>Opens the Java code completion dialog box.</td>
+</tr>
+<tr>
+<td valign="top">Shift-Enter</td>
+<td>Enters the text that is selected in the code completion box into your file.</td>
+</tr>
+<tr>
 <td valign="top">Alt-Shift-I</td>
 <td>Adds an import statement to the import section of the code when
 cursor is over the class name to be imported.</td>
@@ -479,6 +483,17 @@ in front of the open bracket.</td>
 <td valign="top">Shift-F10</td>
 <td>Opens editor's contextual menu.</td>
 </tr>
+<tr>
+<td valign="top">Ctrl-J, D</td>
+<td>A macro that selects the identifier under the caret. Then inserts 
+debugging code on the previous line to print the value of that identifier</td>
+</tr>
+<tr>
+<td valign="top">Shift-Spacebar</td>
+<td>Adds a space without checking for abbreviations to expand.</td>
+</tr>
+
+
 </table></p>
 
 <a name="openfiles"></a>
@@ -526,8 +541,22 @@ source must be mounted under the Javadoc tab in the Explorer.</td>
 <td>Sets or unsets a bookmark at current line.</td>
 </tr>
 <tr>
-<td valign="top">Alt-F2</td>
+<td valign="top">F2</td>
 <td>Goes to next bookmark.</td>
+</tr>
+</table></p>
+
+<a name="annotations"></a>
+<h3>Cycling Through Annotations</h3>
+<p>
+<table border="1" summary="This table displays keyboard shortcuts for using annotations in the source editor.">
+<tr>
+<th align="left" scope="col">Keys</th>
+<th align="left" scope="col">Action</th>
+</tr>
+<tr>
+<td valign="top">Ctrl-Shift-C</td>
+<td>Cycles through the annotations for the selected line.</td>
 </tr>
 </table></p>
 
