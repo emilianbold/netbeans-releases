@@ -1,79 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
-Microsystems, Inc. All Rights Reserved.
+ * 
+ *     Copyright © 2002 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
 -->
-
 <html>
+
 <head>
+
 <title>Adding a New Driver</title>
+
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
 </head>
 
-<body bgcolor="#FFFFFF" text="#000000">
+
+
+<body>
+
 <h2>Adding a New Driver</h2>
-<p> You can add any one of the predefined drivers by choosing Databases <img src="arrow.gif" width="5" height="11">Drivers 
+
+<p> You can add any one of the predefined drivers by choosing Databases <img src="arrow.gif" width="5" height="11" alt="and choose">Drivers 
   in the Runtime tab of the Explorer). After you add a driver, you can test the 
   driver to ensure that it is compatible with the Database Explorer. 
 <p> <b>To add your own driver:</b></p>
+
 <ol>
+
   <li>In the Runtime tab of the Explorer, expand the Databases node. </li>
+
   <li>Right-click the Drivers node or a specific driver under the Drivers node, 
+
     choose Add Driver. </li>
+
   <li>In the Add Driver dialog box, specify a driver name for the new driver. 
+
     <p> The IDE uses this name only for display purposes. </p>
+
   </li>
+
   <li>In the Driver field, provide the fully qualified driver class name. For 
+
     example:
-    <p> <code>COM.pointbase.jdbc.jdbcUniversalDriver</code>. </p>
+
+    <p> <tt>COM.pointbase.jdbc.jdbcUniversalDriver</tt>. </p>
+
   </li>
+
   <li> In the Database URL prefix field, type a template for the URLs of connections 
+
     you want to make using this driver. 
+
     <p> The template can represent a URL that is not the real URL; you can complete 
-      the URL later when you connect. For example, you can now add: <code>jdbc:pointbase://&lt;HOST&gt;[:PORT]/[DB]/<db> 
-      </code> </p>
+
+      the URL later when you connect. For example, you can now add: <tt>jdbc:pointbase://&lt;HOST&gt;[:PORT]/[DB]/<db> 
+
+      </tt> </p>
+
   </li>
+
   <li>Click OK to add the new driver to the list. 
+
     <p> Later, you can remove a driver by selecting it in the Explorer, right-clicking, 
+
       and choosing Delete, or you can open the property sheet and modify its configurations. 
+
       You can also remove the driver using the keyboard.</p>
+
   </li>
+
 </ol>
+
 <table>
+
   <tr>
-    <td valign=top align=left><img src="images/tip.gif"></td>
+
+    <td valign=top align=left><img src="images/tip.gif" alt="tip"></td>
+
     <td valign=top align=left>Adding a new driver just creates a template for 
+
       new connections. The IDE does not actually try to use that driver or check 
+
       to make sure it is the correct one until a connection is made using the 
+
       driver. 
+
       <p><br>
+
         The driver (usually in a JAR or zip archive) must be in the IDE's CLASSPATH, if you want
         to connect, but not if you are only creating the driver template.
       </p>
+
     </td>
+
   </tr>
+
 </table>
+
 <table>
+
   <tr> 
+
     <th colspan=2 align=left>See also</th>
+
   </tr>
+
   <tr> 
+
     <td width="23"></td>
+
     <td> <a href="testdriver.html">Testing a New Driver</a> <br>
+
       <a href="dbadapt.html">Using a Database Adaptor to Replace Missing Metadata</a> 
+
       <br>
+
       <a href="connectdb.html">Connecting to a Database</a> <br>
+
       <a href="connusupp.html">Connecting to an Unsupported Database</a></td>
+
   </tr>
+
 </table>
+
 <hr>
+
 <font size=-2><a href="credits.html">Legal Notices</a></font> 
+
 </body>
+
 </html>
+

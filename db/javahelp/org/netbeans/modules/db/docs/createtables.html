@@ -1,91 +1,164 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
-Microsystems, Inc. All Rights Reserved.
+ * 
+ *     Copyright © 2002 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
 -->
-
 <html>
+
 <head>
+
 <title>Creating  or  Re-creating a Table</title>
+
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
 </head>
 
-<body bgcolor="#FFFFFF" text="#000000">
+
+
+<body>
+
 <h2> Creating or Re-creating a Table</h2>
+
 <p> You can create a table using the Create Table dialog box.
+
 <p>You can also recreate a table in one of two ways
+
 <ul>
+
   <li><a href=#table_structure>Recreate a table and its structure using a database 
+
     snapshot</a></li>
+
   <li><a href=#table_different>Recreate a table in a different database</a></li>
+
 </ul>
+
 <p><b><a name=create_table>To create a new table:</a></b></p>
+
 <ol>
+
   <li>Navigate under a connected database. The Explorer displays icons for Tables, 
+
     Views, and Procedures.
+
   <li>Open the Create Table dialog box using either: 
+
     <ul>
+
       <li>The contextual menu for the Tables</li>
+
       <li>The contextual menus for an existing table</li>
+
     </ul>
+
   <li>Type the table name. 
+
     <p> This name must follow conventions for table names in your database. Case 
+
       is usually insignificant and you must not use spaces. </p>
+
   </li>
+
   <li>Select the owner of the new table from the possible names of database users. 
+
     <p> The dialog box defaults to the name by which you are connected. 
+
   </li>
+
   <li>Click either Add Column or Remove to add or remove columns from the table. 
+
   </li>
+
   <li>Specify the column type and size. You must specify the column type but size 
+
     is optional for some data types. 
+
     <p>All other properties are optional. </p>
+
   </li>
+
   <li>Click OK to create the table.</li>
+
 </ol>
+
 <p><b><a name=table_structure>To re-create a table and its structure using a database 
+
   snapshot:</a></b></p>
+
 <ol>
+
   <li>Right-click a table from the table node.</li>
+
   <li>Choose Grab Structure. This action stores the definition of a selected table 
+
     to a file in the file system.</li>
+
   <li>Type a file name in which to save the structure of the table (the table 
+
     definition).</li>
+
   <li>Right-click the Tables node (or the node of any table under the Tables node) 
+
     and choose Recreate Table.</li>
+
   <li>Select the name of a file from which you want to re-create a table.</li>
+
   <li>In the following dialog, specify the table name and click OK to re-create 
+
     the table. If you want to modify the table definition command click the Edit 
+
     table script button and edit the table definition command.</li>
+
 </ol>
+
 <p><b><a name=table_different>NOTE</a><br>
+
   </b>You can recreate a table in a different database from the one from which 
+
   you saved the structure, even if the SQL syntax to create the second database 
+
   is different from the syntax of the first. You can thus create database-independent 
+
   schemas with the Database Explorer. For example, you can develop a complete 
+
   application with a Pointbase database. For deployment, you can transfer the 
+
   table structures to an Oracle database to create the Oracle database without 
+
   editing SQL. </p>
+
 <table>
+
   <tr> 
+
     <th colspan=2 align=left>See also</th>
+
   </tr>
+
   <tr> 
+
     <td width="23"></td>
+
     <td> <a href="browstruct.html">Browsing Structures</a><br>
+
       <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor SQL 
+
       Commands</a><br>
+
       <a href="addcopycols.html">Adding a Database Column to a Table</a> </td>
+
   </tr>
+
 </table>
+
 <hr>
+
 <font size=-2><a href="credits.html">Legal Notices</a></font> 
+
 </body>
+
 </html>
+

@@ -1,99 +1,180 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
-Microsystems, Inc. All Rights Reserved.
+ * 
+ *     Copyright © 2002 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
 -->
-
 <html>
+
 <head>
+
 <title>Connecting  or Disconnecting from a Database</title>
+
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
 </head>
 
-<body bgcolor="#FFFFFF" text="#000000">
+
+
+<body>
+
 <h2>Connecting or Disconnecting from a Database</h2>
+
 <p>You can use the Database Explorer to:</p>
+
 <ul>
+
   <li>Connect to a database</li>
+
   <li>Display schema information for a database</li>
+
   <li>Correct a broken connection</li>
+
   <li>Disconnect from the database connection</li>
+
 </ul>
+
 <ol>
+
   <li>To open a new connection: 
+
     <ul>
+
       <li>In the contextual menu for Databases or for any existing connection, 
+
         choose Add Connection.</li>
+
       <li> In the contextual menu for a driver, choose Connect Using to preselect 
+
         the driver.<br>
+
       </li>
+
     </ul>
+
   </li>
+
   <li>In the New Database Connection dialog box, ensure the correct driver is 
+
     selected in the Driver field. </li>
+
   <li>Provide the JDBC URL for the database connection in the Database URL field. 
-    <p> This URL typically begins with <code>jdbc:</code>and a short code name 
+
+    <p> This URL typically begins with <tt>jdbc:</tt>and a short code name 
+
       for the driver, followed by another colon. The rest of the URL depends on 
+
       the type of driver you are using. For example, you might need to specify 
+
       a host and port; alternatively, the name of a database file might suffice, 
+
       or an ODBC DSN. To help you get started, existing drivers are provided with 
+
       templates for the correct URL format. If in doubt, refer to the documentation 
+
       for the driver you are using. </p>
+
   </li>
+
   <li>Provide the user name and password, if required by your database configuration.</li>
+
   <li>Click the Remember Password checkbox to have the IDE remember your password. 
+
     <p> The password is saved only for the current the IDE session. After restarting 
+
       the IDE, yu must type the password again. This feature can be turned on 
+
       or off in the properties of each connected database in the Explorer. </p>
+
   </li>
+
   <li>Click OK to connect the IDE to the database. 
+
     <p>If the connection is successful, a new node appears on the same level as 
+
       Drivers. The icon for a connected database shows complete. If the connection 
+
       attempt fails, Forte for Java displays a dialog box indicating the connection 
+
       is broken. </p>
+
   </li>
+
 </ol>
+
 <p><b>To display schema information for a database:</b></p>
+
 <ol>
+
   <li>Choose the Advanced tab on the New Database Connection panel.</li>
+
   <li>Select the schema to use with the database object by choosing it from the 
+
     combo box. This schema will be used with getter database objects such as tables 
+
     and views.</li>
+
   <li>Click OK.<br>
+
     <br>
+
     The database will connect to the database schema and the connection node in 
+
     the Databases folder. The IDE displays child folders of this connection node. 
+
     These Folders represent lists of tables, views and procedures.</li>
+
 </ol>
+
 <p><b>To correct a broken connection:</b></p>
+
 <ol>
+
   <li>Correct the URL in the property sheet.</li>
+
   <li>Connect to the database from the contextual menu.</li>
+
 </ol>
+
 <p><b>To disconnect from the database connection</b>:</p>
+
 <ul>
+
   <li>Choose Disconnect from the Connection contextual menu. 
+
     <p> You cannot browse the database until you reconnect to the database using 
+
       Connect. </p>
+
   </li>
+
 </ul>
+
 <table>
+
   <tr> 
+
     <th colspan=2 align=left>See also</th>
+
   </tr>
+
   <tr> 
+
     <td width="23"></td>
+
     <td><a href="connusupp.html">Connecting to an Unsupported Database</a></td>
+
   </tr>
+
 </table>
+
 <hr>
+
 <font size=-2><a href="credits.html">Legal Notices</a></font> 
+
 </body>
+
 </html>
+

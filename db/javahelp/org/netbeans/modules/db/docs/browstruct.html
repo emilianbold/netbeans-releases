@@ -1,119 +1,199 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-                Sun Public License Notice
-
-The contents of this file are subject to the Sun Public License
-Version 1.0 (the "License"). You may not use this file except in
-compliance with the License. A copy of the License is available at
-http://www.sun.com/
-
-The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
-Microsystems, Inc. All Rights Reserved.
+ * 
+ *     Copyright © 2002 Sun Microsystems, Inc. All rights reserved.
+ *     Use is subject to license terms.
+ * 
 -->
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<!--
- *     Copyright 2001 Sun Microsystems, Inc. All rights reserved.
->   *     Use is subject to license terms.
->   *
->   *     Copyright 2001 Sun Microsystems, Inc. Tous droits réservés.
->   *     L'utilisation est régie par les termes de cette licence.
->   *
->   *
-> -->
 <html>
+
 <head>
+
 <meta name="lastupdated" content="19apr2001">
+
 <title>Browsing Structures</title>
+
 <link rel="stylesheet" href="../../usersguide/ide.css" type="text/css">
 </head>
-<body bgcolor="#FFFFFF">
+
+<body> 
+
+
 
 <h2>Browsing Structures</h2>
 
+
+
 <p>Databases consist tables, views and stored procedures, each of which represents 
+
   a list of columns: </p>
+
 <p>New nodes that appear under a connection when it is live represent tables, 
+
   views, and procedures. </p>
+
 <h3><b>To browse a table:</b> </h3>
+
 <ol>
+
   <li>Click the table node. </li>
+
   <li> Expand the table node to see the table's columns and an index's node, showing 
+
     all indexes defined for a given table. The table node has a list of columns 
+
     and an indexes folder. The indexes folder contains a list of indexes created 
+
     on the table. The table node also contains a list of foreign key nodes based 
+
     on the table's foreign constraints. The foreign key node describes foreign 
+
     key columns that reference a table's primary key.<br>
+
     Refer to the table for a description of icons related to tables and their 
+
     iconic representation.</li>
+
 </ol>
+
 <h4>Columns</h4>
-<p>&nbsp;</p>
+
+<p>The following table lists Explorer icons and their descriptions.</p>
+
 <table width="50%" border="1">
+
   <tr> 
-    <td width="27%"><b>Icon </b></td>
-    <td width="73%"><b>Description</b></td>
+
+    <th scope="col" width="27%"><b>Icon </b></th>
+
+    <th scope="col" width="73%"><b>Description</b></th>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="table.gif" width="16" height="16"></td>
+
     <td width="73%">Table</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="column.gif" width="16" height="16"></td>
+
     <td width="73%">Column</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="columnPrimary.gif" width="16" height="16"></td>
+
     <td width="73%">Column (Primary key)</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%" height="22"><img src="columnIndex.gif" width="16" height="16"></td>
+
     <td width="73%" height="22">Column (Unique key)</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%" height="22"><img src="index.gif" width="16" height="16"></td>
+
     <td width="73%" height="22">Index</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="foreignKeys.gif" width="16" height="16"></td>
+
     <td width="73%">Foreign key</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="columnForeign.gif" width="16" height="16"></td>
+
     <td width="73%">Column in foreign key</td>
+
   </tr>
+
   <tr> 
+
     <td width="27%"><img src="view.gif" width="16" height="16"></td>
+
     <td width="73%">View</td>
+
   </tr>
+
 </table>
+
 <p>&nbsp;</p>
+
 <h4>Indexes</h4>
+
 <p>Click on an index node to see a list of the columns indexed for a given table. 
+
 </p>
+
 <h4>Foreign Keys</h4>
+
 Click on an Foreign Keys node to see a list of the columns in the foreign keys 
+
 for a given table. 
+
 <h4> <b>Views</b></h4>
+
 <p>Click the Views node to see the Views on a given database.<br>
+
   View columns are dimmed to indicate that you cannot change the physical characteristics 
+
   of the columns in a view. However, you can change a view by dropping the view 
+
   and subsequently recreating it.<b> </b></p>
+
 <b>
+
 <h4>Procedures</h4>
-</b>Select a Procedures node to view stored procedure names and their <code>in</code> 
-and <code>out</code> parameters.<b> 
+
+</b>Select a Procedures node to view stored procedure names and their <tt>in</tt> 
+
+and <tt>out</tt> parameters.<b> 
+
 <table>
+
   <tr> 
+
     <th colspan=2 align=left>See also</th>
+
   </tr>
+
   <tr> 
+
     <td width="23"></td>
+
     <td> <a href="manipsql.html">Enabling and Disabling Debug Mode to Monitor 
+
       SQL Commands</a></td>
+
   </tr>
+
 </table>
+
 <hr>
+
 <font size=-2><a href="credits.html">Legal Notices</a></font> </b> 
+
 </body>
+
 </html>
+
