@@ -314,6 +314,7 @@ public final class XMLPropertiesConvertorTest extends NbTestCase {
         Thread.sleep(500);
         ido.delete();
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
+        assertEquals("Listener not deregistered", 0, obj.getListenerCount());
         Thread.sleep(3000);
         assertNull(filename + ".settings was not deleted!", root.getFileObject(filename));
     }

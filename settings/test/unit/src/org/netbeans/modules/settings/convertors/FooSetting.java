@@ -31,6 +31,8 @@ public class FooSetting {
     
     /** Utility field used by bound properties. */
     private java.beans.PropertyChangeSupport propertyChangeSupport =  new java.beans.PropertyChangeSupport(this);
+
+    private int listenerCount = 0;
     
     /** Creates a new instance of FooSetting */
     public FooSetting() {
@@ -44,6 +46,7 @@ public class FooSetting {
      */
     public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.addPropertyChangeListener(l);
+        listenerCount++;
     }
     
     /** Removes a PropertyChangeListener from the listener list.
@@ -51,8 +54,13 @@ public class FooSetting {
      */
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         propertyChangeSupport.removePropertyChangeListener(l);
+        listenerCount--;
     }
     
+    int getListenerCount() {
+        return listenerCount;
+    }
+
     /** Getter for property property1.
      * @return Value of property property1.
      */

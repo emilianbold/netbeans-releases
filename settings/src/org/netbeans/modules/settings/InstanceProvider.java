@@ -107,6 +107,12 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         if (saver != null && fe.firedFrom((FileSystem.AtomicAction) saver.getSaveCookie())) return;
         propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
+  
+    public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+        if (saver != null && fe.firedFrom((FileSystem.AtomicAction) saver.getSaveCookie())) return;
+        releaseInstance();
+    }
+    
     
     /** allow to listen on changes of the object inst; should be called when
      * new instance is created */
@@ -146,7 +152,7 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         }
     }
     
-    private void instanceCookieChanged(Object inst) {
+    private void releaseInstance() {
         SaveSupport _saver = saver;
         if (_saver != null) {
             _saver.removePropertyChangeListener(this);
@@ -159,6 +165,11 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         }
         
         lkpContent.remove(this, node);
+    }
+    
+    private void instanceCookieChanged(Object inst) {
+        releaseInstance();
+        
         lkpContent.add(this, node);
         
         Object ic = lookup.lookup(InstanceCookie.class);

@@ -219,6 +219,15 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         propertyChange(new PropertyChangeEvent(this, SaveSupport.PROP_FILE_CHANGED, null, null));
     }
     
+    public void fileDeleted(org.openide.filesystems.FileEvent fe) {
+        if (saver != null && fe.firedFrom(saver)) return;
+        if (saver != null) {
+            saver.removePropertyChangeListener(this);
+            getScheduledRequest().cancel();
+            saver = null;
+        }
+    }
+    
     private String moduleCodeBase = null;
     private boolean miUnInitialized = true;
     private boolean moduleMissing;    
