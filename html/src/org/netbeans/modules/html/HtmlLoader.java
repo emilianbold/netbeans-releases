@@ -65,7 +65,7 @@ public class HtmlLoader extends UniFileLoader {
     super (MultiDataObject.class);
     setDisplayName(NbBundle.getBundle(HtmlLoader.class).
                    getString("PROP_HtmlLoader_Name"));
-    getExtensions ().addExtension ("txt");
+//    getExtensions ().addExtension ("txt");
     getExtensions ().addExtension ("html");
     getExtensions ().addExtension ("htm");
     getExtensions ().addExtension ("shtml");
@@ -173,6 +173,8 @@ public class HtmlLoader extends UniFileLoader {
 
 /*
 * Log
+*  12   Gandalf   1.11        4/1/99   Jaroslav Tulach Does not recognize .txt 
+*       files.
 *  11   Gandalf   1.10        3/26/99  Ian Formanek    Fixed use of obsoleted 
 *       NbBundle.getBundle (this)
 *  10   Gandalf   1.9         3/17/99  Ian Formanek    Made compilable
