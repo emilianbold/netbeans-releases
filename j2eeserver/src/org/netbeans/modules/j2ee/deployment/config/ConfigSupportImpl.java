@@ -161,10 +161,26 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         }
     }
     
-    public void resetStorage () {
+    public void resetStorage() {
         storage = null;
-        getStorage ();
+        File f = getConfigurationFile();
+        FileObject fo = null;
+        if (f.isFile()) {
+            fo = getPrimaryConfigurationFO();
+        }
+        if (fo != null) {
+            try {
+                DataObject dobj = DataObject.find(fo);
+                if (dobj instanceof ConfigDataObject) {
+                    ConfigDataObject cdo = (ConfigDataObject) dobj;
+                    cdo.resetStorage();
+                }
+            } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            }
+        }
     }
+    
     //from J2eeDeploymentLookup:
     
     //PENDIND should not be public!!!
@@ -186,8 +202,12 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         String fname = null;
         if (dps != null) {
             String[] fnames = dps.getDeploymentPlanFileNames(moduleType);
-            if (fnames != null && fnames.length > 0)
+            if (fnames != null && fnames.length > 0) {
                 fname = fnames [0];
+                if(! getProvider().useDirectoryPath()) {
+                    fname = fnames[0].substring(fnames[0].lastIndexOf("/")+1);
+                }
+            }
         }
         if (fname == null) {
             fname = getServer ().getShortName() + ".dpf";
@@ -251,7 +271,10 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                     FileObject moduleFolder =  getProvider().getModuleFolder();
                     FileObject[] fileObjs = new FileObject[fnames.length];
                     for (int i = 0; i < files.length; i++) {
-                        fileObjs[i] = FileUtil.createData(moduleFolder, fnames [i]);
+                        String fname = fnames[i];
+                        if(!provider.useDirectoryPath())
+                            fname = fnames[i].substring(fnames[i].lastIndexOf("/")+1);
+                        fileObjs[i] = FileUtil.createData(moduleFolder, fname);
                         files [i] = FileUtil.toFile(fileObjs[i]);
                     }
                     fo = fileObjs[0];

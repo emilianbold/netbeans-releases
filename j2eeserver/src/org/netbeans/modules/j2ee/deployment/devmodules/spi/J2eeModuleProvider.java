@@ -77,6 +77,10 @@ public abstract class J2eeModuleProvider {
         public boolean createInitialConfiguration();
         public void setWebContextRoot(String contextRoot);
         public String getWebContextRoot();
+        /**
+         * Reset configuration storage references to make sure memory reclamation on project close.
+         */
+        public void resetStorage();
     }
     
     public boolean useDirectoryPath() {
