@@ -156,6 +156,13 @@ public final class ActionsManager {
         }
         return false;
     }
+    
+    /**
+     * Stops listening on all actions, stops firing events.
+     */
+    public void destroy () {
+        destroyDebuggerEngineListeners ();
+    }
 
     
     // ActionsManagerListener support ..........................................

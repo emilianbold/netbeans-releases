@@ -202,6 +202,7 @@ public final class DebuggerEngine implements LookupProvider {
             int i, k = ss.length;
             for (i = 0; i < k; i++)
                 ss [i].removeEngine (DebuggerEngine.this);
+            getActionsManager ().destroy ();
         }
         
         /**
@@ -212,6 +213,7 @@ public final class DebuggerEngine implements LookupProvider {
          */
         public void killLanguage (Session s, String language) {
             s.removeLanguage (language, DebuggerEngine.this);
+            getActionsManager ().destroy ();
         }
     }
 }
