@@ -1191,7 +1191,9 @@ public class FormUtils
 
         // try execution classpath - in case the class is within the same project
         // (first check there is a java source file for the class available)
-        String resourceName = name.replace('.', '/') + ".java"; // NOI18N
+        int i = name.indexOf('$');
+        String resourceName = (i > -1 ? name.substring(0, i) : name)
+                               .replace('.', '/') + ".java"; // NOI18N
         if (ClassPath.getClassPath(formFile, ClassPath.SOURCE)
                                .findResource(resourceName) != null)
         {
