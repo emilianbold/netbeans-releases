@@ -51,7 +51,7 @@ public class PropertyType_ServiceType extends PropertyEditorsTest {
     }
     
     public void testByCombo(){
-        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.resources.Bundle", "Services/AutoupdateType/autoupdate_xml_type_2.settings"); // NetBeans Update Center Alpha
+        propertyValue_L = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.search.types.Bundle", "TEXT_DATE_CRITERION"); // Date
         propertyValueExpectation_L = propertyValue_L;
         waitDialog = false;                                     
         setByCombo(propertyName_L, propertyValue_L, true);
