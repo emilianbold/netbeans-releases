@@ -418,4 +418,8 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         Debug.log(TabbedAdapter.class, message);
     }
     
+    public boolean isPointInCloseButton(Point p) {
+        return getTabsDisplayer().isPointInCloseButton(p);
+    }
+    
 }

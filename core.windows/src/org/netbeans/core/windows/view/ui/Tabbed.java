@@ -78,12 +78,17 @@ public interface Tabbed {
     
     public int tabForCoordinate(int x, int y);
    
-    // XXX PENDING DnD
     public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
             Point startingPoint, boolean attachingPossible);
     
     public Object getConstraintForLocation(Point location, boolean attachingPossible);
     
-    
+    //XXX currently this will test in the coordinate space of the
+    //tab displayer, which is a child of the tabbed container.  For now
+    //this makes no difference, but if we start to support tabs on the
+    //side or something, we should add an argument to pass the component
+    //the coordinate was found on, so I can convert it.  Peter, let me
+    //know if you want to change this. - Tim
+    public boolean isPointInCloseButton (Point p);
 }
 
