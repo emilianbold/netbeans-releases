@@ -16,6 +16,8 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.j2ee.dd.api.common.ResourceRef;
 import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.openide.NotifyDescriptor;
+import org.openide.DialogDisplayer;
 
 import javax.swing.table.TableCellEditor;
 
@@ -84,9 +86,17 @@ class ResourceReferencesTableModel extends InnerTableModel {
     }
 
     public int addRow() {
-        ResourceRef resourceRef = ejb.newResourceRef();
-        ejb.addResourceRef(resourceRef);
-        modelUpdatedFromUI();
+        String text = Utils.getBundleMessage("LBL_ReferenceName");
+        String title = Utils.getBundleMessage("LBL_AddResourceReference");
+        final NotifyDescriptor.InputLine inputLine = new NotifyDescriptor.InputLine(text, title);
+        DialogDisplayer.getDefault().notify(inputLine);
+        final String name = inputLine.getInputText();
+        if (name != null && name.trim().length() > 0) {
+            ResourceRef resourceRef = ejb.newResourceRef();
+            resourceRef.setResRefName(name);
+            ejb.addResourceRef(resourceRef);
+            modelUpdatedFromUI();
+        }
         int row = getRowCount() - 1;
         return row;
     }
@@ -94,6 +104,10 @@ class ResourceReferencesTableModel extends InnerTableModel {
     public void removeRow(int row) {
         ejb.removeResourceRef(ejb.getResourceRef(row));
         modelUpdatedFromUI();
+    }
+
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return columnIndex != 0;
     }
 
     public TableCellEditor getTableCellEditor(int column) {
