@@ -22,6 +22,7 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 
 import org.openide.awt.StatusDisplayer;
+import org.openide.awt.ToolbarPool;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -46,7 +47,13 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             findTopComponentGroup ("debugger"); // NOI18N
                         if (group != null) {
                             try {
-                            group.open ();
+                                group.open ();
+                                if (ToolbarPool.getDefault ().
+                                    getConfiguration ().equals 
+                                    (ToolbarPool.DEFAULT_CONFIGURATION)
+                                )
+                                    ToolbarPool.getDefault ().setConfiguration 
+                                        ("Debugging");
                             } catch (Throwable e) {
                                 e.printStackTrace();
                             }
@@ -56,14 +63,6 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             }
             if (DebuggerManager.getDebuggerManager ().getSessions ().length == 0
             ) {
-//                if (DebuggerManager.getDebuggerManager ().getSessions ().
-//                    length < 1)
-//                    StatusDisplayer.getDefault ().setStatusText (
-//                        NbBundle.getMessage (
-//                            DebuggerManagerListener.class, 
-//                            "CTL_DebuggerManager_end"   //NOI18N
-//                    ));
-            
                 // Close debugger TopComponentGroup.
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
@@ -71,6 +70,11 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             findTopComponentGroup ("debugger"); // NOI18N
                         if (group != null) {
                             group.close ();
+                            if (ToolbarPool.getDefault ().getConfiguration ()
+                                .equals ("Debugging")
+                            )
+                                ToolbarPool.getDefault ().setConfiguration 
+                                    (ToolbarPool.DEFAULT_CONFIGURATION);
                         }
                     }
                 });

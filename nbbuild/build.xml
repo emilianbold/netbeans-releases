@@ -345,7 +345,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     <echo message="Building module debuggercore/viewmodel ..."/>
     <ant dir="../debuggercore/viewmodel" target="netbeans"/>
   </target>
-  <target name="all-debuggercore" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel">
+  <target name="all-debuggercore" depends="build-platform,all-debuggercore/api,all-debuggercore/viewmodel,all-openide/loaders">
     <echo message="Building module debuggercore ..."/>
     <ant dir="../debuggercore" target="netbeans"/>
   </target>
