@@ -16,7 +16,8 @@ package com.netbeans.developer.modules.loaders.form;
 import java.awt.*;
 import java.beans.*;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.text.MessageFormat;
 import javax.swing.*;
 
@@ -303,11 +304,6 @@ final public class FormEditor extends Object {
     return false;
   }
   
-  public static RADComponent.RADProperty[] sortChangedProperties (Map changedProperties, PropertyDescriptor[] descriptors) {
-    return (RADComponent.RADProperty[])changedProperties.keySet ().toArray (new RADComponent.RADProperty[0]);
-    // [PENDING - sort]
-  }
-
   /** A method that returns the supporting layout for some containers, which
   * have a special design-time support in the FormEditor.
   * @param itemClass The class of the component the layout is requested for
@@ -614,6 +610,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  36   Gandalf   1.35        9/24/99  Ian Formanek    Rollback of last 
+ *       erroneous checkin
  *  35   Gandalf   1.34        9/23/99  Ian Formanek    Better notification in 
  *       case that the JAR Archive does not contain any JavaBeans.
  *  34   Gandalf   1.33        9/12/99  Ian Formanek    FormAwareEditor.setRADComponent
