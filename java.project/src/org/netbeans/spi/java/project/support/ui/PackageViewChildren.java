@@ -513,8 +513,9 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                     // Copy actions and leave out the PropertiesAction and FileSystemAction.                
                     Action superActions[] = super.getActions( context );            
                     ArrayList actionList = new ArrayList( superActions.length );
-
+                    
                     for( int i = 0; i < superActions.length; i++ ) {
+
                         if ( superActions[ i ] == null && superActions[i + 1] instanceof org.openide.actions.PropertiesAction ) {
                             i ++;
                             continue;
@@ -522,15 +523,14 @@ final class PackageViewChildren extends Children.Keys/*<String>*/ implements Fil
                         else if ( superActions[i] instanceof org.openide.actions.PropertiesAction ) {
                             continue;
                         }
-                        else {
-                            actionList.add( superActions[i] );  
-                        }
-                        if (superActions[i] instanceof org.openide.actions.FindAction) {
-                            actionList.add (null);
+                        else if ( superActions[i] instanceof org.openide.actions.FileSystemAction ) {
+                            actionList.add (null); // insert separator and new action
                             actionList.add (FileSensitiveActions.fileCommandAction(ActionProvider.COMMAND_COMPILE_SINGLE, 
                                 NbBundle.getMessage( PackageViewChildren.class, "LBL_CompilePackage_Action" ), // NOI18N
-                                null ));
+                                null ));                            
                         }
+                        
+                        actionList.add( superActions[i] );                                                  
                     }
 
                     actions = new Action[ actionList.size() ];
