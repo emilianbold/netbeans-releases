@@ -18,7 +18,11 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.debugger.support.util.Utils;
 import org.netbeans.modules.debugger.Controller;
 import org.openide.text.Line;
+
 import org.netbeans.modules.web.core.jsploader.JspDataObject;
+import org.netbeans.modules.web.html.HtmlDataObject;
+
+import org.openide.loaders.DataObject;
 
 /**
 * Customizer of LineBreakpointEvent.
@@ -185,8 +189,11 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
     }//GEN-LAST:event_tfLineNumberFocusLost
 
     private void fillPackageAndClass() {
-        if ((event==null)||(event.getSourceName()==null)) return;
+        if (!isAcceptableDataObject()) return;
+
+        if (event.getSourceName()==null) return;
         String s = event.getSourceName().trim();
+        
         if (s.length() < 1) {
             cls = "";   //NOI18N
         }
@@ -197,13 +204,29 @@ class JspBreakpointPanel extends javax.swing.JPanel implements Controller {
     }
 
     private void fillLineNumber () {
-        if (event==null) return;
+        if (!isAcceptableDataObject()) return;
         if (event.getLineNumber () < 1) 
             tfLineNumber.setText ("");  //NOI18N
         else    
             tfLineNumber.setText ("" + event.getLineNumber ()); // NOI18N
     }
 
+    private boolean isAcceptableDataObject() {
+
+        if (event == null) return false;
+        
+        Line l = event.getLine();
+        if (l == null) return false;
+
+        DataObject dobj = l.getDataObject();
+        if (dobj == null) return false;
+        
+        if ((dobj instanceof JspDataObject) || (dobj instanceof HtmlDataObject)) return true;
+        
+        return false;
+        
+    }
+    
     /******************************/
     /* CONTROLLER:                */
     /******************************/
