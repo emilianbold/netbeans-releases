@@ -57,12 +57,26 @@ final class Services extends ServiceType.Registry implements Comparator {
 
     /** precomputed kinds of Class in sections */
     static List kinds = new LinkedList ();
+    
+    /** Mapping between service name and given ServiceType instance. */
+    private Map name2Service;
 
     /** Default instance */
     public static Services getDefault () {
         return INSTANCE;
     }
-
+    
+    public Services() {
+        name2Service = new HashMap();
+        fillMap(name2Service);
+    }
+    
+    private static void fillMap(Map map) {
+        map.put(ExecutorEditor.NO_EXECUTOR.getName(), ExecutorEditor.NO_EXECUTOR);
+        map.put(CompilerTypeEditor.NO_COMPILER.getName(), CompilerTypeEditor.NO_COMPILER);
+        map.put(DebuggerTypeEditor.NO_DEBUGGER.getName(), DebuggerTypeEditor.NO_DEBUGGER);
+    }
+    
     /** Override to specially look up no-op services. */
     public ServiceType find (Class clazz) {
         if (clazz == ExecutorEditor.NoExecutor.class)
@@ -77,16 +91,22 @@ final class Services extends ServiceType.Registry implements Comparator {
 
     /** Override to specially look up no-op services. */
     public ServiceType find (String name) {
-        if (name.equals (ExecutorEditor.NO_EXECUTOR.getName ()))
-            return ExecutorEditor.NO_EXECUTOR;
-        else if (name.equals (CompilerTypeEditor.NO_COMPILER.getName ()))
-            return CompilerTypeEditor.NO_COMPILER;
-        else if (name.equals (DebuggerTypeEditor.NO_DEBUGGER.getName ()))
-            return DebuggerTypeEditor.NO_DEBUGGER;
-        else
-            return super.find (name);
+        Map lookup = name2Service;
+        ServiceType ret;
+        synchronized (lookup) {
+            ret = (ServiceType) lookup.get(name);
+        }
+        
+        if (ret == null) {
+            ret = super.find(name);
+            synchronized (lookup) {
+                lookup.put(name, ret);
+            }
+        }
+        
+        return ret;
     }
-
+    
     /** Adds new section.
     */
     public static void addService (final ManifestSection.ServiceSection s)
@@ -112,9 +132,11 @@ final class Services extends ServiceType.Registry implements Comparator {
             supp.firePropertyChange (PROP_KINDS, null, null);
             
             // removes the default service, if present
-            if (current.remove (s.getServiceType())) {
+            ServiceType st = s.getServiceType();
+            if (current.remove (st)) {
                 supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
             }
+            getDefault().name2Service.remove(st.getName());
         }
     }
     
@@ -166,6 +188,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     * @return list of ServiceType
     */
     public synchronized java.util.List getServiceTypes () {
+      
         if (doinit) {
             setServiceTypes(null);
         }
@@ -211,6 +234,8 @@ final class Services extends ServiceType.Registry implements Comparator {
             
         }
         
+        name2Service.clear();
+        fillMap(name2Service);
         current.clear ();
         current.addAll (arr);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
@@ -239,6 +264,7 @@ final class Services extends ServiceType.Registry implements Comparator {
     /** Removes a service type.
     */
     public synchronized void removeServiceType (ServiceType t) {
+        name2Service.remove(t.getName());
         current.remove (t);
         supp.firePropertyChange (PROP_SERVICE_TYPES, null, null);
     }
@@ -448,6 +474,9 @@ final class Services extends ServiceType.Registry implements Comparator {
 
 /*
 * $Log$
+* Revision 1.35  2000/10/03 12:05:20  anovak
+* faster implementation of find(...) method
+*
 * Revision 1.34  2000/07/21 08:26:42  pnejedly
 * Wrong copyright notice fixed
 *
