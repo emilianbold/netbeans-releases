@@ -285,12 +285,7 @@ static final long serialVersionUID =7628317154007139777L;
       for (int i = wss.length; --i >= 0; ) {
         names[i] = wss[i].getName();
       }
-      try {
-        names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("None");
-      } catch (java.util.MissingResourceException e) {
-        names[wss.length] = "None";
-        e.printStackTrace();
-      }
+      names[wss.length] = NbBundle.getBundle(WorkspaceEditor.class).getString("Workspace_None");
       return names;
     }
   }
@@ -299,6 +294,8 @@ static final long serialVersionUID =7628317154007139777L;
 
 /*
  * Log
+ *  19   Gandalf   1.18        1/1/00   Ian Formanek    Fixed bug w/ resource in
+ *       WorkspaceEditor
  *  18   Gandalf   1.17        12/10/99 Pavel Buzek     
  *  17   Gandalf   1.16        12/8/99  Pavel Buzek     "workspace" property 
  *       added (workspace where forms are opened)
