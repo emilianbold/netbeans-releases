@@ -118,7 +118,7 @@ public class CompiledSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             this.sourceRoots.addPropertyChangeListener(this);
         }
         
-        public synchronized FileObject[] getRoots () {
+        public FileObject[] getRoots () {
             return this.sourceRoots.getRoots(); //No need to cache it, SourceRoots does
         }
         
