@@ -44,17 +44,20 @@ public abstract class I18nGroupAction extends SystemAction {
    
     /** Array of i18n actions. */
     protected static final SystemAction[] i18nActions = new SystemAction[] {
+        SystemAction.get(I18nAction.class),
+        SystemAction.get(InsertI18nStringAction.class),
+        null,
         SystemAction.get(I18nWizardAction.class),
         SystemAction.get(I18nTestWizardAction.class),
-        SystemAction.get(I18nAction.class),
-        SystemAction.get(InsertI18nStringAction.class)
     };
     
-
-    /** Does nothing. Shouldn't be called. Implements superclass abstract method. */
-    public void actionPerformed(ActionEvent evt) {
+    /**
+     * @throw AbstractMethodError always
+     */
+    public void actionPerformed(ActionEvent e) {
+        throw new AbstractMethodError();
     }
-
+    
     /** Gets localized name of action. Implements superclass abstract method. */
     public String getName() {
         return I18nUtil.getBundle().getString("LBL_I18nGroupActionName");
