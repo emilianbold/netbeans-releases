@@ -135,8 +135,11 @@ public final class ScheduledRequest implements Runnable {
         }
     }
     
-    public synchronized void run() {
-        counter = 0;
+    public void run() {
+        synchronized (this) {
+            counter = 0;
+        }
+        
         try {
             performRequest();
         } catch (IOException ex) {
@@ -149,13 +152,28 @@ public final class ScheduledRequest implements Runnable {
     /** perform the storing task, release the file lock and reset
      * ScheduledRequest */
     private void performRequest() throws IOException {
-        running = true;
+        boolean isAlreadyRunning = false;
+        Task runningTask;
+        
+        synchronized (this) {
+            isAlreadyRunning = running;
+            runningTask = task;
+            running = true;
+        }
+        
+        if (isAlreadyRunning) {
+            runningTask.waitFinished();
+            return;
+        }
+        
         try {
             run.run();
         } finally {
-            running = false;
-            if (task == null || counter == 0) {
-                releaseResources();
+            synchronized (this) {
+                running = false;
+                if (task == null || counter == 0) {
+                    releaseResources();
+                }
             }
         }
     }
