@@ -505,6 +505,68 @@ public class DriverSpecification {
         }
     }
 
+    public void getImportedKeys(String catalog, DatabaseMetaData dmd, String table) {
+        String schema = null;
+        boolean caseindentifiers;
+
+        try {
+            caseindentifiers = dmd.storesMixedCaseIdentifiers();
+            if (!caseindentifiers) {
+                caseindentifiers = dmd.storesUpperCaseIdentifiers();
+                table = (caseindentifiers ? table.toUpperCase() : table.toLowerCase());
+            }
+        } catch (SQLException ex) {
+            //      System.out.println("DrvSpecification: " + ex);
+        }
+
+        try {
+            if (!getCatalog().equals("true"))
+                catalog = null;
+            if (getSchema().equals("true"))
+                schema = dmd.getUserName().trim();
+
+            if (!desc.get("DriverName").equals("DefaultDriver")) {
+                rs = dmd.getImportedKeys(catalog, schema, table);
+                return;
+            }
+        } catch (SQLException ex) {
+            //      System.out.println("getImportedKeys: CANNOT OBTAIN IMPORTEDKEYS");
+            rs = null;
+        }
+
+        try {
+            //      System.out.println("1. PASS - ImportedKeys: " + dmd.getDriverName());
+            rs = dmd.getImportedKeys(catalog, schema, table);
+            checkResultSet();
+            rs.close();
+            rs = dmd.getImportedKeys(catalog, schema, table);
+        } catch (Exception ex) {
+            try {
+                //        System.out.println("2. PASS - ImportedKeys: " + dmd.getDriverName());
+                rs = dmd.getImportedKeys(null, schema, table);
+                checkResultSet();
+                rs.close();
+                rs = dmd.getImportedKeys(null, schema, table);
+            } catch (Exception ex1) {
+                try {
+                    //          System.out.println("3. PASS - ImportedKeys: " + dmd.getDriverName());
+                    rs = dmd.getImportedKeys(catalog, null, table);
+                    checkResultSet();
+                    rs.close();
+                    rs = dmd.getImportedKeys(catalog, null, table);
+                } catch (Exception ex2) {
+                    try {
+                        //            System.out.println("4. PASS - ImportedKeys: " + dmd.getDriverName());
+                        rs = dmd.getImportedKeys(null, null, table);
+                    } catch (Exception ex3) {
+                        //            System.out.println("NO IMPORTEDKEYS: " + ex3);
+                        rs = null;
+                    }
+                }
+            }
+        }
+    }
+
     private void checkResultSet() throws Exception {
         if (!rs.next()) {
             rs.close();
