@@ -972,14 +972,15 @@ public final class SAXGeneratorSupport implements XMLGenerateCookie {
             ElementBindings.Entry next = (ElementBindings.Entry) it.next();
 
             String handling = next.getType();
+            String name = sax == 1 ? "name" : "qname"; // NOI18N
 
             if (next.CONTAINER.equals(handling) || next.MIXED.equals(handling)) {
-                code.append(prefix + " (\"" + next.getElement() + "\".equals(name)) {"); // NOI18N
+                code.append(prefix + " (\"" + next.getElement() + "\".equals(" + name + ")) {"); // NOI18N
                 code.append("\nhandler." + methodPrefix + next.getMethod() + "(" + meta + ");"); // NOI18N
                 code.append("\n}"); // NOI18N
                 prefix = " else if"; // NOI18N
             } else if (emptyPrefix != null && next.EMPTY.equals(handling)) {
-                code.append(prefix + " (\"" + next.getElement() + "\".equals(name)) {"); // NOI18N
+                code.append(prefix + " (\"" + next.getElement() + "\".equals(" + name + ")) {"); // NOI18N
                 code.append("\nhandler." + emptyPrefix + next.getMethod() + "(" + meta + ");"); // NOI18N
                 code.append("\n}"); // NOI18N
                 prefix = " else if"; // NOI18N
