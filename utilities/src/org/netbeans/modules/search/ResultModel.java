@@ -143,7 +143,10 @@ public class ResultModel implements TaskListener {
         
         for(int i = 0; i < searchTypes.length; i++) {
             for(int j = 0; j < nodes.length; j++) {
-                detailNodes.addAll(Arrays.asList(searchTypes[i].getDetails(nodes[j])));
+                Node[] details = searchTypes[i].getDetails(nodes[j]);
+                
+                if(details != null)
+                    detailNodes.addAll(Arrays.asList(details));
             }
         }
         
