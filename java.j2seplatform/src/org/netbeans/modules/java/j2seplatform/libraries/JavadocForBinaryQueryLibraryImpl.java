@@ -19,11 +19,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.openide.ErrorManager;
+import org.openide.filesystems.URLMapper;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
+
 
 
 /**
@@ -49,9 +54,16 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
                     Iterator it = jars.iterator();
                     while (it.hasNext()) {
                         URL entry = (URL)it.next();
-                        if (b.equals(entry)) {
-                            List l = Util.getResourcesRoots(libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC));
-                            return (URL[])l.toArray(new URL[l.size()]);
+                        FileObject file = URLMapper.findFileObject (entry);
+                        if (file != null) {
+                            try {
+                                if (b.equals(file.getURL())) {
+                                    List l = Util.getResourcesRoots(libs[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC));
+                                    return (URL[])l.toArray(new URL[l.size()]);
+                                }
+                            } catch (FileStateInvalidException e) {
+                                ErrorManager.getDefault().notify (e);
+                            }
                         }
                     }
                 }
