@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testconfig>
+
+  <config name="config-1">
+      <module name="MyModule" testtypes="unit,logging" attributes="all,code,ide"/>
+  </config>
+    
+</testconfig>
+
