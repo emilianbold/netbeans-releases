@@ -73,7 +73,7 @@ public class TomcatInstallUtil {
         return false;
     }
     
-    public static boolean noBootStrapJar(File homeDir, File baseDir) {
+    public static boolean noBootStrapJar(File homeDir) {
         File[] subFolders = homeDir.listFiles();
         if (subFolders==null) return true;
         for (int i=0; i<subFolders.length; i++) {
@@ -89,6 +89,24 @@ public class TomcatInstallUtil {
         }
         return true;
     }    
+
+    // bin/catalina.xml is specific for T5 - it's not in T4, nor T4.1, so we can use this for T4.x check
+    public static boolean noCatalinaXml(File homeDir) {
+        File[] subFolders = homeDir.listFiles();
+        if (subFolders==null) return true;
+        for (int i=0; i<subFolders.length; i++) {
+            if (subFolders[i].getName().equals("bin") && subFolders[i].isDirectory()) { //NOI18N
+                File[] subBinFolders = subFolders[i].listFiles();
+                if (subBinFolders==null) return true;
+                for (int ii=0; ii<subBinFolders.length; ii++) {
+                    if (subBinFolders[ii].getName().equals("catalina.xml")) {   //NOI18N
+                        return false;
+                   }
+                }
+            }
+        }
+        return true;
+    }
 
     public static String getAdminPort(Server server) {
         String port;
@@ -305,5 +323,5 @@ public class TomcatInstallUtil {
 	}
         return pwd;
     }
-    
+
 }
