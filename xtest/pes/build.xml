@@ -37,10 +37,12 @@
   </target>
   
   <target name="jar" depends="compile">
-    <mkdir dir="lib"/>    
+    <mkdir dir="lib"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
+    <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
     <jar jarfile="lib/xtest-pes.jar"
             basedir="src"
+            manifest="manifest-subst.mf"
             excludesfile="../../nbbuild/standard-jar-excludes.txt"
             compress="false"
             includes="org/netbeans/xtest/**"/>

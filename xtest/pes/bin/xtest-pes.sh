@@ -20,6 +20,7 @@
 #          'xtest-pes.sh run' to tun the server
 #          'xtest-pes.sh stop' to stop the server
 #          'xtest-pes.sh kill' to kill the server
+#          'xtest-pes.sh version' to get the version
 #   
 
 #
@@ -227,8 +228,12 @@ case "$1" in
 	pes_server_reconfigure
 	;;
 
+'version')	
+	pes_server_cmd version
+	;;
+
 *)
-	echo "Usage: $0 { run | stop | kill | reconfigue}"
+	echo "Usage: $0 { run | stop | kill | reconfigure | version}"
 	exit 1
 	;;
 

@@ -119,8 +119,6 @@ public class ServerEngine {
     }
     
     
-    
-    
     /* usuall method which is called run */
     public void run() {
         try {

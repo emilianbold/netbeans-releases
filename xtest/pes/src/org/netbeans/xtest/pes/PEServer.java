@@ -47,6 +47,14 @@ public class PEServer {
 
             File config = new File(System.getProperty("pes.config",""));
             String command = System.getProperty("pes.command","run");
+            String pesHome = System.getProperty("xtest.home");
+            
+            // version handling !!!
+            if (command.equalsIgnoreCase("version")) {
+                /// just printout the versino and leave
+                System.out.println("XTest PES version "+Version.getVersion(pesHome));
+                return;
+            }
             
             ServerEngine se = ServerEngine.createServerEngine(config);            
             try {
