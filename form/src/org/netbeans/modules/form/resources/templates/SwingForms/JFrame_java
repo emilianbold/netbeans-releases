@@ -24,25 +24,15 @@ public class JFrame extends javax.swing.JFrame {
      */
     private void initComponents() {//GEN-BEGIN:initComponents
 
-        addWindowListener(new java.awt.event.WindowAdapter() {
-            public void windowClosing(java.awt.event.WindowEvent evt) {
-                exitForm(evt);
-            }
-        });
-
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         pack();
     }//GEN-END:initComponents
-
-    /** Exit the Application */
-    private void exitForm(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_exitForm
-        System.exit(0);
-    }//GEN-LAST:event_exitForm
 
     /**
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new __NAME__().show();
+        new __NAME__().setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

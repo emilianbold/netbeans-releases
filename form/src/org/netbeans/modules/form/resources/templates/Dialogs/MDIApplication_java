@@ -87,7 +87,7 @@ public class MDIApplication extends javax.swing.JFrame {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new __NAME__().show();
+        new __NAME__().setVisible(true);
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

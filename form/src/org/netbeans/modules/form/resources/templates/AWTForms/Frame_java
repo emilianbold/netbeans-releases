@@ -42,7 +42,7 @@ public class Frame extends java.awt.Frame {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new __NAME__().show();
+        new __NAME__().setVisible(true);
     }
 
 

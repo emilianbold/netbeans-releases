@@ -44,7 +44,7 @@ public class Dialog extends java.awt.Dialog {
     * @param args the command line arguments
     */
     public static void main(String args[]) {
-        new __NAME__(new java.awt.Frame(), true).show();
+        new __NAME__(new java.awt.Frame(), true).setVisible(true);
     }
 
 
