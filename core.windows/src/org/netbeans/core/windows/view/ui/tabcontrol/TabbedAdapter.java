@@ -92,7 +92,13 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed {
         getModel().addTab(position, td);
     }
     
-
+    protected void initDisplayer () {
+        super.initDisplayer();
+        TopComponent tc = getSelectedTopComponent();
+        if (tc != null) {
+            WindowManagerImpl.getInstance().componentShowing(tc);
+        }
+    }
     
     public void setIconAt(int index, javax.swing.Icon icon) {
         getModel().setIcon(index, icon);
