@@ -760,9 +760,11 @@ Included in JDK 1.3, else you may need to download it separately."/>
     <javac srcdir="api/examples" destdir="api/examples">
       <include name="org/netbeans/examples/modules/minicomposer/"/>
       <classpath>
-        <fileset dir="../openide/netbeans/lib">
-          <include name="openide*.jar" />
-        </fileset>
+        <pathelement location="netbeans/lib/openide.jar"/>
+        <pathelement location="compiler/netbeans/modules/autoload/openide-compiler.jar"/>
+        <pathelement location="execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="io/netbeans/modules/autoload/openide-io.jar"/>
+        <pathelement location="deprecated/netbeans/modules/autoload/openide-deprecated.jar"/>
       </classpath>
     </javac>
     <mkdir dir="examplemodulereload/minicomposer-test"/>
