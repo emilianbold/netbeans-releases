@@ -14,6 +14,7 @@
 
 package org.netbeans.modules.i18n;
 
+import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -48,7 +49,12 @@ public class I18nAction extends CookieAction {
         if(editorCookie == null) 
             return;
 
-        editorCookie.open(); 
+        //!!! #23904 hack
+        if (editorCookie.getClass().getName().endsWith("FormEditorSupport")) {
+            ((EditCookie)editorCookie).edit();
+        } else {            
+            editorCookie.open(); 
+        }
         
         final DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
         
