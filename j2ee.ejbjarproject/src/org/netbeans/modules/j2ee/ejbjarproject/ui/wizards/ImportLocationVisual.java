@@ -124,6 +124,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         projectFolder = new javax.swing.JTextField();
         browseProjectFolder = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
+        jPanel1 = new javax.swing.JPanel();
         jCheckBox1 = new javax.swing.JCheckBox();
         serverInstanceLabel = new javax.swing.JLabel();
         serverInstanceComboBox = new javax.swing.JComboBox();
@@ -247,24 +248,28 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jSeparator1, gridBagConstraints);
 
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jCheckBox1.setSelected(true);
         jCheckBox1.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_IW_SetAsMainProject_CheckBox"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jCheckBox1, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        jPanel1.add(jCheckBox1, gridBagConstraints);
 
         serverInstanceLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server_LabelMnemonic").charAt(0));
         serverInstanceLabel.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_Server"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(serverInstanceLabel, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 11);
+        jPanel1.add(serverInstanceLabel, gridBagConstraints);
 
         serverInstanceComboBox.setMinimumSize(new java.awt.Dimension(150, 24));
         serverInstanceComboBox.setPreferredSize(new java.awt.Dimension(150, 24));
@@ -276,50 +281,83 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(serverInstanceComboBox, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        jPanel1.add(serverInstanceComboBox, gridBagConstraints);
 
         jLabel7.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_LabelMnemonic").charAt(0));
-        jLabel7.setText(org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_Label"));
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ImportLocationVisual.class, "LBL_IW_J2EESpecLevel_Label"));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabel7, gridBagConstraints);
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
+        jPanel1.add(jLabel7, gridBagConstraints);
 
         j2eeSpecComboBox.setMinimumSize(new java.awt.Dimension(100, 24));
         j2eeSpecComboBox.setPreferredSize(new java.awt.Dimension(100, 24));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(j2eeSpecComboBox, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 11);
+        jPanel1.add(j2eeSpecComboBox, gridBagConstraints);
 
         addToAppCheckBox.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/j2ee/ejbjarproject/ui/wizards/Bundle").getString("LBL_NWP1_AddToEApp_CheckBox"));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(addToAppCheckBox, gridBagConstraints);
+        addToAppCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                addToAppCheckBoxStateChanged(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
+        jPanel1.add(addToAppCheckBox, gridBagConstraints);
+
+        addToAppComboBox.setEnabled(false);
+        addToAppComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addToAppComboBoxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(addToAppComboBox, gridBagConstraints);
+        jPanel1.add(addToAppComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
 
     }//GEN-END:initComponents
+
+    private void addToAppCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_addToAppCheckBoxStateChanged
+        addToAppComboBox.setEnabled(addToAppCheckBox.isSelected());
+    }//GEN-LAST:event_addToAppCheckBoxStateChanged
+
+    private void addToAppComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToAppComboBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_addToAppComboBoxActionPerformed
 
     private void serverInstanceComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_serverInstanceComboBoxActionPerformed
         String prevSelectedItem = (String)j2eeSpecComboBox.getSelectedItem();
@@ -386,6 +424,7 @@ public class ImportLocationVisual extends javax.swing.JPanel /*implements Docume
     private javax.swing.JLabel jLabelPrjName;
     private javax.swing.JLabel jLabelSrcLocation;
     private javax.swing.JLabel jLabelSrcLocationDesc;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;
     public javax.swing.JTextField projectFolder;
     public javax.swing.JTextField projectLocation;
