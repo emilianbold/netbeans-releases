@@ -552,6 +552,8 @@ public class RADComponent {
                         }
 
                         public void setValue(Object val) throws IllegalArgumentException {
+                            if (val == null)
+                                return;
                             if (!(val instanceof HandlerSetChange)) {
                                 if (val instanceof String) {
                                     HandlerSetChange change = new HandlerSetChange();
@@ -559,8 +561,9 @@ public class RADComponent {
                                     change.getRenamedOldNames().add((String) getValue());
                                     val = change;
                                 }
-                                else
+                                else {
                                     throw new IllegalArgumentException();
+                                }
                             }
                             Hashtable handlersByName = new Hashtable();
                             Vector handlers = event.getHandlers();
