@@ -634,26 +634,9 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized public FileObject[] getChildren( ) {
+    public FileObject[] getChildren( ) {
         
-        // If this is a directory that has not been read yet,
-        if( !areFolderContentsKnown ) {
-            
-            // If this is the root file object,
-            if( isRoot( ) ) {
-                
-                // Read the root's contents
-                readRootContents( );
-                
-            } else {
-                
-                // Read the list of files in this package directory
-                readPackageContents( );
-                
-            }
-            
-        }
-        return (FileObject[])childFileObjects.values( ).toArray( new FileObject[ 0 ] );        
+        return (FileObject[])getChildFileObjects( ).values( ).toArray( new FileObject[ 0 ] );        
     }
     
     
@@ -826,23 +809,35 @@ class HTTPFileObject extends FileObject {
      *
      *	@since 1.0
      */
-    synchronized HTTPFileObject child( String fullFileName ) {
+    HTTPFileObject child( String fullFileName ) {
         
-        // If this is a package that hasn't been read yet and the file system is not mounting,
-        if( parentFileSystem.isRootInitialized && !areFolderContentsKnown ) {
+        return (HTTPFileObject)getChildFileObjects( ).get( fullFileName );        
+    }
+	
+	
+	synchronized private Hashtable getChildFileObjects( ) {
+		
+        // If this is a directory that has not been read yet,
+        if( !areFolderContentsKnown ) {
             
+            // If this is the root file object,
             if( isRoot( ) ) {
                 
+                // Read the root's contents
                 readRootContents( );
+
+			// If the root file objects has been initialized
+            } else if( parentFileSystem.isRootInitialized ) {
                 
-            } else {
-                
+                // Read the list of files in this package directory
                 readPackageContents( );
                 
             }
+            
         }
-        return (HTTPFileObject)childFileObjects.get( fullFileName );        
-    }
+		return childFileObjects;
+		
+	}
     
     
     /**
@@ -928,6 +923,7 @@ class HTTPFileObject extends FileObject {
 
         }
         parentFileSystem.isRootInitialized = true;
+        areFolderContentsKnown = true;
 
     }
     
