@@ -33,7 +33,7 @@ public class ProjectSensitiveActions {
      * Shortcuts for actions are shared according to command, i.e. actions based on the same command
      * will have the same shortcut.
      * @param command the command which should be invoked when the action is
-     *        performed
+     *        performed (see e.g. constants in {@link org.netbeans.spi.project.ActionProvider})
      * @param namePattern a pattern which should be used for determining the action's
      *        name (label). It takes two parameters a la {@link MessageFormat}: <code>{0}</code> - number of selected projects;
      *        <code>{1}</code> - name of the first project.
