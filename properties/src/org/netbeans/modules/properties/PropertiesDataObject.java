@@ -210,6 +210,7 @@ public final class PropertiesDataObject extends MultiDataObject {
             });
 
             ts.add(getPrimaryEntry());
+            
             for (Iterator it = secondaryEntries().iterator();it.hasNext();) {
                 FileEntry fe = (FileEntry)it.next();
                 ts.add(fe);
@@ -223,16 +224,21 @@ public final class PropertiesDataObject extends MultiDataObject {
          */
         protected void addNotify () {
             mySetKeys();
+            
             // listener
-            pcl = new PropertyChangeListener () {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(PROP_FILES)) {
-                        mySetKeys();
-                    }
-                }
-            }; 
+            if(pcl == null) {
+                pcl = new PropertyChangeListener () {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals(PROP_FILES)) {
+                            Iterator it = PropertiesDataObject.this.secondaryEntries().iterator();
 
-            PropertiesDataObject.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesDataObject.this));
+                            mySetKeys();
+                        }
+                    }
+                }; 
+
+                PropertiesDataObject.this.addPropertyChangeListener(WeakListener.propertyChange(pcl, PropertiesDataObject.this));
+            }
         }
 
         /** Called to notify that the children has lost all of its references to
