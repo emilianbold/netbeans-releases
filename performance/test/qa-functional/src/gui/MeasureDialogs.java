@@ -30,42 +30,48 @@ public class MeasureDialogs  {
         // dialogs and windows which don't require any preparation
         suite.addTest(new About("measureTime", "About dialog open"));
         suite.addTest(new About_2("measureTime", "About details open"));
+        
         suite.addTest(new SetupWizard("measureTime", "Setup Wizard open"));
         suite.addTest(new SetupWizard_2("measureTime", "Setup Wizard next open"));
         suite.addTest(new SetupWizard_3("measureTime", "Setup Wizard next next open"));
-
         
-/*
-    TEMPORARY commented -> try to solve never finixhed tests
+/* TEMPORARY commented -> try to solve never finixhed tests
 
         suite.addTest(new KeyboardShortcuts("measureTime", "Keyboard Shortcut dialog open"));
         suite.addTest(new KeyboardShortcuts_2("measureTime", "Keyboard Shortcut shortcuts open"));
+ 
         suite.addTest(new Options("measureTime", "Options dialog open"));
+ 
         suite.addTest(new NewProjectDialog("measureTime", "New Project dialog open"));
         suite.addTest(new NewFileDialog("measureTime", "New File dialog open"));
         suite.addTest(new OpenProjectDialog("measureTime", "Open Project dialog open"));
         suite.addTest(new OpenFileDialog("measureTime", "Open File dialog open"));
+ 
         suite.addTest(new UpdateCenter("measureTime", "Update Center wizard open"));
         suite.addTest(new ProxyConfiguration("measureTime", "Proxy Configuration open"));
         suite.addTest(new VersioningManager("measureTime", "Versioning Manager open"));
         
         suite.addTest(new FilesWindow("measureTime", "Files window open"));
         suite.addTest(new ProjectsWindow("measureTime", "Projects window open"));
-        suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         suite.addTest(new RuntimeWindow("measureTime", "Runtime window open"));
         suite.addTest(new VersioningWindow("measureTime", "Versioning window open"));
+        suite.addTest(new FavoritesWindow("measureTime", "Favorites window open"));
         
 //TODO it still fails in Promo D       suite.addTest(new OutputWindow("measureTime", "Output window open"));
         suite.addTest(new ToDoWindow("measureTime", "To Do window open"));
         suite.addTest(new HttpMonitorWindow("measureTime", "Http Monitor window open"));
+
         suite.addTest(new HelpContentsWindow("measureTime", "Help Contents window open"));
+        
         suite.addTest(new PropertyEditorString("measureTime", "String Property Editor open"));
         suite.addTest(new PropertyEditorColor("measureTime", "Color Property Editor open"));
+        
         suite.addTest(new AddJDBCDriverDialog("measureTime", "Add JDBC Driver dialog open"));
         suite.addTest(new NewDatabaseConnectionDialog("measureTime", "New Database Connection dialog open"));
         suite.addTest(new AddNewServerInstanceDialog("measureTime", "Add Server Instance dialog open"));
         suite.addTest(new SetDefaultServerDialog("measureTime", "Set Default Server dialog open"));
         suite.addTest(new MountXMLCatalogDialog("measureTime", "Mount XML Catalog dialog open"));
+        
         suite.addTest(new FindInProjects("measureTime", "Find in Projects dialog open"));
         suite.addTest(new ProjectPropertiesWindow("measureTime", "Project Properties window open"));
  

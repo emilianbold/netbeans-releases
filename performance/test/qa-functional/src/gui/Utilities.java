@@ -97,11 +97,12 @@ public class Utilities {
                 openFileNodes[i] = new Node(new ProjectsTabOperator().getProjectRootNode(project),SOURCE_PACKAGES + '|' +  files_path[i][0] + '|' + files_path[i][1]);
                 
                 // open file one by one, opening all files at once causes never ending loop (java+mdr)
-                new OpenAction().performAPI(openFileNodes[i]);
+                // new OpenAction().performAPI(openFileNodes[i]);
         }
             
-        // try to open each file separately, it causes a very long time wait for try to open 10 big files at once
-        // new OpenAction().performAPI(openFileNodes);
+        // try to come back and open all files at-once, rises another problem with refactoring, if you do open file and next expand folder, 
+        // it doesn't finish in the real-time -> hard to reproduced by hand
+        new OpenAction().performAPI(openFileNodes);
     }
     
     /**

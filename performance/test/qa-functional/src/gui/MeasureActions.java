@@ -50,8 +50,8 @@ public class MeasureActions  {
     TEMPORARY commented -> try to solve never finixhed tests
 
         
-//TODO NPE rises issue 44379        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
-//TODO NPE rises issue 44379        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
+        suite.addTest(new OpenJspFile("testOpening20kBJSPFile", "Open JSP file"));
+        suite.addTest(new OpenJspFileWithOpenedEditor("testOpening20kBJSPFile", "Open JSP file if Editor opened"));
         
         suite.addTest(new OpenFilesNoCloneableEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB)"));
         suite.addTest(new OpenFilesNoCloneableEditorWithOpenedEditor("testOpening20kBPropertiesFile", "Open Properties file (20kB) if Editor opened"));
