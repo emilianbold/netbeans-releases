@@ -158,7 +158,8 @@ public class CursorEditor extends PropertyEditorSupport  implements
             gridBagConstraints1.insets = new java.awt.Insets(8, 8, 8, 8);
             gridBagConstraints1.weightx = 1.0;
             gridBagConstraints1.weighty = 1.0;
-            add(new JScrollPane(list), gridBagConstraints1);
+            JScrollPane scrollPane = new JScrollPane(list);
+            add(scrollPane, gridBagConstraints1);
 
             gridBagConstraints1 = new java.awt.GridBagConstraints();
             gridBagConstraints1.gridx = 0;
@@ -170,6 +171,8 @@ public class CursorEditor extends PropertyEditorSupport  implements
 
             cursorListLabel.setDisplayedMnemonic(bundle.getString("CTL_SelectCursorName_Mnemonic").charAt(0));
             list.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName"));
+            scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleName(bundle.getString("ACSD_CTL_SelectCursorName")); // NOI18N
+            scrollPane.getVerticalScrollBar().getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CTL_SelectCursorName")); // NOI18N
             getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_CursorCustomEditor"));
         }
 
