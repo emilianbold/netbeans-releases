@@ -68,7 +68,8 @@ public class FormUtils
 
     private static Object[][] propsClassifications = {
         { java.awt.Component.class, CLASS_AND_SUBCLASSES,
-                "locale", PROP_HIDDEN },
+                "locale", PROP_HIDDEN,
+                "locationOnScreen", PROP_HIDDEN },
         { java.awt.Container.class, CLASS_AND_SUBCLASSES,
                 "layout", PROP_HIDDEN },
         { javax.swing.JComponent.class, CLASS_AND_SUBCLASSES,
