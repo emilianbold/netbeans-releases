@@ -36,8 +36,9 @@ import org.openide.xml.EntityCatalog;
  * converted to <tt>"/xml/entities/{vendor}/{entity_name}"</tt> resource name.
  * <p>
  * It also attaches <tt>Environment</tt> according to registrations
- * at <tt>/xml/lookups/</tt> area. There can be registered <tt>XMLDataObject.Processor</tt>
- * or <tt>XMLDataObject.Info</tt> instances.
+ * at <tt>/xml/lookups/</tt> area. There can be registered:
+ * <tt>Environment.Provider</tt> or deprecated <tt>XMLDataObject.Processor</tt>
+ * and <tt>XMLDataObject.Info</tt> instances.
  * <p>
  * All above are core implementation features.
  *
