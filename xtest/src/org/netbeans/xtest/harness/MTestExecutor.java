@@ -115,7 +115,7 @@ public class MTestExecutor extends Task {
                 if (properties != null)
                     for (int j=0; j<properties.length; j++) {
                         Property ant_prop = ant_new.createProperty();
-                        ant_prop.setName( "xtest.userdata|"+properties[j].getName() );
+                        ant_prop.setName(  properties[j].getName() );
                         ant_prop.setValue( properties[j].getValue() );
                     }
                 
@@ -124,6 +124,14 @@ public class MTestExecutor extends Task {
                 clspth_prop.setName( targetParamClasspathProp );
                 
                 StringBuffer stb = new StringBuffer();
+                
+                // if any of the testset contains setup dir, it does not
+                // have to be added to classpath
+                boolean testsetContainsSetupDir = false;
+                if (testbag.getSetupDir() == null) {
+                    testsetContainsSetupDir = true;
+                }
+                
                 for (int j=0; j<testbag.getTestsets().length; j++) {
                     // name of this property should be passed by atribute
                     // and also it's not clear where it's resolved !!!!!!
@@ -137,9 +145,22 @@ public class MTestExecutor extends Task {
                     stb.append( "/" );
                     stb.append( ant_new.getProject().getProperty( "tbag.classpath.work" ) );
                     stb.append( "/" );
-                    stb.append( testbag.getTestsets()[j].getDir());
+                    String testsetDir = testbag.getTestsets()[j].getDir();
+                    stb.append( testsetDir );
+                    stb.append( ";" );
+                    // check if this testset contains setup dir
+                    if ( ! testsetContainsSetupDir) {
+                        if (testbag.getSetupDir().equals(testsetDir)) {
+                            testsetContainsSetupDir = true;
+                        }
+                    }
+                }
+                // add setup/teardown dir if available
+                if ( ! testsetContainsSetupDir ) {
+                    stb.append(testbag.getSetupDir());
                     stb.append( ";" );
                 }
+               
                 if ( stb.length() > 1 ) {
                     stb.deleteCharAt( stb.length() - 1 );                
                 }
@@ -214,6 +235,10 @@ public class MTestExecutor extends Task {
                 Object o = additionalPatterns.elementAt(i);
                 defaultPatterns.append((PatternSet) o, p);
             } */
+            
+            System.out.println("Testbag "+testbag.getName());
+            System.out.println("testset = "+testset);
+            System.out.println("Testset includes "+testset.getIncludes());
 
             ts.setIncludes(testset.getIncludes());
             ts.setExcludes(testset.getExcludes());

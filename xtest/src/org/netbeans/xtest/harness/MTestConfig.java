@@ -122,10 +122,11 @@ public class MTestConfig implements XMLSerializable {
     }
     
     public Testbag createSingleTestbag(String testset_dir, Vector test_includes) throws XMLSerializeException {
+        System.out.println("Preparing single testbag with default executor/compiler/result processor");
         if (defaultExecutor == null)
-            throw new XMLSerializeException("You have to set default executor when executes single test.");
+            throw new XMLSerializeException("You have to set default executor when executing single test.");
         if (defaultCompiler == null)
-            throw new XMLSerializeException("You have to set default compiler when executes single test.");
+            throw new XMLSerializeException("You have to set default compiler when executing single test.");
         if (defaultResultsprocessor == null)
             throw new XMLSerializeException("You have to set default resultsprocessor when executes single test.");
         Testbag testbag = new Testbag();
@@ -147,6 +148,9 @@ public class MTestConfig implements XMLSerializable {
         testset.setPatternsets(new Testbag.Patternset[] { patternset });
         testset.filterPatternsets(null);
         testbag.setTestsets(new Testbag.Testset[] { testset });
+        // set parents 
+        testset.setParent(testbag);
+        testbag.setParent(this);
         return testbag;
     }
     
@@ -224,8 +228,8 @@ public class MTestConfig implements XMLSerializable {
         if (getName() == null)
             throw new XMLSerializeException("Attribute name is required for root element mconfig.");
 
-        // This is not required when plugin are used !!!
-        /*
+        // This is not required when plugin are used !!! -- TBD !!!
+        
         if (executors == null || executors.length == 0)
             throw new XMLSerializeException("At least one element executor is required.");
         //if (compilers == null || compilers.length == 0) 
@@ -235,7 +239,7 @@ public class MTestConfig implements XMLSerializable {
         
         if (testbags == null || testbags.length == 0)
             throw new XMLSerializeException("At least one element testbag is required.");
-        */
+        
         
         defaultExecutor = processAntExecTypes(executors, executors_table, "executor");
         defaultCompiler = processAntExecTypes(compilers, compilers_table, "compiler");

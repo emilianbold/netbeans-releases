@@ -65,14 +65,23 @@ public class PluginExecuteTask extends Task {
         this.actionID = actionID;
     }    
 
-    public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction, Task issuingTask) throws BuildException {
+    // backward compatibility methods
+    public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction, Task issuingTask) throws BuildException { 
+        pluginExecute(pluginDescriptor, pluginAction,issuingTask, null);
+    }
+    
+    public static void pluginExecute(PluginDescriptor pluginDescriptor, PluginDescriptor.Action pluginAction,
+                                        Task issuingTask, Ant newAnt) throws BuildException {
         
         File pluginHomeDirectory = pluginDescriptor.getPluginHomeDirectory();
         String antTarget = pluginAction.getTarget();
         
         File antFile = new File(pluginHomeDirectory, pluginAction.getAntFile());        
         
-        Ant ant = new Ant();
+        Ant ant = newAnt;
+        if (ant == null) {
+            ant = new Ant();
+        }
         if (issuingTask != null) {
             ant.setProject(issuingTask.getProject());
             ant.setOwningTarget(issuingTask.getOwningTarget());
