@@ -863,9 +863,11 @@ public final class TestCreator {
         tgtClass.getFeatures().remove(suiteMethod);
         
         suiteMethod = createSuiteMethod(pkg);
-        String javadocText = NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment");
-        JavaDoc jd = pkg.getJavaDoc().createJavaDoc(javadocText, Collections.EMPTY_LIST);
-        suiteMethod.setJavadoc(jd);
+        if (generateSourceCodeHints) {
+            String javadocText = NbBundle.getMessage(TestCreator.class,"TestCreator.suiteMethod.JavaDoc.comment");
+            JavaDoc jd = pkg.getJavaDoc().createJavaDoc(javadocText, Collections.EMPTY_LIST);
+            suiteMethod.setJavadoc(jd);
+        }
         
         StringBuffer newBody = new StringBuffer();
         generateSuiteBody(pkg, tgtClass.getSimpleName(), newBody, listMembers, true);
