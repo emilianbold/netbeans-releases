@@ -59,7 +59,7 @@ final public class FormEditor extends Object {
   * E.g. for Direction layout property, the property is named "__LAYOUT__mousePressed"
   */
   public static final String LAYOUT_PREFIX = "__LAYOUT__"; // NOI18N
-  public static final String GUI_EDITING_WORKSPACE_NAME = "GUI Editing"; // NOI18N
+  public static final String GUI_EDITING_WORKSPACE_NAME = "Visual"; // NOI18N
 
   /** The resource bundle for the form editor */
   private static java.util.ResourceBundle formBundle = org.openide.util.NbBundle.getBundle (FormEditor.class);
@@ -620,6 +620,8 @@ static final long serialVersionUID =7424646018839457544L;
 
 /*
  * Log
+ *  47   Gandalf-post-FCS1.45.1.0    3/15/00  David Simonek   japanese localization 
+ *       now works correctly (workspace setting)
  *  46   Gandalf   1.45        1/15/00  Pavel Buzek     
  *  45   Gandalf   1.44        1/15/00  Ian Formanek    I18N
  *  44   Gandalf   1.43        1/13/00  Ian Formanek    NOI18N #2
