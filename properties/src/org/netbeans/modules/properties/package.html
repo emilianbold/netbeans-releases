@@ -1,4 +1,25 @@
-<h2>Properties Module Architecture(l10n)</h2>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+  <!--
+                  Sun Public License Notice
+  
+  The contents of this file are subject to the Sun Public License
+  Version 1.0 (the "License"). You may not use this file except in
+  compliance with the License. A copy of the License is available at
+  http://www.sun.com/
+  
+  The Original Code is NetBeans. The Initial Developer of the Original
+  Code is Sun Microsystems, Inc. Portions Copyright 2003 Sun
+  Microsystems, Inc. All Rights Reserved.
+  
+  -->
+</head>
+<body>
+
+Contains the basic functionality of the <em>Properties</em> module.
+
+<h2>Properties Module Architecture (l10n)</h2>
 
 
 <h3>String Handling</h3>
@@ -12,29 +33,25 @@ All other string should Java strings.</p>
 It can be edited in text editor, in visulal editor
 or directly via an API.</p>
 
-<p>These representations need to be reasonable synchronized.
-</p>
+<p>These representations need to be reasonable synchronized.</p>
 
-Text => Struct
+Text =&gt; Struct
 
-<pre>
-autoParse():113, org.netbeans.modules.properties.StructHandler
+<pre>autoParse():113, org.netbeans.modules.properties.StructHandler
 notifyModified():232, org.netbeans.modules.properties.PropertiesEditorSupport
 insertUpdate():1554, org.openide.text.CloneableEditorSupport$Listener
 fireInsertUpdate():184, javax.swing.text.AbstractDocument
 fireInsertUpdate():1020, org.netbeans.editor.BaseDocument
-insertString():583, org.netbeans.editor.BaseDocument
-</pre>
+insertString():583, org.netbeans.editor.BaseDocument</pre>
 
-<h4>TableView => struct => text => struct</h4>
+<h4>TableView =&gt; struct =&gt; text =&gt; struct</h4>
 
 <p>
 It does not recognize that struct modification caused
 the text change and needlessly handles that text change
 </p>
 
-<pre>
-autoParse():113, org.netbeans.modules.properties.StructHandler
+<pre>autoParse():113, org.netbeans.modules.properties.StructHandler
 notifyModified():232, org.netbeans.modules.properties.PropertiesEditorSupport
 insertUpdate():1554, org.openide.text.CloneableEditorSupport$Listener
 fireInsertUpdate():184, javax.swing.text.AbstractDocument
@@ -49,16 +66,26 @@ print():98, org.netbeans.modules.properties.Element
 setValue():156, org.netbeans.modules.properties.Element$Basic
 setKey():370, org.netbeans.modules.properties.Element$ItemElem
 renameItem():164, org.netbeans.modules.properties.PropertiesStructure
-setValueAt():174, org.netbeans.modules.properties.PropertiesTableModel
-</pre>
+setValueAt():174, org.netbeans.modules.properties.PropertiesTableModel</pre>
 
 <p>autoparse() does not recognize that struct was not created and always
-recreates it FIXED #31593.</p>
+recreates it&nbsp;-
+FIXED <a href="http://www.netbeans.org/issues/show_bug.cgi?id=31593">#31593</a>.</p>
+
+<h3>Class Diagrams</h3>
+
+<ul>
+    <li><a href="doc-files/DO_and_nodes.png"><code>DataLoader</code>s, <code>DataObject</code>s and nodes</a></li>
+    <li><a href="doc-files/DO_structure.png">structure of <code>PropertiesDataObject</code> and its entries</a></li>
+</ul>
 
 <h3>Issues</h3>
 <p>PropertiesTableModel.StringPair</p>
 
 <p>Layered TableModels, single properties file TableModel,
 GroupingTableModel and SortingTableModel. Still need to
-maintain table cell -> document position mapping e.g.
+maintain table cell -&gt; document position mapping e.g.
 by a wrapper values.</p>
+
+</body>
+</html>
