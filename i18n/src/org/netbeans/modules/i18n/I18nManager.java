@@ -104,7 +104,6 @@ public class I18nManager {
         getDialog(sourceDataObject);;
         final I18nPanel i18nPanel = ((I18nPanel)i18nPanelWRef.get());
         i18nPanel.showBundleMessage("TXT_SearchingForStrings");
-        i18nPanel.enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
         i18nPanel.getCancelButton().requestFocusInWindow();
 
         // do the search on background
@@ -113,12 +112,10 @@ public class I18nManager {
                     if (find()) {
                         initCaret(ec);
                         highlightHCString();
-                        fillDialogValues();
-                        i18nPanel.enableButtons(I18nPanel.ALL_BUTTONS);
+                        fillDialogValues();                        
                         i18nPanel.getReplaceButton().requestFocusInWindow();
                     } else {
                         i18nPanel.showBundleMessage("TXT_NoHardcodedString");
-                        i18nPanel.enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
                         i18nPanel.getCancelButton().requestFocusInWindow();
 
                     }
@@ -220,10 +217,8 @@ public class I18nManager {
         if(find()) {
             highlightHCString();
             fillDialogValues();
-            ((I18nPanel)i18nPanelWRef.get()).enableButtons(I18nPanel.ALL_BUTTONS);
         } else {
             ((I18nPanel)i18nPanelWRef.get()).showBundleMessage("TXT_NoMoreStrings");
-            ((I18nPanel)i18nPanelWRef.get()).enableButtons(I18nPanel.CANCEL_BUTTON | I18nPanel.HELP_BUTTON);
             ((I18nPanel)i18nPanelWRef.get()).getCancelButton().requestFocusInWindow();
         }
     }
@@ -311,7 +306,7 @@ public class I18nManager {
             dialogWRef = new WeakReference(dialog);
         }
 
-        dialog.setVisible(true);
+        dialog.setVisible(true); 
     }
     
     /** Shows dialog. In our case opens top component if it is necessary and

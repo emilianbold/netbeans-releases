@@ -18,8 +18,11 @@ package org.netbeans.modules.i18n;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeSupport;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -35,16 +38,29 @@ import org.openide.DialogDisplayer;
  */
 public class PropertyPanel extends JPanel {
     
+    /** property representing the I18String. Change is fired when the i18string changes.
+     * Old and new objects are not sent with the notification.
+     */
+    public static final String PROP_STRING = "propString"; 
+    
     /** Helper name for dummy action command. */
     private static final String DUMMY_ACTION = "dont_proceed"; // NOI18N
     
     /** Customized <code>I18nString</code>. */
     protected I18nString i18nString;
 
+    /** Internal flag to block handling of changes to the key jtextfield,
+     * which didn't originate from the user but from the code. If this is >0, 
+     * values are just being pushed to the UI, if <=0, values are being received
+     * from the ui.
+     **/
+    private int internalTextChange = 0;    
+    
     
     /** Creates new <code>PropertyPanel</code>. */
     public PropertyPanel() {
         initComponents();
+        myInitComponents();
         initAccessibility();
     }
 
@@ -71,20 +87,21 @@ public class PropertyPanel extends JPanel {
         this.i18nString = i18nString;
         
         updateAllValues();
+        firePropertyChange(PROP_STRING, null,null);
     }
 
     
     /** Initializes UI values. */
     private void updateAllValues() {
+        updateBundleKeys();        
         updateKey();
         updateValue();
         updateComment();
-        updateBundleKeys();
-
     } 
     
-    /** Updates selected item of <code>keyBundleCombo</code> UI. */
-    private void updateKey() {
+    /** Updates selected item of <code>keyBundleCombo</code> UI. 
+     */
+    private void updateKey() {       
         String key = i18nString.getKey();
         
         if(key == null || !key.equals(keyBundleCombo.getSelectedItem()) ) {
@@ -92,7 +109,9 @@ public class PropertyPanel extends JPanel {
             String oldActionCommand = keyBundleCombo.getActionCommand();
             keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
+            internalTextChange++;
             keyBundleCombo.setSelectedItem(key == null ? "" : key); // NOI18N
+            internalTextChange--;
             
             keyBundleCombo.setActionCommand(oldActionCommand);
         }
@@ -100,22 +119,25 @@ public class PropertyPanel extends JPanel {
         updateReplaceText();
     }
 
-    /** Updates <code>valueText</code> UI. */
+    /** Updates <code>valueText</code> UI. 
+     */
     private void updateValue() {            
         String value = i18nString.getValue();
         
-        if(!valueText.getText().equals(value))
+        if(!valueText.getText().equals(value)) {
             valueText.setText(value == null ? "" : value); // NOI18N
-            
-        updateReplaceText();            
+        }
+       
+       updateReplaceText();            
     }
     
     /** Updates <code>commentText</code> UI. */
     private void updateComment() {
         String comment = i18nString.getComment();
         
-        if(!commentText.getText().equals(comment))
+        if(!commentText.getText().equals(comment)) {
             commentText.setText(comment == null ? "" : comment); // NOI18N
+        }
     }
     
     /** Updates <code>replaceFormatTextField</code>. */
@@ -129,8 +151,10 @@ public class PropertyPanel extends JPanel {
         String oldActionCommand = keyBundleCombo.getActionCommand();
         keyBundleCombo.setActionCommand(DUMMY_ACTION);
 
+        internalTextChange++;
         keyBundleCombo.setModel(new DefaultComboBoxModel(i18nString.getSupport().getResourceHolder().getAllKeys()));
-
+        internalTextChange--;
+        
         keyBundleCombo.setActionCommand(oldActionCommand);
         
         updateKey();
@@ -142,6 +166,29 @@ public class PropertyPanel extends JPanel {
         commentText.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_commentText"));        
         replaceFormatButton.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_CTL_Format"));        
         replaceFormatTextField.getAccessibleContext().setAccessibleDescription(I18nUtil.getBundle().getString("ACS_replaceFormatTextField"));        
+    }
+    
+    private void myInitComponents() {
+        // hook the Key combobox edit-field for changes
+        ((javax.swing.JTextField)keyBundleCombo.getEditor().getEditorComponent()).
+                getDocument().addDocumentListener(new DocumentListener() {              
+                    public void changedUpdate(DocumentEvent e) { keyBundleTextChanged();}
+                    public void insertUpdate(DocumentEvent e) {keyBundleTextChanged();}
+                    public void removeUpdate(DocumentEvent e) {keyBundleTextChanged();}
+                }
+               );
+
+    }
+    
+    private void keyBundleTextChanged() {
+        if (internalTextChange==0) {
+            String key = ((javax.swing.JTextField)keyBundleCombo.getEditor().getEditorComponent()).getText();
+
+            if (!key.equals(i18nString.getKey())) {        
+                i18nString.setKey(key);
+                firePropertyChange(PROP_STRING,null,null);
+            } 
+        }
     }
     
     /** This method is called from within the constructor to
@@ -333,8 +380,9 @@ public class PropertyPanel extends JPanel {
                         String newText = (String)customPanel.getPropertyValue();
                         
                         if(!newText.equals(replaceFormatTextField.getText())) {
-                            i18nString.setReplaceFormat(newText);
+                            i18nString.setReplaceFormat(newText);                            
                             updateReplaceText();
+                            firePropertyChange(PROP_STRING,null,null);
                             
                             // Reset option as well.
                             I18nUtil.getOptions().setReplaceJavaCode(newText);
@@ -371,16 +419,19 @@ public class PropertyPanel extends JPanel {
             i18nString.setComment(comment);
             updateComment();
         }
+        firePropertyChange(PROP_STRING,null,null);
     }//GEN-LAST:event_keyBundleComboActionPerformed
 
     private void commentTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_commentTextFocusLost
         i18nString.setComment(commentText.getText());
         updateComment();
+        firePropertyChange(PROP_STRING,null,null);        
     }//GEN-LAST:event_commentTextFocusLost
 
     private void valueTextFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_valueTextFocusLost
         i18nString.setValue(valueText.getText());
         updateValue();
+        firePropertyChange(PROP_STRING,null,null);        
     }//GEN-LAST:event_valueTextFocusLost
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -397,5 +448,5 @@ public class PropertyPanel extends JPanel {
     private javax.swing.JScrollPane valueScroll;
     private javax.swing.JTextArea valueText;
     // End of variables declaration//GEN-END:variables
-
+        
 }

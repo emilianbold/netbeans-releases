@@ -123,6 +123,7 @@ public class I18nPanel extends JPanel {
             contentsPanelPlaceholder.repaint();
             contentsShown = false;
         }
+        buttonsEnableDisable();
     }
 
     public void showPropertyPanel() {
@@ -133,6 +134,7 @@ public class I18nPanel extends JPanel {
             contentsPanelPlaceholder.repaint();
             contentsShown = true;
         }
+        buttonsEnableDisable();        
     }
 
 
@@ -185,22 +187,7 @@ public class I18nPanel extends JPanel {
         this.i18nString = i18nString;
 
         ((PropertyPanel)propertyPanel).setI18nString(i18nString);
-        ((ResourcePanel)resourcePanel).setI18nString(i18nString);
-        
-        // Set listener to enable/disable replace button.
-        resourcePanel.addPropertyChangeListener(WeakListeners.propertyChange(
-            propListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if(ResourcePanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
-                        replaceButton.setEnabled(evt.getNewValue() != null);
-                        ((PropertyPanel)propertyPanel).updateBundleKeys();
-                    }
-                }
-            },
-            resourcePanel
-        ));
-
-        replaceButton.setEnabled(i18nString.getSupport().getResourceHolder().getResource() != null);
+        ((ResourcePanel)resourcePanel).setI18nString(i18nString);        
         
         showPropertyPanel();
     }
@@ -225,10 +212,16 @@ public class I18nPanel extends JPanel {
         return cancelButton;
     }
     
-    /** Enables/disables buttons. */
+    /** Enables/disables buttons based on the contents of the dialog. */
     private void buttonsEnableDisable() {
-        boolean isBundle = i18nString.getSupport().getResourceHolder().getResource() != null;
-        replaceButton.setEnabled(isBundle);
+        if (contentsShown) enableButtons(ALL_BUTTONS);
+        else  enableButtons(CANCEL_BUTTON | HELP_BUTTON);
+        
+        boolean isBundle = (i18nString != null) && (i18nString.getSupport().getResourceHolder().getResource() != null);
+        boolean keyEmpty = (getI18nString()==null || 
+                            getI18nString().getKey()==null || 
+                            getI18nString().getKey().trim().length()==0);
+        replaceButton.setEnabled(isBundle && !keyEmpty);
     }
 
     public void setDefaultResource(DataObject dataObject) {
@@ -359,6 +352,28 @@ public class I18nPanel extends JPanel {
         contentsPanel.add(propertyPanel);
         contentsShown = true;
         contentsPanelPlaceholder.add(contentsPanel);
+        
+      
+        propertyPanel.addPropertyChangeListener(PropertyPanel.PROP_STRING, 
+                                                new PropertyChangeListener() {
+                                                    public void propertyChange(PropertyChangeEvent evt) {
+                                                        buttonsEnableDisable();
+                                                    }
+                                                });
+        
+        resourcePanel.addPropertyChangeListener(ResourcePanel.PROP_RESOURCE, 
+                WeakListeners.propertyChange(
+                    new PropertyChangeListener() {
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if(ResourcePanel.PROP_RESOURCE.equals(evt.getPropertyName())) {
+                            buttonsEnableDisable();
+                            ((PropertyPanel)propertyPanel).updateBundleKeys();
+                        }
+                    }
+                },resourcePanel
+               )
+        );
+        
     }
 
   private void helpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
@@ -373,12 +388,12 @@ public class I18nPanel extends JPanel {
       helpSystem.showHelp(help);
   }//GEN-LAST:event_helpButtonActionPerformed
 
-    public void enableButtons(long buttonMask) {
+    private void enableButtons(long buttonMask) {
         replaceButton.setEnabled((buttonMask & REPLACE_BUTTON) != 0);
         skipButton.setEnabled((buttonMask & SKIP_BUTTON) != 0);
         infoButton.setEnabled((buttonMask & INFO_BUTTON) != 0);
         cancelButton.setEnabled((buttonMask & CANCEL_BUTTON) != 0);
-        helpButton.setEnabled((buttonMask & HELP_BUTTON) != 0);
+        helpButton.setEnabled((buttonMask & HELP_BUTTON) != 0);               
     }
 
         
