@@ -85,8 +85,8 @@ public class SimpleDialogPanel extends JPanel {
             for (int i=0;i<customizers.length;i++) {
                 if (customizers[i]) {
                     JButton button = new JButton();
-                    button.setText(NbBundle.getMessage(InputTextDialog.class,"LBL_browse"));
-                    button.setMnemonic(NbBundle.getMessage(InputTextDialog.class,"LBL_browse_mnem").charAt(0));
+                    button.setText(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse"));
+                    button.setMnemonic(NbBundle.getMessage(SimpleDialogPanel.class,"LBL_browse_mnem").charAt(0));
                     buttonList.add(button);
                     gridBagConstraints = new java.awt.GridBagConstraints();
                     gridBagConstraints.gridx = 2;
