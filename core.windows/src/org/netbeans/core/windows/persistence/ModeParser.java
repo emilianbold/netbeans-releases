@@ -1004,7 +1004,10 @@ class ModeParser {
         public void startElement (String nameSpace, String name, String qname, Attributes attrs) throws SAXException {
             if ("mode".equals(qname)) { // NOI18N
                 handleMode(attrs);
-            } else if (internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { // NOI18N
+            } else if (internalConfig.specVersion != null && 
+            // check for null because of #45599 - no idea how it can happen other than having a broken file which doesn't
+            // declade 'mode' element. (see handleMode() - after this is called NPE is impossible
+                       internalConfig.specVersion.compareTo(new SpecificationVersion("2.0")) >= 0) { // NOI18N
                 //Parse version 2.0 and beyond
                 if ("module".equals(qname)) { // NOI18N
                     handleModule(attrs);
