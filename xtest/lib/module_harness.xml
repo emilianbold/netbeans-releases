@@ -85,6 +85,7 @@ Microsystems, Inc. All Rights Reserved.
             <taskdef name="testbaginfo" classname="org.netbeans.xtest.pe.TestBagInfoTask"/>
             <taskdef name="regenerateXML" classname="org.netbeans.xtest.pe.RegenerateXMLTask"/>
             <taskdef name="transformXML" classname="org.netbeans.xtest.pe.TransformXMLTask"/>
+            <taskdef name="printSummary" classname="org.netbeans.xtest.pe.PrintSummary"/>
             <taskdef name="getResultsDirs" classname="org.netbeans.xtest.pe.GetResultsDirsTask"/>
         </nbtaskdef>
 
@@ -479,17 +480,16 @@ Microsystems, Inc. All Rights Reserved.
         <!-- transform XML files of new testbag to HTML format -->
         <transformXML inputDir="${xtest.current.results}"
                       outputDir="${xtest.current.results}"/>
-                      
+            
+          
         <!-- because we have regenerated the XML tree, we need to\
             transform the new stuff to HTML -->
         <transformXML inputDir="${xtest.results}"
                       outputDir="${xtest.results}"/>                      
         
-        <!-- finally, printout URL where the report is 
-            - this is relevant only when running tests from module/test -->
-        <property name="xtest.report.url" value="${xtest.results}/index.html"/>
-        <echo message="Hi, here's report URL:"/>
-        <echo message="file://${xtest.report.url}"/>        
+        <!-- print summary -->
+        <printSummary resultsDir="${xtest.results}"/>
+        
     </target>        
     <!--
     -->
