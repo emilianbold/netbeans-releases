@@ -49,6 +49,12 @@ public class AntSettings extends SystemOption implements ChangeListener {
     
     private static final long serialVersionUID = -4457782585534082966L;
     
+    /**
+     * Transient value of ${ant.home} unless otherwise set.
+     * @see "#43522"
+     */
+    private static File defaultAntHome = null;
+    
     protected void initialize () {
         super.initialize();
         setVerbosity(2 /*Project.MSG_INFO*/);
@@ -138,17 +144,47 @@ public class AntSettings extends SystemOption implements ChangeListener {
         putProperty (PROP_INPUT_HANDLER, inputHandler, true);
     }
     
-    public File getAntHome() {
-        File f = (File)getProperty(PROP_ANT_HOME);
-        if (f == null) {
+    static File getDefaultAntHome() {
+        if (defaultAntHome == null) {
             File antJar = InstalledFileLocator.getDefault().locate("ant/lib/ant.jar", "org.apache.tools.ant.module", false); // NOI18N
-            f = antJar.getParentFile().getParentFile();
-            putProperty(PROP_ANT_HOME, f, false);
+            defaultAntHome = antJar.getParentFile().getParentFile();
+            if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                AntModule.err.log("getDefaultAntHome: " + defaultAntHome);
+            }
         }
+        assert defaultAntHome != null;
+        return defaultAntHome;
+    }
+    
+    /**
+     * Get the Ant installation to use.
+     */
+    public File getAntHomeWithDefault() {
+        File f = getAntHome();
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("getAntHomeWithDefault: antHome=" + f);
+        }
+        if (f == null) {
+            // Not explicitly configured. Check default.
+            f = getDefaultAntHome();
+        }
+        assert f != null;
         return f;
+    }
+
+    /**
+     * For serialization only.
+     * May return null.
+     * Use {@link #getAntHomeWithDefault} instead.
+     */
+    public File getAntHome() {
+        return (File)getProperty(PROP_ANT_HOME);
     }
     
     public void setAntHome(File f) {
+        if (AntModule.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            AntModule.err.log("setAntHome: " + f);
+        }
         putProperty(PROP_ANT_HOME, f, true);
         putProperty(PROP_ANT_VERSION, null, false);
         firePropertyChange(PROP_ANT_VERSION, null, null);

@@ -297,7 +297,7 @@ public final class AntBridge {
     private static ClassLoader createMainClassLoader() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
         Collection/*<URL>*/ cp = new LinkedHashSet();
-        File libdir = new File(AntSettings.getDefault().getAntHome(), "lib"); // NOI18N
+        File libdir = new File(AntSettings.getDefault().getAntHomeWithDefault(), "lib"); // NOI18N
         if (!libdir.isDirectory()) throw new IOException("No such Ant library dir: " + libdir); // NOI18N
         AntModule.err.log("Creating main class loader from " + libdir);
         File[] libs = libdir.listFiles(new JarFilter());
