@@ -1,0 +1,223 @@
+/*
+ *                 Sun Public License Notice
+ *
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ *
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+package org.netbeans.test.editor.app.core;
+
+import org.netbeans.test.editor.app.gui.*;
+import javax.swing.JEditorPane;
+import java.awt.event.KeyEvent;
+import javax.swing.text.Keymap;
+import javax.swing.KeyStroke;
+import javax.swing.Action;
+import java.awt.event.ActionEvent;
+import java.util.*;
+import org.netbeans.editor.ext.*;
+import java.awt.event.*;
+import org.netbeans.modules.editor.NbEditorDocument;
+import javax.swing.text.EditorKit;
+import javax.swing.plaf.TextUI;
+
+/**
+ *
+ * @author  pnejedly
+ * @version
+ */
+public class EventLoggingEditorPane extends JEditorPane {
+    public static final String COMPLETION_ON="completion-show";
+    public static final String COMPLETION_OFF="completion-hide";
+    
+    private Logger logger=null;
+    
+//    private boolean keyLock=false;
+    
+    public Hashtable namesToActions;
+    
+    private Action[] actions;
+    private boolean isCompletion=false;
+    
+  /** Creates new EventLoggingEditorPane */
+    public EventLoggingEditorPane() {
+        super();
+/*        if (getToolTipText() != null) {
+            System.err.println("Tooltip text is not null.");
+            setToolTipText(null);
+        };*/
+    }
+    
+    public String[] getActionsNames() {
+        Action[] as = getEditorKit().getActions();
+        String[] ret;
+        ret=new String[as.length];
+        for( int i=0; i < as.length; i++ )
+            ret[i]=(String)(actions[i].getValue( Action.NAME ));
+        return ret;
+        
+    }
+    
+    public synchronized void lock(Logger log) {
+/*        while (keyLock == true) {
+            try {
+                wait();
+            } catch (InterruptedException e) {}
+        }
+        keyLock = true;
+        logger = log;
+        notifyAll();*/
+    }
+    
+    public synchronized void unlock (Logger log) {
+/*        if (log == logger) {
+            logger = null;
+            keyLock = false;
+            notifyAll();
+        }*/
+    }
+    
+    public void setLogger(Logger log) {
+        logger = log;
+    }
+    
+    private final boolean myMapEventToAction(KeyEvent e) {
+        
+        Keymap binding = getKeymap();
+        if (binding != null) {
+            KeyStroke k = KeyStroke.getKeyStrokeForEvent(e);
+            Action a = binding.getAction(k);
+            if (a != null) {
+                String command = null;
+                if (e.getKeyChar() != KeyEvent.CHAR_UNDEFINED) {
+                    command = String.valueOf(e.getKeyChar());
+                }
+                ActionEvent ae =  new ActionEvent(this, ActionEvent.ACTION_PERFORMED,command, e.getModifiers());
+                if (logger != null)
+                    logger.logAction( a, ae );
+                a.actionPerformed(ae);
+                e.consume();
+                return true;
+            }
+        }
+        return false ;
+    }
+    
+    protected void processComponentKeyEvent(KeyEvent e) {
+        Completion comp;
+        
+        comp=ExtUtilities.getCompletion(Main.editor);
+        if (comp != null) {
+            if (comp.isPaneVisible() && !isCompletion) {
+                isCompletion=true;
+                Action a=(Action)namesToActions.get(COMPLETION_ON);
+                if (a != null) {
+                    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
+                    COMPLETION_ON);
+                    if (logger != null)
+                        logger.logAction( a, ae );
+                }
+            }
+        }
+        if ((comp == null || !comp.isPaneVisible()) && isCompletion ) {
+            isCompletion=false;
+            Keymap binding = getKeymap();
+            if (binding != null) {
+                Action a=(Action)namesToActions.get(COMPLETION_OFF);
+                if (a != null) {
+                    ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
+                    COMPLETION_OFF);
+                    if (logger != null)
+                        logger.logAction( a, ae );
+                }
+            }
+        }
+        
+        int id = e.getID();
+        switch(id) {
+            case KeyEvent.KEY_TYPED:
+                if (myMapEventToAction(e) == false) {
+                    // default behavior is to input translated
+                    // characters as content if the character
+                    // hasn't been mapped in the keymap.
+                    Keymap binding = getKeymap();
+                    if (binding != null) {
+                        //            System.out.println("will do default-key-typed with modifiers " + e.getModifiers() );
+                        Action a = binding.getDefaultAction();
+                        if (a != null) {
+                            ActionEvent ae = new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
+                            String.valueOf(e.getKeyChar()), e.getModifiers());
+                            if (logger != null)
+                                logger.logAction( a, ae );
+                            a.actionPerformed(ae);
+                            e.consume();
+                        }
+                    }
+                }
+                break;
+            case KeyEvent.KEY_PRESSED:
+                myMapEventToAction(e);
+                break;
+            case KeyEvent.KEY_RELEASED:
+                myMapEventToAction(e);
+                break;
+        }
+    }
+    
+    public Action[] getActions() {
+        if (actions == null)
+            return new Action[0];
+        return actions;
+    }
+    
+    private void poorSetEditorKit(int index) {
+        EditorKit kit = getEditorKitForContentType(TestSetKitAction.kitsTypes[index]);
+        setDocument(new NbEditorDocument(kit.getClass()/*, true*/));
+//        synchronized (this) {
+            super.setEditorKit(kit);
+//        };
+          actions = null;
+    }
+        
+    public void setEditorKit(int index) {
+        poorSetEditorKit(index);
+        System.err.println("Starting kit setting.");
+        actions = getEditorKit().getActions();
+        namesToActions = new Hashtable( actions.length );  // prepare hashtable for them and fill it with all actions
+        for( int i=0; i < actions.length; i++ )
+            namesToActions.put( actions[i].getValue( Action.NAME ), actions[i] );
+        Main.frame.getController().setActions( actions );
+        Main.frame.getController().updateUI();
+        System.err.println("Ending kit setting.");
+    }
+    
+    public void perform(final java.awt.event.ActionEvent p1) {
+        Action a = (Action)namesToActions.get((String)(p1.getActionCommand()));
+        if (logger != null)
+            logger.logAction( a, p1 );
+        a.actionPerformed(p1);
+    }
+    
+/*    public TextUI getUI() {
+        TextUI ui = super.getUI();
+        
+        if (ui == null) {
+            System.err.println("UI IS null.");
+            updateUI();
+            ui = super.getUI();
+        };
+        
+        EditorKit editorKit = ui.getEditorKit(this);
+        
+        if (editorKit == null) {
+            poorSetEditorKit(0);
+        };
+        return ui;
+    }*/
+    
+}

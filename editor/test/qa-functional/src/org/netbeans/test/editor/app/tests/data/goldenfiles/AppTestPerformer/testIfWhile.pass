@@ -1,0 +1,25 @@
+public class X {
+    
+    public static void main(String args[]) {
+        
+        if (a == a)
+            if (a == a)
+                while (a == a)
+                    a = a;
+            else
+                do
+                    a = a;
+                while (a == a);
+        else
+            b = b;
+        
+        while (a == a)
+            if (a == a)
+                if (a == a)
+                    a = a;
+                else
+                    a = a;
+            else
+                a = a;
+    }
+}

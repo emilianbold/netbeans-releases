@@ -170,6 +170,7 @@ Microsystems, Inc. All Rights Reserved.
 	    <pathelement location="${netbeans.home}/modules/editor.jar"/>
 	    <pathelement location="${netbeans.home}/modules/ext/nb-editor.jar"/>
             <pathelement location="${netbeans.home}/lib/openide.jar"/>
+            <pathelement location="${netbeans.home}/lib/core.jar"/>
    	</path>
     </target>
     
