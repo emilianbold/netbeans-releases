@@ -82,6 +82,7 @@ public class BundleStructure extends PropertyChangeSupport {
     
       public void propertyChange(PropertyChangeEvent evt) { 
         if (evt.getPropertyName().equals(PropertiesDataObject.PROP_FILES)) {
+System.out.println("updating entries"); 
           updateEntries();
           // PENDING
           firePropertyChange (evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
@@ -127,7 +128,7 @@ public class BundleStructure extends PropertyChangeSupport {
   /** Retrieves number of all entries */                      
   public int getEntryCount() {
     if (entries != null)
-      return Array.getLength(entries);
+      return entries.length;
     else 
       throw new InternalError(getClass().getName() +" - Entries not initialized");
   }       
@@ -172,6 +173,7 @@ public class BundleStructure extends PropertyChangeSupport {
     PropertiesFileEntry pfe;
     for (Iterator it = obj.secondaryEntries().iterator(); it.hasNext(); ) {
       pfe = (PropertiesFileEntry)it.next();
+System.out.println("entry " + pfe.getFile().getName());
       tm.put(pfe.getFile().getName(), pfe);
     }  
     

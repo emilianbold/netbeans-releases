@@ -63,7 +63,7 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   static final byte NEW_LINE_RN = 2;
   
   /** The type of new lines */
-  byte newLineType;
+  byte newLineType = NEW_LINE_N;
 
   /** The flag saying if we should listen to the document modifications */
   private boolean listenToEntryModifs = true;
@@ -539,7 +539,7 @@ public class PropertiesEditorSupport extends EditorSupport implements ViewCookie
   /** This stream is used for changing the new line delimiters.
   * It replaces the '\n' by '\n', '\r' or "\r\n"
   */
-  private static class NewLineOutputStream extends OutputStream {
+  static class NewLineOutputStream extends OutputStream {
     /** Underlaying stream. */
     OutputStream stream;
     

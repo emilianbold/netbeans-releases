@@ -102,6 +102,7 @@ public class PropertiesOpen extends OpenSupport implements OpenCookie {
 //      table.setDefaultEditor(String.class, DefaultCellEditor.class);
       JScrollPane scrollPane = new JScrollPane(table);
       table.setPreferredScrollableViewportSize(new Dimension(500, 70));
+      table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
       add (scrollPane, BorderLayout.CENTER);
       JButton addButton = new JButton(PropertiesSettings.getString("LBL_AddPropertyButton"));
       add (addButton, BorderLayout.SOUTH);

@@ -21,10 +21,14 @@ import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.Iterator;
+import javax.swing.text.Document;
 
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.datatransfer.*;
 import org.openide.actions.InstantiateAction;
 import org.openide.util.HelpCtx;
@@ -35,6 +39,7 @@ import org.openide.util.actions.SystemAction;
 import org.openide.nodes.*;
 import org.openide.loaders.*;
 import org.openide.*;
+import org.openide.text.EditorSupport;
 
 /** Standard node representing a data object.
 *
@@ -60,7 +65,13 @@ public class PropertiesDataNode extends DataNode {
   */
   public NewType[] getNewTypes () {
     return new NewType[] {
-      new NewType() {
+      new NewType() {      
+      
+        FileObject folder;
+        String newName;
+        PropertiesFileEntry  fe;
+        PropertiesStructure str;
+        MultiDataObject prop;
 
         public String getName() {
           return NbBundle.getBundle(PropertiesDataNode.class).getString("LAB_NewLocaleAction");
@@ -77,19 +88,54 @@ public class PropertiesDataNode extends DataNode {
               NbBundle.getBundle(PropertiesDataNode.class).getString("CTL_NewLocaleTitle"));
               
           if (NotifyDescriptor.OK_OPTION.equals(TopManager.getDefault().notify(dlg))) {
-            String newname = dlg.getInputText();
+            newName = dlg.getInputText();
             try {
-              if (newname.length() == 0)
+              if (newName.length() == 0)
                 throw new IllegalArgumentException(NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"));
-              if (newname.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
-                newname = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + newname;
+              if (newName.charAt(0) != PropertiesDataLoader.PRB_SEPARATOR_CHAR)
+                newName = "" + PropertiesDataLoader.PRB_SEPARATOR_CHAR + newName;
                 
               // copy the default file to a new file
-              Node.Cookie prop = getCookie (DataObject.class);
-              if (prop != null) {                               
-                FileObject folder = ((DataObject)prop).getPrimaryFile().getParent();
+              prop = (MultiDataObject)getCookie(DataObject.class);
+              if (prop != null) {
+                fe = (PropertiesFileEntry)prop.getPrimaryEntry();
+                str = fe.getHandler().getStructure();
+                folder = prop.getPrimaryFile().getParent();
+                
+                folder.getFileSystem().runAtomicAction(
+                new FileSystem.AtomicAction() {
+                  public void run() throws IOException {
+                    FileObject newFile = FileUtil.createData(folder, prop.getPrimaryFile().getName() + newName + 
+                      "." + PropertiesDataLoader.PROPERTIES_EXTENSION);
+                    BufferedWriter bw = null;  
+                    FileLock lock = newFile.lock();
+                    try {
+                      bw = new BufferedWriter(new OutputStreamWriter(
+                        new PropertiesEditorSupport.NewLineOutputStream(
+                        newFile.getOutputStream(lock), fe.getPropertiesEditor().newLineType), "8859_1"));
+                      for (Iterator it = str.allItems(); it.hasNext(); ) {
+                        Element.ItemElem item1 = (Element.ItemElem)it.next();
+                        Element.ItemElem item2 = new Element.ItemElem(null, 
+                          new Element.KeyElem(null, item1.getKey()),
+                          new Element.ValueElem(null, ""),
+                          new Element.CommentElem(null, item1.getComment()));
+                        String ps = item2.printString();
+                        bw.write(ps, 0, ps.length());
+                      }
+                    } 
+                    finally {
+                      if (bw != null) {
+                        bw.flush();
+                        bw.close();
+                      }  
+                      lock.releaseLock();
+                    }  
+                  }                                                                 
+                }); // end of inner class which is run as atomicaction
+                  
+                /*FileObject folder = ((DataObject)prop).getPrimaryFile().getParent();
                 FileObject newFo = FileUtil.copyFile(((DataObject)prop).getPrimaryFile(), folder, 
-                    ((DataObject)prop).getPrimaryFile().getName() + newname);
+                  ((DataObject)prop).getPrimaryFile().getName() + newName);*/
               }
               
             }
@@ -98,7 +144,7 @@ public class PropertiesDataNode extends DataNode {
               NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                 java.text.MessageFormat.format(
                   NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                  new Object[] {newname}),
+                  new Object[] {newName}),
                 NotifyDescriptor.ERROR_MESSAGE);
               TopManager.getDefault().notify(msg);
             }
@@ -107,7 +153,7 @@ public class PropertiesDataNode extends DataNode {
               NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
                 java.text.MessageFormat.format(
                   NbBundle.getBundle(PropertiesDataNode.class).getString("MSG_LangExists"),
-                  new Object[] {newname}),
+                  new Object[] {newName}),
                 NotifyDescriptor.ERROR_MESSAGE);
               TopManager.getDefault().notify(msg);
             }
@@ -116,6 +162,7 @@ public class PropertiesDataNode extends DataNode {
         }
          
       } // end of inner class
+      
     };
   }
 
