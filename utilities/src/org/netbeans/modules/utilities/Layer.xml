@@ -130,7 +130,7 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
                 </file>
             </folder>
-            <attr name="Tutorials/shortcuts.url" boolvalue="true"/>
+            <attr name="Tutorials/shortcuts.xml" boolvalue="true"/>
             <file name="shortcuts.xml" url="nbresloc:/org/netbeans/modules/utilities/shortcuts.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.url.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/openide/resources/actions/empty.gif"/>
