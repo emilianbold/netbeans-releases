@@ -38,6 +38,7 @@ workspaceswitcher
   <taskdef name="nbmerge" classname="org.netbeans.nbbuild.NbMerge"/>
   <taskdef name="configmods" classname="org.netbeans.nbbuild.ConfigureModules"/>
   <taskdef name="makeupdatedesc" classname="org.netbeans.nbbuild.MakeUpdateDesc"/>
+  <taskdef name="createfile" classname="org.netbeans.nbbuild.CreateFile"/>
 
   <!-- Override this with the Ant command, e.g. -Dmoduleconfig=superslim -->
   <property name="moduleconfig" value="stable"/>
@@ -290,6 +291,7 @@ workspaceswitcher
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
+    <createfile message="NetBeans dev build;Build number: ${buildnumber}" dir="firststart" filename="build_info"/>
   </target>
 
   <target name="depucelee" depends="firststart">
