@@ -75,6 +75,7 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="${nb_root}/nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <include name="org/netbeans/modules/web/"/>
+      <include name="META-INF/"/>
       <locale name="ja"/>
     </locjar>
   </target>
