@@ -16,6 +16,7 @@ package org.netbeans.modules.project.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
+import org.openide.util.NbBundle;
 
 // XXX I18N
 
@@ -45,24 +47,29 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     
     private ExplorerManager manager;
     private SourceGroup[] folders;
+    private BeanTreeView btv;
+    private String projectDisplayName;
     
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
     
     /** Creates new form BrowseFolders */
-    public BrowseFolders( SourceGroup[] folders ) {
+    public BrowseFolders( SourceGroup[] folders, String projectDisplayName ) {
         initComponents();
         this.folders = folders;
+        this.projectDisplayName = projectDisplayName;
         
         manager = new ExplorerManager();        
-        AbstractNode rootNode = new AbstractNode( new SourceGroupsChildren( folders ) );
+        AbstractNode rootNode = new AbstractNode( new SourceGroupsChildren( folders, projectDisplayName ) );
         manager.setRootContext( rootNode );
         
         // Create the templates view
-        BeanTreeView btv = new BeanTreeView();
+        btv = new BeanTreeView();
         btv.setRootVisible( false );
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
-        btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
-        folderPanel.add( btv, java.awt.BorderLayout.CENTER );
+        btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );        
+        btv.setPopupAllowed( false );
+        expandAllNodes( btv, manager.getRootContext() );
+        folderPanel.add( btv, java.awt.BorderLayout.CENTER );        
     }
         
     // ExplorerManager.Provider implementation ---------------------------------
@@ -111,9 +118,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
         
-    public static FileObject showDialog( SourceGroup[] folders ) {
+    public static FileObject showDialog( SourceGroup[] folders, String projectDisplayName ) {
         
-        BrowseFolders bf = new BrowseFolders( folders );
+        BrowseFolders bf = new BrowseFolders( folders, projectDisplayName );
         
         JButton options[] = new JButton[] { 
             //new JButton( NbBundle.getMessage( BrowseFolders.class, "LBL_BrowseFolders_Select_Option") ), // NOI18N
@@ -148,6 +155,21 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 
     }
     
+    private static void expandAllNodes( BeanTreeView btv, Node node ) {
+        
+        btv.expandNode( node );
+        
+        Children ch = node.getChildren();
+        if ( ch == Children.LEAF ) {
+            return;
+        }
+        Node nodes[] = ch.getNodes( true );
+        
+        for ( int i = 0; i < nodes.length; i++ ) {
+            expandAllNodes( btv, nodes[i] );
+        }
+        
+    }
     
     // Innerclasses ------------------------------------------------------------
     
@@ -159,16 +181,18 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         private SourceGroup[] groups;
         private SourceGroup group;
         private FileObject fo;
+        private String projectDisplayName;
         
-        public SourceGroupsChildren( SourceGroup[] groups ) {
+        public SourceGroupsChildren( SourceGroup[] groups, String projectDisplayName ) {
             this.groups = groups;
+            this.projectDisplayName = projectDisplayName;
         }
-        
+                
         public SourceGroupsChildren( FileObject fo, SourceGroup group ) {            
             this.fo = fo;
             this.group = group;
         }
-        
+                
         protected void addNotify() {
             super.addNotify();
             setKeys( getKeys() );
@@ -198,7 +222,20 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
                 FilterNode fn = new FilterNode(dobj.getNodeDelegate(), new SourceGroupsChildren( folder, group ) );
             
                 if ( key instanceof SourceGroup ) {
-                    fn.setDisplayName( group.getDisplayName() );
+                    // XXX Create node to handle icons.
+                    
+                    String groupDisplayName = group.getDisplayName();
+                    
+                    
+                    if ( groupDisplayName.equals( projectDisplayName ) ) {
+                        fn.setDisplayName( groupDisplayName );
+                    }
+                    else {
+                        fn.setDisplayName( MessageFormat.format(
+                            NbBundle.getMessage( BrowseFolders.class, "FMT_TargetChooser_GroupProjectNameBadge" ),
+                            new Object[] { groupDisplayName, projectDisplayName } ) );
+                    }
+                    
                 }
             
                 return new Node[] { fn };            

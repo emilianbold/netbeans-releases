@@ -386,13 +386,13 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
     }
     
     
-    private static class ProjectCellRenderer extends javax.swing.plaf.basic.BasicComboBoxRenderer implements ListCellRenderer {
+    private static class ProjectCellRenderer extends JLabel implements ListCellRenderer  {
         
-        /*
+        
         public ProjectCellRenderer() {
             setOpaque(true);
         }
-        */
+        
         
         public Component getListCellRendererComponent(
             JList list,
@@ -400,15 +400,26 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Explor
             int index,
             boolean isSelected,
             boolean cellHasFocus) {
-        
-            javax.swing.plaf.basic.BasicComboBoxRenderer cbr = (javax.swing.plaf.basic.BasicComboBoxRenderer)super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );   
-            
-            if ( value != null ) {
+                    
+            if ( value instanceof Project ) {
                 ProjectInformation pi = ProjectUtils.getInformation((Project)value);
-                cbr.setText(pi.getDisplayName());
-                cbr.setIcon(pi.getIcon());
+                setText(pi.getDisplayName());
+                setIcon(pi.getIcon());
             }
-            return cbr;
+            else {
+                setText( value.toString () );
+                setIcon( null );
+            }
+            if ( isSelected ) {
+                setBackground(list.getSelectionBackground());
+                setForeground(list.getSelectionForeground());             
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+             
+            }
+            return this;                    
         }
         
     }

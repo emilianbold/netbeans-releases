@@ -64,7 +64,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public boolean isValid() {
-        return gui != null && gui.getTargetName() != null && gui.getTargetFolder() != null &&
+        return gui != null && gui.getTargetName() != null &&
                ( bottomPanel == null || bottomPanel.isValid() );
     }
 
@@ -89,25 +89,20 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
     }
 
     public void readSettings( Object settings ) {
-        
+                
         WizardDescriptor wd = (WizardDescriptor)settings;
-        
-        if ( gui != null ) {
-            
-            Project project = Templates.getProject( wd );
-            
-            // Try to preselect a folder
-            // XXX The test should be rewritten if external project dirs are supported
-            
-            FileObject preselectedTarget = Templates.getTargetFolder( wd );
-            String targetFolder = null;
-            if ( preselectedTarget != null && FileUtil.isParentOf( project.getProjectDirectory(), preselectedTarget ) ) {
-                targetFolder = FileUtil.getRelativePath( project.getProjectDirectory(), preselectedTarget );
-            }
-                        
-            // Init values
-            gui.initValues( project, Templates.getTemplate( wd ), targetFolder );
+                
+        if ( gui == null ) {
+            getComponent();
         }
+        
+        Project project = Templates.getProject( wd );
+
+        // Try to preselect a folder            
+        FileObject preselectedTarget = Templates.getTargetFolder( wd );
+        // Init values
+        gui.initValues( project, Templates.getTemplate( wd ), preselectedTarget );
+        
         
         if ( bottomPanel != null ) {
             bottomPanel.readSettings( settings );
@@ -120,17 +115,24 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel, ChangeLi
                 bottomPanel.storeSettings( settings );
             }
             // XXX Better test for canWrite
+            
+            FileObject rootFolder = gui.getTargetGroup().getRootFolder();
             String folderName = gui.getTargetFolder();
-            File f = new File( folderName );
+            
+            FileObject targetFolder;
+            if ( folderName == null ) {
+                targetFolder = rootFolder;
+            }
+            else {            
+                targetFolder = rootFolder.getFileObject( folderName );
+            }
+            
             try {
-                if ( !f.exists() ) {
+                if ( targetFolder == null ) {
                     // XXX add deletion of the file in uninitalize ow the wizard
-                    String relativeFolder = gui.getRelativeTargetFolder();
-                    FileObject prjDir = project.getProjectDirectory();
-                    FileUtil.createFolder( prjDir, relativeFolder );
+                    targetFolder = FileUtil.createFolder( rootFolder, folderName );
                 }                
-                FileObject folder = FileUtil.toFileObject(f);            
-                Templates.setTargetFolder( (WizardDescriptor)settings, folder );
+                Templates.setTargetFolder( (WizardDescriptor)settings, targetFolder );
                 Templates.setTargetName( (WizardDescriptor)settings, gui.getTargetName() );
             }
             catch( java.io.IOException e ) {
