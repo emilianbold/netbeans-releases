@@ -163,6 +163,13 @@ public class NbTopManager extends TopManager {
     return NbControlPanel.getDefault ();
   }
 
+  /** Prints the stack.
+  */
+  public void notifyException (Throwable t) {
+    t.printStackTrace();
+    super.notifyException (t);
+  }
+
   /** Notifies user by a dialog.
   * @param descriptor description that contains needed informations
   * @return the option that has been choosen in the notification
@@ -277,7 +284,7 @@ public class NbTopManager extends TopManager {
   public void saveAll () {
     DataObject dobj = null;
     ArrayList bad = new ArrayList ();
-    Iterator ee = DataObject.getModifiedObjects ().iterator ();
+    Iterator ee = DataObject.getRegistry ().getModifiedSet ().iterator ();
     while (ee.hasNext ()) {
       try {
         dobj = (DataObject) ee.next ();
