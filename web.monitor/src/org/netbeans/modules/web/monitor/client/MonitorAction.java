@@ -118,6 +118,7 @@ public class MonitorAction extends CallableSystemAction {
     public static void cleanupMonitor() {
 	// Controller is null when running headless
 	if(controller != null) controller.cleanup(); 
+	if(tv != null) tv.close();
     }
 
     public static void log(String s) {
