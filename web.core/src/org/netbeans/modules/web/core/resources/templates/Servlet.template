@@ -19,19 +19,6 @@ import javax.servlet.http.*;
  */
 public class Servlet extends HttpServlet {
    
-    /** Initializes the servlet.
-    */  
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-
-    }
-
-    /** Destroys the servlet.
-    */  
-    public void destroy() {
-
-    }
-
     /** Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
     * @param request servlet request
     * @param response servlet response
@@ -43,16 +30,17 @@ public class Servlet extends HttpServlet {
         /* TODO output your page here
         out.println("<html>");
         out.println("<head>");
-        out.println("<title>Servlet</title>");  
+        out.println("<title>Servlet __NAME__</title>");  
         out.println("</head>");
         out.println("<body>");
-
+        out.println("<h1>Servlet __NAME__ at " + request.getContextPath () + "</h1>");
         out.println("</body>");
         out.println("</html>");
         */
         out.close();
     } 
 
+    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /** Handles the HTTP <code>GET</code> method.
     * @param request servlet request
     * @param response servlet response
@@ -76,5 +64,5 @@ public class Servlet extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }
-
+    // </editor-fold>
 }
