@@ -126,6 +126,7 @@ public class CustomizerWar extends JPanel implements WebCustomizer.Panel, ListSe
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 11);
         jPanel1.add(jLabelFileName, gridBagConstraints);
 
+        jTextFieldFileName.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
