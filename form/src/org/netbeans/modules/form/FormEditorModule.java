@@ -121,48 +121,4 @@ public class FormEditorModule extends ModuleInstall
             repositoryListener = null;
         }
     }
-
-    // -------
-
-    static String[] getDefaultAWTComponents() {
-        return defaultAWTComponents;
-    }
-
-    static String[] getDefaultAWTIcons() {
-        return defaultAWTIcons;
-    }
-
-    /** The default AWT Components */
-    private final static String[] defaultAWTComponents = new String[] {
-        "java.awt.Label", // NOI18N
-        "java.awt.Button", // NOI18N
-        "java.awt.TextField", // NOI18N
-        "java.awt.TextArea", // NOI18N
-        "java.awt.Checkbox", // NOI18N
-        "java.awt.Choice", // NOI18N
-        "java.awt.List", // NOI18N
-        "java.awt.Scrollbar", // NOI18N
-        "java.awt.ScrollPane", // NOI18N
-        "java.awt.Panel", // NOI18N
-        "java.awt.Canvas", // NOI18N
-        "java.awt.MenuBar", // NOI18N
-        "java.awt.PopupMenu", // NOI18N
-    };
-
-    /** The default AWT icons */
-    private final static String[] defaultAWTIcons = new String[] {
-        "/org/netbeans/beaninfo/awt/label.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/button.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/textfield.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/textarea.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/checkbox.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/choice.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/list.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/scrollbar.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/scrollpane.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/panel.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/canvas.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/menubar.gif", // NOI18N
-        "/org/netbeans/beaninfo/awt/popupmenu.gif", // NOI18N
-    };
 }

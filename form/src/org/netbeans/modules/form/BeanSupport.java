@@ -310,40 +310,36 @@ public class BeanSupport
     }
 
     private static Map createImageCache() {
-        Map ret = new HashMap();
+        Map map = new HashMap();
         
-        String[] compos = FormEditorModule.getDefaultAWTComponents();
-        String[] icons = FormEditorModule.getDefaultAWTIcons();
-        include(ret, compos, icons);
-        
-//        compos = FormEditorModule.getDefaultSwingComponents();
-//        icons = FormEditorModule.getDefaultSwingIcons();
-//        include(ret, compos, icons);
+        map.put("java.awt.Label", "/org/netbeans/beaninfo/awt/label.gif"); // NOI18N
+        map.put("java.awt.Button", "/org/netbeans/beaninfo/awt/button.gif"); // NOI18N
+        map.put("java.awt.TextField", "/org/netbeans/beaninfo/awt/textfield.gif"); // NOI18N
+        map.put("java.awt.TextArea", "/org/netbeans/beaninfo/awt/textarea.gif"); // NOI18N
+        map.put("java.awt.Checkbox", "/org/netbeans/beaninfo/awt/checkbox.gif"); // NOI18N
+        map.put("java.awt.Choice", "/org/netbeans/beaninfo/awt/choice.gif"); // NOI18N
+        map.put("java.awt.List", "/org/netbeans/beaninfo/awt/list.gif"); // NOI18N
+        map.put("java.awt.Scrollbar", "/org/netbeans/beaninfo/awt/scrollbar.gif"); // NOI18N
+        map.put("java.awt.ScrollPane", "/org/netbeans/beaninfo/awt/scrollpane.gif"); // NOI18N
+        map.put("java.awt.Panel", "/org/netbeans/beaninfo/awt/panel.gif"); // NOI18N
+        map.put("java.awt.Canvas", "/org/netbeans/beaninfo/awt/canvas.gif"); // NOI18N
+        map.put("java.awt.MenuBar", "/org/netbeans/beaninfo/awt/menubar.gif"); // NOI18N
+        map.put("java.awt.PopupMenu", "/org/netbeans/beaninfo/awt/popupmenu.gif"); // NOI18N
+        map.put("java.awt.Menu", "/org/netbeans/modules/form/resources/menu.gif"); // NOI18N
+        map.put("java.awt.MenuItem", "/org/netbeans/modules/form/resources/menuItem.gif"); // NOI18N
+        map.put("java.awt.CheckboxMenuItem", "/org/netbeans/modules/form/resources/menuItemCheckbox.gif"); // NOI18N
+        map.put("org.netbeans.modules.form.Separator", "/org/netbeans/modules/form/resources/menuSeparator.gif"); // NOI18N
 
-//        compos = FormEditorModule.getDefaultSwing2Components();
-//        icons = FormEditorModule.getDefaultSwing2Icons();
-//        include(ret, compos, icons);
-        
-//        compos = FormEditorModule.getDefaultLayoutsComponents();
-//        icons = FormEditorModule.getDefaultLayoutsIcons();
-//        include(ret, compos, icons);
+        map.put("java.applet.Applet", "/org/netbeans/modules/form/resources/applet.gif"); // NOI18N
+        map.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/dialog.gif"); // NOI18N
+        map.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif"); // NOI18N
 
-//        compos = FormEditorModule.getDefaultBorders();
-//        icons = FormEditorModule.getDefaultBordersIcons();
-//        include(ret, compos, icons);
-        
-//        ret.put("javax.swing.JApplet", "/javax/swing/beaninfo/images/JAppletColor16.gif");
-//        ret.put("javax.swing.JDialog", "/javax/swing/beaninfo/images/JDialogColor16.gif");
-//        ret.put("javax.swing.JFrame", "/javax/swing/beaninfo/images/JFrameColor16.gif");
-        ret.put("java.applet.Applet", "/org/netbeans/modules/form/resources/applet.gif");
-        ret.put("java.awt.Dialog", "/org/netbeans/modules/form/resources/dialog.gif");
-        ret.put("java.awt.Frame", "/org/netbeans/modules/form/resources/frame.gif");
-        return ret;
+        return map;
     }
-    
-    private static void include(Map ret, String[] compos, String[] icons) {
-        for (int i = 0; i < compos.length; i++) {
-            ret.put(compos[i], icons[i]);
-        }
-    }
+
+//    private static void include(Map ret, String[] compos, String[] icons) {
+//        for (int i = 0; i < compos.length; i++) {
+//            ret.put(compos[i], icons[i]);
+//        }
+//    }
 }
