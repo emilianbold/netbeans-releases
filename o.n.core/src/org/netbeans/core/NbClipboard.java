@@ -86,9 +86,9 @@ public final class NbClipboard extends ExClipboard implements LookupListener, AW
     public synchronized Transferable getContents(Object requestor) {
         try {
             if (slowSystemClipboard)
-                return super.getContents(requestor);
+                return convert(super.getContents(requestor));
             else
-                return systemClipboard.getContents(requestor);
+                return convert(systemClipboard.getContents(requestor));
         }
         catch (ThreadDeath ex) {
             throw ex;
