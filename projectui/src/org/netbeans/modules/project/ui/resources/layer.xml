@@ -116,17 +116,22 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-project-ui-physical-tab-action.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsPhysical"/>
             </file>
-            
-            <!-- Searching nodes in projects/files tab -->
-            <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
-            </file>
-            
-            <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
-            </file>
-                                    
+                                                            
         </folder>
+        
+        <folder name="Window">
+            <folder name="SelectDocumentNode">
+                <!-- Searching nodes in projects/files tab -->
+                <file name="org-netbeans-modules-project-ui-SelectInProjects.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inProjects"/>
+                </file>
+
+                <file name="org-netbeans-modules-project-ui-SelectInFiles.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.SelectNodeAction.inFiles"/>
+                </file>       
+            </folder>        
+        </folder>
+        
     </folder>
 
     <folder name="org-netbeans-modules-project-ui-WelcomeScreenHack">
@@ -431,13 +436,13 @@ Microsystems, Inc. All Rights Reserved.
             
             <folder name="SelectDocumentNode">
                 <file name="org-netbeans-modules-project-ui-SelectInProjects.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
                 </file>
 
                 <attr name="org-netbeans-modules-project-ui-SelectInProjects.shadow/org-netbeans-modules-project-ui-SelectInFiles.shadow" boolvalue="true" />
                                 
                 <file name="org-netbeans-modules-project-ui-SelectInFiles.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+                    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
                 </file>
                 
                 <attr name="org-netbeans-modules-project-ui-SelectInFiles.shadow/SelectInFSTabAction.shadow" boolvalue="true" />
@@ -524,11 +529,11 @@ Microsystems, Inc. All Rights Reserved.
 	</file>
 
         <file name="DS-1.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance"/>
 	</file>
         
         <file name="DS-2.shadow">
-	    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
+	    <attr name="originalFile" stringvalue="Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInFiles.instance"/>
 	</file>
         
         <file name="F9.shadow">
