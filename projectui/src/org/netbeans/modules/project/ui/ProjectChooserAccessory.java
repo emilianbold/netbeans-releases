@@ -551,6 +551,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                     jListSubprojects.setModel(subprojectsToSet);
                     // If no soubprojects checkbox should be disabled                
                     jCheckBoxSubprojects.setEnabled( !subprojectsToSet.isEmpty() );
+                    project = null;
                 }                
             }
                         
