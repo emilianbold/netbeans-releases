@@ -17,9 +17,7 @@ package org.netbeans.modules.form;
 
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileLock;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -30,15 +28,17 @@ import org.netbeans.modules.form.actions.*;
 import org.netbeans.modules.form.palette.*;
 
 import java.beans.*;
+import java.io.File;
 
 /**
-* Module installation class for Form Editor
-*
-* @author Ian Formanek
-*/
+ * Module installation class for Form Editor
+ *
+ * @author Ian Formanek
+ */
 public class FormEditorModule extends ModuleInstall {
 
     static final long serialVersionUID =1573432625099425394L;
+    
     /** Module installed for the first time. */
     public void installed() {
         // ---------------------------------------------------------------------------
@@ -56,8 +56,46 @@ public class FormEditorModule extends ModuleInstall {
         restored();
     }
 
+    // XXX(-tdt) hack around failure of loading TimerBean caused by package
+    // renaming com.netbeans => org.netbeans AND the need to preserve user's
+    // system settings
+    
+    private static void timerBeanHack() {
+        TopManager.getDefault().getRepository().addRepositoryListener(
+            new RepositoryListener() {
+                public void fileSystemRemoved (RepositoryEvent ev) {}
+                public void fileSystemPoolReordered(RepositoryReorderedEvent ev) {}
+
+                public void fileSystemAdded (RepositoryEvent ev) {
+                    FileSystem fs = ev.getFileSystem();
+                    if (! (fs instanceof JarFileSystem))
+                        return;
+                    JarFileSystem jarfs = (JarFileSystem) fs;
+
+                    try {
+                        String jarpath = jarfs.getJarFile().getCanonicalPath();
+                        if (! jarpath.endsWith(File.separator + "beans"
+                                               + File.separator + "TimerBean.jar"))
+                            return;
+                        File timerbean = new File(
+                            System.getProperty("netbeans.home")
+                            + File.separator + "beans"
+                            + File.separator + "TimerBean.jar");
+                        if (jarpath.equals(timerbean.getCanonicalPath()))
+                            return;
+                        
+                        jarfs.setJarFile(timerbean);
+                    }
+                    catch (java.io.IOException ex) { /* ignore */ }
+                    catch (PropertyVetoException ex) { /* ignore */ }
+                }
+            });
+    }
+    
     /** Module installed again. */
     public void restored() {
+        timerBeanHack();
+        
         BeanInstaller.autoLoadBeans();
 
         // register standard persistence managers
