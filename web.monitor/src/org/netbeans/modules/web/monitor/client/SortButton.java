@@ -28,6 +28,8 @@ import javax.swing.border.*;     // widgets
 import javax.swing.event.*;
 import java.awt.event.*;
 
+import org.openide.util.NbBundle;
+
 
 class SortButton extends JButton {
 
@@ -52,6 +54,7 @@ class SortButton extends JButton {
 	this.setIcon(icon[state]); 
 	this.setBorder(null);
 	this.setBorderPainted(false);
+        this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonUnsortedA11yDesc"));
 	
 	state = NEUTRAL;
 	
@@ -63,15 +66,20 @@ class SortButton extends JButton {
 		    b.setIcon(icon[state]); 
 		    
 		    if(state == NEUTRAL)
+                    {
 			// PENDING
 			dt.noSorting();
+                        SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonUnsortedA11yDesc"));
+                    }
 		    else if(state == A2Z) {
 			dt.setSortAscending(true);
 			dt.sortByName();
+                        SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonSortAZA11yDesc"));
 		    } else if(state == Z2A) {
 			dt.setSortAscending(false);
 			dt.sortByName();
-		    }
+                        SortButton.this.setToolTipText(NbBundle.getBundle(TransactionView.class).getString("ACS_SortButtonSortZAA11yDesc"));
+                    }
 		}
 	    });
     }

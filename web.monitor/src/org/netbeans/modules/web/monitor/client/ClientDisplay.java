@@ -76,14 +76,17 @@ public class ClientDisplay extends JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Client_3")), 0, ++gridy,
+	dt = new DisplayTable(categories);
+        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ClientTable_3A11yName"));
+        dt.setToolTipText(msgs.getString("ACS_MON_ClientTable_3A11yDesc"));
+	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Client_3"), msgs.getString("MON_Client_3_Mnemonic").charAt(0), msgs.getString("ACS_MON_Client_3A11yDesc"), dt),
+                            0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
 			    TransactionView.labelInsets,
 			    0, 0);
 
-	dt = new DisplayTable(categories);
 	addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,

@@ -111,7 +111,7 @@ public class CookieDisplay extends JPanel {
 
 	} else {
 	    headerIn = msgs.getString("MON_Incoming_cookie");
-	    incomingLabel = TransactionView.createHeaderLabel(headerIn);
+	    incomingLabel = TransactionView.createHeaderLabel(headerIn, msgs.getString("MON_Incoming_cookie_Mnemonic").charAt(0), msgs.getString("ACS_MON_Incoming_cookieA11yDesc"), null);
 	}
 
 	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,
@@ -137,6 +137,9 @@ public class CookieDisplay extends JPanel {
 		    in[i].getAttributeValue("value")
 		};
 		DisplayTable dt = new DisplayTable(categoriesIn, data);
+                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Incoming_cookieTableA11yName"));
+                dt.setToolTipText(msgs.getString("ACS_MON_Incoming_cookieTableA11yDesc"));
+                incomingLabel.setLabelFor(dt);
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
@@ -153,7 +156,7 @@ public class CookieDisplay extends JPanel {
 	    outgoingLabel = TransactionView.createDataLabel(headerOut);
 	} else {
 	    headerOut = msgs.getString("MON_Outgoing_cookie");
-	    outgoingLabel = TransactionView.createHeaderLabel(headerOut);
+	    outgoingLabel = TransactionView.createHeaderLabel(headerOut, msgs.getString("MON_Outgoing_cookie_Mnemonic").charAt(0), msgs.getString("ACS_MON_Outgoing_cookieA11yDesc"), null);
 	}
 	addGridBagComponent(this, outgoingLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
@@ -180,6 +183,9 @@ public class CookieDisplay extends JPanel {
 		    out[i].getAttributeValue("comment")
 		};
 		DisplayTable dt = new DisplayTable(categoriesOut, data);
+                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Outgoing_cookieTableA11yName"));
+                dt.setToolTipText(msgs.getString("ACS_MON_Outgoing_cookieTableA11yDesc"));
+                outgoingLabel.setLabelFor(dt);
 		addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,

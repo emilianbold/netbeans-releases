@@ -98,6 +98,8 @@ public class EditPanelRequest extends javax.swing.JPanel {
 	requestTable.setValueAt(rd.getAttributeValue("uri"), 0,1); 
 	requestTable.setValueAt(rd.getAttributeValue("method"),1,1);
 	requestTable.setValueAt(rd.getAttributeValue("protocol"), 2,1);
+        requestTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
+        requestTable.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
 	//requestTable.setValueAt(rd.getAttributeValue("ipaddress"), 3,1);
 	holdTableChanges = false;
 
@@ -114,7 +116,11 @@ public class EditPanelRequest extends javax.swing.JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Request_19")), 0, ++gridy,
+        JLabel requestHeaderLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Request_19"));
+        requestHeaderLabel.setDisplayedMnemonic(msgs.getString("MON_Request_19_Mnemonic").charAt(0));
+        requestHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_19A11yDesc"));
+        requestHeaderLabel.setLabelFor(requestTable);
+	addGridBagComponent(this, requestHeaderLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,

@@ -84,7 +84,9 @@ public class HeaderDisplay extends JPanel {
 	} else {
 	    msg = msgs.getString("MON_HTTP_Headers");
 	    headerTable = new DisplayTable(params);
-	    hLabel = TransactionView.createSortButtonLabel(msg, headerTable);
+            headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
+            headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+	    hLabel = TransactionView.createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc"));
 	}
 
 	addGridBagComponent(this, TransactionView.createTopSpacer(), 0, ++gridy,

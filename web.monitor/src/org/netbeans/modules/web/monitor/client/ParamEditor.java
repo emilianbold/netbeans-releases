@@ -129,7 +129,10 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 	Insets textInsets = new Insets(0,5,0,5);
 	int fullGridWidth = java.awt.GridBagConstraints.REMAINDER;
 
-	addGridBagComponent(this, new JLabel(msgs.getString("MON_Name")), 0, ++gridy,
+        JLabel nameLabel = new JLabel(msgs.getString("MON_Name"));
+        nameLabel.setDisplayedMnemonic(msgs.getString("MON_Name_Mnemonic").charAt(0));
+        nameLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_NameA11yDesc"));
+	addGridBagComponent(this, nameLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -137,6 +140,9 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 			    0, 0);
 	
 	nameText = new JTextField();
+        nameLabel.setLabelFor(nameText);
+        nameText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_NameTextFieldA11yName"));
+        nameText.setToolTipText(msgs.getString("ACS_MON_NameTextFieldA11yDesc"));
 	nameText.setText(name);
 	nameText.setEnabled(nameEditable);
 	addGridBagComponent(this, nameText, 0, ++gridy,
@@ -146,7 +152,10 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 			    textInsets,
 			    0, 0);
 
-	addGridBagComponent(this, new JLabel(msgs.getString("MON_Value")), 0, ++gridy,
+        JLabel valueLabel = new JLabel(msgs.getString("MON_Value"));
+        valueLabel.setDisplayedMnemonic(msgs.getString("MON_Value_Mnemonic").charAt(0));
+        valueLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_ValueA11yDesc"));
+	addGridBagComponent(this, valueLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -154,6 +163,9 @@ public class ParamEditor extends javax.swing.JPanel implements ActionListener {
 			    0, 0);
 
 	valueText = new JTextArea();
+        valueLabel.setLabelFor(valueText);
+        valueText.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ValueTextAreaA11yName"));
+        valueText.setToolTipText(msgs.getString("ACS_MON_ValueTextAreaA11yDesc"));
 	valueText.setText(value);
 	JScrollPane scrollpane = new JScrollPane(valueText);
 	scrollpane.setMinimumSize(valueSize);

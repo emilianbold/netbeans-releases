@@ -109,8 +109,21 @@ public class EditPanel extends javax.swing.JPanel implements
     private Dialog dialog = null; 
     private DialogDescriptor editDialog = null;
     
+    private JButton sendButton;
+    private JButton okButton;
+    private JButton cancelButton;
+    
     public EditPanel(MonitorData md) {
 	super();
+        sendButton = new JButton(msgs.getString("MON_Send"));
+        sendButton.setMnemonic(msgs.getString("MON_Send_Mnemonic").charAt(0));
+        sendButton.setToolTipText(msgs.getString("ACS_MON_SendA11yDesc"));
+        okButton = new JButton(msgs.getString("MON_OK"));
+        okButton.setMnemonic(msgs.getString("MON_OK_Mnemonic").charAt(0));
+        okButton.setToolTipText(msgs.getString("ACS_MON_OKA11yDesc"));
+        cancelButton = new JButton(msgs.getString("MON_Cancel"));
+        cancelButton.setMnemonic(msgs.getString("MON_Cancel_Mnemonic").charAt(0));
+        cancelButton.setToolTipText(msgs.getString("ACS_MON_CancelA11yDesc"));
 	this.monitorData = md;
 	createDataPanel(md);
     }
@@ -177,8 +190,10 @@ public class EditPanel extends javax.swing.JPanel implements
     public void showDialog() {
 
 	Object[] options = {
-	    msgs.getString("MON_Send"),
-	    msgs.getString("MON_Cancel")
+            sendButton,
+            cancelButton
+//	    msgs.getString("MON_Send"),
+//	    msgs.getString("MON_Cancel")
 	};
 	
 	editDialog = new DialogDescriptor(this, 
@@ -205,7 +220,7 @@ public class EditPanel extends javax.swing.JPanel implements
 
 	if(debug) System.out.println("EditPanel got action");
 	 
-	String str = (String)editDialog.getValue();
+	String str = ((JButton)editDialog.getValue()).getText();
 	if(str.equals(msgs.getString("MON_Send"))) {
 	 
 	    if(debug) System.out.println("EditPanel got SEND");
@@ -224,7 +239,8 @@ public class EditPanel extends javax.swing.JPanel implements
 		// Notify the user that there is no host
 
 		Object[] options = {
-		    msgs.getString("MON_OK"),
+                    okButton
+//		    msgs.getString("MON_OK"),
 		};
 
 		Object[] args = {

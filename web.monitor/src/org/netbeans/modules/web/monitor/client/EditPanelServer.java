@@ -112,7 +112,10 @@ public class EditPanelServer extends javax.swing.JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Exec_server")), 0, ++gridy,
+        serverTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Exec_serverTableA11yName"));
+        serverTable.setToolTipText(msgs.getString("ACS_MON_Exec_serverTableA11yDesc"));
+	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Exec_server"), msgs.getString("MON_Exec_server_Mnemonic").charAt(0), msgs.getString("ACS_MON_Exec_serverA11yDesc"), serverTable),
+                            0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,

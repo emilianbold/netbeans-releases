@@ -529,10 +529,20 @@ public class TransactionView extends ExplorerPanel implements
      * create a header label that uses bold.
      */
     public static JLabel createHeaderLabel(String label) {
+        return createHeaderLabel(label, ' ', null, null);
+    }
+    
+    public static JLabel createHeaderLabel(String label, char mnemonic, String ad, Component comp) {
 	JLabel jl = new JLabel(label);
 	Font labelFont = jl.getFont();
 	Font boldFont = labelFont.deriveFont(Font.BOLD);
 	jl.setFont(boldFont);
+        if (mnemonic != ' ')
+            jl.setDisplayedMnemonic(mnemonic);
+        if (ad != null)
+            jl.getAccessibleContext().setAccessibleDescription(ad);
+        if (comp != null)
+            jl.setLabelFor(comp);
 	return jl;
     }
 	
@@ -542,8 +552,12 @@ public class TransactionView extends ExplorerPanel implements
     }
 
     public static Component createSortButtonLabel(String label, final DisplayTable dt) {
+        return createSortButtonLabel(label, dt, ' ', null);
+    }
+    
+    public static Component createSortButtonLabel(String label, final DisplayTable dt, char mnemonic, String ad) {
 	JPanel panel = new JPanel();
-	panel.add(createHeaderLabel(label));
+	panel.add(createHeaderLabel(label, mnemonic, ad, dt));
 	panel.add(createSortButton(dt));
 	return panel;
     }

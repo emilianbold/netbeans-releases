@@ -138,7 +138,8 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		}
 	    });
 
-	    addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Querystring")), 0, ++gridy,
+	    addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Querystring"), msgs.getString("MON_Querystring_Mnemonic").charAt(0), msgs.getString("ACS_MON_QuerystringA11yDesc"), paramTable),
+                                0, ++gridy,
 				1, 1, 0, 0, 
 				java.awt.GridBagConstraints.WEST,
 				java.awt.GridBagConstraints.NONE,
@@ -187,15 +188,25 @@ public class EditPanelQuery extends javax.swing.JPanel {
 	    Param[] params2 = rd.getParam();
 	    if (params2 == null) params2 = new Param[0];
 	    setParameters(params2);
+            char mnemonic = ' ';
+            String ad = null;
 
 	    if(method.equals("GET")) {
 		msg2 = msgs.getString("MON_Query_parameters");
+                mnemonic = msgs.getString("MON_Query_parameters_Mnemonic").charAt(0);
+                ad = msgs.getString("ACS_MON_Query_parametersA11yDesc");
+                paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
+                paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
 		
 	    } else if(method.equals("POST")) {
 		msg2 = msgs.getString("MON_Posted_data");
+                mnemonic = msgs.getString("MON_Posted_data_Mnemonic").charAt(0);
+                ad = msgs.getString("ACS_MON_Posted_dataA11yDesc");
+                paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Posted_dataTableA11yName"));
+                paramTable.setToolTipText(msgs.getString("ACS_MON_Posted_dataTableA11yDesc"));
 	    }
 
-	    msg2Label = TransactionView.createSortButtonLabel(msg2, paramTable);
+	    msg2Label = TransactionView.createSortButtonLabel(msg2, paramTable, mnemonic, ad);
 
 	    addGridBagComponent(this, msg2Label, 0, ++gridy,
 				1, 1, 0, 0, 
@@ -232,6 +243,8 @@ public class EditPanelQuery extends javax.swing.JPanel {
 			    0, 0);
 
 	newParamB = new JButton(msgs.getString("MON_New_param"));
+        newParamB.setMnemonic(msgs.getString("MON_New_param_Mnemonic").charAt(0));
+        newParamB.setToolTipText(msgs.getString("ACS_MON_New_paramA11yDesc"));
 	newParamB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 
@@ -258,6 +271,8 @@ public class EditPanelQuery extends javax.swing.JPanel {
 		}});
 
 	deleteParamB = new JButton(msgs.getString("MON_Delete_param"));
+        deleteParamB.setMnemonic(msgs.getString("MON_Delete_param_Mnemonic").charAt(0));
+        deleteParamB.setToolTipText(msgs.getString("ACS_MON_Delete_paramA11yDesc"));
 
 	deleteParamB.addActionListener(new ActionListener() {
 
@@ -400,6 +415,8 @@ public class EditPanelQuery extends javax.swing.JPanel {
     boolean tableModelChanging = false;
     public void setParameters(Param[] newParams) {
 	paramTable = new DisplayTable(newParams, DisplayTable.PARAMS);
+        paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_QuerystringTableA11yName"));
+        paramTable.setToolTipText(msgs.getString("ACS_MON_QuerystringTableA11yDesc"));
 	paramTable.sortByName(true);
 	ListSelectionModel selma = paramTable.getSelectionModel();
 	selma.addListSelectionListener(new ListSelectionListener() {

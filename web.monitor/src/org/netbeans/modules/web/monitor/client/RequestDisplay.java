@@ -85,6 +85,8 @@ public class RequestDisplay extends JPanel {
 	dt.setValueAt(rd.getAttributeValue("ipaddress"), 4,1);
 	dt.setValueAt(rd.getAttributeValue("scheme"), 5,1);
 	dt.setValueAt(rd.getAttributeValue("status"), 6,1);
+        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_RequestTable_19A11yName"));
+        dt.setToolTipText(msgs.getString("ACS_MON_RequestTable_19A11yDesc"));
 
 	this.setLayout(new GridBagLayout());
 
@@ -103,7 +105,11 @@ public class RequestDisplay extends JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Request_19")), 0, ++gridy,
+        JLabel requestHeaderLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Request_19"));
+        requestHeaderLabel.setDisplayedMnemonic(msgs.getString("MON_Request_19_Mnemonic").charAt(0));
+        requestHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Request_19A11yDesc"));
+        requestHeaderLabel.setLabelFor(dt);
+	addGridBagComponent(this, requestHeaderLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -156,7 +162,9 @@ public class RequestDisplay extends JPanel {
 	} else {
 	    msg2 = msgs.getString("MON_Parameters");
 	    paramTable = new DisplayTable(params2);
-	    queryDataLabel = TransactionView.createSortButtonLabel(msg2, paramTable);
+            paramTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_ParametersTableA11yName"));
+            paramTable.setToolTipText(msgs.getString("ACS_MON_ParametersTableA11yDesc"));
+	    queryDataLabel = TransactionView.createSortButtonLabel(msg2, paramTable, msgs.getString("MON_Parameters_Mnemonic").charAt(0), msgs.getString("ACS_MON_ParametersA11yDesc"));
 	}
 	
 	addGridBagComponent(this, queryDataLabel, 0, ++gridy,

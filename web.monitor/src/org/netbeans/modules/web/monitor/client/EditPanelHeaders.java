@@ -122,7 +122,9 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createSortButtonLabel(msg, headerTable), 0, ++gridy,
+        headerTable.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_HTTP_HeadersTableA11yName"));
+        headerTable.setToolTipText(msgs.getString("ACS_MON_HTTP_HeadersTableA11yDesc"));
+	addGridBagComponent(this, TransactionView.createSortButtonLabel(msg, headerTable, msgs.getString("MON_HTTP_Headers_Mnemonic").charAt(0), msgs.getString("ACS_MON_HTTP_HeadersA11yDesc")), 0, ++gridy,
 			    1, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -160,6 +162,8 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 			    0, 0);
 
 	newHeaderB = new JButton(msgs.getString("MON_New_header"));
+        newHeaderB.setMnemonic(msgs.getString("MON_New_header_Mnemonic").charAt(0));
+        newHeaderB.setToolTipText(msgs.getString("ACS_MON_New_headerA11yDesc"));
 	newHeaderB.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 		    String title = msgs.getString("MON_New_header"); 
@@ -191,6 +195,8 @@ public class EditPanelHeaders extends javax.swing.JPanel {
 		}});
 
 	deleteHeaderB = new JButton(msgs.getString("MON_Delete_header"));
+        deleteHeaderB.setMnemonic(msgs.getString("MON_Delete_header_Mnemonic").charAt(0));
+        deleteHeaderB.setToolTipText(msgs.getString("MON_New_header_Mnemonic"));
 
 	deleteHeaderB.addActionListener(new ActionListener() {
 

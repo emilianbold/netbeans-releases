@@ -111,7 +111,9 @@ public class SessionDisplay extends JPanel {
 			    TransactionView.topSpacerInsets,
 			    0, 0);
 
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Session_24")), 0, ++gridy,
+        JLabel sessionHeaderLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Session_24"));
+        sessionHeaderLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_24A11yDesc"));
+	addGridBagComponent(this, sessionHeaderLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -132,7 +134,10 @@ public class SessionDisplay extends JPanel {
 		sd.getSessionOut().getAttributeValue("lastAccessed");
 	}
 	
-	addGridBagComponent(this, TransactionView.createDataLabel(msg), 0, ++gridy,
+        JLabel sessionDataLabel = TransactionView.createHeaderLabel(msg);
+        sessionDataLabel.getAccessibleContext().setAccessibleDescription(msg);
+        sessionHeaderLabel.setLabelFor(sessionDataLabel);
+	addGridBagComponent(this, sessionDataLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -168,7 +173,10 @@ public class SessionDisplay extends JPanel {
 	    inactiveChanged = true;
     
 	// Add session properties header
-	addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Session_properties")), 0, ++gridy,
+        JLabel sessionPropertiesLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Session_properties"));
+        sessionPropertiesLabel.setDisplayedMnemonic(msgs.getString("MON_Session_properties_Mnemonic").charAt(0));
+        sessionPropertiesLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_propertiesA11yDesc"));
+	addGridBagComponent(this, sessionPropertiesLabel, 0, ++gridy,
 			    fullGridWidth, 1, 0, 0, 
 			    java.awt.GridBagConstraints.WEST,
 			    java.awt.GridBagConstraints.NONE,
@@ -198,6 +206,9 @@ public class SessionDisplay extends JPanel {
 	}
 
 
+        sessionPropertiesLabel.setLabelFor(dt);
+        dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_propertiesTableA11yName"));
+        dt.setToolTipText(msgs.getString("ACS_MON_Session_propertiesTableA11yDesc"));
  	addGridBagComponent(this, dt, 0, ++gridy,
 			    fullGridWidth, 1, tableWeightX, tableWeightY, 
 			    java.awt.GridBagConstraints.WEST,
@@ -222,13 +233,19 @@ public class SessionDisplay extends JPanel {
 				    tableInsets,
 				    0, 0);
 	    } else {
-		addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Session_att_before")), 0, ++gridy,
+                JLabel sessionBeforeLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Session_att_before"));
+                sessionBeforeLabel.setDisplayedMnemonic(msgs.getString("MON_Session_att_before_Mnemonic").charAt(0));
+                sessionBeforeLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_att_beforeA11yDesc"));
+		addGridBagComponent(this, sessionBeforeLabel, 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
 				    java.awt.GridBagConstraints.NONE,
 				    labelInsets,
 				    0, 0);
 		dt = new DisplayTable(param);
+                sessionBeforeLabel.setLabelFor(dt);
+                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_att_beforeTableA11yName"));
+                dt.setToolTipText(msgs.getString("ACS_MON_Session_att_beforeTableA11yDesc"));
 		addGridBagComponent(this, dt, 0, ++gridy,
 				    fullGridWidth, 1, tableWeightX, tableWeightY, 
 				    java.awt.GridBagConstraints.WEST,
@@ -255,13 +272,19 @@ public class SessionDisplay extends JPanel {
 				    tableInsets,
 				    0, 0);
 	    } else {
-		addGridBagComponent(this, TransactionView.createHeaderLabel(msgs.getString("MON_Session_att_after")), 0, ++gridy,
+                JLabel sessionAfterLabel = TransactionView.createHeaderLabel(msgs.getString("MON_Session_att_after"));
+                sessionAfterLabel.setDisplayedMnemonic(msgs.getString("MON_Session_att_after_Mnemonic").charAt(0));
+                sessionAfterLabel.getAccessibleContext().setAccessibleDescription(msgs.getString("ACS_MON_Session_att_afterA11yDesc"));
+		addGridBagComponent(this, sessionAfterLabel, 0, ++gridy,
 				    fullGridWidth, 1, 0, 0, 
 				    java.awt.GridBagConstraints.WEST,
 				    java.awt.GridBagConstraints.NONE,
 				    labelInsets,
 				    0, 0);
 		dt = new DisplayTable(param);
+                sessionAfterLabel.setLabelFor(dt);
+                dt.getAccessibleContext().setAccessibleName(msgs.getString("ACS_MON_Session_att_afterTableA11yName"));
+                dt.setToolTipText(msgs.getString("ACS_MON_Session_att_afterTableA11yDesc"));
 		addGridBagComponent(this, dt, 0, ++gridy,
 				    fullGridWidth, 1, tableWeightX, tableWeightY, 
 				    java.awt.GridBagConstraints.WEST,
