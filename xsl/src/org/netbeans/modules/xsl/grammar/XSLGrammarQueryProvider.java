@@ -36,13 +36,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 /**
  * Provide DTD grammar. It must be registered at layer.
  *
- * @author  Petr Kuzel <petr.kuzel@sun.com>
+ * @author  Petr Kuzel
  */
 public class XSLGrammarQueryProvider extends GrammarQueryManager {
     
     static final String PUBLIC = "!!! find it out";                             // NOI18N
     static final String SYSTEM = "!!! find it out";                             // NOI18N
-    static final String NAMESPACE = "http://www.w3.org/1999/XSL/Transform";     // NOI18N
+    static final String NAMESPACE = XSLGrammarQuery.XSLT_NAMESPACE_URI;
     
     private String prefix = null;
     
@@ -62,18 +62,18 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
             } else if (next.getNodeType() == next.ELEMENT_NODE) {
                 Element element = (Element) next;
                 String tag = element.getTagName();
-                if (tag.indexOf(":") == -1) {
-                    if ("transformation".equals(tag) || "stylesheet".equals(tag)) {
-                        String ns = element.getAttribute("xmlns");
+                if (tag.indexOf(":") == -1) {  // NOI18N
+                    if ("transformation".equals(tag) || "stylesheet".equals(tag)) { // NOI18N
+                        String ns = element.getAttribute("xmlns"); // NOI18N
                         if (NAMESPACE.equals(ns)) {
                             return new SingletonEnumeration(next);
                         }
                     }
                 } else {
-                    prefix = tag.substring(0, tag.indexOf(":"));
-                    String local = tag.substring(tag.indexOf(":") + 1);
-                    if ("transformation".equals(local) || "stylesheet".equals(local)) {
-                        String ns = element.getAttribute("xmlns:" + prefix);
+                    prefix = tag.substring(0, tag.indexOf(":"));  // NOI18N
+                    String local = tag.substring(tag.indexOf(":") + 1); // NOI18N
+                    if ("transformation".equals(local) || "stylesheet".equals(local)) { // NOI18N
+                        String ns = element.getAttribute("xmlns:" + prefix); // NOI18N
                         if (NAMESPACE.equals(ns)) {
                             return new SingletonEnumeration(next);
                         }
@@ -103,12 +103,12 @@ public class XSLGrammarQueryProvider extends GrammarQueryManager {
     public GrammarQuery getGrammar(GrammarEnvironment input) {
         try {
             FileObject fo = input.getFileObject();
-            if (fo == null) throw new IllegalStateException("GrammarEnvironment has changed between enabled() and getGrammar()!");      // NOI18N
+            if (fo == null) throw new IllegalStateException("GrammarEnvironment has changed between enabled() and getGrammar()!"); // NOI18N     // NOI18N
             DataObject dataObj = DataObject.find(fo);
             return new XSLGrammarQuery(dataObj);
             
         } catch (DataObjectNotFoundException e) {
-            throw new IllegalStateException("Missing DataObject " + e.getFileObject().getPackageNameExt('/', '.') + "!");
+            throw new IllegalStateException("Missing DataObject " + e.getFileObject().getPackageNameExt('/', '.') + "!"); // NOI18N
         }
     }
     
