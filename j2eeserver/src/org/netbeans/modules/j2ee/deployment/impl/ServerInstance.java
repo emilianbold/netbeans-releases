@@ -28,7 +28,6 @@ import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import javax.management.j2ee.Management;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ServerStatusBar;
 import org.openide.util.RequestProcessor;
 //import org.netbeans.modules.j2ee.deployment.impl.ui.actions.ShowEventWindowsAction;
@@ -41,12 +40,10 @@ public class ServerInstance implements Node.Cookie {
     private final String url;
     private final Server server;
     private DeploymentManager manager;
-    private Management management;
     private IncrementalDeployment incrementalDeployment;
     private TargetModuleIDResolver tmidResolver;
     private StartServer startServer;
     private FindJSPServlet findJSPServlet;
-    private final Set targetsStartedByIde = new HashSet(); // valued by target name
     private Map targets; // keyed by target name, valued by ServerTarget
     private boolean managerStartedByIde = false;
     private ServerTarget coTarget = null;
@@ -144,7 +141,6 @@ public class ServerInstance implements Node.Cookie {
             manager.release();
             manager = null;
         }
-        management = null;
         incrementalDeployment = null;
         tmidResolver = null;
         startServer = null;
@@ -158,10 +154,6 @@ public class ServerInstance implements Node.Cookie {
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StopServerProgressMonitor", displayName);
         DeployProgressUI ui = new DeployProgressMonitor(title, false, true);  // modeless with stop/cancel buttons
         
-        for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ){
-            String targetName = (String) i.next();
-            getServerTarget(targetName).stop(ui);
-        }
         stop(ui);
         ServerRegistry.getInstance().removeServerInstance(getUrl());
     }
@@ -242,13 +234,6 @@ public class ServerInstance implements Node.Cookie {
         return tmidResolver;
     }
 
-    private ManagementMapper mgmtMapper = null;
-    public ManagementMapper getManagementMapper() {
-        if (mgmtMapper == null)
-            mgmtMapper = server.getManagementMapper();
-        return mgmtMapper;
-    }
-    
     public FindJSPServlet getFindJSPServlet() {
         if (findJSPServlet == null) {
             findJSPServlet = server.getOptionalFactory().getFindJSPServlet (getDeploymentManager ());
@@ -296,18 +281,6 @@ public class ServerInstance implements Node.Cookie {
     
     public boolean startedByIde() {
         return managerStartedByIde;
-    }
-    /**
-     * Return set of ServerTarget's that have been started from inside IDE.
-     * @return set of ServerTarget objects.
-     */
-    public Set getTargetsStartedByIde() {
-        Set ret = new HashSet();
-        for (Iterator i=targetsStartedByIde.iterator(); i.hasNext(); ) {
-            String targetName = (String) i.next();
-            ret.add(getServerTarget(targetName));
-        }
-        return ret;
     }
     
     //----------- State Transistion API's: ----------------------
@@ -448,12 +421,13 @@ public class ServerInstance implements Node.Cookie {
                 if (ss.isDebuggable(target)) {
                     return true;
                 }
-                if (! _stop(target, ui)) {
-                    return false;
-                }
+                //if (! _stop(target, ui)) {
+                //    return false;
+                //}
                 return _startDebug(target, ui);
             } else {
-                return _start(target, ui);
+                //return _start(target, ui);
+                return true;
             }
         }
     }
@@ -625,34 +599,7 @@ public class ServerInstance implements Node.Cookie {
         }
     }
     
-    // start target server using jsr77
-    private boolean _start(Target target, DeployProgressUI ui) {
-        ServerTarget serverTarget = getServerTarget(target.getName());
-        if (serverTarget.isRunning())
-            return true;
-        if (! serverTarget.start(ui))
-            return false;
-        
-        targetsStartedByIde.add(serverTarget.getName());
-        return true;
-    }
-    
-    // stop target server using jsr77
-    private boolean _stop(Target target, DeployProgressUI ui) {
-        ServerTarget serverTarget = getServerTarget(target.getName());
-        if (! serverTarget.isRunning())
-            return true;
-        if (! serverTarget.stop(ui))
-            return false;
-        
-        targetsStartedByIde.remove(serverTarget.getName());
-        return true;
-    }
-    
     //-------------- End state-machine operations -------------------
-    public boolean _test_stop(Target target, DeployProgressUI ui) {
-        return _stop(target, ui);
-    }
     public void reportError(String errorText) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorText));
     }
@@ -768,41 +715,6 @@ public class ServerInstance implements Node.Cookie {
             if (getStartServer().isAlsoTargetServer(childs[i].getTarget()))
                 coTarget = childs[i];
         }
-    }
-    
-    /*private ShowEventWindowsAction.EventLogProvider getEventLogProviderCookie() {
-        
-        return new ShowEventWindowsAction.EventLogProvider() {
-            
-            public void showEventWindows() {
-                org.openide.windows.InputOutput ios[] = getStartServer().getServerOutput(null);
-                if (ios != null) {
-                    for (int i=0; i<ios.length; i++) {
-                        ios[i].select();
-                    }
-                }
-            }
-        };
-    }*/
-
-    public Management getManagement() {
-        if (management != null) return management;
-        
-        if (getManagementMapper() == null)
-            return null;
-        management = getManagementMapper().getManagement(getDeploymentManager());
-        return management;
-    }
-    
-    public javax.management.j2ee.ListenerRegistration getListenerRegistry() {
-        if (getManagement() == null)
-            return null;
-        try {
-            return getManagement().getListenerRegistry();
-        } catch(Exception ex) {
-            ErrorManager.getDefault().log(ErrorManager.EXCEPTION, ex.getMessage());
-        }
-        return null;
     }
     
     public boolean isDefault() {

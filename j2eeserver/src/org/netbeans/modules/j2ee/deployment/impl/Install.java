@@ -39,11 +39,6 @@ public class Install extends org.openide.modules.ModuleInstall {
             DeployProgressMonitor ui = new DeployProgressMonitor(title, true, false);
             for (Iterator i=instances.iterator(); i.hasNext();) {
                 ServerInstance inst = (ServerInstance) i.next();
-                java.util.Set targets = inst.getTargetsStartedByIde();
-                for (Iterator j=targets.iterator(); j.hasNext();) {
-                    ServerTarget target = (ServerTarget) j.next();
-                    target.stop(ui);
-                }
                 if (inst.startedByIde()) {
                     inst.stop(ui);
                 }

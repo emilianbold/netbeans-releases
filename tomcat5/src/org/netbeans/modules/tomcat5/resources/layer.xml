@@ -40,11 +40,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.ide.TomcatPlanSplitter"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentPlanSplitter"/>
                 </file>
-                <file name="TargetMapper.instance">
-                    <attr name="instanceCreate" newvalue="org.netbeans.modules.tomcat5.TargetMapper"/>
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.tomcat5.TargetMapper"/>
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.api.ManagementMapper"/>
-                </file>
                 <folder name="DeploymentFileNames">
                     <folder name="WAR">
                         <file name="META-INF\context.xml"/>

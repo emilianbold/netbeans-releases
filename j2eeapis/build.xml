@@ -19,8 +19,6 @@ Microsystems, Inc. All Rights Reserved.
     <ant dir="../external" target="unscramble"/>
     <patternset id="j2eeserver/j2eeapis.files">
       <include name="${nb.modules/autoload.dir}/j2eeapis.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/ejb20.jar"/>
-      <include name="${nb.modules/autoload.dir}/ext/javax77.jar"/>
       <include name="${nb.modules/autoload.dir}/ext/jmxri.jar"/>
       <include name="${nb.modules/autoload.dir}/ext/jsr88javax.jar"/>
     </patternset>
@@ -68,12 +66,8 @@ Microsystems, Inc. All Rights Reserved.
         <file location="${license.file}"/>
         <text>For the J2EE(TM) Application Deployment library:</text>
         <file location="../external/j2ee-deployment-license.html"/>
-        <text>For the J2EE(TM) Application Management library:</text>
-        <file location="../external/j2ee-management-license.html"/>
         <text>For the J2SE(TM) Management library:</text>
         <file location="../external/j2se-management-license.html"/>
-        <text>For the EJB(TM) 2.0 API library:</text>
-        <file location="../external/ejb-20-license.html"/>
       </license>
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>

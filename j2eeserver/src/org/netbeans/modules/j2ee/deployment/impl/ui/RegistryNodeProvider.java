@@ -21,7 +21,6 @@ import org.openide.util.Lookup;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.Target;
-import javax.management.j2ee.Management;
 
 
 /*
@@ -81,7 +80,7 @@ public class RegistryNodeProvider {
                 return new FilterXNode(original, xnode, true);
             }
         }
-        return new TargetNode(target);
+        return new TargetBaseNode(org.openide.nodes.Children.LEAF, target);
     }
     
     public Node createInstanceTargetNode(ServerInstance instance) {
@@ -111,8 +110,6 @@ public class RegistryNodeProvider {
                     return instance.getServer().getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz))
                     return instance.getDeploymentManager();
-                if (Management.class.isAssignableFrom(clazz))
-                    return instance.getManagement();
                 return null;
             }
             public Lookup.Result lookup(Lookup.Template template) {
@@ -128,8 +125,6 @@ public class RegistryNodeProvider {
                     return target.getInstance().getServer().getDeploymentFactory();
                 if (DeploymentManager.class.isAssignableFrom(clazz))
                     return target.getInstance().getDeploymentManager();
-                if (Management.class.isAssignableFrom(clazz))
-                    return target.getInstance().getManagement();
                 if (Target.class.isAssignableFrom(clazz))
                     return target.getTarget();
                 return null;

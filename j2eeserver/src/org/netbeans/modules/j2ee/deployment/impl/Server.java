@@ -230,17 +230,6 @@ public class Server implements Node.Cookie {
         return nodeProvider;
     }
     
-    public ManagementMapper getManagementMapper() {
-        ManagementMapper o = (ManagementMapper) lkp.lookup (ManagementMapper.class);
-        if (o != null) {
-            return o;
-        } else {
-            String msg = NbBundle.getMessage(Server.class, "MSG_NoInstance", name, ManagementMapper.class);
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, msg);
-            return null;
-        }
-    }
-
     /** returns OptionalDeploymentManagerFactory or null it is not provided by the plugin */
     public OptionalDeploymentManagerFactory getOptionalFactory () {
         OptionalDeploymentManagerFactory o = (OptionalDeploymentManagerFactory) lkp.lookup (OptionalDeploymentManagerFactory.class);
