@@ -809,20 +809,6 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
               }
         });
         menu.add (cbmi);
-        
-        menu.add (new JPopupMenu.Separator());
-
-        JMenuItem menuItem = new JMenuItem(NbBundle.getMessage(ToolbarConfiguration.class, "CTL_DisplayToolbars"));
-        menuItem.addActionListener(new ActionListener() {
-            public void actionPerformed (ActionEvent event) {
-                //#38613 fix -start
-                ConfigureToolbarPanel.showConfigureDialog(new ToolbarFolderNode());
-//                NodeOperation no = (NodeOperation)Lookup.getDefault().lookup (NodeOperation.class);
-//                no.explore(new ToolbarFolderNode());
-                //#38613 fix - end
-            }
-        });
-        menu.add(menuItem);
     } // getContextMenu
 
     /** Make toolbar visible/invisible in this configuration
