@@ -231,21 +231,22 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
          */
         public Ch (String nodeSectionName) {
             sectionName = nodeSectionName;
-
-            this.result = re (nodeSectionName);
-
-            result.addLookupListener (
-                (LookupListener)WeakListener.create (LookupListener.class, this, result)
-            );
         }
         
         protected void addNotify () {
+            this.result = re (sectionName);
+            result.addLookupListener (
+                (LookupListener)WeakListener.create (LookupListener.class, this, result)
+            );
+            
             // updates its state
             updateKeys ();
         }
         
         protected void removeNotify () {
             setKeys (Collections.EMPTY_SET);
+            
+            result = null;
         }
 
         /** Static method to compute a Lookup.Result from a template.
@@ -261,9 +262,14 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
          * this children. Hopefully never called difectly.
          */
         public final void resultChanged (LookupEvent ev) {
-            updateKeys ();
-            // notify that the set of nodes has changed (probably)
-            NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
+            if (isInitialized ()) {
+                updateKeys ();
+            }
+            
+            if (NodeSection.TYPE_ROOTS.equals (sectionName)) {
+                // notify that the set of nodes has changed (probably)
+                NbTopManager.get ().firePropertyChange (TopManager.PROP_PLACES, null, null);
+            }
         }
 
         /** Update keys takes the all results, plus name of the section.
@@ -313,9 +319,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
                 defaultNode.addNodeListener (this);
             }
 
+            // the arr must never be garbage collected and that is why...
             Node[] arr = defaultNode.getChildren ().getNodes ();
             for (int i = 0; i < arr.length; i++) {
-                arr[i] = arr[i].cloneNode ();
+                // the arr[i] creates filter node and does not use 
+                // arr[i].cloneNode (), because we need to prevent
+                // garbage colleciton
+                arr[i] = new FilterNode (arr[i]);
             }
 
             return arr;
