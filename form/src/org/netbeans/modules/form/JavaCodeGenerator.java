@@ -150,6 +150,7 @@ public class JavaCodeGenerator extends CodeGenerator {
             }
             regenerateVariables ();
             component.getNodeReference ().notifyPropertiesChange ();
+            component.getNodeReference ().notifyPropertySetsChange ();
           }
   
           public Object getValue () {
@@ -1454,6 +1455,7 @@ public class JavaCodeGenerator extends CodeGenerator {
 
 /*
  * Log
+ *  63   Gandalf   1.62        1/10/00  Pavel Buzek     refreshing property sets
  *  62   Gandalf   1.61        1/5/00   Ian Formanek    NOI18N
  *  61   Gandalf   1.60        12/16/99 Pavel Buzek     #3612
  *  60   Gandalf   1.59        12/13/99 Pavel Buzek     

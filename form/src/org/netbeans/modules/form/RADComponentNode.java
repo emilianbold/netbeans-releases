@@ -91,6 +91,10 @@ public class RADComponentNode extends AbstractNode implements RADComponentCookie
     firePropertyChange (null, null, null);
   }
 
+  void notifyPropertySetsChange () {
+    firePropertySetsChange (null, null);
+  }
+
   /** Provides package-private access for firing property changes */
   void firePropertyChangeHelper (String name, Object oldValue, Object newValue) {
     super.firePropertyChange (name, oldValue, newValue);
@@ -727,6 +731,7 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  42   Gandalf   1.41        1/10/00  Pavel Buzek     refreshing property sets
  *  41   Gandalf   1.40        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
  *       Microsystems Copyright in File Comment
  *  40   Gandalf   1.39        10/6/99  Ian Formanek    Implemented copying of 
