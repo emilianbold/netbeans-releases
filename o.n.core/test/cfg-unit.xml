@@ -25,7 +25,7 @@ Microsystems, Inc. All Rights Reserved.
 
 <mconfig name="core unit test config">
     <!-- Tests which should be run before commit to validate IDE, needs IDE mode for ValidateLayer suites -->
-    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation in IDE" resultsprocessor="unit">
+    <testbag testattribs="noncommit" executor="ide" name="Before Commit Validation in IDE">
         <testset dir="unit/src">
             <patternset>
                 <!-- this shall be enabled! <exclude name="org/netbeans/core/AutomountSupportTest.class"/> -->
@@ -37,7 +37,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
   
-    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="Unit tests running in the IDE">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/*.class"/>
@@ -53,7 +53,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable OR cache" executor="ide" name="Testing lookup in real IDE" resultsprocessor="unit">
+    <testbag testattribs="stable OR cache" executor="ide" name="Testing lookup in real IDE">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/lookup/*Test.class"/>
@@ -63,7 +63,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="code" name="Unit tests in code mode" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="code" name="Unit tests in code mode">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/*Test.class"/>
@@ -84,7 +84,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="code" name="testbag_4" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="code" name="testbag_4">
         <testset dir="unit/src">
             <patternset>
                 <!-- Under investigation why it fails (probably "as designed"): -->
@@ -98,7 +98,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="failing" executor="ide" name="testbag_5" resultsprocessor="unit">
+    <testbag testattribs="failing" executor="ide" name="testbag_5">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/core/filesystems/MIMEResolverImplTest.class"/>
@@ -106,7 +106,7 @@ Microsystems, Inc. All Rights Reserved.
         </testset>
     </testbag>
 
-    <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility" resultsprocessor="unit">
+    <testbag testattribs="stable" executor="ide" name="JellyTools_compatibility">
         <testset dir="unit/src">
             <patternset>
                 <include name="org/netbeans/lib/terminalemulator/TermTest.class"/>
@@ -119,14 +119,14 @@ Microsystems, Inc. All Rights Reserved.
     <!-- If you want to use this testbag you *must* provide xtest.includes property, -->
     <!-- (either on cmd line or in the script) to explicitly define which test       -->
     <!-- you want to run. This will run *only* tests from unit/src folder !!!        -->
-    <testbag testattribs="empty" executor="code" name="testbag_empty" resultsprocessor="unit">
+    <testbag testattribs="empty" executor="code" name="testbag_empty">
         <testset dir="unit/src"/>
     </testbag>
-    <testbag testattribs="emptyide" executor="ide" name="testbag_emptyide" resultsprocessor="unit">
+    <testbag testattribs="emptyide" executor="ide" name="testbag_emptyide">
         <testset dir="unit/src"/>
     </testbag>
 
-    <testbag testattribs="dev" executor="code" name="testbag_dev" resultsprocessor="unit">
+    <testbag testattribs="dev" executor="code" name="testbag_dev">
         <testset dir="unit/src">
             <patternset>
                 <!-- Add your own code tests -->
