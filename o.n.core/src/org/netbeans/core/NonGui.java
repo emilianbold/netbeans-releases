@@ -513,8 +513,13 @@ public class NonGui extends NbTopManager implements Runnable {
         org.openide.actions.ExecuteAction.execute(obj, true);
     }
 
-    static void initEnvMap() {
-        java.util.HashMap env = new java.util.HashMap();
+    private static java.util.Properties env;
+    public static java.util.Properties getEnvMap () {
+        if (env != null) {
+            return env;
+        }
+
+        java.util.Properties e = new java.util.Properties ();
         String envfile = System.getProperty("netbeans.osenv"); // NOI18N
         if (envfile != null) {
             try {
@@ -538,6 +543,7 @@ public class NonGui extends NbTopManager implements Runnable {
             }
             catch (IOException ignore) {}
         }
-        org.openide.util.Utilities.setEnvMap(env);
+
+        return env = e;
     }
 }
