@@ -126,18 +126,30 @@ Microsystems, Inc. All Rights Reserved.
         <!-- and org.netbeans.core.ui.WelcomePanel would have to understand Presenter.Toolbar's sanely. -->
         <!-- Also WelcomePanel needs to look up HTML description using a file attribute for URL so that -->
         <!-- modules can add their own welcome items easily. -->
-        <file name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance"/>
+        <file name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-WebLinkAction-NetbeansOrgWebLink.html" />
+        </file>
         <attr name="org-netbeans-core-actions-WebLinkAction$NetbeansOrgWebLink.instance/org-openide-actions-NewTemplateAction.instance" boolvalue="true" />
-        <file name="org-openide-actions-NewTemplateAction.instance"/>
+        <file name="org-openide-actions-NewTemplateAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-NewTemplateAction.html" />
+        </file>
         <attr name="org-openide-actions-NewTemplateAction.instance/org-netbeans-modules-openfile-OpenFileAction.instance" boolvalue="true" />
-        <file name="org-netbeans-modules-openfile-OpenFileAction.instance"/>
+        <file name="org-netbeans-modules-openfile-OpenFileAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-OpenFileAction.html" />
+        </file>
         <attr name="org-netbeans-modules-openfile-OpenFileAction.instance/org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance" boolvalue="true" />
-        <file name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance"/>
+        <file name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-WebLinkAction-DocsTutorialLink.html" />
+        </file>
         <attr name="org-netbeans-core-actions-WebLinkAction$DocsTutorialLink.instance/org-netbeans-modules-autoupdate-UpdateAction.instance" boolvalue="true" />
         <!-- [PENDING] should be from autoupdate module, see above; throws exceptions with autoupdate not installed -->
-        <file name="org-netbeans-modules-autoupdate-UpdateAction.instance"/>
+        <file name="org-netbeans-modules-autoupdate-UpdateAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-UpdateAction.html" />
+        </file>
         <attr name="org-netbeans-modules-autoupdate-UpdateAction.instance/org-netbeans-core-ui-ProxySettingsAction.instance" boolvalue="true" />
-        <file name="org-netbeans-core-ui-ProxySettingsAction.instance"/>
+        <file name="org-netbeans-core-ui-ProxySettingsAction.instance">
+            <attr name="welcomeDescription" urlvalue="nbresloc:/org/netbeans/docs/startup/info-ProxySettingsAction.html" />
+        </file>
     </folder>
 
     <folder name="Menu">
