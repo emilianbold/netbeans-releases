@@ -25,6 +25,7 @@ import org.openide.nodes.*;
 import org.openide.actions.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
 import org.openide.TopManager;
@@ -54,7 +55,7 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
     private static ResourceBundle bundle;
 
     /** Options for the display name format. */
-    protected static final SourceOptions sourceOptions = new SourceOptions();
+    protected static final SourceOptions sourceOptions = (SourceOptions) SharedClassObject.findObject (SourceOptions.class, true);
 
     /** Default return value of getIconAffectingProperties method. */
     private static final String[] ICON_AFFECTING_PROPERTIES = new String[] {
@@ -345,23 +346,3 @@ public abstract class PatternNode extends AbstractNode implements IconBases, Pat
         return bundle.getString(key);
     }
 }
-
-/*
- * Log
- *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
- *       and new WeakListener implementation
- *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         9/24/99  Petr Hrebejk    Rename of properties 
- *       from popupmenu fixed
- *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
- *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $
- */

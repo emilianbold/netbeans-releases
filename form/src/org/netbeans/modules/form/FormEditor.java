@@ -68,13 +68,13 @@ final public class FormEditor extends Object
     /** The resource bundle for the form editor */
     private static ResourceBundle formBundle = NbBundle.getBundle(FormEditor.class);
     /** Settings of FormEditor */
-    private static FormLoaderSettings formSettings = new FormLoaderSettings();
+    private static FormLoaderSettings formSettings = (FormLoaderSettings) SharedClassObject.findObject (FormLoaderSettings.class, true);
     /** The DesignMode action */
-    private static DesignModeAction designModeAction = new DesignModeAction();
+    private static DesignModeAction designModeAction = (DesignModeAction) SharedClassObject.findObject (DesignModeAction.class, true);
     /** The TestMode action */
-    private static TestModeAction testModeAction = new TestModeAction();
+    private static TestModeAction testModeAction = (TestModeAction) SharedClassObject.findObject (TestModeAction.class, true);
     /** The action that holds the curent palette state(selection/add mode) */
-    private static PaletteAction paletteAction = new PaletteAction();
+    private static PaletteAction paletteAction = (PaletteAction) SharedClassObject.findObject (PaletteAction.class, true);
 
     /** The default width of the ComponentInspector */
     public static final int DEFAULT_INSPECTOR_WIDTH = 250;

@@ -30,6 +30,7 @@ import org.openide.modules.ModuleInstall;
 import org.openide.TopManager;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
+import org.openide.util.SharedClassObject;
 
 import org.netbeans.modules.javadoc.settings.StdDocletSettings;
 import org.netbeans.modules.javadoc.comments.JavaDocPropertySupportFactory;
@@ -179,7 +180,7 @@ public class JavadocModule extends ModuleInstall {
         */
 
         // Create default directory for JavaDoc
-        StdDocletSettings sdsTemp = new StdDocletSettings();
+        StdDocletSettings sdsTemp = (StdDocletSettings) SharedClassObject.findObject (StdDocletSettings.class, true);
 
         // Reseting javadoc output directory is necessary for
         // multiuser installation
@@ -286,48 +287,3 @@ public class JavadocModule extends ModuleInstall {
         objectOutput.writeInt( numberOfStarts );
     }
 }
-
-/*
- * Log
- *  26   Gandalf   1.25        2/8/00   Petr Hrebejk    Problem with mounting 
- *       Javadoc output directory in multiuser installation fix
- *  25   Gandalf   1.24        1/19/00  Petr Hrebejk    Hack for project module 
- *       added
- *  24   Gandalf   1.23        1/16/00  Jesse Glick     Actions pool.
- *  23   Gandalf   1.22        1/15/00  Jesse Glick     Actions pool 
- *       installation.
- *  22   Gandalf   1.21        1/12/00  Petr Hrebejk    i18n
- *  21   Gandalf   1.20        1/10/00  Petr Hrebejk    Bug 4747 - closing of 
- *       output tab fixed
- *  20   Gandalf   1.19        12/21/99 Jesse Glick     Installing after general
- *       documentation.
- *  19   Gandalf   1.18        10/27/99 Petr Hrebejk    Bug fixes & back button 
- *       in Javadoc Quickview
- *  18   Gandalf   1.17        10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  17   Gandalf   1.16        10/7/99  Petr Hrebejk    Module Externalization 
- *       fix
- *  16   Gandalf   1.15        10/1/99  Petr Hrebejk    org.openide.modules.ModuleInstall
- *        changed to class + some methods added
- *  15   Gandalf   1.14        8/13/99  Petr Hrebejk    Initialization of JDoc 
- *       repository on first and second start added
- *  14   Gandalf   1.13        7/21/99  Petr Hrebejk    Action installation fix
- *  13   Gandalf   1.12        7/20/99  Petr Hrebejk    Action installation 
- *       added
- *  12   Gandalf   1.11        7/9/99   Petr Hrebejk    JavaDoc comments support
- *       added to module
- *  11   Gandalf   1.10        6/9/99   Ian Formanek    ---- Package Change To 
- *       org.openide ----
- *  10   Gandalf   1.9         6/8/99   Petr Hrebejk    
- *  9    Gandalf   1.8         5/27/99  Petr Hrebejk    
- *  8    Gandalf   1.7         5/16/99  Petr Hrebejk    
- *  7    Gandalf   1.6         5/14/99  Petr Hrebejk    
- *  6    Gandalf   1.5         5/11/99  Petr Hrebejk    
- *  5    Gandalf   1.4         5/11/99  Petr Hrebejk    
- *  4    Gandalf   1.3         5/7/99   Petr Hrebejk    
- *  3    Gandalf   1.2         4/27/99  Petr Hrebejk    GenerateDocAction for 
- *       all producersOf JavaDataObjects
- *  2    Gandalf   1.1         4/23/99  Petr Hrebejk    
- *  1    Gandalf   1.0         4/23/99  Petr Hrebejk    
- * $ 
- */ 

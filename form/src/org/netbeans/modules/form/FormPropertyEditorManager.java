@@ -16,6 +16,7 @@
 package org.netbeans.modules.form;
 
 import org.openide.TopManager;
+import org.openide.util.SharedClassObject;
 
 import java.beans.PropertyEditor;
 import java.util.ArrayList;
@@ -26,7 +27,8 @@ import java.util.HashMap;
  * @author   Ian Formanek
  */
 final public class FormPropertyEditorManager extends Object {
-    private static FormLoaderSettings formSettings = new FormLoaderSettings();
+    private static FormLoaderSettings formSettings =
+        (FormLoaderSettings) SharedClassObject.findObject (FormLoaderSettings.class, true);
     private static HashMap editorsCache = new HashMap(30);
     private static HashMap expliciteEditors = new HashMap(10);
 

@@ -33,6 +33,8 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.SharedClassObject;
+
 import org.netbeans.modules.form.FormLoaderSettings;
 import org.netbeans.modules.clazz.ClassDataObject;
 
@@ -425,7 +427,8 @@ public final class BeanInstaller
 
     /** Auto loading all jars - beans */
     public static void autoLoadBeans() {
-        FormLoaderSettings settings = new FormLoaderSettings();
+        FormLoaderSettings settings =
+            (FormLoaderSettings) SharedClassObject.findObject (FormLoaderSettings.class, true);
 
         File globalFolder = new File(System.getProperty("netbeans.home") + File.separator + "beans");
         try {
