@@ -26,7 +26,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.DeployProgressUI;
 import org.openide.ErrorManager;
 import org.netbeans.modules.j2ee.deployment.execution.DeploymentTarget;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 
@@ -48,29 +47,37 @@ import javax.enterprise.deploy.model.DeployableObject;
  */
 public class TargetServer {
     
-    Target[] targets;
-    ServerInstance instance;
-    DeploymentTarget dtarget;
-    IncrementalDeployment incremental; //null value signifies don't do incremental
+    private Target[] targets;
+    private final ServerInstance instance;
+    private final DeploymentTarget dtarget;
+    private IncrementalDeployment incremental; //null value signifies don't do incremental
+    private boolean debugMode = false;
+    private Set deployedRootTMIDs = new HashSet(); // type TargetModule
+    private Set distributeTargets = new HashSet();
+    private TargetModule[] redeployTargetModules = null;
+    private File application = null;
     
-    Set deployedRootTMIDs = new HashSet(); // type TargetModule
-    Set distributeTargets = new HashSet();
-    TargetModule[] redeployTargetModules = null;
-    File application = null;
-    
-    // Note: this constructor will have admin server running
     public TargetServer(DeploymentTarget target) {
-        this.targets = target.getServer().toTargets();
-        this.instance = target.getServer().getServerInstance();
         this.dtarget = target;
-        init();
+        this.instance = dtarget.getServer().getServerInstance();
     }
     
-    private Target[] getTargets() {
-        return targets;
-    }
-    
-    private void init() {
+    private void init(DeployProgressUI ui) {
+        if (targets != null)
+            return;
+        
+        if (instance.getStartServer().needsStartForTargetList()) {
+            if (instance.getStartServer().isAlsoTargetServer(null)) {
+                if (debugMode) {
+                    instance.startDebugTarget(null, ui);
+                } else {
+                    instance.start(ui);
+                }
+            }
+        }
+
+        this.targets = dtarget.getServer().toTargets();
+
         // see if we want and can incremental
         if (dtarget.doFastDeploy()) {
             incremental = instance.getIncrementalDeployment();
@@ -219,9 +226,9 @@ public class TargetServer {
         }
     }
     
-    
     public boolean startTargets(boolean debugMode, DeployProgressUI ui) {
-        getTargets();
+        this.debugMode = debugMode;
+        init(ui);
         if (debugMode) {
             for (int i=0; i<targets.length; i++)
                 if (! instance.startDebugTarget(targets[i], ui))
@@ -232,14 +239,6 @@ public class TargetServer {
                     return false;
         }
         return true;
-    }
-    
-    public boolean startInstance(DeployProgressUI ui) {
-        return instance.start(ui);
-    }
-    
-    public boolean canIncrementallyRedeploy(IncrementalDeployment incremental) {
-        return incremental != null;
     }
     
     private boolean setProgressObject(DeployProgressUI progUI, ProgressObject obj) {
@@ -299,21 +298,16 @@ public class TargetServer {
         
         public IncrementalEventHandler(ProgressObject po) {
             this.po = po;
-            po.addProgressListener(this);
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
             StateType state = progressEvent.getDeploymentStatus().getState();
             if (state == StateType.COMPLETED) {
                 TargetModuleID[] modules = po.getResultTargetModuleIDs();
                 saveRootTargetModules(modules);
-                if (po != null)
-                    po.removeProgressListener(this);
                 po = null;
                 wakeUp();
             }
             else if (state == StateType.FAILED) {
-                if (po != null)
-                    po.removeProgressListener(this);
                 po = null;
                 wakeUp();
             }
@@ -368,7 +362,7 @@ public class TargetServer {
     }
     
     //collect root modules into TargetModule with timestamp
-    public TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
+    private TargetModuleID[] saveRootTargetModules(TargetModuleID [] modules) {
         long timestamp = System.currentTimeMillis();
         Set originals = new HashSet();
         for (int i=0; i<modules.length; i++) {
@@ -384,6 +378,8 @@ public class TargetServer {
     }
 
     public TargetModule[] deploy(DeployProgressUI progressUI) throws IOException {
+        init(progressUI);
+        
         ProgressObject progressObject = null;
 
         // save configuration file if not already save 
@@ -449,7 +445,8 @@ public class TargetServer {
                         progressUI.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeployNoProgress"));
                     }
                     
-                    new IncrementalEventHandler(progressObject);
+                    IncrementalEventHandler h = new IncrementalEventHandler(progressObject);
+                    progressObject.addProgressListener(h);
 
                     StateType state = progressObject.getDeploymentStatus().getState();
                     //System.out.println("incrementalDeploy: Status="+state);
@@ -458,6 +455,7 @@ public class TargetServer {
                         if (!sleep(120000) )
                             ErrorManager.getDefault().log(ErrorManager.WARNING, "incrementalDeploy: timeout or interrupted!");
                     }
+                    progressObject.removeProgressListener(h);
                     //System.out.println("incrementalDeploy time="+(System.currentTimeMillis()-t0)+" msecs.");
                 } else { // return original target modules
                     return dtarget.getTargetModules();
