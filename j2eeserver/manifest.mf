@@ -5,7 +5,7 @@ OpenIDE-Module-Install: org/netbeans/modules/j2ee/IntegrationModule.class
 OpenIDE-Module-Specification-Version: 1.1.2
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Name: J2EE Server Registry
-OpenIDE-Module-Module-Dependencies: org.openidex.util/1,org.netbeans.modules.debugger.jpda/1
+OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.jpda/1
 OpenIDE-Module-Layer: org/netbeans/modules/j2ee/impl/layer.xml
 OpenIDE-Module-Description: org.netbeans.modules.j2ee.server.docs.j2eeserver
 OpenIDE-Module-Short-Description: Supports j2ee application servers
