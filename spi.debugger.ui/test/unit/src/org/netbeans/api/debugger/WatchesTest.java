@@ -59,19 +59,6 @@ public class WatchesTest extends DebuggerApiTestBase {
         assertEquals("Wrong PCE name", "watchesInit", pce.getPropertyName());
     }
 
-    private void printEvents(List events) {
-        System.out.println("events: " + events.size());
-        for (Iterator i = events.iterator(); i.hasNext();) {
-            DebuggerApiTestBase.Event event1 = (DebuggerApiTestBase.Event) i.next();
-            System.out.println("event: " + event1.name);
-            if (event1.param instanceof PropertyChangeEvent) {
-                PropertyChangeEvent pce = (PropertyChangeEvent) event1.param;
-                System.out.println("PCS name: " + pce.getPropertyName());
-            }
-            System.out.println(event1.param);
-        }
-    }
-
     private void removeWatch(DebuggerManager dm, Watch w, DebuggerApiTestBase.TestDebuggerManagerListener dml) {
         List events;
         DebuggerApiTestBase.Event event;

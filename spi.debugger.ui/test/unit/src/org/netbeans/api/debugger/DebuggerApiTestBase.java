@@ -7,25 +7,46 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Micro//S ystems, Inc. Portions Copyright 1997-2001 Sun
- * Micro//S ystems, Inc. All Rights Reserved.
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+ * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.api.debugger;
 
-import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 
 /**
+ * A base utility class for debugger unit tests.
  *
  * @author Maros Sandor
  */
 public abstract class DebuggerApiTestBase extends NbTestCase {
 
-    public DebuggerApiTestBase(String s) {
+    protected DebuggerApiTestBase(String s) {
         super(s);
+    }
+
+    protected void assertInstanceOf(String msg, Object obj, Class aClass) {
+        if (obj.getClass().isAssignableFrom(aClass))
+        {
+            fail(msg);
+        }
+    }
+
+    protected static void printEvents(List events) {
+        System.out.println("events: " + events.size());
+        for (Iterator i = events.iterator(); i.hasNext();) {
+            DebuggerApiTestBase.Event event1 = (DebuggerApiTestBase.Event) i.next();
+            System.out.println("event: " + event1.name);
+            if (event1.param instanceof PropertyChangeEvent) {
+                PropertyChangeEvent pce = (PropertyChangeEvent) event1.param;
+                System.out.println("PCS name: " + pce.getPropertyName());
+            }
+            System.out.println(event1.param);
+        }
     }
 
     class Event {

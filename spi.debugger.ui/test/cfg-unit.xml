@@ -18,6 +18,7 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="unit-executor" name="Debugger Core API">
         <testset dir="unit/src">
             <patternset>
+<!--                <include name="org/netbeans/api/debugger/LaunchDebuggerTest.class"/>-->
                 <include name="org/netbeans/api/debugger/*Test.class"/>
             </patternset>
         </testset>
