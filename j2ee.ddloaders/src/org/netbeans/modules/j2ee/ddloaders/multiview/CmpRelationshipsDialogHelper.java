@@ -127,7 +127,7 @@ class CmpRelationshipsDialogHelper {
                     ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
                     MethodElement getterMethod = Utils.getGetterMethod(beanClass, fieldName);
                     MethodElement setterMethod = Utils.getSetterMethod(beanClass, fieldName, getterMethod);
-                    ClassElement localInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
+                    ClassElement localInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
                     if (getter) {
                         try {
                             localInterface.addMethod(getterMethod);
@@ -226,7 +226,7 @@ class CmpRelationshipsDialogHelper {
                 ClassElement beanClass = Utils.getBeanClass(ejbJarFile, entity);
                 MethodElement getterMethod = Utils.getGetterMethod(beanClass, origFieldName);
                 MethodElement setterMethod = Utils.getSetterMethod(beanClass, origFieldName, getterMethod);
-                origLocalInterface = Utils.getBusinessInterface(entity.getLocal(), ejbJarFile, beanClass);
+                origLocalInterface = Utils.getBusinessInterfaceClass(entity.getLocal(), ejbJarFile, beanClass);
                 origLocalGetterMethod = Utils.getBusinessMethod(origLocalInterface, getterMethod);
                 origLocalSetterMethod = Utils.getBusinessMethod(origLocalInterface, setterMethod);
                 lastGetter = origLocalGetterMethod != null;
