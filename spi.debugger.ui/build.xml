@@ -50,6 +50,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
         <pathelement location="../openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
         <pathelement location="../openide/io/netbeans/modules/autoload/openide-io.jar"/>
+        <pathelement location="oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
       </classpath>
     </javac>
   </target>
@@ -68,11 +69,11 @@ Microsystems, Inc. All Rights Reserved.
   </target>
 
    
-  <target name="netbeans" depends="jars">
+  <target name="netbeans" depends="jars" description="Build everything.">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 
-  <target name="nbm" depends="netbeans">
+  <target name="nbm" depends="netbeans" description="Build NBM.">
     <makenbm file="debuggercore.nbm"
              topdir="."
              module="netbeans/modules/autoload/debuggerCore.jar"
@@ -82,7 +83,8 @@ Microsystems, Inc. All Rights Reserved.
       <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
     </makenbm>
   </target>
-  <target name="clean">
+  
+  <target name="clean" description="Clean everything.">
     <delete>
       <fileset dir="src">
         <include name="**/*.class"/>

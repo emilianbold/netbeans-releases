@@ -8,7 +8,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2002 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 <project name="apisupport/apidocs" default="netbeans" basedir=".">
@@ -40,6 +40,7 @@ Microsystems, Inc. All Rights Reserved.
         <makeparserdb db="netbeans/system/ParserDB/OpenAPIs" sources="../../openide/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/CompilerAPI" sources="../../openide/compiler/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/ExecutionAPI" sources="../../openide/execution/src" nbroot="../.."/>
+        <makeparserdb db="netbeans/system/ParserDB/DebuggerAPI" sources="../../debuggercore/oldapi/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/InputOutputAPI" sources="../../openide/io/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/JavaHelpAPI" sources="../../core/javahelp/src" nbroot="../.."/>
         <makeparserdb db="netbeans/system/ParserDB/SettingsAPI" sources="../../core/settings/src" nbroot="../.."/>
@@ -55,6 +56,8 @@ Microsystems, Inc. All Rights Reserved.
         <copy file="../../openide/io/javadoc/InputOutputAPI.zip" tofile="netbeans/docs/InputOutputAPI.zip"/>
         <ant dir="../../openide/execution" target="javadoc"/>
         <copy file="../../openide/execution/javadoc/ExecutionAPI.zip" tofile="netbeans/docs/ExecutionAPI.zip"/>
+        <ant dir="../../debuggercore/oldapi" target="javadoc"/>
+        <copy file="../../debuggercore/oldapi/javadoc/DebuggerAPI.zip" tofile="netbeans/docs/DebuggerAPI.zip"/>
         <ant dir="../../openide/compiler" target="javadoc"/>
         <copy file="../../openide/compiler/javadoc/CompilerAPI.zip" tofile="netbeans/docs/CompilerAPI.zip"/>
         <ant dir="../../core/javahelp" target="javadoc"/>

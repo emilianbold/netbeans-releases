@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -18,7 +18,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.editor.ImplementationProvider;
 import javax.swing.Action;
 import org.openide.util.actions.SystemAction;
-import org.openide.actions.ToggleBreakpointAction;
+import org.openide.util.Lookup;
 
 /** This is NetBeans specific provider of functionality.
  * See base class for detailed comments.
@@ -35,7 +35,17 @@ public class NbImplementationProvider extends ImplementationProvider {
     }
 
     public Action getToggleBreakpointAction() {
-        return SystemAction.get(org.openide.actions.ToggleBreakpointAction.class);
+        try {
+            ClassLoader l = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+            Class c = l.loadClass("org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction"); // NOI18N
+            if (SystemAction.class.isAssignableFrom(c)) {
+                return SystemAction.get(c);
+            } else {
+                return (Action)c.newInstance();
+            }
+        } catch (Exception e) {
+            return null;
+        }
     }
     
 }

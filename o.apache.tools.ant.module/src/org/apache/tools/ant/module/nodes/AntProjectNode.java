@@ -154,10 +154,9 @@ public class AntProjectNode extends DataNode implements ChangeListener {
         exec.setShortDescription (NbBundle.getMessage (AntProjectNode.class, "HINT_execution"));
         CompilerSupport csupp = (CompilerSupport) getCookie (CompilerSupport.class);
         if (csupp != null) csupp.addProperties (exec);
-        ExecSupport xsupp = (ExecSupport) getCookie (ExecSupport.class);
+        ExecutionSupport xsupp = (ExecutionSupport) getCookie (ExecutionSupport.class);
         if (xsupp != null) xsupp.addProperties (exec);
-        exec.remove (ExecSupport.PROP_FILE_PARAMS);
-        exec.remove (ExecSupport.PROP_DEBUGGER_TYPE);
+        exec.remove (ExecutionSupport.PROP_FILE_PARAMS);
         if (csupp != null || xsupp != null) {
             sheet.put (exec);
         }

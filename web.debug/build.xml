@@ -43,6 +43,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
         <pathelement location="${nb_root}/openide/execution/netbeans/modules/autoload/openide-execution.jar"/>
+        <pathelement location="${nb_root}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
         <pathelement location="${nb_root}/java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
         <!-- Hopefully set up by nbbuild/build.xml: -->
         <pathelement location="${jdkhome}/lib/tools.jar"/>

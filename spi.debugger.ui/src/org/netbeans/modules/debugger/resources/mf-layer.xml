@@ -18,8 +18,8 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Actions">
         <folder name="Debug">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.Bundle" />
-            <file name="org-openide-actions-AddWatchAction.instance"/>
-            <file name="org-openide-actions-ToggleBreakpointAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
+            <file name="org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance"/>
             <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
             
             <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
@@ -122,8 +122,8 @@ Microsystems, Inc. All Rights Reserved.
             
             <attr name="Separator6.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-AddWatchAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
 
         </folder>
         <attr name="Debug/Tools" boolvalue="true" />
@@ -173,8 +173,8 @@ Microsystems, Inc. All Rights Reserved.
             <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/org-netbeans-modules-debugger-support-actions-FixAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-FixAction.instance" />
 
-            <attr name="org-netbeans-modules-debugger-support-actions-FixAction.instance/org-openide-actions-AddWatchAction.instance" boolvalue="true" />
-            <file name="org-openide-actions-AddWatchAction.instance"/>
+            <attr name="org-netbeans-modules-debugger-support-actions-FixAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true" />
+            <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
         </folder>
 
         <folder name="View">
@@ -188,10 +188,10 @@ Microsystems, Inc. All Rights Reserved.
     <folder name="Shortcuts">
 
         <file name="S-F8.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.ToggleBreakpointAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.ToggleBreakpointAction"/>
 	</file>
         <file name="CS-F7.instance">
-	    <attr name="instanceClass" stringvalue="org.openide.actions.AddWatchAction"/>
+	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddWatchAction"/>
 	</file>
         <file name="CS-F8.instance">
 	    <attr name="instanceClass" stringvalue="org.netbeans.modules.debugger.support.actions.AddBreakpointAction"/>
@@ -352,6 +352,13 @@ Microsystems, Inc. All Rights Reserved.
             <folder name="x-java">
                 <folder name="ToolTips">
                     <file name="org-netbeans-modules-debugger-support-java-ToolTipAnnotation.instance"/>
+                </folder>
+                <folder name="Popup">
+                    <attr name="Separator7.instance/org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance"/>
+                    <attr name="org-netbeans-modules-debugger-support-actions-ToggleBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true"/>
+                    <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
+                    <attr name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance/Separator8.instance" boolvalue="true"/>
                 </folder>
             </folder>
         </folder>

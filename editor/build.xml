@@ -38,6 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="../openide/netbeans/lib/openide.jar"/>
         <pathelement location="../openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="../java/srcmodel/netbeans/modules/autoload/java-src-model.jar"/>
+        <pathelement location="../debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
         <fileset dir="../core/external">
           <include name="regexp*.jar"/>
           <include name="xml-apis*.jar"/>

@@ -176,6 +176,7 @@ Microsystems, Inc. All Rights Reserved.
         <pathelement location="${nbroot}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nbroot}/debuggerjpda/netbeans/modules/jpdaDebugger.jar"/>
         <pathelement location="${nbroot}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
+        <pathelement location="${nbroot}/debuggercore/oldapi/netbeans/modules/autoload/openide-debugger.jar"/>
       </classpath>
     </javac>
   </target>

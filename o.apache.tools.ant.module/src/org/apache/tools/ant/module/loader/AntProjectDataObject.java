@@ -18,7 +18,6 @@ package org.apache.tools.ant.module.loader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import org.openide.cookies.DebuggerCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
@@ -52,14 +51,6 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
             cookies.add (new AntActionInstance (proj));
         }
         addPropertyChangeListener (this);
-    }
-    
-    // #12864: AntExecSupport only incidentally implements DebuggerCookie
-    public Node.Cookie getCookie (Class clazz) {
-        if (clazz == DebuggerCookie.class) {
-            return null;
-        }
-        return super.getCookie (clazz);
     }
     
     public HelpCtx getHelpCtx () {

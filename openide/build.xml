@@ -345,7 +345,13 @@ Microsystems, Inc. All Rights Reserved.
     
   </target>
 
-  <target name="netbeans" depends="jars" description="Build everything needed for inclusion in the IDE.">
+  <target name="release">
+    <copy todir="netbeans" includeEmptyDirs="false">
+      <fileset dir="release" excludesfile="../nbbuild/standard-jar-excludes.txt"/>
+    </copy>
+  </target>
+
+  <target name="netbeans" depends="jars,release" description="Build everything needed for inclusion in the IDE.">
     <genlist targetname="nbm" outputfiledir="netbeans"/>
   </target>
 

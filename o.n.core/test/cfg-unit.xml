@@ -50,9 +50,8 @@ Microsystems, Inc. All Rights Reserved.
     <testbag testattribs="stable" executor="code" name="testbag_3" resultsprocessor="unit">
         <testset dir="unit/src">
             <patternset>
-                <include name="org/netbeans/core/modules/ModuleManagerTest.class"/>
-                <include name="org/netbeans/core/modules/ModuleListTest.class"/>
-                <include name="org/netbeans/core/modules/NbInstallerTest?.class"/>
+                <include name="org/netbeans/core/modules/*Test.class"/>
+                <include name="org/netbeans/core/modules/*Test?.class"/>
                 <include name="org/netbeans/core/NbPlacesTest.class"/>
                 <include name="org/netbeans/core/projects/SystemFileSystemTest.class"/>
                 <include name="org/netbeans/core/projects/cache/*Test.class"/>

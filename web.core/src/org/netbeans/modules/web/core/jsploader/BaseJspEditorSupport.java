@@ -298,8 +298,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         }
         
         /* This method is called when parent window of this component has focus,
-         * and this component is preferred one in it. This implementation adds
-         * performer to the ToggleBreakpointAction.
+         * and this component is preferred one in it.
          */
         protected void componentActivated() {
             getEditorPane().addCaretListener(caretListener);
@@ -308,8 +307,7 @@ public class BaseJspEditorSupport extends DataEditorSupport implements EditCooki
         
         /*
          * This method is called when parent window of this component losts focus,
-         * or when this component losts preferrence in the parent window. This
-         * implementation removes performer from the ToggleBreakpointAction.
+         * or when this component losts preferrence in the parent window.
          */
         protected void componentDeactivated() {
             getEditorPane().removeCaretListener(caretListener);
