@@ -18,8 +18,11 @@ import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 
 import java.io.IOException;
+import java.util.Collections;
+
 import org.openide.WizardDescriptor;
 
 /**
@@ -46,18 +49,15 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
      * the platform's conventions - has name "java.exe" or "java"
      */
     public boolean accept(FileObject dir) {
-        if (!dir.isFolder())
+        if (!dir.isFolder()) {
             return false;
-        dir = dir.getFileObject("bin"); // NOI18N
-        if (dir == null)
-            return false;
-        FileObject javaRunnable;
-        if (winOS) {
-            javaRunnable = dir.getFileObject("java", "exe");
-        } else {
-            javaRunnable = dir.getFileObject("java");
         }
-        return javaRunnable != null;
+        FileObject tool = Util.findTool("java", Collections.singleton(dir));    //NOI18N
+        if (tool == null) {
+            return false;
+        }
+        tool = Util.findTool("javac", Collections.singleton(dir));  //NOI18N
+        return tool != null;
     }
     
     public WizardDescriptor.InstantiatingIterator createIterator(FileObject baseFolder) {
