@@ -137,11 +137,23 @@ public class RADVisualComponent extends RADComponent {
      * Properties may be added, removed etc. - due to specific needs
      * of subclasses. Here used for adding ButtonGroupProperty.
      */
-/*    protected void changePropertiesExplicitly(List prefProps,
+    protected void changePropertiesExplicitly(List prefProps,
                                               List normalProps,
                                               List expertProps) {
 
         super.changePropertiesExplicitly(prefProps, normalProps, expertProps);
+
+        if (getBeanInstance() instanceof java.awt.TextComponent) {
+            // hack for AWT text components - "text" property should be first
+            for (int i=0, n=normalProps.size(); i < n; i++) {
+                RADProperty prop = (RADProperty) normalProps.get(i);
+                if ("text".equals(prop.getName())) { // NOI18N
+                    normalProps.remove(i);
+                    normalProps.add(0, prop);
+                    break;
+                }
+            }
+        }
 
         // hack for buttons - add a fake property for ButtonGroup
 //        if (getBeanInstance() instanceof javax.swing.AbstractButton)
@@ -162,7 +174,7 @@ public class RADVisualComponent extends RADComponent {
 //                normalProps.add(createProperty(pd));
 //            }
 //            catch (IntrospectionException ex) {} // should not happen
-    }*/
+    }
 
     public Node.Property[] getConstraintsProperties() {
         if (constraintsProperties == null)

@@ -28,6 +28,8 @@ class FakeTextComponentPeer extends FakeComponentPeer
 {
     private String _text;
     private int _caretPosition = 0;
+    private int selStart = -1;
+    private int selEnd = -1;
 
     FakeTextComponentPeer(TextComponent target) {
         super(target);
@@ -60,15 +62,16 @@ class FakeTextComponentPeer extends FakeComponentPeer
     }
 
     public int getSelectionStart() {
-        return -1;
+        return selStart;
     }
 
     public int getSelectionEnd() {
-        return -1;
+        return selEnd;
     }
 
     public void select(int selStart, int selEnd) {
-        // noop
+        this.selStart = selStart;
+        this.selEnd = selEnd;
     }
 
     public void setCaretPosition(int pos) {
