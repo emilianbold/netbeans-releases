@@ -50,12 +50,12 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
     }
     
     private ServerTarget getServerTarget() {
-        if (instanceTarget != null) 
+        if (instanceTarget != null)
             return instanceTarget;
         instanceTarget = instance.getCoTarget();
         return instanceTarget;
     }
-
+    
     public Node getDelegateTargetNode() {
         if (xnode != null && xnode != Node.EMPTY)
             return xnode;
@@ -63,7 +63,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         if (st == null)
             return xnode;
         Node tn = instance.getServer().getNodeProvider().createTargetNode(st);
-        if (tn != null) 
+        if (tn != null)
             xnode = tn;
         return xnode;
     }
@@ -80,14 +80,25 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         }
         protected void addNotify() {
             super.addNotify();
-            if (original == Node.EMPTY) {
-                Node newOriginal = ((InstanceTargetXNode) getNode()).getDelegateTargetNode();
-                if (newOriginal != null && newOriginal != Node.EMPTY)
-                    this.changeOriginal(newOriginal);
+            if (isFurtherExpandable()) {
+                if (original == Node.EMPTY) {
+                    Node newOriginal = ((InstanceTargetXNode) getNode()).getDelegateTargetNode();
+                    if (newOriginal != null && newOriginal != Node.EMPTY)
+                        this.changeOriginal(newOriginal);
+                }
+            } else {
+                this.setKeys(java.util.Collections.EMPTY_SET);
             }
         }
         public void updateKeys() {
             addNotify();
+        }
+        private boolean isFurtherExpandable() {
+            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
+            if (root != null) 
+                return root.isExpandablePassTargetNode();
+
+            return true;
         }
     }
     
@@ -117,7 +128,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.R
         org.openide.nodes.Node.Cookie c = null;
         if (tn != null)
             c = tn.getCookie(type);
-        if (c == null) 
+        if (c == null)
             c = super.getCookie(type);
         return c;
     }

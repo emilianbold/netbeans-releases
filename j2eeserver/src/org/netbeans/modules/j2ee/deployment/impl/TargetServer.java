@@ -43,7 +43,7 @@ import javax.enterprise.deploy.model.DeployableObject;
  * scope of a deployment execution only.
  *
  * Typical user are ServerExecutor and Debugger code, with the following general sequence:
- * 
+ *
  *      TargetServer ts = new TargetServer(deploymentTarget);
  *      ts.startTargets(deployProgressUI);
  *      TargetModule[] tms = ts.deploy(deployProgressUI);
@@ -63,6 +63,7 @@ public class TargetServer {
     private Set distributeTargets = new HashSet();
     private TargetModule[] redeployTargetModules = null;
     private File application = null;
+    private StartEventHandler startEventHandler = null;
     
     public TargetServer(DeploymentTarget target) {
         this.dtarget = target;
@@ -257,10 +258,14 @@ public class TargetServer {
         public void handleProgressEvent(ProgressEvent progressEvent) {
             DeploymentStatus status = progressEvent.getDeploymentStatus();
             StateType state = status.getState();
-            
+
             if (state == StateType.COMPLETED) {
-                handleCompletedDistribute(ui, po);
-                po = null;
+                // this check is to avoid NPE is case the handler is misused, e.g.,
+                // firing event multiple times and asynchronously
+                if (po != null) {
+                    handleCompletedDistribute(ui, po, false);
+                    po = null;
+                }
             } // end of if (state == StateType.COMPLETED)
             else if (state == StateType.FAILED) {
                 wakeUp();
@@ -270,18 +275,20 @@ public class TargetServer {
     
     private class IncrementalEventHandler implements ProgressListener {
         ProgressObject po;
+        DeployProgressUI ui;
         
-        public IncrementalEventHandler(ProgressObject po) {
+        public IncrementalEventHandler(DeployProgressUI ui, ProgressObject po) {
             this.po = po;
+            this.ui = ui;
+            
         }
         public void handleProgressEvent(ProgressEvent progressEvent) {
             StateType state = progressEvent.getDeploymentStatus().getState();
             if (state == StateType.COMPLETED) {
-                TargetModuleID[] modules = po.getResultTargetModuleIDs();
-                saveRootTargetModules(modules);
-                //Note: plugin implementation responsible to call start depending on nature of changes
-                po = null;
-                wakeUp();
+                if (po != null) {
+                    TargetServer.this.handleCompletedDistribute(ui, po, true);
+                    po = null;
+                }
             }
             else if (state == StateType.FAILED) {
                 po = null;
@@ -305,6 +312,13 @@ public class TargetServer {
                 wakeUp();
             }
         }
+        
+        public void unregister() {
+            if (startPO != null) {
+                startPO.removeProgressListener(this);
+                startPO = null;
+            }
+        }
     }
     
     private synchronized void wakeUp() {
@@ -320,7 +334,7 @@ public class TargetServer {
             }
         } catch (InterruptedException e) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-        } 
+        }
     }
     
     //collect root modules into TargetModule with timestamp
@@ -348,7 +362,7 @@ public class TargetServer {
         
         File plan = dtarget.getConfigurationFile();
         DeployableObject deployable = dtarget.getDeploymentConfigurationProvider().getDeployableObject(null);
-
+        
         // handle initial file deployment or distribute
         if (distributeTargets.size() > 0) {
             Target[] targetz = (Target[]) distributeTargets.toArray(new Target[distributeTargets.size()]);
@@ -358,12 +372,12 @@ public class TargetServer {
                 File dir = initialDistribute(targetz[0], ui);
                 po = incremental.initialDeploy(targetz[0], deployable, cfg, dir);
                 handleDeployProgress(ui, po);
-
+                
             } else {  // standard DM.distribute
                 if (getApplication() == null) {
                     throw new RuntimeException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
                 }
-                    
+                
                 ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Distributing", application, Arrays.asList(targetz)));
                 po = instance.getDeploymentManager().distribute(targetz, getApplication(), plan);
                 handleDeployProgress(ui, po);
@@ -378,14 +392,14 @@ public class TargetServer {
                     ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_IncrementalDeploying", redeployTargetModules[0]));
                     po = incremental.incrementalDeploy(redeployTargetModules[0].delegate(), acd);
                     handleIncrementalProgress(ui, po);
-
+                    
                 } else { // return original target modules
                     return dtarget.getTargetModules();
                 }
             } else { // standard redeploy
-                if (getApplication() == null) 
+                if (getApplication() == null)
                     throw new IllegalArgumentException(NbBundle.getMessage(TargetServer.class, "MSG_NoArchive"));
-
+                
                 ui.addMessage(NbBundle.getMessage(TargetServer.class, "MSG_Redeploying", application));
                 TargetModuleID[] tmids = TargetModule.toTargetModuleID(redeployTargetModules);
                 po = instance.getDeploymentManager().redeploy(tmids, getApplication(), plan);
@@ -409,36 +423,51 @@ public class TargetServer {
         handleDeployProgress(ui, po, false);
     }
     private void handleDeployProgress(DeployProgressUI ui, ProgressObject po, boolean isIncremental) {
-        ProgressListener handler;
-        if (isIncremental)
-            handler = new TargetServer.IncrementalEventHandler(po);
-        else
-            handler = new DistributeEventHandler(ui, po);
-        po.addProgressListener(handler);
-        ui.setProgressObject(po);
-
-        StateType state = po.getDeploymentStatus().getState();
-        if (state == StateType.COMPLETED) {
-            handleCompletedDistribute(ui, po);
-        } else if (state == StateType.FAILED) {
-            ui.addError(NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedWithNoEvent"));
-        } else {
-            sleep(isIncremental ? INCREMENTAL_TIMEOUT : DISTRIBUTE_TIMEOUT);
+        ProgressListener handler = null;
+        try {
+            ui.setProgressObject(po);
+            
+            StateType state = po.getDeploymentStatus().getState();
+            if (state == StateType.COMPLETED) {
+                ui.addMessage(po.getDeploymentStatus().getMessage());
+                handleCompletedDistribute(ui, po, isIncremental);
+            } else if (state == StateType.FAILED) {
+                ui.addError(NbBundle.getMessage(TargetServer.class, "MSG_DeployFailedWithNoEvent", po.getDeploymentStatus().getMessage()));
+            } else {
+                if (isIncremental)
+                    handler = new TargetServer.IncrementalEventHandler(ui, po);
+                else
+                    handler = new DistributeEventHandler(ui, po);
+                po.addProgressListener(handler);
+                sleep(isIncremental ? INCREMENTAL_TIMEOUT : DISTRIBUTE_TIMEOUT);
+            }
+        } finally {
+            if (handler != null)
+                po.removeProgressListener(handler);
+            if (startEventHandler != null) {
+                startEventHandler.unregister();
+                startEventHandler = null;
+            }
+            ui.setProgressObject(null);
         }
-        po.removeProgressListener(handler);
     }
     
-    private void handleCompletedDistribute(DeployProgressUI ui, ProgressObject po) {
+    private void handleCompletedDistribute(DeployProgressUI ui, final ProgressObject po, boolean isIncremental) {
         TargetModuleID[] modules = po.getResultTargetModuleIDs();
         modules = saveRootTargetModules(modules);
+        if (isIncremental) {
+            //Note: plugin is responsible for starting module, depending on nature of changes
+            wakeUp();
+            return;
+        }
+        
         ProgressObject startPO = instance.getDeploymentManager().start(modules);
-
+        startEventHandler = new StartEventHandler(startPO);
+        ui.setProgressObject(startPO);
+        
         StateType startState = startPO.getDeploymentStatus().getState();
         if (startState == StateType.COMPLETED || startState == StateType.FAILED) {
             wakeUp();
-        } else {
-            ui.setProgressObject(startPO);
-            new StartEventHandler(startPO);
         }
-    }        
+    }
 }

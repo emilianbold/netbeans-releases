@@ -77,7 +77,7 @@ public class ServerString implements java.io.Serializable {
         this.plugin = instance.getServer().getShortName();
         this.instance = instance.getUrl();
         this.serverInstance = instance;
-        if (targetName != null)
+        if (targetName != null && ! "".equals(targetName.trim())) //NOI18N
             this.targets = new String[] { targetName };
         else
             this.targets = null;

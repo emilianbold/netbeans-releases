@@ -20,6 +20,8 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.*;
+import org.openide.filesystems.*;
+import org.openide.loaders.*;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
@@ -44,6 +46,7 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
     
     private transient Map serverNodes = new HashMap();
     private transient HelpCtx helpCtx;
+    private boolean expandablePassTargetNode = true;
     
     public ServerRegistryNode() {
         super(new ServerChildren());
@@ -72,6 +75,15 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
     }
     public void serverRemoved(Server server) {
         updateKeys();
+    }
+    
+    public boolean isExpandablePassTargetNode() {
+        return expandablePassTargetNode;
+    }
+    public void setExpandablePassTargetNode(boolean v) {
+        expandablePassTargetNode = v;
+        setChildren(new ServerChildren());
+        serverNodes.clear();
     }
     
     public void instanceAdded(ServerString instance) {
@@ -155,6 +167,19 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
             Server s = (Server) key;
             //return new Node[] {new FilterNode(((ServerRegistryNode)getNode()).getServerNode(s))};
             return new Node[] {((ServerRegistryNode)getNode()).getServerNode(s)};
+        }
+    }
+    
+    public static ServerRegistryNode getServerRegistryNode() {
+        try {
+            FileSystem defaultFileSystem = Repository.getDefault().getDefaultFileSystem();
+            FileObject fo = defaultFileSystem.findResource("UI/Runtime");    //NOI18N
+            DataFolder df = (DataFolder) DataObject.find(fo);
+            org.openide.util.Lookup l = new FolderLookup(df).getLookup();
+            return (ServerRegistryNode) l.lookup(ServerRegistryNode.class);
+        } catch (DataObjectNotFoundException e) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            return null;
         }
     }
 }
