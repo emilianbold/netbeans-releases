@@ -26,9 +26,16 @@ import org.netbeans.modules.db.explorer.infos.*;
 public class RefreshChildrenAction extends DatabaseAction {
     static final long serialVersionUID =-2858583720506557569L;
     
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+    
     public void performAction (Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
+        if (activatedNodes != null && activatedNodes.length == 1)
             node = activatedNodes[0];
         else
             return;

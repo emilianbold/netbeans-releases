@@ -19,7 +19,6 @@ import java.util.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -31,17 +30,28 @@ public class ViewDataAction extends DatabaseAction {
     private String quoteStr;
     
     protected boolean enable(Node[] activatedNodes) {
-        Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
-            node = activatedNodes[0];
+        if (activatedNodes != null)
+            if (activatedNodes.length == 1)
+                return true;
+            else if (activatedNodes.length > 0) {
+                int t = 0;
+                int v = 0;
+                for (int i = 0; i < activatedNodes.length; i++) {
+                    if (activatedNodes[i].getCookie(ColumnNodeInfo.class) != null) {
+                        t++;
+                        continue;
+                    }
+                    if (activatedNodes[i].getCookie(ViewColumnNodeInfo.class) != null)
+                        v++;
+                }
+                if (t != activatedNodes.length && v != activatedNodes.length)
+                    return false;
+                else
+                    return true;
+            } else
+                return false;
         else
             return false;
-
-        ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
-        if (info != null)
-            return (info.getConnection() != null);
-        
-        return true;
     }
 
     public void performAction (Node[] activatedNodes) {

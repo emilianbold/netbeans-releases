@@ -14,7 +14,6 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.io.*;
-import java.sql.Connection;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -23,7 +22,6 @@ import javax.swing.JFileChooser;
 
 import org.netbeans.lib.ddl.impl.*;
 import org.openide.*;
-import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -31,11 +29,22 @@ import org.netbeans.modules.db.explorer.infos.*;
 
 public class GrabTableAction extends DatabaseAction {
     static final long serialVersionUID =-7685449970256732671L;
+    
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+
     public void performAction (Node[] activatedNodes)
     {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length == 1)
+            node = activatedNodes[0];
+        else
+            return;
+        
         try {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             DatabaseNodeInfo nfo = info.getParent(nodename);

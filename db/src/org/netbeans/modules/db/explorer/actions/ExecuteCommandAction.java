@@ -13,12 +13,10 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.Connection;
 import java.util.*;
 
 import org.openide.*;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
@@ -27,16 +25,19 @@ import org.netbeans.modules.db.explorer.dataview.*;
 public class ExecuteCommandAction extends DatabaseAction {
     protected boolean enable(Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return false;
+        if (activatedNodes != null && activatedNodes.length == 1)
+            node = activatedNodes[0];
+        else
+            return false;
 
         ConnectionNodeInfo info = (ConnectionNodeInfo)node.getCookie(ConnectionNodeInfo.class);
-        if (info != null) return (info.getConnection() != null);
+        if (info != null)
+            return (info.getConnection() != null);
+        
         return true;
     }
 
     public void performAction (Node[] activatedNodes) {
-        StringBuffer cols = new StringBuffer();
         Node node;
 
         if (activatedNodes != null && activatedNodes.length > 0) {

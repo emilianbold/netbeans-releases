@@ -13,7 +13,6 @@
 
 package org.netbeans.modules.db.explorer.actions;
 
-import java.sql.Connection;
 import java.text.MessageFormat;
 
 import org.openide.*;
@@ -28,9 +27,16 @@ public class AddColumnAction extends DatabaseAction {
     
     static final long serialVersionUID =5894518352294344657L;
     
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+    
     public void performAction (Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0)
+        if (activatedNodes != null && activatedNodes.length == 1)
             node = activatedNodes[0];
         else
             return;

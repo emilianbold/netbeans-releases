@@ -15,7 +15,6 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.util.Vector;
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import java.awt.event.*;
 import javax.swing.event.*;
 import javax.swing.JTabbedPane;
@@ -24,7 +23,6 @@ import java.sql.*;
 import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.*;
-import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 
 import org.netbeans.lib.ddl.*;
@@ -42,6 +40,13 @@ public class ConnectUsingDriverAction extends DatabaseAction {
     
     ConnectionDialog dlg = null;
 
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+    
     public void performAction(Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];

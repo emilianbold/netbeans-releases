@@ -30,6 +30,13 @@ import org.netbeans.modules.db.explorer.infos.*;
 public class AddToIndexAction extends DatabaseAction {
     static final long serialVersionUID =-1416260930649261633L;
     
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+
     public void performAction (Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
@@ -42,7 +49,6 @@ public class AddToIndexAction extends DatabaseAction {
             DatabaseNodeInfo nfo = info.getParent(nodename);
 
             String tablename = (String)nfo.get(DatabaseNode.TABLE);
-            String columnname = (String)nfo.get(DatabaseNode.COLUMN);
 
             Specification spec = (Specification)nfo.getSpecification();
             DriverSpecification drvSpec = info.getDriverSpecification();

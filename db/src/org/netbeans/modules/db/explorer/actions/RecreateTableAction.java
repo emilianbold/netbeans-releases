@@ -15,14 +15,12 @@ package org.netbeans.modules.db.explorer.actions;
 
 import java.io.*;
 import java.util.*;
-import java.sql.Connection;
 import java.text.MessageFormat;
 
 import javax.swing.JFileChooser;
 
 import org.openide.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.openide.util.NbBundle;
 import org.openide.nodes.*;
 
 import org.netbeans.modules.db.explorer.nodes.*;
@@ -33,15 +31,24 @@ import org.netbeans.modules.db.explorer.dataview.*;
 public class RecreateTableAction extends DatabaseAction {
     static final long serialVersionUID =6992569917995229492L;
     
+    protected boolean enable(Node[] activatedNodes) {
+        if (activatedNodes != null && activatedNodes.length == 1)
+            return true;
+        else
+            return false;
+    }
+
     public void performAction (Node[] activatedNodes) {
         Node node;
-        if (activatedNodes != null && activatedNodes.length>0) node = activatedNodes[0];
-        else return;
+        if (activatedNodes != null && activatedNodes.length == 1)
+            node = activatedNodes[0];
+        else
+            return;
+        
         try {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
             TableListNodeInfo nfo = (TableListNodeInfo)info.getParent(nodename);
             Specification spec = (Specification)nfo.getSpecification();
-            String tablename = (String)nfo.get(DatabaseNode.TABLE);
             AbstractCommand cmd;
 
             // Get filename
