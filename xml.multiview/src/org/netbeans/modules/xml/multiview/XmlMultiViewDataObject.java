@@ -354,7 +354,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 this.doWrite = false;
                 if (doWrite) {
                     try {
-                        editor.save(generateDocumentFromModel());
+                        getEditorSupport().save(generateDocumentFromModel());
                     } catch (IOException e) {
                         e.printStackTrace();
                         updateDocument();
