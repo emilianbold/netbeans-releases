@@ -233,6 +233,7 @@ public class  PatternGroupNode extends AbstractNode {
                                   result.bound, result.constrained,
                                   result.withField, result.withReturn, result.withSet,
                                   result.withSupport);
+
       }
       return;      
     case PATTERN_KIND_IDX_PROPERTY:
@@ -353,11 +354,13 @@ public class  PatternGroupNode extends AbstractNode {
    */
   boolean eventSetExists( Type type ) {
     
+    String name = Introspector.decapitalize( type.getClassName().getName() );
+
     Collection eventSets = ((PatternChildren)getChildren()).getPatternAnalyser().getEventSetPatterns();
      
     Iterator it = eventSets.iterator();
     while( it.hasNext() ) {
-      if ( ((EventSetPattern)it.next()).getType().compareTo( type, false ) ) {
+      if ( ((EventSetPattern)it.next()).getName().equals( name ) ) {
         return true;
       }
     }
@@ -368,6 +371,8 @@ public class  PatternGroupNode extends AbstractNode {
 
 /* 
  * Log
+ *  7    Gandalf   1.6         9/15/99  Petr Hrebejk    Duplicity recognization 
+ *       by EventSets made better
  *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 
  *       Properties/EventSet with the same name vorbiden. Forms made i18n
  *  5    Gandalf   1.4         8/9/99   Petr Hrebejk    Decapitalization of 
