@@ -84,6 +84,7 @@ final class NbModuleProject implements Project {
             new Actions(this),
             new ClassPathProviderImpl(this),
             new SourceForBinaryImpl(this),
+            new JavadocForBinaryQueryImpl(this),
             new LogicalView(this),
             new SubprojectProviderImpl(this),
             fileBuilt,
@@ -256,6 +257,11 @@ final class NbModuleProject implements Project {
     File getModuleJarLocation() {
         String moduleJar = "netbeans/" + evaluate("module.jar"); // NOI18N
         return helper.resolveFile(moduleJar);
+    }
+    
+    FileObject getModuleJavadocDirectory() {
+        String moduleJavadoc = "javadoc/" + evaluate("javadoc.name"); // NOI18N
+        return helper.resolveFileObject(moduleJavadoc);
     }
     
     boolean supportsJavadoc() {
