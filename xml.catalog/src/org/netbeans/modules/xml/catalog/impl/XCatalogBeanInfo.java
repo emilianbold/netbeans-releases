@@ -15,7 +15,10 @@ package org.netbeans.modules.xml.catalog.impl;
 
 import java.beans.*;
 
+import org.netbeans.modules.xml.catalog.spi.*;
+
 public class XCatalogBeanInfo extends SimpleBeanInfo {
+
 
 
     // Bean descriptor //GEN-FIRST:BeanDescriptor
@@ -35,12 +38,13 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
 
 
     // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_displayName = 0;
-    private static final int PROPERTY_shortDescription = 1;
-    private static final int PROPERTY_source = 2;
+    private static final int PROPERTY_source = 0;
+    private static final int PROPERTY_displayName = 1;
+    private static final int PROPERTY_shortDescription = 2;
+    private static final int PROPERTY_icon = 3;
 
     // Property array 
-    private static PropertyDescriptor[] properties = new PropertyDescriptor[3];
+    private static PropertyDescriptor[] properties = new PropertyDescriptor[4];
 
     private static PropertyDescriptor[] getPdescriptor(){
         return properties;
@@ -48,14 +52,26 @@ public class XCatalogBeanInfo extends SimpleBeanInfo {
 
     static {
         try {
-            properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null );
-            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
             properties[PROPERTY_source] = new PropertyDescriptor ( "source", XCatalog.class, "getSource", "setSource" );
             properties[PROPERTY_source].setExpert ( true );
+            properties[PROPERTY_source].setDisplayName ( Util.getString("PROP_xcatalog_location") );
+            properties[PROPERTY_source].setShortDescription ( Util.getString("PROP_xcatalog_location_desc") );
+            properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", XCatalog.class, "getDisplayName", null );
+            properties[PROPERTY_displayName].setDisplayName ( Util.getString("PROP_xcatalog_name") );
+            properties[PROPERTY_displayName].setShortDescription ( Util.getString("PROP_xcatalog_name_desc") );
+            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", XCatalog.class, "getShortDescription", null );
+            properties[PROPERTY_shortDescription].setDisplayName ( Util.getString("PROP_xcatalog_info") );
+            properties[PROPERTY_shortDescription].setShortDescription ( Util.getString("PROP_xcatalog_info_desc") );
+            properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", XCatalog.class, null, null, "getIcon", null );
+            properties[PROPERTY_icon].setHidden ( true );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
+        
+        properties[PROPERTY_shortDescription].setName(CatalogDescriptor.PROP_CATALOG_DESC);
+        properties[PROPERTY_displayName].setName(CatalogDescriptor.PROP_CATALOG_NAME);
+        properties[PROPERTY_icon].setName(CatalogDescriptor.PROP_CATALOG_ICON);
 
 }//GEN-LAST:Properties
 

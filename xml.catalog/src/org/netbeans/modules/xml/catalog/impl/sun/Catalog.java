@@ -76,6 +76,7 @@ public final class Catalog
         in.defaultReadObject();
         
         // lazy init transient fields, see getPCHS() and getPeer() methods
+        setShortDescription(Util.getString("MSG_prepared", location));
     }
     
     /**

@@ -1,8 +1,24 @@
+/*
+ *                 Sun Public License Notice
+ * 
+ * The contents of this file are subject to the Sun Public License
+ * Version 1.0 (the "License"). You may not use this file except in
+ * compliance with the License. A copy of the License is available at
+ * http://www.sun.com/
+ * 
+ * The Original Code is NetBeans. The Initial Developer of the Original
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2001 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ */
+
 package org.netbeans.modules.xml.catalog.impl.sun;
 
 import java.beans.*;
 
+import org.netbeans.modules.xml.catalog.spi.*;
+
 public class CatalogBeanInfo extends SimpleBeanInfo {
+
 
 
     // Bean descriptor //GEN-FIRST:BeanDescriptor
@@ -18,8 +34,8 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
 
 
     // Property identifiers //GEN-FIRST:Properties
-    private static final int PROPERTY_shortDescription = 0;
-    private static final int PROPERTY_displayName = 1;
+    private static final int PROPERTY_displayName = 0;
+    private static final int PROPERTY_shortDescription = 1;
     private static final int PROPERTY_icon = 2;
 
     // Property array 
@@ -28,14 +44,23 @@ public class CatalogBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties = new PropertyDescriptor[3];
     
         try {
-            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
             properties[PROPERTY_displayName] = new PropertyDescriptor ( "displayName", Catalog.class, "getDisplayName", null );
+            properties[PROPERTY_displayName].setDisplayName ( Util.getString("PROP_catalog_name") );
+            properties[PROPERTY_displayName].setShortDescription ( Util.getString("PROP_catalog_name_desc") );
+            properties[PROPERTY_shortDescription] = new PropertyDescriptor ( "shortDescription", Catalog.class, "getShortDescription", null );
+            properties[PROPERTY_shortDescription].setDisplayName ( Util.getString("PROP_catalog_info") );
+            properties[PROPERTY_shortDescription].setShortDescription ( Util.getString("PROP_catalog_info_desc") );
             properties[PROPERTY_icon] = new IndexedPropertyDescriptor ( "icon", Catalog.class, null, null, "getIcon", null );
+            properties[PROPERTY_icon].setHidden ( true );
         }
         catch( IntrospectionException e) {}//GEN-HEADEREND:Properties
 
     // Here you can add code for customizing the properties array.
 
+        properties[PROPERTY_shortDescription].setName(CatalogDescriptor.PROP_CATALOG_DESC);
+        properties[PROPERTY_displayName].setName(CatalogDescriptor.PROP_CATALOG_NAME);
+        properties[PROPERTY_icon].setName(CatalogDescriptor.PROP_CATALOG_ICON);
+        
         return properties;         }//GEN-LAST:Properties
 
     // EventSet identifiers//GEN-FIRST:Events
