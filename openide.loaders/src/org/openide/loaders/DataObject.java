@@ -14,6 +14,7 @@
 package org.openide.loaders;
 
 import java.awt.datatransfer.*;
+import java.awt.*;
 import java.beans.*;
 import java.io.*;
 import java.util.Set;
@@ -559,7 +560,7 @@ public abstract class DataObject extends Object implements Node.Cookie, Serializ
             IllegalArgumentException iae = new IllegalArgumentException (this.getName ());
             String msg = NbBundle.getMessage (DataObject.class,
                                   "MSG_NotValidName", getName ()); // NOI18N
-            ErrorManager.getDefault ().annotate (iae, msg);
+            ErrorManager.getDefault ().annotate (iae, ErrorManager.INFORMATIONAL, null, msg, null, null);
             throw iae;
         }
         String oldName;
