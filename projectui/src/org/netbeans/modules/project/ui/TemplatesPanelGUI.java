@@ -34,6 +34,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -137,19 +138,15 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         this.wiz = settings;
         FileObject templatesFolder = (FileObject) settings.getProperty (TEMPLATES_FOLDER);        
         if (templatesFolder != null && templatesFolder.isFolder()) {
-            try {
-                DataObject dobj = DataObject.find (templatesFolder);
-                ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
-                    dobj.getNodeDelegate(), new CategoriesChildren (templatesFolder)));
-                if (settings.getProperty(TARGET_TEMPLATE) == null) {
-                    //First run
-                    String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
-                    String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
-                    ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (selectedCategory);
-                    ((ExplorerProviderPanel)this.projectsPanel).setSelectedNode (selectedTemplate);
-                }
-            } catch (DataObjectNotFoundException e) {
-                ErrorManager.getDefault ().notify (e);
+            DataFolder dobj = DataFolder.findFolder (templatesFolder);
+            ((ExplorerProviderPanel)this.categoriesPanel).setRootNode(new FilterNode (
+                    dobj.getNodeDelegate(), new CategoriesChildren (dobj)));
+            if (settings.getProperty(TARGET_TEMPLATE) == null) {
+                //First run
+                String selectedCategory = OpenProjectListSettings.getInstance().getLastSelectedProjectCategory ();
+                String selectedTemplate = OpenProjectListSettings.getInstance().getLastSelectedProjectType ();
+                ((ExplorerProviderPanel)this.categoriesPanel).setSelectedNode (selectedCategory);
+                ((ExplorerProviderPanel)this.projectsPanel).setSelectedNode (selectedTemplate);
             }
         }
     }
@@ -389,9 +386,9 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
     
     private static class CategoriesChildren extends Children.Keys {
         
-        private FileObject root;
+        private DataFolder root;
         
-        public CategoriesChildren (FileObject folder) {
+        public CategoriesChildren (DataFolder folder) {
             this.root = folder;
             assert this.root != null : "Root can not be null";  //NOI18N
         }
@@ -405,17 +402,12 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
         }
         
         protected Node[] createNodes(Object key) {
-            if (key instanceof FileObject) {
-                FileObject fo = (FileObject) key;
-                if (fo.isFolder()) {
-                    try {
-                        DataObject dobj = DataObject.find (fo);
-                        return new Node[] {
-                            new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren (fo))
-                        };
-                    }catch (DataObjectNotFoundException e) {
-                        ErrorManager.getDefault().notify(e);
-                    }
+            if (key instanceof DataObject) {
+                DataObject dobj = (DataObject) key;
+                if (dobj instanceof DataFolder) {
+                    return new Node[] {
+                        new FilterNode (dobj.getNodeDelegate(), new CategoriesChildren ((DataFolder)dobj))
+                    };
                 }
             }
             return new Node[0];
