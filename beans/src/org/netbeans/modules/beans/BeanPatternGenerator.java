@@ -836,14 +836,14 @@ class BeanPatternGenerator extends Object {
 
         if ( !usesConstructorParameters( eventClass, passEvent ) ) {
             return new MethodParameter[]
-                   { new MethodParameter( "event", eventType, false ) }; // NOI18N
+                   { new MethodParameter( "event", getFQNType(eventType), false ) }; // NOI18N
         }
         else {
             ConstructorElement constructor = eventClass.getConstructors()[0];
             MethodParameter[] params = constructor.getParameters();
             MethodParameter[] result = new MethodParameter[ params.length ];
             for ( int i = 0; i < params.length; i++ ) {
-                result[i] = new MethodParameter( "param" + (i + 1), params[i].getType(), false  ); // NOI18N
+                result[i] = new MethodParameter( "param" + (i + 1), getFQNType(params[i].getType()), false  ); // NOI18N
             }
             return result;
         }
@@ -906,24 +906,17 @@ class BeanPatternGenerator extends Object {
             return "Object"; // NOI18N
     }
 
+    private static Type getFQNType(Type t) {
+        if (t.isArray())
+            return Type.createArray(getFQNType(t.getElementType()));
+        if (t.isClass()) {
+            Identifier id=t.getClassName();
+            String fqnName=id.getFullName();
+            
+            if (fqnName==id.getSourceName())
+                return t;
+            return Type.createClass(Identifier.create(fqnName));
+        }
+        return t;
+    }
 }
-/*
- * Log
- *  10   Gandalf   1.9         1/17/00  Petr Hrebejk    Indexed property setter 
- *       body fix mk2
- *  9    Gandalf   1.8         1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
- *       and new WeakListener implementation
- *  8    Gandalf   1.7         1/13/00  Petr Hrebejk    i18n mk3
- *  7    Gandalf   1.6         1/12/00  Petr Hrebejk    i18n  
- *  6    Gandalf   1.5         11/10/99 Petr Hrebejk    Generation of new 
- *       EventListenerList added to MultiCast event sources
- *  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  4    Gandalf   1.3         10/6/99  Petr Hrebejk    Formating fix
- *  3    Gandalf   1.2         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  2    Gandalf   1.1         7/26/99  Petr Hrebejk    BeanInfo fix & Code 
- *       generation fix
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
-java.awt.event.WindowListener */ 
