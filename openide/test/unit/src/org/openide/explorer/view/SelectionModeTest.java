@@ -50,26 +50,27 @@ public class SelectionModeTest extends NbTestCase {
     ExplorerManager mgr;
     TreeView tree;
     Node[] singleSelection, contiguousSelection, discontiguousSelection;
-    boolean prepared = false;
     
     public SelectionModeTest(String name) {
         super(name);
-        prepared = false;
     }
    
     public static void main (String args[]) {
         TestRunner.run (new NbTestSuite (SelectionModeTest.class));
         System.exit(0);
     }
+
+
+    protected boolean runInEQ() {
+        return true;
+    }
     
     /** Create tree and a selection of nodes for test.
      */
-    private void prepareTest () {
-        
-        if (prepared)
-            return ;
-        
-//        TopManager.getDefault ();
+    protected void setUp () {
+        // disable any lookup, to isolate the test from other registered 
+        // subsystems like core/windows
+        System.setProperty ("org.openide.util.Lookup", "-");
         
         // create tree:
         // root +--- parent_one +--- one1
@@ -119,25 +120,12 @@ public class SelectionModeTest extends NbTestCase {
         contiguousSelection = new Node[] {one1, one2};
         discontiguousSelection = new Node[] {one2, two1};
         
-        // wait bit for TreeView.addNotify is called
-        try {
-            SwingUtilities.invokeAndWait (new Runnable () {
-                public void run () {
-                }
-            });
-        } catch (InvocationTargetException ite) {
-        } catch (InterruptedException ie) {
-        }
-
         mgr = p.getExplorerManager();
-        prepared = true;
-        
     }
 
     /** Test set all nodes selections if the mode SINGLE_TREE_SELECTION is set.
      * @throws Exception  */    
     public void testSingleSelectionMode () throws Exception {
-        prepareTest ();
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.SINGLE_TREE_SELECTION);
         PropertyVetoException exp = null;
@@ -184,7 +172,6 @@ public class SelectionModeTest extends NbTestCase {
     /** Test set all nodes selections if the mode CONTIGUOUS_TREE_SELECTION is set.
      * @throws Exception  */    
     public void testContigousSelection () throws Exception {
-        prepareTest ();
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.CONTIGUOUS_TREE_SELECTION);
         PropertyVetoException exp = null;
@@ -229,7 +216,6 @@ public class SelectionModeTest extends NbTestCase {
     /** Test set all nodes selections if the mode DISCONTIGUOUS_TREE_SELECTION is set.
      * @throws Exception  */    
     public void testDiscontigousSelection () throws Exception {
-        prepareTest ();
         // try setSelectionMode; if not present then fail
         setSelectionMode (tree, TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION);
         PropertyVetoException exp = null;
