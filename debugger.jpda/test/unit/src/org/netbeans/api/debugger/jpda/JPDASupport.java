@@ -180,10 +180,10 @@ public class JPDASupport implements DebuggerManagerListener {
     }
 
     public void waitState (int state) {
-        while ( jpdaDebugger.getState () != state &&
-                jpdaDebugger.getState () != JPDADebugger.STATE_DISCONNECTED
-        ) {
-            synchronized (STATE_LOCK) {
+        synchronized (STATE_LOCK) {
+            while ( jpdaDebugger.getState () != state &&
+                    jpdaDebugger.getState () != JPDADebugger.STATE_DISCONNECTED
+            ) {
                 try {
                     STATE_LOCK.wait ();
                 } catch (InterruptedException ex) {
