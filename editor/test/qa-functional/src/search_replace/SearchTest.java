@@ -44,7 +44,7 @@ public class SearchTest extends EditorTestCase {
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
             JEditorPaneOperator txtOper = editor.txtEditorPane();
-
+            
             // open find and close
             new FindAction().perform();
             txtOper.pushKey(KeyEvent.VK_ESCAPE);
@@ -52,14 +52,14 @@ public class SearchTest extends EditorTestCase {
             // open find and open help
             txtOper.pushKey(KeyEvent.VK_F, KeyEvent.CTRL_MASK);
             Find find = new Find();
-            find.btHelp().clickMouse();
+            find.btHelp().doClick();
             
             // close help
             HelpOperator help = new HelpOperator();
             help.close();
             
             // close find
-            find.btClose().clickMouse();
+            find.btClose().doClick();
             
         } finally {
             closeFileWithDiscard();
@@ -86,8 +86,9 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'public' found at 16:5");
-
+            assertEquals(editor.lblStatusBar().getText(),
+                    "'public' found at 16:5");
+            
             // choose the "testFindSelectionRepeated" word
             editor.select(13, 14, 38);
             new FindAction().perform();
@@ -99,7 +100,8 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find2.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'testFindSelectionRepeated' found at 15:35");
+            assertEquals(editor.lblStatusBar().getText(),
+                    "'testFindSelectionRepeated' found at 15:35");
             
         } finally {
             closeFileWithDiscard();
@@ -114,7 +116,7 @@ public class SearchTest extends EditorTestCase {
         openDefaultSampleFile();
         try {
             EditorOperator editor = getDefaultSampleEditorOperator();
-                       
+            
             // first search
             editor.setCaretPosition(0);
             new FindAction().perform();
@@ -142,12 +144,13 @@ public class SearchTest extends EditorTestCase {
             new EventTool().waitNoEvent(1000);
             find3.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText().contains(
-                    "'package' found at 7:1"), true);
-                        
+            assertEquals(editor.lblStatusBar().getText(),
+                    "'package' found at 7:1; End of document reached. "
+                    +"Continuing search from beginning.");
+            
         } finally {
             closeFileWithDiscard();
-        }        
+        }
     }
     
     /**
@@ -165,17 +168,251 @@ public class SearchTest extends EditorTestCase {
             Find find = new Find();
             JComboBoxOperator cbo = find.cboFindWhat();
             cbo.getTextField().setText("cLaSs");
-            find.cbHighlightSearch().clickMouse();
-            find.cbIncrementalSearch().clickMouse();
-            find.cbWrapSearch().clickMouse();
+            find.cbHighlightSearch().setSelected(false);
+            find.cbIncrementalSearch().setSelected(false);
+            find.cbWrapSearch().setSelected(false);
             find.find();
             new EventTool().waitNoEvent(1000);
             find.close();
             // check status bar
-            assertEquals(editor.lblStatusBar().getText(), "'cLaSs' found at 13:8");
+            assertEquals(editor.lblStatusBar().getText(),
+                    "'cLaSs' found at 13:8");
             
         } finally {
             closeFileWithDiscard();
         }
     }
+    
+    /**
+     * TC5 - Nothing Found
+     */
+    public void testNothingFound() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform search for nonexistent word
+            new FindAction().perform();
+            Find find = new Find();
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("foo");
+            find.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), "'foo' not found");
+            
+        } finally {
+            closeFileWithDiscard();
+        }        
+    }
+    
+    /**
+     * TC6 - Match Case
+     */
+    public void testMatchCase() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform case sensitive search - nothing found 
+            new FindAction().perform();
+            Find find = new Find();
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("Package");
+            find.cbMatchCase().setSelected(true);
+            find.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'Package' not found");
+
+            // perform case sensitive search - package found
+            editor.setCaretPosition(0);            
+            new FindAction().perform();
+            Find find2 = new Find();
+            JComboBoxOperator cbo2 = find2.cboFindWhat();
+            cbo2.getTextField().setText("package");
+            find2.find();
+            new EventTool().waitNoEvent(1000);
+            find2.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'package' found at 7:1");
+            
+        } finally {
+            closeFileWithDiscard();
+        }                
+    }
+
+    /**
+     * TC7 - Smart Case
+     */
+    public void testSmartCase() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform smart case search 
+            new FindAction().perform();
+            Find find = new Find();
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("smarttest");
+            // uncheck match case
+            find.cbMatchCase().setSelected(false);
+            // check smart case
+            find.cbSmartCase().setSelected(true);
+            find.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar            
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'smarttest' found at 17:16");
+            
+            // perform smart case search 
+            new FindAction().perform();
+            Find find2 = new Find();
+            JComboBoxOperator cbo2 = find.cboFindWhat();
+            cbo2.getTextField().setText("smarttest");
+            find2.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar            
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'smarttest' found at 18:16");
+
+            // perform smart case search 
+            new FindAction().perform();
+            Find find3 = new Find();
+            JComboBoxOperator cbo3 = find.cboFindWhat();
+            cbo3.getTextField().setText("smarttest");
+            find3.find();
+            new EventTool().waitNoEvent(1000);
+            find3.close();
+            // check status bar            
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'smarttest' found at 19:16");
+
+            // perform smart case search - negative
+            new FindAction().perform();
+            Find find4 = new Find();
+            JComboBoxOperator cbo4 = find.cboFindWhat();
+            cbo4.getTextField().setText("smarttest");
+            find4.find(); 
+            new EventTool().waitNoEvent(1000); 
+            find4.close(); 
+            // check status bar             
+            assertEquals(editor.lblStatusBar().getText(),  
+                    "'smarttest' not found"); 
+            
+        } finally {
+            closeFileWithDiscard();
+        }        
+    }    
+
+    /**
+     * TC8 - Smart Case Reverse
+     */
+    public void testSmartCaseReverse() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform search for Smarttest (found Smarttest)
+            new FindAction().perform();
+            Find find = new Find();
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("Smarttest");
+            find.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'Smarttest' found at 18:16");
+
+            // perform smart case search - negative
+            new FindAction().perform();
+            Find find2 = new Find();
+            JComboBoxOperator cbo2 = find2.cboFindWhat();
+            cbo2.getTextField().setText("Smarttest");
+            find2.find(); 
+            new EventTool().waitNoEvent(1000); 
+            find2.close(); 
+            // check status bar             
+            assertEquals(editor.lblStatusBar().getText(),  
+                    "'Smarttest' not found"); 
+            
+        } finally {
+            closeFileWithDiscard();
+        }        
+    }
+    
+    /**
+     * TC9 - Match Whole Words Only
+     */
+    public void testMatchWholeWordsOnly() {
+        openDefaultProject();
+        openDefaultSampleFile();
+        try {
+            EditorOperator editor = getDefaultSampleEditorOperator();
+            
+            // perform search for "word"
+            new FindAction().perform();
+            Find find = new Find();
+            find.cbMatchCase().setSelected(false);
+            find.cbMatchWholeWordsOnly().setSelected(true);
+            JComboBoxOperator cbo = find.cboFindWhat();
+            cbo.getTextField().setText("word");
+            find.find();
+            new EventTool().waitNoEvent(1000);
+            find.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'word' found at 18:16");
+
+            // perform search for "word"
+            new FindAction().perform();
+            Find find2 = new Find();
+            JComboBoxOperator cbo2 = find2.cboFindWhat();
+            cbo2.getTextField().setText("word");
+            find2.find();
+            new EventTool().waitNoEvent(1000);
+            find2.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'word' found at 18:24");
+
+            // perform search for "word"
+            new FindAction().perform();
+            Find find3 = new Find();
+            JComboBoxOperator cbo3 = find3.cboFindWhat();
+            cbo3.getTextField().setText("word");
+            find3.find();
+            new EventTool().waitNoEvent(1000);
+            find3.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'word' found at 19:25");
+
+            // perform search for "word" - negative
+            new FindAction().perform();
+            Find find4 = new Find();
+            JComboBoxOperator cbo4 = find4.cboFindWhat();
+            cbo4.getTextField().setText("word");
+            find4.find();
+            new EventTool().waitNoEvent(1000);
+            find4.close();
+            // check status bar
+            assertEquals(editor.lblStatusBar().getText(), 
+                    "'word' not found");
+            
+        } finally {
+            closeFileWithDiscard();
+        }        
+    }    
 }
