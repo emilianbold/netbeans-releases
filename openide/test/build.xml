@@ -128,7 +128,7 @@ Microsystems, Inc. All Rights Reserved.
     <!-- This task is used fro QA DataSystems test execution -->
     <!-- It prepares test folder before own test is executed -->
     <!-- Finally it calls runcodetest executor -> test will be executed in code mode -->
-    <target name="runcodeDOTests" depends="prepare-codetest-classpath">
+    <target name="runcodeDOTests">
         <antcall target="restoredata"/>
         <antcall target="runcodetest"/>
     </target>
