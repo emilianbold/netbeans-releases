@@ -285,7 +285,7 @@ final class ViewHierarchy {
             // #37463, it is needed to provide a check, otherwise the window would 
             // get fronted each time.
             if(!comp.isVisible()) {
-                mv.getComponent().setVisible(true);
+                comp.setVisible(true);
             }
         }
     }
@@ -349,11 +349,10 @@ final class ViewHierarchy {
     /** Set active mode view. */
     private void setActiveModeView(ModeView modeView) {
         //#39729 fix - when main window has focus, do not discard (in SDI the actual component can be hidden
-        if(modeView == activeModeView && activeModeView.isActive()) {
+        if(modeView == activeModeView && activeModeView != null && activeModeView.isActive()) {
             return;
         }
-        
-        if(activeModeView != null) {
+        if(activeModeView != null && modeView != activeModeView) {
             activeModeView.setActive(false);
         }
         
