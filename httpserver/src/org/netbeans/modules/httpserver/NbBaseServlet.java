@@ -14,26 +14,13 @@
 package org.netbeans.modules.httpserver;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Enumeration;
-import java.util.TreeSet;
 import java.net.InetAddress;
 import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
-import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 
 /** Base servlet for servlets which access NetBeans Open APIs

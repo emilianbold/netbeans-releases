@@ -14,33 +14,20 @@
 package org.netbeans.modules.httpserver;
 
 import java.awt.Dialog;
-import java.awt.event.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInput;
-import java.util.ResourceBundle;
 import java.util.Hashtable;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Properties;
-import java.net.URL;
-import java.net.MalformedURLException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.MessageFormat;
 import javax.swing.event.EventListenerList;
 import org.openide.DialogDescriptor;
 
 import org.openide.options.SystemOption;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.util.HttpServer;
 import org.openide.util.Utilities;
-import org.openide.filesystems.FileObject;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -48,8 +35,7 @@ import org.openide.DialogDisplayer;
 *
 * @author Ales Novak, Petr Jiricka
 */
-public class HttpServerSettings extends SystemOption 
-    /*implements HttpServer.Impl*/ {
+public class HttpServerSettings extends SystemOption {
 
     private static final int MAX_START_RETRIES = 20;
     private static int currentRetries = 0;
@@ -71,28 +57,21 @@ public class HttpServerSettings extends SystemOption
     /** constant for any host */
     public static final String ANYHOST = "any"; // NOI18N
 
+    public static final HostProperty hostProperty = new HostProperty("", LOCALHOST);
+    
     public static final String PROP_PORT               = "port"; // NOI18N
     public static final String PROP_HOST_PROPERTY      = "hostProperty"; // NOI18N
     static final String PROP_WRAPPER_BASEURL    = "wrapperBaseURL"; // NOI18N
     public static final String PROP_RUNNING            = "running"; // NOI18N
 
-    private static final String PROP_HOST               = "host"; // NOI18N
-    private static final String PROP_GRANTED_ADDRESSES  = "grantedAddresses"; // NOI18N
     private static final String PROP_SHOW_GRANT_ACCESS  = "showGrantAccess"; // NOI18N
 
     /** port */
-    //  private static int port = 8082; //8080
-    private static final int DEFAULT_PORT = 8082;
-
-    /** allowed connections hosts - local/any */
-    private static String host = LOCALHOST;
+     private static final int DEFAULT_PORT = 8082;
 
     /** mapping of wrapper to URL */
     private static String wrapperBaseURL = "/resource/"; // NOI18N
     
-    /** addresses which have been granted access to the web server */
-    private static String grantedAddresses = ""; // NOI18N
-
     /** Reflects whether the server is actually running, not the running property */
     static boolean running = false;
 
@@ -104,11 +83,6 @@ public class HttpServerSettings extends SystemOption
      * @deprecated use <CODE>SharedClassObject.findObject()</CODE>
      */
     public static HttpServerSettings OPTIONS = null;
-
-    /** last used servlet name */
-    private static int lastUsedName = 0;
-    /** map names of servlets to paths */
-    private static HashMap nameMap = new HashMap();
 
     /** Lock for the httpserver operations */
     private static Object httpLock;
@@ -135,7 +109,7 @@ public class HttpServerSettings extends SystemOption
     
     /** human presentable name */
     public String displayName() {
-        return NbBundle.getBundle(HttpServerSettings.class).getString("CTL_HTTP_settings");
+        return NbBundle.getMessage(HttpServerSettings.class, "CTL_HTTP_settings");
     }
 
     /** getter for running status */
@@ -286,17 +260,6 @@ public class HttpServerSettings extends SystemOption
         firePropertyChange(PROP_WRAPPER_BASEURL, oldURL, this.wrapperBaseURL);
     }
 
-    /** Getter for grantedAddresses property */
-    private String getGrantedAddresses() {
-        return grantedAddresses;
-    }
-
-    /** Setter for grantedAccesses property */
-    public void setGrantedAddresses(String grantedAddresses) {
-        this.grantedAddresses = grantedAddresses;
-        firePropertyChange(PROP_HOST_PROPERTY, null, this.grantedAddresses);
-    }
-
     /** setter for port */
     public void setPort(int p) {
         if (p <= 0 || p >65535) {
@@ -327,18 +290,6 @@ public class HttpServerSettings extends SystemOption
         return ((prop == null) ? DEFAULT_PORT : ((Integer)prop).intValue());
     }
 
-    /** setter for host */
-    public void setHost(String h) {
-        if (h.equals(ANYHOST) || h.equals(LOCALHOST))
-            host = h;
-        firePropertyChange(PROP_HOST_PROPERTY, null, this.host);
-    }
-
-    /** getter for host */
-    private String getHost() {
-        return host;
-    }
-
     public void setStartStopMessages(boolean ssm) {
         startStopMessages = ssm;
     }
@@ -366,45 +317,6 @@ public class HttpServerSettings extends SystemOption
         }
     }
 
-    /* Implementation of HttpServer.Impl interface */
-
-//    /** Maps a file object to a URL. Should ensure that the file object is accessible on the given URL. */
-//    public URL getRepositoryURL(FileObject fo) throws MalformedURLException, UnknownHostException {
-//        setRunning(true);
-//        return new URL("http", getLocalHost(), getPort(), // NOI18N
-//                       getRepositoryBaseURL() + fo.getPath()); // NOI18N
-//    }
-//
-//    /** Maps the repository root to a URL. This URL should serve a page from which repository objects are accessible. */
-//    public URL getRepositoryRoot() throws MalformedURLException, UnknownHostException {
-//        setRunning(true);
-//        return new URL("http", getLocalHost(), getPort(), getRepositoryBaseURL()); // NOI18N
-//    }
-//
-//    /** Maps a resource path to a URL. Should ensure that the resource is accessible on the given URL.
-//    * @param resourcePath path of the resource in the classloader format
-//    * @see ClassLoader#getResource(java.lang.String)
-//    * @see TopManager#systemClassLoader()
-//    */
-//    public URL getResourceURL(String resourcePath) throws MalformedURLException, UnknownHostException {
-//        setRunning(true);
-//        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL() + // NOI18N
-//                       (resourcePath.startsWith("/") ?                            // NOI18N 
-//                        resourcePath.substring(1) : 
-//                        resourcePath));
-//    }
-//
-//    /** Maps a resource root to a URL. Should ensure that all resources under the root are accessible under an URL
-//    * consisting of the returned URL and fully qualified resource name.
-//    * @param resourcePath path of the resource in the classloader format
-//    * @see ClassLoader#getResource(java.lang.String)
-//    * @see TopManager#systemClassLoader()
-//    */
-//    public URL getResourceRoot() throws MalformedURLException, UnknownHostException {
-//        setRunning(true);
-//        return new URL("http", getLocalHost(), getPort(), getClasspathBaseURL()); // NOI18N
-//    }
-
     public void addGrantAccessListener(GrantAccessListener l) {
         listenerList.add(GrantAccessListener.class, l);
     }
@@ -426,10 +338,6 @@ public class HttpServerSettings extends SystemOption
         }
         return (grantAccessEvent == null) ? false : grantAccessEvent.isGranted();
     }
-
-//    public boolean allowAccess(InetAddress addr) {
-//        throw new UnsupportedOperationException();
-//    }
 
     /** Requests access for address addr. If necessary asks the user. Returns true it the access
     * has been granted. */  
@@ -475,7 +383,7 @@ public class HttpServerSettings extends SystemOption
                 // descriptor.setOptionsAlign (DialogDescriptor.BOTTOM_ALIGN);
                 final Dialog d  = DialogDisplayer.getDefault ().createDialog (descriptor);
                 d.setSize (580, 180);
-                d.show ();
+                d.setVisible(true);
 
                 setShowGrantAccessDialog (panel.getShowDialog ());
                 if (NotifyDescriptor.YES_OPTION.equals(descriptor.getValue ())) {
@@ -493,7 +401,7 @@ public class HttpServerSettings extends SystemOption
 
     /** Checks whether access to the server is now allowed. */
     private boolean accessAllowedNow(InetAddress addr, String resource) {
-        if (getHost().equals(HttpServerSettings.ANYHOST))
+        if (hostProperty.getHost().equals(HttpServerSettings.ANYHOST))
             return true;
 
         HashSet hs = getGrantedAddressesSet();
@@ -509,13 +417,13 @@ public class HttpServerSettings extends SystemOption
     /** Appends the address to the list of addresses which have been granted access. */
     private void appendAddressToGranted(String addr) {
         synchronized (httpLock ()) {
-            String granted = getGrantedAddresses().trim();
+            String granted = hostProperty.getGrantedAddresses().trim();
             if ((granted.length() > 0) &&
                     (granted.charAt(granted.length() - 1) != ';') &&
                     (granted.charAt(granted.length() - 1) != ','))
                 granted += ',';
             granted += addr;
-            setGrantedAddresses(granted);
+            hostProperty.setGrantedAddresses(granted);
         }
     }
 
@@ -528,7 +436,7 @@ public class HttpServerSettings extends SystemOption
             addr.add(InetAddress.getLocalHost().getHostAddress());
         }
         catch (UnknownHostException e) {}
-        StringTokenizer st = new StringTokenizer(getGrantedAddresses(), ",;"); // NOI18N
+        StringTokenizer st = new StringTokenizer(hostProperty.getGrantedAddresses(), ",;"); // NOI18N
         while (st.hasMoreTokens()) {
             String ipa = st.nextToken();
             ipa = ipa.trim();
@@ -592,7 +500,7 @@ public class HttpServerSettings extends SystemOption
      * @return Value of property hostProperty.
      */
     public HttpServerSettings.HostProperty getHostProperty () {
-        return new HttpServerSettings.HostProperty (grantedAddresses, host);
+        return hostProperty;
     }
     
     /** Setter for property hostProperty.
@@ -600,8 +508,6 @@ public class HttpServerSettings extends SystemOption
      */
     public void setHostProperty (HttpServerSettings.HostProperty hostProperty) {
         if (ANYHOST.equals(hostProperty.getHost ()) || LOCALHOST.equals(hostProperty.getHost ())) {
-            grantedAddresses = hostProperty.getGrantedAddresses ();
-            host = hostProperty.getHost ();
             firePropertyChange(PROP_HOST_PROPERTY, null, hostProperty);
         }
     }
