@@ -94,7 +94,9 @@ public class TestGenerateJavadoc extends JellyTestCase {
         new EventTool().waitNoEvent(1000);
         
         // generate for colorpicker package
-        Node colorPickerNode = new Node(new Node(repoTabOper.getRootNode(), path), "examples|colorpicker"); // NOI18N        
+        Node colorPickerNode = new Node(new Node(repoTabOper.getRootNode(), topNode.getPath() + sep + 
+                            "org" + sep + "netbeans" + sep + "test" + sep + "gui" + sep + // NOI18N
+                            "javadoc" + sep + "data" + sep + "sampledir"), "examples|colorpicker"); // NOI18N        
         generateJDoc.perform(colorPickerNode);
         
         NbDialogOperator nbDialogOper_2 = new NbDialogOperator(questionWinTitle);
@@ -106,7 +108,9 @@ public class TestGenerateJavadoc extends JellyTestCase {
         new EventTool().waitNoEvent(1000);
         
         // generate for examples package
-        Node examplesNode = new Node(new Node(repoTabOper.getRootNode(), path), "examples"); // NOI18N        
+        Node examplesNode = new Node(new Node(repoTabOper.getRootNode(), topNode.getPath() + sep + 
+                            "org" + sep + "netbeans" + sep + "test" + sep + "gui" + sep + // NOI18N
+                            "javadoc" + sep + "data" + sep + "sampledir"), "examples"); // NOI18N        
         generateJDoc.perform(examplesNode);
         
         NbDialogOperator nbDialogOper_3 = new NbDialogOperator(questionWinTitle);
