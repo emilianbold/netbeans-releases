@@ -245,7 +245,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SeparatorRun.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            
+<!--            
             <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />                                                
 
@@ -253,7 +253,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="SeparatorConnect.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-            
+                
             <attr name="SeparatorConnect.instance/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
             <attr name="org-netbeans-modules-debugger-support-actions-FinishAction.instance/Separator1.instance" boolvalue="true" />
@@ -282,10 +282,10 @@ Microsystems, Inc. All Rights Reserved.
             <file name="Separator3.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
-    
-            <attr name="Separator3.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance" boolvalue="true" />
+-->    
+            <attr name="SeparatorRun.instance/org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance" boolvalue="true" />
             <file name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance"/>
-            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance/Separator4.instance" boolvalue="true" />
+<!--            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance/Separator4.instance" boolvalue="true" />
             <file name="Separator4.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
             </file>
@@ -316,7 +316,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
             <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
-            
+-->            
         </folder>
         
         <attr name="RunProject/Versioning" boolvalue="true" />
