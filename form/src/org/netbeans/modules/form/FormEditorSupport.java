@@ -322,6 +322,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
       if (t instanceof ThreadDeath) {
         throw (ThreadDeath)t;
       }
+      if (System.getProperty ("netbeans.debug.exceptions") != null) {
+        t.printStackTrace ();
+      }
       TopManager.getDefault ().notify (
         new NotifyDescriptor.Message (
           java.text.MessageFormat.format (
@@ -405,6 +408,8 @@ public class FormEditorSupport extends JavaEditor implements FormCookie {
 
 /*
  * Log
+ *  34   Gandalf   1.33        9/10/99  Ian Formanek    Better exception 
+ *       notification
  *  33   Gandalf   1.32        9/8/99   Ian Formanek    openAt behaves correctly
  *       when form load fails, i18nized
  *  32   Gandalf   1.31        9/7/99   Ian Formanek    Method getFormManager 
