@@ -1164,7 +1164,7 @@ public class EarProjectProperties extends ArchiveProjectProperties implements An
         else if (obj instanceof File) {
             mod = getModFromFile((File) obj, dd, path);
         }
-        if (mod.getWeb() != null)
+        if (mod != null && mod.getWeb() != null)
             replaceEmptyClientModuleUri(path);
         Module prevMod = searchForModule(dd, path);
         if (null == prevMod && null != mod)
