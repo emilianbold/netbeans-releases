@@ -13,23 +13,19 @@
 
 package org.netbeans.modules.beans.beaninfo;
 
-import java.util.List;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.StringTokenizer;
-
-import org.openide.src.MethodElement;
-import org.openide.src.ClassElement;
-import org.openide.src.MethodParameter;
-import org.openide.nodes.Node;
-import org.openide.TopManager;
-import org.openide.NotifyDescriptor;
-
+import java.io.IOException;
+import java.util.*;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.beans.EventSetPattern;
+import org.netbeans.modules.beans.IdxPropertyPattern;
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.beans.PropertyPattern;
-import org.netbeans.modules.beans.IdxPropertyPattern;
-import org.netbeans.modules.beans.EventSetPattern;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.nodes.Node;
+import org.openide.src.ClassElement;
+import org.openide.src.MethodElement;
+import org.openide.src.MethodParameter;
 
 /** Analyses the ClassElement trying to find source code patterns i.e.
  * properties or event sets;
@@ -378,7 +374,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 
                 String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoExists" );  // NOI18N
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if ( !nd.getValue().equals ( NotifyDescriptor.YES_OPTION ) ) {
                     return;
                 }
@@ -386,10 +382,10 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 try {
                     bis.delete();
                 }
-                catch ( java.io.IOException e ) {
+                catch ( IOException e ) {
                     mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                     nd = new NotifyDescriptor.Message ( mssg );
-                    TopManager.getDefault().notify( nd );
+                    DialogDisplayer.getDefault().notify( nd );
                     return;
                 }
                 bis.createFromTemplate(iconBlockRequired());
@@ -398,11 +394,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
                 try {
                     bis.delete();
                 }
-                catch ( java.io.IOException e ) {
+                catch ( IOException e ) {
                     String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                     nd = new NotifyDescriptor.Message ( mssg );
-                    TopManager.getDefault().notify( nd );
+                    DialogDisplayer.getDefault().notify( nd );
                     return;
                 }
                 
@@ -413,11 +409,11 @@ public class BiAnalyser extends Object implements Node.Cookie {
                     try {
                         bis.delete();
                     }
-                    catch ( java.io.IOException e ) {
+                    catch ( IOException e ) {
                         String mssg = GenerateBeanInfoAction.getString( "MSG_BeanInfoCantDelete" );  // NOI18N
                         NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
                         nd = new NotifyDescriptor.Message ( mssg );
-                        TopManager.getDefault().notify( nd );
+                        DialogDisplayer.getDefault().notify( nd );
                         return;
                     }
                 }
@@ -434,7 +430,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         }
 
-        javax.swing.SwingUtilities.invokeLater( new Runnable() {
+        SwingUtilities.invokeLater( new Runnable() {
                                                     public void run() {
                                                         bis.open();
                                                         regenerateBeanDescriptor();
@@ -520,7 +516,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all properites
-        Collection allProperties = new java.util.TreeSet(getProperties());
+        Collection allProperties = new TreeSet(getProperties());
         allProperties.addAll(getIdxProperties());
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_PropertyIdentifiers" ) );  // NOI18N
@@ -604,7 +600,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         }
 
         // Make common list of all methods
-        Collection allMethods = new java.util.TreeSet( getMethods() );
+        Collection allMethods = new TreeSet( getMethods() );
 
         sb.append( TAB + GenerateBeanInfoAction.getString( "COMMENT_MethodIdentifiers" ) );  // NOI18N
 
@@ -691,7 +687,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
 
         sb.append( TAB + GenerateBeanInfoAction.getString("COMMENT_EventSetsIdentifiers") );  // NOI18N
 
-        Collection events = new java.util.TreeSet(eventSets);
+        Collection events = new TreeSet(eventSets);
         Iterator it = events.iterator();
         while ( it.hasNext() ) {
             BiFeature bif = ( BiFeature )it.next();
@@ -841,7 +837,7 @@ public class BiAnalyser extends Object implements Node.Cookie {
         
         section = bis.getMethodsSection();
         if (section == null) {
-            TopManager.getDefault().notify(new NotifyDescriptor.Message(GenerateBeanInfoAction.getString("MSG_Old_Version"), NotifyDescriptor.WARNING_MESSAGE));  // NOI18N
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(GenerateBeanInfoAction.getString("MSG_Old_Version"), NotifyDescriptor.WARNING_MESSAGE));  // NOI18N
             nullMethods = true;
         } else {
             code = normalizeText(section);

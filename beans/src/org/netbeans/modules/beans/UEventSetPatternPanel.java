@@ -17,10 +17,10 @@ import java.awt.Dialog;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
+import org.openide.DialogDisplayer;
 
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.util.HelpCtx;
@@ -306,7 +306,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
             if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
                 //Test wether the string is empty
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -322,7 +322,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                     if ( groupNode.eventSetExists( type ) ) {
                         String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
                                                            new Object[] { type.toString() } );
-                        TopManager.getDefault().notify(
+                        DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
 
                         typeComboBox.requestFocus();
@@ -330,7 +330,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                     }
                 }
                 catch ( IllegalArgumentException ex ) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -342,7 +342,7 @@ public class UEventSetPatternPanel extends javax.swing.JPanel
                 if ( !PatternAnalyser.isSubclass(
                     ClassElement.forName( type.getClassName().getFullName() ),
                     ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
                                                      NotifyDescriptor.ERROR_MESSAGE) );
                     return;

@@ -17,10 +17,10 @@ import java.awt.Dialog;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
+import org.openide.DialogDisplayer;
 
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.util.HelpCtx;
@@ -120,7 +120,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
         mainPanel.setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(5, 5, 5, 5)));
         eventSetPanel.setLayout(new java.awt.GridBagLayout());
 
-        eventSetPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "eventSetPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        eventSetPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "eventSetPanel"));
         typeLabel.setText("typeLabel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -153,9 +153,9 @@ public class EventSetPatternPanel extends javax.swing.JPanel
 
         optionsPanel.setLayout(new java.awt.GridBagLayout());
 
-        optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color (149, 142, 130)), "optionsPanel", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 0, 11), java.awt.Color.black));
+        optionsPanel.setBorder(new javax.swing.border.TitledBorder(new javax.swing.border.EtchedBorder(null, new java.awt.Color(149, 142, 130)), "optionsPanel"));
         emptyRadioButton.setSelected(true);
-        emptyRadioButton.setText("emptyRadioButton");
+        emptyRadioButton.setLabel("emptyRadioButton");
         emptyRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 emptyRadioButtonActionPerformed(evt);
@@ -170,7 +170,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 4);
         optionsPanel.add(emptyRadioButton, gridBagConstraints);
 
-        alRadioButton.setText("alRadioButton");
+        alRadioButton.setLabel("alRadioButton");
         alRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 alRadioButtonActionPerformed(evt);
@@ -268,17 +268,17 @@ public class EventSetPatternPanel extends javax.swing.JPanel
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton alRadioButton;
+    private javax.swing.JCheckBox fireCheckBox;
+    private javax.swing.JRadioButton emptyRadioButton;
     private javax.swing.JPanel eventSetPanel;
     private javax.swing.JRadioButton ellRadioButton;
-    private javax.swing.JLabel typeLabel;
-    private javax.swing.JCheckBox passEventCheckBox;
-    private javax.swing.JCheckBox fireCheckBox;
-    private javax.swing.JPanel optionsPanel;
     private javax.swing.JLabel textLabel;
-    private javax.swing.JRadioButton emptyRadioButton;
+    private javax.swing.JRadioButton alRadioButton;
+    private javax.swing.JPanel optionsPanel;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JCheckBox passEventCheckBox;
     private javax.swing.JComboBox typeComboBox;
+    private javax.swing.JLabel typeLabel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -339,7 +339,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
             if ( e.getSource() == org.openide.DialogDescriptor.OK_OPTION ) {
                 //Test wether the string is empty
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -355,7 +355,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
                     if ( groupNode.eventSetExists( type ) ) {
                         String msg = MessageFormat.format( PatternNode.getString("MSG_EventSet_Exists"),
                                                            new Object[] { type.toString() } );
-                        TopManager.getDefault().notify(
+                        DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
 
                         typeComboBox.requestFocus();
@@ -363,7 +363,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
                     }
                 }
                 catch ( IllegalArgumentException ex ) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -376,7 +376,7 @@ public class EventSetPatternPanel extends javax.swing.JPanel
                     ClassElement.forName( type.getClassName().getFullName() ),
                     ClassElement.forName( "java.util.EventListener" ) ) ) { // NOI18N
 
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(PatternNode.getString("MSG_InvalidListenerInterface"),
                                                      NotifyDescriptor.ERROR_MESSAGE) );
                     return;

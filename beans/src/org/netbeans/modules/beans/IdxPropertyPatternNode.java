@@ -19,7 +19,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.nodes.*;
@@ -38,8 +37,6 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
     */
     public IdxPropertyPatternNode( IdxPropertyPattern pattern, boolean writeable) {
         super(pattern, writeable);
-        //BHM
-        //setElementFormat (sourceOptions.getFieldElementFormat());
     }
 
     /* Resolve the current icon base.
@@ -83,26 +80,6 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
         return PatternNode.getString( "HINT_IndexedProperty" );
     }
 
-    /* Removes the element from the class and calls superclass.
-    *
-    * @exception IOException if SourceException is thrown
-    *            from the underlayed Element.
-    */
-    /*
-    public void destroy() throws IOException {
-      /
-      try {
-        FieldElement el = (FieldElement) element;
-        el.getDeclaringClass().removeField(el);
-      }
-      catch (SourceException e) {
-        throw new IOException(e.getMessage());
-      }
-      *
-      System.out.println ("Pattern should be removed");
-      super.destroy();
-}
-    */
     /** Overrides the default implementation of clone node
     */
     public Node cloneNode() {
@@ -113,7 +90,6 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
       * @param canW <code>false</code> to force property to be read-only
       * @return the property
       */
-
     protected Node.Property createIndexedTypeProperty(boolean canW) {
         return new PatternPropertySupport(PROP_INDEXEDTYPE, Type.class, canW) {
 
@@ -227,16 +203,3 @@ public class IdxPropertyPatternNode extends PropertyPatternNode  {
 
 }
 
-/*
-* Log
-*  6    Gandalf   1.5         1/12/00  Petr Hrebejk    i18n  
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of 
-*       patterns resolving
-*  3    Gandalf   1.2         7/8/99   Jesse Glick     Context help.
-*  2    Gandalf   1.1         6/30/99  Ian Formanek    Reflecting package 
-*       changes of some property editors
-*  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
-* $
-*/

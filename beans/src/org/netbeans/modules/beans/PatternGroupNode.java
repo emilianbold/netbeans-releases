@@ -36,9 +36,9 @@ import org.openide.actions.PropertiesAction;
 import org.openide.actions.ToolsAction;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDescriptor;
-import org.openide.TopManager;
 
 import org.netbeans.modules.beans.beaninfo.GenerateBeanInfoAction;
+import org.openide.DialogDisplayer;
 
 /** Subnodes of this node are nodes representing source code patterns i.e.
  * PropertyPatternNode or EventSetPatternNode.
@@ -109,12 +109,6 @@ public class  PatternGroupNode extends AbstractNode {
         }
     }
 
-    /*
-    public Node cloneNode() {
-      return new PatternGroupNode( ((PatternChildren) getChildren()).cloneChildren() );
-}
-    */
-
     public HelpCtx getHelpCtx () {
         return new HelpCtx (PatternGroupNode.class);
     }
@@ -140,13 +134,6 @@ public class  PatternGroupNode extends AbstractNode {
                    createNewType(PatternNode.getString("MENU_CREATE_UNICASTSE"), PATTERN_KIND_UC_EVENT_SET ),
                    createNewType(PatternNode.getString("MENU_CREATE_MULTICASTSE"), PATTERN_KIND_MC_EVENT_SET  ),
                };
-        /*
-    }
-        else {
-          // no new types
-          return super.getNewTypes();
-    }
-        */
     }
 
     /** Create one new type with the given name and the kind.
@@ -196,26 +183,14 @@ public class  PatternGroupNode extends AbstractNode {
         case PATTERN_KIND_PROPERTY:
             PropertyPatternPanel propertyPanel;
 
-            /*
-            dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
-              PatternNode.getString( "CTL_TITLE_NewProperty"),            // Title
-              true,                                                 // Modal
-              new Object[] { NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION },  // Option list
-              NotifyDescriptor.OK_OPTION,                           // Default
-              DialogDescriptor.BOTTOM_ALIGN,                        // Align
-              new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty"), // Help
-              propertyPanel );
-            */
-
             dd = new DialogDescriptor( (propertyPanel = new PropertyPatternPanel()),
                                        PatternNode.getString( "CTL_TITLE_NewProperty"),            // Title
                                        true,                                                 // Modal
                                        propertyPanel );
-            //dd.setHelpCtx (new HelpCtx (PatternGroupNode.class.getName () + ".dialogProperty")); // NOI18N
             dd.setHelpCtx (new HelpCtx (HelpCtxKeys.BEAN_PROPERTIES_HELP));
             dd.setClosingOptions( new Object[]{} );
 
-            dialog = TopManager.getDefault().createDialog( dd );
+            dialog = DialogDisplayer.getDefault().createDialog( dd );
             propertyPanel.setDialog( dialog );
             propertyPanel.setForInterface( forInterface );
             propertyPanel.setGroupNode( this );
@@ -242,12 +217,11 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogIdxProperty"), // Help // NOI18N
                                        new HelpCtx (HelpCtxKeys.BEAN_PROPERTIES_HELP), // Help // NOI18N
                                        idxPropertyPanel );
             dd.setClosingOptions( new Object[]{} );
 
-            dialog = TopManager.getDefault().createDialog( dd );
+            dialog = DialogDisplayer.getDefault().createDialog( dd );
             idxPropertyPanel.setDialog( dialog );
             idxPropertyPanel.setForInterface( forInterface );
             idxPropertyPanel.setGroupNode( this );
@@ -277,12 +251,11 @@ public class  PatternGroupNode extends AbstractNode {
                                        NotifyDescriptor.OK_CANCEL_OPTION,                    // Option list
                                        NotifyDescriptor.OK_OPTION,                           // Default
                                        DialogDescriptor.BOTTOM_ALIGN,                        // Align
-                                       //new HelpCtx (PatternGroupNode.class.getName () + ".dialogUniCastES"), // Help // NOI18N
                                        new HelpCtx (HelpCtxKeys.BEAN_EVENTSETS_HELP), // Help // NOI18N
                                        uEventSetPanel );
             dd.setClosingOptions( new Object[]{} );
 
-            dialog = TopManager.getDefault().createDialog( dd );
+            dialog = DialogDisplayer.getDefault().createDialog( dd );
             uEventSetPanel.setDialog( dialog );
             uEventSetPanel.setForInterface( forInterface );
             uEventSetPanel.setGroupNode( this );
@@ -309,7 +282,7 @@ public class  PatternGroupNode extends AbstractNode {
                                        eventSetPanel );
             dd.setClosingOptions( new Object[]{} );
 
-            dialog = TopManager.getDefault().createDialog( dd );
+            dialog = DialogDisplayer.getDefault().createDialog( dd );
             eventSetPanel.setDialog( dialog );
             eventSetPanel.setForInterface( forInterface );
             eventSetPanel.setGroupNode( this );
@@ -321,7 +294,6 @@ public class  PatternGroupNode extends AbstractNode {
                                         result.type, result.implementation, result.firing,
                                         result.passEvent, false );
             }
-            //EventSetPattern.create( ((PatternChildren)getChildren()).getPatternAnalyser(), "NewEventListener", "java.util.EventListener", false ); // NOI18N
             return;
         }
     }
@@ -376,27 +348,3 @@ public class  PatternGroupNode extends AbstractNode {
     }
 }
 
-/*
- * Log
- *  13   Gandalf   1.12        1/13/00  Petr Hrebejk    i18n mk3
- *  12   Gandalf   1.11        1/12/00  Petr Hrebejk    i18n  
- *  11   Gandalf   1.10        1/11/00  Jesse Glick     Context help.
- *  10   Gandalf   1.9         11/11/99 Jesse Glick     Display miscellany.
- *  9    Gandalf   1.8         11/10/99 Petr Hrebejk    Canged to work with 
- *       DialogDescriptor.setClosingOptions()
- *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         9/15/99  Petr Hrebejk    Duplicity recognization 
- *       by EventSets made better
- *  6    Gandalf   1.5         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  5    Gandalf   1.4         8/9/99   Petr Hrebejk    Decapitalization of 
- *       property name
- *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
- */ 

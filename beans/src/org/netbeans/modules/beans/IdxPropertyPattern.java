@@ -18,6 +18,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import org.openide.DialogDisplayer;
 
 import org.openide.src.MethodElement;
 import org.openide.src.MethodParameter;
@@ -27,7 +28,6 @@ import org.openide.src.SourceException;
 import org.openide.src.Identifier;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
 
@@ -173,7 +173,7 @@ public class IdxPropertyPattern extends PropertyPattern {
             try {
                 ipp.generateField( true );
             } catch (SourceException e) {
-                TopManager.getDefault().notify(
+                DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
                         PatternNode.getString("MSG_Cannot_Create_Field"),
                         NotifyDescriptor.WARNING_MESSAGE));
@@ -408,7 +408,7 @@ public class IdxPropertyPattern extends PropertyPattern {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
                                                         new Object[] { setterMethod.getName().getName() } );
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                    TopManager.getDefault().notify( nd );
+                    DialogDisplayer.getDefault().notify( nd );
                     if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                         String newBody = regeneratePropertySupport( indexedSetterMethod.getBody(), null, params[1].getName(), type, oldType );
                         if( newBody != null )
@@ -510,7 +510,7 @@ public class IdxPropertyPattern extends PropertyPattern {
             
             if (setterMethod != null || indexedSetterMethod != null) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                     if ( setterMethod != null )
                         deleteSetterMethod();
@@ -526,7 +526,7 @@ public class IdxPropertyPattern extends PropertyPattern {
                 generateIndexedSetterMethod();
             if (getterMethod != null || indexedGetterMethod != null) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getters") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                     if ( getterMethod != null )
                         deleteGetterMethod();
@@ -859,28 +859,3 @@ public class IdxPropertyPattern extends PropertyPattern {
     }
 
 }
-
-/*
- * Log
- *  12   Gandalf   1.11        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
- *       and new WeakListener implementation
- *  11   Gandalf   1.10        1/13/00  Petr Hrebejk    i18n mk3
- *  10   Gandalf   1.9         1/12/00  Petr Hrebejk    i18n  
- *  9    Gandalf   1.8         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
- *       5044, 5045
- *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
- *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
- *       methods properly
- *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
- *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
- */ 

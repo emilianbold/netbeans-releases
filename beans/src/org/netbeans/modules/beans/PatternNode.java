@@ -28,7 +28,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListener;
 import org.openide.util.actions.SystemAction;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 
 /** Superclass of nodes representing elements in the source hierarchy.

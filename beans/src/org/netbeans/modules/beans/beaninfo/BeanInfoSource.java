@@ -24,10 +24,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.src.SourceElement;
 import org.openide.src.ClassElement;
 import org.openide.src.MethodElement;
-import org.openide.TopManager;
 
 import org.netbeans.modules.beans.PatternAnalyser;
 import org.netbeans.modules.java.JavaEditor;
+import org.openide.filesystems.Repository;
 
 /**
  * Finds or creates BeanInfo source elemnet for the class.
@@ -159,14 +159,8 @@ public class BeanInfoSource extends Object {
 
 
     /** Creates beanInfo data object */
-    void createFromTemplate( boolean iconBlock ) {
-
-        DataFolder dfTemplates = TopManager.getDefault().getPlaces().folders().templates();
-        if ( dfTemplates == null ) {
-            return;
-        }
-        
-        FileObject foTemplates = dfTemplates.getPrimaryFile() ;
+    void createFromTemplate( boolean iconBlock ) {        
+        FileObject foTemplates = Repository.getDefault().getDefaultFileSystem().findResource("Templates"); // NOi18N ;
         if ( foTemplates == null ) {
             return;
         }

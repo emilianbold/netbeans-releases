@@ -31,11 +31,11 @@ import org.openide.nodes.*;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import java.text.MessageFormat;
-
-//import org.openide.explorer.propertysheet.editors.IconEditor.BiImageIcon;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 
 /**
  * PropertyEditor for Icons. Depends on existing DataObject for images.
@@ -117,7 +117,7 @@ class BiIconEditor extends PropertyEditorSupport {
                 ii = null;
             }
             else {
-                URL url = TopManager.getDefault().currentClassLoader().getResource(string);
+                URL url = Repository.getDefault().findResource(string).getURL();
                 ii = new BiImageIcon(url);
                 ii.name = string;
             }
@@ -188,7 +188,7 @@ class BiIconEditor extends PropertyEditorSupport {
         throws IOException, ClassNotFoundException {
             name = (String) in.readObject();
             ImageIcon ii = null;
-            ii = new ImageIcon(TopManager.getDefault().currentClassLoader().getResource(name));
+            ii = new ImageIcon(Repository.getDefault().findResource(name).getURL());
             setImage(ii.getImage());
         }
     }
@@ -294,9 +294,7 @@ class BiIconEditor extends PropertyEditorSupport {
             bSelect.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
                     if (rbClasspath.isSelected()) {
-                        //            InputPanel ip = new InputPanel();
-                        Places places = TopManager.getDefault().getPlaces();
-                        Node ds = places.nodes().repository(new DataFilter() {
+                        Node ds = RepositoryNodeFactory.getDefault().repository(new DataFilter() {
                             public boolean acceptDataObject(DataObject obj) {
                                 // accept only data folders but ignore read only roots of file systems
                                 if (obj instanceof DataFolder)
@@ -310,10 +308,10 @@ class BiIconEditor extends PropertyEditorSupport {
                         try {
                             // selects one folder from data systems
                             DataObject d = (DataObject)
-                            TopManager.getDefault().getNodeOperation().select(
+                            NodeOperation.getDefault().select(
                             bundle.getString("CTL_OpenDialogName"),
                             bundle.getString("CTL_FileSystemName"),
-                            TopManager.getDefault().getPlaces().nodes().repository(),
+                            RepositoryNodeFactory.getDefault().repository(DataFilter.ALL),
                             new NodeAcceptor() {
                                 public boolean acceptNodes(Node[] nodes) {
                                     if ((nodes == null) || (nodes.length != 1))
@@ -380,15 +378,15 @@ class BiIconEditor extends PropertyEditorSupport {
             String s = tfName.getText().trim();
             try {
                 if (rbClasspath.isSelected() && s.length() != 0 ) {
-                    URL url = TopManager.getDefault().currentClassLoader().getResource(s);
+                    FileObject f = Repository.getDefault().findResource(s);
                     try{
-                        ii = new BiImageIcon(url);
+                        ii = new BiImageIcon(f.getURL());
                         ii.name = s;
                     }
                     catch(java.lang.Throwable t){
                         MessageFormat message = new MessageFormat( bundle.getString("CTL_Icon_not_exists")); //NOI18N
                         Object[] form = {s};//CTL_Icon_not_exists=Image class path for {0} is not valid
-                        TopManager.getDefault().notify(new NotifyDescriptor.Message(message.format(form), NotifyDescriptor.ERROR_MESSAGE ));
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message.format(form), NotifyDescriptor.ERROR_MESSAGE ));
                     }
                 }
             } catch (Exception e) {

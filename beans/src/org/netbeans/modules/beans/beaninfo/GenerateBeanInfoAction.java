@@ -18,7 +18,6 @@ import javax.swing.SwingUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
-import org.openide.TopManager;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -28,6 +27,7 @@ import org.openide.util.actions.NodeAction;
 import org.openide.src.ClassElement;
 
 import org.netbeans.modules.beans.PatternAnalyser;
+import org.openide.DialogDisplayer;
 
 /**
 * Search doc action.
@@ -109,7 +109,7 @@ public class GenerateBeanInfoAction extends NodeAction implements java.awt.event
                               new HelpCtx (BiPanel.BEANINFO_HELP), // Help // NOI18N                              
                               null );
 
-        biDialog = TopManager.getDefault().createDialog( dd );
+        biDialog = DialogDisplayer.getDefault().createDialog( dd );
         
         initAccessibility();
 

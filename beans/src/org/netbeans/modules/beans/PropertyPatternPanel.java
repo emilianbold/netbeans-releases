@@ -17,11 +17,11 @@ import java.awt.Dialog;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
 import javax.swing.border.TitledBorder;
+import org.openide.DialogDisplayer;
 
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.src.Type;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 /** Customizer for new Property Pattern
@@ -440,7 +440,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
                 //Test wether the string is empty
                 if ( typeComboBox.getEditor().getItem().toString().trim().length() <= 0) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -450,7 +450,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
 
 
                 if ( !Utilities.isJavaIdentifier( nameTextField.getText() ) ) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Identifier"),
                             NotifyDescriptor.ERROR_MESSAGE) );
@@ -462,7 +462,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                 if ( groupNode.propertyExists( nameTextField.getText() ) ) {
                     String msg = MessageFormat.format( PatternNode.getString("MSG_Property_Exists"),
                                                        new Object[] { nameTextField.getText() } );
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message( msg, NotifyDescriptor.ERROR_MESSAGE) );
 
                     nameTextField.requestFocus();
@@ -473,7 +473,7 @@ public class PropertyPatternPanel extends javax.swing.JPanel
                     Type.parse( typeComboBox.getEditor().getItem().toString() );
                 }
                 catch ( IllegalArgumentException ex ) {
-                    TopManager.getDefault().notify(
+                    DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
                             PatternNode.getString("MSG_Not_Valid_Type"),
                             NotifyDescriptor.ERROR_MESSAGE) );

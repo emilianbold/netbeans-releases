@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.nodes.*;
@@ -112,29 +112,8 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
         return sheet;
     }
 
-    /** Removes the element from the class and calls superclass.
-     *
-     * @exception IOException if SourceException is thrown
-     *            from the underlayed Element.
-     */
-    /*
-    public void destroy() throws IOException {
-     /*
-     try {
-       FieldElement el = (FieldElement) element;
-       el.getDeclaringClass().removeField(el);
-     }
-     catch (SourceException e) {
-       throw new IOException(e.getMessage());
-     }
-     *
-     System.out.println ("Pattern should be removed");
-     super.destroy();
-}
-     */
     /** Overrides the default implementation of clone node
      */
-
     public Node cloneNode() {
         return new PropertyPatternNode((PropertyPattern)pattern, writeable);
     }
@@ -173,7 +152,7 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     boolean testNameValidity( String name ) {
 
         if (! Utilities.isJavaIdentifier( name ) ) {
-            TopManager.getDefault().notify(
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(PatternNode.getString("MSG_Not_Valid_Identifier"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
             return false;
@@ -225,7 +204,6 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     void fire () {
         firePropertyChange( null, null, null );
     }
@@ -271,7 +249,6 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     protected Node.Property createGetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_GETTER, String.class, canW) {
 
@@ -292,7 +269,6 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
      * @param canW <code>false</code> to force property to be read-only
      * @return the property
      */
-
     protected Node.Property createSetterProperty(boolean canW) {
         return new PatternPropertySupport(PROP_SETTER, String.class, canW) {
 
@@ -331,19 +307,3 @@ public class PropertyPatternNode extends PatternNode implements IconBases {
     }
 }
 
-/*
-* Log
-*  8    Gandalf   1.7         1/12/00  Petr Hrebejk    i18n  
-*  7    Gandalf   1.6         1/4/00   Petr Hrebejk    Various bugfixes - 5036, 
-*       5044, 5045
-*  6    Gandalf   1.5         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         9/24/99  Petr Hrebejk    Rename of properties from
-*       popupmenu fixed
-*  4    Gandalf   1.3         7/28/99  Petr Hrebejk    Property Mode change fix
-*  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
-*       patterns resolving
-*  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
-*  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
-* $
-*/

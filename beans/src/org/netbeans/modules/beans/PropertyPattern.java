@@ -19,6 +19,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import org.openide.DialogDisplayer;
 
 import org.openide.src.ClassElement;
 import org.openide.src.FieldElement;
@@ -30,7 +31,6 @@ import org.openide.src.SourceException;
 import org.openide.src.Identifier;
 import org.openide.src.ElementFormat;
 import org.openide.nodes.Node;
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
@@ -169,7 +169,7 @@ public class PropertyPattern extends Pattern {
             try {
                 pp.generateField( true );
             } catch (SourceException e) {
-                TopManager.getDefault().notify(
+                DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
                         PatternNode.getString("MSG_Cannot_Create_Field"),
                         NotifyDescriptor.WARNING_MESSAGE));
@@ -286,7 +286,7 @@ public class PropertyPattern extends Pattern {
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldName" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-            if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
+            if ( DialogDisplayer.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
                 estimatedField.setName( Identifier.create( Introspector.decapitalize( name ) ) );
                 if ( mode == READ_WRITE || mode == READ_ONLY ) {
                     String existingGetterBody = getterMethod.getBody().trim();
@@ -352,7 +352,7 @@ public class PropertyPattern extends Pattern {
                 generateGetterMethod(null, true);
             if ( setterMethod != null ) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Setter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                     deleteSetterMethod();
                 }
@@ -363,7 +363,7 @@ public class PropertyPattern extends Pattern {
                 generateSetterMethod(null, false, true);
             if ( getterMethod != null ) {
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( PatternNode.getString("MSG_Delete_Getter") + PatternNode.getString("MSG_Continue_Confirm"), NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                     deleteGetterMethod();
                 }
@@ -409,7 +409,7 @@ public class PropertyPattern extends Pattern {
                 String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeToIs" ),
                                                     new Object[] { capitalizeFirstLetter( getName() ) } );
                 NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                TopManager.getDefault().notify( nd );
+                DialogDisplayer.getDefault().notify( nd );
                 if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                     getterMethod.setName( Identifier.create( "is" + capitalizeFirstLetter( getName() ) ) ); // NOI18N
                 }
@@ -430,7 +430,7 @@ public class PropertyPattern extends Pattern {
                     String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeMethodBody" ),
                                                         new Object[] { setterMethod.getName().getName() } );
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-                    TopManager.getDefault().notify( nd );
+                    DialogDisplayer.getDefault().notify( nd );
                     if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {
                         String newBody = regeneratePropertySupport( setterMethod.getBody(), null, params[0].getName(), type, oldType );
                         if( newBody != null )
@@ -457,7 +457,7 @@ public class PropertyPattern extends Pattern {
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_ChangeFieldType" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-            if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
+            if ( DialogDisplayer.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
                 estimatedField.setType(type);
             }
             else {
@@ -594,7 +594,7 @@ public class PropertyPattern extends Pattern {
             String mssg = MessageFormat.format( PatternNode.getString( "FMT_DeleteField" ),
                                                 new Object[] { fmt.format (estimatedField) } );
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( mssg, NotifyDescriptor.YES_NO_OPTION );
-            if ( TopManager.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
+            if ( DialogDisplayer.getDefault().notify( nd ).equals( NotifyDescriptor.YES_OPTION ) ) {
                 deleteEstimatedField();
             }
         }
@@ -955,30 +955,3 @@ public class PropertyPattern extends Pattern {
         }
     }
 }
-
-/*
- * Log
- *  13   Gandalf   1.12        1/15/00  Petr Hrebejk    BugFix 5386, 5385, 5393 
- *       and new WeakListener implementation
- *  12   Gandalf   1.11        1/13/00  Petr Hrebejk    i18n mk3
- *  11   Gandalf   1.10        1/12/00  Petr Hrebejk    i18n  
- *  10   Gandalf   1.9         1/4/00   Petr Hrebejk    Various bugfixes - 5036,
- *       5044, 5045
- *  9    Gandalf   1.8         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  8    Gandalf   1.7         10/10/99 Petr Hamernik   console debug messages 
- *       removed.
- *  7    Gandalf   1.6         9/13/99  Petr Hrebejk    Creating multiple 
- *       Properties/EventSet with the same name vorbiden. Forms made i18n
- *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
- *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
- *       methods properly
- *  5    Gandalf   1.4         7/28/99  Petr Hrebejk    Property Mode change fix
- *  4    Gandalf   1.3         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  3    Gandalf   1.2         7/21/99  Petr Hrebejk    Bug fixes interface 
- *       bodies, is for boolean etc
- *  2    Gandalf   1.1         7/20/99  Petr Hrebejk    
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
- */ 

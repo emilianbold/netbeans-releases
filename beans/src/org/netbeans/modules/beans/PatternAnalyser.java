@@ -560,24 +560,3 @@ public class PatternAnalyser extends Object implements Node.Cookie {
         }
     }
 }
-
-/*
- * Log
- *  10   Gandalf   1.9         1/13/00  Petr Hrebejk    i18n mk3
- *  9    Gandalf   1.8         1/12/00  Petr Hrebejk    i18n  
- *  8    Gandalf   1.7         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun
- *       Microsystems Copyright in File Comment
- *  7    Gandalf   1.6         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
- *       EventSets types with src. code fixed
- *  6    Gandalf   1.5         7/29/99  Petr Hrebejk    Fix - change 
- *       ReadOnly/WriteOnly to ReadWrite mode diddn't registered the added 
- *       methods properly
- *  5    Gandalf   1.4         7/26/99  Petr Hrebejk    Better implementation of
- *       patterns resolving
- *  4    Gandalf   1.3         7/21/99  Petr Hrebejk    Field and Method 
- *       listeners moved to PatternChildren
- *  3    Gandalf   1.2         7/20/99  Ian Formanek    compilable version
- *  2    Gandalf   1.1         7/9/99   Petr Hrebejk    Factory chaining fix
- *  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
- * $ 
- */ 

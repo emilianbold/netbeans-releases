@@ -19,8 +19,8 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ResourceBundle;
 import java.text.MessageFormat;
+import org.openide.DialogDisplayer;
 
-import org.openide.TopManager;
 import org.openide.NotifyDescriptor;
 import org.openide.src.*;
 import org.openide.nodes.*;
@@ -79,7 +79,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     boolean testNameValidity( String name ) {
 
         if (! Utilities.isJavaIdentifier( name ) ) {
-            TopManager.getDefault().notify(
+            DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message(getString("MSG_Not_Valid_Identifier"),
                                              NotifyDescriptor.ERROR_MESSAGE) );
             return false;
@@ -88,7 +88,7 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
         if (name.indexOf( "Listener" ) <= 0 ) { // NOI18N
             String msg = MessageFormat.format( getString("FMT_InvalidEventSourceName"),
                                                new Object[] { name } );
-            TopManager.getDefault().notify( new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE) );
+            DialogDisplayer.getDefault().notify( new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE) );
             return false;
         }
 
@@ -280,18 +280,3 @@ public class EventSetPatternNode extends PatternNode implements IconBases {
     }
 }
 
-/*
-* Log
-*  7    ???       ???         6/13/00  Martin Matula   Property editor for 
-        listener types
-*  6    Gandalf   1.5         1/12/00  Petr Hrebejk    i18n  
-*  5    Gandalf   1.4         10/22/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  4    Gandalf   1.3         8/2/99   Petr Hrebejk    EventSetNode chilfren & 
-*       EventSets types with src. code fixed
-*  3    Gandalf   1.2         7/26/99  Petr Hrebejk    Better implementation of 
-*       patterns resolving
-*  2    Gandalf   1.1         7/8/99   Jesse Glick     Context help.
-*  1    Gandalf   1.0         6/28/99  Petr Hrebejk    
-* $
-*/

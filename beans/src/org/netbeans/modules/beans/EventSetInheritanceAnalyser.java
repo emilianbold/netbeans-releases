@@ -21,10 +21,10 @@ package org.netbeans.modules.beans;
 
 import java.lang.reflect.*;
 import java.text.MessageFormat;
-
-import org.openide.src.*;
-import org.openide.TopManager;
+import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.src.*;
+
 /**
  *
  * @author  Petr Suchomel
@@ -97,7 +97,7 @@ class EventSetInheritanceAnalyser extends Object {
             Object msgfields[] = new Object[] {me.getDeclaringClass().getName().getFullName(), supportTypeName };
             String msg = MessageFormat.format(PatternNode.getString("MSG_Inheritance_Found"), msgfields);
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation ( msg , NotifyDescriptor.YES_NO_OPTION );
-            TopManager.getDefault().notify( nd );
+            DialogDisplayer.getDefault().notify( nd );
             if( nd.getValue().equals( NotifyDescriptor.YES_OPTION ) ) {     
                 return supportName;
             }
