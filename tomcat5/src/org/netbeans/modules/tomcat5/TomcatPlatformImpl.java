@@ -55,6 +55,7 @@ public class TomcatPlatformImpl extends J2eePlatformImpl {
     
     static {
         MODULE_TYPES.add(J2eeModule.WAR);
+        SPEC_VERSIONS.add(J2eeModule.J2EE_13);
         SPEC_VERSIONS.add(J2eeModule.J2EE_14);
     }
     
