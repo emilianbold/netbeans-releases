@@ -1360,7 +1360,7 @@ public abstract class BaseBean implements Cloneable, Bean {
      */
     public void merge(BaseBean bean, int mode) {
         if (mode == MERGE_UPDATE)
-            mergeTreeRootUpdate(bean);
+            mergeUpdate(bean);
         else
             mergeTreeRoot(bean, mode);
     }
@@ -1370,14 +1370,15 @@ public abstract class BaseBean implements Cloneable, Bean {
      *	merging option.
      */
     public void merge(BaseBean bean) {
-        mergeTreeRootUpdate(bean);
+        mergeUpdate(bean);
     }
 
     /**
+     * Same as merge(BaseBean bean).
      * It's possible to override this method and make it more efficient,
      * than the generic one.
      */
-    protected void mergeTreeRootUpdate(BaseBean sourceBean) {
+    public void mergeUpdate(BaseBean sourceBean) {
         mergeTreeRoot(sourceBean, MERGE_UPDATE);
     }
     
