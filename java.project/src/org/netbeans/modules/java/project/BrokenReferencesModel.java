@@ -93,6 +93,11 @@ public class BrokenReferencesModel extends AbstractListModel {
         }
     }
 
+    public boolean isBroken(int index) {
+        // XXX: at the moment shows only broken references
+        return true;
+    }
+    
     boolean isLibrary(int index) {
         return index < brokenReferences.length ? brokenReferences[index].startsWith("libs.") : false;
     }

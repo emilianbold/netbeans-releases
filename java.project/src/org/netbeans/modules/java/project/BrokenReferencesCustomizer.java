@@ -13,14 +13,21 @@
 
 package org.netbeans.modules.java.project;
 
+import java.awt.Component;
 import java.io.File;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
+
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -36,6 +43,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         this.model = model;
         errorList.setModel(model);
         errorList.setSelectedIndex(0);
+        errorList.setCellRenderer(new ListCellRendererImpl(model));
         Mnemonics.setLocalizedText(fix, fix.getText());
         Mnemonics.setLocalizedText(errorListLabel, errorListLabel.getText());
     }
@@ -175,5 +183,27 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
 
+    private static Icon brokenRef = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/project/resources/broken-reference.gif")); // NOI18N
+    private static Icon resolvedRef = new ImageIcon(Utilities.loadImage("org/netbeans/modules/java/project/resources/resolved-reference.gif")); // NOI18N
 
+    private static class ListCellRendererImpl extends DefaultListCellRenderer {
+
+        private BrokenReferencesModel model;
+        
+        public ListCellRendererImpl(BrokenReferencesModel model) {
+            this.model = model;
+        }
+        
+        public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );            
+            if (model.isBroken(index)) {
+                setIcon(brokenRef);
+            } else {
+                setIcon(resolvedRef);
+            }
+            
+            return this;
+        }
+    }
+    
 }
