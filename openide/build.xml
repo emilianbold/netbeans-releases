@@ -195,7 +195,7 @@ To force them to be rebuilt, run again with -Dopen-apis-force-rebuild=true
       </sourcepath>
       <classpath>
         <pathelement location="../core/release/lib/ext/parser.jar"/>
-        <pathelement location="../core/release/lib/ext/regexp.jar"/>
+        <pathelement location="${binroot}/core/release/lib/ext/regexp.jar"/>
       </classpath>
       <link href="${jdk-docs-location}"
             offline="true"
