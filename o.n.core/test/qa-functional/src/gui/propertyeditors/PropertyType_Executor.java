@@ -104,7 +104,6 @@ public class PropertyType_Executor extends PropertyEditorsTest {
         customizer.propertySheet();
         customizer.btOK();
         customizer.btCancel();
-        customizer.btHelp();
     }    
     
     /** Test could be executed internaly in Forte without XTest

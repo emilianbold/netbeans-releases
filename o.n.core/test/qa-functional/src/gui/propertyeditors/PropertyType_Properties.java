@@ -92,7 +92,6 @@ public class PropertyType_Properties extends PropertyEditorsTest {
         new JEditorPaneOperator(customizer);
         customizer.btOK();
         customizer.btCancel();
-        customizer.btHelp();
     }    
     
     /** Test could be executed internaly in Forte without XTest
