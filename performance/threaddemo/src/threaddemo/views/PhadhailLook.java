@@ -48,6 +48,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
     }
     
     protected void attachTo(Object o) {
+        assert o instanceof Phadhail : o;
         Phadhail ph = (Phadhail)o;
         ph.addPhadhailListener(this);
     }
@@ -97,7 +98,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                         fireChange(o, Look.GET_CHILD_OBJECTS);
                     }
                 });
-                return null;
+                return Collections.EMPTY_LIST;
             }
         }
         Phadhail ph = (Phadhail)o;
@@ -124,6 +125,7 @@ final class PhadhailLook extends Look implements PhadhailListener, LookupListene
                 } else {
                     System.err.println("DOM tree is not ready");
                     p.start();
+                    return Collections.EMPTY_LIST;
                 }
             }
             return null;
