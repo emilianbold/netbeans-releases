@@ -445,9 +445,11 @@ is divided into following sections:
     DEBUGGING SECTION
     =================
     </xsl:comment>
-    <target name="debug-nb" depends="init,compile,compile-jsps" if="netbeans.home">
-        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}">
-        </nbdeploy>
+    <target name="debug">
+        <xsl:attribute name="description">Debug project in IDE.</xsl:attribute>
+        <xsl:attribute name ="depends">init,compile,compile-jsps</xsl:attribute>
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}"/>
         <nbjpdaconnect name="${{name}}" host="${{jpda.host}}" address="${{jpda.address}}" transport="${{jpda.transport}}">
             <classpath>
                 <path path="${{debug.classpath}}"/>
@@ -464,16 +466,21 @@ is divided into following sections:
         <nbbrowse url="${{client.url}}"/>
     </target>
 
-    <target name="debug-fix-nb" depends="init" if="netbeans.home">
-        <tstamp>
-            <format property="before.compile" pattern="MM/DD/yyyy hh:mm aa" locale="en"/>
-        </tstamp>
-        <antcall target="compile-single"/>
-        <nbjpdareload>
-            <fileset dir="${{build.classes.dir}}" includes="**/*.class">
-                <date datetime="${{before.compile}}" when="after"/>
-            </fileset>
-        </nbjpdareload>
+    <target name="pre-debug-fix">
+        <xsl:attribute name="depends">init</xsl:attribute>
+        <fail unless="fix.includes">Must set fix.includes</fail>
+        <property name="javac.includes" value="${{fix.includes}}.java"/>
+    </target>
+
+    <target name="do-debug-fix">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init,pre-debug-fix,compile-single</xsl:attribute>
+        <j2seproject:nbjpdareload xmlns:j2seproject="http://www.netbeans.org/ns/j2se-project/1"/>
+    </target>
+
+    <target name="debug-fix">
+        <xsl:attribute name="if">netbeans.home</xsl:attribute>
+        <xsl:attribute name="depends">init,pre-debug-fix,do-debug-fix</xsl:attribute>
     </target>
     
             <xsl:comment>
@@ -633,17 +640,6 @@ to simulate
                 </ant>
             </xsl:for-each>
         </target>
-    </xsl:template>
-
-    <xsl:template name="debug-java-body">
-        <jvmarg value="-Xdebug"/>
-        <jvmarg value="-Xnoagent"/>
-        <jvmarg value="-Djava.compiler=none"/>
-        <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${{jpda.address}}"/>
-        <classpath>
-            <path path="${{debug.classpath}}"/>
-        </classpath>
-        <arg line="${{application.args}}"/>
     </xsl:template>
 
 </xsl:stylesheet>
