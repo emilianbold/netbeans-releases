@@ -41,7 +41,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     static final long serialVersionUID = -7882925922830244768L;
 
     /** <code>PropertiesDataObject</code> this table presents. */
-    PropertiesDataObject obj;
+    private BundleStructure structure;
 
     /** Listens to changes on the bundle structure. */
     private PropertyBundleListener bundleListener;
@@ -49,17 +49,15 @@ public class PropertiesTableModel extends AbstractTableModel {
     
     /** Create a data node for a given data object.
      * The provided children object will be used to hold all child nodes.
-     * @param obj object to work with
-     * @param ch children container for the node
+     * @param structure model to work with
      */
-    public PropertiesTableModel(PropertiesDataObject obj) {
+    public PropertiesTableModel(BundleStructure structure) {
         super();
-        this.obj = obj;
+        this.structure = structure;
 
         // listener for the BundleStructure
         bundleListener = new TablePropertyBundleListener();
-
-        obj.getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
+        structure.addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
     }
     
 
@@ -70,17 +68,17 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Gets the number of rows in the model. Implements superclass abstract method. */
     public int getRowCount() {
-        return obj.getBundleStructure().getKeyCount();
+        return structure.getKeyCount();
     }
 
     /** Gets the number of columns in the model. Implements superclass abstract method. */
     public int getColumnCount() {
-        return obj.getBundleStructure().getEntryCount() + 1;
+        return structure.getEntryCount() + 1;
     }
 
     /** Gets the value for the given row and column. Implements superclass abstract method. */
     public Object getValueAt(int row, int column) {
-        BundleStructure bs = obj.getBundleStructure();
+        BundleStructure bs = structure;
         
         if(column == 0)
             // Get StringPair for key.
@@ -99,7 +97,7 @@ public class PropertiesTableModel extends AbstractTableModel {
 
     /** Gets string pair for a key in an item (may be null). */
     private StringPair stringPairForKey(int row) {
-        BundleStructure bs = obj.getBundleStructure();
+        BundleStructure bs = structure;
         Element.ItemElem item = bs.getItem(0, bs.keyAt(row));
         StringPair sp;
         if (item == null)
@@ -107,7 +105,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         else
             sp = new StringPair(item.getComment(), bs.keyAt(row), true);
         
-        if (obj.getBundleStructure().getEntryCount() > 1)
+        if (structure.getEntryCount() > 1)
             sp.setCommentEditable(false);
         
         return sp;
@@ -129,7 +127,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         String leading;
         
         // Construct label.
-        if(column == obj.getBundleStructure().getSortIndex())
+        if(column == structure.getSortIndex())
             // Place for drawing ascending/descending mark in renderer.
             leading = "     "; // NOI18N
         else
@@ -138,10 +136,10 @@ public class PropertiesTableModel extends AbstractTableModel {
         if(column == 0)
             return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LAB_KeyColumnLabel");
         else {
-            if(obj.getBundleStructure().getEntryCount() == 1)
+            if(structure.getEntryCount() == 1)
                 return leading+NbBundle.getBundle(PropertiesTableModel.class).getString("LBL_ColumnValue");
             else {
-                PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(column - 1);
+                PropertiesFileEntry entry = structure.getNthEntry(column - 1);
                 return entry == null ? "" : leading+Util.getLocaleLabel(entry); // NOI18N
             }
         }
@@ -156,7 +154,7 @@ public class PropertiesTableModel extends AbstractTableModel {
         // PENDING - set comment for all files
         // Is key.
         if (columnIndex == 0) {
-            BundleStructure bs = obj.getBundleStructure();
+            BundleStructure bs = structure;
             String oldValue = (String)bs.keyAt(rowIndex);
             if (oldValue == null)
                 return;
@@ -166,8 +164,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                 return;
             } else {
                 // Set in all files
-                for (int i=0; i < obj.getBundleStructure().getEntryCount(); i++) {
-                    PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(i);
+                for (int i=0; i < structure.getEntryCount(); i++) {
+                    PropertiesFileEntry entry = structure.getNthEntry(i);
                     if (entry != null) {
                         PropertiesStructure ps = entry.getHandler().getStructure();
                         if (ps != null) {
@@ -176,7 +174,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                                 ps.renameItem(oldValue, UtilConvert.escapePropertiesSpecialChars(newValue));
                                 // this resorting is necessary only if this column index is same as
                                 // column according the sort is performed, REFINE
-                                obj.getBundleStructure().sort(-1);
+                                structure.sort(-1);
                             }
                             // set the comment
                             if (i == 0) {
@@ -193,8 +191,8 @@ public class PropertiesTableModel extends AbstractTableModel {
             }
         } else {
             // Property value.
-            PropertiesFileEntry entry = obj.getBundleStructure().getNthEntry(columnIndex - 1);
-            String key = obj.getBundleStructure().keyAt(rowIndex);
+            PropertiesFileEntry entry = structure.getNthEntry(columnIndex - 1);
+            String key = structure.keyAt(rowIndex);
             if (entry != null && key != null) {
                 PropertiesStructure ps = entry.getHandler().getStructure();
                 if (ps != null) {
@@ -206,7 +204,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                         item.setComment(((StringPair)aValue).getComment());
                         // this resorting is necessary only if this column index is same as
                         // column according the sort is performed, REFINE
-                        obj.getBundleStructure().sort(-1);
+                        structure.sort(-1);
                     } else {
                         if ((((StringPair)aValue).getValue().length() > 0) || (((StringPair)aValue).getComment().length() > 0))  {
                             ps.addItem(key, UtilConvert.escapeLineContinuationChar(
@@ -214,7 +212,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                                 ), ((StringPair)aValue).getComment());
                             // this resorting is necessary only if this column index is same as
                             // column according the sort is performed, REFINE
-                            obj.getBundleStructure().sort(-1);
+                            structure.sort(-1);
                         }
                     }
                 }
@@ -334,9 +332,10 @@ public class PropertiesTableModel extends AbstractTableModel {
 
                 Object[] list = PropertiesTableModel.super.listenerList.getListenerList();
                 for(int i = 0; i < list.length; i++) {
-                    if(list[i] instanceof JTable) { 
+                    if(list[i] instanceof JTable) {
+                        //!!! strange comment this model should be only stateless proxy
                         // Its necessary to create new instance of model otherwise the 'old' model values would remain.
-                        ((JTable)list[i]).setModel(new PropertiesTableModel(PropertiesTableModel.this.obj));
+                        ((JTable)list[i]).setModel(new PropertiesTableModel(PropertiesTableModel.this.structure));
                     }
                 }
             } else if(changeType == PropertyBundleEvent.CHANGE_ALL) {
@@ -359,7 +358,7 @@ public class PropertiesTableModel extends AbstractTableModel {
                 fireTableDataChanged();
             } else if(changeType == PropertyBundleEvent.CHANGE_FILE) {
                 // File changed.
-                final int index = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
+                final int index = structure.getEntryIndexByFileName(evt.getEntryName());
                 if (index == -1) {
                     if (Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N
                         (new Exception("Changed file not found")).printStackTrace(); // NOI18N
@@ -377,8 +376,8 @@ public class PropertiesTableModel extends AbstractTableModel {
                 fireTableColumnChanged(index + 1);
             } else if(changeType == PropertyBundleEvent.CHANGE_ITEM) {
                 // one item changed
-                final int index2 = obj.getBundleStructure().getEntryIndexByFileName(evt.getEntryName());
-                final int keyIndex = obj.getBundleStructure().getKeyIndexByName(evt.getItemName());
+                final int index2 = structure.getEntryIndexByFileName(evt.getEntryName());
+                final int keyIndex = structure.getKeyIndexByName(evt.getItemName());
                 
                 if(index2 == -1 || keyIndex == -1) {
                     if(Boolean.getBoolean("netbeans.debug.exceptions")) // NOI18N

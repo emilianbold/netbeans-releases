@@ -838,7 +838,7 @@ public class PropertiesOpen extends CloneableOpenSupport implements OpenCookie, 
             c.weightx = 1.0;
             c.weighty = 1.0;
             c.gridwidth = GridBagConstraints.REMAINDER;
-            JPanel panel = new BundleEditPanel(propDataObject, new PropertiesTableModel(propDataObject));
+            JPanel panel = new BundleEditPanel(propDataObject, new PropertiesTableModel(propDataObject.getBundleStructure()));
             gridbag.setConstraints(panel, c);
             add(panel);
         }

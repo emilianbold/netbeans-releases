@@ -27,6 +27,3 @@ public interface PropertyBundleListener extends EventListener {
 
 }
 
-/*
- * <<Log>>
- */

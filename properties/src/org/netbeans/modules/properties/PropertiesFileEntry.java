@@ -399,7 +399,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
                 }
             }; // End of annonymous class.
 
-            ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure().addPropertyBundleListener(new WeakListenerPropertyBundle(bundleListener));
+            bundleStructure().addPropertyBundleListener(bundleListener);
         }
 
         /** Called to notify that the children has lost all of its references to
@@ -407,6 +407,7 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
          * affecting any nodes (because nobody listens to that nodes). Overrides superclass method.
          */
         protected void removeNotify () {
+            bundleStructure().removePropertyBundleListener(bundleListener);
             setKeys(new ArrayList());
         }
 
@@ -416,6 +417,10 @@ public class PropertiesFileEntry extends PresentableFileEntry implements CookieS
             return new Node[] { new KeyNode(getHandler().getStructure(), itemKey) };
         }
 
+        /** Model accessor method. */
+        private BundleStructure bundleStructure() {
+            return ((PropertiesDataObject)PropertiesFileEntry.this.getDataObject()).getBundleStructure();
+        }
     } // End of inner class PropKeysChildren.
 
 }

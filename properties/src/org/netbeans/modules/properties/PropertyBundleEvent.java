@@ -100,7 +100,3 @@ public class PropertyBundleEvent extends EventObject {
     }
 
 }
-
-/*
- * <<Log>>
- */
