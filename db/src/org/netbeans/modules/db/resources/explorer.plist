@@ -63,7 +63,7 @@
 			}
 		);
 	};
-	
+
 	/** 
 	* Driver list section.
 	* This section describes subnode "Drivers" in "Database". It is a root for driver
@@ -125,9 +125,14 @@
 				prefix = "jdbc:oracle:thin:@<HOST>:<PORT>:<SID>";
 			},
 			{
-				name = "Pointbase";
+				name = "PointBase Mobile Edition";
 				driver = "com.pointbase.jdbc.jdbcDriver";
 				prefix = "jdbc:pointbase:<DB>";
+			},
+			{
+				name = "PointBase Server Edition";
+				driver = "com.pointbase.net.netJDBCDriver";
+				prefix = "jdbc:pointbase://<HOST>[:<PORT>]/<DB>";
 			},
 			{
 				name = "Sybase";
