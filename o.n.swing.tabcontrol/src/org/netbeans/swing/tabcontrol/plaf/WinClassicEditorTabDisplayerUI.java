@@ -184,10 +184,11 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
                    defaultRenderer.getSelectedBackground());
 
         Insets ins = getTabAreaInsets();
+        ins.bottom++;
         g.fillRect(r.x, r.y + r.height, r.x + r.width,
                    displayer.getHeight() - (r.y + r.height));
 
-        g.setColor(UIManager.getColor("controlHighlight")); //NOI18N
+        g.setColor(UIManager.getColor("controlLtHighlight")); //NOI18N
 
         int selEnd = 0;
         int i = selectionModel.getSelectedIndex();
@@ -201,6 +202,12 @@ public final class WinClassicEditorTabDisplayerUI extends BasicScrollingTabDispl
                 }
                 if (scratch5.x + scratch5.width < r.x + r.width) {
                     selEnd = scratch5.x + scratch5.width;
+                    //If the last tab is not clipped, the final tab is one
+                    //pixel smaller; we need to overwrite one pixel of the
+                    //border or there will be a small stub sticking down
+                    if (!scroll().isLastTabClipped()) {
+                        selEnd--;
+                    }
                     g.drawLine(selEnd, displayer.getHeight() - ins.bottom,
                                r.x + r.width,
                                displayer.getHeight() - ins.bottom);
