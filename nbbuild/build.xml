@@ -333,6 +333,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../java/srcmodel" target="netbeans"/>
   </target>
+  <target name="all-java/storagebuilder" depends="all-java/javacore,all-java/api,all-java/javamodel,all-mdr/jmi,all-mdr/mof,all-mdr/mdrapi,all-mdr/nbjmiutils,all-mdr/module">
+    <echo message="Building java/storagebuilder library..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/storagebuilder" target="jar"/>
+  </target>
   <target name="all-java/javacore" depends="all-java/javamodel,all-classfile,all-java/api,all-java/parser,all-projects/projectapi">
     <echo message="Building module javacore..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
