@@ -41,6 +41,7 @@ Microsystems, Inc. All Rights Reserved.
       <module name="qa" testtypes="serialization" attributes="nb34"/>
       <module name="openide" testtypes="qa-functional" attributes="stable"/>
       <module name="java" testtypes="qa-functional" attributes="stable"/>
+      <module name="editor" testtypes="qa-functional" attributes="stable"/>
   </config>
   
   <!-- QA functional tests for FFJ CE -->
