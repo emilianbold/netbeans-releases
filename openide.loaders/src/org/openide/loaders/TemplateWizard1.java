@@ -33,14 +33,16 @@ import org.openide.util.RequestProcessor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.Repository;
+import org.openide.util.AsyncGUIJob;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Dialog that can be used in create from template.
 *
 * @author  Jaroslav Tulach
 */
 final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
-    ExplorerManager.Provider, java.beans.PropertyChangeListener {
+    ExplorerManager.Provider, java.beans.PropertyChangeListener, AsyncGUIJob {
     /** See org.openide.WizardDescriptor.PROP_CONTENT_SELECTED_INDEX
      */
     private static final String PROP_CONTENT_SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
@@ -55,8 +57,17 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
     private DataFolder templatesRoot;
     /** manager for templates tree view */
     private ExplorerManager manager;
-    /** true if panel not painted for the first time yet */
-    private boolean firstPaint = true;
+    
+    /** Initialization data structure for passing data between
+     * asynchronous background initialization and UI update */
+    private static final class InitData {
+        HtmlBrowser browser;
+        String noDescMsg;
+        Border noDescBorder;
+    }; // end of InitData
+    
+    /** holds init data for async initialization */
+    private InitData initData;
     
     /** Creates new form NewFromTemplatePanel */
     public TemplateWizard1 () {
@@ -104,6 +115,8 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         noBrowser.setText(bundle.getString("MSG_InitDescription"));
         java.awt.CardLayout card = (java.awt.CardLayout)browserPanel.getLayout();
         card.show (browserPanel, "noBrowser"); // NOI18N
+        // for asynchnonous lazy init of this component
+        Utilities.attachInitJob(this, this);
     }
 
     public void addNotify() {
@@ -296,7 +309,6 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(templatesLabel, gridBagConstraints);
 
-        browserLabel.setLabelFor(browser);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -328,9 +340,9 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel browserLabel;
-    private javax.swing.JLabel templatesLabel;
-    private javax.swing.JLabel noBrowser;
     private javax.swing.JPanel browserPanel;
+    private javax.swing.JLabel noBrowser;
+    private javax.swing.JLabel templatesLabel;
     // End of variables declaration//GEN-END:variables
     private TemplatesTreeView treeView;
     private HtmlBrowser browser;
@@ -349,52 +361,34 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         }
     }
 
-    public void paint (Graphics g) {
-        super.paint(g);
-        // trigger background loading of html browser for descriptions
-        if (firstPaint) {
-            firstPaint = false;
-            RequestProcessor.getDefault().post(new BrowserLoader(), Thread.MIN_PRIORITY);
-        }
+    /** Prepares decription area with html browser inside.
+     * Executed in other then event dispatch thread.
+     */
+    public void construct() {
+        initData = new InitData();
+        initData.browser = new HtmlBrowser(false, false);
+        initData.browser.setName("browser");
+        initData.noDescMsg = NbBundle.getBundle(TemplateWizard1.class).
+                            getString("MSG_NoDescription");
+        initData.noDescBorder = new EtchedBorder();
     }
 
-    /** Helper class for init of html browser anynchronously, in non-AWT thread
+    /** Fills description area using constructed data. Executed in event dispatch thread.
      */
-    private final class BrowserLoader implements Runnable {
-        private boolean loadStage = true;
-        private HtmlBrowser localBrowser;
-        private String noDescMsg;
-        private Border noDescBorder;
-        
-        BrowserLoader() {}
-        
-        public void run () {
-            if (loadStage) {
-                // first pass, running in request processor
-                loadStage = false;
-                localBrowser = new HtmlBrowser(false, false);
-                localBrowser.setName("browser");
-                noDescMsg = NbBundle.getBundle(TemplateWizard1.class).
-                                    getString("MSG_NoDescription");
-                noDescBorder = new EtchedBorder();
-                // invoking second pass
-                SwingUtilities.invokeLater(this);
-            } else {
-                // second pass, running in AWT
-                browser = localBrowser;
-                browserLabel.setLabelFor(browser);
-                browser.getAccessibleContext().setAccessibleName(browserLabel.getText());
-                browserPanel.add(browser, "browser");
-                updateDescription(template);
-                // change loading text to no description text                
-                // install same border as html browser have
-                noBrowser.setText(noDescMsg);
-                noBrowser.setBorder(noDescBorder);
-            }
-        }
-    } // end of BrowserLoader
-
-
+    public void finished() {
+        browser = initData.browser;
+        browserLabel.setLabelFor(browser);
+        browser.getAccessibleContext().setAccessibleName(browserLabel.getText());
+        browserPanel.add(browser, "browser");
+        updateDescription(template);
+        // change loading text to no description text                
+        // install same border as html browser have
+        noBrowser.setText(initData.noDescMsg);
+        noBrowser.setBorder(initData.noDescBorder);
+        // we don't need initData anymore, make gc'able
+        initData = null;
+    }
+    
     /** Helper implementation of WizardDescription.Panel for TemplateWizard.Panel1.
     * Provides the wizard panel with the current data--either
     * the default data or already-modified settings, if the user used the previous and/or next buttons.
@@ -531,6 +525,7 @@ final class TemplateWizard1 extends javax.swing.JPanel implements DataFilter,
         listener = null;
     }
 
+    
     /** Model for displaying only objects till template.
     */
     private static final class TemplatesModel extends NodeTreeModel {
