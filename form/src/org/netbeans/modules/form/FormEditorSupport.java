@@ -721,11 +721,25 @@ public class FormEditorSupport extends JavaEditor
     }
 
     protected org.openide.util.Task reloadDocumentTask() {
+        MultiViewHandler handler = MultiViews.findMultiViewHandler(multiviewTC);
+        MultiViewPerspective[] mvps = handler.getPerspectives();
+        for (int i=0; i < mvps.length; i++) {
+            if (mvps[i] == handler.getSelectedPerspective()) {
+                elementToOpen = i;
+                break;
+            }
+        }
+
         multiviewTC.close(); // will invoke CloseHandler...
+
         org.openide.util.Task docLoadTask = super.reloadDocumentTask();
-        openFormEditor();
-        // PENDING probably does not work well with automatic reloading
-        // caused by external change of the java file...
+
+        openCloneableTopComponent();
+
+        multiviewTC.requestActive();
+        handler = MultiViews.findMultiViewHandler(multiviewTC);
+        handler.requestActive(handler.getPerspectives()[elementToOpen]);
+
         return docLoadTask;
     }
 
@@ -747,7 +761,8 @@ public class FormEditorSupport extends JavaEditor
     
     protected void notifyUnmodified () {
         super.notifyUnmodified();
-        multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
+        if (multiviewTC != null)
+            multiviewTC.setDisplayName(getMVTCDisplayName(formDataObject));
     }
 
     /** Closes the form. Used when closing the form editor or reloading
