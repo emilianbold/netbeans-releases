@@ -23,6 +23,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -936,8 +940,31 @@ public class TemplateWizard extends WizardDescriptor {
             instantiatingIterator.initialize (wiz);
         }
         
-        public java.util.Set instantiate (TemplateWizard wiz) throws IOException {
-            return instantiatingIterator.instantiate ();
+        public Set/*DataObject*/ instantiate (TemplateWizard wiz) throws IOException {
+            // iterate Set and replace unexpected object with dataobjects
+            Set workSet = instantiatingIterator.instantiate ();
+            java.util.Iterator it = workSet.iterator ();
+            Object obj;
+            DataObject dobj;
+            HashSet resultSet = new HashSet (workSet.size ());
+            while (it.hasNext ()) {
+                obj = it.next ();
+                assert obj != null;
+                if (obj instanceof DataObject) continue;
+                if (obj instanceof FileObject) {
+                    try {
+                        dobj = DataObject.find ((FileObject)obj);
+                        resultSet.add (dobj);
+                    } catch (DataObjectNotFoundException ex) {
+                        assert false : obj;
+                    }
+                } else if (obj instanceof Node) {
+                    dobj = (DataObject)((Node)obj).getCookie (DataObject.class);
+                    resultSet.add (dobj);
+                    assert dobj != null : obj;
+                }
+            }
+            return resultSet;
         }
         
         public void uninitialize (TemplateWizard wiz) {
