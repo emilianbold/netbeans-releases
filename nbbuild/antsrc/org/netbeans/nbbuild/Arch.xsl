@@ -140,6 +140,11 @@ Microsystems, Inc. All Rights Reserved.
         </xsl:if>
     </xsl:template>
 
+    <xsl:template match="usecase">
+        <h4><xsl:value-of select="@name" /></h4>
+        <xsl:apply-templates select="./node()" />
+    </xsl:template>
+    
     <!-- Format random HTML elements as is: -->
     <xsl:template match="@*|node()">
         <xsl:copy>

@@ -57,6 +57,14 @@ openide/www/tutorial/questions.html.
         </question>
         
         <question id="arch-usecases" when="init">
+            <hint>
+                Content of this answer will be displayed as part of page at
+                http://www.netbeans.org/download/dev/javadoc/usecases.html 
+                You can use tags &lt;usecase name="name&gt; regular html description &lt;/usecase&gt;
+                and if you want to use an URL you can prefix if with @TOP@ to begin
+                at the root of your javadoc
+            </hint>
+        
             Describe the main <a href="http://openide.netbeans.org/tutorial/api-design.html#usecase">
             use cases</a> of the new API. Who will use it under
             what circumstances? What kind of code would typically need to be written

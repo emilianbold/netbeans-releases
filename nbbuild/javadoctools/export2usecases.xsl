@@ -66,7 +66,69 @@ Microsystems, Inc. All Rights Reserved.
             <xsl:value-of select="@name" />
         </b>
     </xsl:template>
+
+    <xsl:template match="usecase">
+        <h4><xsl:value-of select="@name" /></h4>
+        <xsl:apply-templates select="./node()" />
+    </xsl:template>
+
+    <xsl:template match="a[@href]">
+        <xsl:variable name="target" select="ancestor::module/@target"/>
+        <xsl:variable name="top" select="substring-before($target,'/')" />
+        
+          <xsl:call-template name="print-url" >
+            <xsl:with-param name="url" select="@href" />
+            <xsl:with-param name="base" select="$target" />
+            <xsl:with-param name="top" select="$top" />
+          </xsl:call-template>
+    </xsl:template>
     
+    <xsl:template name="print-url" >
+        <xsl:param name="url" />
+        <xsl:param name="base" />
+        <xsl:param name="top" />
+        
+        <xsl:choose>
+            <xsl:when  test="contains(@href,'@TOP@')" >
+                <xsl:comment>URL contains @TOP@</xsl:comment>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="$top" />
+                        <xsl:text>/</xsl:text>
+                        <xsl:value-of select="substring-after($url,'@TOP@')" />
+                    </xsl:attribute>
+                    <xsl:apply-templates />
+                </a>
+            </xsl:when>
+            <xsl:when test="contains($url,'//')" >
+                <xsl:comment>This is very likely URL with protocol, if not see nbbuild/javadoctools/export2usecases.xsl</xsl:comment>
+                <a> 
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="$url" />
+                    </xsl:attribute>
+                    <xsl:apply-templates />
+                </a>
+            </xsl:when>
+            <xsl:when test="starts-with($url, '#')" >
+                <xsl:comment>Probably reference in the same target document</xsl:comment>
+                <a href="{$base}{$url}" >
+                    <xsl:apply-templates />
+                </a>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:comment>This must be a reference releative to the arch page, if not see nbbuild/javadoctools/export2usecases.xsl</xsl:comment>
+                <a>
+                    <xsl:attribute name="href">
+                        <xsl:value-of select="$base" />
+                        <xsl:text>/../</xsl:text>
+                        <xsl:value-of select="$url" />
+                    </xsl:attribute>
+                    <xsl:apply-templates />
+                </a>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+            
     <xsl:template match="@*|node()">
        <xsl:copy  >
           <xsl:apply-templates select="@*|node()"/>
