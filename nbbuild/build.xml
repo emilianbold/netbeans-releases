@@ -634,6 +634,7 @@ the nbbuild/netbeans/bin/ directory.
         <exclude name="editor/demosrc/properties-addon/org/netbeans/editor/example/res/template.properties"/>
         <exclude name="performance/src/org/netbeans/performance/bde/generated/"/>
         <exclude name="vcsgeneric/src/org/netbeans/modules/vcs/advanced/config/layer-include*.xml"/>
+        <exclude name="openide/test/unit/results/"/>
       </fileset>
     </checklicense>
     <checklicense fragment="Copyright">
