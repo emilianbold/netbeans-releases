@@ -638,7 +638,7 @@ public class MakeNBM extends Task {
 			    }
 			    catch (NoSuchMethodException ex3) {
 				
-				throw new BuildException("Unknown ANT version, only ANT 1.4.1 is currently supported and ANT 1.4.1+ is acceptable.");
+				throw new BuildException("Unknown ANT version, only ANT 1.6.1 is currently supported and ANT 1.6.1+ is acceptable.");
 			    }
                         }
                     }
