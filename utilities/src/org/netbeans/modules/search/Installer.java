@@ -83,7 +83,8 @@ public class Installer extends ModuleInstall {
         // define default criteria tab order
         Registry.reorderBy(new Class[] {ObjectNameType.class, FullTextType.class, ObjectTypeType.class, ModificationDateType.class} );
 
-        SearchEngine.setDefault (new SearchEngineImpl ());
+        if (SearchEngine.getDefault() == null)
+            SearchEngine.setDefault(new SearchEngineImpl());
 
         hook = new SearchHook(new SearchPerformer());
         hook.hook();
