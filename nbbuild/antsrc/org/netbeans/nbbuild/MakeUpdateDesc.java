@@ -192,6 +192,7 @@ public class MakeUpdateDesc extends MatchingTask {
                 
                     os = new java.io.FileOutputStream (desc_ent);
                     pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8"));
+                    pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
                     
                 } else {
                     pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
