@@ -191,6 +191,7 @@ class PropertiesParser {
         // now the new line
         nowPos = in.position;                
         fl = in.readLineNoFrills();
+        if (fl == null) break;
         // delete the leading whitespaces
         int startIndex=0;
         for(startIndex=0; startIndex < fl.line.length(); startIndex++)
