@@ -14,6 +14,7 @@
 package org.netbeans.core.windows.services;
 
 
+import java.util.Arrays;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.dnd.WindowDnDManager;
 import org.openide.DialogDescriptor;
@@ -32,6 +33,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeListener;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -45,7 +47,7 @@ import java.util.Set;
  * @author Ian Formanek, Jaroslav Tulach
  */
 class NbPresenter extends JDialog
-implements PropertyChangeListener, WindowListener, Mutex.Action {
+implements PropertyChangeListener, WindowListener, Mutex.Action, Comparator {
     
     /** variable holding current modal dialog in the system */
     public static NbPresenter currentModalDialog;
@@ -409,6 +411,26 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         initializeClosingOptions (false);
     }
     
+    /**
+     * On Aqua look and feel, options should be sorted such that the default
+     * button is always rightmost, and 'yes' options appear to thr right of
+     * 'no' options.
+     */
+    public int compare (Object a, Object b) {
+        boolean isDefaultButton = a.equals(descriptor.getValue());
+        int result;
+        if (a.equals(NotifyDescriptor.OK_OPTION) || a.equals(NotifyDescriptor.YES_OPTION)) {
+            result = 1;
+        } else {
+            result = 0;
+        }
+        
+        if (isDefaultButton) {
+            result++;
+        }
+        return result;
+    }
+    
     protected final void initializeButtons() {
         // -----------------------------------------------------------------------------
         // If there were any buttons previously, remove them and removeActionListener from them
@@ -430,11 +452,16 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         currentPrimaryButtons = null;
         currentSecondaryButtons = null;
         
+        boolean isAqua = "Aqua".equals (UIManager.getLookAndFeel().getID());
+        
         // explicitly provided options (AKA buttons)
         // JST: The following line causes only problems,
         //      I hope that my change will not cause additional ones ;-)
         //    if (descriptor.getOptionType () == NotifyDescriptor.DEFAULT_OPTION) {
         if (primaryOptions != null) {
+            if ((Utilities.getOperatingSystem() & Utilities.OS_MAC) != 0) {
+                Arrays.sort(primaryOptions, this);
+            }
             currentPrimaryButtons = new Component [primaryOptions.length];
             for (int i = 0; i < primaryOptions.length; i++) {
                 if (primaryOptions[i] == NotifyDescriptor.YES_OPTION) {
@@ -465,22 +492,40 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         } else { // predefined option types
             switch (descriptor.getOptionType()) {
                 case NotifyDescriptor.YES_NO_OPTION:
-                    currentPrimaryButtons = new Component[2];
-                    currentPrimaryButtons[0] = stdYesButton;
-                    currentPrimaryButtons[1] = stdNoButton;
+                    if (isAqua) {
+                        currentPrimaryButtons = new Component[2];
+                        currentPrimaryButtons[0] = stdNoButton;
+                        currentPrimaryButtons[1] = stdYesButton;
+                    } else {
+                        currentPrimaryButtons = new Component[2];
+                        currentPrimaryButtons[0] = stdYesButton;
+                        currentPrimaryButtons[1] = stdNoButton;
+                    }
                     break;
                 case NotifyDescriptor.YES_NO_CANCEL_OPTION:
                     currentPrimaryButtons = new Component[3];
-                    currentPrimaryButtons[0] = stdYesButton;
-                    currentPrimaryButtons[1] = stdNoButton;
-                    currentPrimaryButtons[2] = stdCancelButton;
+                    if (isAqua) {
+                        currentPrimaryButtons[0] = stdCancelButton;
+                        currentPrimaryButtons[1] = stdNoButton;
+                        currentPrimaryButtons[2] = stdYesButton;
+                    } else {
+                        currentPrimaryButtons[0] = stdYesButton;
+                        currentPrimaryButtons[1] = stdNoButton;
+                        currentPrimaryButtons[2] = stdCancelButton;
+                    }
                     break;
                 case NotifyDescriptor.OK_CANCEL_OPTION:
                 default:
-                    currentPrimaryButtons = new Component[2];
-                    currentPrimaryButtons[0] = stdOKButton;
+                    if (isAqua) {
+                        currentPrimaryButtons = new Component[2];
+                        currentPrimaryButtons[0] = stdCancelButton;
+                        currentPrimaryButtons[1] = stdOKButton;
+                    } else {
+                        currentPrimaryButtons = new Component[2];
+                        currentPrimaryButtons[0] = stdOKButton;
+                        currentPrimaryButtons[1] = stdCancelButton;
+                    }
                     stdOKButton.setEnabled(descriptor.isValid());
-                    currentPrimaryButtons[1] = stdCancelButton;
                     break;
             }
         }
@@ -490,7 +535,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         if (currentHelp != null || helpButtonShown) {
             if (currentPrimaryButtons == null) currentPrimaryButtons = new Component[] { };
             Component[] cPB2 = new Component[currentPrimaryButtons.length + 1];
-            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+            if (isAqua) { //NOI18N
                 //Mac default dlg button should be rightmost, not the help button
                 System.arraycopy(currentPrimaryButtons, 0, cPB2, 1, currentPrimaryButtons.length);
                 cPB2[0] = stdHelpButton;
@@ -505,6 +550,7 @@ implements PropertyChangeListener, WindowListener, Mutex.Action {
         
         if ((secondaryOptions != null) && (secondaryOptions.length != 0)) {
             currentSecondaryButtons = new Component [secondaryOptions.length];
+            Arrays.sort (secondaryOptions, this);
             for (int i = 0; i < secondaryOptions.length; i++) {
                 if (secondaryOptions[i] == NotifyDescriptor.YES_OPTION) {
                     currentSecondaryButtons[i] = stdYesButton;
