@@ -210,6 +210,7 @@ final class Importer {
         } catch (IOException e) {
             ErrorManager.getDefault().log(ErrorManager.USER,
                     "Error occured during project importing: " + e); // NOI18N
+            e.printStackTrace();
         }
         return null;
     }
