@@ -59,7 +59,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         J2eeModule source = dtarget.getModule();
         DeployableObject deployable = deployment.getDeployableObject(null);
         try {
-            File dir = fileLayout.getDirectoryForNewApplication(target, deployable);
+            File dir = fileLayout.getDirectoryForNewApplication (target, deployable, deployment.getDeploymentConfiguration ());
             _distribute(source.getArchiveContents(), dir);
 
             if (source instanceof J2eeModuleContainer) {
@@ -67,7 +67,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                 for (int i=0; i<childModules.length; i++) {
                     String uri = childModules[i].getUrl();
                     DeployableObject childModule = deployment.getDeployableObject(uri);
-                    File subdir = fileLayout.getDirectoryForNewModule(dir, uri, childModule);
+                    File subdir = fileLayout.getDirectoryForNewModule(dir, uri, childModule, deployment.getDeploymentConfiguration ());
                     _distribute(childModules[i].getArchiveContents(), dir);
                 }
             }
@@ -103,7 +103,9 @@ public class InitialServerFileDistributor extends ServerProgress {
                 String relativePath = entry.getRelativePath();
                 FileObject sourceFO = entry.getFileObject();
                 FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
-                FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+                if (sourceFO.isData ()) {
+                    FileUtil.copyFile(sourceFO, destFolder, sourceFO.getName());
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -420,7 +420,7 @@ public class TargetServer {
                 File dir = initialDistribute(targetz[0], progressUI);
                 if (dir == null)
                     return new TargetModule[0];
-                progressObject = incremental.initialDeploy(targetz[0], deployable, dir);
+                progressObject = incremental.initialDeploy(targetz[0], deployable, dtarget.getDeploymentConfigurationProvider ().getDeploymentConfiguration (), dir);
                 new DistributeEventHandler(progressUI, progressObject);
                     StateType state = progressObject.getDeploymentStatus().getState();
                     //System.out.println("incrementalDeploy: Status="+state);
