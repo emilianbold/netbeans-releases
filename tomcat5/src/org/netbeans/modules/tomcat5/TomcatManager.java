@@ -292,6 +292,17 @@ public class TomcatManager implements DeploymentManager {
         if (!baseDir.exists()) createBaseDir(baseDir,getCatalinaHomeDir());
         if (baseDir==null) return null;
         catalinaBaseDir = FileUtil.toFileObject(baseDir);
+        if (catalinaBaseDir==null) {
+            // try to refresh parent FileObject
+            File parentDir = baseDir.getParentFile();
+            if (parentDir != null) {
+                FileObject parentFileObject = FileUtil.toFileObject(parentDir);
+                if (parentFileObject != null) {
+                    parentFileObject.refresh();
+                    catalinaBaseDir = FileUtil.toFileObject(baseDir);
+                }
+            }
+        }
         return catalinaBaseDir;
     }
     
