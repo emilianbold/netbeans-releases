@@ -60,12 +60,6 @@ public class FormEditorModule implements ModuleInstall {
 
   /** Module installed again. */
   public void restored () {
-    try {
-      Class borderEd = TopManager.getDefault ().currentClassLoader ().loadClass ("com.netbeans.developer.explorer.propertysheet.editors.BorderEditor");
-      FormPropertyEditorManager.registerEditor (javax.swing.border.Border.class, borderEd);
-    } catch (Exception e) {
-      // uses the border editor from impl, so we must survive when it is not present
-    }
     BeanInstaller.autoLoadBeans ();
 
     // register standard persistence managers
@@ -521,6 +515,8 @@ public class FormEditorModule implements ModuleInstall {
 
 /*
  * Log
+ *  32   Gandalf   1.31        9/13/99  Ian Formanek    Fixed bug 3182 - 
+ *       Property Editor for Border has two the same tabs.
  *  31   Gandalf   1.30        8/15/99  Ian Formanek    Removed 
  *       ListModelFormAware editor
  *  30   Gandalf   1.29        8/9/99   Ian Formanek    Used currentClassLoader 
