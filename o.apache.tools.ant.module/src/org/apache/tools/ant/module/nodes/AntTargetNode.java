@@ -55,7 +55,7 @@ import org.openide.util.HelpCtx;
 
 /** A node representing an Ant build target.
  */
-public class AntTargetNode extends ElementNode {
+public class AntTargetNode extends ElementNode implements ChangeListener {
 
     public AntTargetNode (final AntProjectCookie project, final Element targetElem) {
         super (targetElem, new AntTargetChildren (targetElem));
@@ -76,6 +76,11 @@ public class AntTargetNode extends ElementNode {
                     }
                 });
         }
+        project.addChangeListener(WeakListener.change(this, project));
+    }
+    
+    public void stateChanged (ChangeEvent ev) {
+        firePropertyChange (null, null, null);
     }
 
     protected ElementCookie createElementCookie () {
