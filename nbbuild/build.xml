@@ -1399,21 +1399,24 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${test.user.dir}"/>
     <delete dir="modules_javadoc"/>
     <delete file="moduledefs-tmp.properties"/>
-    <delete file="moduleCluster.properties"/>
     <delete dir="nbms" />
     <delete dir="modules_exported_interfaces"/>
+    <delete dir="${netbeans.dest}"/>
+    <delete file="moduleCluster.properties"/>
   </target>
 
-  <target name="clean" depends="init,localclean"
-          description="Clean out (almost) all build products.">
+  <target name="cleanall" depends="init">
     <cleanall topdir=".." 
               modules="${allmodules}" 
               targetname="clean"
               resolvedependencies="${resolve.clean.dependencies}"
               deptargetprefix="all-"
               failonerror="${stop.when.clean.error}" />
+  </target>
+
+  <target name="clean" depends="init,cleanall,localclean"
+          description="Clean out (almost) all build products.">
     <echo message="Run `ant real-clean' if desired."/>
-    <delete dir="${netbeans.dest}"/>
   </target>
 
 <!-- This section contains properties and targets used to build -->
