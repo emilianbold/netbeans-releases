@@ -7,7 +7,7 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2000 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,9 +17,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.DirectoryScanner;
-
-import org.netbeans.nbbuild.MakeUpdateDesc.Group;
-import org.netbeans.nbbuild.MakeUpdateDesc.Entityinclude;
 import java.io.File;
 import java.util.Vector;
 
@@ -93,7 +90,33 @@ public class MakeUpdateDesc extends MatchingTask {
         filesets.addElement(set);
     }
  
-    
+    // Similar to org.openide.xml.XMLUtil methods.
+    private static String xmlEscape(String s) {
+        int max = s.length();
+        StringBuffer s2 = new StringBuffer((int)(max * 1.1 + 1));
+        for (int i = 0; i < max; i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '<':
+                    s2.append("&lt;");
+                    break;
+                case '>':
+                    s2.append("&gt;");
+                    break;
+                case '&':
+                    s2.append("&amp;");
+                    break;
+                case '"':
+                    s2.append("&quot;");
+                    break;
+                default:
+                    s2.append(c);
+                    break;
+            }
+        }
+        return s2.toString();
+    }
+
     public void execute () throws BuildException {
 	if (desc.exists ()) {
 	    // Simple up-to-date check.
@@ -130,8 +153,8 @@ public class MakeUpdateDesc extends MatchingTask {
 	    java.io.OutputStream os = new java.io.FileOutputStream (desc);
 	    try {
                 
-                java.io.PrintWriter pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os));
-		pw.println ("<?xml version='1.0'?>");
+                java.io.PrintWriter pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8"));
+		pw.println ("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 		pw.println ();
 		java.text.SimpleDateFormat format = new java.text.SimpleDateFormat ("ss/mm/HH/dd/MM/yyyy");
 		format.setTimeZone (java.util.TimeZone.getTimeZone ("GMT"));
@@ -150,15 +173,15 @@ public class MakeUpdateDesc extends MatchingTask {
                     desc_ent.delete();
                     pw.println ("<!DOCTYPE autoupdate_catalog PUBLIC \"-//NetBeans//DTD Autoupdate Catalog 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-catalog-2_0.dtd\" [");
                     // Would be better to follow order of groups and includes
-                    pw.println ("    <!ENTITY entity SYSTEM \"" + desc_ent.getName() + "\">");
+                    pw.println ("    <!ENTITY entity SYSTEM \"" + xmlEscape(desc_ent.getName()) + "\">");
                     int inc_num=0;
                     for (int i=0; i<entityincludes.size(); i++) {
                         Entityinclude ei = (Entityinclude) entityincludes.elementAt(i);
-                        pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + ei.file + "\">");
+                        pw.println ("    <!ENTITY include" + i + " SYSTEM \"" + xmlEscape(ei.file) + "\">");
                     }
                     pw.println ("]>");
                     pw.println ();
-                    pw.println ("<module_updates timestamp=\"" + date + "\">");
+                    pw.println ("<module_updates timestamp=\"" + xmlEscape(date) + "\">");
                     pw.println ("    &entity;");
                     for (int i=0; i<entityincludes.size(); i++) {
                         pw.println ("    &include" + i + ";");
@@ -168,13 +191,16 @@ public class MakeUpdateDesc extends MatchingTask {
                     pw.close ();
                 
                     os = new java.io.FileOutputStream (desc_ent);
-                    pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os));
+                    pw = new java.io.PrintWriter (new java.io.OutputStreamWriter (os, "UTF-8"));
                     
                 } else {
                     pw.println ("<!DOCTYPE module_updates PUBLIC \"-//NetBeans//DTD Autoupdate Module Info 2.0//EN\" \"http://www.netbeans.org/dtds/autoupdate-info-2_0.dtd\">");
                     pw.println ("<module_updates timestamp=\"" + date + "\">");
                     pw.println ();
                 }
+
+                pw.println ("<!-- external entity include " + date + " -->");
+                pw.println ();
 		StringBuffer licenses = new StringBuffer ();
 		java.util.Set licenseNames = new java.util.HashSet (); // Set<String>
                 Group root = new Group();
@@ -189,7 +215,7 @@ public class MakeUpdateDesc extends MatchingTask {
 		    // Don't indent; embedded descriptions would get indented otherwise.
                     log ("Creating group \"" + g.name + "\"");
                     if ( ! g.name.equals("root")) {
-                        pw.println ("<module_group name=\"" + g.name + "\">");
+                        pw.println ("<module_group name=\"" + xmlEscape(g.name) + "\">");
                         pw.println ();
                     }
                     for (int fsi=0; fsi < g.filesets.size(); fsi++) {
