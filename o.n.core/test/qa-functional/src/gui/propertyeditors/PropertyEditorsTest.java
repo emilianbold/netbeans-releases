@@ -65,7 +65,7 @@ public abstract class PropertyEditorsTest extends NbTestCase {
     protected static boolean lastTest = false;
     
     
-    /** Creates a new instance of PropertyType_Boolean */
+    /** Creates a new instance of PropertyEditorsTest */
     public PropertyEditorsTest(String testName) {
         super(testName);
     }

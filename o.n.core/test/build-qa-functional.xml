@@ -123,8 +123,10 @@ Microsystems, Inc. All Rights Reserved.
                 includes="*.txt" />
             <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInDebugging"
                 includes="*.txt" />
-            <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInRunning"
+            <!-- Running Workspaces removed
+	    <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementInRunning"
                 includes="*.txt" />
+	    -->	
             <fileset dir="${xtest.workdir}/user/gui/windowsystem/validation/Validation_Init/testInitialPlacementOfEditor"
                 includes="*.txt" />
         </jar>
