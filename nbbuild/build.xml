@@ -306,6 +306,10 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
     <ant dir="../javaembeddedserver" target="netbeans"/>
   </target>
   -->
+  <target name="all-jemmysupport" depends="all-openide">
+    <echo message="Building module jemmysupport..."/>
+    <ant dir="../jemmysupport" target="netbeans"/>
+  </target>
   <target name="all-jini" depends="all-openide,all-httpserver">
     <echo message="Building module jini..."/>
     <ant dir="../jini" target="netbeans"/>
@@ -386,6 +390,10 @@ fixedmodules=$${config.fixedmodules.${moduleconfig}}
   <target name="all-tasklist" depends="all-openide,all-editor">
     <echo message="Building module tasklist..."/>
     <ant dir="../tasklist" target="netbeans"/>
+  </target>
+  <target name="all-testtools" depends="all-ant,all-openide,all-core,all-java,all-jemmysupport,all-junit,all-utilities">
+    <echo message="Building module testtools..."/>
+    <ant dir="../testtools" target="netbeans"/>
   </target>
   <target name="all-text" depends="all-openide">
     <echo message="Building module text..."/>
