@@ -553,7 +553,9 @@ public class FormEditorSupport extends JavaEditor implements FormCookie, EditCoo
             detachSettingsListener();
             detachTopComponentsListener();
 
-            PaletteTopComponent.getInstance().close();
+            TopComponent palette = PaletteTopComponent.getInstance();
+            palette.setCloseOperation(TopComponent.CLOSE_EACH);
+            palette.close();
         }
         else { // still any opened forms - focus some
             FormEditorSupport next = (FormEditorSupport)

@@ -240,8 +240,10 @@ public class ComponentInspector extends ExplorerPanel implements Serializable
         }
         updateTitle();
 
-        if (visibility > 0)
+        if (visibility > 0) {
             open();
+            setCloseOperation(TopComponent.CLOSE_LAST);
+        }
         else if (visibility < 0) {
             setCloseOperation(TopComponent.CLOSE_EACH);
             close();
