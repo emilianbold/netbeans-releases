@@ -13,9 +13,11 @@
 
 package org.netbeans.modules.project.libraries.ui;
 
+import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -30,13 +32,12 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     
     private LibrariesModel model;
     private Map typeMap;
-    private javax.swing.JButton okOption;
 
+    private DialogDescriptor dd;
 
     /** Creates new form NewLibraryPanel */
-    public NewLibraryPanel (LibrariesModel model, javax.swing.JButton okOptions ) {
+    public NewLibraryPanel (LibrariesModel model) {
         this.model = model;
-        this.okOption = okOptions;
         initComponents();
         this.name.setColumns(25);
         this.name.getDocument().addDocumentListener(new javax.swing.event.DocumentListener () {
@@ -54,8 +55,16 @@ public class NewLibraryPanel extends javax.swing.JPanel {
 
         });
         this.initModel ();
+        Color c = javax.swing.UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            c = new Color(89,79,191);  // RGB suggested by Bruce in #28466
+        }
+        status.setForeground(c);
     }
     
+    void setDialogDescriptor(DialogDescriptor dd) {
+        this.dd = dd;
+    }
     
     public String getLibraryType () {
         Integer index = new Integer (this.libraryType.getSelectedIndex());
@@ -113,7 +122,9 @@ public class NewLibraryPanel extends javax.swing.JPanel {
                     new Object[] {name});
             }
         }
-        this.okOption.setEnabled (valid);
+        if (dd != null) {
+            dd.setValid(valid);
+        }
         this.status.setText(message);
     }
     

@@ -384,20 +384,13 @@ public final class LibrariesCustomizer extends javax.swing.JPanel implements Exp
     private void createLibrary(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createLibrary
         Dialog dlg = null;
         try {
-            Object[] options = new Object[]{
-                new JButton (NbBundle.getMessage(LibrariesCustomizer.class,"CTL_Ok")),
-                new JButton (NbBundle.getMessage(LibrariesCustomizer.class,"CTL_Cancel"))
-            };
-            
-            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(LibrariesCustomizer.class,"AD_Ok"));
-            ((JButton)options[1]).getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(LibrariesCustomizer.class,"AD_Cancel"));
-
-            NewLibraryPanel p = new NewLibraryPanel (this.model,(JButton)options[0]);
+            NewLibraryPanel p = new NewLibraryPanel (this.model);
             DialogDescriptor dd = new DialogDescriptor (p, NbBundle.getMessage(LibrariesCustomizer.class,"CTL_CreateLibrary"),
-                    true, options,options[0],DialogDescriptor.DEFAULT_ALIGN,null,null);
+                    true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+            p.setDialogDescriptor(dd);
             dlg = DialogDisplayer.getDefault().createDialog (dd);
             dlg.setVisible(true);
-            if (dd.getValue() == options[0]) {
+            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
                 String libraryType = p.getLibraryType();
                 String libraryName = p.getLibraryName();
                 LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider (libraryType);
