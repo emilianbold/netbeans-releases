@@ -26,6 +26,8 @@ WORKING_DIR=`dirname $0`
 GNOME_DIR=`dirname $0`
 DO_COMPRESS_PACKAGES=no
 
+FILTER=`dirname $0`/filter
+
 ALL_PACKAGES="SUNWnetbeans-platform4
 SUNWnetbeans-ide4-modules
 SUNWnetbeans-ide"
@@ -124,9 +126,6 @@ process_options () {
 prepare_source () {
   rm -Rf ${SOURCE_DIR}/netbeans
   unzip ${DITRIBUTION_ZIP} -d ${SOURCE_DIR}
-  rm ${SOURCE_DIR}/netbeans/bin/*.exe
-  rm ${SOURCE_DIR}/netbeans/bin/*.dmg
-  rm ${SOURCE_DIR}/netbeans/bin/*.cmd
 }
 
 create_pkginfo () {
@@ -172,6 +171,9 @@ EOF
 
   case ${1} in
     SUNWnetbeans-platform4)
+        cat >> depend << EOF
+P SUNWjhrt JavaHelp Runtime
+EOF
         ;;
     SUNWnetbeans-ide4-modules)
         cat >> depend << EOF
@@ -203,7 +205,7 @@ build_package () {
   echo "i depend" >> prototype
   echo "!default 0644 root other" >> prototype
   echo "d none netbeans 0755" >> prototype
-  sed "s/ 0644 ${USER} ${GROUP}$//" proto | sed "s/ ${USER} ${GROUP}$//" | grep -v "update_tracking" >> prototype
+  sed "s/ 0644 ${USER} ${GROUP}$//" proto | sed "s/ ${USER} ${GROUP}$//" | fgrep -vf "$FILTER" >> prototype
 
   pkgmk -o -d ./ ${1}
 
