@@ -86,6 +86,10 @@ public class DiffAction extends NodeAction {
         if (fos.size() < 2) return ;
         final FileObject fo1 = (FileObject) fos.get(0);
         final FileObject fo2 = (FileObject) fos.get(1);
+        performAction(fo1, fo2);
+    }
+    
+    public static void performAction(FileObject fo1, FileObject fo2) {
         //System.out.println("performAction("+fo1+", "+fo2+")");
         //doDiff(fo1, fo2);
         Diff diff = Diff.getDefault();
