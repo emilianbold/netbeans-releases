@@ -46,6 +46,8 @@ import org.w3c.dom.NodeList;
  */
 public class PlatformUiSupport {
     
+    private static final String DEFAULT_JAVAC_TARGET = "${default.javac.target}";  //NOI18N
+    
     
     private PlatformUiSupport() {
     }
@@ -66,9 +68,11 @@ public class PlatformUiSupport {
      * @param props project's shared properties
      * @param helper to read/update project.xml
      * @param platformDisplayName the patform's display name
+     * @param sourceLevel source level
      */
-    public static void storePlatform (EditableProperties props, UpdateHelper helper, String platformDisplayName) {
-        String platformAntName = getAntPlatformName (platformDisplayName);
+    public static void storePlatform (EditableProperties props, UpdateHelper helper, String platformDisplayName, SpecificationVersion sourceLevel) {
+        JavaPlatform platform = getPlatform(platformDisplayName);
+        String platformAntName = (String) platform.getProperties().get("platform.ant.name");    //NOI18N        
         //null means active broken (unresolved) platform, no need to do anything
         if (platformAntName != null) {
             props.put(J2SEProjectProperties.JAVA_PLATFORM, platformAntName);
@@ -76,14 +80,27 @@ public class PlatformUiSupport {
             boolean defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName().equals(platformDisplayName);        
             boolean changed = false;
             NodeList explicitPlatformNodes = root.getElementsByTagNameNS (J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,"explicit-platform");   //NOI18N
-            if (defaultPlatform && explicitPlatformNodes.getLength()==1) {
-                root.removeChild(explicitPlatformNodes.item(0));
-                changed = true;
+            if (defaultPlatform) {                
+                if (explicitPlatformNodes.getLength()==1) {
+                    root.removeChild(explicitPlatformNodes.item(0));
+                    changed = true;
+                }
+                if (!DEFAULT_JAVAC_TARGET.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {
+                    props.setProperty (J2SEProjectProperties.JAVAC_TARGET, DEFAULT_JAVAC_TARGET);
+                }
             }
-            else if (!defaultPlatform && explicitPlatformNodes.getLength()==0) {
-                Element explicitPlatform = root.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
-                root.appendChild(explicitPlatform);
-                changed = true;
+            else {
+                if (explicitPlatformNodes.getLength()==0) {
+                    Element explicitPlatform = root.getOwnerDocument().createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+                    root.appendChild(explicitPlatform);
+                    changed = true;
+                }
+                if (DEFAULT_JAVAC_TARGET.equals(props.getProperty(J2SEProjectProperties.JAVAC_TARGET))) {
+                    if (sourceLevel == null) {
+                        sourceLevel = platform.getSpecification().getVersion();
+                    }
+                    props.setProperty (J2SEProjectProperties.JAVAC_TARGET, sourceLevel.toString());
+                }
             }
             if (changed) {
                 helper.putPrimaryConfigurationData(root, true);

@@ -44,6 +44,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
@@ -311,12 +312,13 @@ public class J2SEProjectProperties {
         projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
         
         //Handle platform selection
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem());
+        SpecificationVersion sourceLevel = (SpecificationVersion) JAVAC_SOURCE_MODEL.getSelectedItem();
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, (String) PLATFORM_MODEL.getSelectedItem(), sourceLevel);
         
         //Save javac.source
-        if (JAVAC_SOURCE_MODEL.getSelectedItem()!=null) {
+        if (sourceLevel!=null) {
             //Not broken platform
-            projectProperties.setProperty(JAVAC_SOURCE, JAVAC_SOURCE_MODEL.getSelectedItem().toString());
+            projectProperties.setProperty(JAVAC_SOURCE, sourceLevel.toString());
         }
                 
         // Handle other special cases
