@@ -39,7 +39,7 @@ public final class EntityCatalogImpl extends EntityCatalog {
     /** map between publicId and privateId (String, String); must be synchronized */
     private Map id2uri;  
 
-    private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser");
+    private static final RequestProcessor catalogRP = new RequestProcessor("EntityCatalog/parser"); // NOI18N
 
     /** Creates new EntityCatalogImpl */
     private EntityCatalogImpl(Map map) {
