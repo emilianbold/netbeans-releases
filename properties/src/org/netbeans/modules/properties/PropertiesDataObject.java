@@ -36,8 +36,6 @@ import org.openide.util.WeakListener;
 
 /** 
  * Object that provides main functionality for properties data loader.
- * This class is final only for performance reasons,
- * can be unfinaled if desired.
  * Represents set of .properties files with same basic name (name without locale postfix).
  *
  * @author Ian Formanek

@@ -462,6 +462,15 @@ public class UtilConvert {
     }
 
     /**
+     * Convert chars to encoded '\\uxxxx' using comment escaping rules.
+     * @param commentString
+     * @return escaped comment
+     */
+    public static String escapeComment(String commentString) {
+        return charsToUnicodes(commentString, true);
+    }
+
+    /**
     * Converts chars to encoded '\\uxxxx'.
      * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
     */
@@ -471,10 +480,10 @@ public class UtilConvert {
     
     
     /**
-    * Converts chars to encoded '\\uxxxx'. If escapeWhiteSpaces is true, then white spaces won't be converted
+    * Converts chars to encoded '\\uxxxx'. If skipWhiteSpaces is true, then white spaces won't be converted
      * Note there are not converted '\\"', '\\'', '\\ ', '\\\\' and java special chars escapes.
     */
-    public static String charsToUnicodes(String theString, boolean escapeWhiteSpaces) {
+    public static String charsToUnicodes(String theString, boolean skipWhiteSpaces) {
         if(theString == null) return null;
         char aChar;
         int len = theString.length();
@@ -484,7 +493,7 @@ public class UtilConvert {
             aChar = theString.charAt(x++);
             if ((aChar < 20) || (aChar > 127) ) {
 
-                if (escapeWhiteSpaces && Character.isWhitespace(aChar)){
+                if (skipWhiteSpaces && Character.isWhitespace(aChar)){
                     // do not convert white spaces
                     outBuffer.append(aChar);
                     continue;

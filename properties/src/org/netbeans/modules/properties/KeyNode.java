@@ -240,7 +240,7 @@ public class KeyNode extends AbstractNode {
                     if (!(val instanceof String))
                         throw new IllegalArgumentException();
 
-                    String commentValue = UtilConvert.charsToUnicodes((String)val);
+                    String commentValue = UtilConvert.escapeComment((String)val);
                     getItem().setComment(commentValue);
                 }
             };

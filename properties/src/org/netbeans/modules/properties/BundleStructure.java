@@ -81,6 +81,7 @@ public class BundleStructure extends Object {
 
     
     /** Retrieves n-th entry from the list, indexed from 0.
+     * The first entry is always the primary entry.
      * @return n-th ntry or null if index is out of bounds */
     public PropertiesFileEntry getNthEntry(int i) {
         if (entries == null)

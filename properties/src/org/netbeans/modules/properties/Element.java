@@ -401,7 +401,9 @@ public abstract class Element extends Object implements Serializable {
         }
 
         /** Set the comment for this item
-         *  @param newComment the new comment
+         *  @param newComment the new comment (escaped value)
+         *  //??? why is required escaped value? I'd expect escapng to be applied during
+         *  writing value down to stream no earlier
          */                        
         public void setComment(String newComment) {
             String oldComment = comment.getValue();
