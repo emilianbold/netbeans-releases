@@ -26,9 +26,10 @@ import org.openide.util.*;
 import org.openide.util.lookup.*;
 import org.openide.xml.*;
 import org.openide.*;
-import junit.framework.*;
+//import junit.framework.*;
+import org.netbeans.junit.*;
 
-public class MIMEResolverImplTest extends TestCase {
+public class MIMEResolverImplTest extends NbTestCase {
 
     List resolvers;
     FileObject root;
@@ -63,8 +64,8 @@ public class MIMEResolverImplTest extends TestCase {
         junit.textui.TestRunner.run(suite());
     }
     
-    public static Test suite() {
-        TestSuite suite = new TestSuite(MIMEResolverImplTest.class);
+    public static NbTest suite() {
+        NbTestSuite suite = new NbTestSuite(MIMEResolverImplTest.class);
         
         return suite;
     }
