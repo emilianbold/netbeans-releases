@@ -67,6 +67,8 @@ public class TreeModelRoot implements TreeModelListener {
     public void treeChanged () {
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
+                if (model == null) 
+                    return; // already disposed
                 rootNode.setObject (model.getRoot ());
             }
         });
