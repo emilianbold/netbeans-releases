@@ -41,7 +41,8 @@ final class EnvironmentNode extends AbstractNode {
     private static final String EN_ICON_BASE = "/org/netbeans/core/resources/"; // NOI18N
     /** map between type of node and the parent node for this type (String, Node) */
     private static java.util.HashMap types = new java.util.HashMap (11);
-    
+    /** A lock for the find method. */
+    private static final Object lock = new Object();
 
     /** Constructor */
     private EnvironmentNode (String filter) {
@@ -59,12 +60,14 @@ final class EnvironmentNode extends AbstractNode {
     /** Finds the node for given name.
      */
     public static EnvironmentNode find (String name) {
-         EnvironmentNode n = (EnvironmentNode)types.get (name);
-         if (n == null) {
-             n = new EnvironmentNode (name);
-             types.put (name, n);
-         }
-         return n;
+        synchronized (lock) {
+            EnvironmentNode n = (EnvironmentNode)types.get (name);
+            if (n == null) {
+                n = new EnvironmentNode (name);
+                types.put (name, n);
+            }
+            return n;
+        }
     }
     
 
