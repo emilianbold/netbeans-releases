@@ -438,6 +438,11 @@ public final class ProjectWebModule extends J2eeModuleProvider
     }
     
     private boolean isProjectOpened() {
+        // XXX workaround: OpenProjects.getDefault() can be null 
+        // when called from ProjectOpenedHook.projectOpened()
+        if (OpenProjects.getDefault() == null)
+            return true;
+        
         Project[] projects = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i < projects.length; i++) {
             if (projects[i].equals(project)) 
