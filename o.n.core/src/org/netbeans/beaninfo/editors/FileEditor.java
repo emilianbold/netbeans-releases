@@ -205,6 +205,10 @@ public class FileEditor extends PropertyEditorSupport implements ExPropertyEdito
     private class PListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent e) {
             File f = chooser.getSelectedFile ();
+            if (f == null) {
+                return;
+            }
+            
             if (f != null) {
                 if (!files && f.isFile ()) return;
                 if (!directories && f.isDirectory ()) return;
