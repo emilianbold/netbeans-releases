@@ -416,6 +416,8 @@ public abstract class WizardIterator implements TemplateWizard.Iterator {
    public static File showFileChooser(Component parent, String title, boolean selectDirectories, boolean selectJars) {
         JFileChooser f=new JFileChooser(target);
         f.setDialogTitle(title);
+        // show also hidden files (e.g. .* on unix)
+        f.setFileHidingEnabled(false);
         if (selectJars) {
             f.setFileFilter(new JarAndZipFilter());
             if (selectDirectories)
