@@ -16,9 +16,9 @@ Microsystems, Inc. All Rights Reserved.
 
 <!-- XTEST configuration file. Where is DTD and documentation? -->
 
-<mconfig name="vcscore">
+<mconfig name="xml-catalog">
 
-    <testbag testattribs="stable" compiler="myunit-compiler" executor="myunit-executor" name="vcscore">
+    <testbag testattribs="stable" compiler="myunit-compiler" executor="myunit-executor" name="xml-catalog">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
