@@ -7,7 +7,7 @@
  * http://www.sun.com/
  *
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
@@ -17,6 +17,7 @@ import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
@@ -34,6 +35,8 @@ public class NewLibraryPanel extends javax.swing.JPanel {
     private Map typeMap;
 
     private DialogDescriptor dd;
+    
+    private static final Pattern VALID_LIBRARY_NAME = Pattern.compile("[-._a-zA-Z0-9]+"); // NOI18N
 
     /** Creates new form NewLibraryPanel */
     public NewLibraryPanel (LibrariesModel model, String preselectedLibraryType) {
@@ -137,8 +140,8 @@ public class NewLibraryPanel extends javax.swing.JPanel {
         // XXX: there is method in PropertyUtils.isUsablePropertyName()
         // which should be used here but that would create dependency
         // on ant/project modules which is not desirable.
-        // Anyway, the restriction on display name is just for promoD.
-        return name.indexOf(' ') == -1;
+        // XXX: The restriction of display name should be fixed in promo F
+        return VALID_LIBRARY_NAME.matcher(name).matches();
     }
     
     /** This method is called from within the constructor to
