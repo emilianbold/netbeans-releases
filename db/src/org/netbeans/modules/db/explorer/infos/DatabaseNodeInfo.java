@@ -619,14 +619,13 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
     public Vector getActions()
     {
         Vector actions = (Vector)get(ACTIONS);
+        actions = (Vector)actions.clone();
         if (actions == null) {
             actions = new Vector();
             put(ACTIONS, actions);
         }
 
         if (actions.size() == 0) return actions;
-        Object xaction = actions.elementAt(0);
-        if (xaction != null && xaction instanceof DatabaseAction) return actions;
         boolean ro = isReadOnly();
         for (int i=0; i<actions.size();i++) {
 
@@ -661,7 +660,9 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie {
                             System.out.println(message);
                         }
 
-                        action = (SystemAction)Class.forName(actcn).newInstance();
+                        //action = (SystemAction)Class.forName(actcn).newInstance();
+                        //action = (SystemAction)SharedClassObject.findObject(Class.forName(actcn), true);
+                        action = SystemAction.get(Class.forName(actcn));
                         ((DatabaseAction)action).setName(locname);
                         ((DatabaseAction)action).setNode(actnode);
                     } else action = SystemAction.get(Class.forName(actcn));

@@ -1242,7 +1242,6 @@
 			{
 				name = "GrabStructure";
 				class = org.netbeans.modules.db.explorer.actions.GrabTableAction;
-				perm = "write";
 			},
 			{
 				name = "RecreateTable";
@@ -2084,7 +2083,6 @@
 			{
 				name = "Refresh";
 				class = org.netbeans.modules.db.explorer.actions.RefreshChildrenAction;
-				perm = "write";
 			},
 			delimiter
 		);

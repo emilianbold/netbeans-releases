@@ -62,6 +62,17 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
             DatabaseConnection con = new DatabaseConnection(drvurl, dburl, getUser(), getPassword());
             Connection connection = con.createJDBCConnection();
             
+            SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
+            Specification spec;
+            DriverSpecification drvSpec;
+
+            if (dbsys != null) {
+                spec = (Specification)factory.createSpecification(con, dbsys, connection);
+            } else {
+                setReadOnly(false);
+                spec = (Specification)factory.createSpecification(con, connection);
+            }
+
             if (connection != null) {
                 ResultSet rs;
                 Vector items = new Vector();
@@ -87,15 +98,6 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 }
             }
             
-            SpecificationFactory factory = (SpecificationFactory)getSpecificationFactory();
-            Specification spec;
-            DriverSpecification drvSpec;
-
-            if (dbsys != null) {
-                spec = (Specification)factory.createSpecification(con, dbsys, connection);
-            } else
-                spec = (Specification)factory.createSpecification(con, connection);
-
             setSpecification(spec);
 
             drvSpec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
@@ -109,6 +111,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
 
             UnsupportedDatabaseDialog dlg = new UnsupportedDatabaseDialog();
             dlg.show();
+            setReadOnly(false);
             switch (dlg.getResult()) {
             case UnsupportedDatabaseDialog.GENERIC: connect("GenericDatabaseSystem"); break; //NOI18N
             case UnsupportedDatabaseDialog.READONLY: connectReadOnly(); break;
