@@ -589,6 +589,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return;
 
         org.w3c.dom.Node constrNode = null;
+        org.w3c.dom.NamedNodeMap constrAttr = null;
+
         if (convIndex >= 0 && reasonable31Constraints[convIndex]) {
             org.w3c.dom.NodeList children = node.getChildNodes();
             if (children != null)
@@ -596,9 +598,36 @@ public class GandalfPersistenceManager extends PersistenceManager {
                     org.w3c.dom.Node cNode = children.item(i);
                     if (cNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
                         constrNode = cNode;
+                        constrAttr = cNode.getAttributes();
                         break;
                     }
                 }
+        }
+
+        try { // obligatory try/catch block for finding methods and constructors
+
+        if (constrNode == null) { // no constraints found
+            if (convIndex < 0 && layoutConvIndex >= LAYOUT_JSCROLL) {
+                // JScrollPane requires special add code although there are
+                // no constraints ...
+                if (setViewportViewMethod == null)
+                    setViewportViewMethod =
+                            javax.swing.JScrollPane.class.getMethod(
+                                    "setViewportView", // NOI18N
+                                    new Class[] { java.awt.Component.class });
+
+                CodeStructure.createConnection(
+                                  layoutSupport.getContainerCodeElement(),
+                                  setViewportViewMethod,
+                                  new CodeElement[] { compElement });
+            }
+            else { // create simple add method connection with no constraints
+                CodeStructure.createConnection(
+                                layoutSupport.getContainerDelegateCodeElement(),
+                                getSimpleAddMethod(),
+                                new CodeElement[] { compElement });
+            }
+            return;
         }
 
         CodeStructure codeStructure = layoutSupport.getCodeStructure();
@@ -606,17 +635,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         CodeElement contDelCodeElement =
             layoutSupport.getContainerDelegateCodeElement();
 
-        if (constrNode == null) {
-            // create simple add method connection with no constraints
-            CodeStructure.createConnection(contDelCodeElement,
-                                           getSimpleAddMethod(),
-                                           new CodeElement[] { compElement });
-            return;
-        }
-
-        org.w3c.dom.NamedNodeMap constrAttr = constrNode.getAttributes();
-
-        try {
         if (convIndex == LAYOUT_BORDER) {
             if (!"BorderConstraints".equals(constrNode.getNodeName())) // NOI18N
                 return; // should not happen
@@ -978,6 +996,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                             boundsParams) });
             }
         }
+
         }
         catch (NoSuchMethodException ex) { // should not happen
             ex.printStackTrace();
@@ -1254,7 +1273,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                           org.netbeans.lib.awtextra.AbsoluteLayout.class;
         }
 
-        else return -1; // no layout manager
+        else return convIndex; // no layout manager
 
         CodeElement layoutElement;
         if (layoutClass != null) {
@@ -1709,17 +1728,23 @@ public class GandalfPersistenceManager extends PersistenceManager {
                             StringBuffer buf, String indent)
     {
         LayoutSupportManager layoutSupport = container.getLayoutSupport();
-        String delegateName = layoutSupport.getLayoutDelegate().getClass().getName();
+        Class layoutClass = layoutSupport.getLayoutDelegate().getSupportedClass();
+
         int convIndex = -1; // index in conversion table
 
-        for (int i=0; i < layoutDelegateNames.length; i++)
-            if (delegateName.equals(layoutDelegateNames[i])) {
-                convIndex = i;
-                break;
-            }
+        if (layoutClass == null)
+            convIndex = LAYOUT_NULL;
+        else {
+            String className = layoutClass.getName();
+            for (int i=0; i < supportedClassNames.length; i++)
+                if (className.equals(supportedClassNames[i])) {
+                    convIndex = i;
+                    break;
+                }
 
-        if (convIndex < 0)
-            return; // [to do: XML code persistence]
+            if (convIndex < 0)
+                return; // [to do: XML code persistence]
+        }
 
         StringBuffer buf2 = new StringBuffer();
         boolean anyPropertySaved = false;
@@ -1728,7 +1753,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
             Node.Property[] properties = layoutSupport.getAllProperties();
             for (int i=0; i < properties.length; i++) {
                 FormProperty property = (FormProperty) properties[i];
-                if (property.isChanged()) {
+                if (property.isChanged()
+                    // NB 3.1 considered special values as default for
+                    // GridLayout, so we must always save rows and columns
+                    || (convIndex == LAYOUT_GRID
+                        && ("rows".equals(property.getName())
+                            || "columns".equals(property.getName()))))
+                {
                     String delegatePropName = property.getName();
                     String layout31PropName = null;
                     String[] delPropNames = layoutDelegatePropertyNames[convIndex];
@@ -3035,21 +3066,21 @@ public class GandalfPersistenceManager extends PersistenceManager {
         true, false, false, true, true, true, false
     }; // fixed table, do not change!
 
-    private static final String[] layoutDelegateNames = {
-        "org.netbeans.modules.form.layoutsupport.delegates.BorderLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.FlowLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.BoxLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.GridLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.CardLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.AbsoluteLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.JScrollPaneSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.ScrollPaneSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.JSplitPaneSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.JTabbedPaneSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.JLayeredPaneSupport", // NOI18N
-        "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport" // NOI18N
+    private static final String[] supportedClassNames = {
+        "java.awt.BorderLayout", // NOI18N
+        "java.awt.FlowLayout", // NOI18N
+        "javax.swing.BoxLayout", // NOI18N
+        "java.awt.GridBagLayout", // NOI18N
+        "java.awt.GridLayout", // NOI18N
+        "java.awt.CardLayout", // NOI18N
+        "org.netbeans.lib.awtextra.AbsoluteLayout", // NOI18N
+        null,
+        "javax.swing.JScrollPane", // NOI18N
+        "java.awt.ScrollPane", // NOI18N
+        "javax.swing.JSplitPane", // NOI18N
+        "javax.swing.JTabbedPane", // NOI18N
+        "javax.swing.JLayeredPane", // NOI18N
+        "javax.swing.JToolBar" // NOI18N
     }; // fixed table, do not change!
 
     private static final String[][] layout31PropertyNames = {
@@ -3098,6 +3129,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static Method setTopComponentMethod;
     private static Method setBottomComponentMethod;
     private static Method setBoundsMethod;
+    private static Method setViewportViewMethod;
     private static Constructor gridBagConstrConstructor;
     private static Constructor insetsConstructor;
     private static Constructor absoluteConstraintsConstructor;
