@@ -13,15 +13,18 @@
 
 package org.netbeans.spi.project.ui;
 
-/** List of paths to templates which should be in the initial list of
- * templates in NewAction
- *
+/**
+ * List of templates which should be in the initial "privileged" list
+ * when making a new file.
+ * An instance should be placed in {@link org.netbeans.api.project.Project#getLookup}
+ * to affect the privileged list for that project.
  * @author Petr Hrebejk
  */
 public interface PrivilegedTemplates {
     
-    /** Lists privilieged templates.
-     * @return Array of strings representing names of privileged templates.
+    /**
+     * Lists privileged templates.
+     * @return full paths to privileged templates, e.g. <samp>Templates/Other/XmlFile.xml</samp>
      */
     public String[] getPrivilegedTemplates();
     

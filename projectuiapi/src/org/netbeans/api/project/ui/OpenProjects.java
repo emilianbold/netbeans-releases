@@ -13,47 +13,33 @@
 
 package org.netbeans.api.project.ui;
 
-import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.IOException;
-
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.modules.project.uiapi.ProjectOpenedTrampoline;
 import org.netbeans.modules.project.uiapi.Utilities;
-import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
  * List of projects open in the GUI.
+ * <p class="nonnormative">
+ * <strong>Warning:</strong> this API is intended only for a limited set of use
+ * cases where obtaining a list of all open projects is really the direct goal.
+ * For example, you may wish to display a chooser letting the user select a
+ * file from among the top-level source folders of any open project.
+ * For many cases, however, this API is not the correct approach, so use it as
+ * a last resort. Consider {@link GlobalPathRegistry} and {@link ProjectOpenedHook}
+ * first. Only certain operations should actually be aware of which projects
+ * are "open"; by default, all project functionality should be available whether
+ * it is open or not.
+ * </p>
  * @author Jesse Glick, Petr Hrebejk
  */
 public final class OpenProjects {
     
-    
-    /** Property open projects. */
-    public static final String PROPERTY_OPEN_PROJECTS = "OpenProjects";
+    /**
+     * Property representing open projects.
+     * @see #getOpenProjects
+     */
+    public static final String PROPERTY_OPEN_PROJECTS = "openProjects"; // NOI18N
     
     private static OpenProjects INSTANCE = new OpenProjects();
     
@@ -62,29 +48,37 @@ public final class OpenProjects {
     private OpenProjects() {
         this.trampoline = Utilities.getOpenProjectsTrampoline();
     }
-           
+
+    /**
+     * Get the default singleton instance of this class.
+     * @return the default instance
+     */
     public static OpenProjects getDefault() {                
         return INSTANCE;
     }
     
-    /** Gets array of currently opened projects.
-     * @return Array of projects currently opened in the IDEGui
+    /**
+     * Gets a list of currently open projects.
+     * @return list of projects currently opened in the IDE's GUI; order not specified
      */
     public Project[] getOpenProjects() {
         return trampoline.getOpenProjectsAPI();
     }
             
-    /** Add property change listener on open projects/ 
-     * As this class is singletnon, which is not GCed it is good idea to 
-     * add WeakListeners or remove the listeners properly.
-     * @param listener The listener to be added.
+    /**
+     * Adds a listener to changes in the set of open projects.
+     * As this class is a singleton and is not subject to garbage collection,
+     * it is recommended to add only weak listeners, or remove regular listeners reliably.
+     * @param listener a listener to add
+     * @see #PROPERTY_OPEN_PROJECTS
      */    
     public void addPropertyChangeListener( PropertyChangeListener listener ) {
         trampoline.addPropertyChangeListenerAPI( listener );
     }
     
-    /** Removes property change listener. 
-     * @param listener Listener to be removed. 
+    /**
+     * Removes a listener.
+     * @param listener a listener to remove
      */
     public void removePropertyChangeListener( PropertyChangeListener listener ) {
         trampoline.removePropertyChangeListenerAPI( listener );
