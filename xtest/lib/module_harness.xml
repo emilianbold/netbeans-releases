@@ -44,8 +44,15 @@ Microsystems, Inc. All Rights Reserved.
     
 
     <target name="forbidden">
+       <antcall target="version"/>
        <fail message="This script is not intended to be directly executed. This in only library."/>
     </target>
+        
+    <target name="version" description="Shows version of XTest">
+        <taskdef name="version" classname="org.netbeans.xtest.XTestVersion" 
+                 classpath="${xtest.home}/lib/xtest.jar"/>
+        <version/>
+    </target>    
     
     <!-- =========== -->
     <!-- Init target -->
