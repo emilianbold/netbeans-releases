@@ -12,21 +12,24 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-
-<mconfig name="java/project">
+<mconfig name="ant">
     
-    <testbag testattribs="stable" executor="unit-executor" name="java/project">
+    <testbag testattribs="stable" executor="unit-executor" name="ant">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <!-- Will not pass until Ant 1.7 is bundled: -->
+                <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="commit" executor="unit-executor" name="java/project">
+    <testbag testattribs="commit" executor="unit-executor" name="ant">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
+                <!-- Will not pass until Ant 1.7 is bundled: -->
+                <exclude name="**/AntLoggerTest.class/testLocationOfImportedTargetsWithLineNumbers"/>
             </patternset>
         </testset>
     </testbag>

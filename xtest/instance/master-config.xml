@@ -18,37 +18,26 @@ Microsystems, Inc. All Rights Reserved.
   <!-- Dev TESTS -->
   <!-- ========= -->  
 
-  <config name="config-1">
-      <module name="core" testtypes="unit" attributes="stable"/>
-      <module name="openide" testtypes="unit" attributes="stable"/>
-      <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
-      <module name="ant/project" testtypes="unit" attributes="stable"/>
-<!--      <module name="ant/grammar" testtypes="unit" attributes="stable"/> -->
-      <module name="java/api" testtypes="unit" attributes="stable"/>
-      <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
-      <module name="java/platform" testtypes="unit" attributes="stable"/>
-      <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
-      <!--
-      <module name="openidex" testtypes="unit" attributes="stable"/>
-      -->
-  </config>
-  
-  <config name="unit-nb">
-      <module name="core" testtypes="unit" attributes="stable"/>
-      <module name="openide" testtypes="unit" attributes="stable"/>
-      <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
-      <module name="ant/project" testtypes="unit" attributes="stable"/>
-<!--      <module name="ant/grammar" testtypes="unit" attributes="stable"/> -->
-      <module name="java/api" testtypes="unit" attributes="stable"/>
-      <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
-      <module name="java/platform" testtypes="unit" attributes="stable"/>
-      <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
-      <module name="html" testtypes="unit" attributes="stable"/>
-      <!--
-      <module name="openidex" testtypes="unit" attributes="stable"/>
-      -->
-      <module name="schema2beans" testtypes="unit" attributes="all,code"/>
-  </config>
+    <config name="unit-nb"> <!-- was also similar to old "config-1" -->
+        <module name="core" testtypes="unit" attributes="stable"/>
+        <module name="openide" testtypes="unit" attributes="stable"/>
+        <!-- Needs to be early since many other tests compile against it: -->
+        <!-- (in general, check using: 'fgrep /build/test/unit/classes */{,*/}nbproject/project.properties') -->
+        <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
+        <module name="ant" testtypes="unit" attributes="stable"/>
+        <module name="ant/freeform" testtypes="unit" attributes="stable"/>
+        <module name="ant/grammar" testtypes="unit" attributes="stable"/>
+        <module name="ant/project" testtypes="unit" attributes="stable"/>
+        <module name="apisupport/project" testtypes="unit" attributes="stable"/>
+        <module name="java/api" testtypes="unit" attributes="stable"/>
+        <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
+        <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
+        <module name="java/platform" testtypes="unit" attributes="stable"/>
+        <module name="java/project" testtypes="unit" attributes="stable"/>
+        <module name="projects/projectui" testtypes="unit" attributes="stable"/>
+        <!-- removed (not runnable): html, schema2beans -->
+        <!-- other candidate modules in current default moduleconfig: autoupdate core/execution core/favorites core/multiview core/output2 core/settings core/windows debuggercore debuggerjpda editor editor/fold editor/util extbrowser httpserver j2eeserver java/javacore mdr openide/masterfs refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks tomcatint/tomcat5 web/core web/jspparser web/webapi xml/api xml/core xml/schema xml/text-edit xml/xsl -->
+    </config>
   
   <config name="unit-nb-nbm">
       <module name="mdr" testtypes="unit" attributes="stable"/>

@@ -19,7 +19,7 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xtest.home" location=".."/>
     <property name="xtest.basedir" location="../.."/>
     
-    <property name="xtest.config" value="config-1"/>
+    <property name="xtest.config" value="unit-nb"/>
     <property name="xtest.instance.name" value="NetBeans tests"/>
     
     <property name="xtest.harness.antfile" location="${xtest.home}/lib/harness.xml"/>

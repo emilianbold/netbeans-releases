@@ -11,9 +11,9 @@ The Original Code is NetBeans. The Initial Developer of the Original
 Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
-<project name="ant/test" basedir="." default="all">
-    <property name="xtest.module" value="ant"/>
-    <import file="../../nbbuild/templates/xtest.xml"/>
+<project name="apisupport/project/test" basedir="." default="all">
+    <property name="xtest.module" value="apisupport/project"/>
+    <import file="../../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
 </project>
