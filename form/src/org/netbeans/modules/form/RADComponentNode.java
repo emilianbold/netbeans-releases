@@ -33,6 +33,7 @@ import java.awt.Image;
 import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /** 
 *
@@ -510,6 +511,93 @@ static final long serialVersionUID =3851021533468196849L;
 // -----------------------------------------------------------------------------
 // Paste types
 
+  private RADComponent makeCopy (RADComponent original, boolean assignName) {
+    RADComponent copyComponent;
+    if (original instanceof RADVisualContainer) {
+      copyComponent = new RADVisualContainer ();
+    } else if (original instanceof RADVisualComponent) {
+      copyComponent = new RADVisualComponent ();
+    } else {
+      copyComponent = new RADComponent ();
+    }
+    copyComponent.initialize (component.getFormManager ());
+    copyComponent.setComponent (original.getBeanClass ());
+    if (assignName) copyComponent.setName(component.getFormManager ().getVariablesPool ().getNewName (original.getBeanClass ())); 
+
+    // 1. clone layout on containers
+    if (original instanceof RADVisualContainer) {
+      try {
+        ((ComponentContainer)copyComponent).initSubComponents (new RADComponent[0]);
+        DesignLayout newLayout = (DesignLayout)((RADVisualContainer)original).getDesignLayout ().clone ();
+        ((RADVisualContainer)copyComponent).setDesignLayout (newLayout);
+      } catch (Exception e) {
+        // ignore problem with cloning layout
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      }
+    }
+
+    // 2. copy subcomponents
+    if (original instanceof RADVisualContainer) { // [FUTURE - non visual containers]
+      RADComponent[] originalSubs = ((RADVisualContainer)original).getSubBeans ();
+      RADComponent[] newSubs = new RADComponent[originalSubs.length];
+      for (int i = 0; i < originalSubs.length; i++) {
+        newSubs[i] = makeCopy (originalSubs [i], true);
+      }
+      ((RADVisualContainer)copyComponent).initSubComponents (newSubs);
+    }
+
+
+    // 3. copy changed properties
+    RADComponent.RADProperty[] originalProps = original.getAllProperties ();
+    for (int i = 0; i < originalProps.length; i++) {
+      try {
+        if (originalProps[i].isChanged ()) {
+          RADComponent.RADProperty newProperty = copyComponent.getPropertyByName (originalProps[i].getName ());
+          newProperty.setValue (FormUtils.cloneObject (originalProps[i].getValue ()));
+          newProperty.setChanged (true);
+        }
+      } catch (Exception e) {
+        // ignore property with problem
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      }
+    }
+
+    // 4. copy aux values
+    java.util.Map auxVals = original.getAuxValues ();
+    for (Iterator it = auxVals.keySet ().iterator (); it.hasNext ();) {
+      String auxName = (String)it.next ();
+      Object auxValue = auxVals.get (auxName);
+      try {
+        copyComponent.setAuxValue (auxName, FormUtils.cloneObject (auxValue));
+      } catch (Exception e) {
+        // ignore aux value with problem
+        if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+      }
+    }
+
+    // 5. copy constraints
+    if (original instanceof RADVisualComponent) {
+      java.util.Map constraintsMap = ((RADVisualComponent)original).getConstraintsMap ();
+      java.util.HashMap newConstraints = new java.util.HashMap (constraintsMap.size () * 2);
+      for (Iterator it = constraintsMap.keySet ().iterator (); it.hasNext ();) {
+        String layoutClass = (String)it.next ();
+        DesignLayout.ConstraintsDescription cd = (DesignLayout.ConstraintsDescription)constraintsMap.get (layoutClass);
+        try {
+          newConstraints.put (layoutClass, FormUtils.cloneObject (cd));
+        } catch (Exception e) {
+          // ignore aux value with problem
+          if (Boolean.getBoolean ("netbeans.debug.exceptions")) e.printStackTrace ();
+        }
+      }
+      ((RADVisualComponent)copyComponent).initConstraints (newConstraints);
+    }
+
+    // 6. copy events
+    // [PENDING - Events]
+
+    return copyComponent;
+  }
+  
   /** Paste types for data objects.
   */
   private final class RADPaste extends PasteType {
@@ -536,41 +624,27 @@ static final long serialVersionUID =3851021533468196849L;
       }
 //      System.out.println ("RADPaste.paste() : fromCut: "+fromCut+", : "+radComponent);
 
+      FormManager2 pasteManager = component.getFormManager ();
 
       // 1. pasting copy of RADComponent
       if (!fromCut) {
-        FormManager2 pasteManager = component.getFormManager ();
-        RADComponent copyComponent;
-        if (radComponent instanceof RADVisualContainer) {
-          copyComponent = new RADVisualContainer ();
-        } else if (radComponent instanceof RADVisualComponent) {
-          copyComponent = new RADVisualComponent ();
-        } else {
-          copyComponent = new RADComponent ();
-        }
-        copyComponent.initialize (pasteManager);
-        copyComponent.setComponent (radComponent.getBeanClass ());
-//        copyComponent.setName
-//          formManager2.getVariablesPool ().createVariable (nodes[i].componentName, nodes[i].beanClass);
-        if (copyComponent instanceof RADVisualContainer) {
-// [PENDING]  ((RADVisualContainer)copyComponent).setDesignLayout (((RADContainerNode)nodes[i]).designLayout);
-        }
-        if (copyComponent instanceof RADVisualComponent) {
-          // [PENDING - how about adding visual container to non-visuals?]
-          pasteManager.addVisualComponent ((RADVisualComponent)copyComponent, (RADVisualContainer)component, null);
+        RADComponent newCopy = makeCopy (radComponent, false);
+        if ((newCopy instanceof RADVisualComponent) && (component instanceof RADVisualContainer)) {
+          pasteManager.addVisualComponent ((RADVisualComponent)newCopy, (RADVisualContainer)component, null);
+          pasteManager.addVisualComponentsRecursively ((RADVisualContainer)component);
           pasteManager.getFormTopComponent ().validate();
           pasteManager.fireCodeChange ();
         } else {
-          pasteManager.addNonVisualComponent (copyComponent, null);
+          pasteManager.addNonVisualComponent (newCopy, null);
           pasteManager.fireCodeChange ();
         }
         return null;
       } else {        
       // 2. pasting cut RADComponent (same instance)
-        FormManager2 pasteManager = component.getFormManager ();
         radComponent.initialize (pasteManager); // if pasting into another form
         if (radComponent instanceof RADVisualComponent) {
           pasteManager.addVisualComponent ((RADVisualComponent)radComponent, (RADVisualContainer)component, null);
+          pasteManager.addVisualComponentsRecursively ((RADVisualContainer)component);
           pasteManager.getFormTopComponent ().validate();
           pasteManager.fireCodeChange ();
         } else {
@@ -652,6 +726,10 @@ static final long serialVersionUID =3851021533468196849L;
 
 /*
  * Log
+ *  40   Gandalf   1.39        10/6/99  Ian Formanek    Implemented copying of 
+ *       components (first cut). Fixes bug 2309 - Copy doesn't work over 
+ *       Component and Bug 2629 - If you copy and paste some component in 
+ *       Component Inspector the text property of new component is empty. 
  *  39   Gandalf   1.38        9/29/99  Ian Formanek    codeChanged added to 
  *       FormListener, Fixed bug 4098 - Containers added to form using 
  *       Copy/Paste (not from Component Palette) cannot be used as containers in
