@@ -153,6 +153,25 @@ public final class Method extends Field {
     }
 
     /**
+     * Returns the method's return type in the type format defined by
+     * the JVM Specification for Field Descriptors (section 4.3.2).
+     */
+    public final String getReturnType() {
+	String desc = getDescriptor();
+	int i = desc.indexOf(')') + 1;
+	return desc.substring(i);
+    }
+
+    /**
+     * Returns the method's return type as it would be defined in Java
+     * source code format.
+     */
+    public final String getReturnSignature() {
+	String type = getReturnType();
+	return CPFieldMethodInfo.getSignature(type, true);
+    }
+
+    /**
      * Returns the default annotation value for the element
      * defined by this method.  Null is returned if no default 
      * is specified for this element, or if the class that contains 
@@ -184,7 +203,8 @@ public final class Method extends Field {
             if (i+1 < parameters.length)
                 sb.append(", ");
         }
-        sb.append(")");
+        sb.append("), returns ");
+	sb.append(getReturnSignature());
         CPClassInfo[] ec = getExceptionClasses();
         if (ec.length > 0) {
             sb.append(", throws"); //NOI18N
