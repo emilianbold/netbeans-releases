@@ -57,6 +57,9 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     /** Open support for this data object. Provides editable table view on bundle. */
     private transient PropertiesOpen openSupport;
 
+    /** Lock used for synchronization of <code>openSupport</code> instance creation */
+    private final transient Object OPEN_SUPPORT_LOCK = new Object();
+
     // Hack due having lock on secondaries, can't override handleCopy, handleMove at all.
     /** Suffix used by copying/moving dataObject. */
     private transient String pasteSuffix;
@@ -172,12 +175,14 @@ public final class PropertiesDataObject extends MultiDataObject implements Cooki
     }
 
     /** Returns open support. It's used by all subentries as open support too. */
-    public synchronized PropertiesOpen getOpenSupport() {
-        if(openSupport == null) {
-            openSupport = new PropertiesOpen(this);
+    public PropertiesOpen getOpenSupport() {
+        synchronized(OPEN_SUPPORT_LOCK) {
+            if(openSupport == null) {
+                openSupport = new PropertiesOpen(this);
+            }
+
+            return openSupport;
         }
-                
-        return openSupport;
     }
 
     /** Updates modification status of this dataobject from its entries. */
