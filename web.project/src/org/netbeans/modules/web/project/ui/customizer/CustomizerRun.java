@@ -16,23 +16,28 @@ package org.netbeans.modules.web.project.ui.customizer;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 
 public class CustomizerRun extends JPanel implements WebCustomizer.Panel, DocumentListener {
     
     // Helper for storing properties
     private VisualPropertySupport vps;
-    
+    private WebModule wm;
+    private Document doc;
+
     String[] serverInstanceIDs;
     String[] serverNames;
     
     /** Creates new form CustomizerCompile */
-    public CustomizerRun(WebProjectProperties webProperties) {
+    public CustomizerRun(WebProjectProperties webProperties, WebModule wm) {
         initComponents();
 
+        this.wm = wm;        
         vps = new VisualPropertySupport(webProperties);
     }
     
@@ -41,20 +46,20 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         serverInstanceIDs = deployment.getServerInstanceIDs ();
         serverNames = new String[serverInstanceIDs.length];
         for (int i = 0; i < serverInstanceIDs.length; i++) {
-            
             serverNames[i] = deployment.getServerDisplayName (deployment.getServerID (serverInstanceIDs [i])) 
              + " (" + deployment.getServerInstanceDisplayName (serverInstanceIDs [i]) + ")"; //NOI18N
-            
         }
-        
-        vps.register(jTextFieldContextPath, WebProjectProperties.CONTEXT_PATH);
+
         vps.register(jCheckBoxDisplayBrowser, WebProjectProperties.DISPLAY_BROWSER);
         vps.register(jTextFieldRelativeURL, WebProjectProperties.LAUNCH_URL_RELATIVE);
         vps.register(jTextFieldFullURL, WebProjectProperties.LAUNCH_URL_FULL);
         vps.register(jComboBoxServer, serverNames, serverInstanceIDs, WebProjectProperties.J2EE_SERVER_INSTANCE);
 
+        jTextFieldContextPath.setText(wm.getContextPath());
+        
         jTextFieldRelativeURL.setEditable(jCheckBoxDisplayBrowser.isSelected());
-        jTextFieldContextPath.getDocument().addDocumentListener(this);
+        doc = jTextFieldContextPath.getDocument();
+        doc.addDocumentListener(this);
         jTextFieldRelativeURL.getDocument().addDocumentListener(this);
     } 
     
@@ -210,14 +215,23 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
     
     // Implementation of DocumentListener --------------------------------------
     public void changedUpdate(DocumentEvent e) {
+        if (e.getDocument() == doc)
+            setContextPath();
+        
         setFullURL();
     }
     
     public void insertUpdate(DocumentEvent e) {
+        if (e.getDocument() == doc)
+            setContextPath();
+        
         setFullURL();
     }
     
     public void removeUpdate(DocumentEvent e) {
+        if (e.getDocument() == doc)
+            setContextPath();
+
         setFullURL();
     }
     // End if implementation of DocumentListener -------------------------------
@@ -233,5 +247,9 @@ public class CustomizerRun extends JPanel implements WebCustomizer.Panel, Docume
         fullURL.append("/");
         fullURL.append(jTextFieldRelativeURL.getText().trim());
         jTextFieldFullURL.setText(fullURL.toString());
+    }
+    
+    private void setContextPath() {
+        wm.setContextPath(jTextFieldContextPath.getText().trim());
     }
 }

@@ -79,7 +79,6 @@ public class WebProjectProperties {
     public static final String WAR_CONTENT_EXCLUDES = "war.content.excludes";
     public static final String WAR_CONTENT_ADDITIONAL = "war.content.additional";
 
-    public static final String CONTEXT_PATH = "context.path";
     public static final String LAUNCH_URL_RELATIVE = "launch.url.relative";
     public static final String LAUNCH_URL_FULL = "launch.url.full";
     public static final String DISPLAY_BROWSER = "display.browser";
@@ -149,7 +148,6 @@ public class WebProjectProperties {
         new PropertyDescriptor( WAR_CONTENT_EXCLUDES, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( WAR_CONTENT_ADDITIONAL, PROJECT, PATH_PARSER ),
         
-        new PropertyDescriptor( CONTEXT_PATH, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LAUNCH_URL_RELATIVE, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( LAUNCH_URL_FULL, PROJECT, STRING_PARSER ),
         new PropertyDescriptor( DISPLAY_BROWSER, PROJECT, BOOLEAN_PARSER ),
