@@ -39,6 +39,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.w3c.dom.Element;
 
@@ -124,7 +125,8 @@ final class Importer {
             return project;
         }
         nOfProcessed++;
-        progressInfo = "Processing \"" + eclProject.getName() + "\" project...";
+        progressInfo = NbBundle.getMessage(Importer.class,
+                "MSG_Progress_ProcessingProject", eclProject.getName()); // NOI18N
         File nbProjectDir = new File(destination + "/" + eclProject.getName());
         Map eclRoots = eclProject.getAllSourceRoots();
         File[] testDirs = new File[0];
@@ -199,30 +201,42 @@ final class Importer {
             // use default platform
             return;
         }
+        Element pcd = helper.getPrimaryConfigurationData(true);
+        Element el = pcd.getOwnerDocument().createElementNS(
+                J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
+                "explicit-platform"); // NOI18N
+        pcd.appendChild(el);
+        helper.putPrimaryConfigurationData(pcd, true);
+        EditableProperties prop =
+                helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        String ver = null;
+        String normalizedName = null;
         for (int i = 0; i < nbPlfs.length; i++) {
             JavaPlatform nbPlf = nbPlfs[i];
             String nbPlfDir = FileUtil.toFile(
                     (FileObject) nbPlf.getInstallFolders().toArray()[0]).getAbsolutePath();
             
             if (nbPlfDir.equals(eclPlfDir)) {
-                EditableProperties prop =
-                        helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                Element pcd = helper.getPrimaryConfigurationData(true);
-                Element el = pcd.getOwnerDocument().createElementNS(
-                        J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE,
-                        "explicit-platform"); // NOI18N
-                pcd.appendChild(el);
-                helper.putPrimaryConfigurationData(pcd, true);
-                String ver = nbPlf.getSpecification().getVersion().toString();
-                String normalizedName = (String)nbPlf.getProperties().get(
+                ver = nbPlf.getSpecification().getVersion().toString();
+                normalizedName = (String)nbPlf.getProperties().get(
                         "platform.ant.name"); // NOI18N
-                prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
-                prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
-                prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
                 break;
             }
         }
+        // If we are not able to find any platform let's use the "broken
+        // platform" which can be easily added by user with "Resolve Reference
+        // Problems" feature. Such behaviour is much better then using a default 
+        // platform when user imports more projects.
+        // TODO parse version from Eclipse project or parse it out from a
+        // platform directory
+        if (normalizedName == null) {
+            normalizedName = new File(eclPlfDir).getName();
+        }
+        if (ver != null) {
+            prop.setProperty(J2SEProjectProperties.JAVAC_SOURCE, ver);
+            prop.setProperty(J2SEProjectProperties.JAVAC_TARGET, ver);
+        }
+        prop.setProperty(J2SEProjectProperties.JAVA_PLATFORM, normalizedName);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, prop);
     }
-    // if we are not able to find any platform the default is used
 }
