@@ -353,6 +353,11 @@ public class AllOptionsFolder{
     
     /** Lazily inits MIME Option class */
     public synchronized void loadMIMEOption(Class kitClass){
+        loadMIMEOption(kitClass, true);
+    }
+    
+    /** Lazily inits MIME Option class. If processOldTypeOption is true initializers for this option will be processed. */
+    public synchronized void loadMIMEOption(Class kitClass, boolean processOldTypeOption){
         String contentType = BaseKit.getKit(kitClass).getContentType();
         if (contentType == null) return;
         FileObject optionFO = TopManager.getDefault().getRepository().getDefaultFileSystem().
@@ -361,16 +366,18 @@ public class AllOptionsFolder{
             // old type of BaseOptions.
             // Options weren't transfered to XML form for this kitClass yet.
             // We have to find them via BaseOptions.getOptions and process initializers.
-            BaseOptions oldBO = BaseOptions.getOptions(kitClass);
-            if (oldBO != null){
-                if (!installedOptions.containsKey(kitClass)){
-                    installedOptions.put(kitClass, oldBO);
-                    processInitializers(oldBO, false);
+            if (processOldTypeOption){
+                BaseOptions oldBO = BaseOptions.getOptions(kitClass);
+                if (oldBO != null){
+                    if (!installedOptions.containsKey(kitClass)){
+                        installedOptions.put(kitClass, oldBO);
+                        processInitializers(oldBO, false);
+                    }
                 }
             }
             return;
         }
-        
+
         try{
             DataObject optionDO = DataObject.find(optionFO);
             if (optionDO == null) return;

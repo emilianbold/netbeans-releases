@@ -206,7 +206,15 @@ public class BaseOptions extends OptionSupport {
     }
 
     public static BaseOptions getOptions(Class kitClass) {
-        return (BaseOptions)kitClass2Options.get(kitClass);
+        BaseOptions option = (BaseOptions)kitClass2Options.get(kitClass);
+        
+        if (option == null) {
+            AllOptionsFolder.getDefault().loadMIMEOption(kitClass, false);
+            
+            option = (BaseOptions)kitClass2Options.get(kitClass);
+        }
+        
+        return option;
     }
 
     /** Listening for Settings.settings creation.*/
