@@ -41,13 +41,15 @@ Microsystems, Inc. All Rights Reserved.
     <copy file="src/org/netbeans/core/Versioning.properties"
           tofile="versioning-tmp/org/netbeans/core/Versioning.properties"
 	  filtering="on"/>
-    <jar jarfile="netbeans/lib/core.jar"
-	 compress="false">
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
+    <locjar jarfile="netbeans/lib/core.jar"
+	    compress="false">
       <fileset dir="src" excludesfile="../nbbuild/standard-jar-excludes.txt">
         <exclude name="org/netbeans/core/Versioning.properties"/>
       </fileset>
       <fileset dir="versioning-tmp"/>
-    </jar>
+      <locale name="ja"/>
+    </locjar>
     <!-- XXX does this really need to be built? -->
     <jar jarfile="netbeans/lib/ext/regexp.jar"
          basedir="libsrc"

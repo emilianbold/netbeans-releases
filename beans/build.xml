@@ -39,7 +39,8 @@ Microsystems, Inc. All Rights Reserved.
 	    excludesfile="../nbbuild/standard-jar-excludes.txt"
 	    compress="false">
       <locale name="ja"/>
-      <localekit dir="src" includesfile="../nbbuild/standard-localekit-includes.txt"/>
+      <!-- Not yet: -->
+      <!-- <localekit dir="src" includesfile="../nbbuild/standard-localekit-includes.txt"/> -->
     </locjar>
   </target>
   <target name="netbeans" depends="jars"/>

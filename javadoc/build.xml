@@ -15,6 +15,7 @@ Microsystems, Inc. All Rights Reserved.
 <project name="javadoc" default="netbeans" basedir=".">
 
   <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="../nbbuild/nbantext.jar"/>
+  <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
 
   <target name="compile">
     <javac srcdir="src" destdir="src">
@@ -30,11 +31,13 @@ Microsystems, Inc. All Rights Reserved.
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/javadoc.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
+    <locjar jarfile="netbeans/modules/javadoc.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <locale name="ja"/>
+    </locjar>
   </target>
 
   <target name="netbeans" depends="jars"/>

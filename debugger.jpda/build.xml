@@ -39,11 +39,14 @@ ToDo:
     <mkdir dir="netbeans/modules"/>
     <filter token="BUILD_NUMBER_SUBST" value="${buildnumber}"/>
     <copy file="manifest.mf" tofile="manifest-subst.mf" filtering="on"/>
-    <jar jarfile="netbeans/modules/jpdaDebugger.jar"
-         manifest="manifest-subst.mf"
-         basedir="src"
-	 excludesfile="../nbbuild/standard-jar-excludes.txt"
-	 compress="false"/>
+    <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="../nbbuild/nbantext.jar"/>
+    <locjar jarfile="netbeans/modules/jpdaDebugger.jar"
+            manifest="manifest-subst.mf"
+            basedir="src"
+	    excludesfile="../nbbuild/standard-jar-excludes.txt"
+	    compress="false">
+      <locale name="ja"/>
+    </locjar>
   </target>
   <!-- Build only if JPDA is available now. -->
   <target name="netbeans" depends="check,jars" if="jpda"/>
