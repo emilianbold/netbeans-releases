@@ -762,21 +762,58 @@ Comments or questions? Post to the dev@openide.netbeans.org mailing list.
     </target>
 
     <!-- support for testing under main trunk version of the ide -->
-    <target name="test-single" >
-        <tempfile property="temp.file" />
-        <echo message="xtest#includes=${test.includes}" file="${temp.file}" />
-        <replace file="${temp.file}" token=".java" value="" />
-        <replace file="${temp.file}" token="." value="/" />
-        <replace file="${temp.file}" token="#" value="." />
-        <echo file="${temp.file}" append="true" >*class
-        </echo>
-        <loadproperties srcfile="${temp.file}" />
-        <echo message="xtest.includes: ${xtest.includes}" /> 
-        <delete file="${temp.file}" />
-        <ant dir="test" inheritall="true" >
-            <property name="xtest.attribs" value="empty" />
-        </ant>
+    <target name="compile-test-single" >
+        <ant dir="test" target="buildtests" />
     </target>
+    
+    <target name="test-single" depends="init" >
+        <fail unless="test.includes">Must set test.includes</fail>
+        <mkdir dir="${build.test.unit.results.dir}"/>
+        <junit showoutput="true" fork="true" failureproperty="tests.failed" errorproperty="tests.failed">
+            <batchtest todir="test/results">
+                <fileset dir="test/unit/src" includes="${test.includes}"/>
+            </batchtest>
+            <classpath >
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
+                <pathelement location="build/test/unit/classes" />
+                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+            </classpath>
+            <formatter type="brief" usefile="false"/>
+        </junit>
+        <fail if="tests.failed">Some tests failed; see details above.</fail>
+    </target>
+    
+    <target name="debug-test-single-nb" depends="init" if="netbeans.home" >
+        <fail unless="test.class">Must set test.class</fail>
+        <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
+            <classpath> 
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar"/>
+                <pathelement location="build/test/unit/classes" />
+                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+                <fileset dir="${netbeans.dest.dir}" >
+                    <patternset refid="openide.files" />
+                </fileset>
+            </classpath>
+        </nbjpdastart>
+        
+        <java fork="true" classname="junit.textui.TestRunner">
+            <jvmarg value="-Xdebug"/>
+            <jvmarg value="-Xnoagent"/>
+            <jvmarg value="-Djava.compiler=none"/>
+            <jvmarg value="-Xrunjdwp:transport=dt_socket,address=${jpda.address}"/>
+            <classpath >
+                <pathelement location="${netbeans.dest.dir}/${cluster.dir}/${nb.lib.dir}/openide.jar" />
+                <pathelement location="build/test/unit/classes" />
+                <pathelement location="${nb_all}/xtest/lib/junit.jar"/>
+                <pathelement location="${nb_all}/xtest/lib/nbjunit.jar"/>
+            </classpath>
+            <arg line="${test.class}"/>
+        </java>
+        
+    </target>
+
     
     <!-- be able to execute all unit tests -->
     <target name="test" >
