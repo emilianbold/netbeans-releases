@@ -34,6 +34,7 @@ import org.netbeans.editor.ext.*;
 import org.netbeans.modules.editor.*;
 
 import org.netbeans.modules.xml.core.XMLDataObject;
+import org.netbeans.modules.xml.text.completion.NodeSelector;
 
 
 /**
@@ -85,6 +86,11 @@ public class XMLKit extends UniKit {
 
     public Completion createCompletion(ExtEditorUI extEditorUI) {
         return new org.netbeans.modules.xml.text.completion.XMLCompletion(extEditorUI);
+    }
+    
+    public void install(JEditorPane c) {
+        super.install(c);
+        new NodeSelector(c);
     }
 
     // hack to be settings browseable //??? more info needed    
