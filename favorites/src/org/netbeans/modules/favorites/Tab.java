@@ -34,24 +34,17 @@ import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
-import org.openide.loaders.OperationEvent;
-import org.openide.loaders.OperationListener;
 import org.openide.nodes.*;
-import org.openide.util.Lookup;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakSet;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /** Special class for projects tab in main explorer */
 public class Tab extends TopComponent
-implements OperationListener, Runnable, ExplorerManager.Provider {
+implements Runnable, ExplorerManager.Provider {
     static final long serialVersionUID =-8178367548546385799L;
 
     /** data object which should be selected in EQ; synch array when accessing */
@@ -84,12 +77,6 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
 
         // following line tells the top component which lookup should be associated with it
         associateLookup (ExplorerUtils.createLookup (manager, map));
-        
-        
-        DataLoaderPool pool = (DataLoaderPool)Lookup.getDefault ().lookup (DataLoaderPool.class);
-        pool.addOperationListener ((OperationListener)org.openide.util.WeakListeners.create (
-            OperationListener.class, this, pool
-        ));
     }
 
     public ExplorerManager getExplorerManager() {
@@ -322,46 +309,9 @@ implements OperationListener, Runnable, ExplorerManager.Provider {
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
-
-    // ---- Imlementation of OperationListener
-
-    public void operationPostCreate (OperationEvent ev) {}
-    public void operationCopy (OperationEvent.Copy ev) {}
-    public void operationMove (OperationEvent.Move ev) {}
-    public void operationDelete (OperationEvent ev) {}
-    public void operationRename (OperationEvent.Rename ev) {}
-    /** A shadow of a data object has been created.
-     * @param ev event describing the action
-     */
-    public void operationCreateShadow (OperationEvent.Copy ev) {
-        postTask (ev.getObject ());
-    }
-    /** New instance of an object has been created.
-     * @param ev event describing the action
-     */
-    public void operationCreateFromTemplate (OperationEvent.Copy ev) {
-        postTask (ev.getObject ());
-    }
+    
     // ---- private implementation
-
-    private void postTask(DataObject obj) {
-        synchronized (needToSelect) {
-            needToSelect[0] = obj;
-        }
-        Mutex.EVENT.writeAccess(new Runnable() {
-            public void run() {
-                DataObject d;
-                synchronized (needToSelect) {
-                    d = needToSelect[0];
-                    needToSelect[0] = null;
-                }
-                if (d != null && /* #14179 */d.isValid()) {
-                    doSelectNode(d);
-                }
-            }
-        });
-    }
-
+    
     /** Finds a node for given data object.
     */
     private static Node findClosestNode (DataObject obj, Node start, boolean useLogicalViews) {
