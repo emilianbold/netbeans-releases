@@ -137,6 +137,13 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
   public Node executors () {
     return ExecutionEngine.getNode ();
   }
+  
+  /** Get the Debugger types node.
+  * @return the node
+  */
+  public Node debuggerTypes () {
+    return ExecutionEngine.getDebugNode ();
+  }
 
   /** Session node */
   public Node session () {
@@ -238,6 +245,8 @@ final class NbPlaces extends Object implements Places, Places.Nodes, Places.Fold
 
 /*
 * Log
+*  22   Gandalf   1.21        6/28/99  Jaroslav Tulach Debugger types are like 
+*       Executors
 *  21   Gandalf   1.20        6/8/99   Ian Formanek    ---- Package Change To 
 *       org.openide ----
 *  20   Gandalf   1.19        6/8/99   Ian Formanek    Added method actions() to
