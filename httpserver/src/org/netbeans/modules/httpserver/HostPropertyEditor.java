@@ -56,7 +56,6 @@ public class HostPropertyEditor extends PropertyEditorSupport {
 
   /** @param text A text for the current value. */
   public void setAsText (String text) {
-//System.out.println("set as text "   + text);
     if (text.equals(LOCALHOST)) {
       //HttpServerSettings.OPTIONS.setHost(HttpServerSettings.LOCALHOST);
       setValue(HttpServerSettings.LOCALHOST);
@@ -72,14 +71,13 @@ public class HostPropertyEditor extends PropertyEditorSupport {
   }   
   
   public void setValue(Object value) {
-//System.out.println("setValue " + value.toString());
-//util.Util.printStackTrace();
     super.setValue(value);
   }
 }
 
 /*
  * Log
+ *  5    Gandalf   1.4         6/22/99  Petr Jiricka    
  *  4    Gandalf   1.3         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  3    Gandalf   1.2         6/8/99   Petr Jiricka    

@@ -35,7 +35,10 @@ import org.openide.filesystems.FileObject;
 public class HttpServerSettings extends SystemOption implements HttpServer.Impl {
   
   /** generated Serialized Version UID */
-  static final long serialVersionUID = -2930037136839837001L;
+//  static final long serialVersionUID = -2930037136839837001L;
+  
+  private static final int MAX_START_RETRIES = 5;
+  private static int currentRetries = 0;
                  
   /** Has this been initialized ? 
   *  Becomes true if a "running" getter or setter is called
@@ -95,6 +98,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Intended to be called by the thread which succeeded to start the server */
   void runSuccess() {
     synchronized (HttpServerSettings.OPTIONS) {
+      currentRetries = 0;
       running = true;
       HttpServerSettings.OPTIONS.notifyAll();
     }  
@@ -103,6 +107,13 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
   /** Intended to be called by the thread which failed to start the server */
   void runFailure() {
     running = false;
+    currentRetries ++;
+    if (currentRetries <= MAX_START_RETRIES) {
+      setPort(getPort() + 1);
+      setRunning(true);
+    }
+    else 
+      currentRetries = 0;
   }
 
   /** Restarts the server if it is running */
@@ -174,8 +185,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       this.repositoryBaseURL = newURL;
       restartIfNecessary();
     }
-    // PENDING
-    //firePropertyChange(
+    firePropertyChange("repositoryBaseURL", null, this.repositoryBaseURL);
   }
                                       
   /** getter for classpath base */
@@ -197,8 +207,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
       this.classpathBaseURL = newURL;
       restartIfNecessary();
     }
-    // PENDING
-    //firePropertyChange(
+    firePropertyChange("classpathBaseURL", null, this.classpathBaseURL);
   }
 
   /** setter for port */
@@ -206,7 +215,8 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
     synchronized (HttpServerSettings.OPTIONS) {
       port = p;
       restartIfNecessary();
-    }  
+    }                
+    firePropertyChange("port", null, new Integer(port));
   }
 
   /** getter for port */
@@ -216,9 +226,9 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
   /** setter for host */
   public void setHost(String h) {
-//System.out.println("Set host : " + h);
-    if (h == ANYHOST || h == LOCALHOST)
+    if (h.equals(ANYHOST) || h.equals(LOCALHOST))
       host = h;
+    firePropertyChange("host", null, this.host);
   }
 
   /** getter for host */
@@ -284,6 +294,7 @@ public class HttpServerSettings extends SystemOption implements HttpServer.Impl 
 
 /*
  * Log
+ *  9    Gandalf   1.8         6/22/99  Petr Jiricka    
  *  8    Gandalf   1.7         6/9/99   Ian Formanek    ---- Package Change To 
  *       org.openide ----
  *  7    Gandalf   1.6         6/8/99   Petr Jiricka    
