@@ -71,6 +71,17 @@ public class AntProjectNode extends DataNode implements ChangeListener {
     }
     
     public Image getIcon(int type) {
+        Image i = getBasicIcon();
+        try {
+            // #25248: annotate the build script icon
+            i = getDataObject().getPrimaryFile().getFileSystem().getStatus().
+                annotateIcon(i, type, getDataObject().files());
+        } catch (FileStateInvalidException fsie) {
+            AntModule.err.notify(ErrorManager.INFORMATIONAL, fsie);
+        }
+        return i;
+    }
+    private Image getBasicIcon() {
         AntProjectCookie.ParseStatus cookie = (AntProjectCookie.ParseStatus)getDataObject().getCookie(AntProjectCookie.ParseStatus.class);
         if (cookie.getFile() == null && cookie.getFileObject() == null) {
             // Script has been invalidated perhaps? Don't continue, we would
