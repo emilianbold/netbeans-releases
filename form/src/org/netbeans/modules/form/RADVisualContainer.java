@@ -157,7 +157,9 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
     if (!(comp instanceof RADVisualComponent)) throw new IllegalArgumentException ();
     subComponents.add (comp);
     ((RADVisualComponent)comp).initParent (this);
-    ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+    if (getNodeReference () != null) { // it can be null in the case when copying containers with components
+      ((RADChildren)getNodeReference ().getChildren ()).updateKeys ();
+    }
   }
 
   public void remove (RADComponent comp) {
@@ -189,6 +191,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
 /*
  * Log
+ *  23   Gandalf   1.22        10/6/99  Ian Formanek    Better handling of 
+ *       special state during copy/paste of components
  *  22   Gandalf   1.21        8/15/99  Ian Formanek    Fixed bug 3289 - Wrong 
  *       Code Generation in JInternalFrame
  *  21   Gandalf   1.20        8/6/99   Ian Formanek    setComponent is public
