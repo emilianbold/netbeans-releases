@@ -79,60 +79,33 @@
 
 <mapID target="objects.group" url="objects/objects_group.html" />
 
-<mapID target="gui.intro" url="gui/intro.html" />
-<mapID target="gui.formeditor" url="gui/formeditor.html" />
-<mapID target="gui.modes" url="gui/testing.html" />
-<mapID target="gui.formsize" url="gui/formsize.html" />
-<mapID target="gui.component-inspector" url="gui/component-inspector.html" />
-<mapID target="gui.creatingforms" url="gui/creatingforms.html" />
-<mapID target="gui.reloadingform" url="gui/reloadingform.html" />
-<mapID target="gui.reversingwork" url="gui/reversingwork.html" />
-<mapID target="gui.components.palette" url="gui/components/palette.html" />
-<mapID target="gui.components.adding" url="gui/components/adding.html" />
-<mapID target="gui.components.designing" url="gui/components/designing.html" />
-<mapID target="gui.components.moving" url="gui/components/moving.html" />
-<mapID target="gui.components.reordering" url="gui/components/reordering.html" />
-<mapID target="gui.components.selecting" url="gui/components/selecting.html" />
-<mapID target="gui.components.inplace-editing" url="gui/components/inplace-editing.html" />
-<mapID target="gui.components.editing" url="gui/components/editing.html" />
-<mapID target="gui.layouts.setting" url="gui/layouts/setting.html" />
-<mapID target="gui.layouts.props" url="gui/layouts/props.html" />
-<mapID target="gui.layouts.gbcustomizer" url="gui/layouts/gbcustomizer.html" />
-<mapID target="gui.layouts.custom_mgr" url="gui/layouts/custom_mgr.html" />
-<mapID target="gui.layouts.managers.border" url="gui/layouts/managers/border.html" />
-<mapID target="gui.layouts.managers.flow" url="gui/layouts/managers/flow.html" />
-<mapID target="gui.layouts.managers.grid" url="gui/layouts/managers/grid.html" />
-<mapID target="gui.layouts.managers.gridbag" url="gui/layouts/managers/gridbag.html" />
-<mapID target="gui.layouts.managers.card" url="gui/layouts/managers/card.html" />
-<mapID target="gui.layouts.managers.box" url="gui/layouts/managers/box.html" />
-<mapID target="gui.layouts.managers.absolute" url="gui/layouts/managers/absolute.html" />
-<mapID target="gui.layouts.managers.null" url="gui/layouts/managers/null.html" />
-<mapID target="gui.source.guarded" url="gui/source/guarded.html" />
-<mapID target="gui.source.modifying.intro" url="gui/source/modifying/intro.html" />
-<mapID target="gui.source.modifying.component" url="gui/source/modifying/component.html" />
-<mapID target="gui.source.modifying.form" url="gui/source/modifying/form.html" />
-<mapID target="gui.source.modifying.property" url="gui/source/modifying/property.html" />
-<mapID target="gui.source.external" url="gui/source/external.html" />
-<mapID target="gui.events.intro" url="gui/events/intro.html" />
-<mapID target="gui.events.defining" url="gui/events/defining.html" />
-<mapID target="gui.events.removing" url="gui/events/removing.html" />
-<mapID target="gui.events.renaming" url="gui/events/renaming.html" />
-<mapID target="gui.events.multiple" url="gui/events/multiple.html" />
-<mapID target="gui.connecting.intro" url="gui/connecting/intro.html" />
-<mapID target="gui.connecting.source" url="gui/connecting/source.html" />
-<mapID target="gui.connecting.target" url="gui/connecting/target.html" />
-<mapID target="gui.connecting.code" url="gui/connecting/code.html" />
-<mapID target="gui.menus.menubar" url="gui/menus/menubar.html" />
-<mapID target="gui.menus.current" url="gui/menus/current.html" />
-<mapID target="gui.menus.menu" url="gui/menus/menu.html" />
-<mapID target="gui.menus.popup" url="gui/menus/popup.html" />
-<mapID target="gui.menus.item" url="gui/menus/item.html" />
-<mapID target="gui.menus.events" url="gui/menus/events.html" />
-<mapID target="gui.mdi" url="gui/mdi.html" />
-<mapID target="gui.configuring" url="gui/configuring.html" />
-<mapID target="gui.accessibleform" url="gui/accessibleform.html" />
-<mapID target="gui.custompalette.creating" url="gui/custompalette/creating.html" />
-<mapID target="gui.custompalette.removing" url="gui/custompalette/removing.html" />
+<!--begin GUI Form Editor section-->
+<mapID target="gui.about" url="gui/gui_about.html" />
+<mapID target="gui.overview" url="gui/gui_overview.html" />
+<mapID target="gui.quickref" url="gui/gui_quickref.html" />
+
+<mapID target="gui.designing" url="gui/gui_designing.html" />
+<mapID target="gui.creatingforms" url="gui/gui_creatingforms.html" />
+<mapID target="gui.containers.designing" url="gui/gui_containers.html" />
+<mapID target="gui.components.adding" url="gui/gui_addcomponent.html" />
+<mapID target="gui.components.selecting" url="gui/gui_selectcomponents.html" />
+<mapID target="gui.components.editing" url="gui/gui_editcomponentprops.html" />
+
+<mapID target="gui.layouts.about" url="gui/gui_layoutmanagers.html" />
+<mapID target="gui.layouts.setting" url="gui/gui_settinglayout.html" />
+<mapID target="gui.layouts.gbcustomizer" url="gui/gui_gbcustomizer.html" />
+<mapID target="gui.layouts.custom_mgr" url="gui/gui_customlayout.html" />
+<mapID target="gui.layouts.props" url="gui/gui_layoutprops.html" />
+
+<mapID target="gui.events.managing" url="gui/gui_manageevents.html" />
+<mapID target="gui.connectionwizard" url="gui/gui_connectionwizard.html" />
+
+<!--<mapID target="gui.mdi" url="gui/gui_mdi.html" />-->
+<mapID target="gui.configuring" url="gui/gui_configuring.html" />
+<mapID target="gui.source.modifying" url="gui/gui_modifysource.html" />
+<mapID target="gui.source.modifying.property" url="gui/gui_modifyinitproperty.html" />
+<mapID target="gui.accessibleform" url="gui/gui_accessibleform.html" />
+<mapID target="gui.testing" url="gui/gui_testing.html" />
 
 <mapID target="beans.intro" url="beans/intro.html" />
 <mapID target="beans.creating" url="beans/creating.html" />
