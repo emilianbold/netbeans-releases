@@ -29,13 +29,15 @@ import com.mortbay.HTTP.HttpServer;
 *
 * @author Petr Jiricka
 */
-public class HttpServerModule implements ModuleInstall {
+public class HttpServerModule implements ModuleInstall, Externalizable {
 
   
   private static HttpServer server;
   private static NbServer config;
   private static Thread serverThread;
   private static boolean inSetRunning = false;
+  
+  static boolean optionsSerialized = false;
 
   /** Module installed for the first time. */
   public void installed() {
@@ -46,8 +48,10 @@ public class HttpServerModule implements ModuleInstall {
   * Add applet executor
   */
   public void restored() {            
-    org.openide.util.HttpServer.registerServer(HttpServerSettings.OPTIONS);
-    com.mortbay.Base.Log.instance()._out = new NullWriter();
+    if (!HttpServerModule.optionsSerialized) {
+      // set the default value of the running property
+      HttpServerSettings.OPTIONS.isRunning();                                    
+    }
   }
 
   /** Module was uninstalled. */
@@ -63,6 +67,23 @@ public class HttpServerModule implements ModuleInstall {
     }  
     return true; // agree to close
   }
+
+	/** Writes data
+	* @param out ObjectOutputStream
+	*/
+ 	public void writeExternal(ObjectOutput out) throws IOException {
+		out.writeObject(new Boolean(true));
+	}
+	
+	/** Reads data
+	* @param in ObjectInputStream
+	*/
+ 	public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException	{
+ 	  Object obj = in.readObject();
+ 	  if (obj instanceof Boolean) {
+ 	    optionsSerialized = ((Boolean)obj).booleanValue();
+ 	  }
+	}	
 
   /** initiates HTTPServer so it runs */
   static void initHTTPServer() {
@@ -155,6 +176,8 @@ public class HttpServerModule implements ModuleInstall {
 
 /*
  * Log
+ *  20   Gandalf   1.19        8/17/99  Petr Jiricka    Externalization - server
+ *       startup during the first IDE start
  *  19   Gandalf   1.18        8/9/99   Petr Jiricka    Fixed bug with multiple 
  *       restarts of the server on IDE startup
  *  18   Gandalf   1.17        7/24/99  Petr Jiricka    
