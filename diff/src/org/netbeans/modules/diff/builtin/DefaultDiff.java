@@ -17,11 +17,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,19 +45,9 @@ import org.netbeans.spi.diff.*;
  *
  * @author  Martin Entlicher
  */
-public class DefaultDiff extends Diff {
+public class DefaultDiff extends Diff implements Serializable {
     
-    private String name1, name2;
-    private String title1, title2;
-    private String MIMEType;
-    //private Reader r1, r2;
-    private String buffer1, buffer2;
-    private DiffWrapperPanel diffPanel;
-    private DiffTopComponent tp;
-    private Map providersMap;
-    private Map visualizersMap;
-    private String defaultProviderName;
-    private String defaultVisualizerName;
+    private boolean showDiffSelector = true;
     
     /** Creates a new instance of DefaultDiff */
     public DefaultDiff() {
@@ -85,6 +76,7 @@ public class DefaultDiff extends Diff {
     public Component createDiff(String name1, String title1, Reader r1,
                                 String name2, String title2, Reader r2,
                                 String MIMEType) throws IOException {
+                                    /*
         this.name1 = name1;
         this.name2 = name2;
         this.title1 = title1;
@@ -96,10 +88,32 @@ public class DefaultDiff extends Diff {
         cpStream(r2, out2);
         this.buffer1 = out1.toString();
         this.buffer2 = out2.toString();
-        diffPanel = new DiffWrapperPanel();
-        tp = new DiffTopComponent(diffPanel);
-        if (!initPanel()) return null;
+                                     */
+        //diffPanel = new DiffWrapperPanel(showDiffSelector, showDiffSelector);
+        DiffPresenter.Info diffInfo = new DiffInfo(name1, name2, title1, title2,
+            MIMEType, showDiffSelector, showDiffSelector, r1, r2);
+        DiffPresenter diffPanel = new DiffPresenter(diffInfo);
+        TopComponent tp = new DiffTopComponent(diffPanel);
+        diffInfo.setPresentingComponent(tp);
+        diffPanel.setProvider((DiffProvider) Lookup.getDefault().lookup(DiffProvider.class));
+        diffPanel.setVisualizer((DiffVisualizer) Lookup.getDefault().lookup(DiffVisualizer.class));
         return tp;
+        //if (!initPanel()) return null;
+        //return tp;
+    }
+    
+    /** Getter for property showDiffSelector.
+     * @return Value of property showDiffSelector.
+     */
+    public boolean isShowDiffSelector() {
+        return showDiffSelector;
+    }
+    
+    /** Setter for property showDiffSelector.
+     * @param showDiffSelector New value of property showDiffSelector.
+     */
+    public void setShowDiffSelector(boolean showDiffSelector) {
+        this.showDiffSelector = showDiffSelector;
     }
     
     /*
@@ -152,6 +166,7 @@ public class DefaultDiff extends Diff {
     }
      */
     
+    /*
     private boolean initPanel() throws IOException {
         DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
         DiffVisualizer visualizer = (DiffVisualizer) Lookup.getDefault().lookup(DiffVisualizer.class);
@@ -178,6 +193,7 @@ public class DefaultDiff extends Diff {
         }
         c.requestFocus();
     }
+     */
     
     /*
     private synchronized void showDiff() throws IOException {
@@ -203,7 +219,7 @@ public class DefaultDiff extends Diff {
     }
      */
     
-    private void cpStream(Reader in, Writer out) throws IOException {
+    private static void cpStream(Reader in, Writer out) throws IOException {
         char[] buff = new char[1024];
         int n;
         while ((n = in.read(buff)) > 0) {
@@ -213,13 +229,14 @@ public class DefaultDiff extends Diff {
         out.close();
     }
     
+    /*
     private class ServicesChangeListener implements java.beans.PropertyChangeListener {
         
         /**
          * This method gets called when a bound property is changed.
          * @param evt A PropertyChangeEvent object describing the event source
          *  	and the property that has changed.
-         */
+         *
         public void propertyChange(java.beans.PropertyChangeEvent evt) {
             try {
                 showDiff(diffPanel.getProvider(), diffPanel.getVisualizer());
@@ -229,6 +246,7 @@ public class DefaultDiff extends Diff {
         }
         
     }
+     */
     
     /*
     private class ProvidersChangeListener implements ItemListener {
@@ -272,6 +290,32 @@ public class DefaultDiff extends Diff {
         
     }
      */
+    
+    private static class DiffInfo extends DiffPresenter.Info {
+        
+        private String buffer1, buffer2;
+        
+        public DiffInfo(String name1, String name2, String title1, String title2,
+                        String mimeType, boolean chooseProviders, boolean chooseVisualizers,
+                        Reader r1, Reader r2) throws IOException {
+            super(name1, name2, title1, title2, mimeType, chooseProviders, chooseVisualizers);
+            StringWriter out1 = new StringWriter();
+            StringWriter out2 = new StringWriter();
+            cpStream(r1, out1);
+            cpStream(r2, out2);
+            this.buffer1 = out1.toString();
+            this.buffer2 = out2.toString();
+        }
+        
+        public Reader createFirstReader() {
+            return new StringReader(buffer1);
+        }
+        
+        public Reader createSecondReader() {
+            return new StringReader(buffer2);
+        }
+        
+    }
     
     private static class DiffTopComponent extends TopComponent {
         
