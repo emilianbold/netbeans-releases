@@ -497,13 +497,24 @@ public class DetectPanel extends javax.swing.JPanel {
                     try {
                         URL url = f.toURI().toURL();
                         if (FileUtil.isArchiveFile(url)) {
-                            src.add (ClassPathSupport.createResource(FileUtil.getArchiveRoot(url)));
+                            url = FileUtil.getArchiveRoot(url);
+                            FileObject fo = URLMapper.findFileObject(url);
+                            if (fo != null) {
+                                fo = fo.getFileObject("src");   //NOI18N
+                                if (fo != null) {
+                                    url = fo.getURL();
+                                }
+                            }
+                            src.add (ClassPathSupport.createResource(url));
                         }
                         else {
                             src.add (ClassPathSupport.createResource(url));
                         }
-                    }catch (MalformedURLException mue) {
+                    } catch (MalformedURLException mue) {
                         ErrorManager.getDefault().notify (mue);
+                    }
+                    catch (FileStateInvalidException e) {
+                        ErrorManager.getDefault().notify(e);
                     }
                 }
                 String jdocPath = this.component.getJavadoc();

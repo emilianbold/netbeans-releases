@@ -14,8 +14,11 @@
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 import java.net.MalformedURLException;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.URLMapper;
 
 import org.openide.util.NbBundle;
 import org.openide.ErrorManager;
@@ -51,6 +54,9 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         if (sources == null) {
             sources = getSources (javaHome);
         }
+        if (javadoc == null) {
+            javadoc = getJavadoc (javaHome);
+        }
         return new DefaultPlatformImpl(installFolders, properties, new HashMap(System.getProperties()), sources,javadoc);
     }
     
@@ -79,11 +85,38 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
             try {
                 File f = new File (javaHome, "src.zip");    //NOI18N
                 if (f.exists() && f.canRead()) {
-                    return Collections.singletonList (FileUtil.getArchiveRoot(f.toURI().toURL()));
+                    //Test for src folder in the src.zip
+                    URL url = FileUtil.getArchiveRoot(f.toURI().toURL());
+                    FileObject fo = URLMapper.findFileObject(url);
+                    if (fo != null) {
+                        fo = fo.getFileObject("src");    //NOI18N
+                        if (fo != null) {
+                            url = fo.getURL();
+                        }
+                    }
+                    return Collections.singletonList (url);
                 }
             } catch (MalformedURLException e) {
                 ErrorManager.getDefault().notify (e);
             }
+              catch (FileStateInvalidException e) {
+                  ErrorManager.getDefault().notify (e);
+              }
+        }
+        return null;
+    }
+    
+    
+    private static List getJavadoc (File javaHome) {
+        if (javaHome != null ) {
+            File f = new File (javaHome,"docs"); //NOI18N
+            if (f.isDirectory() && f.canRead()) {
+                try {
+                    return Collections.singletonList(f.toURI().toURL());
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify (mue);
+                }
+            }                        
         }
         return null;
     }
