@@ -9,7 +9,7 @@ compliance with the License. A copy of the License is available at
 http://www.sun.com/
 
 The Original Code is NetBeans. The Initial Developer of the Original
-Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
 Microsystems, Inc. All Rights Reserved.
 -->
 
@@ -47,16 +47,13 @@ Microsystems, Inc. All Rights Reserved.
 	    <patternset>
 		<include name="gui/propertyeditors/PropertyType_Color.class"/>
 		<include name="gui/propertyeditors/PropertyType_Dimension.class"/>
+		<include name="gui/propertyeditors/PropertyType_File.class"/>
 		<include name="gui/propertyeditors/PropertyType_Font.class"/>
 		<include name="gui/propertyeditors/PropertyType_HTMLBrowser.class"/>
 		<include name="gui/propertyeditors/PropertyType_IndentEngine.class"/>
 		<include name="gui/propertyeditors/PropertyType_Insets.class"/>
-<!-- TODO write for new build system
-		<include name="gui/propertyeditors/PropertyType_File.class"/>
-		<include name="gui/propertyeditors/PropertyType_Filesystem.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbClassPath.class"/>
 		<include name="gui/propertyeditors/PropertyType_NbProcessDescriptor.class"/>
--->                
 		<include name="gui/propertyeditors/PropertyType_Point.class"/>
 		<include name="gui/propertyeditors/PropertyType_Properties.class"/>
 		<include name="gui/propertyeditors/PropertyType_Rectangle.class"/>
@@ -70,7 +67,7 @@ Microsystems, Inc. All Rights Reserved.
 
 
 <!-- START javahelp testbag -->
-    <testbag testattribs="full or javahelp" executor="ide" name="Javahelp tests">
+    <testbag testattribs="full or javahelp or validation" executor="ide" name="Javahelp tests">
 	<testset dir="qa-functional/src">
 	    <patternset>
 		<include name="gui/javahelp/JavaHelpDialogTest.class"/>
@@ -78,6 +75,18 @@ Microsystems, Inc. All Rights Reserved.
 	</testset>
     </testbag>
 <!-- END javahelp testbag -->
+
+
+<!-- START windowsystem testbag -->
+    <testbag testattribs="full or windowsystem or validation" executor="ide" name="Window System tests">
+	<testset dir="qa-functional/src">
+	    <patternset>
+		<include name="gui/windowsystem/MainMenu.class"/>
+	    </patternset>
+	</testset>
+    </testbag>
+<!-- END windowsystem testbag -->
+
 
 <!-- START TEMP -->
     <testbag testattribs="temp" executor="ide" name="Temp">
