@@ -63,7 +63,8 @@ Microsystems, Inc. All Rights Reserved.
     </javac>
   </target>
 
-  <target name="preprocess"  >    
+  <target name="preprocess">
+    <mkdir dir="tmp"/>
     <preprocess srcdir="src" destdir="tmp" >
       <include name="**/*.java" />
     </preprocess>
