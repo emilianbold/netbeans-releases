@@ -73,19 +73,6 @@ public class FormDataLoader extends JavaDataLoader {
         };
     }
 
-    /** finds file with the same name and specified extension in the same folder as param javaFile */
-    static public FileObject findFile(FileObject javaFile, String ext) {
-        if (javaFile == null) return null;
-        String name = javaFile.getName();
-        int indx = name.indexOf('$');
-        if (indx > 0) {
-            name = name.substring(0, indx);
-        }
-        if (javaFile.getParent() == null) return null; // handle critical situation
-        return javaFile.getParent().getFileObject(name, ext);
-
-    }
-
     /** For a given file finds a primary file.
      * @param fo the file to find primary file for
      *
@@ -94,21 +81,13 @@ public class FormDataLoader extends JavaDataLoader {
      */
     protected FileObject findPrimaryFile(FileObject fo) {
         String ext = fo.getExt();
-        if (ext.equals(JAVA_EXTENSION))
-            return(findFile(fo, FORM_EXTENSION) == null) ? null : fo;
+        if (ext.equals(FORM_EXTENSION))
+            return FileUtil.findBrother(fo, JAVA_EXTENSION);
 
-        if (ext.equals(FORM_EXTENSION)) {
-            return findFile(fo, JAVA_EXTENSION);
-        }
-
-        if (ext.equals(CLASS_EXTENSION)) {
-            if (findFile(fo, FORM_EXTENSION) != null)
-                return findFile(fo, JAVA_EXTENSION);
-            else
-                return null;
-        }
-
-        return null;
+        FileObject javaFile = super.findPrimaryFile(fo);
+        return javaFile != null
+                    && FileUtil.findBrother(javaFile, FORM_EXTENSION) != null ?
+            javaFile : null;
     }
 
     /** Creates the right data object for given primary file.
@@ -122,7 +101,7 @@ public class FormDataLoader extends JavaDataLoader {
     protected MultiDataObject createMultiObject(FileObject primaryFile)
         throws DataObjectExistsException, java.io.IOException
     {
-        return new FormDataObject(findFile(primaryFile, FORM_EXTENSION),
+        return new FormDataObject(FileUtil.findBrother(primaryFile, FORM_EXTENSION),
                                   primaryFile,
                                   this);
     }
