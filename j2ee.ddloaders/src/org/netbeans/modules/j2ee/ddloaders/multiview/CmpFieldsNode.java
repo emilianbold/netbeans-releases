@@ -14,6 +14,12 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
+import org.netbeans.modules.xml.multiview.SectionNode;
+import org.netbeans.modules.j2ee.dd.api.ejb.CmpField;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * @author pfiala
@@ -40,9 +46,48 @@ class CmpFieldsNode extends EjbSectionNode {
                     scheduleRefreshView();
                 }
             }
+
+            public void focusData(Object element) {
+                if (element instanceof CmpField) {
+                    final int row = getRow((CmpField) element);
+                    if (row >= 0) {
+                        getTable().getSelectionModel().setSelectionInterval(row, row);
+                    }
+                }
+            }
         };
         return innerTablePanel;
 
+    }
+
+    public SectionNode getNodeForElement(Object element) {
+        if (element instanceof CmpField) {
+            if (getRow((CmpField) element) >= 0) {
+                return this;
+            }
+        } else if (element instanceof CmpField[]) {
+            final List list1 = Arrays.asList(cmpFields.getCmpFields());
+            final List list2 = new LinkedList(Arrays.asList((CmpField[]) element));
+            if (list1.size() == list2.size()) {
+                list2.removeAll(list1);
+                if (list2.size() == 0) {
+                    return this;
+                }
+            }
+        }
+        return super.getNodeForElement(element);
+    }
+
+    private int getRow(final CmpField field) {
+        int n = -1;
+        final CmpField[] fields = this.cmpFields.getCmpFields();
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i].equals(field)) {
+                n = i;
+                break;
+            }
+        }
+        return n;
     }
 
 }

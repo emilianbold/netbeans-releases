@@ -174,4 +174,22 @@ public class SectionNode extends AbstractNode {
             }
         }
     }
+
+    public SectionNode getNodeForElement(Object element) {
+        if (key.equals(element)) {
+            return this;
+        } else {
+            final Node[] nodes = getChildren().getNodes();
+            for (int i = 0; i < nodes.length; i++) {
+                Node node = nodes[i];
+                if (node instanceof SectionNode) {
+                    final SectionNode nodeForElement = ((SectionNode) node).getNodeForElement(element);
+                    if (nodeForElement != null) {
+                        return nodeForElement;
+                    }
+                }
+            }
+            return null;
+        }
+    }
 }

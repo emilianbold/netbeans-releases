@@ -29,4 +29,7 @@ public abstract class SectionNodeInnerPanel extends SectionInnerPanel {
         SectionNodeView sectionNodeView = ((SectionNodeView)getSectionView());
         sectionNodeView.getDataObject().modelUpdatedFromUI();
     }
+
+    public void focusData(Object element) {
+    }
 }

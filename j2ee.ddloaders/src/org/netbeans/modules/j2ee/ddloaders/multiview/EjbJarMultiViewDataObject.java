@@ -21,13 +21,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.ejb.Ejb;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
-import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
-import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
-import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
-import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.dd.api.ejb.*;
 import org.netbeans.modules.j2ee.dd.impl.ejb.EjbJarProxy;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeEvent;
 import org.netbeans.modules.j2ee.ddloaders.ejb.DDChangeListener;
@@ -36,7 +30,10 @@ import org.netbeans.modules.j2ee.ddloaders.ejb.EjbJarDataLoader;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.logicalview.ejb.shared.DDEditorNavigator;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
 import org.netbeans.modules.xml.multiview.DesignMultiViewDesc;
+import org.netbeans.modules.xml.multiview.SectionNode;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataObject;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
+import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.ErrorManager;
@@ -461,6 +458,25 @@ public class EjbJarMultiViewDataObject extends XmlMultiViewDataObject
      */
     protected boolean isModelCreated() {
         return (ejbJar!=null && ejbJar.getOriginal()!=null);
+    }
+
+    public void showElement(final Object element) {
+        if (element instanceof Relationships || element instanceof EjbRelation) {
+            openView(1);
+        } else {
+            openView(0);
+        }
+        final SectionNodeView sectionView = (SectionNodeView) getActiveMultiViewElement().getSectionView();
+        final Node root = sectionView.getRoot();
+        final SectionNode node = ((SectionNode) root.getChildren().getNodes()[0]).getNodeForElement(element);
+        if (node != null) {
+            Utils.runInAwtDispatchThread(new Runnable() {
+                public void run() {
+                    sectionView.openPanel(node);
+                    ((SectionNodeInnerPanel)node.getSectionNodePanel().getInnerPanel()).focusData(element);
+                }
+            });
+        }
     }
 
     private static class DDView extends DesignMultiViewDesc implements java.io.Serializable {
