@@ -81,9 +81,7 @@ public class WrapperServlet extends NbBaseServlet {
                                 // should not happen, but never mind - use normal wrapping
                             }
                         }
-                        else {
-                            return fsurl;
-                        }
+                        return fsurl;
                     }
                 }
             }
