@@ -26,7 +26,6 @@ import com.netbeans.ide.nodes.CookieSet;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
 import com.netbeans.developer.modules.loaders.java.JavaEditor;
 import com.netbeans.developer.modules.loaders.form.*;
-import com.netbeans.developer.modules.loaders.form.formeditor.DesignForm;
 
 /** The DataObject for forms.
 *
@@ -197,6 +196,7 @@ public class FormDataObject extends JavaDataObject {
 
 /*
  * Log
+ *  12   Gandalf   1.11        3/27/99  Ian Formanek    Removed obsoleted import
  *  11   Gandalf   1.10        3/24/99  Ian Formanek    
  *  10   Gandalf   1.9         3/24/99  Ian Formanek    
  *  9    Gandalf   1.8         3/22/99  Ian Formanek    
