@@ -292,7 +292,7 @@ public class JemmyProperties {
      * @see #ROBOT_MODEL_MASK
      */
     public static int getDefaultDispatchingModel() {
-	return(QUEUE_MODEL_MASK);
+        return(SHORTCUT_MODEL_MASK);
     }
 
     /**
