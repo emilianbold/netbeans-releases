@@ -25,13 +25,10 @@ import org.openide.util.NbBundle;
  */
 public class ReconfigureReaderPanel extends javax.swing.JPanel {
 
-    private String exceptionType, exceptionMessage;
     private Settings settings;
     private ResourceBundle bundle = NbBundle.getBundle (ReconfigureReaderPanel.class);
     
     public ReconfigureReaderPanel (String exceptionType, String exceptionMessage) {
-        this.exceptionType = exceptionType;
-        this.exceptionMessage = exceptionMessage;
         settings = Settings.getDefault ();
         initComponents ();
         initAccessibility ();            

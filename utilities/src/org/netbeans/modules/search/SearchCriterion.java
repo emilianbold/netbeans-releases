@@ -31,8 +31,6 @@ final class SearchCriterion implements java.io.Serializable {
     String searchTypeClassName;
     /** */
     String name;
-    /** */
-    boolean isDefault;
     /** <!-- PENDING --> */
     byte[] criterionData;
 
@@ -49,7 +47,6 @@ final class SearchCriterion implements java.io.Serializable {
     SearchCriterion(SearchType searchType) throws IOException {
         this.name = searchType.getName();
         searchTypeClassName = searchType.getClass().getName();
-        isDefault = false;
         
         /* serialize the search type: */
         ObjectOutputStream oos = null;
