@@ -25,6 +25,7 @@ import java.awt.event.MouseListener;
 import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.ComponentUI;
@@ -72,9 +73,10 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
     }
     
     protected void install() {
-        toolbar = new JToolBar();
+        toolbar = new TabToolbar();
         toolbar.setLayout (new AutoGridLayout());
         toolbar.setFloatable (false);
+        toolbar.setRollover( true );
         displayer.setLayout (new BorderLayout());
         displayer.add (toolbar, BorderLayout.CENTER);
         if (displayer.getModel() != null && displayer.getModel().size() > 0) {
@@ -159,11 +161,11 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
     }
     
     public Dimension getPreferredSize(JComponent c) {
-        return toolbar.getLayout().preferredLayoutSize(c);
+        return toolbar.getPreferredSize();
     }
 
     public Dimension getMinimumSize(JComponent c) {
-        return toolbar.getLayout().minimumLayoutSize(c);
+        return toolbar.getMinimumSize();
     }
 
     
@@ -214,6 +216,8 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             setFont (displayer.getFont());
             setFocusable(false);
             setBorder (buttonBorder);
+            setMargin(new Insets(0, 3, 0, 3));
+            setRolloverEnabled( true );
         }
 
         public void addNotify() {
@@ -258,6 +262,8 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             String s = doGetText();
             int w = DefaultTabLayoutModel.textWidth(s, getFont());
             result.width += w;
+            // as we cannot get the button small enough using the margin and border...
+            result.height -= 3;
             return result;
         }
         
@@ -401,7 +407,6 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
                 int prefHeight = v_margin_top + rowCount * rowHeight
                                      + (rowCount - 1) * v_gap + v_margin_bottom;
 
-                
                 Dimension result = new Dimension(containerWidth, prefHeight);
                 return result;
             }
@@ -470,4 +475,20 @@ public class ToolbarTabDisplayerUI extends AbstractTabDisplayerUI {
             }
         }
     }    
+    
+    static class TabToolbar extends JToolBar {
+        public void paintComponent(Graphics g) {
+            super.paintComponent(g);
+
+            Color color = g.getColor();
+
+            g.setColor(UIManager.getColor("controlLtHighlight")); // NOI18N
+            g.drawLine(0, 0, getWidth(), 0);
+            g.drawLine(0, 0, 0, getHeight()-1);
+            g.setColor(UIManager.getColor("controlShadow")); // NOI18N
+            g.drawLine(0, getHeight()-1, getWidth(), getHeight()-1);
+
+            g.setColor(color);
+        }
+    }
 }
