@@ -65,6 +65,9 @@ import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.modules.editor.options.BaseOptions;
 import org.netbeans.editor.ImplementationProvider;
 import org.netbeans.modules.editor.NbImplementationProvider;
+import java.util.Iterator;
+import org.openide.text.CloneableEditor;
+import java.util.HashSet;
 
 
 /**
@@ -216,6 +219,36 @@ implements JavaCompletion.JCFinderInitializer, PropertyChangeListener, Runnable 
         } catch (Throwable t) {
             t.printStackTrace();
         }
+
+        // issue #16110
+        // close all TopComponents which contain editor based on BaseKit
+        HashSet set = new HashSet();
+        set.addAll(TopComponent.getRegistry().getOpened());
+
+        for (Iterator it = set.iterator(); it.hasNext(); ) {
+            TopComponent topComp = (TopComponent)it.next();
+            // top components in which we are interested must be of type CloneableEditor
+            if (!(topComp instanceof CloneableEditor))
+                continue;
+            Node[] arr = topComp.getActivatedNodes();
+            if (arr == null)
+                continue;
+            for (int i=0; i<arr.length; i++) {
+                EditorCookie ec = (EditorCookie)arr[i].getCookie(EditorCookie.class);
+                if (ec == null)
+                    continue;
+                JEditorPane[] pane = ec.getOpenedPanes();
+                if (pane == null) 
+                    continue;
+                for (int j=0; j<pane.length; j++) {
+                    if (pane[j].getEditorKit() instanceof BaseKit) {
+                        topComp.setCloseOperation(TopComponent.CLOSE_EACH);
+                        topComp.close();
+                    }
+                }
+            }
+        }
+        
     }
 
     /** Prepares lazy init of JCC. */
