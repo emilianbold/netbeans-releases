@@ -297,24 +297,21 @@ public final class DesktopImpl {
             result.x = viewRect.x + Math.max(viewRect.width, viewPreferred.width);
             result.y = 0;
             result.height = splitRootRect.height;
-//            result.width = editorBounds.x - result.x + 6;
             result.width = view.getSlideBounds().width;
             if (result.width < MIN_EDITOR_ALIGN_THICK) {
                 result.width = splitRootRect.width / 3;
             }
-            if (result.width > editorBounds.width) {
+            if (result.width > splitRootRect.width) {
                 // make sure we are not bigger than the current window..
-                result.width = editorBounds.width - (editorBounds.width / 10);
+                result.width = splitRootRect.width - (splitRootRect.width / 10);
             }
         } else if (Constants.RIGHT.equals(side)) {
             int rightLimit = layeredPane.getBounds().x + layeredPane.getBounds().width - Math.max(viewRect.width, viewPreferred.width);
-//            result.x = (rightLimit - (editorBounds.x + editorBounds.width) < MIN_EDITOR_ALIGN_THICK)
-//                        ? rightLimit - splitRootRect.width / 3 : editorBounds.x + editorBounds.width - 6;
             result.x = (view.getSlideBounds().width < MIN_EDITOR_ALIGN_THICK)
                         ? rightLimit - splitRootRect.width / 3 : rightLimit - view.getSlideBounds().width;
             if (result.x < 0) {
                 // make sure we are not bigger than the current window..
-                result.x = editorBounds.width / 10;
+                result.x = splitRootRect.width / 10;
             }
             result.y = 0;
             result.height = splitRootRect.height;
@@ -327,7 +324,7 @@ public final class DesktopImpl {
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - view.getSlideBounds().height;
             if (result.y < 0) {
                 // make sure we are not bigger than the current window..
-                result.y = editorBounds.width / 10;
+                result.y = splitRootRect.width / 10;
             }
             result.height = lowerLimit - result.y;
             result.width = splitRootRect.width;
