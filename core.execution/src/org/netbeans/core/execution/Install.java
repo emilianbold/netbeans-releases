@@ -404,7 +404,11 @@ public class Install extends ModuleInstall {
         public PendingActionNode(Action action) {
             super(Children.LEAF);
             
-            String actionName = org.openide.awt.Actions.cutAmpersand((String)action.getValue(Action.NAME));
+            String actionName = (String)action.getValue(Action.NAME);
+            if (actionName == null) {
+                actionName = ""; // NOI18N
+            }
+            actionName = org.openide.awt.Actions.cutAmpersand(actionName);
             setName(actionName);
             setDisplayName(actionName + " " // NOI18N
                 + NbBundle.getBundle(Install.class)
