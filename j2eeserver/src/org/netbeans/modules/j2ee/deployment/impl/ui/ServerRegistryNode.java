@@ -55,6 +55,8 @@ implements ServerRegistry.PluginListener, ServerRegistry.InstanceListener {
         String msg = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_NODE");//NOI18N
         setDisplayName(msg);
         setIconBase(REGISTRY_ICON_BASE);
+        String shortDescription = NbBundle.getBundle(ServerRegistryNode.class).getString("SERVER_REGISTRY_SHORT_DESCRIPTION");//NOI18N
+        setShortDescription(shortDescription);
     }
 
     public void serverAdded(Server server) {
