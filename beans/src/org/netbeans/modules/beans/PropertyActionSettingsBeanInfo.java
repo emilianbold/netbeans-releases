@@ -16,7 +16,9 @@ package org.netbeans.modules.beans;
 import java.awt.Image;
 import java.beans.*;
 
+import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** Description of {@link PropertyActionSettings}.
  *
@@ -24,75 +26,56 @@ import org.openide.util.NbBundle;
  */
 public class PropertyActionSettingsBeanInfo extends SimpleBeanInfo {
     
-    private PropertyDescriptor[] descriptors = null;
-    private BeanDescriptor descr = null;
-    
     public BeanDescriptor getBeanDescriptor() {
-        
-        if( descr == null ){
-            descr = new BeanDescriptor(org.netbeans.modules.beans.PropertyActionSettings.class);
-            descr.setDisplayName(NbBundle.getBundle(PropertyActionSettingsBeanInfo.class).getString("PROP_Option_Menu"));
-            descr.setValue ("version", "1.1"); // NOI18N            
-            descr.setValue("global", Boolean.FALSE); // now it is global     
-        }                
+        BeanDescriptor descr = new BeanDescriptor(org.netbeans.modules.beans.PropertyActionSettings.class);
+        descr.setDisplayName(NbBundle.getBundle(PropertyActionSettingsBeanInfo.class).getString("PROP_Option_Menu"));
+        descr.setValue ("version", "1.1"); // NOI18N            
+        descr.setValue("global", Boolean.FALSE); // now it is global                     
         return descr;
     }
 
     public PropertyDescriptor[] getPropertyDescriptors () {
-        if( descriptors == null ){
-            try {
-                PropertyDescriptor access = new PropertyDescriptor("genAccess", PropertyActionSettings.class);
-                access.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Access"));
-                access.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Access"));
-                access.setPropertyEditorClass (AccessEditor.class);
+        try {
+            PropertyDescriptor access = new PropertyDescriptor("genAccess", PropertyActionSettings.class);
+            access.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Access"));
+            access.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Access"));
+            access.setPropertyEditorClass (AccessEditor.class);
 
-                PropertyDescriptor bound = new PropertyDescriptor("genBound", PropertyActionSettings.class);
-                bound.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Bound"));
-                bound.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Bound"));
+            PropertyDescriptor bound = new PropertyDescriptor("genBound", PropertyActionSettings.class);
+            bound.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Bound"));
+            bound.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Bound"));
 
-                PropertyDescriptor constrained = new PropertyDescriptor("genConstrained", PropertyActionSettings.class);
-                constrained.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Constrained"));
-                constrained.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Constrained"));
+            PropertyDescriptor constrained = new PropertyDescriptor("genConstrained", PropertyActionSettings.class);
+            constrained.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Constrained"));
+            constrained.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Constrained"));
 
-                PropertyDescriptor indexed = new PropertyDescriptor("genIndexed", PropertyActionSettings.class);
-                indexed.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Indexed"));
-                indexed.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Indexed"));
+            PropertyDescriptor indexed = new PropertyDescriptor("genIndexed", PropertyActionSettings.class);
+            indexed.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Gen_Indexed"));
+            indexed.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Gen_Indexed"));
 
-                PropertyDescriptor inherit = new PropertyDescriptor("useInherit", PropertyActionSettings.class);
-                inherit.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Use_Inherit"));
-                inherit.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Use_Inherit"));
+            PropertyDescriptor inherit = new PropertyDescriptor("useInherit", PropertyActionSettings.class);
+            inherit.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Use_Inherit"));
+            inherit.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Use_Inherit"));
                 
-                PropertyDescriptor askBefore = new PropertyDescriptor("askBeforeGen", PropertyActionSettings.class);
-                askBefore.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Ask_Before_Generating"));
-                askBefore.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Ask_Before_Generating"));
-                askBefore.setHidden(true);  //will be set to false ASAP I'll have right panel
+            PropertyDescriptor askBefore = new PropertyDescriptor("askBeforeGen", PropertyActionSettings.class);
+            askBefore.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Ask_Before_Generating"));
+            askBefore.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Ask_Before_Generating"));
+            askBefore.setHidden(true);  //will be set to false ASAP I'll have right panel
                 
-                PropertyDescriptor propstyle = new PropertyDescriptor("propStyle", PropertyActionSettings.class);
-                propstyle.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Prop_Style"));
-                propstyle.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Prop_Style"));
-                propstyle.setPropertyEditorClass (PropertyStyleEditor.class);
+            PropertyDescriptor propstyle = new PropertyDescriptor("propStyle", PropertyActionSettings.class);
+            propstyle.setDisplayName(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "PROP_Option_Prop_Style"));
+            propstyle.setShortDescription(NbBundle.getMessage(PropertyActionSettingsBeanInfo.class, "HINT_Option_Prop_Style"));
+            propstyle.setPropertyEditorClass (PropertyStyleEditor.class);
 
-                descriptors = new PropertyDescriptor[] { access, bound, constrained, indexed, inherit, askBefore, propstyle};
-            } catch (IntrospectionException ie) {
-                if (Boolean.getBoolean ("netbeans.debug.exceptions"))
-                    ie.printStackTrace ();
-                return null;
-            }
+    	    return new PropertyDescriptor[] { access, bound, constrained, indexed, inherit, askBefore, propstyle};
+        } catch (IntrospectionException ie) {
+	    TopManager.getDefault().getErrorManager().notify(ie);
+            return null;
         }
-        return descriptors;
     }
 
-    private static Image icon, icon32;
     public Image getIcon (int type) {
-        if (type == BeanInfo.ICON_COLOR_16x16 || type == BeanInfo.ICON_MONO_16x16) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/beans/resources/beansSetting.gif");
-            return icon;
-        } else {
-            if (icon32 == null)
-                icon32 = loadImage("/org/netbeans/modules/beans/resources/beansSetting.gif");
-            return icon32;
-        }
+        return Utilities.loadImage("org/netbeans/modules/beans/resources/beansSetting.gif");
     }
 
     public static class AccessEditor extends PropertyEditorSupport {
