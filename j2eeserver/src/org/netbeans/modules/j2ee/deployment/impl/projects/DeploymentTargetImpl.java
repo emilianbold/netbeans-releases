@@ -74,6 +74,17 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
             J2eeModuleProvider clientProvider = ConfigurationStorage.getChildModuleProvider(ear, clientName);
             if (clientProvider != null)
                 clientModule = clientProvider.getJ2eeModule();
+            else {
+                //findWebUrl(null) will take care to find a first weburl it sees, but just to be sure...
+                J2eeModuleContainer jmc = (J2eeModuleContainer) ear.getJ2eeModule();
+                J2eeModule[] modules = jmc.getModules(null);
+                for (int i=0; i<modules.length; i++) {
+                    if (J2eeModule.WAR.equals(modules[i].getModuleType())) {
+                        clientModule = modules[i];
+                        break;
+                    }
+                }
+            }
         } else {
             clientModule = moduleProvider.getJ2eeModule();
         }
