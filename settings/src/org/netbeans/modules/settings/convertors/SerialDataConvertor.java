@@ -196,31 +196,12 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         else if (name == SaveSupport.PROP_FILE_CHANGED) {
             miUnInitialized = true;
             if (mi != null) {
-                mi.removePropertyChangeListener(moduleInfoListener);
+                ModuleInfoManager.getDefault().
+                    unregisterPropertyChangeListener(moduleInfoListener, mi);
             }
             instanceCookieChanged(null);
         } else if(ModuleInfo.PROP_ENABLED.equals(evt.getPropertyName())) {
-
-            boolean change;
-
-            if (!Boolean.TRUE.equals (evt.getNewValue ())) {
-                // a module has been disabled, use full checks
-                //aModuleHasBeenChanged = true;
-
-                // if wasModuleEnabled was true, we changed state
-                change = wasModuleEnabled;
-            } else {
-                // a module was enabled, if wasModuleEnabled was false
-                // we changed state
-                change = !wasModuleEnabled;
-            }
-
-            // update wasModuleEnabled to current state of the module
-            wasModuleEnabled = isModuleEnabled();
-            
-            if (change) {
-                instanceCookieChanged(null);
-            }
+            instanceCookieChanged(null);
         }
     }
 
@@ -232,15 +213,15 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
     
     private ModuleInfo mi;
     private boolean miUnInitialized = true;
-    private boolean wasModuleEnabled;
+    
     private boolean isModuleEnabled() {
         if (miUnInitialized) {
             mi = getModuleInfo();
             miUnInitialized = false;
             if (mi != null) {
-                wasModuleEnabled = mi.isEnabled();
                 moduleInfoListener = WeakListener.propertyChange(this, mi);
-                mi.addPropertyChangeListener(moduleInfoListener);
+                ModuleInfoManager.getDefault().
+                    registerPropertyChangeListener(moduleInfoListener, mi);
             }
         }
         return mi == null || mi.isEnabled();
@@ -361,7 +342,16 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         public boolean instanceOf(Class type) {
             try {
+                if (mi != null && ModuleInfoManager.getDefault().isReloaded(mi) &&
+                    type.getClassLoader () != ClassLoader.getSystemClassLoader ()) {
+                    // special treatment for classes that could be reloaded
+                    Class instanceType = instanceClass ();
+                    return type.isAssignableFrom (instanceType);
+                }
                 return getSettings(true).getInstanceOf().contains(type.getName());
+            } catch (ClassNotFoundException ex) {
+                err.annotate(ex, getDataObject().getPrimaryFile().toString());
+                inform(ex);
             } catch (IOException ex) {
                 err.annotate(ex, getDataObject().getPrimaryFile().toString());
                 inform(ex);
@@ -460,6 +450,8 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         
         /** place where to filter events comming from setting object */
         private boolean ignoreChange(PropertyChangeEvent pce) {
+            if (isChanged || isWriting || !getDataObject().isValid()) return true;
+            
             // undocumented workaround used in 3.3; since 3.4 convertors make
             // possible to customize the setting change notification filtering 
             if (pce != null && Boolean.FALSE.equals(pce.getPropagationId())) return true;
@@ -628,9 +620,6 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
 
         /** process events coming from a setting object */
         public final void propertyChange(PropertyChangeEvent pce) {
-            if (isChanged || isWriting) {
-                return;
-            }
             if (ignoreChange(pce)) return ;
             isChanged = true;
             firePropertyChange(PROP_SAVE);
@@ -640,14 +629,12 @@ implements PropertyChangeListener, FileSystem.AtomicAction {
         }
         
         public void markDirty() {
-            if (isChanged) return;
             if (ignoreChange(null)) return;
             isChanged = true;
             firePropertyChange(PROP_SAVE);
         }
         
         public void requestSave() throws java.io.IOException {
-            if (isChanged) return;
             if (ignoreChange(null)) return;
             isChanged = true;
             firePropertyChange(PROP_SAVE);
