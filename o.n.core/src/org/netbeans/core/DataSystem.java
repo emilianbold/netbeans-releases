@@ -31,6 +31,8 @@ import org.openide.util.datatransfer.*;
 import org.openide.util.*;
 import org.openide.nodes.*;
 import org.openide.util.actions.SystemAction;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.ErrorManager;
 
 /** Data system encapsulates logical structure of more file systems.
 * It also allows filtering of content of DataFolders
@@ -244,18 +246,28 @@ implements RepositoryListener, NewTemplateAction.Cookie {
         * @param fileSystemPool the pool
         * @param fs file system to remove
         */
-        public void refresh (Repository fileSystemPool, FileSystem fs) {
-            Enumeration en = fileSystemPool.getFileSystems ();
-            ArrayList list = new ArrayList ();
-            while (en.hasMoreElements ()) {
-                Object o = en.nextElement ();
-                if (fs != o && !((FileSystem)o).isHidden ()) {
-                    list.add (o);
+        public void refresh(Repository fileSystemPool, FileSystem fs) {
+            Enumeration en = fileSystemPool.getFileSystems();
+            ArrayList list = new ArrayList();
+            while (en.hasMoreElements()) {
+                Object o = en.nextElement();
+                if (fs != o && !((FileSystem)o).isHidden()) {
+                    DataObject root = null;
+                    try {
+                        root = DataObject.find(((FileSystem)o).getRoot());
+                    }
+                    catch (DataObjectNotFoundException e) {
+                        TopManager.getDefault().getErrorManager().notify(ErrorManager.INFORMATIONAL, e);
+                        // root will remain null and will be accepted
+                        // (as that seems safer than not accepting it)
+                    }
+                    if ((root == null) || getDS().filter.acceptDataObject(root)) {
+                        list.add(o);
+                    }
                 }
             }
-            setKeys (list);
-        }
-
+            setKeys(list);
+        }            
     }
 
     /** Serialization. */
