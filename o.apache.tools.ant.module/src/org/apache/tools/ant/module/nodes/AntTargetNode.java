@@ -244,6 +244,8 @@ public class AntTargetNode extends ElementNode implements ChangeListener {
                 pane.setBorder(new EmptyBorder(new Insets(12, 12, 11, 11)));
                 pane.add(new JScrollPane(new DependsPanel ()));
                 pane.setPreferredSize(new Dimension(250,300));
+                pane.getAccessibleContext().setAccessibleDescription (
+                    NbBundle.getMessage (AntTargetNode.class, "AD_DependsEditor"));
                 HelpCtx.setHelpIDString (pane, "org.apache.tools.ant.module.nodes.AntTargetNode$DependsProperty$DependsEditor");
                 return pane;
             }
