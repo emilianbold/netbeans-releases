@@ -1,4 +1,4 @@
-<%@tag description = "put the tag description here" pageEncoding="UTF-8"%>
+<%@tag description="put the tag description here" pageEncoding="UTF-8"%>
 
 <%-- Taglib directives can be specified here: --%>
 <%--
@@ -15,18 +15,18 @@
 <%-- Use expression language to work with normal attributes or use --%>
 <%-- the <jsp:invoke> or <jsp:doBody> actions to invoke JSP fragments or tag body: --%>
 <%--
-<table border=1>
-  <tr>
-    <td align="center"><h2>${title}</h2></td>
-  </tr>
-  <tr>
-    <td><i>Author:</i> <b>${author}</b></td>
-  </tr>
-  <tr>
-    <td><i>Price Info:</i> <jsp:invoke fragment="price_info"/></td>
-  </tr>
-  <tr>
-    <td collspan=2><i>Book Info:</i> <jsp:doBody/></td>
-  </tr>
+<table border="1">
+    <tr>
+        <td align="center"><h2>${title}</h2></td>
+    </tr>
+    <tr>
+        <td><em>Author:</em><strong>${author}</strong></td>
+    </tr>
+    <tr>
+        <td><em>Price Info:</em><jsp:invoke fragment="price_info"/></td>
+    </tr>
+    <tr>
+        <td colspan="2"><em>Book Info:</em><jsp:doBody/></td>
+    </tr>
 </table>
 --%>

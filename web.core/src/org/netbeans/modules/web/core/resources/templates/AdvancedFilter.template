@@ -107,9 +107,9 @@ public class AdvancedFilter implements Filter {
 	//
 	/*
 	    PrintWriter respOut = new PrintWriter(response.getWriter());
-	    respOut.println("<P><B>This has been appended by an intrusive filter.</B>");
+	    respOut.println("<p><strong>This has been appended by an intrusive filter.</strong></p>");
 	    
-	    respOut.println("<P>Params (after the filter chain):<BR>");
+	    respOut.println("<p>Params (after the filter chain):<br>");
 	    for (Enumeration en = request.getParameterNames(); en.hasMoreElements(); ) {
 		String name = (String)en.nextElement();
 		String values[] = request.getParameterValues(name);
@@ -123,8 +123,9 @@ public class AdvancedFilter implements Filter {
 			buf.append(",");
 		}
 		log(buf.toString());
-		respOut.println(buf.toString() + "<BR>");
+		respOut.println(buf.toString() + "<br>");
 	    }
+            respOut.println("</p>");
 	*/
     }
 
@@ -253,7 +254,7 @@ public class AdvancedFilter implements Filter {
 		response.setContentType("text/html");
 		PrintStream ps = new PrintStream(response.getOutputStream());
 		PrintWriter pw = new PrintWriter(ps); 
-		pw.print("<html>\n<head>\n</head>\n<body>\n"); //NOI18N
+		pw.print("<html>\n<head>\n<title>Error</title>\n</head>\n<body>\n"); //NOI18N
 		    
 		// PENDING! Localize this for next official release
 		pw.print("<h1>The resource did not process correctly</h1>\n<pre>\n"); 

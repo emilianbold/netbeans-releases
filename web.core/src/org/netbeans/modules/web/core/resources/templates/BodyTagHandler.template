@@ -85,8 +85,8 @@ public class BodyTagHandler extends BodyTagSupport {
         // TODO: insert code to write html before writing the body content.
         // e.g.:
         //
-        // out.println("<B>" + attribute_1 + "</B>");
-        // out.println("   <BLOCKQUOTE>");
+        // out.println("<strong>" + attribute_1 + "</strong>");
+        // out.println("   <blockquote>");
         
         //
         // write the body content (after processing by the JSP engine) on the output Writer
@@ -103,7 +103,7 @@ public class BodyTagHandler extends BodyTagSupport {
         // TODO: insert code to write html after writing the body content.
         // e.g.:
         //
-        // out.println("   </BLOCKQUOTE>");
+        // out.println("   </blockquote>");
     
         
         // clear the body content for the next time through.

@@ -30,8 +30,8 @@ public class TagHandler extends SimpleTagSupport {
             // TODO: insert code to write html before writing the body content.
             // e.g.:
             //
-            // out.println("<B>" + attribute_1 + "</B>");
-            // out.println("    <BLOCKQUOTE>");
+            // out.println("<strong>" + attribute_1 + "</strong>");
+            // out.println("    <blockquote>");
 
             JspFragment f=getJspBody();
             if (f != null) f.invoke(out);
@@ -39,7 +39,7 @@ public class TagHandler extends SimpleTagSupport {
             // TODO: insert code to write html after writing the body content.
             // e.g.:
             //
-            // out.println("    </BLOCKQUOTE>");
+            // out.println("    </blockquote>");
 
         } catch (java.io.IOException ex) {
             throw new JspException(ex.getMessage());

@@ -6,9 +6,9 @@
 
 <%--
 <table>
-  <tr>
-    <th>${column_1}</th>
-    <th>${column_2}</th>
-    <th>${column_3}</th>
-  </tr>
+    <tr>
+        <th>${column_1}</th>
+        <th>${column_2}</th>
+        <th>${column_3}</th>
+    </tr>
 --%>
