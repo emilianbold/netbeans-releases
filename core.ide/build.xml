@@ -33,11 +33,9 @@ Microsystems, Inc. All Rights Reserved.
                     <include name="openide*.jar" />
                 </fileset>
 				<pathelement location="../netbeans/lib/core.jar"/>
-				<!--
                 <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
                 <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
-				-->
             </classpath>
         </javac>
     </target>
