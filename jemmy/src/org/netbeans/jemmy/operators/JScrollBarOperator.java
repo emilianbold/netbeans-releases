@@ -28,6 +28,8 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Point;
@@ -867,6 +869,9 @@ public class JScrollBarOperator extends JComponentOperator
 	
 	minButtOperator.setTimeouts(times);		 
 	maxButtOperator.setTimeouts(times);		 
+
+	minButtOperator.setVisualizer(new EmptyVisualizer());		 
+	maxButtOperator.setVisualizer(new EmptyVisualizer());
     }
 
     private boolean isPadVisible() {

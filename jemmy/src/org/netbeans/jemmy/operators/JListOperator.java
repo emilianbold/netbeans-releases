@@ -24,6 +24,8 @@ import org.netbeans.jemmy.Outputable;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jemmy.TimeoutExpiredException;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -499,6 +501,7 @@ public class JListOperator extends JComponentOperator
 	output.printTrace("Scroll JList to " + Integer.toString(itemIndex) + "'th item\n    : " +
 			  getSource().toString());
 	output.printGolden("Scroll JList to " + Integer.toString(itemIndex) + "'th item");
+	makeComponentVisible();
 	//try to find JScrollPane under.
 	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
 						       JScrollPaneFinder(ComponentSearcher.
@@ -508,6 +511,7 @@ public class JListOperator extends JComponentOperator
 	}
 	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
 	scroller.copyEnvironment(this);
+	scroller.setVisualizer(new EmptyVisualizer());
 	Rectangle rect = getCellBounds(itemIndex, itemIndex);
 	scroller.scrollToComponentRectangle(getSource(), 
 					    (int)rect.getX(),

@@ -28,6 +28,8 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -974,6 +976,7 @@ public class JTreeOperator extends JComponentOperator
 	output.printTrace("Scroll JTree to path \"" + path.toString() + "\"\n    : " +
 			  getSource().toString());
 	output.printGolden("Scroll JTree to path \"" + path.toString() + "\"");
+	makeComponentVisible();
 	//try to find JScrollPane under.
 	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
 						       JScrollPaneFinder(ComponentSearcher.
@@ -983,6 +986,7 @@ public class JTreeOperator extends JComponentOperator
 	}
 	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
 	scroller.copyEnvironment(this);
+	scroller.setVisualizer(new EmptyVisualizer());
 	Rectangle rect = getPathBounds(path);
 	scroller.scrollToComponentRectangle(getSource(), 
 					    (int)rect.getX(),
@@ -1943,6 +1947,7 @@ public class JTreeOperator extends JComponentOperator
 	    JTextComponentOperator textOper =  
 		new JTextComponentOperator((JTextComponent)editor);
 	    textOper.copyEnvironment(oper);
+	    textOper.setVisualizer(new EmptyVisualizer());
 	    textOper.clearText();
 	    textOper.typeText(value.toString());
 	    textOper.pushKey(KeyEvent.VK_ENTER);

@@ -25,6 +25,8 @@ import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 
@@ -581,6 +583,7 @@ public class JSplitPaneOperator extends JComponentOperator
 	} else {
 	    ComponentOperator divOper = new ComponentOperator(findDivider());
 	    divOper.copyEnvironment(this);
+	    divOper.setVisualizer(new EmptyVisualizer());
 	    /* workaround */
 	    if(getDividerLocation() == -1) {
 		moveTo(divOper, divOper.getCenterX() - 1, divOper.getCenterY() - 1);
@@ -598,6 +601,7 @@ public class JSplitPaneOperator extends JComponentOperator
     }
 
     private void expandTo(int index) {
+	makeComponentVisible();
 	ComponentSearcher cs = new ComponentSearcher(findDivider());
 	cs.setOutput(output.createErrorOutput());
 	JButtonOperator bo = 
@@ -610,6 +614,7 @@ public class JSplitPaneOperator extends JComponentOperator
 		}
 	    }, index));
 	bo.copyEnvironment(this);
+	bo.setVisualizer(new EmptyVisualizer());
 	bo.push();
     }
 

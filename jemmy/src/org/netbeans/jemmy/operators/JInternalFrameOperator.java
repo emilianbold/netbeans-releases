@@ -27,6 +27,8 @@ import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Rectangle;
@@ -346,6 +348,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Iconify JInternalFrame\n    : " + getSource().toString());
 	output.printGolden("Iconify JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
+	makeComponentVisible();
 	minOper.clickMouse();
 	initOperators();
     }
@@ -376,6 +379,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Maximize JInternalFrame\n    : " + getSource().toString());
 	output.printGolden("Maximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
+	makeComponentVisible();
 	if(!isMaximum()) {
 	    if(!isSelected()) {
 		activate();
@@ -395,6 +399,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	output.printLine("Demaximize JInternalFrame\n    : " + getSource().toString());
 	output.printGolden("Demaximize JInternalFrame \"" + getTitle() + "\"");
 	checkIconified(false);
+	makeComponentVisible();
 	if(isMaximum()) {
 	    if(!isSelected()) {
 		activate();
@@ -472,6 +477,7 @@ public class JInternalFrameOperator extends JComponentOperator
     public void scrollToRectangle(int x, int y, int width, int height) {
 	output.printTrace("Scroll desktop pane to make \"" + getTitle() + "\" internal frame visible");
 	output.printGolden("Scroll desktop pane to make \"" + getTitle() + "\" internal frame visible");
+	makeComponentVisible();
 	Component cmp = isIcon() ? iconOperator.getSource() : getSource();
 	//try to find JScrollPane under.
 	JScrollPane scroll;
@@ -491,6 +497,7 @@ public class JInternalFrameOperator extends JComponentOperator
 	}
 	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
 	scroller.copyEnvironment(this);
+	scroller.setVisualizer(new EmptyVisualizer());
 	scroller.scrollToComponentRectangle(isIcon() ? iconOperator.getSource() : getSource(), 
 					    x, y, width, height);
     }
@@ -949,6 +956,7 @@ public class JInternalFrameOperator extends JComponentOperator
 										       getTrueChooser("Minimize button")),
 								  bttCount));
 		minOper.copyEnvironment(this);
+		minOper.setVisualizer(new EmptyVisualizer());
 		bttCount++;
 		if(((JInternalFrame)getSource()).isMaximizable()) {
 		    maxOper = 
@@ -957,6 +965,7 @@ public class JInternalFrameOperator extends JComponentOperator
 											   getTrueChooser("Maximize button")),
 								      bttCount));
 		    maxOper.copyEnvironment(this);
+		    maxOper.setVisualizer(new EmptyVisualizer());
 		    bttCount++;
 		} else {
 		    maxOper = null;
@@ -972,6 +981,7 @@ public class JInternalFrameOperator extends JComponentOperator
 										       getTrueChooser("Close button")),
 								  bttCount));
 		closeOper.copyEnvironment(this);
+		closeOper.setVisualizer(new EmptyVisualizer());
 	    } else {
 		closeOper = null;
 	    }

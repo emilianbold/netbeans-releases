@@ -28,6 +28,8 @@ import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.WindowWaiter;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -365,6 +367,7 @@ implements Timeoutable, Outputable {
      * @throws TimeoutExpiredException
      */
     public void pushComboButton() {
+	makeComponentVisible();
 	ComponentSearcher bs = new ComponentSearcher((Container)getSource());
 	bs.setOutput(output.createErrorOutput());
 	JButtonOperator bo = new JButtonOperator((JButton)bs.findComponent(new ComponentChooser() {
@@ -376,6 +379,7 @@ implements Timeoutable, Outputable {
 		}
 	    }));
 	bo.copyEnvironment(this);
+	bo.setVisualizer(new EmptyVisualizer());
 	bo.push();
     }
     
@@ -393,6 +397,7 @@ implements Timeoutable, Outputable {
 	JListOperator lo = new JListOperator(waitList());
 	lo.copyEnvironment(this);
 	lo.setVerification(false);
+	lo.setVisualizer(new EmptyVisualizer());
 
 	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
 
@@ -438,6 +443,7 @@ implements Timeoutable, Outputable {
 
 	JListOperator lo = new JListOperator(waitList());
 	lo.copyEnvironment(this);
+	lo.setVisualizer(new EmptyVisualizer());
 
 	timeouts.sleep("JComboBoxOperator.BeforeSelectingTimeout");
 
@@ -454,8 +460,10 @@ implements Timeoutable, Outputable {
      * @throws TimeoutExpiredException
      */
     public void typeText(String text) {
+	makeComponentVisible();
 	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
 	tfo.copyEnvironment(this);
+	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.typeText(text);
     }
 
@@ -465,8 +473,10 @@ implements Timeoutable, Outputable {
      * @throws TimeoutExpiredException
      */
     public void clearText() {
+	makeComponentVisible();
 	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
 	tfo.copyEnvironment(this);
+	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.clearText();
     }
 
@@ -476,11 +486,13 @@ implements Timeoutable, Outputable {
      * @throws TimeoutExpiredException
      */
     public void enterText(String text) {
+	makeComponentVisible();
 	if((getDispatchingModel() & JemmyProperties.ROBOT_MODEL_MASK) == 0) {
 	    requestFocus();
 	}
 	JTextFieldOperator tfo = new JTextFieldOperator(findJTextField());
 	tfo.copyEnvironment(this);
+	tfo.setVisualizer(new EmptyVisualizer());
 	tfo.enterText(text);
     }
 

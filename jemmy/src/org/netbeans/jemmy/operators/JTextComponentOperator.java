@@ -30,6 +30,8 @@ import org.netbeans.jemmy.Timeoutable;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Color;
@@ -823,6 +825,7 @@ public class JTextComponentOperator extends JComponentOperator
 	output.printTrace("Scroll JTextComponent to " + Integer.toString(position) + " position\n    : " +
 			  getSource().toString());
 	output.printGolden("Scroll JTextComponent to " + Integer.toString(position) + " position");
+	makeComponentVisible();
 	//try to find JScrollPane under.
 	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
 						       JScrollPaneFinder(ComponentSearcher.
@@ -832,6 +835,7 @@ public class JTextComponentOperator extends JComponentOperator
 	}
 	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
 	scroller.copyEnvironment(this);
+	scroller.setVisualizer(new EmptyVisualizer());
 	Rectangle rect = modelToView(position);
 	scroller.scrollToComponentRectangle(getSource(), 
 					    (int)rect.getX(),

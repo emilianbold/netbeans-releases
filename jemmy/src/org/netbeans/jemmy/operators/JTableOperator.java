@@ -26,6 +26,8 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Timeouts;
 import org.netbeans.jemmy.Waiter;
 
+import org.netbeans.jemmy.util.EmptyVisualizer;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -605,6 +607,7 @@ implements Outputable, Timeoutable {
 			  getSource().toString());
 	output.printGolden("Scroll JTable to (" + Integer.toString(row) +
 			   "," + Integer.toString(column) + ")");
+	makeComponentVisible();
 	//try to find JScrollPane under.
 	JScrollPane scroll = (JScrollPane)getContainer(new JScrollPaneOperator.
 						       JScrollPaneFinder(ComponentSearcher.
@@ -614,6 +617,7 @@ implements Outputable, Timeoutable {
 	}
 	JScrollPaneOperator scroller = new JScrollPaneOperator(scroll);
 	scroller.copyEnvironment(this);
+	scroller.setVisualizer(new EmptyVisualizer());
 	Rectangle rect = getCellRect(row, column, false);
 	scroller.scrollToComponentRectangle(getSource(), 
 					    (int)rect.getX(),
@@ -1559,6 +1563,7 @@ implements Outputable, Timeoutable {
 	    JTextComponentOperator textOper =  
 		new JTextComponentOperator((JTextComponent)editor);
 	    textOper.copyEnvironment(oper);
+	    textOper.setVisualizer(new EmptyVisualizer());
 	    textOper.clearText();
 	    textOper.typeText(value.toString());
 	    textOper.pushKey(KeyEvent.VK_ENTER);
