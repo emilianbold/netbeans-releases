@@ -26,6 +26,7 @@ import javax.swing.plaf.ComponentUI;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.net.URL;
+import org.netbeans.swing.tabcontrol.TabListPopupAction;
 
 /**
  * Windows xp impl of tabs ui
@@ -86,7 +87,7 @@ public final class WinXPEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
 
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 24;
-        Graphics g = TabListPopup.getOffscreenGraphics();
+        Graphics g = BasicScrollingTabDisplayerUI.getOffscreenGraphics();
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();

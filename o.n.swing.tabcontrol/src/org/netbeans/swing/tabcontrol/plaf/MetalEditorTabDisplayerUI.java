@@ -24,6 +24,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.plaf.ComponentUI;
 import java.awt.*;
+import org.netbeans.swing.tabcontrol.TabListPopupAction;
 
 /**
  * Tab displayer UI for Metal look and feel
@@ -54,7 +55,7 @@ public final class MetalEditorTabDisplayerUI extends BasicScrollingTabDisplayerU
     
     public Dimension getPreferredSize(JComponent c) {
         int prefHeight = 28;
-        Graphics g = TabListPopup.getOffscreenGraphics();
+        Graphics g = BasicScrollingTabDisplayerUI.getOffscreenGraphics();
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();

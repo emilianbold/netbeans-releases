@@ -13,7 +13,7 @@
 
 package org.netbeans.core.windows;
 
-import org.netbeans.core.windows.view.ui.RecentViewListDlg;
+import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
 import org.openide.actions.ActionManager;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -177,7 +177,7 @@ final class ShortcutAndMenuKeyEventProcessor implements KeyEventDispatcher, KeyE
                                 ev.getModifiers() == InputEvent.CTRL_MASK;
             boolean isCtrlShiftTab = ev.getKeyCode() == KeyEvent.VK_TAB &&
                 ev.getModifiers() == (InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK);
-            if ((isCtrlTab || isCtrlShiftTab) && !RecentViewListDlg.isShown()) {
+            if ((isCtrlTab || isCtrlShiftTab) && !KeyboardPopupSwitcher.isShown()) {
                 return processShortcut(ev);
             }
         

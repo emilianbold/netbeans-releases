@@ -28,6 +28,7 @@ import java.awt.event.HierarchyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import org.netbeans.swing.tabcontrol.TabListPopupAction;
 
 /**
  * A provisional look and feel for OS-X, round 2, using Java2d to emulate the
@@ -107,7 +108,7 @@ public class AquaEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI {
         int prefHeight = 28;
         //Never call getGraphics() on the control, it resets in-process
         //painting on OS-X 1.4.1 and triggers gratuitous repaints
-        Graphics g = TabListPopup.getOffscreenGraphics();
+        Graphics g = BasicScrollingTabDisplayerUI.getOffscreenGraphics();
         if (g != null) {
             FontMetrics fm = g.getFontMetrics(displayer.getFont());
             Insets ins = getTabAreaInsets();

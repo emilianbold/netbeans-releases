@@ -19,12 +19,12 @@
 package org.netbeans.swing.tabcontrol.plaf;
 
 import org.netbeans.swing.tabcontrol.TabDisplayer;
-import org.netbeans.swing.tabcontrol.TabbedContainer;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.lang.ref.SoftReference;
 
 /**
  * Base class for tab displayers that have scrollable tabs.
@@ -372,4 +372,23 @@ public abstract class BasicScrollingTabDisplayerUI extends BasicTabDisplayerUI {
         }
     }
 
+    static SoftReference ctx = null;
+
+    /**
+     * Provides an offscreen graphics context so that widths based on character
+     * size can be calculated correctly before the component is shown
+     */
+    public static Graphics2D getOffscreenGraphics() {
+        BufferedImage result = null;
+        //XXX multi-monitors w/ different resolution may have problems;
+        //Better to call Toolkit to create a screen graphics
+        if (ctx != null) {
+            result = (BufferedImage) ctx.get();
+        }
+        if (result == null) {
+            result = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+            ctx = new SoftReference(result);
+        }
+        return (Graphics2D) result.getGraphics();
+    }
 }

@@ -14,23 +14,30 @@
 
 package org.netbeans.core.windows.actions;
 
-import org.netbeans.core.windows.ModeImpl;
-import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.RecentViewListDlg;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
+import org.netbeans.core.windows.Constants;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
+import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
+import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Invokes Recent View List
@@ -38,24 +45,26 @@ import java.util.Iterator;
  * @author  Marek Slama
  */
 public final class RecentViewListAction extends AbstractAction
-implements PropertyChangeListener {
+        implements PropertyChangeListener {
     
     /** Creates a new instance of RecentViewListAction */
-    public RecentViewListAction () {
+    public RecentViewListAction() {
         putValue(NAME, NbBundle.getMessage(RecentViewListAction.class, "CTL_RecentViewListAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
-            WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+                WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         updateEnabled();
     }
     
     public void actionPerformed(ActionEvent evt) {
-        TopComponent[] tcs = WindowManagerImpl.getInstance().getRecentViewList();
-        if (tcs.length == 0) {
+        TopComponent[] documents = getRecentDocuments();
+        
+        if (documents.length == 0) {
             return;
         }
-
+        
         // XXX Show dialog only if the action was invoked by shortcut (not from menu).
-        if(!(evt.getSource() instanceof javax.swing.JMenuItem)) {
+        if(!"immediately".equals(evt.getActionCommand()) && // NOI18N
+                !(evt.getSource() instanceof javax.swing.JMenuItem)) {
             // #46800: fetch key directly from action command
             KeyStroke keyStroke = Utilities.stringToKey(evt.getActionCommand());
             
@@ -63,49 +72,80 @@ implements PropertyChangeListener {
                 int triggerKey = keyStroke.getKeyCode();
                 int reverseKey = KeyEvent.VK_SHIFT;
                 int releaseKey = 0;
-
+                
                 int modifiers = keyStroke.getModifiers();
                 if((InputEvent.CTRL_MASK & modifiers) != 0) {
                     releaseKey = KeyEvent.VK_CONTROL;
                 } else if((InputEvent.ALT_MASK & modifiers) != 0) {
                     releaseKey = KeyEvent.VK_ALT;
                 } else if((InputEvent.META_MASK & modifiers) != 0) {
-                    releaseKey = KeyEvent.META_MASK;
+                    releaseKey = InputEvent.META_MASK;
                 }
                 
                 if(releaseKey != 0) {
-                    if (!RecentViewListDlg.isShown()) {
+                    if (!KeyboardPopupSwitcher.isShown()) {
                         Frame owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
-                            instanceof Frame ? 
-                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow() 
+                        instanceof Frame ?
+                            (Frame) KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow()
                             : WindowManager.getDefault().getMainWindow();
-                        int sel = tcs.length == 1 ? 0 : 1;
-                        RecentViewListDlg.invoke(owner, tcs, sel, triggerKey, reverseKey, releaseKey);
+                        KeyboardPopupSwitcher.selectItem(
+                                createSwitcherItems(documents),
+                                releaseKey, triggerKey);
                     }
                     return;
                 }
             }
         }
-
-        if(tcs.length > 1) {
-            TopComponent tc = tcs[1];
+        
+        if(documents.length > 1) {
+            TopComponent tc = documents[1];
             // #37226 Unmaximized the other mode if needed.
             WindowManagerImpl wm = WindowManagerImpl.getInstance();
-            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            ModeImpl mode = (ModeImpl) wm.findMode(tc);
             if(mode != null && mode != wm.getMaximizedMode()) {
                 wm.setMaximizedMode(null);
             }
-
+            
             tc.requestActive();
         }
     }
-
+    
+    private SwitcherTableItem[] createSwitcherItems(TopComponent[] tcs) {
+        SwitcherTableItem[] items = new SwitcherTableItem[tcs.length];
+        for (int i = 0; i < tcs.length; i++) {
+            String name = tcs[i].getDisplayName();
+            if (name == null || name.trim().length() == 0) {
+                name = tcs[i].getName();
+            }
+            Image image = tcs[i].getIcon();
+            ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
+            items[i] = new SwitcherTableItem(
+                    new ActivableTC(tcs[i]),
+                    name,
+                    imageIcon);
+        }
+        return items;
+    }
+    
+    private class ActivableTC implements SwitcherTableItem.Activable {
+        private TopComponent tc;
+        private ActivableTC(TopComponent tc) {
+            this.tc = tc;
+        }
+        public void activate() {
+            if (tc != null) {
+                tc.requestActive();
+            }
+        }
+    }
+    
+    
     public void propertyChange(PropertyChangeEvent evt) {
         if(TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
             updateEnabled();
         }
     }
-
+    
     /** Only here for fix #41477:, called from layer.xml:
      * For KDE on unixes, Ctrl+TAB is occupied by OS,
      * so we also register Ctrl+BACk_QUOTE as recent view list action shortcut.
@@ -119,15 +159,43 @@ implements PropertyChangeListener {
         return null;
     }
     
+    /**
+     * Update enable state of this action.
+     */
     private void updateEnabled() {
+        setEnabled(isMoreThanOneDocOpened());
+    }
+    
+    private boolean isMoreThanOneDocOpened() {
         for(Iterator it = WindowManagerImpl.getInstance().getModes().iterator(); it.hasNext(); ) {
-            ModeImpl mode = (ModeImpl)it.next();
-            if(!mode.getOpenedTopComponents().isEmpty()) {
-                setEnabled(true);
-                return;
+            ModeImpl mode = (ModeImpl)it.next(); {
+                if (mode.getKind() == Constants.MODE_KIND_EDITOR)
+                    return (mode.getOpenedTopComponents().size() > 1);
             }
         }
-        setEnabled(false);
+        return false;
+    }
+    
+    private TopComponent[] getRecentDocuments() {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        TopComponent[] documents = wm.getRecentViewList();
+        
+        List docsList = new ArrayList();
+        for (int i = 0; i < documents.length; i++) {
+            TopComponent tc = documents[i];
+            if (tc == null) {
+                continue;
+            }
+            ModeImpl mode = (ModeImpl)wm.findMode(tc);
+            if (mode == null) {
+                continue;
+            }
+            
+            if (mode.getKind() == Constants.MODE_KIND_EDITOR) {
+                docsList.add(tc);
+            }
+        }
+        return (TopComponent[])docsList.toArray(new TopComponent[0]);
     }
 }
 

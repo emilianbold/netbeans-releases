@@ -106,7 +106,7 @@ class BaseTabLayoutModel implements TabLayoutModel {
         //dump it if the font changes.
         Integer result = (Integer) widthMap.get(text);
         if (result == null) {
-            double wid = HtmlRenderer.renderString(text, TabListPopup.getOffscreenGraphics(), 0, 0,
+            double wid = HtmlRenderer.renderString(text, BasicScrollingTabDisplayerUI.getOffscreenGraphics(), 0, 0,
                                            Integer.MAX_VALUE,
                                            Integer.MAX_VALUE, f,
                                            Color.BLACK, HtmlRenderer.STYLE_TRUNCATE,
@@ -123,7 +123,7 @@ class BaseTabLayoutModel implements TabLayoutModel {
             String testStr = "Zgj"; //NOI18N
             Font f = getFont();
             textHeight = new Double(f.getStringBounds(testStr, 
-            TabListPopup.getOffscreenGraphics().getFontRenderContext()).getWidth()).intValue() + 2;
+            BasicScrollingTabDisplayerUI.getOffscreenGraphics().getFontRenderContext()).getWidth()).intValue() + 2;
         }
         return textHeight;
     }
