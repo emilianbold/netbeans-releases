@@ -34,8 +34,8 @@ Microsystems, Inc. All Rights Reserved.
     </item>
 
     <item priority="2">
-        <summary>Upgrade modules to use 3.3 implementation.</summary>
-        <description>Upgrade modules to use 3.3 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 Upgrade Guide</a> for more info.</description>
+        <summary>Upgrade modules to use 3.4 implementation.</summary>
+        <description>Upgrade modules to use 3.4 implementation, especially mf-layer advantages -- see <a href="http://www.netbeans.org/unbranded-source/browse/~checkout~/openide/api/doc/org/openide/doc-files/upgrade.html">3.2 -> 3.3 -> 3.4 Upgrade Guide</a> for more info.</description>
     </item>
 
     &catalog_todo.xml;

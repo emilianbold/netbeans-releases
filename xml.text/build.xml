@@ -116,6 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-text-edit.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/xml-text-edit.jar"
                  homepage="http://xml.${homepage.base}/text-edit/"
                  distribution="http://${dist.base}/xml-text-edit.nbm">

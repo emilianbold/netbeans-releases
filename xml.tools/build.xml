@@ -115,6 +115,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-tools.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/xml-tools.jar"
                  homepage="http://xml.${homepage.base}/tools/"
                  distribution="http://${dist.base}/xml-tools.nbm">

@@ -32,7 +32,6 @@ Microsystems, Inc. All Rights Reserved.
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="genlist" classname="org.netbeans.nbbuild.MakeListOfNBM" classpath="${nbext_root}/nbantext.jar"/>
     <taskdef name="locjar" classname="org.netbeans.nbbuild.LocalizedJar" classpath="${nbext_root}/nbantext.jar"/>
-    <taskdef name="genjavadoc" classname="org.netbeans.nbbuild.GenerateJavadoc" classpath="${nbext_root}/nbantext.jar"/>
 
     <property name="build.compiler.debug" value="on"/>
 
@@ -90,6 +89,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-api.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/autoload/xml-api.jar"
                  homepage="http://xml.${homepage.base}/api/"
                  distribution="http://${dist.base}/xml-api.nbm">
@@ -113,15 +113,19 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="XmlAPIs.zip"/>
     </target>
 
+    <target name="real-clean" depends="clean">
+        <delete dir="javadoc"/>
+    </target>
+
     <target name="all" depends="clean,nbm"/>
 
     <target name="javadoc" depends="apichanges,xml-apis">
-      <copy todir="javadoc">
-        <fileset dir=".">
-          <include name="XmlAPIs/**"/>
-          <include name="XmlAPIs.zip"/>
-        </fileset>
-      </copy>
+        <copy todir="javadoc">
+            <fileset dir=".">
+                <include name="XmlAPIs/**"/>
+                <include name="XmlAPIs.zip"/>
+            </fileset>
+        </copy>
     </target>
 
     <target name="xml-apis">

@@ -113,6 +113,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-catalog.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/xml-catalog.jar"
                  homepage="http://xml.${homepage.base}/catalog/"
                  distribution="http://${dist.base}/xml-catalog.nbm">

@@ -131,6 +131,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-core.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/xml-core.jar"
                  homepage="http://xml.${homepage.base}/core/"
                  distribution="http://${dist.base}/xml-core.nbm">

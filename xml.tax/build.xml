@@ -116,6 +116,7 @@ Microsystems, Inc. All Rights Reserved.
         <delete dir="Info"/>
         <makenbm file="../xml-tax.nbm"
                  topdir="."
+                 needsrestart="false"
                  module="netbeans/modules/autoload/xml-tax.jar"
                  homepage="http://xml.${homepage.base}/tax/"
                  distribution="http://${dist.base}/xml-tax.nbm">
