@@ -39,6 +39,12 @@ public interface Sources {
     
     /**
      * Find all root source folders matching a given type.
+     * <p>For a given type, the returned source folders must not overlap, i.e.
+     * there may be no duplicates and no folder may be a descendant of another.
+     * <p>In the case of {@link #TYPE_GENERIC} source folders, the project must
+     * contain at least one such folder (a nonempty array must be returned), and
+     * the {@link Project#getProjectDirectory project directory} must either be
+     * one of the returned folders, or a descendant of one of the returned folders.
      * @param type a kind of folder, e.g. {@link #TYPE_GENERIC} or
      *             {@link org.netbeans.api.java.project.JavaProjectConstants#SOURCES_TYPE_JAVA}
      * @return a list of top-level source folders of that kind (may be empty but not null)

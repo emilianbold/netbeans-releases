@@ -68,6 +68,7 @@ public interface Project extends Lookup.Provider {
      * <p>You might also have e.g.:</p>
      * <ol>
      * <li>{@link org.netbeans.spi.queries.FileBuiltQueryImplementation}</li>
+     * <li>{@link org.netbeans.spi.queries.SharabilityQueryImplementation}</li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/ProjectOpenedHook.html"><code>ProjectOpenedHook</code></a></li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/RecommendedTemplates.html"><code>RecommendedTemplates</code></a></li>
      * <li><a href="@PROJECTS/PROJECTUIAPI@/org/netbeans/spi/project/ui/PrivilegedTemplates.html"><code>PrivilegedTemplates</code></a></li>
@@ -75,9 +76,9 @@ public interface Project extends Lookup.Provider {
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/SourceForBinaryQueryImplementation.html"><code>SourceForBinaryQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/JavadocForBinaryQueryImplementation.html"><code>JavadocForBinaryQueryImplementation</code></a></li>
      * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/AccessibilityQueryImplementation.html"><code>AccessibilityQueryImplementation</code></a></li>
+     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/support/ant/ProjectXmlSavedHook.html"><code>ProjectXmlSavedHook</code></a></li>
      * <li><a href="@ANT/PROJECT@/org/netbeans/spi/project/ant/AntArtifactProvider.html"><code>AntArtifactProvider</code></a></li>
-     * <li><a href="@JAVA/API@/org/netbeans/spi/java/queries/UnitTestForSourceQueryImplementation.html"><code>UnitTestForSourceQueryImplementation</code></a></li>
      * </ol>
      * <p>Typical implementation:</p>
      * <pre>
