@@ -379,11 +379,13 @@ Microsystems, Inc. All Rights Reserved.
  	      --> 
              <fileset dir="${netbeans.home}/lib">
             		<include name="core.jar"/>
-            		<include name="core-windows.jar"/>
                         <include name="openide.jar"/>
                         <include name="openide-loaders.jar"/>
             		<include name="ext/*.jar"/>
              </fileset>             
+             <fileset dir="${netbeans.home}/modules">
+            		<include name="core-windows.jar"/>
+             </fileset>
              <!-- XXX -->
              <fileset dir="${netbeans.home}/modules/autoload">
                      <include name="openide-*.jar"/>
