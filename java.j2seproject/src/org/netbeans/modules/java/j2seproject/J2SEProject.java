@@ -22,6 +22,7 @@ import java.lang.ref.SoftReference;
 import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -61,13 +62,17 @@ import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -210,6 +215,39 @@ final class J2SEProject implements Project, AntProjectListener {
         return helper.resolveFile(testClassesDir);
     }
     
+    /** Last time in ms when the Broken References alert was shown. */
+    private static long brokenAlertLastTime = 0;
+    
+    /** Is Broken References alert shown now? */
+    private static boolean brokenAlertShown = false;
+
+    /** Timeout within which request to show alert will be ignored. */
+    private static int BROKEN_ALERT_TIMEOUT = 1000;
+    
+    private static synchronized void showBrokenReferencesAlert() {
+        // Do not show alert if it is already shown or if it was shown
+        // in last BROKEN_ALERT_TIMEOUT milliseconds.
+        if (brokenAlertShown || brokenAlertLastTime+BROKEN_ALERT_TIMEOUT > System.currentTimeMillis()) {
+            return;
+        }
+        brokenAlertShown = true;
+        SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(
+                                NbBundle.getMessage(J2SEProject.class, "MSG_Broken_References"), 
+                                NotifyDescriptor.WARNING_MESSAGE));
+                    } finally {
+                        synchronized (J2SEProject.class) {
+                            brokenAlertLastTime = System.currentTimeMillis();
+                            brokenAlertShown = false;
+                        }
+                    }
+                }
+            });
+    }
+    
     // Private innerclasses ----------------------------------------------------
     
     private final class Info implements ProjectInformation {
@@ -304,6 +342,9 @@ final class J2SEProject implements Project, AntProjectListener {
                     return null;
                 }
             });
+            if (J2SEPhysicalViewProvider.hasBrokenLinks(evaluator())) {
+                showBrokenReferencesAlert();
+            }
         }
         
         protected void projectClosed() {

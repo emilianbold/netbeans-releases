@@ -246,7 +246,7 @@ public class ProjectsRootNode extends AbstractNode {
         }
 
         public String getHtmlDisplayName() {
-            return isMain() ? "<b>" + super.getDisplayName() + "</b>" : null; //NOI18N
+            return isMain() ? "<b>" + super.getDisplayName() + "</b>" : super.getDisplayName(); //NOI18N
         }
 
         public Image getIcon( int type ) {
