@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.ErrorManager;
 import org.w3c.dom.Element;

@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import java.util.Collections;
@@ -39,6 +40,7 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
 
     public BasicProjectInfoWizardPanel() {
+        getComponent().setName(NbBundle.getMessage(BasicProjectInfoWizardPanel.class, "WizardPanel_NameAndLocation"));
     }
     
     public Component getComponent() {
@@ -94,22 +96,12 @@ public class BasicProjectInfoWizardPanel implements WizardDescriptor.Panel, Chan
     
     public void storeSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT, component.getAntScript());
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_NAME, component.getProjectName());
+        wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_ANT_SCRIPT, component.getAntScript());
+        wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_PROJECT_NAME, component.getProjectName());
+        wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_PROJECT_LOCATION, component.getProjectLocation());
+        wizardDescriptor.putProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER, component.getProjectFolder());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
         wizardDescriptor.putProperty("setAsMain", component.getMainProject()); // NOI18N
-
-        PropertyEvaluator evaluator = PropertyUtils.sequentialPropertyEvaluator(null, new PropertyProvider[]{
-            PropertyUtils.fixedPropertyProvider(
-            Collections.singletonMap(FreeformProjectGenerator.PROP_PROJECT_LOCATION, component.getProjectLocation().getAbsolutePath()))});
-
-        ProjectModel pm = (ProjectModel) wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL);
-        if (pm == null ||
-                !pm.getBaseFolder().equals(component.getProjectLocation()) ||
-                !pm.getNBProjectFolder().equals(component.getProjectFolder())) {
-            pm = ProjectModel.createEmptyModel(component.getProjectLocation(), component.getProjectFolder(), evaluator);
-            wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL, pm);
-        }
     }
     
     public void stateChanged(ChangeEvent e) {

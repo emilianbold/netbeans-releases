@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -56,8 +57,8 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
         }
         delegate = initEval();
         delegate.addPropertyChangeListener(this);
-        if (Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
-            Util.err.log("properties for " + project.getProjectDirectory() + ": " + delegate.getProperties());
+        if (org.netbeans.modules.ant.freeform.Util.err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            org.netbeans.modules.ant.freeform.Util.err.log("properties for " + project.getProjectDirectory() + ": " + delegate.getProperties());
         }
     }
     

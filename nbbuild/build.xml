@@ -503,7 +503,7 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../ant/docs" target="netbeans"/>
   </target>
-  <target name="all-ant/freeform" depends="init,all-web/webapi">
+  <target name="all-ant/freeform" depends="init,all-ant,all-java/project,all-ant/project,all-projects/projectapi,all-projects/projectuiapi">
     <echo message="Building module ant/freeform..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
     <antcall target="build-one-cluster-dependencies" inheritAll="false">
@@ -1702,6 +1702,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
     </antcall>
     <ant dir="../web/project" target="netbeans" />
   </target>
+  <target name="all-web/freeform" depends="init,all-web/webapi">
+    <echo message="Building module web/freeform..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../web/freeform" target="netbeans"/>
+  </target>
   <target name="all-web/core" depends="init,all-web/ddapi,all-web/webapi,all-j2eeserver,all-web/jspsyntax,all-xml/multiview">
     <echo message="Building module web/core..."/>
     <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
@@ -2262,6 +2271,15 @@ try building with the flag: -Dnetbeans.no.pre.unscramble=true</echo>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
     <ant dir="../java/j2seproject" target="netbeans"/>
+  </target>
+  <target name="all-java/freeform" depends="init,all-ant,all-java/project,all-java/api,all-java/platform,all-ant/project,all-projects/projectapi,all-projects/projectuiapi,all-ant/freeform">
+    <echo message="Building module java/freeform..."/>
+    <getdependsclusters name="dependsClusters" list="${nb.clusters.list}"/>
+    <antcall target="build-one-cluster-dependencies" inheritAll="false">
+      <param name="one.cluster.dependencies" value="${dependsClusters}"/>
+      <param name="one.cluster.name" value="this-cluster"/>
+    </antcall>
+    <ant dir="../java/freeform" target="netbeans"/>
   </target>
   <target name="all-ant/project" depends="init,all-ant,all-projects/projectapi">
       <echo message="Building module ant/project..."/>

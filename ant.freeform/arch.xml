@@ -40,11 +40,12 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="arch-overall">
+  <api group="java" name="FreeformProjectSPI" type="export" category="friend">
   <p>
-   Currently provides no API or SPI. In the future, may be split into
-   domain-specific modules (<dfn>natures</dfn>), in which case the main project
-   type would have a friend SPI for defining how those co&ouml;perate.
+   Provides SPI for domain specific modules to plug their functionality into 
+   freeform project type.
   </p>
+  </api>
   <p>
    The behavior of the project is entirely controlled by its
    <code>project.xml</code>:
@@ -52,19 +53,11 @@ Microsystems, Inc. All Rights Reserved.
   <ol>
    <li>
     <!-- XXX change links when these are properly published: #43596 -->
-    <api group="dtd" name="freeform-project-general.xsd" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd">
+    <api group="dtd" name="freeform-project-general.xsd" type="export" category="official" url="http://www.netbeans.org/source/browse/~checkout~/ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd">
      <p>
-      XML schema for the general section of the project type.
-     </p>
-    </api>
-    <api group="dtd" name="freeform-project-java.xsd" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-java.xsd">
-     <p>
-      XML schema for the Java-specific section.
-     </p>
-    </api>
-    <api group="dtd" name="freeform-project-web.xsd" type="export" category="devel" url="http://www.netbeans.org/source/browse/~checkout~/ant/freeform/src/org/netbeans/modules/ant/freeform/resources/freeform-project-web.xsd">
-     <p>
-      XML schema for the web-application-specific section.
+      XML schema for the general section of the project type. Users are allowed
+      to modify this section by hand and can refer to this schema for available
+      syntax.
      </p>
     </api>
    </li>
@@ -107,7 +100,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="arch-time">
   <p>
-   Largely complete; see Issuezilla #42682.
+   Complete.
   </p>
  </answer>
 
@@ -126,6 +119,45 @@ Microsystems, Inc. All Rights Reserved.
    See the <a
    href="http://projects.netbeans.org/buildsys/design.html#freeform">Architecture
    Sketch</a> for justifications of the module.
+  </p>
+  <p>
+   The SPI is used to plug additional functionality provided by domain specific
+   extensions into freeform project type. The base freeform project defines
+   attributes of project such as its location or Ant script and defines mapping
+   of IDE actions to Ant script targets. Extensions can enhance base project in
+   several ways:
+  </p>
+  <ol>
+   <li>
+    <p>
+     can extend project's lookup. That allows project to provide implementation
+     of domain specific queries, e.g. J2SE extension can plug in an implementation
+     of <code>ClassPathProvider</code>.
+    </p>
+   </li>
+   <li>
+    <p>
+     can add UI panel into project's customizer in which user can customize
+     domain-specific features
+    </p>
+   </li>
+   <li>
+    <p>
+     can provide a new source folder visualization style, e.g. J2SE extension
+     can register "package" style which presents source folder as Java packages
+    </p>
+   </li>
+   <li>
+    <p>
+     can list extra build targets to be shown in the target mapping customizer,
+     e.g. the Web extension may want to map the Deploy (in IDE) action to
+     an Ant script target
+    </p>
+   </li>
+  </ol>
+  <p>
+  Extensions have access to project's metadata and based on that can decide
+  whether and how to enhance the freeform project.
   </p>
  </answer>
 
@@ -147,7 +179,7 @@ Microsystems, Inc. All Rights Reserved.
    with no further constraints. Unlike &ldquo;canned&rdquo; project types, the
    module does not assist the user in creating or maintaining the build script.
    Instead, it just provides a NetBeans project wrapper around the existing build
-   functionality and source structure. Most of what it does falls into three
+   functionality and source structure. Most of what it does falls into four
    categories:
   </p>
   <ol>
@@ -159,14 +191,19 @@ Microsystems, Inc. All Rights Reserved.
    </li>
    <li>
     <p>
-     Answers various <dfn>queries</dfn> from other parts of the IDE about the
-     structure and intended behavior of the project; e.g. the classpath to use
-     for source files for purposes of code completion and refactoring.
+     Provides extendable project customizer.
     </p>
    </li>
    <li>
     <p>
-     Provides wizards to help the user set up a new project.
+     Answers various <dfn>queries</dfn> from other parts of the IDE about the
+     structure and intended behavior of the project. 
+    </p>
+   </li>
+   <li>
+    <p>
+     Provides SPI for pluging in extensions supporting domain specific 
+     development, e.g. J2SE development, Web development, etc.
     </p>
    </li>
   </ol>
@@ -197,7 +234,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="compat-i18n">
   <p>
-   100% I18N coverage is a goal. The generated <code>project.xml</code> may not
+   Module has 100% I18N coverage. The generated <code>project.xml</code> may not
    be internationalized, but most functionality is available through the GUI
    anyway.
   </p>
@@ -284,14 +321,14 @@ Microsystems, Inc. All Rights Reserved.
  <answer id="dep-nb">
   <ul>
    <li>
-    <api group="java" name="AntModuleAPI" type="import" category="devel">
+    <api group="java" name="AntModuleAPI" type="import" category="official">
      <p>
       For running Ant targets, finding targets, etc.
      </p>
     </api>
    </li>
    <li>
-    <api group="java" name="AntProjectAPI" type="import" category="devel">
+    <api group="java" name="AntProjectAPI" type="import" category="official">
      <p>
       The SPI is used heavily to implement various queries, evaluate Ant
       properties at development time, etc.
@@ -299,42 +336,21 @@ Microsystems, Inc. All Rights Reserved.
     </api>
    </li>
    <li>
-    <api group="java" name="JavaSupportAPIs" type="import" category="official">
+    <api group="java" name="ProjectAPI" type="import" category="official">
      <p>
-      Implements the classpath query.
+      Basic project API.
      </p>
     </api>
    </li>
    <li>
-    <api group="java" name="JavaPlatformAPI" type="import" category="devel">
-     <p>
-      Looks for registered Java platforms to handle the boot classpath.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="JavaProjectAPI" type="import" category="devel">
-     <p>
-      Used for the Java package view, etc.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="WebModuleAPI" type="import" category="devel">
-     <p>
-      Used to answer web-app-specific queries.
-     </p>
-    </api>
-   </li>
-   <li>
-    <api group="java" name="ProjectUIAPI" type="import" category="devel">
+    <api group="java" name="ProjectUIAPI" type="import" category="official">
      <p>
       Used to provide the logical view and register the project import wizards.
      </p>
     </api>
    </li>
    <li>
-    <api group="java" name="GeneralQueriesAPI" type="import" category="devel">
+    <api group="java" name="GeneralQueriesAPI" type="import" category="official">
      <p>
       For checking file collocation.
      </p>
@@ -423,9 +439,9 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="deploy-dependencies">
-  <p>
-   N/A
-  </p>
+  <pre>
+   OpenIDE-Module-Module-Dependencies: org.netbeans.modules.ant.freeform &gt; @SPECIFICATION-VERSION@
+  </pre>
  </answer>
 
 
@@ -488,7 +504,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="deploy-packages">
   <p>
-   No public packages.
+   Only official SPI packages are exported.
   </p>
  </answer>
 
@@ -745,9 +761,14 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="lookup-lookup">
+  <api group="lookup" name="org.netbeans.modules.ant.freeform.spi.ProjectNature" 
+       url="@TOP@org/netbeans/modules/ant/freeform/spi/ProjectNature.html" 
+       type="export" category="friend">
   <p>
-   Just usual <code>getDefault</code> methods.
+   Project extensions are searched for in global lookup. Order is not 
+   significant.
   </p>
+  </api>
  </answer>
 
 
@@ -762,9 +783,11 @@ Microsystems, Inc. All Rights Reserved.
         </question>
 -->
  <answer id="lookup-register">
+  <api group="lookup" name="org.netbeans.spi.project.support.ant.AntBasedProjectType" type="import" category="official">
   <p>
-   Project type is registered.
+   Project type is registered in <code>META-INF/services</code>.
   </p>
+  </api>
  </answer>
 
 
@@ -807,8 +830,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-huge_dialogs">
   <p>
-   No. There is a customizer dialog but this is separated into tabs of reasonable
-   size.
+   No. There is a customizer dialog which is composed from panels provided by
+   individual freeform extensions, but these are presented as separate tabs.
   </p>
  </answer>
 
@@ -911,7 +934,8 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="perf-spi">
   <p>
-   N/A
+   Exported SPI are of friend stability with limited number of clients whose
+   performance can be tested.
   </p>
  </answer>
 
@@ -982,7 +1006,7 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="resources-layer">
   <p>
-   Registers new project wizards.
+   No.
   </p>
  </answer>
 

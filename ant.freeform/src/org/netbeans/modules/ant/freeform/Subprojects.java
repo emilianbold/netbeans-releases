@@ -21,6 +21,7 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -65,7 +66,7 @@ final class Subprojects implements SubprojectProvider {
                         subprojects.add(p);
                     }
                 } catch (IOException e) {
-                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    org.netbeans.modules.ant.freeform.Util.err.notify(ErrorManager.INFORMATIONAL, e);
                 }
             }
         }

@@ -16,8 +16,12 @@ package org.netbeans.modules.ant.freeform;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.modules.ant.freeform.spi.ProjectNature;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAttributeEvent;
@@ -47,18 +51,6 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Jesse Glick
  */
 final class ProjectXmlValidator extends DefaultHandler implements FileChangeListener {
-    
-    /**
-     * URIs to XML Schema files describing syntax of project.xml.
-     * @see #validateProjectXml
-     */
-    private static final String[] SCHEMAS = {
-        // XXX should not refer to schema in another module; wait for #42686 to solve properly
-        "nbres:/org/netbeans/modules/project/ant/project.xsd", // NOI18N
-        "nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd", // NOI18N
-        "nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-java.xsd", // NOI18N
-        "nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-web.xsd", // NOI18N
-    };
     
     private final FileObject projectXml;
     private InputOutput io;
@@ -103,8 +95,7 @@ final class ProjectXmlValidator extends DefaultHandler implements FileChangeList
                 p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaLanguage", // NOI18N
                               "http://www.w3.org/2001/XMLSchema"); // NOI18N
             }
-            p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", // NOI18N
-                          SCHEMAS);
+            p.setProperty("http://java.sun.com/xml/jaxp/properties/schemaSource", getSchemas()); // NOI18N
             p.parse(projectXml.getURL().toString(), this);
         } catch (SAXParseException e) {
             log(e);
@@ -113,6 +104,22 @@ final class ProjectXmlValidator extends DefaultHandler implements FileChangeList
         } finally {
             close();
         }
+    }
+
+    /**
+     * Compute a list of XML schema locations to be used for validating project.xml files.
+     */
+    private static String[] getSchemas() {
+        Set/*<String>*/ schemas = new TreeSet();
+        // XXX should not refer to schema in another module; wait for #42686 to solve properly
+        schemas.add("nbres:/org/netbeans/modules/project/ant/project.xsd"); // NOI18N
+        schemas.add("nbres:/org/netbeans/modules/ant/freeform/resources/freeform-project-general.xsd"); // NOI18N
+        Iterator/*<ProjectNature>*/ natures = FreeformProject.PROJECT_NATURES.allInstances().iterator();
+        while (natures.hasNext()) {
+            ProjectNature nature = (ProjectNature) natures.next();
+            schemas.addAll(nature.getSchemas());
+        }
+        return (String[]) schemas.toArray(new String[schemas.size()]);
     }
     
     public void fileChanged(FileEvent fe) {

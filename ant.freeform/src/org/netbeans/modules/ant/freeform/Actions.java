@@ -32,6 +32,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -182,8 +183,8 @@ public final class Actions implements ActionProvider {
             try {
                 pattern = Pattern.compile(text);
             } catch (PatternSyntaxException e) {
-                Util.err.annotate(e, ErrorManager.UNKNOWN, "From <pattern> in " + FileUtil.getFileDisplayName(project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH)), null, null, null); // NOI18N
-                Util.err.notify(e);
+                org.netbeans.modules.ant.freeform.Util.err.annotate(e, ErrorManager.UNKNOWN, "From <pattern> in " + FileUtil.getFileDisplayName(project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH)), null, null, null); // NOI18N
+                org.netbeans.modules.ant.freeform.Util.err.notify(e);
                 return Collections.EMPTY_MAP;
             }
         }

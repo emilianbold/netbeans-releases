@@ -14,11 +14,11 @@
 package org.netbeans.modules.ant.freeform;
 
 import java.util.List;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -42,7 +42,7 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("one generic group", 1, groups.length);
         assertEquals("right root folder", simple.getProjectDirectory(), groups[0].getRootFolder());
         assertEquals("right display name", "Simple Freeform Project", groups[0].getDisplayName());
-        groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("two Java groups", 2, groups.length);
         assertEquals("right root folder #1", simple.getProjectDirectory().getFileObject("src"), groups[0].getRootFolder());
         assertEquals("right display name #1", "Main Sources", groups[0].getDisplayName());
@@ -56,7 +56,7 @@ public class FreeformSourcesTest extends TestBase {
         assertEquals("one generic group", 1, groups.length);
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot"), groups[0].getRootFolder());
         assertEquals("right display name", "Top-Level Dir", groups[0].getDisplayName());
-        groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src"), groups[0].getRootFolder());
         assertEquals("right display name", "External Sources", groups[0].getDisplayName());
@@ -65,7 +65,7 @@ public class FreeformSourcesTest extends TestBase {
     
     public void testSourceRootChanges() throws Exception {
         Sources s = ProjectUtils.getSources(extsrcroot);
-        SourceGroup[] groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src"), groups[0].getRootFolder());
         TestCL l = new TestCL();
@@ -84,7 +84,7 @@ public class FreeformSourcesTest extends TestBase {
         location.appendChild(location.getOwnerDocument().createTextNode("../src2"));
         extsrcroot.helper().putPrimaryConfigurationData(data, true);
         assertEquals("got a change in Sources", 1, l.changeCount());
-        groups = s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        groups = s.getSourceGroups("java");
         assertEquals("one Java group", 1, groups.length);
         assertEquals("right root folder", egdirFO.getFileObject("extsrcroot/src2"), groups[0].getRootFolder());
     }

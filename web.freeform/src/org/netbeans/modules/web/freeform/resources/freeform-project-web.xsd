@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+XML Schema to define the project.xml for a freeform project.
+Cf. http://projects.netbeans.org/buildsys/design.html#freeform
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/freeform-project-web/1"
+            xmlns="http://www.netbeans.org/ns/freeform-project-web/1"
+            elementFormDefault="qualified">
+
+    <xsd:element name="web-data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="web-module" minOccurs="0" maxOccurs="unbounded" type="web-module"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="web-module">
+        <xsd:sequence>
+            <xsd:element name="doc-root" maxOccurs="1" minOccurs="1" type="substitutable-text"/>
+            <xsd:element name="classpath" maxOccurs="1" minOccurs="0" type="substitutable-text"/>
+            <xsd:element name="context-path" maxOccurs="1" minOccurs="0" type="substitutable-text"/>
+            <xsd:element name="j2ee-spec-level" minOccurs="0" maxOccurs="1">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:NMTOKEN">
+                        <xsd:enumeration value="1.3"/>
+                        <xsd:enumeration value="1.4"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <!-- XXX other locations (web.xml, WEB-INF, libraries,... -->
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- XXX: this type was copied from freeform-project-general.xsd -->
+    <!-- Some text that might be substituted with Ant property references. -->
+    <xsd:simpleType name="substitutable-text">
+        <xsd:restriction base="xsd:string">
+            <!-- XXX limit by regexp, perhaps -->
+        </xsd:restriction>
+    </xsd:simpleType>
+
+</xsd:schema>

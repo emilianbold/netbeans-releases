@@ -15,23 +15,32 @@ package org.netbeans.modules.ant.freeform;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.ant.freeform.spi.ProjectNature;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.modules.ant.freeform.ui.ProjectCustomizerProvider;
 import org.netbeans.modules.ant.freeform.ui.View;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
-import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 
 /**
@@ -40,9 +49,12 @@ import org.w3c.dom.Element;
  */
 public final class FreeformProject implements Project {
     
+    public static final Lookup.Result/*<ProjectNature>*/ PROJECT_NATURES = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class));
+    
     private final AntProjectHelper helper;
     private final PropertyEvaluator eval;
     private final Lookup lookup;
+    private AuxiliaryConfiguration aux;
     
     public FreeformProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -56,25 +68,20 @@ public final class FreeformProject implements Project {
     }
     
     private Lookup initLookup() throws IOException {
-        Classpaths cp = new Classpaths(this);
-        return Lookups.fixed(new Object[] {
+        aux = helper().createAuxiliaryConfiguration(); // AuxiliaryConfiguration
+        Lookup baseLookup = Lookups.fixed(new Object[] {
             new Info(), // ProjectInformation
             new FreeformSources(this), // Sources
             new Actions(this), // ActionProvider
             new View(this), // LogicalViewProvider
-            cp, // ClassPathProvider
-            new SourceLevelQueryImpl(this), // SourceLevelQueryImplementation
-            new SourceForBinaryQueryImpl(this), // SourceForBinaryQueryImplementation
-            new WebModules(this), // WebModuleProvider
             new ProjectCustomizerProvider(this, helper, eval), // CustomizerProvider
-            new OpenHook(cp), // ProjectOpenedHook
-            helper().createAuxiliaryConfiguration(), // AuxiliaryConfiguration
+            aux, // AuxiliaryConfiguration
             helper().createCacheDirectoryProvider(), // CacheDirectoryProvider
             new PrivilegedTemplatesImpl(),           // List of templates in New action popup
             new Subprojects(this), // SubprojectProvider
             new ArtifactProvider(this), // AntArtifactProvider
-            new TestQuery(this), // UnitTestForSourceQueryImplementation
         });
+        return new FreeformLookup(baseLookup, this, helper, eval, aux);
     }
     
     public FileObject getProjectDirectory() {
@@ -133,24 +140,6 @@ public final class FreeformProject implements Project {
         
     }
     
-    private final class OpenHook extends ProjectOpenedHook {
-        
-        private final Classpaths cp;
-        
-        public OpenHook(Classpaths cp) {
-            this.cp = cp;
-        }
-        
-        protected void projectOpened() {
-            cp.opened();
-        }
-        
-        protected void projectClosed() {
-            cp.closed();
-        }
-        
-    }
-    
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
         
         private static final String[] PRIVILEGED_NAMES = new String[] {
@@ -163,6 +152,41 @@ public final class FreeformProject implements Project {
             return PRIVILEGED_NAMES;
         }
         
+    }
+    
+    private static final class FreeformLookup extends ProxyLookup implements LookupListener {
+
+        private final Lookup baseLookup;
+        private final AntProjectHelper helper;
+        private final PropertyEvaluator evaluator;
+        private final FreeformProject project;
+        private final AuxiliaryConfiguration aux;
+        
+        public FreeformLookup(Lookup baseLookup, FreeformProject project, AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
+            super(new Lookup[0]);
+            this.baseLookup = baseLookup;
+            this.project = project;
+            this.helper = helper;
+            this.evaluator = evaluator;
+            this.aux = aux;
+            updateLookup();
+            PROJECT_NATURES.addLookupListener((LookupListener) WeakListeners.create(LookupListener.class, this, PROJECT_NATURES));
+        }
+        
+        public void resultChanged (LookupEvent ev) {
+            updateLookup();
+        }
+        
+        private void updateLookup() {
+            List/*<Lookup>*/ lookups = new ArrayList();
+            lookups.add(baseLookup);
+            Iterator/*<ProjectNature>*/ it = PROJECT_NATURES.allInstances().iterator();
+            while (it.hasNext()) {
+                ProjectNature pn  = (ProjectNature) it.next();
+                lookups.add(pn.getLookup(project, helper, evaluator, aux));
+            }
+            setLookups((Lookup[]) lookups.toArray(new Lookup[lookups.size()]));
+        }
     }
     
 }

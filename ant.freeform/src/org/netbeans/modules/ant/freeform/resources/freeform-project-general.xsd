@@ -134,6 +134,7 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
             <xsd:enumeration value="relative-path"/>
             <xsd:enumeration value="absolute-path-noext"/>
             <xsd:enumeration value="relative-path-noext"/>
+            <!-- XXX should this be factored out into java/freeform? -->
             <xsd:enumeration value="java-name"/>
         </xsd:restriction>
     </xsd:simpleType>
@@ -181,8 +182,10 @@ Cf. http://projects.netbeans.org/buildsys/design.html#freeform
     
     <xsd:simpleType name="source-folder-style">
         <xsd:restriction base="xsd:NMTOKEN">
+            <!-- factored out into natures; XXX can they contribute styles? probably not...
             <xsd:enumeration value="tree"/>
             <xsd:enumeration value="packages"/>
+            -->
         </xsd:restriction>
     </xsd:simpleType>
     

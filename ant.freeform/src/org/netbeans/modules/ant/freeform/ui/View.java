@@ -15,6 +15,7 @@ package org.netbeans.modules.ant.freeform.ui;
 
 import java.awt.Image;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -25,9 +26,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.ant.freeform.Actions;
 import org.netbeans.modules.ant.freeform.FreeformProject;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
-import org.netbeans.modules.ant.freeform.Util;
-import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.support.GenericSources;
+import org.netbeans.modules.ant.freeform.spi.ProjectNature;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -41,6 +41,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
@@ -53,7 +54,6 @@ import org.w3c.dom.Element;
 public final class View implements LogicalViewProvider {
     
     private static final String STYLE_TREE = "tree"; // NOI18N
-    private static final String STYLE_PACKAGES = "packages"; // NOI18N
     
     private final FreeformProject project;
     
@@ -66,7 +66,7 @@ public final class View implements LogicalViewProvider {
     }
     
     public Node findPath(Node root, Object target) {
-        // XXX
+        // XXX use ProjectNature.findPath
         return null;
     }
     
@@ -129,30 +129,36 @@ public final class View implements LogicalViewProvider {
             } else {
                 label = null;
             }
-            DataObject fileDO;
-            try {
-                fileDO = DataObject.find(file);
-            } catch (DataObjectNotFoundException e) {
-                throw new AssertionError(e);
-            }
             if (itemEl.getLocalName().equals("source-folder")) { // NOI18N
                 if (!file.isFolder()) {
                     // Just a file. Skip it.
                     return null;
                 }
                 String style = itemEl.getAttribute("style"); // NOI18N
-                if (style.equals(STYLE_TREE)) {
-                    return new Node[] {new ViewItemNode((DataFolder) fileDO, location, label)};
-                } else {
-                    assert style.equals(STYLE_PACKAGES) : style;
-                    if (label == null) {
-                        // Don't use fileDO.getNodeDelegate().getDisplayName() since we are not listening to changes anyway.
-                        label = file.getNameExt();
+                Iterator/*<ProjectNature>*/ natures = Lookup.getDefault().lookup(new Lookup.Template(ProjectNature.class)).allInstances().iterator();
+                while (natures.hasNext()) {
+                    ProjectNature nature = (ProjectNature) natures.next();
+                    if (nature.getSourceFolderViewStyles().contains(style)) {
+                        return new Node[] {nature.createSourceFolderView(p, file, style, location, label)};
                     }
-                    return new Node[] {PackageView.createPackageView(GenericSources.group(p, file, location, label, null, null))};
                 }
+                // fall back to tree display
+                // assert style.equals(STYLE_TREE);
+                DataObject fileDO;
+                try {
+                    fileDO = DataObject.find(file);
+                } catch (DataObjectNotFoundException e) {
+                    throw new AssertionError(e);
+                }
+                return new Node[] {new ViewItemNode((DataFolder) fileDO, location, label)};
             } else {
                 assert itemEl.getLocalName().equals("source-file") : itemEl; // NOI18N
+                    DataObject fileDO;
+                    try {
+                        fileDO = DataObject.find(file);
+                    } catch (DataObjectNotFoundException e) {
+                        throw new AssertionError(e);
+                    }
                 return new Node[] {new ViewItemNode(fileDO.getNodeDelegate(), location, label)};
             }
         }

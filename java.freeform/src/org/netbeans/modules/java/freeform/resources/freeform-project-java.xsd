@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+                Sun Public License Notice
+
+The contents of this file are subject to the Sun Public License
+Version 1.0 (the "License"). You may not use this file except in
+compliance with the License. A copy of the License is available at
+http://www.sun.com/
+
+The Original Code is NetBeans. The Initial Developer of the Original
+Code is Sun Microsystems, Inc. Portions Copyright 1997-2004 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<!--
+XML Schema to define the project.xml for a freeform project.
+Cf. http://projects.netbeans.org/buildsys/design.html#freeform
+-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.netbeans.org/ns/freeform-project-java/1"
+            xmlns="http://www.netbeans.org/ns/freeform-project-java/1"
+            elementFormDefault="qualified">
+    
+    <xsd:element name="java-data">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="compilation-unit" minOccurs="0" maxOccurs="unbounded" type="compilation-unit"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:complexType name="compilation-unit">
+        <xsd:sequence>
+            <xsd:element name="package-root" maxOccurs="unbounded" type="substitutable-text"/>
+            <xsd:element name="classpath" minOccurs="0" maxOccurs="unbounded">
+                <!-- XXX use schema to declare that the mode must be unique within this group -->
+                <xsd:complexType>
+                    <xsd:simpleContent>
+                        <xsd:extension base="substitutable-text">
+                            <xsd:attribute name="mode" use="required">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:NMTOKEN">
+                                        <xsd:enumeration value="boot"/>
+                                        <xsd:enumeration value="compile"/>
+                                        <xsd:enumeration value="execute"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                        </xsd:extension>
+                    </xsd:simpleContent>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="built-to" minOccurs="0" maxOccurs="unbounded" type="substitutable-text"/>
+            <xsd:element name="source-level" minOccurs="0">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:NMTOKEN">
+                        <xsd:enumeration value="1.3"/>
+                        <xsd:enumeration value="1.4"/>
+                        <xsd:enumeration value="1.5"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <!-- XXX location of matching unit tests -->
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- XXX: this type was copied from freeform-project-general.xsd -->
+    <!-- Some text that might be substituted with Ant property references. -->
+    <xsd:simpleType name="substitutable-text">
+        <xsd:restriction base="xsd:string">
+            <!-- XXX limit by regexp, perhaps -->
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+</xsd:schema>

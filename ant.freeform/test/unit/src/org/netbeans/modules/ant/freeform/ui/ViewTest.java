@@ -19,7 +19,7 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ant.freeform.FreeformProjectType;
 import org.netbeans.modules.ant.freeform.TestBase;
-import org.netbeans.modules.ant.freeform.Util;
+import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
@@ -58,14 +58,7 @@ public class ViewTest extends TestBase {
         Children ch = root.getChildren();
         Node[] kids = ch.getNodes(true);
         assertEquals("two child nodes", 2, kids.length);
-        assertEquals("correct code name #1", "../src", kids[0].getName());
-        assertEquals("correct display name #1", "External Sources", kids[0].getDisplayName());
-        assertEquals("correct cookie #1",
-            DataObject.find(egdirFO.getFileObject("extsrcroot/src")),
-            kids[0].getLookup().lookup(DataObject.class));
-        Node[] kids2 = kids[0].getChildren().getNodes(true);
-        assertEquals("one child of ../src", 1, kids2.length);
-        assertEquals("correct name of #1's kid", "org.foo", kids2[0].getName());
+        // Do not check anything about #1, since it is provided by java/freeform.
         assertEquals("correct code name #2", "nbproject/project.xml", kids[1].getName());
         assertEquals("correct display name #2", "project.xml", kids[1].getDisplayName());
         assertEquals("correct cookie #2",

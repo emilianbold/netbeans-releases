@@ -25,6 +25,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.modules.ant.freeform.Util;
+import org.netbeans.modules.ant.freeform.spi.ProjectConstants;
+import org.netbeans.modules.ant.freeform.spi.support.NewFreeformProjectSupport;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -36,18 +38,21 @@ import org.openide.util.NbBundle;
  */
 public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
 
+    public static final String PROP_TARGET_MAPPINGS = "targetMappings"; // <List> NOI18N
+    
     private TargetMappingPanel component;
     private WizardDescriptor wizardDescriptor;
-    private String projectType;
+    private List targets;
     private List targetNames;
     
-    public TargetMappingWizardPanel(String projectType) {
-        this.projectType = projectType;
+    public TargetMappingWizardPanel(List targets) {
+        this.targets = targets;
+        getComponent().setName(NbBundle.getMessage(TargetMappingWizardPanel.class, "WizardPanel_BuildAndRunActions"));
     }
     
     public Component getComponent() {
         if (component == null) {
-            component = new TargetMappingPanel(projectType);
+            component = new TargetMappingPanel(targets, false);
             ((JComponent)component).getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(TargetMappingWizardPanel.class, "ACSD_TargetMappingWizardPanel")); // NOI18N
         }
         return component;
@@ -87,7 +92,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
         wizardDescriptor.putProperty("NewProjectWizard_Title", component.getClientProperty("NewProjectWizard_Title")); // NOI18N
-        File f = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
+        File f = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_ANT_SCRIPT);
         FileObject fo = FileUtil.toFileObject(f);
         // Util.getAntScriptTargetNames can return null when script is 
         // invalid but first panel checks script validity so it is OK here.
@@ -97,12 +102,11 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
             targetNames = new ArrayList(l);
             component.setTargetNames(l, true);
         }
-        ProjectModel pm = (ProjectModel) wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_MODEL);
-        File projDir = pm.getNBProjectFolder();//(File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_PROJECT_FOLDER);
-        File antScript = (File)wizardDescriptor.getProperty(NewJ2SEFreeformProjectWizardIterator.PROP_ANT_SCRIPT);
+        File projDir = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_PROJECT_FOLDER);
+        File antScript = (File)wizardDescriptor.getProperty(NewFreeformProjectSupport.PROP_ANT_SCRIPT);
         if (!(antScript.getParentFile().equals(projDir) && antScript.getName().equals("build.xml"))) { // NOI18N
             // NON-DEFAULT location of build file
-            component.setScript("${"+FreeformProjectGenerator.PROP_ANT_SCRIPT+"}"); // NOI18N
+            component.setScript("${"+ProjectConstants.PROP_ANT_SCRIPT+"}"); // NOI18N
         } else {
             component.setScript(null);
         }
@@ -110,7 +114,7 @@ public class TargetMappingWizardPanel implements WizardDescriptor.Panel {
     
     public void storeSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor)settings;        
-        wizardDescriptor.putProperty(NewJ2SEFreeformProjectWizardIterator.PROP_TARGET_MAPPINGS, component.getMapping());
+        wizardDescriptor.putProperty(PROP_TARGET_MAPPINGS, component.getMapping());
         wizardDescriptor.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
     

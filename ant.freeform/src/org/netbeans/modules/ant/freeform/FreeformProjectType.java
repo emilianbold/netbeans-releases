@@ -27,9 +27,6 @@ public final class FreeformProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.ant.freeform";
     public static final String NS_GENERAL = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
     private static final String NS_GENERAL_PRIVATE = "http://www.netbeans.org/ns/freeform-project-private/1"; // NOI18N
-    public static final String NS_JAVA = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
-    public static final String NS_WEB = "http://www.netbeans.org/ns/freeform-project-web/1"; // NOI18N
-    
     
     /** Default constructor for lookup. */
     public FreeformProjectType() {}

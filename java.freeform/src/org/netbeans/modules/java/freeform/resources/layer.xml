@@ -22,24 +22,13 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="existingJ2SE.xml/j2sefreeform.xml" boolvalue="true"/>
                 <file name="j2sefreeform.xml">
                     <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ant.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.freeform.resources.Bundle"/>
+                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.java.freeform.ui.NewJ2SEFreeformProjectWizardIterator"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.freeform.resources.Bundle"/>
+                    <!-- XXX: icon used from ant/freeform -->
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/j2sefreeform.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/java/freeform/resources/freeform-project-java.html"/>
                 </file>
             </folder>
-
-            <folder name="Web">
-                <attr name="emptyWeb.xml/webfreeform.xml" boolvalue="true"/>
-                <file name="webfreeform.xml">
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="instantiatingIterator" newvalue="org.netbeans.modules.ant.freeform.ui.NewWebFreeformProjectWizardIterator"/>
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ant.freeform.resources.Bundle"/>
-                    <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/freeform-project.png"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ant/freeform/resources/webfreeform.html"/>
-                </file>
-            </folder>
-
         </folder>
     </folder>
 </filesystem>

@@ -68,7 +68,7 @@ public class ProjectCustomizerProvider implements CustomizerProvider {
             // check if the project is being customized
             if (dlg.isShowing ()) {
                 // make it showed
-                dlg.show ();
+                dlg.show();
                 return ;
             }
         }
