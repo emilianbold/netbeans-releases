@@ -247,7 +247,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                                                          DataObjectNotFoundException dnfe = 
                                                              new DataObjectNotFoundException (obj.getPrimaryFile ());
                                                          ErrorManager errMan = ErrorManager.getDefault ();
-                                                         errMan.annotate( dnfe, obj == null ? null : obj.getClass().toString());
+                                                         errMan.annotate( dnfe, obj.getClass().toString());
                                                          errMan.annotate( dnfe, file == null ? null : file.getPath());
                                                          throw dnfe;
                                                      }
@@ -291,10 +291,7 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
                     Writer os = new OutputStreamWriter (fo.getOutputStream (lock), "UTF-8");
                     try {
                         FileObject pf = obj.getPrimaryFile ();
-                        os.write (pf.getPath());
-                        os.write ('\n');
-                        os.write (pf.getFileSystem ().getSystemName ());
-                        os.write ('\n');
+                        os.write (pf.getPath()+"\n"+pf.getFileSystem ().getSystemName ()+"\n"); // NOI18N
                     } finally {
                         os.close ();
                         lock.releaseLock ();
