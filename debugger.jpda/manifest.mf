@@ -6,6 +6,7 @@ OpenIDE-Module-Module-Dependencies: org.netbeans.modules.debugger.core/2 > 1.1.4
 OpenIDE-Module-Specification-Version: 1.9
 OpenIDE-Module-Implementation-Version: @BUILD_NUMBER_SUBST@
 OpenIDE-Module-Short-Description: Enables debugging with the JPDA debugger implementation.
+OpenIDE-Module-Package-Dependencies: com.sun.jdi[VirtualMachineManager]
 OpenIDE-Module-Long-Description: The JPDA Debugger module enables you to debug applications
   using the Java Platform Debugging Architecture.
 
