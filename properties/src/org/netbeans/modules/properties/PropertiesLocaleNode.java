@@ -60,6 +60,7 @@ public final class PropertiesLocaleNode extends FileEntryNode implements CookieS
         setShortDescription(messageToolTip());
 
         getCookieSet().add(PropertiesOpen.class, this);
+        getCookieSet().add(fe.getDataObject());
     }
 
     
