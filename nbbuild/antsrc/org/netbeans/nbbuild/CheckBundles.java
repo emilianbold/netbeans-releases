@@ -7,21 +7,40 @@
  * http://www.sun.com/
  * 
  * The Original Code is NetBeans. The Initial Developer of the Original
- * Code is Sun Microsystems, Inc. Portions Copyright 1997-2003 Sun
+ * Code is Sun Microsystems, Inc. Portions Copyright 1997-2005 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
+
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
-import org.apache.tools.ant.*;
-import org.apache.tools.ant.types.*;
-
-import javax.xml.parsers.*;
-import org.xml.sax.*;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 /** Task that scans Bundle.properties files for unused keys.
@@ -66,6 +85,23 @@ public class CheckBundles extends Task {
             dir = new File (srcdir, "libsrc");
             if (dir.exists())
                 scanSubdirs(dir, bundles, sources);
+            // XXX there are still a lot of unsplit bundles in e.g. core/src/
+            // referred to from other submodules
+            // XXX this technique does not work so well, though - should only scan
+            // them for source files, not bundles...
+            /*
+            File[] subdirs = srcdir.listFiles();
+            if (subdirs != null) {
+                for (int i = 0; i < subdirs.length; i++) {
+                    if (subdirs[i].isDirectory()) {
+                        dir = new File(subdirs[i], "src");
+                        if (dir.exists()) {
+                            scanSubdirs(dir, bundles, sources);
+                        }
+                    }
+                }
+            }
+             */
             check (bundles, sources, knownNames);
         }
         catch (Exception e) {
@@ -90,9 +126,11 @@ public class CheckBundles extends Task {
             Iterator bIt = bundles.iterator();
             while (bIt.hasNext ()) {
                 File bundle = (File)bIt.next();
-                Iterator it = entries (bundle).iterator ();
+                Iterator it = entries(bundle).entrySet().iterator();
                 while (it.hasNext()) {
-                    String key = (String)it.next();
+                    Map.Entry entry = (Map.Entry) it.next();
+                    String key = (String) entry.getKey();
+                    int line = ((Integer) entry.getValue()).intValue();
                     log("Looking for "+key, Project.MSG_DEBUG);
                     boolean found = false;
                     // module info or file name from layer
@@ -115,20 +153,21 @@ public class CheckBundles extends Task {
                     }
                     if (!found) {
                         // try other java sources
+                        // XXX should skip moduleKeys, etc.
                         Iterator fIt = files.keySet().iterator();
                         while (fIt.hasNext()) {
                             File dir = (File)fIt.next();
                             String [] srcs = (String [])files.get (dir);
                             for (int i=0; i<srcs.length; i++) {
                                 if (srcs[i].indexOf("\""+key+"\"")>=0) {
-                                    log(bundle.getPath()+": "+key+" used from "+dir.getPath(), Project.MSG_WARN);
+                                    log(bundle.getPath() + ":" + line + ": " + key + " used from " + dir.getPath(), Project.MSG_WARN);
                                     found = true;
                                     break;
                                 }
                             }
                         }
                         if (!found) {
-                            log(bundle.getPath()+": "+key+" NOT FOUND");
+                            log(bundle.getPath() + ":" + line + ": " + key + " NOT FOUND");
                         }
                     }
                 }
@@ -178,19 +217,23 @@ public class CheckBundles extends Task {
         return;
     }
     
-    private Collection entries (File bundle) throws IOException {
-        ArrayList list = new ArrayList();
+    /**
+     * Get a list of keys in a bundle file, with accompanying line numbers.
+     */
+    private Map/*<String,int>*/ entries(File bundle) throws IOException {
+        Map/*<String,int>*/ entries = new LinkedHashMap();
         BufferedReader r = new BufferedReader (new FileReader (bundle));
         String l;
         boolean multi = false;
+        int line = 0;
         while ((l = r.readLine()) != null) {
-            
+            line++;
             if (!l.startsWith("#")) {
             
                 int i = l.indexOf('=');
                 if (i>0 && !multi) {
                     String key = l.substring(0,i).trim();
-                    list.add (key);
+                    entries.put(key, new Integer(line));
                 }
                 if (l.endsWith("\\"))
                     multi = true;
@@ -198,7 +241,7 @@ public class CheckBundles extends Task {
                     multi = false;
             }
         }
-        return list;
+        return entries;
     }
 
     private Map parseManifest(File dir) {
