@@ -133,6 +133,22 @@ class OutWriter extends PrintWriter {
             } else {
                 ByteBuffer buf;
                 synchronized (this) {
+                    if (s.startsWith("\t")) { //NOI18N
+                        char[] c = s.toCharArray();
+                        int ix = 0;
+                        //Temporary handling of leading tab characters, so they
+                        //at least have some width.  Note this does affect output
+                        //written with save-as
+                        StringBuffer sb = new StringBuffer (s.length() + 10);
+                        for (int i=0; i < c.length; i++) {
+                            if ('\t' == c[i]) {
+                                sb.append ("    ");
+                            } else {
+                                sb.append (c[i]);
+                            }
+                        }
+                        s = sb.toString();
+                    }
                     buf = getStorage().getWriteBuffer(AbstractLines.toByteIndex(s.length()));
                     buf.asCharBuffer().put(s);
                     buf.position (buf.position() + AbstractLines.toByteIndex(s.length()));
@@ -363,6 +379,20 @@ class OutWriter extends PrintWriter {
             if (checkError()) {
                 return;
             }
+            if (len > 0 && data[off] == '\t') {
+                //Temporary handling of leading tab characters, so they
+                //at least have some width.  Note this does affect output
+                //written with save-as
+                StringBuffer sb = new StringBuffer(data.length + 10);
+                for (int i=0; i < data.length; i++) {
+                    if (data[i] == '\t') {
+                        sb.append ("    ");
+                    } else {
+                        sb.append (data[i]);
+                    }
+                }
+            }
+            
             int count = off;
             int start = off;
             while (count < len + off) {
