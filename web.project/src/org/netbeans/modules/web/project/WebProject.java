@@ -659,7 +659,9 @@ public final class WebProject implements Project, AntProjectListener, FileChange
                     return null;
                 }
             });
-            if (WebPhysicalViewProvider.hasBrokenLinks(updateHelper, refHelper)) {
+            WebPhysicalViewProvider physicalViewProvider = (WebPhysicalViewProvider)
+                WebProject.this.getLookup().lookup (WebPhysicalViewProvider.class);
+            if (physicalViewProvider != null &&  physicalViewProvider.hasBrokenLinks()) {   
                 BrokenReferencesSupport.showAlert();
             }
             webPagesFileWatch.init();
