@@ -568,7 +568,18 @@ public final class NbMainExplorer extends CloneableTopComponent
                     setIcon(n.getIcon(BeanInfo.ICON_COLOR_16x16));
                 } else if (Node.PROP_SHORT_DESCRIPTION.equals(propName)) {
                     setToolTipText(n.getShortDescription());
-                }
+               } else if ("valid".equals(propName)) { // NOI18N
+                    // this if has been added while fixing #15046
+                    //    it assumes that the root node will refire
+                    //    invalidation event in response to e.g. filesystem
+                    ///   unmounting
+                    if (evt.getNewValue() instanceof Boolean) {
+                        if (!((Boolean)evt.getNewValue()).booleanValue()) {
+                            ExplorerTab.this.close();
+                        }
+                    }
+               }
+
             }
         } // end of RootContextListener inner class
 
