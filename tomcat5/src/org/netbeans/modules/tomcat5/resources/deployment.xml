@@ -21,7 +21,7 @@ Microsystems, Inc. All Rights Reserved.
     <!--
     The disconnected-string element contains the String parameter to DeploymentFactory.getDisconnectedDeploymentManager()
     -->
-    <disconnected-string>tomcat:jakarta-tomcat-5.0.18</disconnected-string>
+    <disconnected-string>tomcat:jakarta-tomcat-5.0.19</disconnected-string>
     
     <container-limitation><war-deploy/></container-limitation>
     

@@ -114,8 +114,8 @@ Microsystems, Inc. All Rights Reserved.
     The need for this target will be removed when we move the the
     projects based deployment of the monitor. 
     --> 
-    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.18/common/lib/schema2beans.jar"/>
-    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.18/common/lib/httpmonitor.jar"/>
+    <copy file="${nb_root}/schema2beans/netbeans/modules/autoload/schema2beans.jar" tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/schema2beans.jar"/>
+    <copy file="netbeans/modules/ext/httpmonitor.jar"                      tofile="${nb_root}/tomcatint/tomcat5/bundled/netbeans/jakarta-tomcat-5.0.19/common/lib/httpmonitor.jar"/>
   </target>
 
   <target name="bundled-tomcat5-check">
