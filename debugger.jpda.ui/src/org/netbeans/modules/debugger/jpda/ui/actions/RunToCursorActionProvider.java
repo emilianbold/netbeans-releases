@@ -54,7 +54,8 @@ public class RunToCursorActionProvider extends ActionsProviderSupport implements
         setEnabled (
             DebuggerManager.ACTION_RUN_TO_CURSOR,
             (debugger.getState () == debugger.STATE_STOPPED) &&
-            (Context.getCurrentClassName ().length () > 0)
+            (Context.getCurrentLineNumber () >= 0) && 
+            (Context.getCurrentURL ().endsWith (".java"))
         );
         if ( (debugger.getState () != debugger.STATE_RUNNING) &&
              (breakpoint != null)
