@@ -11,83 +11,61 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
+
 package org.netbeans.modules.properties;
 
-import java.awt.Image;
-import java.beans.*;
-import java.util.ResourceBundle;
 
+import java.awt.Image;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
+
+import org.openide.TopManager;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 
 /** BeanInfo for properties loader.
-*
-* @author Ian Formanek
-*/
+ *
+ * @author Ian Formanek
+ */
 public final class PropertiesDataLoaderBeanInfo extends SimpleBeanInfo {
 
-    /** Icons for compiler settings objects. */
-    private static Image icon;
-    private static Image icon32;
-
-    /** Propertydescriptors */
-    private static PropertyDescriptor[] descriptors;
-
     /**
-    * @return Returns an array of PropertyDescriptors
-    * describing the editable properties supported by this bean.
-    */
+     * @return Returns an array of PropertyDescriptors
+     * describing the editable properties supported by this bean. */
     public PropertyDescriptor[] getPropertyDescriptors () {
-        if (descriptors == null) initializeDescriptors();
-        return descriptors;
+        try {
+            PropertyDescriptor p1 = new PropertyDescriptor(
+                "displayName", // NOI18N
+                PropertiesDataLoader.class,
+                "getDisplayName", //NOI18N
+                null);
+            p1.setDisplayName(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("PROP_Name"));
+            p1.setShortDescription(NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class).getString("HINT_Name"));
+            
+            PropertyDescriptor p2 = new PropertyDescriptor(
+                "extensions", // NOI18N
+                PropertiesDataLoader.class,
+                "getExtensions", // NOI18N
+                "setExtensions"); // NOI18N
+            
+            return new PropertyDescriptor[] {p1, p2};
+        } catch(IntrospectionException ie) {
+            TopManager.getDefault().getErrorManager().notify(ie);
+            
+            return null;
+        }
     }
 
     /** @param type Desired type of the icon
-    * @return returns the properties loader's icon
-    */
+     * @return returns the properties loader's icon */
     public Image getIcon(final int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
-                (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
-            if (icon == null)
-                icon = loadImage("/org/netbeans/modules/properties/propertiesObject.gif");
-            return icon;
+        if((type == BeanInfo.ICON_COLOR_16x16) || (type == BeanInfo.ICON_MONO_16x16)) {
+            return Utilities.loadImage("org/netbeans/modules/properties/propertiesObject.gif"); // NOI18N
         } else {
-            if (icon32 == null)
-                icon32 = loadImage ("/org/netbeans/modules/properties/propertiesObject32.gif");
-            return icon32;
+            return Utilities.loadImage("org/netbeans/modules/properties/propertiesObject32.gif"); // NOI18N
         }
     }
-
-    private static void initializeDescriptors () {
-        final ResourceBundle bundle =
-            NbBundle.getBundle(PropertiesDataLoaderBeanInfo.class);
-        try {
-            descriptors =  new PropertyDescriptor[] {
-                               new PropertyDescriptor ("displayName", PropertiesDataLoader.class,
-                                                       "getDisplayName", null),
-                               new PropertyDescriptor ("extensions", PropertiesDataLoader.class,
-                                                       "getExtensions", "setExtensions")
-                           };
-            descriptors[0].setDisplayName(bundle.getString("PROP_Name"));
-            descriptors[0].setShortDescription(bundle.getString("HINT_Name"));
-        } catch (IntrospectionException e) {
-            if (Boolean.getBoolean("netbeans.debug.exceptions"))
-                e.printStackTrace ();
-        }
-    }
-
 }
-
-/*
-* <<Log>>
-*  6    Gandalf   1.5         10/23/99 Ian Formanek    NO SEMANTIC CHANGE - Sun 
-*       Microsystems Copyright in File Comment
-*  5    Gandalf   1.4         10/13/99 Petr Jiricka    Debug messages removed
-*  4    Gandalf   1.3         8/31/99  Petr Jiricka    Added extensions property
-*  3    Gandalf   1.2         6/9/99   Ian Formanek    ---- Package Change To 
-*       org.openide ----
-*  2    Gandalf   1.1         3/9/99   Ian Formanek    Moved images to this 
-*       package
-*  1    Gandalf   1.0         1/22/99  Ian Formanek    
-* $
-*/
