@@ -14,7 +14,6 @@
 package org.netbeans.modules.openfile;
 
 import java.awt.GridLayout;
-import java.awt.Component;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -50,24 +48,6 @@ class FileChooser extends JFileChooser {
             new String[] {DefaultOpenFileImpl.TXT_EXT}, 
             NbBundle.getMessage(FileChooser.class, "TXT_TxtFilter")));  //NOI18N
         setFileFilter(currentFilter);
-    }
-
-    public int showDialog(Component parent, String approveButtonText) {
-        // don't offer C:\Document and Settings\joeuser as the default starting
-        // point in the file chooser on Windows
-        
-        if (Utilities.isWindows() && getCurrentDirectory() == null) {
-            String dir = System.getProperty("user.home");   //NOI18N
-            if (dir != null && dir.startsWith(":\\", 1)) { // NOI18N
-                dir = dir.substring(0, 3);
-                setCurrentDirectory(new File(dir));
-            }
-            else if (new File("C:\\").exists()) { // NOI18N
-                setCurrentDirectory(new File("C:\\")); // NOI18N
-            }
-        }
-
-        return super.showDialog(parent, approveButtonText);
     }
     
     public void approveSelection() {

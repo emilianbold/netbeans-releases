@@ -357,9 +357,7 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
         
         File currDir = null;
         String dir = opls.getLastOpenProjectDir();
-        if ( dir == null ) {
-            currDir = opls.getProjectsFolder();
-        } else {
+        if ( dir != null ) {
             File d = new File( dir );
             if ( d.exists() && d.isDirectory() ) {
                 currDir = d;

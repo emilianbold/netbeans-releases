@@ -402,7 +402,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     }//GEN-END:initComponents
 
     private void browseProjectLocationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectLocationActionPerformed
-        JFileChooser chooser = new FileChooser();
+        JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         if (projectLocation.getText().length() > 0 && getProjectLocation().exists()) {
@@ -416,7 +416,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     }//GEN-LAST:event_browseProjectLocationActionPerformed
 
     private void browseProjectFolderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseProjectFolderActionPerformed
-        JFileChooser chooser = new FileChooser();
+        JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.DIRECTORIES_ONLY);
         if (projectFolder.getText().length() > 0 && getProjectFolder().exists()) {
@@ -432,7 +432,7 @@ public class BasicProjectInfoPanel extends javax.swing.JPanel implements HelpCtx
     }//GEN-LAST:event_browseProjectFolderActionPerformed
 
     private void browseAntScriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseAntScriptActionPerformed
-        JFileChooser chooser = new FileChooser();
+        JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
         if (antScript.getText().length() > 0 && getAntScript().exists()) {
