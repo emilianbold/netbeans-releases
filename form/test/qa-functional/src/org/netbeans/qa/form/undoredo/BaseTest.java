@@ -65,6 +65,7 @@ public class BaseTest extends JellyTestCase {
     
     //select tab in PropertySheet
     public void selectTab(PropertySheetOperator pso, String name){
+        sleep(1000);
         ComponentSearcher searcher = new ComponentSearcher((Container)pso.getSource());
         javax.swing.JTabbedPane tPane= JTabbedPaneOperator.findJTabbedPane((Container)pso.getSource(), searcher.getTrueChooser(""));
         JTabbedPaneOperator tPaneOperator = new JTabbedPaneOperator(tPane);
