@@ -342,6 +342,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     }
 
     public boolean canClose() {
+        synchronizeModelTask.waitFinished();
         if (isModified()) {
             Enumeration enumeration =
                     ((CloneableTopComponent) getEditorSupport() .getMVTC()).getReference().getComponents();
