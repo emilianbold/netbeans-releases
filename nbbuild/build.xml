@@ -286,7 +286,7 @@ workspaceswitcher
     <!-- XXX ideal would be a timeout after which the process would get SIGQUIT then SIGINT then SIGKILL -->
     <!-- This is possible in newer Ants but not in 1.1 -->
     <echo message="Successfully started, cleaning up detritus..."/>
-    <delete file="firststart/system/ide.log"/>
+    <rename src="firststart/system/ide.log" dest="NetBeans-${buildnumber}.log"/>
     <delete file="firststart/system/project.basic"/>
     <delete file="firststart/system/project.last"/>
     <delete file="firststart/beans/libs.properties"/>
