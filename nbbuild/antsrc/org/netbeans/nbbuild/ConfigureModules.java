@@ -29,12 +29,15 @@ public class ConfigureModules extends Task {
     private String property, config;
     //private List configs = new LinkedList ();
 
+    /** You must add a <samp>&lt;config&gt;</samp> nested element for each configuration. */
     public class Config {
 	public String name, modules;
+        /** Name of the configuration (as used in <samp>-Dmoduleconfig=...</samp>). */
 	public void setName (String n) {
 	    name = n;
 	    checkMyself ();
 	}
+        /** Comma-separated list of modules. */
 	public void setModules (String m) {
 	    modules = m;
 	    checkMyself ();
@@ -62,9 +65,11 @@ public class ConfigureModules extends Task {
 	return project;
     }
 
+    /** Name of the property used to hold the resulting comma-separated list of modules. */
     public void setProperty (String p) {
 	property = p;
     }
+    /** The desired configuration. */
     public void setSelectedconfig (String c) {
 	config = c;
     }

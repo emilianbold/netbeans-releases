@@ -29,8 +29,16 @@ import org.apache.tools.ant.taskdefs.Java;
  */
 public class MakeNBM extends Task {
 
+    /** The same syntax may be used for either <samp>&lt;license&gt;</samp> or
+     * <samp>&lt;description&gt;</samp> subelements.
+     */
     public class Blurb {
+        /** You may embed a <samp>&lt;file&gt;</samp> element inside the blurb.
+         * If there is text on either side of it, that will be separated
+         * with a line of dashes automatically.
+         */
 	public class FileInsert {
+            /** File location. */
 	    public void setLocation (File file) throws BuildException {
 		long lmod = file.lastModified ();
 		if (lmod > mostRecentInput) mostRecentInput = lmod;
@@ -53,6 +61,7 @@ public class MakeNBM extends Task {
 	}
 	private StringBuffer text = new StringBuffer ();
 	private String name = null;
+        /** There may be freeform text inside the element. */
 	public void addText (String t) {
 	    addSeparator ();
 	    // Strips indentation. Needed because of common style:
@@ -109,12 +118,17 @@ public class MakeNBM extends Task {
 	public String getText () {
 	    return "<![CDATA[" + text.toString () + "]]>";
 	}
+        /** You can either set a name for the blurb, or using the <code>file</code> attribute does this.
+         * The name is mandatory for licenses, as this identifies the license in
+         * an update description.
+         */
 	public void setName (String name) {
 	    this.name = name;
 	}
 	public String getName () {
 	    return name;
 	}
+        /** Include a file (and set the license name according to its basename). */
 	public void setFile (File file) {
 	    // This actually adds the text and so on:
 	    new FileInsert ().setLocation (file);
@@ -131,15 +145,19 @@ public class MakeNBM extends Task {
 	return location;
     }
 
-    public static class Signature {
+    /** <samp>&lt;signature&gt;</samp> subelement for signing the NBM. */
+    public /*static*/ class Signature {
 	public File keystore;
 	public String storepass, alias;
+        /** Path to the keystore (private key). */
 	public void setKeystore (File f) {
 	    keystore = f;
 	}
+        /** Password for the keystore. */
 	public void setStorepass (String s) {
 	    storepass = s;
 	}
+        /** Alias for the private key. */
 	public void setAlias (String s) {
 	    alias = s;
 	}
@@ -155,20 +173,29 @@ public class MakeNBM extends Task {
     private Signature signature = null;
     long mostRecentInput = 0L;
 
+    /** Name of resulting NBM file. */
     public void setFile (File file) {
 	this.file = file;
     }
+    /** Top directory.
+     * Expected to contain a subdirectory <samp>netbeans/</samp> with the
+     * desired contents of the NBM.
+     * Will create <samp>Info/info.xml</samp> with metadata.
+     */
     public void setTopdir (File topdir) {
 	this.topdir = topdir;
     }
+    /** Module manifest needed for versioning. */
     public void setManifest (File manifest) {
 	this.manifest = manifest;
 	long lmod = manifest.lastModified ();
 	if (lmod > mostRecentInput) mostRecentInput = lmod;
     }
+    /** URL to a home page describing the module. */
     public void setHomepage (String homepage) {
 	this.homepage = homepage;
     }
+    /** URL where this NBM file is expected to be downloadable from. */
     public void setDistribution (String distribution) {
 	this.distribution = distribution;
     }

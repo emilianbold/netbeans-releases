@@ -28,9 +28,11 @@ import org.apache.tools.ant.Task;
  */
 public class MakeUpdateDesc extends Task {
 
-    public static class Group {
+    /** Set of NBMs presented as a folder in the Update Center. */
+    public /*static*/ class Group {
 	public List nbms = new LinkedList ();
 	public String name;
+        /** Displayed name of the group. */
 	public void setName (String s) {
 	    name = s;
 	}
@@ -41,8 +43,12 @@ public class MakeUpdateDesc extends Task {
 	}
     }
 
-    public static class Nbm {
+    /** One NBM file in the group. */
+    public /*static*/ class Nbm {
 	public File file;
+        /** Path to the NBM file.
+         * Its <samp>Info/info.xml</samp> will be parsed for information to include.
+         */
 	public void setFile (File f) {
 	    file = f;
 	}
@@ -51,6 +57,7 @@ public class MakeUpdateDesc extends Task {
     private List groups = new LinkedList ();
     private File desc;
 
+    /** Description file to create. */
     public void setDesc (File d) {
 	desc = d;
     }

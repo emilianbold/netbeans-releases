@@ -37,10 +37,12 @@ public class NbMerge extends Task {
     private String targetprefix = "all-";
     private String topdir = "..";
     
+    /** Target directory to unpack to (top of IDE installation). */
     public void setDest (String s) {
         dest = s;
     }
     
+    /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
         modules = new Vector ();
@@ -48,10 +50,17 @@ public class NbMerge extends Task {
             modules.addElement (tok.nextToken ());
     }
     
+    /** String which will have a module name appended to it.
+     * This will form a target in the same project which should
+     * create the <samp>netbeans/</samp> subdirectory.
+     */
     public void setTargetprefix (String s) {
         targetprefix = s;
     }
     
+    /** Set the top directory.
+     * There should be subdirectories under this for each named module.
+     */
     public void setTopdir (String s) {
         topdir = s;
     }

@@ -21,7 +21,7 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.Ant;
 
-/** Runs a clean task in all submodules.
+/** Runs a clean task (for example) in all submodules.
  *
  * @author Jesse Glick
  */
@@ -31,6 +31,7 @@ public class CleanAll extends Task {
     private String targetname = "clean";
     private File topdir = null;
     
+    /** Comma-separated list of modules to include. */
     public void setModules (String s) {
         StringTokenizer tok = new StringTokenizer (s, ", ");
         modules = new Vector ();
@@ -38,10 +39,12 @@ public class CleanAll extends Task {
             modules.addElement (tok.nextToken ());
     }
     
+    /** Name of the target to run in each module's build script. */
     public void setTargetname (String s) {
         targetname = s;
     }
     
+    /** The top directory containing these modules as subdirectories. */
     public void setTopdir (File f) {
         topdir = f;
     }
