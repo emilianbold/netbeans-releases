@@ -128,6 +128,9 @@ public class IndexSearch
     /** Initializes the Form */
     public IndexSearch() {
         initComponents ();
+        
+        // Force winsys to not show tab when this comp is alone                                                                                                                 
+        putClientProperty("TabPolicy", "HideWhenAlone");  
 
         javax.swing.ComboBoxEditor editor = searchComboBox.getEditor();
         editor.addActionListener (new java.awt.event.ActionListener () {
@@ -147,6 +150,7 @@ public class IndexSearch
         splitPanel.setSplitPosition( oldSplit );
         splitPanel.setSplitDragable( true );
         splitPanel.setSplitTypeChangeEnabled( true );
+        splitPanel.setPreferredSize(PREFFERED_SIZE);
         splitPanel.addSplitChangeListener( new SplittedPanel.SplitChangeListener() {
                                                public void splitChanged (SplittedPanel.SplitChangeEvent evt) {
                                                    int value = evt.getNewValue();
@@ -307,8 +311,8 @@ public class IndexSearch
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 3);
         jPanel1.add(searchButton, gridBagConstraints);
 
-        sourceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         sourceButton.setMinimumSize(new java.awt.Dimension(25, 25));
+        sourceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         sourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showSource(evt);
@@ -320,9 +324,9 @@ public class IndexSearch
         jPanel1.add(sourceButton, gridBagConstraints);
 
         byNameButton.setSelected(true);
-        byNameButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byNameButton.setActionCommand("A");
         byNameButton.setMinimumSize(new java.awt.Dimension(25, 25));
+        byNameButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byNameButton.setRequestFocusEnabled(false);
         byNameButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -332,9 +336,9 @@ public class IndexSearch
 
         jPanel1.add(byNameButton, new java.awt.GridBagConstraints());
 
-        byReferenceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byReferenceButton.setActionCommand("R");
         byReferenceButton.setMinimumSize(new java.awt.Dimension(25, 25));
+        byReferenceButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byReferenceButton.setRequestFocusEnabled(false);
         byReferenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -344,9 +348,9 @@ public class IndexSearch
 
         jPanel1.add(byReferenceButton, new java.awt.GridBagConstraints());
 
-        byTypeButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byTypeButton.setActionCommand("T");
         byTypeButton.setMinimumSize(new java.awt.Dimension(25, 25));
+        byTypeButton.setPreferredSize(new java.awt.Dimension(25, 25));
         byTypeButton.setRequestFocusEnabled(false);
         byTypeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -368,8 +372,8 @@ public class IndexSearch
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         jPanel1.add(quickViewButton, gridBagConstraints);
 
-        helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
         helpButton.setText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp"));
+        helpButton.setToolTipText(org.openide.util.NbBundle.getBundle(IndexSearch.class).getString("CTL_SEARCH_ButtonHelp_tooltip"));
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);
@@ -552,15 +556,15 @@ public class IndexSearch
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JToggleButton byTypeButton;
-    private javax.swing.JToggleButton quickViewButton;
     private javax.swing.JButton searchButton;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton sourceButton;
     private javax.swing.JComboBox searchComboBox;
-    private javax.swing.JToggleButton byReferenceButton;
     private javax.swing.JToggleButton byNameButton;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JButton helpButton;
+    private javax.swing.JToggleButton byReferenceButton;
+    private javax.swing.JToggleButton quickViewButton;
+    private javax.swing.JToggleButton byTypeButton;
     // End of variables declaration//GEN-END:variables
 
 
