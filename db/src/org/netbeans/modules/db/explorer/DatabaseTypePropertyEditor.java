@@ -60,7 +60,6 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 		}
 		
 		if (i == k) {
-			System.out.println("can't find "+ii);
 			throw new IllegalArgumentException("can't find "+ii);
 		} 
 		index = i;
@@ -116,6 +115,7 @@ public class DatabaseTypePropertyEditor implements PropertyEditor
 
 /*
  * <<Log>>
+ *  5    Gandalf   1.4         8/18/99  Slavek Psenicka debug log removed
  *  4    Gandalf   1.3         7/21/99  Slavek Psenicka 
  *  3    Gandalf   1.2         6/15/99  Slavek Psenicka debug prints
  *  2    Gandalf   1.1         5/21/99  Slavek Psenicka new version

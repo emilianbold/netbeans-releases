@@ -166,7 +166,7 @@ public class DatabaseNodeInfo extends Hashtable implements Node.Cookie
 		}
 		Map ltab = (Map)getGlobalNodeInfo(sname);
 		if (ltab != null) putAll(ltab);
-		else throw new DatabaseException("unable to read nfo for "+sname);
+		else throw new DatabaseException("unable to read info for "+sname);
 		put(CODE, sname);
 	}
 	
