@@ -85,40 +85,5 @@ Microsystems, Inc. All Rights Reserved.
       </folder>
     </folder>
   </folder>
-
-  <!--
-  <folder name="UI"> 
-    <folder name="Services">
-      <folder name="IDEConfiguration">
-        <folder name="ServerAndExternalToolSettings">
-          <folder name="DiffProviders">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-            <file name="org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.shadow">
-<![CDATA[Services/org-netbeans-modules-diff-cmdline-CmdlineDiffProvider.settings
-SystemFileSystem
-]]>
-            </file>
-          </folder>
-          <folder name="DiffVisualizers">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.diff.Bundle" />
-            <file name="org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.shadow">
-<![CDATA[Services/org-netbeans-modules-diff-builtin-visualizer-GraphicalDiffVisualizer.settings
-SystemFileSystem
-]]>
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
-            </file>
-            <file name="org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.shadow">
-<![CDATA[Services/org-netbeans-modules-diff-builtin-visualizer-TextDiffVisualizer.settings
-SystemFileSystem
-]]>
-              <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/diff/diffSettingsIcon.gif" />
-            </file>
-          </folder>
-        </folder>
-      </folder>
-    </folder>
-  </folder>
-  -->
-
 </filesystem>
 
