@@ -16,28 +16,23 @@ package com.netbeans.developer.modules.loaders.form;
 import java.io.IOException;
 import java.text.MessageFormat;
 
-/*import com.netbeans.ide.loaders.DataFolder;
-import com.netbeans.ide.loaders.DataObject;
-import com.netbeans.ide.loaders.DataObjectExistsException;
-import com.netbeans.ide.NotifyDescriptor;
-import com.netbeans.ide.TopManager;
-import com.netbeans.ide.filesystems.FileLock;
-import com.netbeans.ide.filesystems.FileObject;
-import com.netbeans.ide.windows.ComponentRefEvent;
-import com.netbeans.ide.windows.ComponentRefListener;
-import com.netbeans.ide.util.io.NbObjectInputStream;
-import com.netbeans.ide.util.io.NbObjectOutputStream;
+import com.netbeans.ide.*;
+import com.netbeans.ide.actions.OpenAction;
+import com.netbeans.ide.loaders.*;
+import com.netbeans.ide.filesystems.*;
+import com.netbeans.ide.util.actions.SystemAction;
+//import com.netbeans.ide.windows.ComponentRefEvent;
+//import com.netbeans.ide.windows.ComponentRefListener;
 import com.netbeans.ide.nodes.Node;
-import com.netbeans.developer.modules.loaders.form.formeditor.*;
-import com.netbeans.developer.modules.loaders.java.DocumentRef;
 import com.netbeans.developer.modules.loaders.java.JavaDataObject;
-import com.netbeans.developer.modules.loaders.java.JavaEditor;
-import com.netbeans.developer.modules.loaders.java.src.*;
-*/
+//import com.netbeans.developer.modules.loaders.form.formeditor.*;
+//import com.netbeans.developer.modules.loaders.java.DocumentRef;
+//import com.netbeans.developer.modules.loaders.java.JavaEditor;
+//import com.netbeans.developer.modules.loaders.java.src.*;
+
 /** The DataObject for forms.
 *
 * @author Ian Formanek, Petr Hamernik
-* @version 1.00, Aug 04, 1998
 */
 public class FormDataObject extends JavaDataObject implements FormCookie {
   /** generated Serialized Version UID */
@@ -50,12 +45,12 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   private static final Object OPEN_FORM_LOCK = new Object ();
 
   /** The resource bundle for Java Objects */
-  private static java.util.ResourceBundle javaBundle =
-    com.netbeans.ide.util.NbBundle.getBundle("com.netbeans.developer.modules.locales.LoadersJavaBundle");
+//  private static java.util.ResourceBundle javaBundle =
+//    com.netbeans.ide.util.NbBundle.getBundle("com.netbeans.developer.modules.locales.LoadersJavaBundle");
 
-  public FormDataObject (FileObject ffo, FileObject jfo) throws DataObjectExistsException {
-    super(jfo);
-    addSecondaryEntry (formEntry = new MirroringEntry (ffo) {
+  public FormDataObject (FileObject ffo, FileObject jfo, FormDataLoader loader) throws DataObjectExistsException {
+    super(jfo, loader);
+    addSecondaryEntry (formEntry = new FileEntry (ffo) {
         /** saves the DesignForm into the .form file */
         public void save (boolean modified) {
 /*          if (modified & !isModified())
@@ -96,7 +91,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
           } */
         }
       }
-    );
+    ); 
     init ();
   }
 
@@ -222,14 +217,14 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   }
 
   /** returns an editor with the document */
-  public JavaEditor prepareEditor (boolean visibility) {
+/*  public JavaEditor prepareEditor (boolean visibility) {
     final JavaEditor je = super.prepareEditor(visibility);
     if (!componentRefRegistered) {
       componentRefRegistered = true;
       je.addComponentRefListener(new ComponentRefListener() {
           /** This method is called when number of components changes.
           * @param evt Adequate event.
-          */
+          * /
           public void componentChanged(ComponentRefEvent evt) {
             if (evt.getNewValue () == 0) {
               je.removeComponentRefListener (this);
@@ -260,44 +255,44 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     formLoaded = false;
     templateInit = false;
   }
-
+*/
   /** Method from FormCookie */
   public void gotoEditor() {
-    synchronized (OPEN_FORM_LOCK) {
+/*    synchronized (OPEN_FORM_LOCK) {
       if (!formLoaded)
         if (!loadForm ()) return;
     }
-    super.open();
+    super.open(); */
   }
 
   /** Method from FormCookie */
   public void gotoForm() {
-    synchronized (OPEN_FORM_LOCK) {
+/*    synchronized (OPEN_FORM_LOCK) {
       if (!formLoaded)
         if (!loadForm ()) return;
     }
-    designForm.getRADWindow().show();
+    designForm.getRADWindow().show(); */
   }
 
   /** Method from FormCookie */
   public void gotoInspector() {
     // show the ComponentInspector
-    FormEditor.getComponentInspector().setVisible(true);
+//    FormEditor.getComponentInspector().setVisible(true);
   }
 
   /** @returns the DesignForm of this Form */
-  public DesignForm getDesignForm() {
+/*  public DesignForm getDesignForm() {
     if (!formLoaded)
       loadForm ();
     return designForm;
-  }
+  } */
 
   /** @returns the root Node of the nodes representing the AWT hierarchy */
-  public RADFormNode getComponentsRoot() {
+/*  public RADFormNode getComponentsRoot() {
     if (!formLoaded)
       if (!loadForm ()) return null;
     return designForm.getFormManager().getComponentsRoot();
-  }
+  } */
 
   /** Handles copy of the data object.
   * @param f target folder
@@ -305,14 +300,31 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   * @exception IOException if an error occures
   */
   public DataObject handleCopy (DataFolder df) throws IOException {
-    String suffix = existInFolder(formEntry.getFile(), df);
-    FileObject ffo = formEntry.copy (df, suffix);
-    FileObject jfo = getPrimaryEntry ().copy (df, suffix);
-    FormDataObject fdo = new FormDataObject (ffo, jfo);
-    fdo.instantiated = true;
+    String suffix = existInFolder(formEntry.getFile(), df.getPrimaryFile ());
+    FileObject ffo = formEntry.copy (df.getPrimaryFile (), suffix);
+    FileObject jfo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
+    FormDataObject fdo = new FormDataObject (ffo, jfo, (FormDataLoader)getMultiFileLoader ());
+//    fdo.instantiated = true;
     return fdo;
   }
 
+  /** Check if in specific folder exists fileobject with the same name.
+  * If it exists user is asked for confirmation to rewrite, rename or cancel operation.
+  * @param folder destination folder
+  * @return the suffix which should be added to the name or null if operation is cancelled
+  */
+  private static String existInFolder(FileObject fo, FileObject folder) {
+    String orig = fo.getName ();
+    String name = FileUtil.findFreeFileName(
+      folder, orig, fo.getExt ()
+    );
+    if (name.length () <= orig.length ()) {
+      return "";
+    } else {
+      return name.substring (orig.length ());
+    }
+  }
+  
   /** Handles creation of new data object from template. This method should
   * copy content of the template to destination folder and assign new name
   * to the new object.
@@ -326,13 +338,13 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   public DataObject handleCreateFromTemplate (
     DataFolder df, String name
   ) throws IOException {
-    if ((name != null) && (!com.netbeans.ide.util.Utilities.isJavaIdentifier (name)))
-      throw new IOException (
-          java.text.MessageFormat.format (
+/*    if ((name != null) && (!com.netbeans.ide.util.Utilities.isJavaIdentifier (name)))
+      throw new IOException ();
+/*          java.text.MessageFormat.format (
               javaBundle.getString ("FMT_Not_Valid_Class_Name"),
               new Object[] { name }
               )
-          );
+          ); * /
     FileObject ffo = formEntry.createFromTemplate (df, name);
     FileObject jfo = null;
     try {
@@ -355,11 +367,12 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
     fdo.templateInit = true;
     fdo.instantiated = true;
     fdo.modifiedInit = true;
-    return fdo;
+    return fdo; */
+    return null;
   }
 
   /** This method is used by ParseManager to set the parsed information. */
-  protected void setParsed(JavaFile parsed) {
+/*  protected void setParsed(JavaFile parsed) {
     super.setParsed (parsed);
     synchronized (OPEN_FORM_LOCK) {
       if (templateInit) {
@@ -394,7 +407,7 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
       } // for
     }
 
-  }
+  } */
 
   /** Allows subclasses to create its own data object for provided
   * primary file. This implementation returns JavaDataObject.
@@ -402,14 +415,14 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   * @param fo file object to create data object for
   * @exception IOException if something falls
   */
-  protected DataObject createDataObject (FileObject fo) throws IOException {
+/*  protected DataObject createDataObject (FileObject fo) throws IOException {
     throw new InternalError ("Error creating FormDataObject");
-  }
+  } */
 
   /** Provides node that should represent this data object. When a node for representation
   * in a parent is requested by a call to getNode (parent) it is the exact copy of this node
   * with only parent changed. This implementation creates instance
-  * <CODE>FormDataNode</CODE>.
+  * <CODE>DataNode</CODE>.
   * <P>
   * This method is called only once.
   *
@@ -417,17 +430,17 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
   * @see DataNode
   */
   protected Node createNodeDelegate () {
-    if (nodeDelegate == null)
-      nodeDelegate = new FormDataNode(this);
-    return nodeDelegate;
+    FormDataNode node = new FormDataNode (this);
+    node.setDefaultAction (SystemAction.get (OpenAction.class));
+    return node;
   }
 
   /** @see com.netbeans.developer.modules.loaders.java.JavaDataObject#fileEntryAdded
   * This method only makes it public to this package.
   */
-  protected void fileEntryAdded(FileEntry fe) {
+/*  protected void fileEntryAdded(FileEntry fe) {
     super.fileEntryAdded(fe);
-  }
+  } */
 
 
 //--------------------------------------------------------------------
@@ -453,32 +466,18 @@ public class FormDataObject extends JavaDataObject implements FormCookie {
 
 
   /** The DesignForm of this form */
-  transient private DesignForm designForm;
+//  transient private DesignForm designForm;
   /** The entry for the .form file */
-  private MirroringEntry formEntry;
+  private FileEntry formEntry;
 }
 
 /*
  * Log
+ *  4    Gandalf   1.3         3/10/99  Ian Formanek    Gandalf updated
  *  3    Gandalf   1.2         2/11/99  Ian Formanek    getXXXPresenter -> 
  *       createXXXPresenter (XXX={Menu, Toolbar})
  *  2    Gandalf   1.1         1/6/99   Ian Formanek    Reflecting change in 
  *       datasystem package
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
- * Beta Change History:
- *  0    Tuborg    0.11        --/--/98 Petr Hamernik   createDataObject() added
- *  0    Tuborg    0.14        --/--/98 Jan Formanek    changes in handleCopy/handleCreateFromTemplate to allow
- *  0    Tuborg    0.14        --/--/98 Jan Formanek    copying/creating forms
- *  0    Tuborg    0.15        --/--/98 Petr Hamernik   "modified" flag changes
- *  0    Tuborg    0.24        --/--/98 Jan Formanek    serializes first into memory to prevent corruption of the form file
- *  0    Tuborg    0.25        --/--/98 Jan Formanek    shows the ComponentInspector on opening form
- *  0    Tuborg    0.27        --/--/98 Petr Hamernik   lock bugfix
- *  0    Tuborg    0.28        --/--/98 Jan Formanek    open/setParsed made synchronized to avoid creating 2 form windows
- *  0    Tuborg    0.30        --/--/98 Jan Formanek    small bugfix - NullPoinerException was thrown from setParsed when loadForm failed
- *  0    Tuborg    0.31        --/--/98 Jan Formanek    implements FormCookie
- *  0    Tuborg    0.32        --/--/98 Jan Formanek    serialization changed
- *  0    Tuborg    0.34        --/--/98 Petr Hamernik   serializetion uses NB i/o Object Streams
- *  0    Tuborg    0.36        --/--/98 Jan Formanek    Forms now regenerate code after opening
- *  0    Tuborg    0.37        --/--/98 Petr Hamernik   Some locking changes
  */

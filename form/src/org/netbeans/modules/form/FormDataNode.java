@@ -29,40 +29,25 @@ import com.netbeans.developer.modules.loaders.java.*;
 */
 public class FormDataNode extends JavaNode {
   /** generated Serialized Version UID */
-  static final long serialVersionUID = 1795549004166402392L;
+//  static final long serialVersionUID = 1795549004166402392L;
+  
   /** Icons for java data objects. */
-  static protected java.awt.Image icon;
-  static protected java.awt.Image icon32;
-  static private java.awt.Image iconMain;
-  static private java.awt.Image iconMain32;
-  static private java.awt.Image iconError;
-  static private java.awt.Image iconError32;
-
-  static {
-    icon = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/form.gif"));
-    icon32 = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/form32.gif"));
-    iconMain = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/formMain.gif"));
-    iconMain32 = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/formMain32.gif"));
-    iconError = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/formError.gif"));
-    iconError32 = java.awt.Toolkit.getDefaultToolkit ().getImage (
-        Object.class.getResource ("/com.netbeans.developer.modules/resources/java/formError32.gif"));
-  }
+  private static final String ICON_BASE = "com/netbeans/developer/modules/loaders/form/resources/";
+  private static final String ICON_CLASS = "form";
+  private static final String ICON_CLASS_MAIN = "formMain";
+  private static final String ICON_CLASS_ERROR = "formError";
 
   /** Constructs a new FormDataObject for specified primary file */
   public FormDataNode (FormDataObject fdo) {
     super (fdo);
+    setIconBase(ICON_BASE + ICON_CLASS);
   }
 
-  void updateFormNode () {
-    parseChanged ();
-  }
+//  void updateFormNode () {
+//    parseChanged ();
+//  }
 
-  protected Node[] createSubNodes(Node parNode) {
+/*  protected Node[] createSubNodes(Node parNode) {
     Node[] inherited = super.createSubNodes(parNode);
     FormDataObject fdo = getFormDataObject();
     if (fdo.isLoaded ()) {
@@ -75,11 +60,11 @@ public class FormDataNode extends JavaNode {
     }
     else
       return inherited;
-  }
+  } */
 
 
   /** @return The FormDataObject represented by this FormDataNode */
-  public FormDataObject getFormDataObject() {
+/*  public FormDataObject getFormDataObject() {
     return (FormDataObject) getDataObject();
   }
 
@@ -111,13 +96,14 @@ public class FormDataNode extends JavaNode {
     }
     fireIconChange (null, currentIcon);
   }
-
+*/
   /** True, if the subnode for the AWT hierarchy has been added to the children list */
-  transient private boolean initializedWithForm = false;
+//  transient private boolean initializedWithForm = false;
 }
 
 /*
  * Log
+ *  3    Gandalf   1.2         3/10/99  Ian Formanek    Gandalf updated
  *  2    Gandalf   1.1         1/7/99   Ian Formanek    
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $

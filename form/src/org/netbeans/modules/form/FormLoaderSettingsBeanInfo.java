@@ -22,6 +22,10 @@ import java.beans.*;
 */
 public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
+  /** Icons for url data loader. */
+  private static Image icon;
+  private static Image icon32;
+
   /** Array of property descriptors. */
   private static PropertyDescriptor[] desc;
 
@@ -150,10 +154,16 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
   /** Returns the FormLoaderSettings' icon */
   public Image getIcon(int type) {
-    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-      return FormDataNode.icon;
-    else
-      return FormDataNode.icon32;
+    if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) ||
+        (type == java.beans.BeanInfo.ICON_MONO_16x16)) {
+      if (icon == null)
+        icon = loadImage("/com/netbeans/developer/modules/loaders/form/resources/form.gif");
+      return icon;
+    } else {
+      if (icon32 == null)
+        icon32 = loadImage ("/com/netbeans/developer/modules/loaders/form/resources/form32.gif");
+      return icon32;
+    }
   }
 
   final public static class ModifierPropertyEditor extends java.beans.PropertyEditorSupport {
@@ -197,6 +207,7 @@ public class FormLoaderSettingsBeanInfo extends SimpleBeanInfo {
 
 /*
  * Log
+ *  2    Gandalf   1.1         3/10/99  Ian Formanek    Gandalf updated
  *  1    Gandalf   1.0         1/5/99   Ian Formanek    
  * $
  */
