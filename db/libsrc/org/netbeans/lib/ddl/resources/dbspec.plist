@@ -131,27 +131,27 @@
 		DatabaseProductVersion = 6;
 		TriggerEventListDelimiter = ", ";
 		TypeMap = {
-			java.sql.Types.BIGINT = BIGINT;	
-			java.sql.Types.BINARY = BINARY;	
-			java.sql.Types.BIT = BIT;
-			java.sql.Types.BLOB = IMAGE;
-			java.sql.Types.CHAR = CHAR;		
-			java.sql.Types.CLOB = TEXT;
-			java.sql.Types.DATE = DATE;
-			java.sql.Types.DECIMAL = DECIMAL;	
-			java.sql.Types.DOUBLE = DOUBLE;
-			java.sql.Types.FLOAT = FLOAT;		
-			java.sql.Types.INTEGER = INT;
-			java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
-			java.sql.Types.LONGVARBINARY = "LONG BINARY";
-			java.sql.Types.NUMERIC = NUMERIC;			
-			java.sql.Types.REAL = REAL;		
-			java.sql.Types.SMALLINT = SMALLINT;	
-			java.sql.Types.TIME = TIME;		
-			java.sql.Types.TIMESTAMP = TIMESTAMP;	
-			java.sql.Types.TINYINT = TINYINT;		
-			java.sql.Types.VARBINARY = VARBINARY;		
-			java.sql.Types.VARCHAR = VARCHAR;	
+      java.sql.Types.BIGINT = BIGINT;
+      java.sql.Types.BINARY = BINARY;
+      java.sql.Types.BIT = BIT;
+      java.sql.Types.BLOB = IMAGE;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.CLOB = TEXT;  //JDBC 2.0 A type representing an SQL Character Large Object
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = DOUBLE;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+      java.sql.Types.LONGVARBINARY = "LONG BINARY";
+      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARBINARY = VARBINARY;
+      java.sql.Types.VARCHAR = VARCHAR;
 		};
 		ProcedureArgumentMap = {
 			IN = IN;
@@ -325,27 +325,17 @@
 		DatabaseProductVersion = 6;
 		TriggerEventListDelimiter = " OR ";
 		TypeMap = {
-			java.sql.Types.BIGINT = BIGINT;	
-			java.sql.Types.BINARY = BINARY;	
-			java.sql.Types.BIT = BIT;
-			java.sql.Types.BLOB = IMAGE;
-			java.sql.Types.CHAR = CHAR;		
-			java.sql.Types.CLOB = TEXT;
-			java.sql.Types.DATE = DATE;
-			java.sql.Types.DECIMAL = DECIMAL;	
-			java.sql.Types.DOUBLE = DOUBLE;
-			java.sql.Types.FLOAT = FLOAT;		
-			java.sql.Types.INTEGER = NUMBER;
-			java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
-			java.sql.Types.LONGVARBINARY = "LONG BINARY";
-			java.sql.Types.NUMERIC = NUMERIC;			
-			java.sql.Types.REAL = REAL;		
-			java.sql.Types.SMALLINT = SMALLINT;	
-			java.sql.Types.TIME = TIME;		
-			java.sql.Types.TIMESTAMP = TIMESTAMP;	
-			java.sql.Types.TINYINT = TINYINT;		
-			java.sql.Types.VARBINARY = VARBINARY;		
-			java.sql.Types.VARCHAR = VARCHAR2;	
+      java.sql.Types.BIGINT = INTEGER;
+      java.sql.Types.BLOB = BLOB;  //JDBC 2.0 A type representing an SQL Binary Large Object
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.FLOAT = FLOAT;
+      java.sql.Types.INTEGER = INT;
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.VARCHAR = VARCHAR2;
 		};
 		ProcedureArgumentMap = {
 			IN = IN;
@@ -528,23 +518,24 @@
 		DatabaseProductVersion = 2;
 		TriggerEventListDelimiter = ", ";
 		TypeMap = {
-			java.sql.Types.BINARY = BIT;	
-			java.sql.Types.BIT = BOOLEAN;
-			java.sql.Types.CHAR = CHAR;		
-			java.sql.Types.DATE = DATE;
-			java.sql.Types.DECIMAL = DECIMAL;	
-			java.sql.Types.DOUBLE = "DOUBLE PRECISION";
-			java.sql.Types.REAL = FLOAT;		
-			java.sql.Types.LONGVARBINARY = "LONG VARBINARY";
-			java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
-			java.sql.Types.BIGINT = LONGINT;	
-			java.sql.Types.NUMERIC = NUMERIC;			
-			java.sql.Types.SMALLINT = SMALLINT;	
-			java.sql.Types.TIME = TIME;		
-			java.sql.Types.TIMESTAMP = TIMESTAMP;	
-			java.sql.Types.TINYINT = TINYINT;		
-			java.sql.Types.VARCHAR = VARCHAR;	
-			java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.BIGINT = LONGINT;  
+      java.sql.Types.BINARY = BIT;
+      java.sql.Types.BIT = BOOLEAN;
+      java.sql.Types.CHAR = CHAR;
+      java.sql.Types.DATE = DATE;
+      java.sql.Types.DECIMAL = DECIMAL;
+      java.sql.Types.DOUBLE = "DOUBLE PRECISION";
+      java.sql.Types.REAL = FLOAT;    
+      java.sql.Types.INTEGER = INTEGER;
+      java.sql.Types.LONGVARBINARY = "LONG VARBINARY";
+      java.sql.Types.LONGVARCHAR = "LONG VARCHAR";
+      java.sql.Types.NUMERIC = NUMERIC;
+      java.sql.Types.REAL = REAL;
+      java.sql.Types.SMALLINT = SMALLINT;
+      java.sql.Types.TIME = TIME;
+      java.sql.Types.TIMESTAMP = TIMESTAMP;
+      java.sql.Types.TINYINT = TINYINT;
+      java.sql.Types.VARCHAR = VARCHAR;
 		};
 		ProcedureArgumentMap = {
 			IN = IN;
@@ -618,6 +609,12 @@
 			Format = "check ({check.condition})";
 		};			
 	};
+
+//	********************************************************************************
+//
+//	Hypersonic SQL
+//
+//	********************************************************************************/
 
 	"HypersonicSQL" = {
 		DatabaseProductName = "HypersonicSQL";
