@@ -41,7 +41,7 @@ import org.openide.filesystems.LocalFileSystem;
  * JUnit based XXXtest
  *
  * Created on 19 November 2004, 15:53
- * @author rm111737.PRAGUE
+ * @author Radek Matous
  */
 public class FolderObjTest extends NbTestCase {
     File testFile;
@@ -108,7 +108,28 @@ public class FolderObjTest extends NbTestCase {
         
         
      }
-     
+
+     public void testRename2 () throws Exception {
+        File test = new File (getWorkDir(), "testrename.txt");
+        if (!test.exists()) {
+            assertTrue(test.createNewFile());
+        }
+        
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(test);
+        assertNotNull(fs);
+        
+        FileObject testFo = fs.findFileObject(test);
+        assertNotNull (testFo);
+
+        FileLock lock = testFo.lock();
+        assertNotNull (lock);
+        try {
+         testFo.rename(lock, "TESTRENAME", "TXT");           
+        } finally {
+            lock.releaseLock();
+        }
+    }    
+
     /**
      * Test of getChildren method, of class org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj.
      */
@@ -597,6 +618,5 @@ public class FolderObjTest extends NbTestCase {
     public File getWorkDir() throws IOException {
         return super.getWorkDir();
     }
-
 
 }
