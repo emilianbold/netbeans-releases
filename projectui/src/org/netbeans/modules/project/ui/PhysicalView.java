@@ -34,7 +34,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.project.ui.support.LogicalViews;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.ErrorManager;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -245,7 +245,7 @@ public class PhysicalView {
                     projectActions = new Action[ folderActions.length ]; 
                     for ( int i = 0; i < folderActions.length; i++ ) {
                         if ( folderActions[i] instanceof org.openide.actions.PropertiesAction ) {
-                            projectActions[i] = LogicalViews.customizeProjectAction();
+                            projectActions[i] = CommonProjectActions.customizeProjectAction();
                         }
                         else {
                             projectActions[i] = folderActions[i];

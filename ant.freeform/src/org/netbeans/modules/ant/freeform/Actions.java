@@ -23,7 +23,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ui.support.LogicalViews;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
 import org.openide.actions.FindAction;
@@ -143,7 +143,7 @@ public final class Actions implements ActionProvider {
     
     public static Action[] createContextMenu(FreeformProject p) {
         List/*<Action>*/ actions = new ArrayList();
-        actions.add(LogicalViews.newFileAction());
+        actions.add(CommonProjectActions.newFileAction());
         // Requested actions.
         Element genldata = p.helper().getPrimaryConfigurationData(true);
         Element viewEl = Util.findElement(genldata, "view", FreeformProjectType.NS_GENERAL); // NOI18N
@@ -174,15 +174,15 @@ public final class Actions implements ActionProvider {
         }
         // Back to generic actions.
         actions.add(null);
-        actions.add(LogicalViews.setAsMainProjectAction());
-        actions.add(LogicalViews.openSubprojectsAction());
-        actions.add(LogicalViews.closeProjectAction());
+        actions.add(CommonProjectActions.setAsMainProjectAction());
+        actions.add(CommonProjectActions.openSubprojectsAction());
+        actions.add(CommonProjectActions.closeProjectAction());
         actions.add(null);
         actions.add(SystemAction.get(FindAction.class));
         actions.add(null);
         actions.add(SystemAction.get(ToolsAction.class));
         actions.add(null);
-        actions.add(LogicalViews.customizeProjectAction());
+        actions.add(CommonProjectActions.customizeProjectAction());
         return (Action[])actions.toArray(new Action[actions.size()]);
     }
     

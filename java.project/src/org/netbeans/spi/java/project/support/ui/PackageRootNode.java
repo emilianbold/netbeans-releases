@@ -24,7 +24,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.spi.project.ui.support.LogicalViews;
+import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -67,7 +67,7 @@ final class PackageRootNode extends AbstractNode {
 
         if ( actions == null ) {
             actions = new Action[] {
-                LogicalViews.newFileAction(),
+                CommonProjectActions.newFileAction(),
                 null,
                 org.openide.util.actions.SystemAction.get( org.openide.actions.FileSystemRefreshAction.class ),
                 org.openide.util.actions.SystemAction.get( org.openide.actions.FindAction.class ),

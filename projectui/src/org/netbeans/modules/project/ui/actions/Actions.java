@@ -209,7 +209,7 @@ public class Actions implements ActionsFactory {
     public static class SystemNewFile extends CallableSystemAction implements ContextAwareAction, PropertyChangeListener {
         
         public SystemNewFile() {
-            org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().addPropertyChangeListener( this );
+            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().addPropertyChangeListener( this );
         }
             
         public String getName() {
@@ -230,11 +230,11 @@ public class Actions implements ActionsFactory {
         }
 
         public void actionPerformed( ActionEvent ev ) {
-            org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().actionPerformed(ev);
+            org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().actionPerformed(ev);
         }
         
         public boolean isEnabled() {
-            return org.netbeans.spi.project.ui.support.LogicalViews.newFileAction().isEnabled();            
+            return org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction().isEnabled();            
         }
         
         public void performAction() {
@@ -242,7 +242,7 @@ public class Actions implements ActionsFactory {
         }
         
         public Action createContextAwareInstance(Lookup actionContext) {
-            return ((ContextAwareAction)org.netbeans.spi.project.ui.support.LogicalViews.newFileAction()).createContextAwareInstance( actionContext );
+            return ((ContextAwareAction)org.netbeans.spi.project.ui.support.CommonProjectActions.newFileAction()).createContextAwareInstance( actionContext );
         }
         
         public void propertyChange( PropertyChangeEvent evt ) {

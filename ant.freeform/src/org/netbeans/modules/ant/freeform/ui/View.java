@@ -13,22 +13,7 @@
 
 package org.netbeans.modules.ant.freeform.ui;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-
-import org.openide.actions.OpenLocalExplorerAction;
-
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.nodes.FilterNode;
-
-import org.netbeans.spi.project.ui.support.LogicalViews;
-import org.openide.actions.FindAction;
-import org.openide.actions.ToolsAction;
-import org.openide.util.actions.SystemAction;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import javax.swing.Action;
 import org.openide.util.Utilities;
 
@@ -45,7 +30,6 @@ import org.netbeans.spi.project.support.GenericSources;
 
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
