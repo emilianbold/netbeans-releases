@@ -128,7 +128,7 @@ public final class ValidateSchemaSupport extends ValidateXMLSupport {
             ShareableInputSource shared = ShareableInputSource.create(input);
             try {
                 ns = parseForTargetNamespace(shared);
-                shared.reset();
+                shared.reset();                
                 super.parse(shared);
             } finally {
                 shared.closeAll();
