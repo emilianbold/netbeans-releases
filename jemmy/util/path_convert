@@ -1,0 +1,37 @@
+#!/bin/sh
+
+path_to_win () {
+	if [ -n "`uname -a | grep \^CYGWIN`" ]
+	then
+		cygpath -w "$1" | sed -e 's+\\+\\\\+g'
+	else
+		echo "$1" | grep "^//" 2>&1 > /dev/null
+		if [ $? -ne 0 ]
+		then
+			echo "$1" | sed -e 's+/++'  | sed -e 's+/+:/+' | sed -e 's+/+\\\\\\\\+g'
+		else
+			echo "$1" | sed -e 's+//++' | sed -e 's+/+:/+' | sed -e 's+/+\\\\\\\\+g'
+		fi
+	fi
+}
+
+if [ -n "`uname -a | grep \^CYGWIN`" ] || [ -n "`uname -a | grep \^UWIN`" ]
+then
+	part_count=`echo "$*" | sed -e 's|[^:]||g' | wc -c`
+	count=1
+	result=""
+	while [ $count -le $part_count ]
+	do
+		path=`echo "$*" | cut -f $count -d :`
+		if [ -z "$result" ]
+		then
+			result=`path_to_win "$path"`
+		else
+			result=$result\;`path_to_win "$path"`
+		fi
+		count=`expr $count \+ 1`
+	done
+	echo $result
+else
+	echo "$*"
+fi

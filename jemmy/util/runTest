@@ -1,0 +1,74 @@
+#!/bin/sh
+
+JEMMY_ROOT=`dirname $0`
+JEMMY_ROOT=`dirname $JEMMY_ROOT`
+
+test_class=$1
+java_flags=$2
+
+TEST_SUITE=`pwd`
+
+if [ -f properties.gold ]
+then
+    cp properties.gold properties
+    echo Using $TEST_SUITE/properties.gold file as jemmy properties.
+else 
+    rm -f properties
+    touch properties
+fi
+if [ -f gui_resource ]
+then
+    echo Using $TEST_SUITE/gui_resource as GUI resource file.
+else
+    touch gui_resource
+fi
+echo "RESOURCE_FILE = `$JEMMY_ROOT/util/path_convert $TEST_SUITE/gui_resource`" >> properties
+RESOURCE_FILE=`$JEMMY_ROOT/util/path_convert $TEST_SUITE/gui_resource`
+
+CLASSPATH=`pwd`/classes:$JEMMY_ROOT/classes:$JEMMY_ROOT/jemmy:$JEMMY_ROOT/common:$JEMMY_ROOT/fjie:$CLASSPATH
+export CLASSPATH
+
+prop_file=`pwd`/properties
+
+if [ "$JEMMY_DEMO" = "on" ]
+then
+    java_flags="-Djemmy.demo=on $java_flags"
+fi
+java_flags="-Djemmy.properties="`$JEMMY_ROOT/util/path_convert $prop_file`" $java_flags"
+
+if [ -f ./setup ]
+then
+    sh ./setup
+    if [ $? -ne 0 ]
+    then
+	echo Setup failed
+	exit 1
+    fi
+fi
+
+JAVA=`which java`
+if [ "$JAVA_HOME" != "" ]
+then
+    JAVA=$JAVA_HOME/bin/java
+fi
+
+echo Using $JAVA
+
+echo $JAVA $java_flags -classpath "`$JEMMY_ROOT/util/path_convert $CLASSPATH`" org.netbeans.jemmy.Test $test_class
+$JAVA $java_flags -classpath `$JEMMY_ROOT/util/path_convert $CLASSPATH` org.netbeans.jemmy.Test $test_class
+
+if [ $? -ne 0 ]
+then
+    echo Test failed
+    exit 1
+fi
+
+if [ -f ./cleanup ]
+then
+    sh ./cleanup
+    if [ $? -ne 0 ]
+    then
+	echo Clenup failed
+	exit 1
+    fi
+fi

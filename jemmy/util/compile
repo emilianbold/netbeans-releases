@@ -1,0 +1,33 @@
+#!/bin/sh
+
+if [ "$1" = "" ]
+then
+    dir=.
+else
+    dir=$1
+fi
+
+JEMMY_ROOT=`dirname $0`
+JEMMY_ROOT=`dirname $JEMMY_ROOT`
+
+TEST_SUITE=`pwd`
+
+CLASSPATH="`$JEMMY_ROOT/util/path_convert $TEST_SUITE/classes:$JEMMY_ROOT/classes:$TONGA_CLASSES:$CLASSPATH`"
+export CLASSPATH
+
+if [ ! -d $TEST_SUITE/classes ]
+then
+    mkdir $TEST_SUITE/classes
+fi
+
+JAVAC=`which javac`
+if [ "$JAVA_HOME" != "" ]
+then
+    JAVAC=$JAVA_HOME/bin/javac
+fi
+
+echo Using $JAVAC
+
+cd $TEST_SUITE
+$JAVAC `find $dir -name "*.java" | grep -v SCCS/ | grep -v ./run/` -d "`$JEMMY_ROOT/util/path_convert $TEST_SUITE/classes`"
+

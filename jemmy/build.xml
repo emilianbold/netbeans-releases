@@ -18,6 +18,7 @@
   <property name="robot" value="off"/>
 
   <target name="compile">
+    <copy file="${util}/version" tofile="${src}/org/netbeans/jemmy/version_info"/>
     <mkdir dir="${build}"/>
     <javac srcdir="${src}" destdir="${build}"/>
     <copy file="${src}/org/netbeans/jemmy/debug.timeouts" todir="${build}/org/netbeans/jemmy"/>
@@ -30,7 +31,8 @@
   </target>
 
   <target name="jar" depends="compile">
-    <jar jarfile="${jar}" basedir="${build}"/>
+    <copy file="${src}/org/netbeans/jemmy/version_info" tofile="${build}/org/netbeans/jemmy/version_info"/>
+    <jar jarfile="${jar}" basedir="${build}" manifest="${build}/org/netbeans/jemmy/version_info"/>
   </target>
 
   <target name="jarsrc" depends="compile,jar">
