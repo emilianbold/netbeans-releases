@@ -94,7 +94,7 @@ public class Plain extends NbTopManager implements Runnable {
         XML.init();
         String userDir = System.getProperty("modules.dir");
         try {
-            moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), new File(userDir), null);
+            moduleSystem = new ModuleSystem(getRepository().getDefaultFileSystem(), userDir == null ? null : new File(userDir), null);
         } catch (IOException ioe) {
             notifyException(ioe);
             return;
