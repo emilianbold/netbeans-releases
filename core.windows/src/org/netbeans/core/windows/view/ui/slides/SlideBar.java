@@ -137,6 +137,7 @@ public final class SlideBar extends Box implements ComplexListDataListener,
             buttons.add(i, curButton);
             add(curButton, i * 2);
             add(createStrut(), i * 2 + 1);
+            revalidate();
         }
     }
     
@@ -161,17 +162,14 @@ public final class SlideBar extends Box implements ComplexListDataListener,
     }
     
     public void indicesAdded(ComplexListDataEvent e) {
-        // XXX - TBD - change impl to create only changed items
         syncWithModel();
     }
     
     public void indicesChanged(ComplexListDataEvent e) {
-        // XXX - TBD - change impl to create only changed items
         syncWithModel();
     }
     
     public void indicesRemoved(ComplexListDataEvent e) {
-        // XXX - TBD - change impl to create only changed items
         syncWithModel();
     }
 
@@ -356,6 +354,8 @@ public final class SlideBar extends Box implements ComplexListDataListener,
         }
 
         commandMgr.syncWithModel();
+        // #46488 - add(...) is sometimes not enough for proper repaint, god knows why
+        revalidate();
     }
     
     /** Builds empty border around slide bar. Computes its correct size
