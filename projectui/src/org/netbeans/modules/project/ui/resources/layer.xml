@@ -99,11 +99,7 @@ Microsystems, Inc. All Rights Reserved.
             <file name="org-netbeans-modules-project-ui-DebugTestSingle.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugTestSingle"/>
             </file>
-            
-            <file name="org-netbeans-modules-project-ui-DebugFix.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.actions.Actions.debugFix"/>
-            </file>
-                        
+                                    
             <!-- Project tabs opening -->
             <file name="org-netbeans-modules-project-ui-logical-tab-action.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.project.ui.ProjectTabAction.projectsLogical"/>
@@ -360,14 +356,8 @@ Microsystems, Inc. All Rights Reserved.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugMainProject.instance"/>
             </file>
            
-            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/SeparatorMainProject.instance" boolvalue="true" />                             
+            <attr name="org-netbeans-modules-project-ui-DebugMainProject.shadow/RunOther" boolvalue="true" />                             
                         
-            <file name="SeparatorMainProject.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-
-            <attr name="SeparatorMainProject.instance/RunOther" boolvalue="true" />                
-
             <folder name="RunOther">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle" />
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/empty.gif" />
@@ -412,81 +402,6 @@ Microsystems, Inc. All Rights Reserved.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 </file>
                                    
-<!--            
-            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-support-actions-ConnectAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance" />                                                
-
-            <attr name="org-netbeans-modules-debugger-support-actions-ConnectAction.instance/SeparatorConnect.instance" boolvalue="true" />
-            <file name="SeparatorConnect.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-                
-            <attr name="SeparatorConnect.instance/org-netbeans-modules-debugger-support-actions-FinishAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-FinishAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-FinishAction.instance/Separator1.instance" boolvalue="true" />
-            <file name="Separator1.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-	    
-            <attr name="Separator1.instance/org-netbeans-modules-debugger-support-actions-PauseAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-PauseAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-PauseAction.instance/org-netbeans-modules-debugger-support-actions-ContinueAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-ContinueAction.instance/Separator2.instance" boolvalue="true" />
-            <file name="Separator2.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-
-            <attr name="Separator2.instance/org-netbeans-modules-debugger-support-actions-StepOverAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-StepOverAction.instance/org-netbeans-modules-debugger-support-actions-StepIntoAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-StepIntoAction.instance/org-netbeans-modules-debugger-support-actions-StepOutAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-StepOutAction.instance/org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance"/>
-            <attr name="org-netbeans-modules-debugger-support-actions-RunToCursorAction.instance/Separator3.instance" boolvalue="true" />
-            <file name="Separator3.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
--->    
-            <attr name="SeparatorRun.instance/org-netbeans-modules-project-ui-DebugFix.shadow" boolvalue="true" />
-            <file name="org-netbeans-modules-project-ui-DebugFix.shadow">
-                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-DebugFix.instance"/>
-            </file>
-
-<!--            <attr name="org-netbeans-modules-project-ui-PlaceHolderAction$DebugFix.instance/Separator4.instance" boolvalue="true" />
-            <file name="Separator4.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            
-            <attr name="Separator4.instance/Stack" boolvalue="true" />
-            <folder name="Stack">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.debugger.resources.Bundle" />
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/debugger/resources/actions/Folder.gif" />
-                
-                <file name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance"/>
-                <attr name="org-netbeans-modules-debugger-support-actions-GoToCalledMethodAction.instance/org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance"/>
-                <attr name="org-netbeans-modules-debugger-support-actions-GoToCallingMethodAction.instance/Separator5.instance" boolvalue="true" />
-                <file name="Separator5.instance">
-                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                </file>
-                
-                <attr name="Separator5.instance/org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance" boolvalue="true" />
-                <file name="org-netbeans-modules-debugger-support-actions-PopTopmostFrameAction.instance"/>
-            </folder>
-            <attr name="Stack/Separator6.instance" boolvalue="true" />
-                
-            <file name="Separator6.instance">
-                <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-            </file>
-            
-            <attr name="Separator6.instance/org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance" />
-            <attr name="org-netbeans-modules-debugger-support-actions-AddBreakpointAction.instance/org-netbeans-modules-debugger-support-actions-AddWatchAction.instance" boolvalue="true" />
-            <file name="org-netbeans-modules-debugger-support-actions-AddWatchAction.instance"/>
--->            
         </folder>
         
         <attr name="RunProject/Versioning" boolvalue="true"/>

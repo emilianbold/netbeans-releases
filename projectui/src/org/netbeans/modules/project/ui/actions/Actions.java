@@ -157,15 +157,7 @@ public class Actions implements ActionsFactory {
             "org/netbeans/modules/project/ui/resources/testDebugSingle.gif",
             null ); //NOI18N
     }
-    
-    public static Action debugFix() {
-        return new FileCommandAction (
-            "debug.fix", // XXX Define standard
-            NbBundle.getMessage(Actions.class, "LBL_DebugFixAction_Name" ), // NOI18N
-            "org/netbeans/modules/project/ui/resources/debugFix.gif",
-            null ); //NOI18N
-    }
-    
+        
     // Main Project actions ----------------------------------------------------
     
     
