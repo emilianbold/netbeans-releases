@@ -21,6 +21,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
+import org.netbeans.api.project.FileOwnerQuery;
 
 
 /**
@@ -88,10 +89,15 @@ public class I18nAction extends CookieAction {
         
         DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
         
-        if(dataObject == null)
+        if(dataObject == null || dataObject.getPrimaryFile() == null)
             return false;
         
-        return FactoryRegistry.hasFactory(dataObject.getClass());
+        if (!FactoryRegistry.hasFactory(dataObject.getClass())) return false;
+
+	// check that the node has project
+	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) return false;
+
+	return true;
     }
     
     /** Gets localized name of action. Overrides superclass method. */

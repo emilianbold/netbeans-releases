@@ -33,6 +33,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.util.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.netbeans.api.project.FileOwnerQuery;
 
 /**
  * Bundle access, ...
@@ -42,7 +43,7 @@ import org.openide.filesystems.FileObject;
 final class Util {
     
     public static String getString(String key) {
-        return NbBundle.getMessage(Util.class, key);
+        return NbBundle.getMessage(org.netbeans.modules.i18n.wizard.Util.class, key);
     }
     
     public static char getChar(String key) {
@@ -138,6 +139,12 @@ final class Util {
             if (node.getCookie(EditorCookie.class) == null) {
                 return false;
             }
+
+	    DataObject dobj = (DataObject)node.getCookie(DataObject.class);
+	    if (dobj == null) return false;
+	    
+	    // check that the node has project
+	    if (FileOwnerQuery.getOwner(dobj.getPrimaryFile()) == null) return false;
         }
         return true;
     }

@@ -32,6 +32,7 @@ import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
+import org.netbeans.api.project.FileOwnerQuery;
 
 
 /**
@@ -227,6 +228,9 @@ public class InsertI18nStringAction extends CookieAction {
         DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
 
         if (dataObject == null) return false;
+
+	// check that the node has project
+	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) return false;
 
         if (FactoryRegistry.hasFactory(dataObject.getClass()) == false) return false;
 
