@@ -113,6 +113,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser)e.getSource();
             File dir = chooser.getSelectedFile();
+            dir = FileUtil.normalizeFile (dir);
             DefaultListModel spListModel = (DefaultListModel)jListArtifacts.getModel();
             
             Project project = getProject( dir );
@@ -123,6 +124,7 @@ public class AntArtifactChooser extends javax.swing.JPanel implements PropertyCh
     private Project getProject( File projectDir ) {
         
         try {            
+            projectDir = FileUtil.normalizeFile (projectDir);
             FileObject fo = FileUtil.toFileObject(projectDir);
             
             if (fo != null) {
