@@ -116,7 +116,8 @@ public class DatabaseConnection implements DBConnection {
         if (name == null || name.equals(drvname)) return;
         String olddrv = drvname;
         drvname = name;
-        propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_DRIVERNAME, olddrv, drvname);
     }
 
     /** Returns database URL */
@@ -134,7 +135,8 @@ public class DatabaseConnection implements DBConnection {
         if (database == null || database.equals(db)) return;
         String olddb = db;
         db = database;
-        propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_DATABASE, olddb, db);
     }
 
     /** Returns user login name */
@@ -152,7 +154,8 @@ public class DatabaseConnection implements DBConnection {
         if (user == null || user.equals(usr)) return;
         String oldusr = usr;
         usr = user;
-        propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_USER, oldusr, usr);
     }
 
     /** Returns name of the connection */
@@ -170,7 +173,8 @@ public class DatabaseConnection implements DBConnection {
         if (name == null || name.equals(value)) return;
         String old = name;
         name = value;
-        propertySupport.firePropertyChange(PROP_NAME, old, name);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_NAME, old, name);
     }
 
     /** Returns if password should be remembered */
@@ -202,7 +206,8 @@ public class DatabaseConnection implements DBConnection {
         if (password == null || password.equals(pwd)) return;
         String oldpwd = pwd;
         pwd = password;
-        propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
+        if(propertySupport!=null)
+            propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
     }
 
     /** Creates JDBC connection
