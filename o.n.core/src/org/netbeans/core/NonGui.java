@@ -24,6 +24,7 @@ import java.util.Vector;
 import java.text.MessageFormat;
 import javax.swing.*;
 import javax.swing.border.*;
+import java.lang.reflect.Method;
 
 import org.openide.util.datatransfer.ExClipboard;
 import org.openide.*;
@@ -459,8 +460,32 @@ public class NonGui extends NbTopManager implements Runnable {
                 
                 SwingUtilities.invokeAndWait(new Runnable() {
                     public void run() {
-                        boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard(getSplash());
-                        System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
+                        // Original code
+                        //boolean canceled = org.netbeans.core.upgrade.UpgradeWizard.showWizard(getSplash());
+                        //System.setProperty("import.canceled", new Boolean(canceled).toString()); // NOI18N
+                        
+                        // Let's use reflection
+                        System.setProperty("import.canceled", new Boolean( false ).toString()); // NOI18N
+                        try {
+                            Class wizardClass = Class.forName( "org.netbeans.core.upgrade.UpgradeWizard" ); // NOI18N
+                            Method showMethod = wizardClass.getMethod( "showWizard", new Class[] { Splash.SplashOutput.class } ); // NOI18N
+                            
+                            Boolean canceled = (Boolean)showMethod.invoke( null, new Object[] { getSplash() } );
+                            System.setProperty("import.canceled", canceled.toString()); // NOI18N
+                        }
+                        catch ( ClassNotFoundException e ) {
+                            // Assume there is no UpgradeWizard to run
+                        }
+                        catch ( NoSuchMethodException e ) {
+                            // Assume there is no UpgradeWizard to run
+                        }
+                        catch ( IllegalAccessException e ) {
+                            // Assume there is no UpgradeWizard to run
+                        }
+                        catch ( java.lang.reflect.InvocationTargetException e ) {
+                            // Assume there is no UpgradeWizard to run
+                        }
+                        
                     }
                 });
                 if (Boolean.getBoolean("import.canceled"))

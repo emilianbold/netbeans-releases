@@ -26,19 +26,20 @@ Microsystems, Inc. All Rights Reserved.
     <property name="xmlparser" value="xerces.jar"/>
 
     <target name="compile">
-    <!--
         <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
             <classpath>
                 <pathelement location="../../openide/openide-13javac-workaround.jar"/>
                 <fileset dir="../../openide/netbeans/lib">
                     <include name="openide*.jar" />
                 </fileset>
+				<pathelement location="../netbeans/lib/core.jar"/>
+				<!--
                 <pathelement location="${binroot}/core/release/lib/ext/jaxp.jar"/>
                 <pathelement location="${binroot}/core/release/lib/ext/${xmlparser}"/>
                 <pathelement location="${binroot}/core/release/lib/ext/jh.jar"/>
+				-->
             </classpath>
         </javac>
-	-->
     </target>
 
     <target name="jars" depends="compile">
