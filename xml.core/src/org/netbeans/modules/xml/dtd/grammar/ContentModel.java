@@ -433,9 +433,9 @@ abstract class ContentModel {
          */
         protected boolean eat(Food food) {
 
-            boolean accepted = false;
+            boolean accepted = food.hasNext() == false;
             int newFood = food.mark();
-            boolean acceptedAndHungry = false;
+            boolean acceptedAndHungry = food.hasNext() == false;
 
             while (food.hasNext()) {
 

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!ELEMENT name ( #PCDATA ) >
+
+<!ELEMENT cc ( address ) >
+
+<!ELEMENT attachment EMPTY >
+<!ATTLIST attachment attachfile NMTOKEN #REQUIRED >
+
+<!ELEMENT body ( subject, content?, attachment+ ) >
+
+<!ELEMENT content EMPTY >
+
+<!ELEMENT email ( head, body ) >
+
+<!ELEMENT subject EMPTY >
+
+<!ELEMENT head ( from, to+, cc* ) >
+
+<!ELEMENT from ( name, address ) >
+
+<!ELEMENT to ( name, address ) >
+
+<!ELEMENT address EMPTY >
+
