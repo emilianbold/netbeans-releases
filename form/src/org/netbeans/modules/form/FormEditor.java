@@ -198,19 +198,18 @@ final public class FormEditor extends Object {
         propValue = varName;
       }
     }
-/*    else if (comp instanceof JTable) {
+    else if (comp instanceof JTable) {
       javax.swing.table.TableModel tm = ((JTable)comp).getModel ();
       if ((tm == null) || ((tm instanceof javax.swing.table.DefaultTableModel) &&
           (tm.getRowCount () == 0) && (tm.getColumnCount () == 0))) 
       {
-        value = 
-          new javax.swing.table.DefaultTableModel (
+        propValue = new com.netbeans.developer.editors.TableModelEditor.NbTableModel (new javax.swing.table.DefaultTableModel (
             new String[] {"Title 1", "Title 2", "Title 3", "Title 4"},
             4
-          )
+          ));
         propName = "model";
       }      
-    } */
+    }
     else if ((comp instanceof JTextField) && (!(comp instanceof JPasswordField))) { // JTextField and not JPasswordField
       if ("".equals (((JTextField)comp).getText ())) {
         propName = "text";
@@ -565,25 +564,41 @@ final public class FormEditor extends Object {
 
   public static void displayErrorLog () {
     if (errorLog.size () == 0) return;
-    for (Iterator it = errorLog.iterator (); it.hasNext ();) {
-      ErrorLogItem item = (ErrorLogItem)it.next ();
-      if (item.getType () == ErrorLogItem.WARNING) {
-        System.out.println("WARNING: "+item.getDescription ());
-      } else {
-        System.out.println("ERROR: "+item.getDescription ());
+
+/*    JButton closeButton = new JButton (getFormBundle ().getString ("CTL_CLOSE"));
+    JButton detailsButton = new JButton (getFormBundle ().getString ("CTL_DETAILS"));
+    if (TopManager.getDefault ().notify (new NotifyDescriptor (
+          getFormBundle ().getString ("ERR_ErrorsNotification"),
+          getFormBundle ().getString ("CTL_ErrorsNotificationTitle"),
+          NotifyDescriptor.DEFAULT_OPTION,
+          NotifyDescriptor.WARNING_MESSAGE,
+          null, // icon
+          new Object[] { detailsButton, closeButton }, // options
+          closeButton
+        )) == detailsButton) 
+    { */
+      for (Iterator it = errorLog.iterator (); it.hasNext ();) {
+        ErrorLogItem item = (ErrorLogItem)it.next ();
+        if (item.getType () == ErrorLogItem.WARNING) {
+          System.out.println("WARNING: "+item.getDescription ());
+        } else {
+          System.out.println("ERROR: "+item.getDescription ());
+        }
+        if (item.getThrowable () != null) {
+          System.out.println("Details:");
+          item.getThrowable ().printStackTrace ();
+        }
       }
-      if (item.getThrowable () != null) {
-        System.out.println("Details:");
-        item.getThrowable ().printStackTrace ();
-      }
-    }
+      
+      //new ErrorLogDialog (errorLog).show (); // [PENDING]
+//    }
+
     TopManager.getDefault ().notify (new NotifyDescriptor.Message (
           org.openide.util.NbBundle.getBundle (FormEditor.class).getString ("ERR_BetaErrorsNotification"),
           NotifyDescriptor.WARNING_MESSAGE
         )
      ); 
-    
-    //new ErrorLogDialog (errorLog).show (); // [PENDING]
+
     clearLog ();
   }
 
@@ -591,6 +606,8 @@ final public class FormEditor extends Object {
 
 /*
  * Log
+ *  30   Gandalf   1.29        8/3/99   Ian Formanek    Default JTable model 
+ *       init
  *  29   Gandalf   1.28        8/1/99   Ian Formanek    NodePropertyEditor 
  *       employed
  *  28   Gandalf   1.27        8/1/99   Ian Formanek    createPropertyEditor 
