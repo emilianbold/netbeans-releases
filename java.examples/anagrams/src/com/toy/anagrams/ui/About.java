@@ -12,7 +12,7 @@ import javax.swing.JFrame;
 /**
  * About dialog of the Anagram Game application.
  */
-public class About extends JDialog implements ActionListener {
+public class About extends JDialog {
 
     /** Creates new form About */
     public About(JFrame parent) {
@@ -65,7 +65,11 @@ public class About extends JDialog implements ActionListener {
 
         closeButton.setMnemonic('C');
         closeButton.setText("Close");
-        closeButton.addActionListener(this);
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -79,14 +83,6 @@ public class About extends JDialog implements ActionListener {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(mainPanel, gridBagConstraints);
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (evt.getSource() == closeButton) {
-            About.this.closeButtonActionPerformed(evt);
-        }
     }//GEN-END:initComponents
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed

@@ -13,7 +13,7 @@ import javax.swing.JFrame;
 /**
  * Main window of the Anagram Game application.
  */
-public class Anagrams extends JFrame implements ActionListener, WindowListener {
+public class Anagrams extends JFrame {
 
     public static void main(String[] args) {
         new Anagrams().setVisible(true);
@@ -58,7 +58,11 @@ public class Anagrams extends JFrame implements ActionListener, WindowListener {
         exitMenuItem = new javax.swing.JMenuItem();
 
         setTitle("Anagrams");
-        addWindowListener(this);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                exitForm(evt);
+            }
+        });
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -111,7 +115,11 @@ public class Anagrams extends JFrame implements ActionListener, WindowListener {
         guessButton.setMnemonic('G');
         guessButton.setText("Guess");
         guessButton.setToolTipText("Guess the scrambled word.");
-        guessButton.addActionListener(this);
+        guessButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guessedWordActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
@@ -124,7 +132,11 @@ public class Anagrams extends JFrame implements ActionListener, WindowListener {
         nextTrial.setMnemonic('N');
         nextTrial.setText("New Word");
         nextTrial.setToolTipText("Fetch a new word.");
-        nextTrial.addActionListener(this);
+        nextTrial.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                nextTrialActionPerformed(evt);
+            }
+        });
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -147,14 +159,22 @@ public class Anagrams extends JFrame implements ActionListener, WindowListener {
         aboutMenuItem.setMnemonic('A');
         aboutMenuItem.setText("About");
         aboutMenuItem.setToolTipText("About");
-        aboutMenuItem.addActionListener(this);
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
 
         fileMenu.add(aboutMenuItem);
 
         exitMenuItem.setMnemonic('E');
         exitMenuItem.setText("Exit");
         exitMenuItem.setToolTipText("Quit Team, Quit!");
-        exitMenuItem.addActionListener(this);
+        exitMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitMenuItemActionPerformed(evt);
+            }
+        });
 
         fileMenu.add(exitMenuItem);
 
@@ -162,47 +182,6 @@ public class Anagrams extends JFrame implements ActionListener, WindowListener {
 
         setJMenuBar(mainMenu);
 
-    }
-
-    // Code for dispatching events from components to event handlers.
-
-    public void actionPerformed(java.awt.event.ActionEvent evt) {
-        if (evt.getSource() == aboutMenuItem) {
-            Anagrams.this.aboutMenuItemActionPerformed(evt);
-        }
-        else if (evt.getSource() == exitMenuItem) {
-            Anagrams.this.exitMenuItemActionPerformed(evt);
-        }
-        else if (evt.getSource() == guessButton) {
-            Anagrams.this.guessedWordActionPerformed(evt);
-        }
-        else if (evt.getSource() == nextTrial) {
-            Anagrams.this.nextTrialActionPerformed(evt);
-        }
-    }
-
-    public void windowActivated(java.awt.event.WindowEvent evt) {
-    }
-
-    public void windowClosed(java.awt.event.WindowEvent evt) {
-    }
-
-    public void windowClosing(java.awt.event.WindowEvent evt) {
-        if (evt.getSource() == Anagrams.this) {
-            Anagrams.this.exitForm(evt);
-        }
-    }
-
-    public void windowDeactivated(java.awt.event.WindowEvent evt) {
-    }
-
-    public void windowDeiconified(java.awt.event.WindowEvent evt) {
-    }
-
-    public void windowIconified(java.awt.event.WindowEvent evt) {
-    }
-
-    public void windowOpened(java.awt.event.WindowEvent evt) {
     }//GEN-END:initComponents
 
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutMenuItemActionPerformed
