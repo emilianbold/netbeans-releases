@@ -115,7 +115,7 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
         if (base == null) {
             base = home;
         }
-        
+
         InstalledFileLocator ifl = InstalledFileLocator.getDefault ();
         File homeDir = new File (home);
         if (!homeDir.isAbsolute ()) {
@@ -127,6 +127,9 @@ public final class StartTomcat implements StartServer, Runnable, ProgressObject
             File baseDir2 = ifl.locate (base, null, false);
             if (baseDir2 == null) {
                 baseDir = createBaseDir (baseDir, homeDir);
+            }
+            else {
+                baseDir = baseDir2;
             }
         }
         // XXX check for null's
