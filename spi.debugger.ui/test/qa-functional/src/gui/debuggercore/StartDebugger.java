@@ -20,7 +20,6 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTreeOperator;
@@ -47,13 +46,13 @@ public class StartDebugger extends JellyTestCase {
     
     /** setUp method  */
     public void setUp() {
+        Utilities.sleep(1000);
         System.out.println("########  " + getName() + "  #######");
     }
     
     /** tearDown method */
     public void tearDown() {
         Utilities.closeZombieSessions();
-        //new EventTool().waitNoEvent(1000);
     }
     
     public void testRunInDebugger() {
@@ -62,13 +61,15 @@ public class StartDebugger extends JellyTestCase {
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
 
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runInDebuggerItem).toString(), null).perform();
+        new Action(null, null, Utilities.debugProjectShortcut).performShortcut();
+        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText(Utilities.runningStatusBarText);
-        new EventTool().waitNoEvent(2000);
 
         // finnish bedugging session
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText(Utilities.finishedStatusBarText);
@@ -84,16 +85,15 @@ public class StartDebugger extends JellyTestCase {
         projectNode.select();
         projectNode.performPopupAction(Utilities.setMainProjectAction);
 
-        JavaNode javaNode = new JavaNode(projectNode, "Source Packages|examples.advanced|MemoryView.java");
-        javaNode.select();
-        javaNode.performPopupAction(Utilities.openSourceAction);
-
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.stepIntoItem).toString(), null).perform();
+        new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
+        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:241.");
         
         // finnish bedugging session
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText(Utilities.finishedStatusBarText);
@@ -116,12 +116,15 @@ public class StartDebugger extends JellyTestCase {
         EditorOperator editorOperator = new EditorOperator("MemoryView.java");
         editorOperator.setCaretPosition(112, 1);
         
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.runToCursorItem).toString(), null).perform();
+        new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+        Utilities.sleep(1000);
         MainWindowOperator mwo = MainWindowOperator.getDefault();
         mwo.waitStatusText("Thread main stopped at MemoryView.java:112.");
         
         // finnish bedugging session
-        new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        //new Action(new StringBuffer(Utilities.runMenu).append("|").append(Utilities.killSessionsItem).toString(), null).perform();
+        new Action(null, null, Utilities.killSessionShortcut).performShortcut();
         try {
             JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 5000);
             mwo.waitStatusText(Utilities.finishedStatusBarText);
