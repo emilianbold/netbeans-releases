@@ -112,8 +112,6 @@ Microsystems, Inc. All Rights Reserved.
                 <package>org.netbeans.editor.ext.html</package>
                 <package>org.netbeans.editor.ext.java</package>
                 <package>org.netbeans.editor.ext.plain</package>
-                <package>org.netbeans.editor.fold.api</package>
-                <package>org.netbeans.editor.fold.spi</package>
                 <package>org.netbeans.editor.view.spi</package>
             </public-packages>
             <extra-compilation-unit>
