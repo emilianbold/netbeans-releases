@@ -27,6 +27,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyEditor;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import javax.swing.border.EmptyBorder;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
@@ -291,7 +292,10 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         }
 
         if(index < 0) {
-            throw new IllegalArgumentException(text);
+            String msg = MessageFormat.format (
+                NbBundle.getMessage (ColorEditor.class, "FMT_IllegalEntry"), 
+                new Object[]{text});
+            throw new IllegalArgumentException(msg);
         }
 
         setValue(new SuperColor(text, palette, color));
