@@ -37,8 +37,8 @@ public interface SearchInfo {
      * algorithm for determination of the result value should be slow, it is
      * better to return <code>true</code> than make the method slow.
      *
-     * @return  <code>true</code> if the object can be (potentially) searched;
-     *          <code>false</code> otherwise
+     * @return  <code>false</code> if the object is known that it cannot be
+     *          searched; <code>true</code> otherwise
      */
     public boolean canSearch();
 
