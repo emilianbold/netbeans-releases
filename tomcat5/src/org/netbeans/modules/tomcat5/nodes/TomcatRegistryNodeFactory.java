@@ -45,7 +45,8 @@ public class TomcatRegistryNodeFactory implements RegistryNodeFactory {
       * @return admin server node.
       */
     public Node getManagerNode(Lookup lookup) {
-        return null;
+        TomcatInstanceNode tn = new TomcatInstanceNode (new Children.Map(), lookup);
+        return tn;
     }
     
     /**
