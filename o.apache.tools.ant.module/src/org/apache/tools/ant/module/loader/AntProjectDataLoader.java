@@ -105,7 +105,7 @@ public class AntProjectDataLoader extends UniFileLoader {
     private static class QuickieHandler extends DefaultHandler {
         public void startElement (String namespace, String name, String qname, Attributes attrs) throws SAXException {
             throw new ResolvedThrow (qname.equals ("project") && // NOI18N
-                                     attrs.getValue ("name") != null && // NOI18N
+                                     //attrs.getValue ("name") != null && // NOI18N
                                      //attrs.getValue ("basedir") != null && // NOI18N
                                      attrs.getValue ("default") != null); // NOI18N
         }
