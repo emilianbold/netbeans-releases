@@ -279,8 +279,19 @@ final class XMLSettingsSupport {
         }
         
         Class[] cs = clazz.getInterfaces();
-        for (int i = 0; i < cs.length; i++) {
-            getSuperClasses(cs[i], classes);
+        
+        // XXX following validation should help to identify a wrong IBM's
+        // implementation of Class.getInterfaces(). The implementation for some
+        // classes returns null. See issue #16257.
+        if (cs != null) {
+            for (int i = 0; i < cs.length; i++) {
+                getSuperClasses(cs[i], classes);
+            }
+        } else {
+            ErrorManager.getDefault().log(ErrorManager.ERROR,
+                "Error: if you encounter this message, please attach " + //NOI18N
+                "the class name to the issue http://www.netbeans.org/issues/show_bug.cgi?id=16257. " + //NOI18N
+                "Class.getInterfaces() == null for the class: " + clazz); // NOI18N
         }
         
         return getSuperClasses(clazz.getSuperclass(), classes);
