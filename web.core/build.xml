@@ -65,12 +65,13 @@ Microsystems, Inc. All Rights Reserved.
           <fileset dir="${nb_root}/core/external">
             <include name="xml-apis*.jar"/>
           </fileset>
+        <pathelement location="${nb_root}/core/netbeans/lib/core.jar"/> <!-- XXX: ExLocalFileSystem in UnpackWarAction -->
         <pathelement location="${nb_root}/openidex/netbeans/modules/autoload/openidex.jar"/>
         <pathelement location="${nb_root}/html/netbeans/modules/html.jar"/>
         <pathelement location="${nb_root}/java/netbeans/modules/java.jar"/>
         <pathelement location="${nb_root}/jarpackager/netbeans/modules/jarpackager.jar"/>
         <pathelement location="${nb_root}/debuggercore/netbeans/modules/autoload/debuggerCore.jar"/>
-        <pathelement path="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
+        <pathelement location="${nb_root}/schema2beans/netbeans/modules/schema2beans.jar" />
         <pathelement location="${nb_root}/openide/netbeans/lib/openide.jar"/>
         <pathelement location="${nb_root}/openide/deprecated/netbeans/modules/autoload/openide-deprecated.jar"/> <!-- XXX -->
         <pathelement location="${nb_root}/openide/compiler/netbeans/modules/autoload/openide-compiler.jar"/>
