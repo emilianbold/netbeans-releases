@@ -57,6 +57,11 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.*;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.web.dd.DDProvider;
+import org.netbeans.api.web.dd.WebApp;
+import org.netbeans.api.web.dd.Servlet;
+import org.netbeans.api.web.dd.ServletMapping;
+import org.netbeans.api.java.classpath.ClassPath;
 
 /** Action provider of the Web project. This is the place where to do
  * strange things to Web actions. E.g. compile-single.
@@ -159,19 +164,29 @@ class WebActionProvider implements ActionProvider {
             }
             if (command.equals (COMMAND_RUN_SINGLE)) {
                 FileObject[] files = findJsps( context );
-                try {
-                    URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
-                    if (uc != null) {
-                        p.setProperty("client.urlPart", uc.getURL ());
+                if (files!=null && files.length>0) {
+                    try {
+                        URLCookie uc = (URLCookie) DataObject.find (files [0]).getCookie (URLCookie.class);
+                        if (uc != null) {
+                            p.setProperty("client.urlPart", uc.getURL ()); //NOI18N
+                        } else {
+                            return;
+                        }
+                    } catch (DataObjectNotFoundException e) {
+                        ErrorManager.getDefault ().notify (e);
+                        return;
+                    }
+                } else {
+                    FileObject[] javaFiles = findJavaSources(context);
+                    String[] urlPatterns = getServletMappings(context,javaFiles[0]);
+                    if (urlPatterns!=null && urlPatterns.length>0) {
+                        p.setProperty("client.urlPart", urlPatterns[0]); //NOI18N
                     } else {
                         return;
                     }
-                } catch (DataObjectNotFoundException e) {
-                    ErrorManager.getDefault ().notify (e);
-                    return;
                 }
+
             }
-            
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE)) {
             if (!isSelectedServer ()) {
@@ -264,7 +279,13 @@ class WebActionProvider implements ActionProvider {
         }
         if ( command.equals( COMMAND_RUN_SINGLE ) ) {
             FileObject jsps [] = findJsps (context);
-            return jsps != null && jsps.length == 1;
+            if (jsps != null && jsps.length >0) return true;
+            FileObject[] javaFiles = findJavaSources(context);
+            if (javaFiles!=null && javaFiles.length > 0) {
+                if (isDDServlet(context, javaFiles[0]))
+                    return true;
+                else return false;
+            } else return false;
         }
         else {
             // other actions are global
@@ -364,4 +385,48 @@ class WebActionProvider implements ActionProvider {
         }
         return selected;
     }
+    
+    private boolean isDDServlet(Lookup context, FileObject javaClass) {
+        FileObject webDir = project.getWebModule ().getDocumentBase ();
+        if (webDir==null) return false;
+        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
+        ClassPath classPath = ClassPath.getClassPath(project.getSourceDirectory (),ClassPath.SOURCE);
+        String className = classPath.getResourceName(javaClass,'.',false);
+        if (fo==null) return false;
+        try {
+            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
+            Servlet servlet = (Servlet)webApp.findBeanByName("Servlet","ServletClass",className); //NOI18N
+            if (servlet!=null) return true;
+            else return false;
+        } catch (IOException ex) {return false;}  
+    }
+    
+    private String[] getServletMappings(Lookup context, FileObject javaClass) {
+        FileObject webDir = project.getWebModule ().getDocumentBase ();
+        if (webDir==null) return null;
+        FileObject fo = webDir.getFileObject("WEB-INF/web.xml"); //NOI18N
+        if (fo==null) return null;
+        ClassPath classPath = ClassPath.getClassPath(project.getSourceDirectory (),ClassPath.SOURCE);
+        String className = classPath.getResourceName(javaClass,'.',false);
+        try {
+            WebApp webApp = DDProvider.getDefault().getDDRoot(fo);
+            Servlet[] servlets = webApp.getServlet();
+            java.util.List mappingList = new java.util.ArrayList();
+            for (int i=0;i<servlets.length;i++) {
+                if (servlets[i].getServletClass().equals(className)) {
+                    String servletName=servlets[i].getServletName();
+                    ServletMapping[] maps  = webApp.getServletMapping();
+                    for (int j=0;j<maps.length;j++) {
+                        if (maps[j].getServletName().equals(servletName)) {
+                            mappingList.add(maps[j].getUrlPattern());
+                        }
+                    }
+                }
+            }
+            String[] mappings = new String[mappingList.size()];
+            mappingList.toArray(mappings);
+            return mappings;
+        } catch (IOException ex) {return null;}  
+    }
+        
 }
